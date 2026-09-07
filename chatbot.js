@@ -14,6 +14,7 @@
   'use strict';
 
   var HIDDEN_KEY = 'leobot_hidden_v1';
+  var AUTO_OPEN_KEY = 'leobot_auto_opened_v1';
 
   function currentPage(){
     var path = location.pathname.split('/').pop();
@@ -224,35 +225,16 @@
     }
   };
 
-  /* ============================================================
-     Íconos y ojos del robot por estado (solo cambia la carita)
-     ============================================================ */
-  var EYES = {
-    normal:'<svg viewBox="0 0 40 20" fill="none"><path d="M4 12c2-6 8-6 10 0" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M26 12c2-6 8-6 10 0" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
-    wink:'<svg viewBox="0 0 40 20" fill="none"><path d="M4 12c2-6 8-6 10 0" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M26 10h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
-    happy:'<svg viewBox="0 0 40 20" fill="none"><path d="M2 10c3-9 11-9 14 0" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><path d="M24 10c3-9 11-9 14 0" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>',
-    thinking:'<svg viewBox="0 0 40 20" fill="none"><circle cx="9" cy="11" r="2.6" fill="#fff"/><circle cx="31" cy="11" r="2.6" fill="#fff"/></svg>'
-  };
-
   function buildAvatarHtml(){
-    return (
-      '<div class="lb-antenna"><span class="lb-antenna-ball"></span><span class="lb-antenna-stick"></span></div>' +
-      '<div class="lb-shell">' +
-        '<div class="lb-screen"><span class="lb-eyes">' + EYES.normal + '</span></div>' +
-        '<div class="lb-badge"><img src="logo.png" alt="" loading="lazy"></div>' +
-      '</div>'
-    );
+    return '<img src="leobot.png" alt="LeoBot" draggable="false">';
   }
 
   function setAvatarState(avatarEl, state, duration){
     if(!avatarEl) return;
     avatarEl.setAttribute('data-state', state);
-    var eyesEl = avatarEl.querySelector('.lb-eyes');
-    if(eyesEl) eyesEl.innerHTML = EYES[state] || EYES.normal;
     if(duration){
       window.setTimeout(function(){
         avatarEl.setAttribute('data-state', 'normal');
-        if(eyesEl) eyesEl.innerHTML = EYES.normal;
       }, duration);
     }
   }
@@ -317,7 +299,7 @@
     var hasOpenedOnce = false;
     var history = []; // pila de nodos visitados en esta sesión de chat (para "Volver")
 
-    function open(){
+    function open(isAutomatic){
       isOpen = true;
       panel.classList.add('open');
       fab.setAttribute('aria-expanded', 'true');
@@ -328,6 +310,7 @@
         goTo('root', false);
       }
       window.setTimeout(function(){
+        if(isAutomatic) return;
         var firstBtn = optionsEl.querySelector('.leobot-opt-btn');
         if(firstBtn) firstBtn.focus();
       }, 220);
@@ -461,6 +444,15 @@
     document.addEventListener('keydown', function(e){
       if(e.key === 'Escape' && isOpen) close();
     });
+
+    /* Una sola bienvenida por navegador: no reaparece al navegar entre páginas. */
+    if(localStorage.getItem(AUTO_OPEN_KEY) !== '1'){
+      window.setTimeout(function(){
+        if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
+        localStorage.setItem(AUTO_OPEN_KEY, '1');
+        open(true);
+      }, 900);
+    }
   }
 
   function renderReopenPill(){
