@@ -549,12 +549,7 @@ function runVocabSession({ container, level, onExit }){
     container.appendChild(wrap);
 
     card.innerHTML = `
-      <div class="vocab-card">
-        <div class="vocab-word">${item.word}</div>
-        <div class="vocab-sub">${item.translation}</div>
-      </div>
-      ${renderExamplesBlock(item.examples)}
-      <div class="practice-prompt" style="margin-top:22px;font-size:1.05rem;">${item.quiz.prompt}</div>
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.quiz.prompt}</div>
       <div class="option-list" id="optList"></div>
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
@@ -570,7 +565,12 @@ function runVocabSession({ container, level, onExit }){
           if(j === item.quiz.correct) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
-        renderFeedback(card, isCorrect, item.quiz.explain, null);
+        const reveal = document.createElement('div');
+        reveal.className = 'vocab-card';
+        reveal.style.marginTop = '16px';
+        reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
+        list.after(reveal);
+        renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
         showNextButton(card, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →', ()=>{
           idx++;
@@ -1156,12 +1156,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
     container.appendChild(wrap);
 
     card.innerHTML = `
-      <div class="vocab-card">
-        <div class="vocab-word">${item.word}</div>
-        <div class="vocab-sub">${item.translation}</div>
-      </div>
-      ${renderExamplesBlock(item.examples)}
-      <div class="practice-prompt" style="margin-top:22px;font-size:1.05rem;">${item.quiz.prompt}</div>
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.quiz.prompt}</div>
       <div class="option-list" id="optList"></div>
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
@@ -1177,7 +1172,12 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
           if(j === item.quiz.correct) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
-        renderFeedback(card, isCorrect, item.quiz.explain, null);
+        const reveal = document.createElement('div');
+        reveal.className = 'vocab-card';
+        reveal.style.marginTop = '16px';
+        reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
+        list.after(reveal);
+        renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
         showNextButton(card, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →', ()=>{
           idx++;
