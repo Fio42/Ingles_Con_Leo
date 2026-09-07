@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /miembros.html
+
+Sitemap: https://inglesconleo.example/sitemap.xml

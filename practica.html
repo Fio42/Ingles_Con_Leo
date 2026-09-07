@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practica inglés gratis — Inglés con Leo</title>
+<meta name="description" content="Ejercicios gratis de inglés adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+. Elige tu nivel y practica ahora mismo, sin registrarte.">
+<link rel="canonical" href="https://inglesconleo.example/practica.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="#3554F0"/>
+        <circle cx="24" cy="20" r="9" fill="#FFF4E0"/>
+        <path d="M13 22c1-6 5-10 11-10s10 4 11 10" stroke="#F5A524" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="20.5" cy="19.5" r="1.6" fill="#1B2333"/>
+        <circle cx="27.5" cy="19.5" r="1.6" fill="#1B2333"/>
+        <path d="M21 24c1 1.2 5 1.2 6 0" stroke="#1B2333" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      </svg>
+      Inglés con <span class="leo">Leo</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html" class="current">Practicar gratis</a>
+      <a href="miembros.html">Miembros</a>
+    </nav>
+    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta">Entrar a miembros</a>
+    <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <span class="badge badge-free">Gratis</span>
+      <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
+      <p class="lead">Aquí tienes “Seleccionar respuesta” gratis en los 3 niveles. El resto de actividades están en la sección de miembros.</p>
+    </div>
+  </section>
+
+  <section style="padding-top:8px;">
+    <div class="wrap">
+      <div class="levels" id="levelSelector">
+        <button class="level-card lvl-facil" data-level="facil" aria-pressed="true">
+          <div class="level-check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="level-top">
+            <div>
+              <div class="level-name">Fácil</div>
+              <div class="level-range">A1 – A2</div>
+            </div>
+            <svg class="level-icon" viewBox="0 0 48 48" fill="none">
+              <rect x="6" y="10" width="36" height="28" rx="6" fill="#E7F7EE"/>
+              <path d="M14 20h20M14 26h14" stroke="#1FA463" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="tone-bar"></div>
+          <p class="level-desc">Palabras y frases del día a día.</p>
+        </button>
+
+        <button class="level-card lvl-medio" data-level="medio" aria-pressed="false">
+          <div class="level-check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="level-top">
+            <div>
+              <div class="level-name">Medio</div>
+              <div class="level-range">B1 – B2</div>
+            </div>
+            <svg class="level-icon" viewBox="0 0 48 48" fill="none">
+              <rect x="8" y="26" width="8" height="12" rx="2" fill="#FFF4E0"/>
+              <rect x="20" y="18" width="8" height="20" rx="2" fill="#F5A524"/>
+              <rect x="32" y="10" width="8" height="28" rx="2" fill="#FFF4E0"/>
+            </svg>
+          </div>
+          <div class="tone-bar"></div>
+          <p class="level-desc">Conversaciones más largas y matices.</p>
+        </button>
+
+        <button class="level-card lvl-avanzado" data-level="avanzado" aria-pressed="false">
+          <div class="level-check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="level-top">
+            <div>
+              <div class="level-name">Avanzado</div>
+              <div class="level-range">C1+</div>
+            </div>
+            <svg class="level-icon" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="16" fill="#FDEBE8"/>
+              <path d="M24 8v32M8 24h32" stroke="#EF5A45" stroke-width="2"/>
+              <path d="M14 14a14 14 0 0120 0" stroke="#EF5A45" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="tone-bar"></div>
+          <p class="level-desc">Matices y precisión de nativo.</p>
+        </button>
+      </div>
+
+      <div style="margin-top:32px;">
+        <div class="practice-shell">
+          <div class="practice-tabs" id="practiceTabs">
+            <button class="tab-btn active" data-activity="choice">Seleccionar respuesta</button>
+            <button class="tab-btn" data-activity="fill">${LOCK} Completar frase</button>
+            <button class="tab-btn" data-activity="error">${LOCK} Elegir palabra correcta</button>
+            <button class="tab-btn" data-activity="vocab">${LOCK} Vocabulario</button>
+          </div>
+          <div class="practice-body" id="practiceBody"></div>
+        </div>
+      </div>
+
+      <div class="article-cta" style="margin-top:28px;">
+        <h3>¿Quieres las 4 actividades en los 3 niveles?</h3>
+        <p style="color:var(--ink-soft);">Eso vive en la sección de miembros, con tu progreso guardado.</p>
+        <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Entrar a miembros</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar</a>
+      <a href="miembros.html">Miembros</a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
+
+<nav class="mobile-nav">
+  <button class="mnav-item" onclick="location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    Inicio
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Artículos
+  </button>
+  <button class="mnav-item active" onclick="location.href='practica.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    Practicar
+  </button>
+  <button class="mnav-item" onclick="location.href='miembros.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+    Miembros
+  </button>
+</nav>
+
+<script src="app.js"></script>
+<script>
+  // fix lock icon placeholders in tab labels
+  document.querySelectorAll('#practiceTabs .tab-btn').forEach(btn=>{
+    btn.innerHTML = btn.innerHTML.replace('${LOCK}', btn.dataset.activity === 'choice' ? '' : '<svg class="mini-lock" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>');
+  });
+
+  initPracticeWidget({
+    tabsEl: document.getElementById('practiceTabs'),
+    bodyEl: document.getElementById('practiceBody'),
+    levelsEl: document.getElementById('levelSelector'),
+    mode: 'free'
+  });
+</script>
+
+</body>
+</html>
