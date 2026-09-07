@@ -467,29 +467,63 @@ function renderGrammarItemInto(container, item, onAnswered){
       bank.appendChild(chip);
     });
   } else if(item.type === 'error'){
-    const wrongHtml = item.wrong.split(' ').map(w=>{
-      const clean = w.replace(/[.,]/g,'');
-      return clean === item.wrongWord ? `<span style="background:#FDEBE8;color:#A32E1E;padding:2px 6px;border-radius:6px;">${w}</span>` : w;
-    }).join(' ');
+    const tokens = item.wrong.split(' ');
+    const cleanTokens = tokens.map(w => w.replace(/[.,]/g,''));
+    const wrongTokens = item.wrongWord ? item.wrongWord.split(' ') : [];
+    let wrongStart = -1;
+    if(wrongTokens.length){
+      for(let i=0;i<=cleanTokens.length-wrongTokens.length;i++){
+        if(cleanTokens.slice(i,i+wrongTokens.length).join(' ') === item.wrongWord){ wrongStart = i; break; }
+      }
+    }
+    const wrongEnd = wrongStart + wrongTokens.length - 1;
+    const isAnswerIdx = (idx) => wrongStart>=0 && idx>=wrongStart && idx<=wrongEnd;
+
+    const wordsHtml = tokens.map((w,idx)=>
+      `<button type="button" class="error-word" data-idx="${idx}">${w}</button>`
+    ).join(' ');
+
     container.innerHTML = `
-      <div class="practice-prompt">Encuentra el error</div>
-      <div style="border:2px solid var(--line);border-radius:14px;padding:16px;font-size:1.05rem;font-weight:500;">${wrongHtml}</div>
-      <div style="text-align:center;margin:14px 0;color:var(--ink-faint);">↓</div>
-      <button class="btn btn-primary btn-block" id="revealBtn">Ver corrección</button>
+      <div class="practice-prompt">Encuentra el error — toca la palabra incorrecta</div>
+      <div class="error-sentence">${wordsHtml}</div>
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
-    container.querySelector('#revealBtn').addEventListener('click', function(){
-      this.style.display = 'none';
-      const rightHtml = item.right.split(' ').map(w=>{
-        const clean = w.replace(/[.,]/g,'');
-        return (item.rightWord && clean === item.rightWord) ? `<span style="background:#E7F7EE;color:#116B41;padding:2px 6px;border-radius:6px;">${w}</span>` : w;
-      }).join(' ');
-      const box = document.createElement('div');
-      box.style.cssText = 'border:2px solid #1FA463;background:#E7F7EE;border-radius:14px;padding:16px;font-size:1.05rem;font-weight:500;margin-top:12px;';
-      box.innerHTML = rightHtml;
-      this.after(box);
-      renderFeedback(container, true, item.explain, item.examples);
-      onAnswered(true);
+
+    const wordBtns = Array.from(container.querySelectorAll('.error-word'));
+    wordBtns.forEach(btn=>{
+      btn.addEventListener('click', function(){
+        const pickedIdx = Number(this.dataset.idx);
+        const isCorrect = isAnswerIdx(pickedIdx);
+        wordBtns.forEach(b=>{ b.disabled = true; });
+        if(isCorrect){
+          this.classList.add('is-answer');
+        } else {
+          this.classList.add('is-wrong-pick');
+          wordBtns.forEach(b=>{ if(isAnswerIdx(Number(b.dataset.idx))) b.classList.add('is-answer'); });
+        }
+
+        const rightTokens = item.right.split(' ');
+        const rightClean = rightTokens.map(w => w.replace(/[.,]/g,''));
+        const rightWordTokens = item.rightWord ? item.rightWord.split(' ') : [];
+        let rightStart = -1;
+        if(rightWordTokens.length){
+          for(let i=0;i<=rightClean.length-rightWordTokens.length;i++){
+            if(rightClean.slice(i,i+rightWordTokens.length).join(' ') === item.rightWord){ rightStart = i; break; }
+          }
+        }
+        const rightEnd = rightStart + rightWordTokens.length - 1;
+        const rightHtml = rightTokens.map((w,i)=>
+          (rightStart>=0 && i>=rightStart && i<=rightEnd) ? `<span style="background:#E7F7EE;color:#116B41;padding:2px 6px;border-radius:6px;">${w}</span>` : w
+        ).join(' ');
+
+        const box = document.createElement('div');
+        box.className = 'error-correct-box';
+        box.innerHTML = rightHtml;
+        container.querySelector('.error-sentence').after(box);
+
+        renderFeedback(container, isCorrect, item.explain, item.examples);
+        onAnswered(isCorrect);
+      });
     });
   }
 }
