@@ -247,7 +247,13 @@ const VOCAB_BANK = {
       quiz:{ prompt:"We go hiking every ___.", options:["weekend","Monday","minute"], correct:0, explain:"“Weekend” = sábado y domingo." } },
     { id:'v-facil-6', word:'Friend', translation:'Amigo · alguien cercano a ti',
       examples:[{en:"He is my best friend.", es:"Él es mi mejor amigo."},{en:"I made new friends at school.", es:"Hice nuevos amigos en la escuela."}],
-      quiz:{ prompt:"He is my best ___.", options:["friend","stranger","teacher"], correct:0, explain:"“Friend” es alguien cercano, no un desconocido." } }
+      quiz:{ prompt:"He is my best ___.", options:["friend","stranger","teacher"], correct:0, explain:"“Friend” es alguien cercano, no un desconocido." } },
+    { id:'v-facil-7', word:'Early', translation:'Temprano · antes de la hora usual',
+      examples:[{en:"I woke up early today.", es:"Hoy me desperté temprano."},{en:"She arrived early for the meeting.", es:"Ella llegó temprano a la reunión."}],
+      quiz:{ prompt:"¿Qué significa \"early\"?", options:["Tarde","Temprano","Nunca"], correct:1, explain:"“Early” significa antes de la hora esperada; lo opuesto es “late”." } },
+    { id:'v-facil-8', word:'Borrow', translation:'Pedir prestado · tomar algo para devolverlo',
+      examples:[{en:"Can I borrow your pen?", es:"¿Puedo pedirte prestado tu lapicero?"},{en:"He borrowed some money from his friend.", es:"Él pidió prestado algo de dinero a su amigo."}],
+      quiz:{ prompt:"¿Cuál oración usa \"borrow\" correctamente?", options:["Can I borrow your pen?","Can I lend your pen, please lend?","Can I borrow to the store?"], correct:0, explain:"“Borrow” = pedir prestado (tú recibes algo); “lend” es prestar (tú das algo)." } }
   ],
   medio: [
     { id:'v-medio-1', word:'Reluctant', translation:'Reacio · con poca disposición',
@@ -267,7 +273,13 @@ const VOCAB_BANK = {
       quiz:{ prompt:"He was tired; ___, he kept working.", options:["nevertheless","breakfast","kitchen"], correct:0, explain:"“Nevertheless” muestra un contraste." } },
     { id:'v-medio-6', word:'Achieve', translation:'Lograr · alcanzar una meta',
       examples:[{en:"She worked hard to achieve her goals.", es:"Ella trabajó duro para lograr sus metas."},{en:"He finally achieved success.", es:"Él finalmente logró el éxito."}],
-      quiz:{ prompt:"You can ___ anything with effort.", options:["achieve","waste","forget"], correct:0, explain:"“Achieve” significa lograr algo." } }
+      quiz:{ prompt:"You can ___ anything with effort.", options:["achieve","waste","forget"], correct:0, explain:"“Achieve” significa lograr algo." } },
+    { id:'v-medio-7', word:'Postpone', translation:'Posponer · dejar para después',
+      examples:[{en:"We had to postpone the meeting.", es:"Tuvimos que posponer la reunión."},{en:"The trip was postponed until next month.", es:"El viaje se pospuso hasta el próximo mes."}],
+      quiz:{ prompt:"¿Qué significa \"postpone\"?", options:["Cancelar para siempre","Dejar para después","Empezar antes de tiempo"], correct:1, explain:"“Postpone” = mover algo a una fecha posterior, no cancelarlo." } },
+    { id:'v-medio-8', word:'Reliable', translation:'Confiable · en quien se puede confiar',
+      examples:[{en:"She's a reliable coworker.", es:"Ella es una compañera de trabajo confiable."},{en:"This car is old but reliable.", es:"Este carro es viejo pero confiable."}],
+      quiz:{ prompt:"¿Cuál oración usa \"reliable\" correctamente?", options:["He is very reliable at work.","He is very reliable of work.","He reliable works hard."], correct:0, explain:"“Reliable” funciona como adjetivo: “is reliable”, sin preposición extra." } }
   ],
   avanzado: [
     { id:'v-avz-1', word:'Ubiquitous', translation:'Omnipresente · que está en todas partes',
@@ -287,7 +299,13 @@ const VOCAB_BANK = {
       quiz:{ prompt:"Instead of dreaming big, he took a ___ approach.", options:["pragmatic","contentious","nuance"], correct:0, explain:"“Pragmatic” significa práctico y realista." } },
     { id:'v-avz-6', word:'Meticulous', translation:'Meticuloso · muy cuidadoso con los detalles',
       examples:[{en:"She's meticulous about her work.", es:"Ella es meticulosa con su trabajo."},{en:"He kept meticulous records.", es:"Él llevaba registros meticulosos."}],
-      quiz:{ prompt:"The report was written in a ___ way, with every detail checked.", options:["meticulous","reluctant","ubiquitous"], correct:0, explain:"“Meticulous” describe mucho cuidado con los detalles." } }
+      quiz:{ prompt:"The report was written in a ___ way, with every detail checked.", options:["meticulous","reluctant","ubiquitous"], correct:0, explain:"“Meticulous” describe mucho cuidado con los detalles." } },
+    { id:'v-avz-7', word:'Redundant', translation:'Redundante · innecesario por repetido',
+      examples:[{en:"That sentence is redundant; you already said it.", es:"Esa frase es redundante; ya lo dijiste."},{en:"Some of these rules are redundant now.", es:"Algunas de estas reglas ahora son redundantes."}],
+      quiz:{ prompt:"¿Qué significa \"redundant\"?", options:["Muy importante","Innecesario por repetido","Difícil de entender"], correct:1, explain:"“Redundant” describe algo repetitivo o innecesario." } },
+    { id:'v-avz-8', word:'Discrepancy', translation:'Discrepancia · diferencia entre dos cosas que deberían coincidir',
+      examples:[{en:"There's a discrepancy between the two reports.", es:"Hay una discrepancia entre los dos informes."},{en:"We need to explain this discrepancy in the numbers.", es:"Necesitamos explicar esta discrepancia en los números."}],
+      quiz:{ prompt:"¿Cuál oración usa \"discrepancy\" correctamente?", options:["There's a discrepancy between the reports.","She felt discrepancy about the job.","He is a discrepancy person."], correct:0, explain:"“Discrepancy” es un sustantivo: una diferencia entre datos o versiones, no un sentimiento ni un adjetivo." } }
   ]
 };
 
@@ -381,7 +399,11 @@ const WRITING_BANK = {
     { id:'w-facil-3', prompt:"Escribe una frase sobre tu desayuno de hoy.", target:"breakfast",
       checkPattern:"\\b(had|ate|have|eat)\\b.*breakfast|breakfast.*\\b(had|ate|have|eat)\\b", hint:"Estructura esperada: un verbo (had/ate) + “breakfast”.",
       example:{en:"I had eggs for breakfast.", es:"Comí huevos en el desayuno."},
-      checklist:["¿Usaste la palabra “breakfast”?","¿Usaste un verbo en pasado si ya desayunaste?","¿La frase tiene sentido?"] }
+      checklist:["¿Usaste la palabra “breakfast”?","¿Usaste un verbo en pasado si ya desayunaste?","¿La frase tiene sentido?"] },
+    { id:'w-facil-4', prompt:"Escribe una frase describiendo el clima de hoy.", target:"weather description",
+      checkPattern:"\\b(it('s| is))\\b.*\\b(sunny|rainy|cold|hot|cloudy|windy)\\b", hint:"Estructura esperada: “It is ___” + una palabra de clima (sunny, rainy, cold, hot, cloudy, windy).",
+      example:{en:"It is sunny today.", es:"Hoy está soleado."},
+      checklist:["¿Empezaste con “It is...”?","¿Usaste una palabra de clima?","¿La frase tiene sentido?"] }
   ],
   medio: [
     { id:'w-medio-1', prompt:"Escribe una frase usando “used to” para un hábito pasado.", target:"used to",
@@ -395,7 +417,11 @@ const WRITING_BANK = {
     { id:'w-medio-3', prompt:"Escribe una frase con “although” o “even though”.", target:"although / even though",
       checkPattern:"although|even though", hint:"Estructura esperada: “Although ...,” o “Even though ...,” conectando dos ideas.",
       example:{en:"Although it was raining, we went out.", es:"Aunque estaba lloviendo, salimos."},
-      checklist:["¿Usaste “although” o “even though”?","¿Conecta dos ideas contrastantes?","¿La frase tiene sentido?"] }
+      checklist:["¿Usaste “although” o “even though”?","¿Conecta dos ideas contrastantes?","¿La frase tiene sentido?"] },
+    { id:'w-medio-4', prompt:"Escribe una frase usando un comparativo (“more... than” o “-er than”).", target:"comparativo",
+      checkPattern:"\\b\\w+er\\b than|more \\w+ than", hint:"Estructura esperada: “___ + er/more ___ than ___.”",
+      example:{en:"This city is more expensive than mine.", es:"Esta ciudad es más cara que la mía."},
+      checklist:["¿Usaste un comparativo (“-er” o “more”)?","¿Incluiste “than”?","¿La frase compara dos cosas?"] }
   ],
   avanzado: [
     { id:'w-avz-1', prompt:"Escribe una frase con condicional tipo 3 (“had” + participio, “would have” + participio).", target:"condicional tipo 3",
@@ -409,6 +435,10 @@ const WRITING_BANK = {
     { id:'w-avz-3', prompt:"Escribe una frase con una inversión enfática (“No sooner...”, “Not only...”).", target:"inversión enfática",
       checkPattern:"^(not only|no sooner)", hint:"Estructura esperada: empezar la frase con “Not only” o “No sooner”, seguido de inversión verbo–sujeto.",
       example:{en:"Not only did she arrive late, but she also forgot the documents.", es:"No solo llegó tarde, sino que también olvidó los documentos."},
-      checklist:["¿Empezaste con “Not only” o “No sooner”?","¿Invertiste el orden verbo–sujeto después?","¿La frase suena natural?"] }
+      checklist:["¿Empezaste con “Not only” o “No sooner”?","¿Invertiste el orden verbo–sujeto después?","¿La frase suena natural?"] },
+    { id:'w-avz-4', prompt:"Escribe una frase con voz pasiva (“is/was” + participio).", target:"voz pasiva",
+      checkPattern:"\\b(is|are|was|were|been)\\b [a-z]+ed\\b|\\b(is|are|was|were|been)\\b (done|made|written|seen|taken|given|built|sent)", hint:"Estructura esperada: “sujeto + is/was/were” + verbo en participio.",
+      example:{en:"The report was written by the team.", es:"El informe fue escrito por el equipo."},
+      checklist:["¿Usaste “is/was/were” + participio?","¿El sujeto recibe la acción en vez de hacerla?","¿La frase tiene sentido?"] }
   ]
 };

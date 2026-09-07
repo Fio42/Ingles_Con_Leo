@@ -1022,18 +1022,461 @@ function renderProgressPage(root){
 }
 
 /* ============================================================
-   VISTA PREVIA GRATIS (practica.html) — muestra corta de varias
-   habilidades, no solo Gramática.
+   PRÁCTICA GRATIS (practica.html) — mini sesiones reales, no un
+   solo ítem de muestra. Comparten los mismos bancos de datos que
+   Miembros y las mismas piezas de UI (tarjetas, feedback, audio),
+   pero NO llaman a recordSession() (no tocan el progreso guardado
+   de Miembros) y terminan en un resumen propio que invita —sin
+   interrumpir la sesión— a entrar a Miembros para más práctica y
+   seguimiento. Miembros conserva su propio motor (runGrammarSession,
+   runVocabSession, runListeningSession, runSpeakingSession,
+   runWritingSession) sin cambios.
    ============================================================ */
-function initFreePreview({ levelsEl, tabsEl, headEl, bodyEl }){
+
+/* ---------- Resumen de sesión gratis (independiente del de Miembros) ---------- */
+function renderFreeSessionSummary({ title, score, topics }){
+  return `
+    <div class="session-summary">
+      <h2>${title}</h2>
+      <p class="summary-score">${score}</p>
+      ${topics && topics.length ? `
+        <div class="summary-topics">
+          <div class="examples-label">Practicaste:</div>
+          <ul>${topics.map(t=>`<li>${t}</li>`).join('')}</ul>
+        </div>` : ''}
+      <div class="summary-actions">
+        <button class="btn btn-primary" id="freeAgainBtn">Hacer otra sesión</button>
+        <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
+      </div>
+      <div class="summary-secondary">
+        <p>¿Quieres más práctica y seguimiento de progreso?</p>
+        <a href="miembros.html" class="btn btn-ghost btn-sm">Entrar a miembros →</a>
+      </div>
+    </div>`;
+}
+function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
+  const againBtn = container.querySelector('#freeAgainBtn');
+  if(againBtn) againBtn.addEventListener('click', onAgain);
+  const otherBtn = container.querySelector('#freeOtherSkillBtn');
+  if(otherBtn) otherBtn.addEventListener('click', onOtherSkill);
+}
+
+/* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
+function runFreeGrammarSession({ container, level, onOtherSkill }){
+  const topics = GRAMMAR_BANK[level];
+  const pool = [];
+  const maxLen = Math.max(...topics.map(t=>t.items.length));
+  for(let i=0;i<maxLen;i++){
+    topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
+  }
+  const total = pool.length;
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderGrammarItemInto(card, item, (isCorrect)=>{
+      results.push({ itemId:item.id, isCorrect });
+      showNextButton(card, idx+1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      });
+    });
+  }
+  function finish(){
+    const correct = results.filter(r=>r.isCorrect).length;
+    container.innerHTML = renderFreeSessionSummary({
+      title:'¡Listo!', score:`${correct} / ${total} correctas`,
+      topics: topics.map(t=>t.topic)
+    });
+    wireFreeSummaryButtons(container, {
+      onAgain: ()=>runFreeGrammarSession({ container, level, onOtherSkill }),
+      onOtherSkill
+    });
+  }
+  renderItem();
+}
+
+/* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
+function runFreeVocabSession({ container, level, onOtherSkill }){
+  const pool = VOCAB_BANK[level];
+  const total = pool.length;
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    card.innerHTML = `
+      <div class="vocab-card">
+        <div class="vocab-word">${item.word}</div>
+        <div class="vocab-sub">${item.translation}</div>
+      </div>
+      ${renderExamplesBlock(item.examples)}
+      <div class="practice-prompt" style="margin-top:22px;font-size:1.05rem;">${item.quiz.prompt}</div>
+      <div class="option-list" id="optList"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    const list = card.querySelector('#optList');
+    item.quiz.options.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
+      b.addEventListener('click', ()=>{
+        const isCorrect = i === item.quiz.correct;
+        [...list.children].forEach((el,j)=>{
+          el.disabled = true;
+          if(j === item.quiz.correct) el.classList.add('correct');
+          if(j === i && !isCorrect) el.classList.add('incorrect');
+        });
+        renderFeedback(card, isCorrect, item.quiz.explain, null);
+        results.push({ itemId:item.id, isCorrect });
+        showNextButton(card, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →', ()=>{
+          idx++;
+          if(idx < total) renderItem(); else finish();
+        });
+      });
+      list.appendChild(b);
+    });
+  }
+  function finish(){
+    const correct = results.filter(r=>r.isCorrect).length;
+    container.innerHTML = renderFreeSessionSummary({
+      title:'¡Listo!', score:`Repasaste ${total} palabras · ${correct}/${total} en el mini quiz`,
+      topics: ['Vocabulario en contexto']
+    });
+    wireFreeSummaryButtons(container, {
+      onAgain: ()=>runFreeVocabSession({ container, level, onOtherSkill }),
+      onOtherSkill
+    });
+  }
+  renderItem();
+}
+
+/* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
+function runFreeListeningSession({ container, level, onOtherSkill }){
+  const pool = LISTENING_BANK[level];
+  const total = pool.length;
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    card.innerHTML = `
+      <div class="practice-prompt">Escucha</div>
+      <div class="listen-row">
+        <button class="btn btn-primary btn-sm" id="playBtn">${PLAY_ICON} Reproducir</button>
+      </div>
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.question}</div>
+      <div class="option-list" id="optList"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    card.querySelector('#playBtn').addEventListener('click', function(){
+      playAudioFile(item.audioFile, card);
+    });
+    const list = card.querySelector('#optList');
+    item.options.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
+      b.addEventListener('click', ()=>{
+        const isCorrect = i === item.correct;
+        [...list.children].forEach((el,j)=>{
+          el.disabled = true;
+          if(j === item.correct) el.classList.add('correct');
+          if(j === i && !isCorrect) el.classList.add('incorrect');
+        });
+        const fb = card.querySelector('#fb');
+        fb.classList.add('show');
+        fb.classList.toggle('ok', isCorrect);
+        fb.classList.toggle('bad', !isCorrect);
+        fb.innerHTML = `
+          <div class="fb-head">${isCorrect ? OK_ICON : BAD_ICON}<span>${isCorrect ? 'Correcto' : 'Casi.'}</span></div>
+          <p class="fb-explain">${item.explain}</p>
+          <div class="examples-block">
+            <div class="examples-label">Transcripción</div>
+            <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
+          </div>`;
+        results.push({ itemId:item.id, isCorrect });
+        showNextButton(card, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →', ()=>{
+          idx++;
+          if(idx < total) renderItem(); else finish();
+        });
+      });
+      list.appendChild(b);
+    });
+  }
+  function finish(){
+    const correct = results.filter(r=>r.isCorrect).length;
+    container.innerHTML = renderFreeSessionSummary({
+      title:'¡Listo!', score:`${correct} / ${total} correctas`,
+      topics: ['Comprensión auditiva']
+    });
+    wireFreeSummaryButtons(container, {
+      onAgain: ()=>runFreeListeningSession({ container, level, onOtherSkill }),
+      onOtherSkill
+    });
+  }
+  renderItem();
+}
+
+/* ---------- Writing gratis: 4 ejercicios guiados por nivel.
+   Misma validación honesta por patrón que Miembros (no es IA). ---------- */
+function checkWritingAnswer(text, item){
+  const clean = (text || '').trim().toLowerCase();
+  if(clean.length < 3) return false;
+  try{
+    const re = new RegExp(item.checkPattern, 'i');
+    return re.test(clean);
+  }catch(e){
+    return false;
+  }
+}
+function runFreeWritingSession({ container, level, onOtherSkill }){
+  const pool = WRITING_BANK[level];
+  const total = pool.length;
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    card.innerHTML = `
+      <div class="practice-prompt">${item.prompt}</div>
+      <textarea id="writingInput" rows="3" class="writing-area" placeholder="Escribe tu frase en inglés aquí..."></textarea>
+      <div class="next-row" style="justify-content:flex-start;">
+        <button class="btn btn-primary btn-sm" id="reviewBtn">Revisar mi frase</button>
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+
+    const input = card.querySelector('#writingInput');
+    const fb = card.querySelector('#fb');
+    const nextRow = card.querySelector('#nextRow');
+
+    function doReview(){
+      const text = input.value;
+      const isOk = checkWritingAnswer(text, item);
+      fb.classList.add('show');
+      fb.classList.toggle('ok', isOk);
+      fb.classList.toggle('bad', !isOk);
+      if(isOk){
+        fb.innerHTML = `
+          <div class="fb-head">${OK_ICON}<span>Bien encaminado ✓</span></div>
+          <p class="fb-explain">Tu frase incluye la estructura que buscábamos.</p>
+          <div class="examples-block">
+            <div class="examples-label">Ejemplo</div>
+            <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
+          </div>
+          <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+      } else {
+        fb.innerHTML = `
+          <div class="fb-head">${BAD_ICON}<span>Revisa esto</span></div>
+          <p class="fb-explain">${item.hint}</p>
+          <div class="examples-block">
+            <div class="examples-label">Ejemplo</div>
+            <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
+          </div>
+          <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+      }
+      results.push({ itemId:item.id, isCorrect:isOk });
+      nextRow.innerHTML = '';
+      if(!isOk){
+        const retryBtn = document.createElement('button');
+        retryBtn.className = 'btn btn-ghost btn-sm';
+        retryBtn.textContent = 'Intentar de nuevo';
+        retryBtn.addEventListener('click', ()=>{
+          results.pop();
+          fb.classList.remove('show','ok','bad');
+          fb.innerHTML = '';
+          nextRow.innerHTML = '';
+          input.focus();
+        });
+        nextRow.appendChild(retryBtn);
+      }
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'btn btn-primary btn-sm';
+      nextBtn.textContent = idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →';
+      nextBtn.addEventListener('click', ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      });
+      nextRow.appendChild(nextBtn);
+    }
+    card.querySelector('#reviewBtn').addEventListener('click', doReview);
+  }
+  function finish(){
+    const okCount = results.filter(r=>r.isCorrect).length;
+    container.innerHTML = renderFreeSessionSummary({
+      title:'¡Listo!', score:`${okCount} / ${total} frases bien encaminadas`,
+      topics: ['Escritura guiada']
+    });
+    wireFreeSummaryButtons(container, {
+      onAgain: ()=>runFreeWritingSession({ container, level, onOtherSkill }),
+      onOtherSkill
+    });
+  }
+  renderItem();
+}
+
+/* ---------- Speaking gratis: las 3 frases/audio existentes del nivel.
+   Mismo sistema de grabación que Miembros, sin puntuación inventada. ---------- */
+function runFreeSpeakingSession({ container, level, onOtherSkill }){
+  const pool = SPEAKING_BANK[level];
+  const total = pool.length;
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+
+    card.innerHTML = `
+      <div class="practice-prompt">Escucha</div>
+      <div class="speak-sentence">${item.sentence}</div>
+      <p class="speak-tip">${item.translation}</p>
+      <div class="speak-actions">
+        <button class="btn btn-ghost btn-sm" id="hearBtn">${PLAY_ICON} Escuchar pronunciación</button>
+      </div>
+      <div class="practice-prompt" style="margin-top:22px;">Ahora tú</div>
+      <div class="speak-actions">
+        ${canRecord
+          ? `<button class="btn btn-primary btn-sm" id="recordBtn">${MIC_ICON} Grabar mi voz</button><span class="recording-indicator" id="recIndicator" hidden>● Grabando...</span>`
+          : `<p class="audio-missing-note">Tu navegador no permite grabar audio aquí. Puedes practicar en voz alta igual y avanzar.</p>`}
+      </div>
+      <div id="compareRow" class="compare-row"></div>
+      <div class="next-row" id="nextRow">
+        <button class="btn btn-ghost btn-sm" id="retryBtn" style="display:none;">Intentar otra vez</button>
+        <button class="btn btn-primary btn-sm" id="nextSpeakBtn">${idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →'}</button>
+      </div>`;
+
+    card.querySelector('#hearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+    card.querySelector('#nextSpeakBtn').addEventListener('click', ()=>{
+      results.push({ itemId:item.id, isCorrect:null });
+      idx++;
+      if(idx < total) renderItem(); else finish();
+    });
+
+    if(canRecord){
+      let stream = null, recorder = null, chunks = [];
+      const recordBtn = card.querySelector('#recordBtn');
+      const compareRow = card.querySelector('#compareRow');
+      const retryBtn = card.querySelector('#retryBtn');
+      const recIndicator = card.querySelector('#recIndicator');
+
+      recordBtn.addEventListener('click', async ()=>{
+        if(recorder && recorder.state === 'recording'){
+          recorder.stop();
+          return;
+        }
+        compareRow.innerHTML = '';
+        try{
+          stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        }catch(err){
+          compareRow.innerHTML = `<p class="audio-missing-note">No pudimos acceder al micrófono. Revisa los permisos del navegador.</p>`;
+          return;
+        }
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = ()=>{
+          const blob = new Blob(chunks, { type:'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          compareRow.innerHTML = `
+            <div class="compare-col">
+              <div class="compare-label">Pronunciación original</div>
+              <button class="btn btn-ghost btn-sm" id="origBtn">${PLAY_ICON} Escuchar</button>
+            </div>
+            <div class="compare-col">
+              <div class="compare-label">Tu grabación</div>
+              <audio controls src="${url}"></audio>
+            </div>`;
+          compareRow.querySelector('#origBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+          retryBtn.style.display = 'inline-flex';
+          stream.getTracks().forEach(t=>t.stop());
+          recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
+          if(recIndicator) recIndicator.hidden = true;
+        };
+        recorder.start();
+        recordBtn.textContent = 'Detener grabación';
+        if(recIndicator) recIndicator.hidden = false;
+      });
+      retryBtn.addEventListener('click', ()=>{
+        compareRow.innerHTML = '';
+        retryBtn.style.display = 'none';
+        recordBtn.innerHTML = `${MIC_ICON} Grabar mi voz`;
+        if(recIndicator) recIndicator.hidden = true;
+      });
+    }
+  }
+  function finish(){
+    container.innerHTML = renderFreeSessionSummary({
+      title:'¡Listo!', score:`Practicaste ${total} frases en voz alta`,
+      topics: ['Pronunciación guiada']
+    });
+    wireFreeSummaryButtons(container, {
+      onAgain: ()=>runFreeSpeakingSession({ container, level, onOtherSkill }),
+      onOtherSkill
+    });
+  }
+  renderItem();
+}
+
+/* ---------- Orquestador de practica.html: nivel + pestañas + una
+   sola sesión visible a la vez. Lee ?skill= de la URL. ---------- */
+function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing'];
   const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing' };
   const SKILL_DESC = {
-    gramatica: 'Un ejercicio de muestra en tu nivel.',
-    vocabulario: 'Una palabra con contexto y ejemplos.',
-    listening: 'Escucha y responde.',
-    speaking: 'Escucha cómo suena una frase de tu nivel.',
-    writing: 'Escribe una frase y compárala con un buen ejemplo.'
+    gramatica: '8 preguntas cortas con explicación y ejemplos.',
+    vocabulario: '8 palabras útiles en contexto, no solo la traducción.',
+    listening: '3 audios reales: escucha y responde.',
+    speaking: '3 frases: escucha, grábate y compara.',
+    writing: '4 frases guiadas con revisión honesta.'
+  };
+  const RUNNERS = {
+    gramatica: runFreeGrammarSession,
+    vocabulario: runFreeVocabSession,
+    listening: runFreeListeningSession,
+    speaking: runFreeSpeakingSession,
+    writing: runFreeWritingSession
   };
 
   let currentLevel = 'facil';
@@ -1044,79 +1487,9 @@ function initFreePreview({ levelsEl, tabsEl, headEl, bodyEl }){
     if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
   }catch(e){}
 
-  function renderSampleGrammar(){
-    const item = GRAMMAR_BANK[currentLevel][0].items[0];
-    bodyEl.innerHTML = '';
-    const card = document.createElement('div');
-    card.className = 'session-card';
-    bodyEl.appendChild(card);
-    renderGrammarItemInto(card, item, ()=>{
-      showNextButton(card, 'Ver más en miembros →', ()=>{ window.location.href='miembros.html'; });
-    });
+  function focusTabs(){
+    if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' });
   }
-  function renderSampleVocab(){
-    const item = VOCAB_BANK[currentLevel][0];
-    bodyEl.innerHTML = `
-      <div class="vocab-card">
-        <div class="vocab-word">${item.word}</div>
-        <div class="vocab-sub">${item.translation}</div>
-      </div>
-      ${renderExamplesBlock(item.examples)}`;
-  }
-  function renderSampleListening(){
-    const item = LISTENING_BANK[currentLevel][0];
-    bodyEl.innerHTML = `
-      <div class="listen-row">
-        <button class="btn btn-primary btn-sm" id="freePlayBtn">${PLAY_ICON} Reproducir</button>
-      </div>
-      <div class="practice-prompt" style="font-size:1.05rem;">${item.question}</div>
-      <div class="option-list" id="freeOptList"></div>
-      <div class="feedback" id="freeFb"></div>`;
-    bodyEl.querySelector('#freePlayBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, bodyEl));
-    const list = bodyEl.querySelector('#freeOptList');
-    item.options.forEach((opt,i)=>{
-      const b = document.createElement('button');
-      b.className='option';
-      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
-      b.addEventListener('click', ()=>{
-        const isCorrect = i===item.correct;
-        [...list.children].forEach((el,j)=>{ el.disabled=true; if(j===item.correct) el.classList.add('correct'); if(j===i && !isCorrect) el.classList.add('incorrect'); });
-        const fb = bodyEl.querySelector('#freeFb');
-        fb.classList.add('show'); fb.classList.toggle('ok',isCorrect); fb.classList.toggle('bad',!isCorrect);
-        fb.innerHTML = `<div class="fb-head">${isCorrect?OK_ICON:BAD_ICON}<span>${isCorrect?'Correcto':'Casi.'}</span></div><p class="fb-explain">${item.explain}</p>`;
-      });
-      list.appendChild(b);
-    });
-  }
-  function renderSampleSpeaking(){
-    const item = SPEAKING_BANK[currentLevel][0];
-    bodyEl.innerHTML = `
-      <div class="speak-sentence">${item.sentence}</div>
-      <p class="speak-tip">${item.translation}</p>
-      <div class="speak-actions">
-        <button class="btn btn-ghost btn-sm" id="freeHearBtn">${PLAY_ICON} Escuchar pronunciación</button>
-      </div>`;
-    bodyEl.querySelector('#freeHearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, bodyEl));
-  }
-  function renderSampleWriting(){
-    const item = WRITING_BANK[currentLevel][0];
-    bodyEl.innerHTML = `
-      <div class="practice-prompt" style="font-size:1.05rem;">${item.prompt}</div>
-      <div class="hero-v2-card-explain" style="margin-top:14px;">${item.hint}</div>
-      ${renderExamplesBlock([item.example])}
-      <div style="margin-top:18px;">
-        <p style="color:var(--ink-soft);font-size:0.9rem;margin-bottom:10px;">Writing se corrige tú mismo con una checklist guiada — esa parte completa está en Miembros.</p>
-        <a href="miembros.html" class="btn btn-primary btn-sm">Practicar Writing como miembro →</a>
-      </div>`;
-  }
-
-  const RENDERERS = {
-    gramatica: renderSampleGrammar,
-    vocabulario: renderSampleVocab,
-    listening: renderSampleListening,
-    speaking: renderSampleSpeaking,
-    writing: renderSampleWriting
-  };
 
   function renderHead(){
     headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
@@ -1126,6 +1499,7 @@ function initFreePreview({ levelsEl, tabsEl, headEl, bodyEl }){
       <button type="button" class="skill-tab-btn" data-skill="${sk}" role="tab" aria-selected="${sk===currentSkill}" aria-pressed="${sk===currentSkill}">${SKILL_LABELS[sk]}</button>`).join('');
     tabsEl.querySelectorAll('.skill-tab-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
+        if(btn.dataset.skill === currentSkill) return;
         currentSkill = btn.dataset.skill;
         renderTabs();
         renderCurrent();
@@ -1134,7 +1508,8 @@ function initFreePreview({ levelsEl, tabsEl, headEl, bodyEl }){
   }
   function renderCurrent(){
     renderHead();
-    (RENDERERS[currentSkill] || renderSampleGrammar)();
+    const run = RUNNERS[currentSkill] || runFreeGrammarSession;
+    run({ container: bodyEl, level: currentLevel, onOtherSkill: focusTabs });
   }
 
   renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); });
