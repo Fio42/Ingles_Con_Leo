@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /miembros.html
+Disallow: /gramatica.html
+Disallow: /vocabulario.html
+Disallow: /listening.html
+Disallow: /writing.html
+Disallow: /speaking.html
+Disallow: /progreso.html
+
+Sitemap: https://inglesconleo.example/sitemap.xml

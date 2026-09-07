@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practica inglés gratis — Inglés con Leo</title>
+<meta name="description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening y Speaking, adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+.">
+<link rel="canonical" href="https://inglesconleo.example/practica.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <img src="logo.png" class="logo-mark" alt="Inglés con Leo">
+      Inglés con <span class="leo">Leo</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html" class="current">Practicar gratis</a>
+      <a href="miembros.html">Miembros</a>
+    </nav>
+    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta">Entrar a miembros</a>
+    <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <span class="badge badge-free">Gratis</span>
+      <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
+      <p class="lead">Una pequeña muestra de Gramática, Vocabulario, Listening y Speaking. Sin registrarte.</p>
+    </div>
+  </section>
+
+  <section style="padding-top:8px;">
+    <div class="wrap">
+      <div class="levels" id="levelSelector"></div>
+
+      <div style="margin-top:32px;display:grid;gap:20px;">
+        <div class="skill-section">
+          <div class="skill-section-head">
+            <h3>Gramática</h3>
+            <p>Un ejercicio de muestra en tu nivel.</p>
+          </div>
+          <div class="skill-section-body" id="grammarBody"></div>
+        </div>
+
+        <div class="skill-section">
+          <div class="skill-section-head">
+            <h3>Vocabulario</h3>
+            <p>Una palabra con contexto y ejemplos.</p>
+          </div>
+          <div class="skill-section-body" id="vocabBody"></div>
+        </div>
+
+        <div class="skill-section">
+          <div class="skill-section-head">
+            <h3>Listening</h3>
+            <p>Escucha y responde.</p>
+          </div>
+          <div class="skill-section-body" id="listeningBody"></div>
+        </div>
+
+        <div class="skill-section">
+          <div class="skill-section-head">
+            <h3>Speaking</h3>
+            <p>Escucha cómo suena una frase de tu nivel.</p>
+          </div>
+          <div class="skill-section-body" id="speakingBody"></div>
+        </div>
+      </div>
+
+      <div class="article-cta" style="margin-top:28px;">
+        <h3>¿Quieres seguir practicando?</h3>
+        <p style="color:var(--ink-soft);">Desbloquea todas las actividades, los 3 niveles y tu progreso guardado.</p>
+        <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Entrar a miembros</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar</a>
+      <a href="miembros.html">Miembros</a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
+
+<nav class="mobile-nav">
+  <button class="mnav-item" onclick="location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    Inicio
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Artículos
+  </button>
+  <button class="mnav-item active" onclick="location.href='practica.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    Practicar
+  </button>
+  <button class="mnav-item" onclick="location.href='miembros.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+    Miembros
+  </button>
+</nav>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="chatbot.js"></script>
+<script>
+  initFreePreview({
+    levelsEl: document.getElementById('levelSelector'),
+    grammarEl: document.getElementById('grammarBody'),
+    vocabEl: document.getElementById('vocabBody'),
+    listeningEl: document.getElementById('listeningBody'),
+    speakingEl: document.getElementById('speakingBody')
+  });
+  initOnboarding(); personalizeNav();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+/* ============================================================
+   LEOBOT — asistente flotante 100% precodeado (sin IA, sin red)
+   Todo el flujo es de selección múltiple: el usuario nunca escribe.
+   v2: rediseño visual (launcher y panel más grandes y respirados,
+   robot con silueta continua, mejor jerarquía y menos scroll).
+   ============================================================ */
+
+.leobot-fab{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  background:#fff;
+  border:2.5px solid var(--line, #E4E7F0);
+  box-shadow:0 14px 32px rgba(27,35,51,0.20);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:9999;
+  padding:11px;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.leobot-fab:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 18px 38px rgba(27,35,51,0.26);}
+.leobot-fab:focus-visible{outline:3px solid var(--blue,#3554F0);outline-offset:3px;}
+.leobot-fab .leobot-avatar{width:100%;height:100%;}
+
+/* Pastilla discreta para reactivar el asistente cuando el usuario lo ocultó */
+.leobot-reopen{
+  position:fixed;right:16px;bottom:16px;z-index:9999;
+  background:rgba(255,255,255,0.95);
+  border:1px solid var(--line,#E4E7F0);
+  color:var(--ink-faint,#8A90A6);
+  font-size:0.76rem;font-weight:600;
+  padding:8px 14px;border-radius:999px;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(27,35,51,0.1);
+}
+.leobot-reopen:hover{color:var(--ink,#1B2333);border-color:var(--blue,#3554F0);}
+
+/* ---------- Panel ---------- */
+.leobot-panel{
+  position:fixed;
+  right:24px;
+  bottom:112px;
+  width:min(400px, calc(100vw - 32px));
+  max-height:min(620px, calc(100vh - 150px));
+  background:#fff;
+  border:1px solid var(--line,#E4E7F0);
+  border-radius:24px;
+  box-shadow:0 26px 60px rgba(27,35,51,0.24);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:9999;
+  opacity:0;
+  transform:translateY(14px) scale(0.97);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.leobot-panel.open{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  pointer-events:auto;
+}
+
+.leobot-header{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 20px;
+  border-bottom:1px solid var(--line,#E4E7F0);
+  background:var(--paper-dim,#F5F3EE);
+  flex-shrink:0;
+}
+.leobot-header .leobot-avatar{width:54px;height:54px;flex-shrink:0;}
+.leobot-header-text{flex:1;min-width:0;}
+.leobot-header-name{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.15rem;color:var(--ink,#1B2333);line-height:1.25;}
+.leobot-header-sub{font-size:0.82rem;color:var(--ink-faint,#8A90A6);margin-top:1px;}
+.leobot-header-actions{display:flex;gap:4px;flex-shrink:0;}
+.leobot-icon-btn{
+  width:34px;height:34px;border-radius:10px;border:none;background:transparent;
+  color:var(--ink-faint,#8A90A6);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s ease, color .12s ease;
+}
+.leobot-icon-btn:hover{background:rgba(0,0,0,0.06);color:var(--ink,#1B2333);}
+.leobot-icon-btn:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;}
+.leobot-icon-btn svg{width:18px;height:18px;}
+
+.leobot-body{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 20px 6px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  background:#fff;
+  min-height:120px;
+}
+
+.leobot-msg{
+  display:flex;gap:10px;align-items:flex-end;
+  max-width:100%;
+  animation:leobotFadeIn .2s ease both;
+}
+.leobot-msg.user{flex-direction:row-reverse;}
+.leobot-msg .leobot-avatar{width:32px;height:32px;flex-shrink:0;}
+.leobot-bubble{
+  padding:13px 16px;
+  border-radius:16px;
+  font-size:0.94rem;
+  line-height:1.55;
+  max-width:80%;
+}
+.leobot-msg.bot .leobot-bubble{
+  background:var(--paper-dim,#F5F3EE);
+  color:var(--ink,#1B2333);
+  border-bottom-left-radius:5px;
+}
+.leobot-msg.user .leobot-bubble{
+  background:var(--blue,#3554F0);
+  color:#fff;
+  border-bottom-right-radius:5px;
+  font-weight:600;
+}
+.leobot-bubble strong{color:inherit;}
+
+.leobot-typing{display:flex;gap:10px;align-items:flex-end;animation:leobotFadeIn .2s ease both;}
+.leobot-typing .leobot-avatar{width:32px;height:32px;flex-shrink:0;}
+.leobot-typing-dots{
+  background:var(--paper-dim,#F5F3EE);
+  border-radius:16px;border-bottom-left-radius:5px;
+  padding:14px 18px;
+  display:flex;gap:5px;align-items:center;
+}
+.leobot-typing-dots span{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--ink-faint,#8A90A6);
+  animation:leobotBounce 1s infinite ease-in-out;
+}
+.leobot-typing-dots span:nth-child(2){animation-delay:.15s;}
+.leobot-typing-dots span:nth-child(3){animation-delay:.3s;}
+
+.leobot-options{
+  display:flex;flex-direction:column;gap:10px;
+  padding:14px 20px 8px;
+  flex-shrink:0;
+  border-top:1px solid var(--line,#E4E7F0);
+  background:#fff;
+}
+.leobot-opt-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;
+  min-height:48px;
+  text-align:left;
+  padding:12px 16px;
+  border-radius:14px;
+  border:1.5px solid var(--line,#E4E7F0);
+  background:#fff;
+  color:var(--ink,#1B2333);
+  font-size:0.92rem;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  transition:border-color .12s ease, background .12s ease, transform .12s ease, box-shadow .12s ease;
+}
+.leobot-opt-btn:hover{border-color:var(--blue,#3554F0);background:var(--blue-tint,#EEF1FE);transform:translateY(-1px);box-shadow:0 4px 10px rgba(53,84,240,0.12);}
+.leobot-opt-btn:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;}
+.leobot-opt-btn.link{color:var(--blue,#3554F0);}
+.leobot-opt-btn .arrow{opacity:0.65;flex-shrink:0;}
+.leobot-opt-btn.ghost{
+  border-style:dashed;
+  color:var(--ink-faint,#8A90A6);
+  font-weight:600;
+  font-size:0.85rem;
+  min-height:42px;
+}
+
+.leobot-footer{
+  padding:10px 20px 16px;
+  display:flex;justify-content:center;
+  flex-shrink:0;
+  background:#fff;
+}
+.leobot-hide-link{
+  background:none;border:1px solid transparent;
+  color:var(--ink-faint,#8A90A6);
+  font-size:0.78rem;
+  cursor:pointer;
+  font-family:inherit;
+  padding:6px 12px;
+  border-radius:999px;
+}
+.leobot-hide-link:hover{color:var(--ink,#1B2333);background:var(--paper-dim,#F5F3EE);}
+.leobot-hide-link:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;}
+
+/* ---------- Robot avatar: silueta continua (una sola forma), pantalla y
+   placa del logo integradas — pensado para leerse como personaje, no
+   como icono suelto. ---------- */
+.leobot-avatar{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;}
+.lb-antenna{display:flex;flex-direction:column;align-items:center;height:11%;justify-content:flex-end;flex-shrink:0;}
+.lb-antenna-ball{width:16%;aspect-ratio:1;min-width:4px;background:var(--blue,#3554F0);border-radius:50%;flex-shrink:0;}
+.lb-antenna-stick{width:2.5px;flex:1;background:var(--ink,#1B2333);border-radius:2px;}
+.lb-shell{
+  width:84%;
+  height:87%;
+  background:#fff;
+  border:3px solid var(--ink,#1B2333);
+  border-radius:32% 32% 28% 28% / 24% 24% 20% 20%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  padding:9% 0 7%;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.lb-screen{
+  width:68%;
+  height:36%;
+  background:var(--ink,#1B2333);
+  border-radius:38%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.lb-eyes{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+.lb-eyes svg{width:74%;height:74%;}
+.lb-badge{
+  width:48%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#fff;
+  border:2px solid var(--line,#E4E7F0);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  flex-shrink:0;
+  margin-top:6%;
+}
+.lb-badge img{width:88%;height:88%;object-fit:contain;display:block;}
+
+/* Animaciones sutiles de estado (nada molesto ni permanente) */
+.leobot-avatar[data-state="wink"] .lb-shell,
+.leobot-avatar[data-state="happy"] .lb-shell{animation:leobotPop .38s ease;}
+.leobot-avatar[data-state="thinking"] .lb-shell{animation:leobotTilt 1.4s ease-in-out infinite;}
+
+@keyframes leobotFadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+@keyframes leobotBounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+@keyframes leobotPop{0%{transform:scale(1);}40%{transform:scale(1.07);}100%{transform:scale(1);}}
+@keyframes leobotTilt{0%,100%{transform:rotate(0deg);}50%{transform:rotate(-3deg);}}
+
+@media (prefers-reduced-motion: reduce){
+  .leobot-avatar[data-state] .lb-shell{animation:none;}
+  .leobot-typing-dots span{animation:none;opacity:.7;}
+  .leobot-panel, .leobot-fab{transition:none;}
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width:480px){
+  /* El sitio tiene una barra de navegación fija abajo en mobile
+     (.mobile-nav); dejamos espacio suficiente para no taparla. */
+  .leobot-panel{
+    right:10px;left:10px;bottom:calc(158px + env(safe-area-inset-bottom));width:auto;
+    max-height:min(68vh, 540px);
+    border-radius:20px;
+  }
+  .leobot-fab{right:16px;bottom:calc(76px + env(safe-area-inset-bottom));width:68px;height:68px;padding:9px;}
+  .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
+  .leobot-header{padding:16px 16px;}
+  .leobot-header .leobot-avatar{width:48px;height:48px;}
+  .leobot-body{padding:16px 16px 4px;}
+  .leobot-options{padding:12px 16px 6px;}
+  .leobot-footer{padding:8px 16px 14px;}
+}
+
+@media (min-width:481px) and (max-width:899px){
+  /* La barra .mobile-nav del sitio también aparece en tablet (<900px) */
+  .leobot-fab{bottom:calc(76px + env(safe-area-inset-bottom));}
+  .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
+  .leobot-panel{bottom:calc(164px + env(safe-area-inset-bottom));}
+}

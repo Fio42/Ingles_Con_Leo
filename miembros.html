@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miembros — Inglés con Leo</title>
+<meta name="description" content="Tu panel privado de Inglés con Leo: continúa donde te quedaste, elige qué practicar y sigue tu progreso.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="chatbot.css">
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <img src="logo.png" class="logo-mark" alt="Inglés con Leo">
+      Inglés con <span class="leo">Leo</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar gratis</a>
+      <a href="miembros.html" class="current">Miembros</a>
+    </nav>
+    <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ACCESS GATE -->
+  <div class="gate-shell" id="gate">
+    <div class="gate-card">
+      <svg class="gate-icon" viewBox="0 0 56 56" fill="none">
+        <rect x="12" y="26" width="32" height="22" rx="6" fill="#EEF1FE"/>
+        <path d="M18 26v-8a10 10 0 0120 0v8" stroke="#3554F0" stroke-width="4" fill="none"/>
+        <circle cx="28" cy="37" r="3.5" fill="#3554F0"/>
+      </svg>
+      <h1>Área de miembros</h1>
+      <p>Escribe tu código de acceso para entrar a tu panel de práctica.</p>
+      <input type="text" class="gate-input" id="codeInput" placeholder="CÓDIGO" maxlength="20" autocomplete="off">
+      <div class="gate-error" id="codeError">Ese código no es correcto. Intenta de nuevo.</div>
+      <button class="btn btn-primary btn-block" id="unlockBtn">Entrar</button>
+      <p class="gate-hint">¿No tienes código? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
+    </div>
+  </div>
+
+  <!-- MEMBER DASHBOARD -->
+  <div id="memberContent" style="display:none;">
+    <section class="page-hero" style="padding-bottom:8px;">
+      <div class="wrap">
+        <div class="dash-greeting" id="greetLine">Hola</div>
+        <p class="dash-sub">Este es tu panel. Continúa donde te quedaste o elige qué practicar hoy.</p>
+        <div id="continueCard"></div>
+      </div>
+    </section>
+
+    <section style="padding-top:8px;">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>¿Qué quieres practicar hoy?</h2>
+        </div>
+        <div class="skill-cards-grid">
+          <a href="gramatica.html" class="skill-card-link">
+            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3>Gramática</h3>
+            <p>Ejercicios cortos para entender estructuras.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="vocabulario.html" class="skill-card-link">
+            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" stroke="currentColor" stroke-width="2"/></svg>
+            <h3>Vocabulario</h3>
+            <p>Palabras útiles siempre dentro de contexto.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="listening.html" class="skill-card-link">
+            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 13v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>
+            <h3>Listening</h3>
+            <p>Escucha inglés y comprueba qué entendiste.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="writing.html" class="skill-card-link">
+            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 20l1-4L16 5l3 3-11 11-4 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <h3>Writing</h3>
+            <p>Escribe frases y compáralas con buenos ejemplos.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="speaking.html" class="skill-card-link">
+            <svg class="skill-icon violet" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3>Speaking</h3>
+            <p>Escucha, grábate y compara tu pronunciación.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="progreso.html" class="skill-card-link">
+            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3>Tu progreso</h3>
+            <p>Estadísticas reales de lo que has practicado.</p>
+            <span class="go">Ver progreso →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar</a>
+      <a href="miembros.html">Miembros</a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
+
+<nav class="mobile-nav">
+  <button class="mnav-item" onclick="location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    Inicio
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Artículos
+  </button>
+  <button class="mnav-item" onclick="location.href='practica.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    Practicar
+  </button>
+  <button class="mnav-item active" onclick="location.href='miembros.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+    Miembros
+  </button>
+</nav>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="chatbot.js"></script>
+<script>
+  const gate = document.getElementById('gate');
+  const memberContent = document.getElementById('memberContent');
+  const alreadyUnlocked = initAccessGate({
+    gateEl: gate,
+    contentEl: memberContent,
+    inputEl: document.getElementById('codeInput'),
+    btnEl: document.getElementById('unlockBtn'),
+    errorEl: document.getElementById('codeError')
+  });
+
+  function startDashboard(){
+    applyDashboardGreeting(document.getElementById('greetLine'));
+    renderContinueCard(document.getElementById('continueCard'));
+  }
+
+  if(alreadyUnlocked){
+    startDashboard();
+  } else {
+    document.getElementById('unlockBtn').addEventListener('click', ()=>{
+      if(memberContent.style.display === 'block') startDashboard();
+    });
+    document.getElementById('codeInput').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        setTimeout(()=>{ if(memberContent.style.display === 'block') startDashboard(); }, 0);
+      }
+    });
+  }
+
+  initOnboarding(()=>{
+    if(memberContent.style.display === 'block') startDashboard();
+  });
+</script>
+
+</body>
+</html>
