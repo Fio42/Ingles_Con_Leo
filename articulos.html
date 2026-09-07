@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Artículos de inglés — Inglés con Leo</title>
 <meta name="description" content="Artículos gratis sobre errores comunes en inglés, vocabulario del día a día y cómo crear el hábito de practicar. Explicaciones simples, sin relleno.">
-<link rel="canonical" href="https://inglesconleo.example/articulos.html">
+<link rel="canonical" href="https://fio42.github.io/Ingles_Con_Leo/articulos.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -69,13 +69,13 @@
     </div>
   </section>
 
-  <section class="section-alt" id="videos">
+  <section class="section-alt" id="videos" data-videos-section>
     <div class="wrap">
       <div class="section-head">
         <h2>Aprende también en video</h2>
         <p>Explicaciones cortas de Inglés con Leo en redes sociales.</p>
       </div>
-      <div class="video-grid">
+      <div class="video-grid" data-video-grid>
         <!-- Placeholder: reemplaza data-youtube-url por el link real de cada video de YouTube -->
         <a href="#" class="video-card-mini" data-youtube-url="PON_AQUI_LA_URL_DE_YOUTUBE">
           <span class="video-mini-icon">🎬</span>
@@ -90,7 +90,7 @@
           <span class="video-mini-text"><strong>Remember vs Remind</strong><span>Video próximamente</span></span>
         </a>
       </div>
-      <div class="social-row">
+      <div class="social-row" data-social-row>
         <!-- Reemplaza los "#" por tus URLs reales -->
         <a href="#" data-social="youtube">YouTube</a>
         <a href="#" data-social="instagram">Instagram</a>
@@ -135,6 +135,38 @@
 <script src="app.js"></script>
 <script src="chatbot.js"></script>
 <script>initOnboarding(); personalizeNav();</script>
+<script>
+  /* Oculta (sin borrar) videos y redes que todavía son placeholders.
+     Para reactivar: solo reemplaza data-youtube-url o el href="#" real y
+     esto deja de ocultarlos automáticamente. */
+  (function(){
+    var PLACEHOLDER_URL = 'PON_AQUI_LA_URL_DE_YOUTUBE';
+    var videoCards = document.querySelectorAll('.video-card-mini');
+    var visibleVideos = 0;
+    videoCards.forEach(function(card){
+      var url = card.getAttribute('data-youtube-url');
+      if(!url || url === PLACEHOLDER_URL){
+        card.hidden = true;
+      } else {
+        visibleVideos++;
+      }
+    });
+    var socialLinks = document.querySelectorAll('.social-row a[data-social]');
+    var visibleSocial = 0;
+    socialLinks.forEach(function(link){
+      var href = link.getAttribute('href');
+      if(!href || href === '#'){
+        link.hidden = true;
+      } else {
+        visibleSocial++;
+      }
+    });
+    var videosSection = document.querySelector('[data-videos-section]');
+    if(videosSection && visibleVideos === 0 && visibleSocial === 0){
+      videosSection.hidden = true;
+    }
+  })();
+</script>
 
 </body>
 </html>

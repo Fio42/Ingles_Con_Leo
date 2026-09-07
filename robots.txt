@@ -8,4 +8,4 @@ Disallow: /writing.html
 Disallow: /speaking.html
 Disallow: /progreso.html
 
-Sitemap: https://inglesconleo.example/sitemap.xml
+Sitemap: https://fio42.github.io/Ingles_Con_Leo/sitemap.xml

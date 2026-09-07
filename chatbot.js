@@ -445,13 +445,28 @@
       if(e.key === 'Escape' && isOpen) close();
     });
 
-    /* Una sola bienvenida por navegador: no reaparece al navegar entre páginas. */
+    /* Una sola bienvenida por navegador: no reaparece al navegar entre páginas.
+       Si el modal de onboarding (.onb-overlay) está abierto, esperamos a que
+       el usuario lo cierre (Empezar o Saltar) y damos ~2.5s de aire antes de
+       abrir LeoBot, para que nunca compitan por la atención al mismo tiempo. */
     if(localStorage.getItem(AUTO_OPEN_KEY) !== '1'){
-      window.setTimeout(function(){
+      var tryAutoOpen = function(){
         if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
         localStorage.setItem(AUTO_OPEN_KEY, '1');
         open(true);
-      }, 900);
+      };
+      var onbOverlay = document.querySelector('.onb-overlay');
+      if(onbOverlay){
+        var onbObserver = new MutationObserver(function(){
+          if(!document.body.contains(onbOverlay)){
+            onbObserver.disconnect();
+            window.setTimeout(tryAutoOpen, 2500);
+          }
+        });
+        onbObserver.observe(document.body, { childList:true });
+      } else {
+        window.setTimeout(tryAutoOpen, 900);
+      }
     }
   }
 

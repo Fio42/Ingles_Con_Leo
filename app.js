@@ -1025,22 +1025,38 @@ function renderProgressPage(root){
    VISTA PREVIA GRATIS (practica.html) — muestra corta de varias
    habilidades, no solo Gramática.
    ============================================================ */
-function initFreePreview({ levelsEl, grammarEl, vocabEl, listeningEl, speakingEl }){
+function initFreePreview({ levelsEl, tabsEl, headEl, bodyEl }){
+  const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing'];
+  const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing' };
+  const SKILL_DESC = {
+    gramatica: 'Un ejercicio de muestra en tu nivel.',
+    vocabulario: 'Una palabra con contexto y ejemplos.',
+    listening: 'Escucha y responde.',
+    speaking: 'Escucha cómo suena una frase de tu nivel.',
+    writing: 'Escribe una frase y compárala con un buen ejemplo.'
+  };
+
   let currentLevel = 'facil';
+  let currentSkill = 'gramatica';
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const skillParam = params.get('skill');
+    if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
+  }catch(e){}
 
   function renderSampleGrammar(){
     const item = GRAMMAR_BANK[currentLevel][0].items[0];
-    grammarEl.innerHTML = '';
+    bodyEl.innerHTML = '';
     const card = document.createElement('div');
     card.className = 'session-card';
-    grammarEl.appendChild(card);
+    bodyEl.appendChild(card);
     renderGrammarItemInto(card, item, ()=>{
       showNextButton(card, 'Ver más en miembros →', ()=>{ window.location.href='miembros.html'; });
     });
   }
   function renderSampleVocab(){
     const item = VOCAB_BANK[currentLevel][0];
-    vocabEl.innerHTML = `
+    bodyEl.innerHTML = `
       <div class="vocab-card">
         <div class="vocab-word">${item.word}</div>
         <div class="vocab-sub">${item.translation}</div>
@@ -1049,15 +1065,15 @@ function initFreePreview({ levelsEl, grammarEl, vocabEl, listeningEl, speakingEl
   }
   function renderSampleListening(){
     const item = LISTENING_BANK[currentLevel][0];
-    listeningEl.innerHTML = `
+    bodyEl.innerHTML = `
       <div class="listen-row">
         <button class="btn btn-primary btn-sm" id="freePlayBtn">${PLAY_ICON} Reproducir</button>
       </div>
       <div class="practice-prompt" style="font-size:1.05rem;">${item.question}</div>
       <div class="option-list" id="freeOptList"></div>
       <div class="feedback" id="freeFb"></div>`;
-    listeningEl.querySelector('#freePlayBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, listeningEl));
-    const list = listeningEl.querySelector('#freeOptList');
+    bodyEl.querySelector('#freePlayBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, bodyEl));
+    const list = bodyEl.querySelector('#freeOptList');
     item.options.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className='option';
@@ -1065,7 +1081,7 @@ function initFreePreview({ levelsEl, grammarEl, vocabEl, listeningEl, speakingEl
       b.addEventListener('click', ()=>{
         const isCorrect = i===item.correct;
         [...list.children].forEach((el,j)=>{ el.disabled=true; if(j===item.correct) el.classList.add('correct'); if(j===i && !isCorrect) el.classList.add('incorrect'); });
-        const fb = listeningEl.querySelector('#freeFb');
+        const fb = bodyEl.querySelector('#freeFb');
         fb.classList.add('show'); fb.classList.toggle('ok',isCorrect); fb.classList.toggle('bad',!isCorrect);
         fb.innerHTML = `<div class="fb-head">${isCorrect?OK_ICON:BAD_ICON}<span>${isCorrect?'Correcto':'Casi.'}</span></div><p class="fb-explain">${item.explain}</p>`;
       });
@@ -1074,20 +1090,54 @@ function initFreePreview({ levelsEl, grammarEl, vocabEl, listeningEl, speakingEl
   }
   function renderSampleSpeaking(){
     const item = SPEAKING_BANK[currentLevel][0];
-    speakingEl.innerHTML = `
+    bodyEl.innerHTML = `
       <div class="speak-sentence">${item.sentence}</div>
       <p class="speak-tip">${item.translation}</p>
       <div class="speak-actions">
         <button class="btn btn-ghost btn-sm" id="freeHearBtn">${PLAY_ICON} Escuchar pronunciación</button>
       </div>`;
-    speakingEl.querySelector('#freeHearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, speakingEl));
+    bodyEl.querySelector('#freeHearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, bodyEl));
   }
-  function renderAll(){
-    renderSampleGrammar();
-    renderSampleVocab();
-    renderSampleListening();
-    renderSampleSpeaking();
+  function renderSampleWriting(){
+    const item = WRITING_BANK[currentLevel][0];
+    bodyEl.innerHTML = `
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.prompt}</div>
+      <div class="hero-v2-card-explain" style="margin-top:14px;">${item.hint}</div>
+      ${renderExamplesBlock([item.example])}
+      <div style="margin-top:18px;">
+        <p style="color:var(--ink-soft);font-size:0.9rem;margin-bottom:10px;">Writing se corrige tú mismo con una checklist guiada — esa parte completa está en Miembros.</p>
+        <a href="miembros.html" class="btn btn-primary btn-sm">Practicar Writing como miembro →</a>
+      </div>`;
   }
-  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderAll(); });
-  renderAll();
+
+  const RENDERERS = {
+    gramatica: renderSampleGrammar,
+    vocabulario: renderSampleVocab,
+    listening: renderSampleListening,
+    speaking: renderSampleSpeaking,
+    writing: renderSampleWriting
+  };
+
+  function renderHead(){
+    headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
+  }
+  function renderTabs(){
+    tabsEl.innerHTML = SKILL_ORDER.map(sk => `
+      <button type="button" class="skill-tab-btn" data-skill="${sk}" role="tab" aria-selected="${sk===currentSkill}" aria-pressed="${sk===currentSkill}">${SKILL_LABELS[sk]}</button>`).join('');
+    tabsEl.querySelectorAll('.skill-tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        currentSkill = btn.dataset.skill;
+        renderTabs();
+        renderCurrent();
+      });
+    });
+  }
+  function renderCurrent(){
+    renderHead();
+    (RENDERERS[currentSkill] || renderSampleGrammar)();
+  }
+
+  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); });
+  renderTabs();
+  renderCurrent();
 }

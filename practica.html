@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Practica inglés gratis — Inglés con Leo</title>
-<meta name="description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening y Speaking, adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+.">
-<link rel="canonical" href="https://inglesconleo.example/practica.html">
+<meta name="description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+.">
+<link rel="canonical" href="https://fio42.github.io/Ingles_Con_Leo/practica.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,7 +36,7 @@
     <div class="wrap">
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
-      <p class="lead">Una pequeña muestra de Gramática, Vocabulario, Listening y Speaking. Sin registrarte.</p>
+      <p class="lead">Elige tu nivel, elige qué quieres practicar y empieza. Sin registrarte.</p>
     </div>
   </section>
 
@@ -44,38 +44,11 @@
     <div class="wrap">
       <div class="levels" id="levelSelector"></div>
 
-      <div style="margin-top:32px;display:grid;gap:20px;">
-        <div class="skill-section">
-          <div class="skill-section-head">
-            <h3>Gramática</h3>
-            <p>Un ejercicio de muestra en tu nivel.</p>
-          </div>
-          <div class="skill-section-body" id="grammarBody"></div>
-        </div>
+      <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
 
-        <div class="skill-section">
-          <div class="skill-section-head">
-            <h3>Vocabulario</h3>
-            <p>Una palabra con contexto y ejemplos.</p>
-          </div>
-          <div class="skill-section-body" id="vocabBody"></div>
-        </div>
-
-        <div class="skill-section">
-          <div class="skill-section-head">
-            <h3>Listening</h3>
-            <p>Escucha y responde.</p>
-          </div>
-          <div class="skill-section-body" id="listeningBody"></div>
-        </div>
-
-        <div class="skill-section">
-          <div class="skill-section-head">
-            <h3>Speaking</h3>
-            <p>Escucha cómo suena una frase de tu nivel.</p>
-          </div>
-          <div class="skill-section-body" id="speakingBody"></div>
-        </div>
+      <div class="skill-section" style="margin-top:20px;">
+        <div class="skill-section-head" id="skillHead"></div>
+        <div class="skill-section-body" id="skillBody"></div>
       </div>
 
       <div class="article-cta" style="margin-top:28px;">
@@ -125,10 +98,9 @@
 <script>
   initFreePreview({
     levelsEl: document.getElementById('levelSelector'),
-    grammarEl: document.getElementById('grammarBody'),
-    vocabEl: document.getElementById('vocabBody'),
-    listeningEl: document.getElementById('listeningBody'),
-    speakingEl: document.getElementById('speakingBody')
+    tabsEl: document.getElementById('skillTabs'),
+    headEl: document.getElementById('skillHead'),
+    bodyEl: document.getElementById('skillBody')
   });
   initOnboarding(); personalizeNav();
 </script>
