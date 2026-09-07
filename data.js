@@ -298,43 +298,43 @@ const VOCAB_BANK = {
 --------------------------------------------------------- */
 const LISTENING_BANK = {
   facil: [
-    { id:'l-facil-1', audioFile:'audio/a1/listening-001.mp3',
+    { id:'l-facil-1', audioFile:'audio/a1/a1listening-001.mp3',
       transcript:"I wake up at seven every morning.", translation:"Me despierto a las siete todas las mañanas.",
       question:"What time does the speaker wake up?", options:["At seven","At seventeen","At eleven"], correct:0,
       explain:"“Seven” suena distinto a “seventeen” o “eleven”; la sílaba final es la clave." },
-    { id:'l-facil-2', audioFile:'audio/a1/listening-002.mp3',
+    { id:'l-facil-2', audioFile:'audio/a1/a1listening-002.mp3',
       transcript:"She usually drinks coffee, not tea.", translation:"Ella normalmente toma café, no té.",
       question:"What does she drink?", options:["Tea","Coffee","Juice"], correct:1,
       explain:"“Not tea” nos dice qué NO toma; “coffee” es la respuesta." },
-    { id:'l-facil-3', audioFile:'audio/a1/listening-003.mp3',
+    { id:'l-facil-3', audioFile:'audio/a1/a1listening-003.mp3',
       transcript:"The store closes at nine tonight.", translation:"La tienda cierra a las nueve esta noche.",
       question:"When does the store close?", options:["At nine","At five","At noon"], correct:0,
       explain:"“Nine” es la hora que se menciona en la frase." }
   ],
   medio: [
-    { id:'l-medio-1', audioFile:'audio/b1/listening-001.mp3',
+    { id:'l-medio-1', audioFile:'audio/b1/b1listening-001.mp3',
       transcript:"By the time we arrived, the movie had already started.", translation:"Para cuando llegamos, la película ya había empezado.",
       question:"What had happened before they arrived?", options:["The movie started","The movie ended","The movie was cancelled"], correct:0,
       explain:"“Had already started” = ya había comenzado antes de llegar." },
-    { id:'l-medio-2', audioFile:'audio/b1/listening-002.mp3',
+    { id:'l-medio-2', audioFile:'audio/b1/b1listening-002.mp3',
       transcript:"I'm used to working late, so it doesn't bother me.", translation:"Estoy acostumbrado a trabajar hasta tarde, así que no me molesta.",
       question:"How does the speaker feel about working late?", options:["It bothers them","They are used to it","They refuse to do it"], correct:1,
       explain:"“Used to working” significa que está acostumbrado." },
-    { id:'l-medio-3', audioFile:'audio/b1/listening-003.mp3',
+    { id:'l-medio-3', audioFile:'audio/b1/b1listening-003.mp3',
       transcript:"She would have called if she had known about the meeting.", translation:"Ella habría llamado si hubiera sabido sobre la reunión.",
       question:"Why didn't she call?", options:["She forgot her phone","She didn't know about the meeting","She was busy"], correct:1,
       explain:"Condicional 3: no sabía de la reunión, por eso no llamó." }
   ],
   avanzado: [
-    { id:'l-avz-1', audioFile:'audio/c1/listening-001.mp3',
+    { id:'l-avz-1', audioFile:'audio/c1/c1listening-001.mp3',
       transcript:"Had I known about the delay, I would have acted differently.", translation:"Si hubiera sabido sobre el retraso, habría actuado diferente.",
       question:"What is implied?", options:["He knew about the delay","He did not know about the delay","He caused the delay"], correct:1,
       explain:"El condicional tipo 3 implica que NO lo sabía." },
-    { id:'l-avz-2', audioFile:'audio/c1/listening-002.mp3',
+    { id:'l-avz-2', audioFile:'audio/c1/c1listening-002.mp3',
       transcript:"No sooner had she arrived than it started raining.", translation:"Apenas había llegado cuando empezó a llover.",
       question:"What happened right after she arrived?", options:["It started raining","She left again","The sun came out"], correct:0,
       explain:"“No sooner... than” indica que algo pasó inmediatamente después." },
-    { id:'l-avz-3', audioFile:'audio/c1/listening-003.mp3',
+    { id:'l-avz-3', audioFile:'audio/c1/c1listening-003.mp3',
       transcript:"Despite the criticism, the policy remains ubiquitous.", translation:"A pesar de las críticas, la política sigue siendo omnipresente.",
       question:"What does \"ubiquitous\" suggest about the policy?", options:["It is rare","It is everywhere","It is illegal"], correct:1,
       explain:"“Ubiquitous” significa presente en todas partes." }
@@ -348,19 +348,19 @@ const LISTENING_BANK = {
 --------------------------------------------------------- */
 const SPEAKING_BANK = {
   facil: [
-    { id:'s-facil-1', sentence:"What time is it?", translation:"¿Qué hora es?", audioFile:'audio/a1/speaking-001.mp3' },
-    { id:'s-facil-2', sentence:"My name is Leo and I am from Colombia.", translation:"Me llamo Leo y soy de Colombia.", audioFile:'audio/a1/speaking-002.mp3' },
-    { id:'s-facil-3', sentence:"I usually have breakfast at eight.", translation:"Normalmente desayuno a las ocho.", audioFile:'audio/a1/speaking-003.mp3' }
+    { id:'s-facil-1', sentence:"What time is it?", translation:"¿Qué hora es?", audioFile:'audio/a1/a1speaking-001.mp3' },
+    { id:'s-facil-2', sentence:"My name is Veronica and I am from Colombia.", translation:"Me llamo Veronica y soy de Colombia.", audioFile:'audio/a1/a1speaking-002.mp3' },
+    { id:'s-facil-3', sentence:"I usually have breakfast at eight.", translation:"Normalmente desayuno a las ocho.", audioFile:'audio/a1/a1speaking-003.mp3' }
   ],
   medio: [
-    { id:'s-medio-1', sentence:"By the time we arrived, the movie had already started.", translation:"Para cuando llegamos, la película ya había empezado.", audioFile:'audio/b1/speaking-001.mp3' },
-    { id:'s-medio-2', sentence:"I'm used to working late.", translation:"Estoy acostumbrado a trabajar hasta tarde.", audioFile:'audio/b1/speaking-002.mp3' },
-    { id:'s-medio-3', sentence:"Nevertheless, we decided to continue.", translation:"Sin embargo, decidimos continuar.", audioFile:'audio/b1/speaking-003.mp3' }
+    { id:'s-medio-1', sentence:"By the time we arrived, the movie had already started.", translation:"Para cuando llegamos, la película ya había empezado.", audioFile:'audio/b1/b1speaking-001.mp3' },
+    { id:'s-medio-2', sentence:"I'm used to working late.", translation:"Estoy acostumbrado a trabajar hasta tarde.", audioFile:'audio/b1/b1speaking-002.mp3' },
+    { id:'s-medio-3', sentence:"Nevertheless, we decided to continue.", translation:"Sin embargo, decidimos continuar.", audioFile:'audio/b1/b1speaking-003.mp3' }
   ],
   avanzado: [
-    { id:'s-avz-1', sentence:"Had I known about the delay, I would have acted differently.", translation:"Si hubiera sabido sobre el retraso, habría actuado diferente.", audioFile:'audio/c1/speaking-001.mp3' },
-    { id:'s-avz-2', sentence:"No sooner had she arrived than it started raining.", translation:"Apenas había llegado cuando empezó a llover.", audioFile:'audio/c1/speaking-002.mp3' },
-    { id:'s-avz-3', sentence:"Despite the criticism, the policy remains ubiquitous.", translation:"A pesar de las críticas, la política sigue siendo omnipresente.", audioFile:'audio/c1/speaking-003.mp3' }
+    { id:'s-avz-1', sentence:"Had I known about the delay, I would have acted differently.", translation:"Si hubiera sabido sobre el retraso, habría actuado diferente.", audioFile:'audio/c1/c1speaking-001.mp3' },
+    { id:'s-avz-2', sentence:"No sooner had she arrived than it started raining.", translation:"Apenas había llegado cuando empezó a llover.", audioFile:'audio/c1/c1speaking-002.mp3' },
+    { id:'s-avz-3', sentence:"Despite the criticism, the policy remains ubiquitous.", translation:"A pesar de las críticas, la política sigue siendo omnipresente.", audioFile:'audio/c1/c1speaking-003.mp3' }
   ]
 };
 
