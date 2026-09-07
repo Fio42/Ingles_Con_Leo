@@ -36,72 +36,158 @@
 
 <main>
 
-  <section>
-    <div class="wrap hero" style="padding:56px 0 40px;display:grid;gap:32px;align-items:center;">
-      <div class="hero-copy" style="max-width:560px;">
-        <span class="badge badge-free" style="margin-bottom:18px;">Gratis para empezar</span>
-        <h1 style="font-size:clamp(2.1rem,7vw,3.4rem);margin-top:14px;">Practica <span style="color:var(--blue);">inglés</span> en la vida real.</h1>
-        <p class="lead" style="margin-top:16px;font-size:1.1rem;color:var(--ink-soft);max-width:46ch;">Ejercicios cortos, explicaciones fáciles y ejemplos que sí usarías.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:26px;">
-          <a href="practica.html" class="btn btn-primary">Practicar gratis</a>
+  <!-- HERO -->
+  <section class="hero-v2">
+    <div class="wrap hero-v2-grid">
+      <div class="hero-v2-copy">
+        <h1>Aprende inglés<br>para usarlo de verdad<span class="hero-v2-dot">.</span></h1>
+        <p class="hero-v2-sub">Explicaciones fáciles, ejemplos reales y práctica a tu nivel. Sin complicaciones.</p>
+        <div class="hero-v2-actions">
+          <a href="practica.html" class="btn btn-primary hero-cta-main">Practicar gratis <span aria-hidden="true">→</span></a>
           <a href="miembros.html" class="btn btn-ghost">Entrar a miembros</a>
         </div>
+        <ul class="hero-v2-checks">
+          <li><span class="hero-v2-check-icon">✓</span>Ejercicios prácticos</li>
+          <li><span class="hero-v2-check-icon">✓</span>Explicaciones claras</li>
+          <li><span class="hero-v2-check-icon">✓</span>A tu ritmo</li>
+        </ul>
       </div>
-      <div class="hero-character-wrap">
-        <img src="leo-hero.png" alt="Leo, de Inglés con Leo" class="hero-character" width="560" height="860" loading="eager">
-        <div class="hero-floating-card">
-          <div class="q">Which one is correct?</div>
-          <div class="opt correct">I have been there. ✓</div>
-          <div class="opt">I have gone there.</div>
+      <div class="hero-v2-media">
+        <div class="hero-v2-character-wrap">
+          <img src="leo-front.png" alt="Leo, de Inglés con Leo" class="hero-v2-character" width="480" height="888" loading="eager">
+        </div>
+        <div class="hero-v2-card">
+          <div class="hero-v2-card-top">
+            <span class="hero-v2-card-tag">Ejemplo de hoy</span>
+            <span class="hero-v2-card-count">1/3</span>
+          </div>
+          <div class="hero-v2-card-en">I have been there.</div>
+          <div class="hero-v2-card-es">He estado allí.</div>
+          <div class="hero-v2-card-explain">Se usa para hablar de experiencias en el pasado que siguen siendo relevantes en el presente.</div>
+          <a href="articulos.html" class="hero-v2-card-link">Ver explicación <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- WHAT'S FREE VS MEMBERS -->
-  <section>
+  <!-- CÓMO FUNCIONA -->
+  <section class="how-v2">
     <div class="wrap">
       <div class="section-head">
         <h2>Cómo funciona</h2>
-        <p>Simple: aprendes, practicas y mejoras.</p>
+        <p>Un método simple, efectivo y pensado para que avances de verdad.</p>
       </div>
-      <div class="article-grid">
-        <div class="article-card">
-          <span class="how-step">01</span>
+      <div class="how-v2-grid">
+        <a href="articulos.html" class="how-v2-card">
+          <span class="how-v2-num">01</span>
           <h3>Aprende</h3>
-          <p>Explicaciones fáciles y ejemplos reales, sin párrafos académicos.</p>
-          <a href="articulos.html" class="read">Leer artículos →</a>
-        </div>
-        <div class="article-card">
-          <span class="how-step">02</span>
+          <p>Explicaciones claras con ejemplos reales, sin palabras complicadas.</p>
+          <div class="how-v2-demo demo-grammar">
+            <span class="demo-tag">Present Simple</span>
+            <div class="demo-sentence">I <strong>work</strong> from home.</div>
+            <div class="demo-translation">Trabajo desde casa.</div>
+          </div>
+        </a>
+        <a href="practica.html" class="how-v2-card">
+          <span class="how-v2-num">02</span>
           <h3>Practica</h3>
-          <p>Ejercicios rápidos de Gramática, Vocabulario, Listening, Writing y Speaking, según tu nivel.</p>
-          <a href="practica.html" class="read">Probar ejercicios →</a>
-        </div>
-        <div class="article-card">
-          <span class="how-step">03</span>
+          <p>Ejercicios interactivos y variados para aplicar lo que aprendes.</p>
+          <div class="how-v2-demo demo-practice">
+            <div class="demo-label">Completa la oración:</div>
+            <div class="demo-sentence">She ___ English every day.</div>
+            <div class="demo-options">
+              <span class="demo-pill">work</span>
+              <span class="demo-pill demo-pill-selected">works</span>
+              <span class="demo-pill">working</span>
+            </div>
+          </div>
+        </a>
+        <a href="progreso.html" class="how-v2-card">
+          <span class="how-v2-num">03</span>
           <h3>Mejora</h3>
-          <p>Guarda tu progreso y continúa exactamente donde te quedaste.</p>
-          <a href="miembros.html" class="read">Entrar a miembros →</a>
-        </div>
+          <p>Sigue tu progreso y gana confianza paso a paso.</p>
+          <div class="how-v2-demo demo-progress">
+            <div class="demo-progress-head"><span>Tu progreso</span><span class="demo-progress-level">Nivel A2</span></div>
+            <div class="demo-progress-row">
+              <div class="demo-progress-track"><div class="demo-progress-fill" style="width:70%;"></div></div>
+              <span class="demo-progress-pct">70%</span>
+            </div>
+            <div class="demo-progress-badge">✓ ¡Vas muy bien!</div>
+          </div>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- LEO INTRO -->
-  <section class="section-alt leo-intro">
-    <div class="wrap content-row leo-row">
-      <div class="leo-intro-media">
-        <img src="leo-front.png" alt="Leo, de Inglés con Leo" class="leo-photo">
+  <!-- QUÉ PRACTICAR HOY -->
+  <section class="section-alt home-skills">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>¿Qué te gustaría practicar hoy?</h2>
+        <p>Elige un área y empieza a practicar con ejercicios cortos y reales.</p>
       </div>
-      <div class="leo-intro-copy">
-        <h2>Inglés fácil, directo y con ejemplos reales.</h2>
-        <p>Soy Leo. Enseño inglés con explicaciones cortas, ejemplos claros y práctica para que realmente entiendas cómo usarlo.</p>
-        <p class="leo-intro-sub">Cada ejercicio te explica por qué una respuesta es correcta, no solo si acertaste o no.</p>
-        <div class="leo-intro-actions">
-          <a href="articulos.html" class="btn btn-primary">Ver mis artículos</a>
-          <a href="articulos.html#videos" class="btn btn-ghost">Ver mis videos</a>
-        </div>
+      <div class="home-skills-grid">
+        <a href="gramatica.html" class="home-skill-card tint-gramatica">
+          <h3>Gramática</h3>
+          <p>Reglas claras con ejemplos fáciles de entender.</p>
+          <span class="home-skill-go">Practicar →</span>
+        </a>
+        <a href="vocabulario.html" class="home-skill-card tint-vocabulario">
+          <h3>Vocabulario</h3>
+          <p>Palabras y frases útiles para la vida real.</p>
+          <span class="home-skill-go">Practicar →</span>
+        </a>
+        <a href="listening.html" class="home-skill-card tint-listening">
+          <h3>Listening</h3>
+          <p>Escucha inglés real y mejora tu comprensión.</p>
+          <span class="home-skill-go">Practicar →</span>
+        </a>
+        <a href="writing.html" class="home-skill-card tint-writing">
+          <h3>Writing</h3>
+          <p>Practica tu escritura con ejercicios guiados.</p>
+          <span class="home-skill-go">Practicar →</span>
+        </a>
+        <a href="speaking.html" class="home-skill-card tint-speaking">
+          <h3>Speaking</h3>
+          <p>Gana confianza al hablar inglés.</p>
+          <span class="home-skill-go">Practicar →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGUNDO CTA -->
+  <section class="home-cta2">
+    <div class="wrap">
+      <h2>¿Listo para empezar?</h2>
+      <a href="practica.html" class="btn btn-primary">Practicar gratis <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <!-- MÁS EN REDES -->
+  <section class="home-social">
+    <div class="wrap home-social-row">
+      <div class="home-social-copy">
+        <h3>Más inglés con Leo</h3>
+        <p>Consejos, mini lecciones y contenido extra en mis redes sociales.</p>
+      </div>
+      <div class="home-social-links">
+        <a href="#" class="home-social-btn" data-social="youtube">
+          <span class="home-social-icon icon-yt"><svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#FF3B30"/><path d="M10 8.5l6 3.5-6 3.5v-7z" fill="#fff"/></svg></span>
+          YouTube
+        </a>
+        <a href="#" class="home-social-btn" data-social="instagram">
+          <span class="home-social-icon icon-ig"><svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="7" fill="#D6249F"/><rect x="6" y="6" width="12" height="12" rx="4" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.6"/><circle cx="16.2" cy="7.8" r="1" fill="#fff"/></svg></span>
+          Instagram
+        </a>
+        <a href="#" class="home-social-btn" data-social="tiktok">
+          <span class="home-social-icon icon-tt"><svg viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#000"/><path d="M14 6v7.2a2.6 2.6 0 11-2.2-2.57" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M14 6c.3 1.6 1.5 2.7 3 2.9" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          TikTok
+        </a>
+        <a href="#" class="home-social-btn" data-social="facebook">
+          <span class="home-social-icon icon-fb"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M13.2 20v-6.4h2.1l.3-2.5h-2.4V9.5c0-.7.2-1.2 1.2-1.2h1.3V6.1c-.2 0-1-.1-1.9-.1-1.9 0-3.2 1.2-3.2 3.3v1.8H8.5v2.5h2.1V20h2.6z" fill="#fff"/></svg></span>
+          Facebook
+        </a>
       </div>
     </div>
   </section>
