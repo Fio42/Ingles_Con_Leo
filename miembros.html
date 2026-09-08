@@ -33,8 +33,15 @@
 
 <main>
 
+  <!-- LOADING (mientras se confirma la sesion, para no mostrar el gate de golpe) -->
+  <div id="gateLoading" style="max-width:520px;margin:60px auto;text-align:center;">
+    <div style="width:34px;height:34px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:leoSpin 0.8s linear infinite;"></div>
+    <p style="color:var(--ink-faint);font-weight:600;">Cargando tu panel...</p>
+  </div>
+  <style>@keyframes leoSpin{to{transform:rotate(360deg);}}</style>
+
   <!-- ACCESS GATE -->
-  <div class="gate-shell" id="gate" style="max-width:520px;">
+  <div class="gate-shell" id="gate" style="max-width:520px;display:none;">
     <div style="text-align:center;margin-bottom:8px;">
       <span class="badge badge-members">Membresía</span>
       <h1 style="margin-top:14px;">Practica inglés todos los días</h1>
@@ -207,7 +214,10 @@
 <script src="chatbot.js"></script>
 <script>
   const gate = document.getElementById('gate');
+  const gateLoading = document.getElementById('gateLoading');
   const memberContent = document.getElementById('memberContent');
+  function hideLoading(){ gateLoading.style.display = 'none'; }
+  function showGate(){ hideLoading(); gate.style.display = 'block'; }
   const loginStep1 = document.getElementById('loginStep1');
   const loginStep2 = document.getElementById('loginStep2');
   const loginRecovery = document.getElementById('loginRecovery');
@@ -256,6 +266,7 @@
   }
 
   function unlock(){
+    hideLoading();
     gate.style.display = 'none';
     memberContent.style.display = 'block';
     startDashboard();
@@ -268,6 +279,7 @@
       await LeoBackend.syncProgressFromCloud();
       unlock();
     } else {
+      showGate();
       showLoginStep(3);
     }
   }
@@ -427,17 +439,24 @@
   updateAuthModeUI();
 
   (async function initGate(){
-    if(!LeoBackend.isConfigured()) return; // backend aún no configurado: se queda el login normal
-    LeoBackend.onPasswordRecovery(()=>{ showLoginStep(4); });
-    const profile = await LeoBackend.getMemberProfile();
-    if(profile){
-      hasSession = true;
-      if(profile.is_member){
-        await LeoBackend.syncProgressFromCloud();
-        unlock();
+    if(!LeoBackend.isConfigured()){ showGate(); return; } // backend aún no configurado: se queda el login normal
+    LeoBackend.onPasswordRecovery(()=>{ showGate(); showLoginStep(4); });
+    try{
+      const profile = await LeoBackend.getMemberProfile();
+      if(profile){
+        hasSession = true;
+        if(profile.is_member){
+          await LeoBackend.syncProgressFromCloud();
+          unlock();
+        } else {
+          showGate();
+          showLoginStep(3);
+        }
       } else {
-        showLoginStep(3);
+        showGate();
       }
+    }catch(e){
+      showGate();
     }
   })();
 
