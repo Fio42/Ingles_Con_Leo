@@ -1028,11 +1028,11 @@ const SPEAKING_BANK = {
     ],
     [
       { id:'s-facil2-1', sentence:"My keys are in my bag.", translation:"Mis llaves están en mi bolso.", audioFile:'audio/a1/a1speaking-004.mp3' },
-      { id:'s-facil2-2', sentence:"There isn't any coffee left.", translation:"No queda nada de café.", audioFile:'audio/a1/a1speaking-006.mp3' }
+      { id:'s-facil2-2', sentence:"He can cook well, but he can't bake.", translation:"Él cocina bien, pero no sabe hornear.", audioFile:'audio/a1/a1speaking-006.mp3' }
     ],
     [
       { id:'s-facil3-1', sentence:"This bag is bigger than that one.", translation:"Esta bolsa es más grande que esa.", audioFile:'audio/a1/a1speaking-005.mp3' },
-      { id:'s-facil3-2', sentence:"Those shoes over there are too expensive for me.", translation:"Esos zapatos de allá son demasiado caros para mí.", audioFile:'audio/a1/a1speaking-007.mp3' }
+      { id:'s-facil3-2', sentence:"There are too many people here.", translation:"Hay demasiada gente aquí.", audioFile:'audio/a1/a1speaking-007.mp3' }
     ]
   ],
   medio: [
@@ -1043,11 +1043,11 @@ const SPEAKING_BANK = {
     ],
     [
       { id:'s-medio2-1', sentence:"She said that she was tired.", translation:"Ella dijo que estaba cansada.", audioFile:'audio/b1/b1speaking-004.mp3' },
-      { id:'s-medio2-2', sentence:"I have already finished my homework.", translation:"Ya terminé mi tarea.", audioFile:'audio/b1/b1speaking-006.mp3' }
+      { id:'s-medio2-2', sentence:"She enjoys reading before bed.", translation:"A ella le gusta leer antes de dormir.", audioFile:'audio/b1/b1speaking-006.mp3' }
     ],
     [
       { id:'s-medio3-1', sentence:"If it rains tomorrow, we will stay home.", translation:"Si llueve mañana, nos quedaremos en casa.", audioFile:'audio/b1/b1speaking-005.mp3' },
-      { id:'s-medio3-2', sentence:"Even though he was busy, he helped his friend.", translation:"Aunque estaba ocupado, ayudó a su amigo.", audioFile:'audio/b1/b1speaking-007.mp3' }
+      { id:'s-medio3-2', sentence:"The book that I read was fantastic.", translation:"El libro que leí fue fantástico.", audioFile:'audio/b1/b1speaking-007.mp3' }
     ]
   ],
   avanzado: [
@@ -1058,11 +1058,11 @@ const SPEAKING_BANK = {
     ],
     [
       { id:'s-avz2-1', sentence:"Nevertheless, the team kept working.", translation:"Sin embargo, el equipo siguió trabajando.", audioFile:'audio/c1/c1speaking-004.mp3' },
-      { id:'s-avz2-2', sentence:"She's married to a lawyer.", translation:"Ella está casada con un abogado.", audioFile:'audio/c1/c1speaking-006.mp3' }
+      { id:'s-avz2-2', sentence:"He must have forgotten the meeting.", translation:"Debe haberse olvidado de la reunión.", audioFile:'audio/c1/c1speaking-006.mp3' }
     ],
     [
       { id:'s-avz3-1', sentence:"The report written by the team was well received.", translation:"El informe escrito por el equipo fue bien recibido.", audioFile:'audio/c1/c1speaking-005.mp3' },
-      { id:'s-avz3-2', sentence:"Rarely have I seen such dedication.", translation:"Rara vez he visto tanta dedicación.", audioFile:'audio/c1/c1speaking-007.mp3' }
+      { id:'s-avz3-2', sentence:"Should you need anything, just ask.", translation:"Si necesitas algo, solo pregunta.", audioFile:'audio/c1/c1speaking-007.mp3' }
     ]
   ]
 };
