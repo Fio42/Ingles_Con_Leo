@@ -100,7 +100,7 @@
   <!-- MEMBER DASHBOARD -->
   <div id="memberContent" style="display:none;">
     <section class="page-hero" style="padding-bottom:8px;">
-      <div class="wrap">
+      <div class="wrap wrap-dash">
         <div class="dash-greeting" id="greetLine">Hola</div>
         <p class="dash-sub">Continúa tu práctica y revisa tu avance.</p>
 
@@ -109,8 +109,11 @@
         <div class="dash-grid">
           <div class="rings-panel">
             <div class="rings-panel-head">
-              <h3>Tu progreso</h3>
-              <p>Así vas en cada habilidad. ¡Sigue practicando!</p>
+              <div>
+                <h3>Tu progreso</h3>
+                <p>Así vas en cada habilidad. ¡Sigue practicando!</p>
+              </div>
+              <a href="progreso.html" class="see-all">Ver progreso completo →</a>
             </div>
             <div class="ring-grid" id="ringGrid"></div>
           </div>
@@ -120,7 +123,7 @@
     </section>
 
     <section style="padding-top:8px;">
-      <div class="wrap">
+      <div class="wrap wrap-dash">
         <div class="section-head">
           <h2>¿Qué quieres practicar hoy?</h2>
         </div>
@@ -161,22 +164,16 @@
             <p>Un poco de todo en una sola sesión.</p>
             <span class="go">Practicar →</span>
           </a>
-          <a href="progreso.html" class="skill-card-link">
-            <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <h3>Progreso detallado</h3>
-            <p>Precisión, minutos practicados y más detalle.</p>
-            <span class="go">Ver progreso →</span>
-          </a>
         </div>
       </div>
     </section>
 
     <section style="padding-top:8px;">
-      <div class="wrap">
+      <div class="wrap wrap-dash">
         <div class="bottom-grid">
-          <div id="recentActivity"></div>
+          <div class="activity-card" id="recentActivity"></div>
           <div class="weekly-chart-card" id="weeklyChart"></div>
-          <div class="motivate-card" id="motivateCard"></div>
+          <div class="streak-card" id="streakCard"></div>
         </div>
       </div>
     </section>
@@ -289,7 +286,7 @@
     renderContinueCard(document.getElementById('continueCard'));
     renderWeeklyChart(document.getElementById('weeklyChart'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
-    renderMotivateCard(document.getElementById('motivateCard'));
+    renderStreakCard(document.getElementById('streakCard'));
   }
 
   function unlock(){

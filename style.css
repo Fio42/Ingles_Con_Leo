@@ -361,50 +361,69 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-icon{width:34px;height:34px;color:var(--blue);}
 .skill-icon.violet{color:var(--violet);}
 
-/* ---------- Dashboard v2: stat cards, rings, weekly chart ---------- */
-.stat-cards{display:grid;gap:14px;grid-template-columns:repeat(2,1fr);margin:24px 0 28px;}
+/* ---------- Dashboard v3: contenedor mas ancho, jerarquia mas grande ---------- */
+.wrap-dash{max-width:1260px;}
+
+.dash-greeting{font-size:2.05rem;}
+.dash-sub{font-size:1.02rem;margin-bottom:30px;}
+
+.stat-cards{display:grid;gap:16px;grid-template-columns:repeat(2,1fr);margin:26px 0 32px;}
 @media(min-width:760px){.stat-cards{grid-template-columns:repeat(4,1fr);}}
-.stat-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);padding:16px 16px;display:flex;align-items:center;gap:12px;}
-.stat-card-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.stat-card-icon svg{width:21px;height:21px;}
-.stat-card-label{font-size:0.8rem;color:var(--ink-soft);font-weight:600;line-height:1.25;}
-.stat-card-value{font-family:'Baloo 2';font-weight:700;font-size:1.1rem;margin-top:2px;line-height:1.2;}
+.stat-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:22px 22px;display:flex;align-items:center;gap:16px;}
+.stat-card-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stat-card-icon svg{width:26px;height:26px;}
+.stat-card-label{font-size:0.85rem;color:var(--ink-soft);font-weight:600;line-height:1.25;}
+.stat-card-value{font-family:'Baloo 2';font-weight:700;font-size:1.35rem;margin-top:3px;line-height:1.2;}
 
-.dash-grid{display:grid;gap:20px;grid-template-columns:1fr;margin-bottom:8px;align-items:stretch;}
-@media(min-width:900px){.dash-grid{grid-template-columns:1.35fr 1fr;}}
-.dash-grid .continue-card{max-width:none;height:100%;box-sizing:border-box;}
-.continue-note{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:var(--radius-sm);padding:10px 14px;margin-top:16px;color:#C7CCDA;font-size:0.85rem;flex-basis:100%;}
+.dash-grid{display:grid;gap:24px;grid-template-columns:1fr;margin-bottom:12px;align-items:stretch;}
+@media(min-width:900px){.dash-grid{grid-template-columns:1.4fr 1fr;}}
+.dash-grid .continue-card{max-width:none;height:100%;box-sizing:border-box;padding:34px 32px;align-content:center;}
+.continue-eyebrow{font-size:0.82rem;}
+.continue-title{font-size:1.55rem;}
+.continue-sub{font-size:1rem;}
+.continue-note{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:var(--radius-sm);padding:12px 16px;margin-top:18px;color:#C7CCDA;font-size:0.88rem;flex-basis:100%;}
 
-.rings-panel{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:26px 24px 22px;}
-.rings-panel-head h3{font-family:'Baloo 2';font-size:1.2rem;}
-.rings-panel-head p{color:var(--ink-soft);font-size:0.88rem;margin-top:4px;}
-.ring-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 10px;margin-top:20px;}
-.ring-grid svg{width:100%;height:auto;max-width:72px;}
-@media(min-width:520px){.ring-grid{grid-template-columns:repeat(5,1fr);gap:18px;}}
-.ring-item{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;}
+.rings-panel{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:36px 34px 32px;display:flex;flex-direction:column;}
+.rings-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+.rings-panel-head h3{font-family:'Baloo 2';font-size:1.5rem;}
+.rings-panel-head p{color:var(--ink-soft);font-size:0.95rem;margin-top:6px;}
+.rings-panel-head .see-all{font-weight:700;color:var(--blue);font-size:0.88rem;white-space:nowrap;}
+.ring-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 12px;margin-top:auto;padding-top:30px;flex:1;align-items:center;}
+.ring-grid svg{width:100%;height:auto;max-width:118px;}
+@media(min-width:520px){.ring-grid{grid-template-columns:repeat(5,1fr);gap:16px;}}
+.ring-item{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
 .ring-item svg{display:block;}
-.ring-pct{font-family:'Baloo 2';font-weight:700;font-size:0.95rem;fill:var(--ink);}
-.ring-label{font-size:0.78rem;color:var(--ink-soft);font-weight:600;}
+.ring-pct{font-family:'Baloo 2';font-weight:700;fill:var(--ink);}
+.ring-label{font-size:0.86rem;color:var(--ink-soft);font-weight:700;}
 
-.bottom-grid{display:grid;gap:20px;grid-template-columns:1fr;}
-@media(min-width:900px){.bottom-grid{grid-template-columns:1.1fr 1fr;}}
-@media(min-width:1200px){.bottom-grid{grid-template-columns:1fr 1fr 0.8fr;}}
-.bottom-panel-title{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;margin-bottom:14px;}
+.bottom-grid{display:grid;gap:20px;grid-template-columns:1fr;align-items:stretch;}
+@media(min-width:900px){.bottom-grid{grid-template-columns:1fr 1fr;}}
+@media(min-width:1200px){.bottom-grid{grid-template-columns:1.15fr 1fr 0.85fr;}}
+.bottom-panel-title{font-family:'Baloo 2';font-weight:700;font-size:1.1rem;margin-bottom:16px;}
 .recent-row{border-left:4px solid var(--line);}
 
-.weekly-chart-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:22px 20px 16px;height:100%;box-sizing:border-box;}
-.weekly-bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:14px;}
-.weekly-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;}
-.weekly-bar{width:100%;max-width:26px;border-radius:6px 6px 3px 3px;background:var(--blue-tint);position:relative;min-height:4px;}
+.activity-card, .weekly-chart-card, .streak-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:24px 22px 20px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;}
+.activity-card .recent-list{flex:1;}
+
+.weekly-bars{display:flex;align-items:flex-end;gap:10px;height:150px;margin-top:16px;flex:1;}
+.weekly-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px;}
+.weekly-bar{width:100%;max-width:30px;border-radius:6px 6px 3px 3px;background:var(--blue-tint);position:relative;min-height:4px;}
 .weekly-bar.today{background:var(--blue);}
-.weekly-bar-count{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:0.72rem;font-weight:700;color:var(--blue);white-space:nowrap;}
-.weekly-bar-label{font-size:0.76rem;color:var(--ink-faint);font-weight:600;}
+.weekly-bar-count{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:0.74rem;font-weight:700;color:var(--blue);white-space:nowrap;}
+.weekly-bar-label{font-size:0.78rem;color:var(--ink-faint);font-weight:600;}
 .weekly-bar-label.today{color:var(--ink);}
 
-.motivate-card{background:var(--amber-tint);border-radius:var(--radius-lg);padding:24px 22px;display:flex;flex-direction:column;gap:10px;justify-content:center;}
-.motivate-card h3{font-family:'Baloo 2';font-size:1.1rem;}
-.motivate-card p{color:var(--ink-soft);font-size:0.9rem;font-style:italic;}
-.motivate-card .who{color:var(--ink-faint);font-size:0.82rem;font-style:normal;font-weight:600;}
+.streak-card{align-items:center;text-align:center;justify-content:center;gap:4px;}
+.streak-flame{width:52px;height:52px;border-radius:50%;background:var(--coral-tint);color:var(--coral);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.streak-flame svg{width:26px;height:26px;}
+.streak-number{font-family:'Baloo 2';font-weight:700;font-size:2rem;line-height:1;}
+.streak-caption{color:var(--ink-soft);font-size:0.86rem;margin-top:4px;}
+.streak-dots{display:flex;gap:8px;margin-top:18px;}
+.streak-dot{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.streak-dot-mark{width:15px;height:15px;border-radius:50%;background:var(--paper-dim);border:2px solid var(--line);}
+.streak-dot-mark.done{background:var(--coral);border-color:var(--coral);}
+.streak-dot-mark.today-mark{box-shadow:0 0 0 3px var(--coral-tint);}
+.streak-dot-label{font-size:0.68rem;color:var(--ink-faint);font-weight:700;}
 
 /* ---------- Progreso (progreso.html) ---------- */
 .progress-empty, .progress-note{color:var(--ink-soft);font-size:0.94rem;}

@@ -1372,7 +1372,7 @@ function renderSkillRings(container){
     const pct = computeSkillCoverage(p, sk);
     return `
       <div class="ring-item">
-        ${ringSvg(pct, SKILL_COLORS[sk])}
+        ${ringSvg(pct, SKILL_COLORS[sk], 120, 11)}
         <span class="ring-label">${SKILL_LABELS[sk]}</span>
       </div>`;
   }).join('');
@@ -1426,19 +1426,25 @@ function renderRecentActivityV2(container){
   container.innerHTML += `<div class="recent-list">${rows}</div>`;
 }
 
-const DASH_QUOTES = [
-  { text:'El progreso real viene de la práctica constante.', who:'Inglés con Leo' },
-  { text:'Un poco cada día te acerca a tus metas.', who:'Inglés con Leo' },
-  { text:'No necesitas ser perfecto, solo constante.', who:'Inglés con Leo' },
-  { text:'Cada sesión corta cuenta, aunque no lo sientas.', who:'Inglés con Leo' }
-];
-function renderMotivateCard(container){
+function renderStreakCard(container){
   if(!container) return;
-  const q = DASH_QUOTES[Math.floor(Math.random() * DASH_QUOTES.length)];
+  const streak = computeStreak();
+  const days = computeWeeklyBarData();
+  const practicedCount = days.filter(d=>d.count>0).length;
   container.innerHTML = `
-    <h3>Sigue aprendiendo</h3>
-    <p>"${q.text}"</p>
-    <span class="who">— ${q.who}</span>`;
+    <div class="streak-flame">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+    </div>
+    <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
+    <div class="streak-caption">de racha seguida</div>
+    <div class="streak-dots">
+      ${days.map(d=>`
+        <div class="streak-dot">
+          <div class="streak-dot-mark ${d.count>0 ? 'done' : ''} ${d.isToday ? 'today-mark' : ''}"></div>
+          <span class="streak-dot-label">${d.label.slice(0,1)}</span>
+        </div>`).join('')}
+    </div>
+    <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>`;
 }
 
 /* ============================================================
