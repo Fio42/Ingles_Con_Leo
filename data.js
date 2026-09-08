@@ -2017,9 +2017,9 @@ const SPEAKING_BANK = {
       { id:'s-avz3-2', sentence:"Should you need anything, just ask.", translation:"Si necesitas algo, solo pregunta.", audioFile:'audio/c1/c1speaking-007.mp3' }
     ],
     [
-      { id:'s-avz5-1', sentence:"It is widely believed that the new regulation will curb inflation.", translation:"Se cree ampliamente que la nueva regulación frenará la inflación.", audioFile:'audio/c1/c1speaking-008.mp3' },
-      { id:'s-avz5-2', sentence:"Had the board been more transparent, shareholders wouldn't have lost confidence.", translation:"Si la junta hubiera sido más transparente, los accionistas no habrían perdido la confianza.", audioFile:'audio/c1/c1speaking-009.mp3' },
-      { id:'s-avz5-3', sentence:"Arguably, this has been the company's most challenging quarter to date.", translation:"Posiblemente, este ha sido el trimestre más desafiante de la empresa hasta la fecha.", audioFile:'audio/c1/c1speaking-010.mp3' }
+      { id:'s-avz5-1', sentence:"Despite the setbacks, the team managed to launch the product on schedule.", translation:"A pesar de los contratiempos, el equipo logró lanzar el producto a tiempo.", audioFile:'audio/c1/c1speaking-008.mp3' },
+      { id:'s-avz5-2', sentence:"The committee is expected to announce its decision sometime next week.", translation:"Se espera que el comité anuncie su decisión en algún momento de la próxima semana.", audioFile:'audio/c1/c1speaking-009.mp3' },
+      { id:'s-avz5-3', sentence:"Few people anticipated how quickly the market would recover.", translation:"Pocas personas anticiparon qué tan rápido se recuperaría el mercado.", audioFile:'audio/c1/c1speaking-010.mp3' }
     ]
   ]
 };
