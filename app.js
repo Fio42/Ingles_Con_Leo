@@ -1242,6 +1242,7 @@ function renderContinueCard(container){
           <div class="continue-sub">8 ejercicios cortos, con ejemplos y explicaciones.</div>
         </div>
         <a href="gramatica.html" class="btn btn-primary">Empezar →</a>
+        <div class="continue-note">💡 Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;
   }
@@ -1255,11 +1256,189 @@ function renderContinueCard(container){
         <div class="continue-sub">${attempted} de ${total} ejercicios practicados</div>
       </div>
       <a href="${SKILL_PAGE[last.skill]}" class="btn btn-primary">Continuar →</a>
+      <div class="continue-note">💡 Un poco cada día te acerca a tus metas.</div>
     </div>`;
 }
 function applyDashboardGreeting(el){
   const profile = getProfile();
   el.textContent = (profile && profile.name) ? `Hola, ${profile.name}` : 'Hola';
+}
+
+/* ---------- Dashboard v2: stats, anillos de progreso, actividad ---------- */
+const DASH_SKILLS = ['gramatica','vocabulario','listening','writing','speaking'];
+
+function computeTotalStats(){
+  const p = loadProgress();
+  let attempted = 0, total = 0;
+  DASH_SKILLS.concat(['mixto']).forEach(sk=>{
+    attempted += Math.min(attemptedItemIdsFor(p, sk).size, bankSizeFor(sk));
+    total += bankSizeFor(sk);
+  });
+  return { attempted, total };
+}
+
+/* Cuenta de ejercicios por día de ESTA semana (lunes a domingo). */
+function computeWeeklyBarData(){
+  const p = loadProgress();
+  const now = new Date();
+  const jsDay = now.getDay(); // 0=domingo..6=sabado
+  const mondayOffset = jsDay === 0 ? 6 : jsDay - 1;
+  const monday = new Date(now);
+  monday.setHours(0,0,0,0);
+  monday.setDate(monday.getDate() - mondayOffset);
+
+  const labels = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const todayStr = now.toISOString().slice(0,10);
+  const days = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    const dateStr = d.toISOString().slice(0,10);
+    days.push({ label: labels[i], date: dateStr, isToday: dateStr === todayStr, count: 0 });
+  }
+  const byDate = {};
+  days.forEach(d=> byDate[d.date] = d);
+  p.sessions.forEach(s=>{
+    const bucket = byDate[s.date];
+    if(bucket) bucket.count += (s.results ? s.results.length : 0);
+  });
+  return days;
+}
+
+function ringSvg(pct, color, size, strokeWidth){
+  size = size || 72; strokeWidth = strokeWidth || 7;
+  const r = (size - strokeWidth) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.min(100, Math.max(0, pct)) / 100);
+  const center = size / 2;
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="var(--paper-dim)" stroke-width="${strokeWidth}"/>
+      <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+        stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}"
+        transform="rotate(-90 ${center} ${center})"/>
+      <text x="${center}" y="${center}" text-anchor="middle" dominant-baseline="central" class="ring-pct" font-size="${size*0.24}">${pct}%</text>
+    </svg>`;
+}
+
+function renderStatCards(container){
+  if(!container) return;
+  const streak = computeStreak();
+  const level = getUserLevel();
+  const totals = computeTotalStats();
+  container.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--green-tint);color:var(--green);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.2L21 9l-5 4.4L17.4 20 12 16.6 6.6 20 8 13.4 3 9l6.4-.8L12 2z" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Miembro activo</div>
+        <div class="stat-card-value">¡Gracias por ser parte!</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Racha</div>
+        <div class="stat-card-value">${streak} ${streak === 1 ? 'día' : 'días'}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--blue-tint);color:var(--blue);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-value">${LEVEL_META[level].label} ${LEVEL_META[level].range}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--violet-tint);color:var(--violet);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Ejercicios completados</div>
+        <div class="stat-card-value">${totals.attempted} <span style="color:var(--ink-faint);font-weight:600;font-size:0.8rem;">de ${totals.total}</span></div>
+      </div>
+    </div>`;
+}
+
+function renderSkillRings(container){
+  if(!container) return;
+  const p = loadProgress();
+  container.innerHTML = DASH_SKILLS.map(sk=>{
+    const pct = computeSkillCoverage(p, sk);
+    return `
+      <div class="ring-item">
+        ${ringSvg(pct, SKILL_COLORS[sk])}
+        <span class="ring-label">${SKILL_LABELS[sk]}</span>
+      </div>`;
+  }).join('');
+}
+
+function renderWeeklyChart(container){
+  if(!container) return;
+  const days = computeWeeklyBarData();
+  const max = Math.max(1, ...days.map(d=>d.count));
+  container.innerHTML = `
+    <div class="bottom-panel-title">Tu progreso esta semana</div>
+    <div class="weekly-bars">
+      ${days.map(d=>{
+        const h = Math.round((d.count / max) * 100);
+        return `
+        <div class="weekly-bar-col">
+          <div class="weekly-bar ${d.isToday ? 'today' : ''}" style="height:${d.count ? Math.max(h,6) : 4}%;">
+            ${d.count ? `<span class="weekly-bar-count">${d.count}</span>` : ''}
+          </div>
+          <span class="weekly-bar-label ${d.isToday ? 'today' : ''}">${d.label}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderRecentActivityV2(container){
+  if(!container) return;
+  const p = loadProgress();
+  const recent = p.sessions.slice(-5).reverse();
+  container.innerHTML = `<div class="bottom-panel-title">Tu actividad reciente</div>`;
+  if(!recent.length){
+    container.innerHTML += `<p class="progress-empty">Aún no tienes sesiones registradas. ¡Empieza tu primera práctica hoy!</p>`;
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const rows = recent.map(s=>{
+    const graded = (s.results||[]).filter(r=>r.isCorrect===true || r.isCorrect===false);
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const scoreText = graded.length ? `${correct}/${graded.length} correctas` : `${s.results.length} completados`;
+    const dateLabel = s.date === today ? 'Hoy' : (s.date === yesterday ? 'Ayer' : s.date);
+    return `
+      <div class="recent-row" style="border-left-color:${SKILL_COLORS[s.skill]};">
+        <div>
+          <div class="recent-skill">${SKILL_LABELS[s.skill]} · ${(s.topics && s.topics[0]) || ''}</div>
+          <div class="recent-score">${scoreText}</div>
+        </div>
+        <div class="recent-date">${dateLabel}</div>
+      </div>`;
+  }).join('');
+  container.innerHTML += `<div class="recent-list">${rows}</div>`;
+}
+
+const DASH_QUOTES = [
+  { text:'El progreso real viene de la práctica constante.', who:'Inglés con Leo' },
+  { text:'Un poco cada día te acerca a tus metas.', who:'Inglés con Leo' },
+  { text:'No necesitas ser perfecto, solo constante.', who:'Inglés con Leo' },
+  { text:'Cada sesión corta cuenta, aunque no lo sientas.', who:'Inglés con Leo' }
+];
+function renderMotivateCard(container){
+  if(!container) return;
+  const q = DASH_QUOTES[Math.floor(Math.random() * DASH_QUOTES.length)];
+  container.innerHTML = `
+    <h3>Sigue aprendiendo</h3>
+    <p>"${q.text}"</p>
+    <span class="who">— ${q.who}</span>`;
 }
 
 /* ============================================================

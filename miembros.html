@@ -102,8 +102,20 @@
     <section class="page-hero" style="padding-bottom:8px;">
       <div class="wrap">
         <div class="dash-greeting" id="greetLine">Hola</div>
-        <p class="dash-sub">Este es tu panel. Continúa donde te quedaste o elige qué practicar hoy.</p>
-        <div id="continueCard"></div>
+        <p class="dash-sub">Continúa tu práctica y revisa tu avance.</p>
+
+        <div class="stat-cards" id="statCards"></div>
+
+        <div class="dash-grid">
+          <div class="rings-panel">
+            <div class="rings-panel-head">
+              <h3>Tu progreso</h3>
+              <p>Así vas en cada habilidad. ¡Sigue practicando!</p>
+            </div>
+            <div class="ring-grid" id="ringGrid"></div>
+          </div>
+          <div id="continueCard"></div>
+        </div>
       </div>
     </section>
 
@@ -151,10 +163,20 @@
           </a>
           <a href="progreso.html" class="skill-card-link">
             <svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <h3>Tu progreso</h3>
-            <p>Estadísticas reales de lo que has practicado.</p>
+            <h3>Progreso detallado</h3>
+            <p>Precisión, minutos practicados y más detalle.</p>
             <span class="go">Ver progreso →</span>
           </a>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:8px;">
+      <div class="wrap">
+        <div class="bottom-grid">
+          <div id="recentActivity"></div>
+          <div class="weekly-chart-card" id="weeklyChart"></div>
+          <div class="motivate-card" id="motivateCard"></div>
         </div>
       </div>
     </section>
@@ -262,7 +284,12 @@
 
   function startDashboard(){
     applyDashboardGreeting(document.getElementById('greetLine'));
+    renderStatCards(document.getElementById('statCards'));
+    renderSkillRings(document.getElementById('ringGrid'));
     renderContinueCard(document.getElementById('continueCard'));
+    renderWeeklyChart(document.getElementById('weeklyChart'));
+    renderRecentActivityV2(document.getElementById('recentActivity'));
+    renderMotivateCard(document.getElementById('motivateCard'));
   }
 
   function unlock(){
