@@ -602,6 +602,6 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-trust{padding:56px 0;}
 .home-trust-grid{display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;max-width:640px;margin:0 auto;}
 @media(min-width:640px){.home-trust-grid{flex-direction:row;text-align:left;}}
-.home-trust-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;background:var(--blue-tint);flex-shrink:0;}
+.home-trust-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center top;background:var(--blue-tint);flex-shrink:0;}
 .home-trust-copy h2{font-size:1.4rem;margin-bottom:8px;}
 .home-trust-copy p{color:var(--ink-soft);font-size:0.98rem;line-height:1.6;}
