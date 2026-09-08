@@ -95,11 +95,11 @@
   <!-- CÓMO FUNCIONA -->
   <section class="how-v2">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Cómo funciona</h2>
         <p>Un método simple, efectivo y pensado para que avances de verdad.</p>
       </div>
-      <div class="how-v2-grid">
+      <div class="how-v2-grid reveal-stagger">
         <a href="articulos.html" class="how-v2-card">
           <span class="how-v2-num">01</span>
           <h3>Aprende</h3>
@@ -144,11 +144,11 @@
   <!-- QUÉ PRACTICAR HOY -->
   <section class="section-alt home-skills">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>¿Qué te gustaría practicar hoy?</h2>
         <p>Elige un área y empieza a practicar con ejercicios cortos y reales.</p>
       </div>
-      <div class="home-skills-grid">
+      <div class="home-skills-grid reveal-stagger">
         <a href="practica.html?skill=grammar" class="home-skill-card tint-gramatica">
           <h3>Gramática</h3>
           <p>Reglas claras con ejemplos fáciles de entender.</p>
@@ -181,11 +181,11 @@
   <!-- PRACTICA A TU NIVEL -->
   <section class="home-levels">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <h2>Practica a tu nivel</h2>
         <p>Cada ejercicio se adapta a dónde estás ahora mismo.</p>
       </div>
-      <div class="home-levels-grid">
+      <div class="home-levels-grid reveal-stagger">
         <a href="practica.html" class="home-level-card lvl-facil">
           <span class="home-level-tag">Fácil</span>
           <h3>A1–A2</h3>
@@ -208,7 +208,7 @@
   <!-- SOBRE LEO -->
   <section class="home-trust">
     <div class="wrap">
-      <div class="home-trust-grid">
+      <div class="home-trust-grid reveal">
         <img src="leo-front.png" alt="Leo, de Inglés con Leo" class="home-trust-photo" loading="lazy">
         <div class="home-trust-copy">
           <h2>Hola, soy Leo 👋</h2>
@@ -220,7 +220,7 @@
 
   <!-- MÁS EN REDES -->
   <section class="home-social">
-    <div class="wrap home-social-row">
+    <div class="wrap home-social-row reveal">
       <div class="home-social-copy">
         <h3>Más inglés con Leo</h3>
         <p>Consejos, mini lecciones y contenido extra en mis redes sociales.</p>
@@ -248,7 +248,7 @@
 
   <!-- CONTACTO -->
   <section class="home-contact" id="contacto">
-    <div class="wrap home-contact-grid">
+    <div class="wrap home-contact-grid reveal">
       <div class="home-contact-copy">
         <span class="badge badge-members"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> CONTÁCTANOS</span>
         <h2>¿Tienes dudas? Escríbenos</h2>
@@ -352,7 +352,7 @@
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script src="chatbot.js"></script>
-<script>initOnboarding(); personalizeNav(); renderDailyMiniLesson();</script>
+<script>initOnboarding(); personalizeNav(); renderDailyMiniLesson(); initScrollReveal();</script>
 <script>
   (function(){
     var form = document.getElementById('contactForm');

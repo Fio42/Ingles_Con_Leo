@@ -234,6 +234,29 @@ function personalizeNav(){
     cta.href = 'miembros.html';
   }
 }
+
+/* Animación sutil al hacer scroll: las secciones marcadas con
+   .reveal (o .reveal-stagger, para que sus hijos aparezcan uno a uno)
+   aparecen con un fade + leve desplazamiento cuando entran en pantalla.
+   Respeta prefers-reduced-motion y no bloquea nada si el navegador
+   no soporta IntersectionObserver. */
+function initScrollReveal(){
+  const els = document.querySelectorAll('.reveal, .reveal-stagger');
+  if(!els.length) return;
+  if(!('IntersectionObserver' in window)){
+    els.forEach(el=> el.classList.add('in-view'));
+    return;
+  }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+  els.forEach(el=> io.observe(el));
+}
 function initAccessGate({ gateEl, contentEl, inputEl, btnEl, errorEl }){
   function unlock(){
     gateEl.style.display = 'none';
