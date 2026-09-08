@@ -898,8 +898,8 @@ const VOCAB_BANK = {
    LISTENING — el audio es un archivo MP3 real (todavía por
    producir). Si el archivo no existe, la interfaz lo avisa
    discretamente y sigue funcionando con el resto del ejercicio.
-   BANK[level] = [ variante0 (3 ítems), variante1 (2 ítems),
-   variante2 (2 ítems) ]. Los MP3 nuevos continúan la numeración.
+   BANK[level] = [ variante0 (3 ítems), variante1 (1 ítem),
+   variante2 (1 ítem) ]. Los MP3 nuevos continúan la numeración.
 --------------------------------------------------------- */
 const LISTENING_BANK = {
   facil: [
@@ -921,21 +921,13 @@ const LISTENING_BANK = {
       { id:'l-facil2-1', audioFile:'audio/a1/a1listening-004.mp3',
         transcript:"My keys are in my bag, not on the table.", translation:"Mis llaves están en mi bolso, no en la mesa.",
         question:"Where are the keys?", options:["On the table","In the bag","Under the chair"], correct:1,
-        explain:"“In my bag” indica que están dentro del bolso, no en la mesa." },
-      { id:'l-facil2-2', audioFile:'audio/a1/a1listening-005.mp3',
-        transcript:"We are going to the beach this weekend.", translation:"Vamos a ir a la playa este fin de semana.",
-        question:"What are they going to do?", options:["Go to the beach","Stay home","Go to school"], correct:0,
-        explain:"“Going to the beach” describe un plan futuro." }
+        explain:"“In my bag” indica que están dentro del bolso, no en la mesa." }
     ],
     [
-      { id:'l-facil3-1', audioFile:'audio/a1/a1listening-006.mp3',
+      { id:'l-facil3-1', audioFile:'audio/a1/a1listening-005.mp3',
         transcript:"This bag is bigger than that one.", translation:"Esta bolsa es más grande que esa.",
         question:"Which bag is bigger?", options:["This one","That one","They are the same"], correct:0,
-        explain:"“Bigger than” indica cuál de las dos es más grande." },
-      { id:'l-facil3-2', audioFile:'audio/a1/a1listening-007.mp3',
-        transcript:"I can swim, but I can't ski.", translation:"Puedo nadar, pero no puedo esquiar.",
-        question:"What can't the speaker do?", options:["Swim","Ski","Run"], correct:1,
-        explain:"“Can't ski” dice qué NO puede hacer la persona." }
+        explain:"“Bigger than” indica cuál de las dos es más grande." }
     ]
   ],
   medio: [
@@ -957,21 +949,13 @@ const LISTENING_BANK = {
       { id:'l-medio2-1', audioFile:'audio/b1/b1listening-004.mp3',
         transcript:"She said that she was tired.", translation:"Ella dijo que estaba cansada.",
         question:"What did she say?", options:["That she was tired","That she was hungry","That she was late"], correct:0,
-        explain:"“Said that she was tired” reporta lo que ella dijo." },
-      { id:'l-medio2-2', audioFile:'audio/b1/b1listening-005.mp3',
-        transcript:"I have lived here since 2019.", translation:"He vivido aquí desde 2019.",
-        question:"How long has she lived here?", options:["Since 2019","For 2019 years","Until 2019"], correct:0,
-        explain:"“Since 2019” marca el punto exacto en que empezó." }
+        explain:"“Said that she was tired” reporta lo que ella dijo." }
     ],
     [
-      { id:'l-medio3-1', audioFile:'audio/b1/b1listening-006.mp3',
+      { id:'l-medio3-1', audioFile:'audio/b1/b1listening-005.mp3',
         transcript:"If it rains tomorrow, we will stay home.", translation:"Si llueve mañana, nos quedaremos en casa.",
         question:"What will they do if it rains?", options:["Stay home","Go out","Cancel the trip"], correct:0,
-        explain:"Condicional tipo 1: consecuencia real y probable." },
-      { id:'l-medio3-2', audioFile:'audio/b1/b1listening-007.mp3',
-        transcript:"Although it was expensive, she bought the dress.", translation:"Aunque era caro, ella compró el vestido.",
-        question:"Did she buy the dress?", options:["Yes","No","She's not sure"], correct:0,
-        explain:"“Although” introduce un contraste, pero la acción sí ocurrió." }
+        explain:"Condicional tipo 1: consecuencia real y probable." }
     ]
   ],
   avanzado: [
@@ -993,21 +977,13 @@ const LISTENING_BANK = {
       { id:'l-avz2-1', audioFile:'audio/c1/c1listening-004.mp3',
         transcript:"The results were disappointing; nevertheless, the team kept working.", translation:"Los resultados fueron decepcionantes; sin embargo, el equipo siguió trabajando.",
         question:"What does \"nevertheless\" show here?", options:["A contrast","A reason","A result"], correct:0,
-        explain:"“Nevertheless” conecta dos ideas contrastantes." },
-      { id:'l-avz2-2', audioFile:'audio/c1/c1listening-005.mp3',
-        transcript:"She is responsible for the project, not accountable to it.", translation:"Ella es responsable del proyecto, no responsable ante él.",
-        question:"What preposition follows \"responsible\" here?", options:["for","to","of"], correct:0,
-        explain:"“Responsible for” indica estar a cargo de algo." }
+        explain:"“Nevertheless” conecta dos ideas contrastantes." }
     ],
     [
-      { id:'l-avz3-1', audioFile:'audio/c1/c1listening-006.mp3',
+      { id:'l-avz3-1', audioFile:'audio/c1/c1listening-005.mp3',
         transcript:"The report written by the team was well received.", translation:"El informe escrito por el equipo fue bien recibido.",
         question:"Who wrote the report?", options:["The team","The manager","A client"], correct:0,
-        explain:"“Written by the team” es una cláusula relativa reducida." },
-      { id:'l-avz3-2', audioFile:'audio/c1/c1listening-007.mp3',
-        transcript:"Should you need assistance, please contact us.", translation:"Si necesita ayuda, por favor contáctenos.",
-        question:"What does this sentence mean?", options:["If you need help, contact us","You must contact us now","You already contacted us"], correct:0,
-        explain:"“Should you need” es una forma formal de decir “if you need”." }
+        explain:"“Written by the team” es una cláusula relativa reducida." }
     ]
   ]
 };
@@ -1016,8 +992,8 @@ const LISTENING_BANK = {
    SPEAKING — el audio de referencia también es un MP3 real
    (mismo criterio que listening). No se inventa puntuación
    de pronunciación: solo se compara escuchando ambos audios.
-   BANK[level] = [ variante0 (3 ítems), variante1 (2 ítems),
-   variante2 (2 ítems) ]. Los MP3 nuevos continúan la numeración.
+   BANK[level] = [ variante0 (3 ítems), variante1 (1 ítem),
+   variante2 (1 ítem) ]. Los MP3 nuevos continúan la numeración.
 --------------------------------------------------------- */
 const SPEAKING_BANK = {
   facil: [
@@ -1027,12 +1003,10 @@ const SPEAKING_BANK = {
       { id:'s-facil-3', sentence:"I usually have breakfast at eight.", translation:"Normalmente desayuno a las ocho.", audioFile:'audio/a1/a1speaking-003.mp3' }
     ],
     [
-      { id:'s-facil2-1', sentence:"My keys are in my bag.", translation:"Mis llaves están en mi bolso.", audioFile:'audio/a1/a1speaking-004.mp3' },
-      { id:'s-facil2-2', sentence:"We are going to the beach this weekend.", translation:"Vamos a ir a la playa este fin de semana.", audioFile:'audio/a1/a1speaking-005.mp3' }
+      { id:'s-facil2-1', sentence:"My keys are in my bag.", translation:"Mis llaves están en mi bolso.", audioFile:'audio/a1/a1speaking-004.mp3' }
     ],
     [
-      { id:'s-facil3-1', sentence:"This bag is bigger than that one.", translation:"Esta bolsa es más grande que esa.", audioFile:'audio/a1/a1speaking-006.mp3' },
-      { id:'s-facil3-2', sentence:"I can swim, but I can't ski.", translation:"Puedo nadar, pero no puedo esquiar.", audioFile:'audio/a1/a1speaking-007.mp3' }
+      { id:'s-facil3-1', sentence:"This bag is bigger than that one.", translation:"Esta bolsa es más grande que esa.", audioFile:'audio/a1/a1speaking-005.mp3' }
     ]
   ],
   medio: [
@@ -1042,12 +1016,10 @@ const SPEAKING_BANK = {
       { id:'s-medio-3', sentence:"Nevertheless, we decided to continue.", translation:"Sin embargo, decidimos continuar.", audioFile:'audio/b1/b1speaking-003.mp3' }
     ],
     [
-      { id:'s-medio2-1', sentence:"She said that she was tired.", translation:"Ella dijo que estaba cansada.", audioFile:'audio/b1/b1speaking-004.mp3' },
-      { id:'s-medio2-2', sentence:"I have lived here since 2019.", translation:"He vivido aquí desde 2019.", audioFile:'audio/b1/b1speaking-005.mp3' }
+      { id:'s-medio2-1', sentence:"She said that she was tired.", translation:"Ella dijo que estaba cansada.", audioFile:'audio/b1/b1speaking-004.mp3' }
     ],
     [
-      { id:'s-medio3-1', sentence:"If it rains tomorrow, we will stay home.", translation:"Si llueve mañana, nos quedaremos en casa.", audioFile:'audio/b1/b1speaking-006.mp3' },
-      { id:'s-medio3-2', sentence:"Although it was expensive, she bought the dress.", translation:"Aunque era caro, ella compró el vestido.", audioFile:'audio/b1/b1speaking-007.mp3' }
+      { id:'s-medio3-1', sentence:"If it rains tomorrow, we will stay home.", translation:"Si llueve mañana, nos quedaremos en casa.", audioFile:'audio/b1/b1speaking-005.mp3' }
     ]
   ],
   avanzado: [
@@ -1057,12 +1029,10 @@ const SPEAKING_BANK = {
       { id:'s-avz-3', sentence:"Despite the criticism, the policy remains ubiquitous.", translation:"A pesar de las críticas, la política sigue siendo omnipresente.", audioFile:'audio/c1/c1speaking-003.mp3' }
     ],
     [
-      { id:'s-avz2-1', sentence:"Nevertheless, the team kept working.", translation:"Sin embargo, el equipo siguió trabajando.", audioFile:'audio/c1/c1speaking-004.mp3' },
-      { id:'s-avz2-2', sentence:"She is responsible for the project.", translation:"Ella es responsable del proyecto.", audioFile:'audio/c1/c1speaking-005.mp3' }
+      { id:'s-avz2-1', sentence:"Nevertheless, the team kept working.", translation:"Sin embargo, el equipo siguió trabajando.", audioFile:'audio/c1/c1speaking-004.mp3' }
     ],
     [
-      { id:'s-avz3-1', sentence:"The report written by the team was well received.", translation:"El informe escrito por el equipo fue bien recibido.", audioFile:'audio/c1/c1speaking-006.mp3' },
-      { id:'s-avz3-2', sentence:"Should you need assistance, please contact us.", translation:"Si necesita ayuda, por favor contáctenos.", audioFile:'audio/c1/c1speaking-007.mp3' }
+      { id:'s-avz3-1', sentence:"The report written by the team was well received.", translation:"El informe escrito por el equipo fue bien recibido.", audioFile:'audio/c1/c1speaking-005.mp3' }
     ]
   ]
 };
