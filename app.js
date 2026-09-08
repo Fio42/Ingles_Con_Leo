@@ -209,6 +209,7 @@ function bankSizeFor(skill){
   if(skill === 'listening') return LEVELS.reduce((sum,l)=> sum + LISTENING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'writing') return LEVELS.reduce((sum,l)=> sum + WRITING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'speaking') return LEVELS.reduce((sum,l)=> sum + SPEAKING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
+  if(skill === 'mixto') return LEVELS.length * MIX_NOMINAL_SIZE;
   return 0;
 }
 
@@ -263,9 +264,14 @@ function computeStreak(){
   return streak;
 }
 
-const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listening:'Listening', writing:'Writing', speaking:'Speaking' };
-const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3554F0', writing:'#F5A524', speaking:'#8B5CF6' };
-const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', writing:'writing.html', speaking:'speaking.html' };
+const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listening:'Listening', writing:'Writing', speaking:'Speaking', mixto:'Mixto' };
+const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3554F0', writing:'#F5A524', speaking:'#8B5CF6', mixto:'#0EA5A0' };
+const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', writing:'writing.html', speaking:'speaking.html', mixto:'mixto.html' };
+
+// Mixto no tiene su propio banco: combina ítems reales de los otros 5.
+// Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
+// para que la barra de cobertura en Progreso tenga un total razonable.
+const MIX_NOMINAL_SIZE = 8;
 
 function bankSizeForLevel(skill, level){
   if(skill === 'gramatica') return GRAMMAR_BANK[level].reduce((vs,variant)=> vs + variant.reduce((s,t)=> s+t.items.length, 0), 0);
@@ -273,6 +279,7 @@ function bankSizeForLevel(skill, level){
   if(skill === 'listening') return LISTENING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'writing') return WRITING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'speaking') return SPEAKING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
+  if(skill === 'mixto') return MIX_NOMINAL_SIZE;
   return 0;
 }
 
@@ -926,6 +933,275 @@ function runSpeakingSession({ container, level, onExit }){
   renderItem();
 }
 
+/* ============================================================
+   SESIÓN MIXTA — combina ítems reales de las 5 habilidades en
+   una sola sesión corta, usando el contenido que ya existe
+   (mismas variantes/rotación que las sesiones individuales).
+   No se crea contenido nuevo para esta habilidad.
+   ============================================================ */
+function pickMixItems(level){
+  function sample(arr, n){
+    const copy = arr.slice();
+    for(let i=copy.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; }
+    return copy.slice(0, Math.min(n, copy.length));
+  }
+
+  const gVariantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
+  const gTopics = GRAMMAR_BANK[level][gVariantIdx];
+  const gPool = [];
+  gTopics.forEach(t=> t.items.forEach(it=> gPool.push(it)));
+  const grammarPicks = sample(gPool, 2).map(item=>({ kind:'grammar', item }));
+
+  const vVariantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
+  const vPool = VOCAB_BANK[level][vVariantIdx];
+  const vocabPicks = sample(vPool, 2).map(item=>({ kind:'vocab', item }));
+
+  const lVariantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length);
+  const lPool = LISTENING_BANK[level][lVariantIdx];
+  const listeningPicks = sample(lPool, 1).map(item=>({ kind:'listening', item }));
+
+  const sVariantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
+  const sPool = SPEAKING_BANK[level][sVariantIdx];
+  const speakingPicks = sample(sPool, 1).map(item=>({ kind:'speaking', item }));
+
+  const wVariantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length);
+  const wPool = WRITING_BANK[level][wVariantIdx];
+  const writingPicks = sample(wPool, 2).map(item=>({ kind:'writing', item }));
+
+  const all = [...grammarPicks, ...vocabPicks, ...listeningPicks, ...speakingPicks, ...writingPicks];
+  for(let i=all.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
+  return all;
+}
+
+const MIX_KIND_LABEL = { grammar:'Gramática', vocab:'Vocabulario', listening:'Listening', speaking:'Speaking', writing:'Writing' };
+
+function renderMixItemInto(card, entry, onAnswered){
+  const item = entry.item;
+  if(entry.kind === 'grammar'){
+    renderGrammarItemInto(card, item, onAnswered);
+    return;
+  }
+  if(entry.kind === 'vocab'){
+    card.innerHTML = `
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.quiz.prompt}</div>
+      <div class="option-list" id="optList"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    const list = card.querySelector('#optList');
+    item.quiz.options.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
+      b.addEventListener('click', ()=>{
+        const isCorrect = i === item.quiz.correct;
+        [...list.children].forEach((el,j)=>{
+          el.disabled = true;
+          if(j === item.quiz.correct) el.classList.add('correct');
+          if(j === i && !isCorrect) el.classList.add('incorrect');
+        });
+        const reveal = document.createElement('div');
+        reveal.className = 'vocab-card';
+        reveal.style.marginTop = '16px';
+        reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
+        list.after(reveal);
+        renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        onAnswered(isCorrect);
+      });
+      list.appendChild(b);
+    });
+    return;
+  }
+  if(entry.kind === 'listening'){
+    card.innerHTML = `
+      <div class="practice-prompt">Escucha</div>
+      <div class="listen-row">
+        <button class="btn btn-primary btn-sm" id="playBtn">${PLAY_ICON} Reproducir</button>
+      </div>
+      <div class="practice-prompt" style="font-size:1.05rem;">${item.question}</div>
+      <div class="option-list" id="optList"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    card.querySelector('#playBtn').addEventListener('click', function(){ playAudioFile(item.audioFile, card); });
+    const list = card.querySelector('#optList');
+    item.options.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
+      b.addEventListener('click', ()=>{
+        const isCorrect = i === item.correct;
+        [...list.children].forEach((el,j)=>{
+          el.disabled = true;
+          if(j === item.correct) el.classList.add('correct');
+          if(j === i && !isCorrect) el.classList.add('incorrect');
+        });
+        const fb = card.querySelector('#fb');
+        fb.classList.add('show');
+        fb.classList.toggle('ok', isCorrect);
+        fb.classList.toggle('bad', !isCorrect);
+        fb.innerHTML = `
+          <div class="fb-head">${isCorrect ? OK_ICON : BAD_ICON}<span>${isCorrect ? 'Correcto' : 'Casi.'}</span></div>
+          <p class="fb-explain">${item.explain}</p>
+          <div class="examples-block">
+            <div class="examples-label">Transcripción</div>
+            <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
+          </div>`;
+        onAnswered(isCorrect);
+      });
+      list.appendChild(b);
+    });
+    return;
+  }
+  if(entry.kind === 'writing'){
+    card.innerHTML = `
+      <div class="practice-prompt">${item.prompt}</div>
+      <textarea id="writingInput" rows="3" class="writing-area" placeholder="Escribe tu frase en inglés aquí..."></textarea>
+      <div class="next-row" style="justify-content:flex-start;">
+        <button class="btn btn-primary btn-sm" id="reviewBtn">Revisar mi frase</button>
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    const input = card.querySelector('#writingInput');
+    const fb = card.querySelector('#fb');
+    card.querySelector('#reviewBtn').addEventListener('click', ()=>{
+      const clean = (input.value || '').trim().toLowerCase();
+      let isOk = false;
+      if(clean.length >= 3){
+        try{ isOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ isOk = false; }
+      }
+      fb.classList.add('show');
+      fb.classList.toggle('ok', isOk);
+      fb.classList.toggle('bad', !isOk);
+      fb.innerHTML = `
+        <div class="fb-head">${isOk ? OK_ICON : BAD_ICON}<span>${isOk ? 'Bien encaminado ✓' : 'Revisa esto'}</span></div>
+        <p class="fb-explain">${isOk ? 'Tu frase incluye la estructura que buscábamos.' : item.hint}</p>
+        <div class="examples-block">
+          <div class="examples-label">Ejemplo</div>
+          <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
+        </div>
+        <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+      onAnswered(isOk);
+    });
+    return;
+  }
+  if(entry.kind === 'speaking'){
+    const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+    card.innerHTML = `
+      <div class="practice-prompt">Escucha</div>
+      <div class="speak-sentence">${item.sentence}</div>
+      <p class="speak-tip">${item.translation}</p>
+      <div class="speak-actions">
+        <button class="btn btn-ghost btn-sm" id="hearBtn">${PLAY_ICON} Escuchar pronunciación</button>
+      </div>
+      <div class="practice-prompt" style="margin-top:22px;">Ahora tú</div>
+      <div class="speak-actions">
+        ${canRecord
+          ? `<button class="btn btn-primary btn-sm" id="recordBtn">${MIC_ICON} Grabar mi voz</button><span class="recording-indicator" id="recIndicator" hidden>● Grabando...</span>`
+          : `<p class="audio-missing-note">Tu navegador no permite grabar audio aquí. Puedes practicar en voz alta igual y avanzar.</p>`}
+      </div>
+      <div id="compareRow" class="compare-row"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    card.querySelector('#hearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+    if(canRecord){
+      let stream = null, recorder = null, chunks = [];
+      const recordBtn = card.querySelector('#recordBtn');
+      const compareRow = card.querySelector('#compareRow');
+      const recIndicator = card.querySelector('#recIndicator');
+      recordBtn.addEventListener('click', async ()=>{
+        if(recorder && recorder.state === 'recording'){ recorder.stop(); return; }
+        compareRow.innerHTML = '';
+        try{
+          stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+        }catch(err){
+          compareRow.innerHTML = `<p class="audio-missing-note">No pudimos acceder al micrófono. Revisa los permisos del navegador.</p>`;
+          return;
+        }
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = ()=>{
+          const blob = new Blob(chunks, { type:'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          compareRow.innerHTML = `
+            <div class="compare-col">
+              <div class="compare-label">Pronunciación original</div>
+              <button class="btn btn-ghost btn-sm" id="origBtn">${PLAY_ICON} Escuchar</button>
+            </div>
+            <div class="compare-col">
+              <div class="compare-label">Tu grabación</div>
+              <audio controls src="${url}"></audio>
+            </div>`;
+          compareRow.querySelector('#origBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+          stream.getTracks().forEach(t=>t.stop());
+          recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
+          if(recIndicator) recIndicator.hidden = true;
+        };
+        recorder.start();
+        recordBtn.textContent = 'Detener grabación';
+        if(recIndicator) recIndicator.hidden = false;
+      });
+    }
+    // Speaking no se califica: se avisa que quedó lista para continuar.
+    onAnswered(null);
+    return;
+  }
+}
+
+function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
+  const pool = pickMixItems(level);
+  const total = pool.length;
+  const startedAt = Date.now();
+  const results = [];
+  let idx = 0;
+
+  function renderItem(){
+    const entry = pool[idx];
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Mixto · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderMixItemInto(card, entry, (isCorrect)=>{
+      results.push({ itemId: entry.item.id, isCorrect });
+      showNextButton(card, idx+1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      });
+    });
+  }
+
+  function finish(){
+    const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const score = graded.length ? `${correct} / ${graded.length} correctas · ${total} ejercicios en total` : `${total} ejercicios completados`;
+    if(isFree){
+      container.innerHTML = renderFreeSessionSummary({
+        title:'¡Listo!', score, topics: ['Mezcla de habilidades']
+      });
+      wireFreeSummaryButtons(container, {
+        onAgain: ()=>runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }),
+        onOtherSkill
+      });
+    } else {
+      recordSession({ skill:'mixto', level, topics:['Mezcla de habilidades'], results, startedAt });
+      container.innerHTML = renderSessionSummary({
+        title:'¡Listo!', score, topics: ['Mezcla de habilidades']
+      });
+      wireSummaryButtons(container, ()=>runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }));
+    }
+  }
+
+  renderItem();
+}
+function runMixSession({ container, level, onExit }){
+  runMixSessionCore({ container, level, onExit, isFree:false });
+}
+function runFreeMixSession({ container, level, onOtherSkill }){
+  runMixSessionCore({ container, level, onOtherSkill, isFree:true });
+}
+
 /* ---------- Resumen de sesión (compartido) ---------- */
 function renderSessionSummary({ title, score, topics }){
   return `
@@ -1530,21 +1806,23 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
 /* ---------- Orquestador de practica.html: nivel + pestañas + una
    sola sesión visible a la vez. Lee ?skill= de la URL. ---------- */
 function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
-  const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing'];
-  const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing' };
+  const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing','mixto'];
+  const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing', mix:'mixto' };
   const SKILL_DESC = {
     gramatica: '8 preguntas cortas con explicación y ejemplos.',
     vocabulario: '8 palabras útiles en contexto, no solo la traducción.',
     listening: '3 audios reales: escucha y responde.',
     speaking: '3 frases: escucha, grábate y compara.',
-    writing: '4 frases guiadas con revisión honesta.'
+    writing: '4 frases guiadas con revisión honesta.',
+    mixto: 'Un poco de todo: gramática, vocabulario, listening, speaking y writing en una sola sesión.'
   };
   const RUNNERS = {
     gramatica: runFreeGrammarSession,
     vocabulario: runFreeVocabSession,
     listening: runFreeListeningSession,
     speaking: runFreeSpeakingSession,
-    writing: runFreeWritingSession
+    writing: runFreeWritingSession,
+    mixto: runFreeMixSession
   };
 
   let currentLevel = 'facil';
