@@ -199,6 +199,33 @@ const LeoBackend = (function(){
     }catch(e){}
   }
 
+  /* Pide un link de pago de Mercado Pago personalizado para el
+     usuario logueado (ligado a su id, no a un correo). Devuelve
+     { ok:true, url } o { ok:false, error }. Depende de que la
+     función de Supabase que hace de "create-checkout" esté
+     desplegada. Nota: Supabase le puso el nombre "super-service"
+     a esa función en vez de "create-checkout" al crearla, por eso
+     la URL de abajo usa ese nombre — es la misma función. */
+  async function startCheckout(){
+    if(!isConfigured()) return { ok:false, error:'not_configured' };
+    const session = await getSession();
+    if(!session) return { ok:false, error:'no_session' };
+    try{
+      const res = await fetch(SUPABASE_URL + '/functions/v1/super-service', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + session.access_token,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
+      return { ok:true, url: data.init_point };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   /* Verifica que haya una sesión iniciada Y que is_member sea
      true. Si no, redirige a miembros.html. Úsala desde las
      páginas de miembros vía guardMemberPage() (más abajo). */
@@ -219,7 +246,7 @@ const LeoBackend = (function(){
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync
+    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout
   };
 })();
 

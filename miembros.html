@@ -41,8 +41,8 @@
     </div>
     <div class="pricing-card">
       <div class="pricing-price">
-        <span class="pricing-amount">$1</span>
-        <span class="pricing-period">USD / mes</span>
+        <span class="pricing-amount">$2</span>
+        <span class="pricing-period">USD / mes (≈$40 MXN)</span>
       </div>
       <ul class="pricing-features">
         <li>Todos los niveles</li>
@@ -51,7 +51,7 @@
         <li>Guarda tu progreso</li>
         <li>Cancela cuando quieras</li>
       </ul>
-      <a href="index.html#contacto" class="btn btn-primary btn-block">Hazte miembro</a>
+      <button type="button" class="btn btn-primary btn-block" id="pricingCtaBtn">Hazte miembro</button>
     </div>
 
     <p class="gate-divider">¿Ya eres miembro? Entra con tu correo ↓</p>
@@ -81,8 +81,10 @@
         <button class="btn btn-primary btn-block" id="setNewPasswordBtn" style="margin-top:10px;">Guardar contraseña</button>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
-        <p style="margin:0 0 10px;">Ya iniciaste sesión, pero tu membresía todavía no está activa.<br>Hazte miembro arriba y en cuanto veamos el pago te activamos el acceso.</p>
-        <button class="btn btn-ghost btn-block" id="logoutBtn">Cerrar sesión</button>
+        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, ≈$40 MXN):</p>
+        <button class="btn btn-primary btn-block" id="payBtn">Pagar con Mercado Pago</button>
+        <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+        <button class="btn btn-ghost btn-block" id="logoutBtn" style="margin-top:10px;">Cerrar sesión</button>
       </div>
       <p class="gate-hint" id="freeSampleHint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
     </div>
@@ -222,8 +224,12 @@
   const newPasswordInput = document.getElementById('newPasswordInput');
   const setNewPasswordBtn = document.getElementById('setNewPasswordBtn');
   const logoutBtn = document.getElementById('logoutBtn');
+  const pricingCtaBtn = document.getElementById('pricingCtaBtn');
+  const payBtn = document.getElementById('payBtn');
+  const payError = document.getElementById('payError');
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
+  let hasSession = false;
 
   function showLoginStep(step){
     loginStep1.style.display = step === 1 ? 'block' : 'none';
@@ -256,6 +262,7 @@
   }
 
   async function afterAuthSuccess(){
+    hasSession = true;
     const profile = await LeoBackend.getMemberProfile();
     if(profile && profile.is_member){
       await LeoBackend.syncProgressFromCloud();
@@ -263,6 +270,21 @@
     } else {
       showLoginStep(3);
     }
+  }
+
+  async function goToCheckout(btn){
+    payError.classList.remove('show');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Generando link de pago...';
+    const res = await LeoBackend.startCheckout();
+    if(res.ok){
+      window.location.href = res.url;
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = originalText;
+    payError.classList.add('show');
   }
 
   function translateAuthError(msg){
@@ -387,17 +409,35 @@
     });
   }
 
+  if(pricingCtaBtn){
+    pricingCtaBtn.addEventListener('click', async ()=>{
+      if(hasSession){
+        await goToCheckout(pricingCtaBtn);
+      } else {
+        document.getElementById('loginStep1').scrollIntoView({ behavior:'smooth', block:'center' });
+        emailInput.focus();
+      }
+    });
+  }
+
+  if(payBtn){
+    payBtn.addEventListener('click', ()=>{ goToCheckout(payBtn); });
+  }
+
   updateAuthModeUI();
 
   (async function initGate(){
     if(!LeoBackend.isConfigured()) return; // backend aún no configurado: se queda el login normal
     LeoBackend.onPasswordRecovery(()=>{ showLoginStep(4); });
     const profile = await LeoBackend.getMemberProfile();
-    if(profile && profile.is_member){
-      await LeoBackend.syncProgressFromCloud();
-      unlock();
-    } else if(profile){
-      showLoginStep(3);
+    if(profile){
+      hasSession = true;
+      if(profile.is_member){
+        await LeoBackend.syncProgressFromCloud();
+        unlock();
+      } else {
+        showLoginStep(3);
+      }
     }
   })();
 

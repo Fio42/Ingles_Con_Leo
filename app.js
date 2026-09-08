@@ -1399,7 +1399,7 @@ function renderFreeSessionSummary({ title, score, topics }){
           <span>🔒 Tu progreso</span>
           <span>🔒 Todos los niveles</span>
         </div>
-        <a href="miembros.html" class="btn btn-primary btn-block">Desbloquear por $1/mes</a>
+        <a href="miembros.html" class="btn btn-primary btn-block">Desbloquear por $2/mes</a>
       </div>
     </div>`;
 }
