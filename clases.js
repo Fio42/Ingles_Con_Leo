@@ -112,15 +112,9 @@ function renderStepListening(body, state, next){
   let answered = false;
   body.innerHTML = `
     <div class="clase-eyebrow">Escucha</div>
+    <p class="clase-step-intro">Escucha el diálogo con atención — todavía no puedes leerlo.</p>
     <div class="clase-audio-row">
-      <button class="btn btn-ghost btn-sm" id="claseHear">${PLAY_ICON} Escuchar diálogo</button>
-    </div>
-    <div class="clase-dialogue">
-      ${listening.dialogue.map(d=>`
-        <div class="clase-dialogue-line">
-          <span class="clase-dialogue-speaker">${d.speaker}:</span>
-          <span class="clase-dialogue-text">${d.en}</span>
-        </div>`).join('')}
+      <button class="btn btn-primary btn-sm" id="claseHear">${PLAY_ICON} Escuchar diálogo</button>
     </div>
     <div class="clase-question-card">
       <p class="clase-question-text">${listening.question.text}</p>
@@ -145,9 +139,17 @@ function renderStepListening(body, state, next){
         const rightBtn = body.querySelector(`.clase-option-btn[data-idx="${listening.question.correctIndex}"]`);
         if(rightBtn) rightBtn.classList.add('correct');
       }
-      body.querySelector('#claseFeedback').innerHTML = correct
+      const transcriptHtml = `
+        <div class="clase-dialogue" style="margin-top:14px;">
+          ${listening.dialogue.map(d=>`
+            <div class="clase-dialogue-line">
+              <span class="clase-dialogue-speaker">${d.speaker}:</span>
+              <span class="clase-dialogue-text">${d.en}</span>
+            </div>`).join('')}
+        </div>`;
+      body.querySelector('#claseFeedback').innerHTML = (correct
         ? `<p class="clase-fb-ok">${OK_ICON} ¡Correcto!</p>`
-        : `<p class="clase-fb-bad">${BAD_ICON} Casi — escucha de nuevo si quieres.</p>`;
+        : `<p class="clase-fb-bad">${BAD_ICON} Casi — aquí tienes la transcripción.</p>`) + transcriptHtml;
       showNextButton(body, 'Continuar →', next);
     });
   });
