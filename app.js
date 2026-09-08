@@ -203,12 +203,12 @@ function sessionsInLastDays(p, days){
 
 function bankSizeFor(skill){
   if(skill === 'gramatica'){
-    return LEVELS.reduce((sum,l)=> sum + GRAMMAR_BANK[l].reduce((s,t)=> s + t.items.length, 0), 0);
+    return LEVELS.reduce((sum,l)=> sum + GRAMMAR_BANK[l].reduce((vs,variant)=> vs + variant.reduce((s,t)=> s + t.items.length, 0), 0), 0);
   }
-  if(skill === 'vocabulario') return LEVELS.reduce((sum,l)=> sum + VOCAB_BANK[l].length, 0);
-  if(skill === 'listening') return LEVELS.reduce((sum,l)=> sum + LISTENING_BANK[l].length, 0);
-  if(skill === 'writing') return LEVELS.reduce((sum,l)=> sum + WRITING_BANK[l].length, 0);
-  if(skill === 'speaking') return LEVELS.reduce((sum,l)=> sum + SPEAKING_BANK[l].length, 0);
+  if(skill === 'vocabulario') return LEVELS.reduce((sum,l)=> sum + VOCAB_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
+  if(skill === 'listening') return LEVELS.reduce((sum,l)=> sum + LISTENING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
+  if(skill === 'writing') return LEVELS.reduce((sum,l)=> sum + WRITING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
+  if(skill === 'speaking') return LEVELS.reduce((sum,l)=> sum + SPEAKING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   return 0;
 }
 
@@ -268,12 +268,36 @@ const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3
 const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', writing:'writing.html', speaking:'speaking.html' };
 
 function bankSizeForLevel(skill, level){
-  if(skill === 'gramatica') return GRAMMAR_BANK[level].reduce((s,t)=> s+t.items.length, 0);
-  if(skill === 'vocabulario') return VOCAB_BANK[level].length;
-  if(skill === 'listening') return LISTENING_BANK[level].length;
-  if(skill === 'writing') return WRITING_BANK[level].length;
-  if(skill === 'speaking') return SPEAKING_BANK[level].length;
+  if(skill === 'gramatica') return GRAMMAR_BANK[level].reduce((vs,variant)=> vs + variant.reduce((s,t)=> s+t.items.length, 0), 0);
+  if(skill === 'vocabulario') return VOCAB_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
+  if(skill === 'listening') return LISTENING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
+  if(skill === 'writing') return WRITING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
+  if(skill === 'speaking') return SPEAKING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   return 0;
+}
+
+/* ---------- Selección de variante de sesión (evita repetir contenido) ---------- */
+const LAST_VARIANT_KEY = 'leo_last_variant';
+function getLastVariantMap(){
+  try{ return JSON.parse(localStorage.getItem(LAST_VARIANT_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveLastVariantMap(map){
+  try{ localStorage.setItem(LAST_VARIANT_KEY, JSON.stringify(map)); }
+  catch(e){ /* localStorage no disponible: simplemente no recordamos la última variante */ }
+}
+function pickVariantIndex(skill, level, variantCount){
+  if(!variantCount || variantCount <= 1) return 0;
+  const map = getLastVariantMap();
+  const key = skill + '_' + level;
+  const last = map[key];
+  const choices = [];
+  for(let i=0; i<variantCount; i++){ if(i !== last) choices.push(i); }
+  const pool = choices.length ? choices : [0];
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  map[key] = pick;
+  saveLastVariantMap(map);
+  return pick;
 }
 
 /* ---------- UI: tarjetas de nivel reutilizables ---------- */
@@ -366,7 +390,8 @@ function playAudioFile(path, container){
    Una sesión = todos los ítems del nivel (mezcla de sus 2 temas).
    ============================================================ */
 function runGrammarSession({ container, level, onExit }){
-  const topics = GRAMMAR_BANK[level];
+  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
+  const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
   const maxLen = Math.max(...topics.map(t=>t.items.length));
   for(let i=0;i<maxLen;i++){
@@ -532,7 +557,8 @@ function renderGrammarItemInto(container, item, onAnswered){
    SESIÓN DE VOCABULARIO
    ============================================================ */
 function runVocabSession({ container, level, onExit }){
-  const pool = VOCAB_BANK[level];
+  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
+  const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
   const startedAt = Date.now();
   const results = [];
@@ -598,7 +624,8 @@ function runVocabSession({ container, level, onExit }){
    no existe todavía, se avisa sin romper el ejercicio.
    ============================================================ */
 function runListeningSession({ container, level, onExit }){
-  const pool = LISTENING_BANK[level];
+  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length);
+  const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
   const startedAt = Date.now();
   const results = [];
@@ -675,7 +702,8 @@ function runListeningSession({ container, level, onExit }){
    Ofrecemos ejemplo + checklist de autorrevisión, honesto.
    ============================================================ */
 function runWritingSession({ container, level, onExit }){
-  const pool = WRITING_BANK[level];
+  const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length);
+  const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
   const startedAt = Date.now();
   const results = [];
@@ -790,7 +818,8 @@ function runWritingSession({ container, level, onExit }){
    Solo comparar: pronunciación original vs. tu grabación.
    ============================================================ */
 function runSpeakingSession({ container, level, onExit }){
-  const pool = SPEAKING_BANK[level];
+  const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
+  const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
   const startedAt = Date.now();
   const results = [];
@@ -1097,7 +1126,8 @@ function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
 
 /* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
 function runFreeGrammarSession({ container, level, onOtherSkill }){
-  const topics = GRAMMAR_BANK[level];
+  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
+  const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
   const maxLen = Math.max(...topics.map(t=>t.items.length));
   for(let i=0;i<maxLen;i++){
@@ -1140,7 +1170,8 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
 
 /* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
 function runFreeVocabSession({ container, level, onOtherSkill }){
-  const pool = VOCAB_BANK[level];
+  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
+  const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -1203,7 +1234,8 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
 
 /* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
 function runFreeListeningSession({ container, level, onOtherSkill }){
-  const pool = LISTENING_BANK[level];
+  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length);
+  const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -1289,7 +1321,8 @@ function checkWritingAnswer(text, item){
   }
 }
 function runFreeWritingSession({ container, level, onOtherSkill }){
-  const pool = WRITING_BANK[level];
+  const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length);
+  const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -1385,7 +1418,8 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 /* ---------- Speaking gratis: las 3 frases/audio existentes del nivel.
    Mismo sistema de grabación que Miembros, sin puntuación inventada. ---------- */
 function runFreeSpeakingSession({ container, level, onOtherSkill }){
-  const pool = SPEAKING_BANK[level];
+  const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
+  const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -1559,11 +1593,13 @@ function pickDailyGrammarExample(){
   if(typeof GRAMMAR_BANK === 'undefined') return null;
   const pool = [];
   Object.keys(GRAMMAR_BANK).forEach(level=>{
-    GRAMMAR_BANK[level].forEach(topic=>{
-      topic.items.forEach(item=>{
-        if(item.examples && item.examples.length){
-          pool.push({ en: item.examples[0].en, es: item.examples[0].es, explain: item.explain });
-        }
+    GRAMMAR_BANK[level].forEach(variant=>{
+      variant.forEach(topic=>{
+        topic.items.forEach(item=>{
+          if(item.examples && item.examples.length){
+            pool.push({ en: item.examples[0].en, es: item.examples[0].es, explain: item.explain });
+          }
+        });
       });
     });
   });
