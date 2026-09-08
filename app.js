@@ -593,6 +593,20 @@ function runGrammarSession({ container, level, onExit }){
   renderItem();
 }
 
+// Baraja las opciones de una pregunta de opción múltiple para que la
+// respuesta correcta no caiga siempre en la misma posición (ej. siempre "A").
+// No modifica el item original, solo devuelve una copia reordenada.
+function shuffleOptions(options, correctIndex){
+  const order = options.map((_,i)=>i);
+  for(let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const shuffled = order.map(i=>options[i]);
+  const newCorrect = order.indexOf(correctIndex);
+  return { options: shuffled, correct: newCorrect };
+}
+
 function renderGrammarItemInto(container, item, onAnswered){
   if(item.type === 'choice'){
     container.innerHTML = `
@@ -601,15 +615,16 @@ function renderGrammarItemInto(container, item, onAnswered){
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
     const list = container.querySelector('#optList');
-    item.options.forEach((opt,i)=>{
+    const { options: shuffledOptions, correct: shuffledCorrect } = shuffleOptions(item.options, item.correct);
+    shuffledOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.correct;
+        const isCorrect = i === shuffledCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.correct) el.classList.add('correct');
+          if(j === shuffledCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         renderFeedback(container, isCorrect, item.explain, item.examples);
@@ -632,7 +647,12 @@ function renderGrammarItemInto(container, item, onAnswered){
       row.appendChild(span);
     });
     const bank = container.querySelector('#bank');
-    item.bank.forEach(word=>{
+    const shuffledBank = [...item.bank];
+    for(let i = shuffledBank.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledBank[i], shuffledBank[j]] = [shuffledBank[j], shuffledBank[i]];
+    }
+    shuffledBank.forEach(word=>{
       const chip = document.createElement('button');
       chip.className = 'word-chip';
       chip.textContent = word;
@@ -740,15 +760,16 @@ function runVocabSession({ container, level, onExit }){
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
     const list = card.querySelector('#optList');
-    item.quiz.options.forEach((opt,i)=>{
+    const { options: shuffledQuizOptions, correct: shuffledQuizCorrect } = shuffleOptions(item.quiz.options, item.quiz.correct);
+    shuffledQuizOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.quiz.correct;
+        const isCorrect = i === shuffledQuizCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.quiz.correct) el.classList.add('correct');
+          if(j === shuffledQuizCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const reveal = document.createElement('div');
@@ -814,15 +835,16 @@ function runListeningSession({ container, level, onExit }){
       playAudioFile(item.audioFile, card);
     });
     const list = card.querySelector('#optList');
-    item.options.forEach((opt,i)=>{
+    const { options: shuffledListenOptions, correct: shuffledListenCorrect } = shuffleOptions(item.options, item.correct);
+    shuffledListenOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.correct;
+        const isCorrect = i === shuffledListenCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.correct) el.classList.add('correct');
+          if(j === shuffledListenCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const fb = card.querySelector('#fb');
@@ -1141,15 +1163,16 @@ function renderMixItemInto(card, entry, onAnswered){
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
     const list = card.querySelector('#optList');
-    item.quiz.options.forEach((opt,i)=>{
+    const { options: shuffledQuizOptions, correct: shuffledQuizCorrect } = shuffleOptions(item.quiz.options, item.quiz.correct);
+    shuffledQuizOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.quiz.correct;
+        const isCorrect = i === shuffledQuizCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.quiz.correct) el.classList.add('correct');
+          if(j === shuffledQuizCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const reveal = document.createElement('div');
@@ -1176,15 +1199,16 @@ function renderMixItemInto(card, entry, onAnswered){
       <div class="next-row" id="nextRow"></div>`;
     card.querySelector('#playBtn').addEventListener('click', function(){ playAudioFile(item.audioFile, card); });
     const list = card.querySelector('#optList');
-    item.options.forEach((opt,i)=>{
+    const { options: shuffledListenOptions, correct: shuffledListenCorrect } = shuffleOptions(item.options, item.correct);
+    shuffledListenOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.correct;
+        const isCorrect = i === shuffledListenCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.correct) el.classList.add('correct');
+          if(j === shuffledListenCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const fb = card.querySelector('#fb');
@@ -1978,15 +2002,16 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
     const list = card.querySelector('#optList');
-    item.quiz.options.forEach((opt,i)=>{
+    const { options: shuffledQuizOptions, correct: shuffledQuizCorrect } = shuffleOptions(item.quiz.options, item.quiz.correct);
+    shuffledQuizOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.quiz.correct;
+        const isCorrect = i === shuffledQuizCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.quiz.correct) el.classList.add('correct');
+          if(j === shuffledQuizCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const reveal = document.createElement('div');
@@ -2049,15 +2074,16 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
       playAudioFile(item.audioFile, card);
     });
     const list = card.querySelector('#optList');
-    item.options.forEach((opt,i)=>{
+    const { options: shuffledListenOptions, correct: shuffledListenCorrect } = shuffleOptions(item.options, item.correct);
+    shuffledListenOptions.forEach((opt,i)=>{
       const b = document.createElement('button');
       b.className = 'option';
       b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
       b.addEventListener('click', ()=>{
-        const isCorrect = i === item.correct;
+        const isCorrect = i === shuffledListenCorrect;
         [...list.children].forEach((el,j)=>{
           el.disabled = true;
-          if(j === item.correct) el.classList.add('correct');
+          if(j === shuffledListenCorrect) el.classList.add('correct');
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         const fb = card.querySelector('#fb');
