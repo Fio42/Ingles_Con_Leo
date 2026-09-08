@@ -1550,3 +1550,36 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   renderTabs();
   renderCurrent();
 }
+
+/* ---------- Mini lección del día (home) ----------
+   Elige un ejemplo de GRAMMAR_BANK de forma determinista según la fecha,
+   así todos ven la misma "lección del día" y cambia sola cada día,
+   sin backend: solo usa la fecha del navegador. */
+function pickDailyGrammarExample(){
+  if(typeof GRAMMAR_BANK === 'undefined') return null;
+  const pool = [];
+  Object.keys(GRAMMAR_BANK).forEach(level=>{
+    GRAMMAR_BANK[level].forEach(topic=>{
+      topic.items.forEach(item=>{
+        if(item.examples && item.examples.length){
+          pool.push({ en: item.examples[0].en, es: item.examples[0].es, explain: item.explain });
+        }
+      });
+    });
+  });
+  if(!pool.length) return null;
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+  return pool[dayOfYear % pool.length];
+}
+function renderDailyMiniLesson(){
+  const lesson = pickDailyGrammarExample();
+  if(!lesson) return;
+  const enEl = document.querySelector('.hero-v2-card-en');
+  const esEl = document.querySelector('.hero-v2-card-es');
+  const explainEl = document.querySelector('.hero-v2-card-explain');
+  if(enEl) enEl.textContent = lesson.en;
+  if(esEl) esEl.textContent = lesson.es;
+  if(explainEl) explainEl.textContent = lesson.explain;
+}
