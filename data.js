@@ -685,7 +685,7 @@ const GRAMMAR_BANK = {
               {en:"You must wear a seatbelt.", es:"Debes usar cinturón de seguridad (es obligatorio)."},
               {en:"Employees must wash their hands.", es:"Los empleados deben lavarse las manos."}
             ]},
-          { id:'g-medio4-mod-2', type:'choice', prompt:"You ___ see a doctor if you feel sick — it's a good idea.",
+          { id:'g-medio4-mod-2', type:'choice', prompt:"You ___ see a doctor if you feel sick. It's a good idea.",
             options:["should","must","can"], correct:0,
             explain:"“Should” es un consejo, no una obligación estricta como “must”.",
             examples:[
@@ -713,7 +713,7 @@ const GRAMMAR_BANK = {
       {
         topic: 'Will vs Going to (futuro)',
         items: [
-          { id:'g-medio5-fut-1', type:'choice', prompt:"I've already decided — I ___ start my own business next year.",
+          { id:'g-medio5-fut-1', type:'choice', prompt:"I've already decided that I ___ start my own business next year.",
             options:["will","am going to","would"], correct:1,
             explain:"Usamos “going to” para planes ya decididos, no “will” (más para decisiones espontáneas).",
             examples:[
@@ -814,7 +814,7 @@ const GRAMMAR_BANK = {
       {
         topic: 'Phrasal verbs comunes (look for / give up / find out)',
         items: [
-          { id:'g-medio6-phr-1', type:'choice', prompt:"I'm ___ my keys — have you seen them?",
+          { id:'g-medio6-phr-1', type:'choice', prompt:"I'm ___ my keys. Have you seen them?",
             options:["looking for","looking at","looking after"], correct:0,
             explain:"“Look for” significa buscar algo.",
             examples:[
@@ -2410,7 +2410,7 @@ const CLASSES_BANK = {
       prompt:{ speaker:'Agente', en:'Would you like a window or aisle seat?' },
       options:[
         { en:"Window seat, please.", correct:true, feedback:'¡Bien! Es una respuesta natural y directa.' },
-        { en:"Yes, I have a passport.", correct:false, feedback:'Esa respuesta no tiene sentido aquí — te preguntaron por el asiento, no por el pasaporte.' },
+        { en:"Yes, I have a passport.", correct:false, feedback:'Esa respuesta no tiene sentido aquí: te preguntaron por el asiento, no por el pasaporte.' },
         { en:"The flight is at 5:40.", correct:false, feedback:'Estás respondiendo con información de vuelo, pero te preguntaron por el tipo de asiento.' }
       ]
     },
@@ -2446,7 +2446,7 @@ const CLASSES_BANK = {
           en:'At the gate, staff announce: "Flight 220 is now boarding at gate B12."',
           es:'En la puerta, el personal anuncia: "El vuelo 220 ahora está abordando en la puerta B12."',
           options:[
-            { en:'That\'s my flight — thank you!', next:'end', correct:true },
+            { en:'That\'s my flight, thank you!', next:'end', correct:true },
             { en:'I think I\'ll wait for the next one.', next:'gate-miss', correct:false }
           ]
         },
@@ -2454,7 +2454,7 @@ const CLASSES_BANK = {
           en:'Staff clarifies: "This is the final boarding call for flight 220."',
           es:'El personal aclara: "Esta es la última llamada de abordaje para el vuelo 220."',
           options:[
-            { en:'Oh, I\'m on that flight — I\'m coming!', next:'end', correct:true }
+            { en:'Oh, I\'m on that flight! I\'m coming!', next:'end', correct:true }
           ]
         },
         end:{ en:'You board the plane just in time. ¡Buen viaje!', es:'Abordas el avión justo a tiempo. ¡Buen viaje!', options:[] }
