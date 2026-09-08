@@ -54,18 +54,28 @@
       <a href="index.html#contacto" class="btn btn-primary btn-block">Hazte miembro</a>
     </div>
 
-    <p class="gate-divider">¿Ya eres miembro? Introduce tu código ↓</p>
+    <p class="gate-divider">¿Ya eres miembro? Entra con tu correo ↓</p>
 
     <div class="gate-card" style="margin-top:14px;">
       <svg class="gate-icon" viewBox="0 0 56 56" fill="none">
-        <rect x="12" y="26" width="32" height="22" rx="6" fill="#EEF1FE"/>
-        <path d="M18 26v-8a10 10 0 0120 0v8" stroke="#3554F0" stroke-width="4" fill="none"/>
-        <circle cx="28" cy="37" r="3.5" fill="#3554F0"/>
+        <rect x="10" y="16" width="36" height="26" rx="6" fill="#EEF1FE" stroke="#3554F0" stroke-width="3"/>
+        <path d="M12 19l16 13 16-13" stroke="#3554F0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <input type="text" class="gate-input" id="codeInput" placeholder="CÓDIGO" maxlength="20" autocomplete="off">
-      <div class="gate-error" id="codeError">Ese código no es correcto. Intenta de nuevo.</div>
-      <button class="btn btn-primary btn-block" id="unlockBtn">Entrar</button>
-      <p class="gate-hint">¿No tienes código? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
+      <div id="loginStep1">
+        <input type="email" class="gate-input" id="emailInput" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
+        <div class="gate-error" id="loginError">Escribe un correo válido.</div>
+        <button class="btn btn-primary btn-block" id="sendLinkBtn">Entrar con mi correo</button>
+        <p class="gate-hint">Sin contraseña: te enviamos un enlace para entrar directo.</p>
+      </div>
+      <div id="loginStep2" style="display:none;text-align:center;">
+        <p style="margin:0 0 6px;font-weight:700;">Revisa tu correo 📩</p>
+        <p class="gate-hint" style="margin:0;">Te enviamos un enlace a tu email. Ábrelo desde este mismo dispositivo para entrar.</p>
+      </div>
+      <div id="loginPending" style="display:none;text-align:center;">
+        <p style="margin:0 0 10px;">Ya iniciaste sesión, pero tu membresía todavía no está activa.<br>Hazte miembro arriba y en cuanto veamos el pago te activamos el acceso.</p>
+        <button class="btn btn-ghost btn-block" id="logoutBtn">Cerrar sesión</button>
+      </div>
+      <p class="gate-hint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
     </div>
   </div>
 
@@ -179,37 +189,79 @@
   </button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script src="backend.js"></script>
 <script src="chatbot.js"></script>
 <script>
   const gate = document.getElementById('gate');
   const memberContent = document.getElementById('memberContent');
-  const alreadyUnlocked = initAccessGate({
-    gateEl: gate,
-    contentEl: memberContent,
-    inputEl: document.getElementById('codeInput'),
-    btnEl: document.getElementById('unlockBtn'),
-    errorEl: document.getElementById('codeError')
-  });
+  const loginStep1 = document.getElementById('loginStep1');
+  const loginStep2 = document.getElementById('loginStep2');
+  const loginPending = document.getElementById('loginPending');
+  const emailInput = document.getElementById('emailInput');
+  const loginError = document.getElementById('loginError');
+  const sendLinkBtn = document.getElementById('sendLinkBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function showLoginStep(step){
+    loginStep1.style.display = step === 1 ? 'block' : 'none';
+    loginStep2.style.display = step === 2 ? 'block' : 'none';
+    loginPending.style.display = step === 3 ? 'block' : 'none';
+  }
 
   function startDashboard(){
     applyDashboardGreeting(document.getElementById('greetLine'));
     renderContinueCard(document.getElementById('continueCard'));
   }
 
-  if(alreadyUnlocked){
+  function unlock(){
+    gate.style.display = 'none';
+    memberContent.style.display = 'block';
     startDashboard();
-  } else {
-    document.getElementById('unlockBtn').addEventListener('click', ()=>{
-      if(memberContent.style.display === 'block') startDashboard();
-    });
-    document.getElementById('codeInput').addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        setTimeout(()=>{ if(memberContent.style.display === 'block') startDashboard(); }, 0);
-      }
+  }
+
+  sendLinkBtn.addEventListener('click', async ()=>{
+    const email = emailInput.value.trim();
+    if(!email || email.indexOf('@') === -1 || email.indexOf('.') === -1){
+      loginError.textContent = 'Escribe un correo válido.';
+      loginError.classList.add('show');
+      return;
+    }
+    loginError.classList.remove('show');
+    sendLinkBtn.disabled = true;
+    sendLinkBtn.textContent = 'Enviando...';
+    const res = await LeoBackend.sendMagicLink(email);
+    sendLinkBtn.disabled = false;
+    sendLinkBtn.textContent = 'Entrar con mi correo';
+    if(res.ok){
+      showLoginStep(2);
+    } else {
+      loginError.textContent = 'No pudimos enviar el enlace. Intenta de nuevo en un momento.';
+      loginError.classList.add('show');
+    }
+  });
+
+  emailInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') sendLinkBtn.click(); });
+
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', async ()=>{
+      await LeoBackend.signOut();
+      window.location.reload();
     });
   }
+
+  (async function initGate(){
+    if(!LeoBackend.isConfigured()) return; // backend aún no configurado: se queda el login normal
+    const profile = await LeoBackend.getMemberProfile();
+    if(profile && profile.is_member){
+      await LeoBackend.syncProgressFromCloud();
+      unlock();
+    } else if(profile){
+      showLoginStep(3);
+    }
+  })();
 
   initOnboarding(()=>{
     if(memberContent.style.display === 'block') startDashboard();

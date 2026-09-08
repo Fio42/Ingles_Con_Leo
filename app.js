@@ -193,6 +193,9 @@ function recordSession({ skill, level, topics, results, startedAt }){
   p.sessions.push(session);
   p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
   saveProgressRaw(p);
+  if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
+    LeoBackend.pushSession(session);
+  }
   return p;
 }
 

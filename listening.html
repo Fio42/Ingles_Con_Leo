@@ -97,18 +97,20 @@
   </button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js"></script>
 <script src="app.js"></script>
+<script src="backend.js"></script>
 <script src="chatbot.js"></script>
 <script>
-  if(requireMember()){
+  guardMemberPage(function(){
     const area = document.getElementById('sessionArea');
     function start(level){
       runListeningSession({ container: area, level: level });
     }
     renderLevelSelector(document.getElementById('levelSelector'), getUserLevel(), start);
     start(getUserLevel());
-  }
+  });
 </script>
 
 </body>
