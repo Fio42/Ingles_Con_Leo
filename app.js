@@ -1587,9 +1587,168 @@ function streakGoalMessage(streak, practicedCount){
 /* ============================================================
    PÁGINA DE PROGRESO (progreso.html)
    ============================================================ */
+/* ---------- Iconos por habilidad (mismos trazos que las tarjetas de miembros.html) ---------- */
+const SKILL_ICONS = {
+  gramatica: '<path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  vocabulario: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" stroke="currentColor" stroke-width="2"/>',
+  listening: '<path d="M4 13v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/>',
+  writing: '<path d="M4 20l1-4L16 5l3 3-11 11-4 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  speaking: '<rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  mixto: '<path d="M4 6h6M4 12h4M4 18h8M14 6h6M17 12h3M12 18h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+};
+const SKILL_TINTS = { gramatica:'coral', vocabulario:'green', listening:'blue', writing:'amber', speaking:'violet', mixto:'blue' };
+
+/* ---------- Estadísticas semanales con comparación vs. la semana anterior ---------- */
+function computeWeeklyStatsWithDelta(){
+  const p = loadProgress();
+  const now = Date.now();
+  const thisWeek = p.sessions.filter(s => (s.startedAt||0) >= now - 7*86400000);
+  const lastWeek = p.sessions.filter(s => (s.startedAt||0) >= now - 14*86400000 && (s.startedAt||0) < now - 7*86400000);
+
+  function summarize(list){
+    const exercises = list.reduce((n,s)=> n + (s.results ? s.results.length : 0), 0);
+    const graded = [];
+    list.forEach(s => (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }));
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const accuracy = graded.length ? Math.round(correct / graded.length * 100) : null;
+    const minutes = Math.round(list.reduce((n,s)=> n + (s.durationMs||0), 0) / 60000);
+    return { exercises, accuracy, minutes };
+  }
+
+  const current = summarize(thisWeek);
+  const previous = summarize(lastWeek);
+  return {
+    current, previous,
+    exDelta: current.exercises - previous.exercises,
+    accDelta: (current.accuracy !== null && previous.accuracy !== null) ? current.accuracy - previous.accuracy : null,
+    hasData: thisWeek.length >= MIN_SESSIONS_FOR_STATS
+  };
+}
+
+function statDeltaHtml(delta, unit){
+  if(delta === null || delta === undefined) return '';
+  if(delta > 0) return `<div class="stat-card-delta up">↗ +${delta}${unit} que la semana pasada</div>`;
+  if(delta < 0) return `<div class="stat-card-delta down">↘ ${delta}${unit} que la semana pasada</div>`;
+  return `<div class="stat-card-delta flat">— Igual que la semana pasada</div>`;
+}
+
+/* ---------- Mensaje de progreso por habilidad (chip de color) ---------- */
+function skillFeedback(pct, attempted){
+  if(!attempted) return { text:'Aún no has empezado.', tone:'neutral' };
+  if(pct >= 100) return { text:'¡Completaste esta habilidad! 🎉', tone:'good' };
+  if(pct >= 60) return { text:'¡Vas muy bien! Sigue así.', tone:'good' };
+  if(pct >= 25) return { text:'Buen comienzo. Sigue practicando.', tone:'mid' };
+  return { text:'Aquí puedes mejorar. ¡Tú puedes!', tone:'low' };
+}
+
+/* ---------- Selector de nivel (modal ligero, reutiliza el estilo del onboarding) ---------- */
+function openLevelSwitcher(onChanged){
+  const overlay = document.createElement('div');
+  overlay.className = 'onb-overlay';
+  overlay.innerHTML = `
+    <div class="onb-card">
+      <h2>Cambiar tu nivel</h2>
+      <p>Esto ajusta la dificultad de los ejercicios que ves en cada habilidad.</p>
+      <div class="onb-field" id="lvlSwitchLevels" style="display:grid;gap:12px;"></div>
+      <button class="btn btn-ghost btn-block" id="lvlSwitchCancel" style="margin-top:6px;">Cancelar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  renderLevelSelector(document.getElementById('lvlSwitchLevels'), getUserLevel(), (lvl)=>{
+    setUserLevel(lvl);
+    overlay.remove();
+    if(typeof onChanged === 'function') onChanged(lvl);
+  });
+  overlay.querySelector('#lvlSwitchCancel').addEventListener('click', ()=> overlay.remove());
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+}
+
+function renderProgressStatCards(container, stats, streak, level, practicedCount){
+  if(!container) return;
+  const accText = stats.current.accuracy === null ? '—' : stats.current.accuracy + '%';
+  container.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--violet-tint);color:var(--violet);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Ejercicios esta semana</div>
+        <div class="stat-card-value">${stats.current.exercises}</div>
+        ${statDeltaHtml(stats.exDelta, '')}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--green-tint);color:var(--green);">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Precisión (7 días)</div>
+        <div class="stat-card-value">${accText}</div>
+        ${statDeltaHtml(stats.accDelta, '%')}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Días de racha</div>
+        <div class="stat-card-value">${streak}</div>
+        <div class="stat-card-delta ${practicedCount>0 ? 'up' : 'flat'}">${practicedCount>0 ? '¡Sigue así!' : 'Practica hoy para empezar'}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:var(--blue-tint);color:var(--blue);">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-value">${LEVEL_META[level].label}</div>
+        <button type="button" class="stat-card-link" id="statChangeLevelBtn">Cambiar nivel →</button>
+      </div>
+    </div>`;
+  const changeLevelBtn = document.getElementById('statChangeLevelBtn');
+  if(changeLevelBtn){
+    changeLevelBtn.addEventListener('click', ()=>{
+      openLevelSwitcher(()=> location.reload());
+    });
+  }
+}
+
+function renderSkillsPanel(container, p){
+  if(!container) return;
+  container.innerHTML = Object.keys(SKILL_LABELS).map(skill=>{
+    const pct = computeSkillCoverage(p, skill);
+    const attempted = attemptedItemIdsFor(p, skill).size;
+    const color = SKILL_COLORS[skill];
+    const tint = `var(--${SKILL_TINTS[skill]}-tint)`;
+    const fb = skillFeedback(pct, attempted);
+    return `
+      <a href="${SKILL_PAGE[skill]}" class="skill-row-link">
+        <span class="skill-row-icon" style="background:${tint};color:${color};">
+          <svg viewBox="0 0 24 24" fill="none">${SKILL_ICONS[skill]}</svg>
+        </span>
+        <span class="skill-row-label">${SKILL_LABELS[skill]}</span>
+        <span class="skill-row-track"><span class="skill-row-fill" style="width:${pct}%;background:${color};"></span></span>
+        <span class="skill-row-pct">${pct}%</span>
+        <span class="skill-row-chip chip-${fb.tone}">${fb.text}</span>
+        <svg class="skill-row-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>`;
+  }).join('');
+}
+
+function renderProgressMascotCard(container, streak, practicedCount){
+  if(!container) return;
+  const msg = streak > 0
+    ? `Llevas ${streak} ${streak===1?'día':'días'} de racha. La práctica constante te acerca a tus metas.`
+    : 'Un poco cada día te acerca a tus metas. ¡Empieza hoy!';
+  container.innerHTML = `
+    <img src="leo-pointing.png" alt="" width="90" height="150" loading="lazy">
+    <h4>Sigue aprendiendo</h4>
+    <p>${msg}</p>
+    <a href="miembros.html" class="btn btn-primary">Practicar ahora →</a>`;
+}
+
 function renderProgressPage(root){
-  const weekly = computeWeeklyStats();
-  const level = getUserLevel();
   const p = loadProgress();
 
   if(!p.sessions || p.sessions.length === 0){
@@ -1603,47 +1762,15 @@ function renderProgressPage(root){
     return;
   }
 
-  const statsHtml = weekly.hasData ? `
-    <div class="progress-stats">
-      <div class="stat"><div class="num">${weekly.exercises}</div><div class="lbl">ejercicios (7 días)</div></div>
-      <div class="stat"><div class="num">${weekly.accuracy === null ? '—' : weekly.accuracy + '%'}</div><div class="lbl">precisión (7 días)</div></div>
-      <div class="stat"><div class="num">${weekly.days}</div><div class="lbl">días practicados</div></div>
-      <div class="stat"><div class="num">${LEVEL_META[level].label}</div><div class="lbl">nivel actual</div></div>
-    </div>
-    ${weekly.minutes > 0 ? `<p class="progress-note">Tiempo practicado esta semana: ~${weekly.minutes} min.</p>` : ''}
-  ` : `<p class="progress-empty">Todavía no hay suficiente actividad. Completa tu primera sesión para ver tus estadísticas aquí.</p>`;
+  const stats = computeWeeklyStatsWithDelta();
+  const streak = computeStreak();
+  const level = getUserLevel();
+  const weekDays = computeWeeklyBarData();
+  const practicedCount = weekDays.filter(d=>d.count>0).length;
 
-  const barsHtml = Object.keys(SKILL_LABELS).map(skill=>{
-    const pct = computeSkillCoverage(p, skill);
-    return `
-      <div class="bar-row">
-        <span class="bar-label">${SKILL_LABELS[skill]}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${SKILL_COLORS[skill]};"></div></div>
-        <span class="bar-pct">${pct}%</span>
-      </div>`;
-  }).join('');
-
-  const recent = p.sessions.slice(-5).reverse();
-  const today = new Date().toISOString().slice(0,10);
-  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
-  const recentHtml = recent.length ? recent.map(s=>{
-    const graded = (s.results||[]).filter(r=>r.isCorrect===true || r.isCorrect===false);
-    const correct = graded.filter(r=>r.isCorrect).length;
-    const scoreText = graded.length ? `${correct}/${graded.length} correctas` : `${s.results.length} completados`;
-    const dateLabel = s.date === today ? 'Hoy' : (s.date === yesterday ? 'Ayer' : s.date);
-    return `
-      <div class="recent-row">
-        <div>
-          <div class="recent-skill">${SKILL_LABELS[s.skill]} · ${(s.topics && s.topics[0]) || ''}</div>
-          <div class="recent-score">${scoreText}</div>
-        </div>
-        <div class="recent-date">${dateLabel}</div>
-      </div>`;
-  }).join('') : `<p class="progress-empty">Aún no tienes sesiones registradas.</p>`;
-
-  /* Recomendación simple: la habilidad con menor cobertura entre
-     las que ya se empezaron; si nada se ha practicado, Gramática. */
-  let recommendation = { skill:'gramatica', label:'Gramática', reason:'Es un buen punto de partida.' };
+  /* Recomendación: la habilidad con menor cobertura entre las ya
+     empezadas; si nada se ha practicado, Gramática. */
+  let recommendation = { skill:'gramatica', reason:'Es un buen punto de partida.' };
   const startedSkills = Object.keys(SKILL_LABELS).filter(sk => attemptedItemIdsFor(p, sk).size > 0);
   if(startedSkills.length){
     let lowest = null;
@@ -1651,38 +1778,49 @@ function renderProgressPage(root){
       const cov = computeSkillCoverage(p, sk);
       if(!lowest || cov < lowest.cov) lowest = { sk, cov };
     });
-    recommendation = { skill: lowest.sk, label: SKILL_LABELS[lowest.sk], reason: 'Sigue teniendo margen para practicar más.' };
+    recommendation = { skill: lowest.sk, reason: 'Sigue teniendo margen para practicar más.' };
   }
 
   root.innerHTML = `
     <div class="section-head">
       <h2>Tu progreso</h2>
-      <p>Esta semana</p>
+      <p>Aquí puedes ver tu avance y seguir practicando. ¡Vas muy bien!</p>
     </div>
-    ${statsHtml}
 
-    <div class="section-head" style="margin-top:40px;">
-      <h2 style="font-size:1.4rem;">Tus habilidades</h2>
+    <div class="stat-cards" id="progressStatCards"></div>
+
+    <div class="section-head" style="margin-top:44px;">
+      <h2 style="font-size:1.5rem;">Tus habilidades</h2>
       <p>Cobertura del contenido disponible en cada habilidad.</p>
     </div>
-    <div class="progress-panel">${barsHtml}</div>
+    <div class="skills-panel" id="skillsPanel"></div>
 
-    <div class="section-head" style="margin-top:40px;">
-      <h2 style="font-size:1.4rem;">Últimas prácticas</h2>
+    <div class="section-head" style="margin-top:44px;">
+      <h2 style="font-size:1.5rem;">Tu actividad</h2>
     </div>
-    <div class="recent-list">${recentHtml}</div>
+    <div class="bottom-grid" id="progressBottomGrid">
+      <div class="activity-card" id="progressRecent"></div>
+      <div class="weekly-chart-card" id="progressWeekly"></div>
+      <div class="mascot-card" id="progressMascot"></div>
+    </div>
 
-    <div class="section-head" style="margin-top:40px;">
-      <h2 style="font-size:1.4rem;">Continúa aprendiendo</h2>
+    <div class="section-head" style="margin-top:44px;">
+      <h2 style="font-size:1.5rem;">Continúa aprendiendo</h2>
     </div>
     <div class="continue-card">
       <div>
         <div class="continue-eyebrow">Recomendado para ti</div>
-        <div class="continue-title">${recommendation.label}</div>
+        <div class="continue-title">${SKILL_LABELS[recommendation.skill]}</div>
         <div class="continue-sub">${recommendation.reason}</div>
       </div>
       <a href="${SKILL_PAGE[recommendation.skill]}" class="btn btn-primary">Practicar →</a>
     </div>`;
+
+  renderProgressStatCards(document.getElementById('progressStatCards'), stats, streak, level, practicedCount);
+  renderSkillsPanel(document.getElementById('skillsPanel'), p);
+  renderRecentActivityV2(document.getElementById('progressRecent'));
+  renderWeeklyChart(document.getElementById('progressWeekly'));
+  renderProgressMascotCard(document.getElementById('progressMascot'), streak, practicedCount);
 }
 
 /* ============================================================

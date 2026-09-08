@@ -475,6 +475,45 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .recent-score{color:var(--ink-soft);font-size:0.85rem;margin-top:2px;}
 .recent-date{color:var(--ink-faint);font-size:0.85rem;font-weight:600;flex-shrink:0;}
 
+/* ---------- Progreso v2: deltas, lista de habilidades, tarjeta mascota ---------- */
+.stat-card-delta{font-size:0.78rem;font-weight:700;margin-top:5px;}
+.stat-card-delta.up{color:var(--green);}
+.stat-card-delta.down{color:var(--coral);}
+.stat-card-delta.flat{color:var(--ink-faint);}
+.stat-card-link{color:var(--blue);font-weight:700;font-size:0.82rem;margin-top:5px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;display:block;}
+.stat-card-link:hover{text-decoration:underline;}
+
+.skills-panel{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:6px 22px;display:flex;flex-direction:column;}
+.skill-row-link{display:grid;grid-template-columns:auto 140px 1fr auto auto auto;align-items:center;gap:16px;padding:18px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background .15s ease;border-radius:var(--radius-sm);}
+.skill-row-link:last-child{border-bottom:none;}
+.skill-row-link:hover{background:var(--paper-dim);}
+.skill-row-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.skill-row-icon svg{width:19px;height:19px;}
+.skill-row-label{font-weight:700;font-size:0.98rem;}
+.skill-row-track{height:11px;border-radius:99px;background:var(--paper-dim);overflow:hidden;min-width:80px;}
+.skill-row-fill{display:block;height:100%;border-radius:99px;}
+.skill-row-pct{font-weight:700;font-size:0.88rem;color:var(--ink-soft);width:40px;text-align:right;}
+.skill-row-chip{font-size:0.78rem;font-weight:700;padding:7px 12px;border-radius:999px;white-space:nowrap;}
+.skill-row-chip.chip-good{background:var(--green-tint);color:var(--green);}
+.skill-row-chip.chip-mid{background:var(--blue-tint);color:var(--blue-deep);}
+.skill-row-chip.chip-low{background:var(--coral-tint);color:var(--coral);}
+.skill-row-chip.chip-neutral{background:var(--paper-dim);color:var(--ink-faint);}
+.skill-row-chevron{width:16px;height:16px;color:var(--ink-faint);flex-shrink:0;}
+@media(max-width:760px){
+  .skill-row-link{grid-template-columns:auto 1fr auto;grid-template-areas:"icon label chevron" "icon track track" "icon chip chip";row-gap:8px;padding:16px 4px;}
+  .skill-row-icon{grid-area:icon;}
+  .skill-row-label{grid-area:label;}
+  .skill-row-track{grid-area:track;}
+  .skill-row-pct{display:none;}
+  .skill-row-chip{grid-area:chip;justify-self:start;}
+  .skill-row-chevron{grid-area:chevron;}
+}
+
+.mascot-card{background:var(--blue-tint);border:2px solid var(--line);border-radius:var(--radius-lg);padding:26px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:8px;height:100%;box-sizing:border-box;}
+.mascot-card img{width:100px;height:auto;margin-bottom:2px;}
+.mascot-card h4{font-family:'Baloo 2';font-size:1.1rem;}
+.mascot-card p{color:var(--ink-soft);font-size:0.88rem;}
+.mascot-card .btn{margin-top:8px;}
 
 /* ---------- Videos (articulos.html) ---------- */
 .video-grid{display:grid;gap:12px;grid-template-columns:1fr;}
