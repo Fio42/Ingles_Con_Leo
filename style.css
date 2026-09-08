@@ -64,7 +64,7 @@ header{
 .nav-links{display:none;gap:26px;font-weight:600;font-size:0.96rem;color:var(--ink-soft);}
 .nav-links a:hover{color:var(--ink);}
 .nav-links a.current{color:var(--blue);}
-.nav-cta{display:none;}
+.nav .nav-cta{display:none;}
 .nav-burger{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;}
 .nav-burger span{display:block;width:20px;height:2px;background:var(--ink);position:relative;}
 .nav-burger span::before,.nav-burger span::after{content:'';position:absolute;left:0;width:20px;height:2px;background:var(--ink);}
@@ -72,7 +72,7 @@ header{
 .nav-burger span::after{top:6px;}
 @media(min-width:900px){
   .nav-links{display:flex;}
-  .nav-cta{display:inline-flex;}
+  .nav .nav-cta{display:inline-flex;}
   .nav-burger{display:none;}
 }
 
@@ -571,3 +571,37 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .form-status{font-size:0.88rem;font-weight:600;text-align:center;min-height:1.2em;}
 .form-status.ok{color:#116B41;}
 .form-status.error{color:#A32E1E;}
+
+/* ---------- Membresía: pitch de precio (miembros.html) ---------- */
+.pricing-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:30px 26px;box-shadow:var(--shadow);text-align:center;margin-top:20px;}
+.pricing-price{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:18px;}
+.pricing-amount{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:2.6rem;color:var(--blue);line-height:1;}
+.pricing-period{color:var(--ink-soft);font-weight:600;font-size:0.95rem;}
+.pricing-features{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:10px;text-align:left;max-width:340px;margin-left:auto;margin-right:auto;}
+.pricing-features li{color:var(--ink-soft);font-size:0.95rem;font-weight:500;display:flex;align-items:flex-start;gap:8px;}
+.pricing-features li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0;}
+.gate-divider{max-width:420px;margin:36px auto 0;padding:0 20px;text-align:center;color:var(--ink-faint);font-size:0.85rem;font-weight:600;}
+
+/* ---------- Práctica gratis: refuerzo de conversión al terminar sesión ---------- */
+.summary-unlock{margin-top:26px;padding-top:22px;border-top:1px solid var(--line);}
+.summary-unlock-label{font-weight:700;color:var(--ink);margin-bottom:12px;}
+.summary-unlock-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:18px;}
+.summary-unlock-grid span{background:var(--paper-dim);color:var(--ink-soft);font-size:0.85rem;font-weight:600;padding:8px 14px;border-radius:999px;}
+
+/* ---------- Practica a tu nivel (home) ---------- */
+.home-levels{padding:56px 0;}
+.home-levels-grid{display:grid;gap:16px;grid-template-columns:1fr;margin-top:32px;}
+@media(min-width:760px){.home-levels-grid{grid-template-columns:repeat(3,1fr);}}
+.home-level-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:24px 22px;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;border-top:6px solid var(--tone);}
+.home-level-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--line);}
+.home-level-tag{display:inline-block;font-weight:700;font-size:0.8rem;color:var(--tone);background:var(--tone-tint);padding:5px 12px;border-radius:999px;margin-bottom:10px;}
+.home-level-card h3{font-family:'Baloo 2',sans-serif;font-size:1.3rem;margin-bottom:6px;}
+.home-level-card p{color:var(--ink-soft);font-size:0.9rem;}
+
+/* ---------- Sobre Leo (home) ---------- */
+.home-trust{padding:56px 0;}
+.home-trust-grid{display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;max-width:640px;margin:0 auto;}
+@media(min-width:640px){.home-trust-grid{flex-direction:row;text-align:left;}}
+.home-trust-photo{width:120px;height:120px;border-radius:50%;object-fit:cover;background:var(--blue-tint);flex-shrink:0;}
+.home-trust-copy h2{font-size:1.4rem;margin-bottom:8px;}
+.home-trust-copy p{color:var(--ink-soft);font-size:0.98rem;line-height:1.6;}

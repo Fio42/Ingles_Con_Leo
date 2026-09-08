@@ -34,15 +34,34 @@
 <main>
 
   <!-- ACCESS GATE -->
-  <div class="gate-shell" id="gate">
-    <div class="gate-card">
+  <div class="gate-shell" id="gate" style="max-width:520px;">
+    <div style="text-align:center;margin-bottom:8px;">
+      <span class="badge badge-members">Membresía</span>
+      <h1 style="margin-top:14px;">Practica inglés todos los días</h1>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-price">
+        <span class="pricing-amount">$1</span>
+        <span class="pricing-period">USD / mes</span>
+      </div>
+      <ul class="pricing-features">
+        <li>Todos los niveles</li>
+        <li>Gramática, vocabulario, listening, speaking y writing</li>
+        <li>Ejercicios ilimitados</li>
+        <li>Guarda tu progreso</li>
+        <li>Cancela cuando quieras</li>
+      </ul>
+      <a href="index.html#contacto" class="btn btn-primary btn-block">Hazte miembro</a>
+    </div>
+
+    <p class="gate-divider">¿Ya eres miembro? Introduce tu código ↓</p>
+
+    <div class="gate-card" style="margin-top:14px;">
       <svg class="gate-icon" viewBox="0 0 56 56" fill="none">
         <rect x="12" y="26" width="32" height="22" rx="6" fill="#EEF1FE"/>
         <path d="M18 26v-8a10 10 0 0120 0v8" stroke="#3554F0" stroke-width="4" fill="none"/>
         <circle cx="28" cy="37" r="3.5" fill="#3554F0"/>
       </svg>
-      <h1>Área de miembros</h1>
-      <p>Escribe tu código de acceso para entrar a tu panel de práctica.</p>
       <input type="text" class="gate-input" id="codeInput" placeholder="CÓDIGO" maxlength="20" autocomplete="off">
       <div class="gate-error" id="codeError">Ese código no es correcto. Intenta de nuevo.</div>
       <button class="btn btn-primary btn-block" id="unlockBtn">Entrar</button>

@@ -1376,7 +1376,7 @@ function renderProgressPage(root){
 function renderFreeSessionSummary({ title, score, topics }){
   return `
     <div class="session-summary">
-      <h2>${title}</h2>
+      <h2>${title} 🎉</h2>
       <p class="summary-score">${score}</p>
       ${topics && topics.length ? `
         <div class="summary-topics">
@@ -1387,9 +1387,16 @@ function renderFreeSessionSummary({ title, score, topics }){
         <button class="btn btn-primary" id="freeAgainBtn">Hacer otra sesión</button>
         <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
       </div>
-      <div class="summary-secondary">
-        <p>¿Quieres más práctica y seguimiento de progreso?</p>
-        <a href="miembros.html" class="btn btn-ghost btn-sm">Entrar a miembros →</a>
+      <div class="summary-unlock">
+        <p class="summary-unlock-label">¿Quieres seguir?</p>
+        <div class="summary-unlock-grid">
+          <span>🔒 Más ejercicios</span>
+          <span>🔒 Listening</span>
+          <span>🔒 Speaking</span>
+          <span>🔒 Tu progreso</span>
+          <span>🔒 Todos los niveles</span>
+        </div>
+        <a href="miembros.html" class="btn btn-primary btn-block">Desbloquear por $1/mes</a>
       </div>
     </div>`;
 }
