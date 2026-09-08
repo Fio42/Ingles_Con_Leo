@@ -1,6 +1,5 @@
 User-agent: *
 Allow: /
-Disallow: /miembros.html
 Disallow: /gramatica.html
 Disallow: /vocabulario.html
 Disallow: /listening.html
