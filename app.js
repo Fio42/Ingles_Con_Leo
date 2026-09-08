@@ -82,10 +82,10 @@ async function initMemberHeader(){
   const bellDot = document.getElementById('navBellDot');
   let msg, showDot;
   if(practicedToday){
-    msg = '✅ Ya practicaste hoy. ¡Buen trabajo!';
+    msg = 'Ya practicaste hoy. ¡Buen trabajo!';
     showDot = false;
   } else if(streak > 0){
-    msg = `🔥 Llevas ${streak} ${streak===1?'día':'días'} de racha. Practica hoy para no perderla.`;
+    msg = `Llevas ${streak} ${streak===1?'día':'días'} de racha. Practica hoy para no perderla.`;
     showDot = true;
   } else {
     msg = 'Aún no tienes práctica registrada esta racha. ¡Empieza hoy!';
@@ -1368,7 +1368,7 @@ function renderContinueCard(container){
           <div class="continue-sub">8 ejercicios cortos, con ejemplos y explicaciones.</div>
         </div>
         <a href="gramatica.html" class="btn btn-primary">Empezar →</a>
-        <div class="continue-note">💡 Un poco cada día te acerca a tus metas.</div>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;
   }
@@ -1382,7 +1382,7 @@ function renderContinueCard(container){
         <div class="continue-sub">${attempted} de ${total} ejercicios practicados</div>
       </div>
       <a href="${SKILL_PAGE[last.skill]}" class="btn btn-primary">Continuar →</a>
-      <div class="continue-note">💡 Un poco cada día te acerca a tus metas.</div>
+      <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
     </div>`;
 }
 function applyDashboardGreeting(el){
@@ -1578,8 +1578,8 @@ function renderStreakCard(container){
    esta semana, con los mismos datos que ya calculamos arriba. */
 function streakGoalMessage(streak, practicedCount){
   const WEEKLY_GOAL = 5;
-  if(practicedCount >= WEEKLY_GOAL) return '¡Meta semanal cumplida! 🎉';
-  if(streak === 0) return 'Empieza hoy y arranca tu racha 🔥';
+  if(practicedCount >= WEEKLY_GOAL) return '¡Meta semanal cumplida!';
+  if(streak === 0) return 'Empieza hoy y arranca tu racha.';
   const left = WEEKLY_GOAL - practicedCount;
   return `Te ${left === 1 ? 'falta' : 'faltan'} ${left} ${left === 1 ? 'día' : 'días'} para tu meta semanal.`;
 }
@@ -1635,7 +1635,7 @@ function statDeltaHtml(delta, unit){
 /* ---------- Mensaje de progreso por habilidad (chip de color) ---------- */
 function skillFeedback(pct, attempted){
   if(!attempted) return { text:'Aún no has empezado.', tone:'neutral' };
-  if(pct >= 100) return { text:'¡Completaste esta habilidad! 🎉', tone:'good' };
+  if(pct >= 100) return { text:'¡Completaste esta habilidad!', tone:'good' };
   if(pct >= 60) return { text:'¡Vas muy bien! Sigue así.', tone:'good' };
   if(pct >= 25) return { text:'Buen comienzo. Sigue practicando.', tone:'mid' };
   return { text:'Aquí puedes mejorar. ¡Tú puedes!', tone:'low' };
@@ -1839,7 +1839,7 @@ function renderProgressPage(root){
 function renderFreeSessionSummary({ title, score, topics }){
   return `
     <div class="session-summary">
-      <h2>${title} 🎉</h2>
+      <h2>${title}</h2>
       <p class="summary-score">${score}</p>
       ${topics && topics.length ? `
         <div class="summary-topics">
