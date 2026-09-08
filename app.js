@@ -27,6 +27,132 @@ function setUserLevel(level){
   saveProfile(p);
 }
 
+function setProfileName(name){
+  const p = getProfile() || { level:'facil', createdAt: Date.now() };
+  p.name = name;
+  saveProfile(p);
+}
+
+/* ---------- Header de miembros: buscador rapido, notificaciones y cuenta ----------
+   Se usa en las 7 paginas de miembros + el panel. No inventa datos: el
+   "aviso" reusa la racha/practica de hoy que ya calculamos, y el buscador
+   solo filtra los enlaces reales del sitio (no hay indice de ejercicios). */
+const QUICK_NAV_LINKS = [
+  { label:'Gramática', href:'gramatica.html' },
+  { label:'Vocabulario', href:'vocabulario.html' },
+  { label:'Listening', href:'listening.html' },
+  { label:'Writing', href:'writing.html' },
+  { label:'Speaking', href:'speaking.html' },
+  { label:'Mixto', href:'mixto.html' },
+  { label:'Tu progreso', href:'progreso.html' },
+  { label:'Panel de miembros', href:'miembros.html' },
+  { label:'Artículos', href:'articulos.html' },
+  { label:'Practicar gratis (sin cuenta)', href:'practica.html' }
+];
+
+function closeAllNavPops(){
+  document.querySelectorAll('.nav-pop.open').forEach(el=> el.classList.remove('open'));
+}
+
+async function initMemberHeader(){
+  const block = document.getElementById('navUserBlock');
+  if(!block) return;
+  if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+
+  const profile = getProfile();
+  let memberProfile = null;
+  try{ memberProfile = await LeoBackend.getMemberProfile(); }catch(e){}
+  const email = memberProfile ? memberProfile.email : '';
+  const displayName = (profile && profile.name) ? profile.name : (email ? email.split('@')[0] : 'Cuenta');
+  const initial = (displayName.trim().charAt(0) || 'L').toUpperCase();
+
+  block.querySelectorAll('.nav-avatar').forEach(el=> el.textContent = initial);
+  const nameEl = document.getElementById('navProfileName');
+  if(nameEl) nameEl.textContent = displayName;
+  const popNameEl = document.getElementById('navProfilePopName');
+  if(popNameEl) popNameEl.textContent = displayName;
+  const popEmailEl = document.getElementById('navProfilePopEmail');
+  if(popEmailEl) popEmailEl.textContent = email;
+
+  const p = loadProgress();
+  const today = new Date().toISOString().slice(0,10);
+  const practicedToday = p.sessions.some(s=> s.date === today);
+  const streak = computeStreak();
+  const bellContent = document.getElementById('navBellContent');
+  const bellDot = document.getElementById('navBellDot');
+  let msg, showDot;
+  if(practicedToday){
+    msg = '✅ Ya practicaste hoy. ¡Buen trabajo!';
+    showDot = false;
+  } else if(streak > 0){
+    msg = `🔥 Llevas ${streak} ${streak===1?'día':'días'} de racha. Practica hoy para no perderla.`;
+    showDot = true;
+  } else {
+    msg = 'Aún no tienes práctica registrada esta racha. ¡Empieza hoy!';
+    showDot = true;
+  }
+  if(bellContent) bellContent.innerHTML = `<p class="nav-pop-msg">${msg}</p>`;
+  if(bellDot) bellDot.style.display = showDot ? 'block' : 'none';
+
+  const searchInput = document.getElementById('navSearchInput');
+  const searchResults = document.getElementById('navSearchResults');
+  function renderSearchResults(query){
+    if(!searchResults) return;
+    const q = (query||'').trim().toLowerCase();
+    const matches = QUICK_NAV_LINKS.filter(l=> !q || l.label.toLowerCase().includes(q));
+    searchResults.innerHTML = matches.length
+      ? matches.map(l=> `<a href="${l.href}" class="nav-pop-item">${l.label}</a>`).join('')
+      : `<p class="nav-pop-msg">Sin resultados.</p>`;
+  }
+  if(searchInput){
+    renderSearchResults('');
+    searchInput.addEventListener('input', ()=> renderSearchResults(searchInput.value));
+  }
+
+  function wireToggle(btnId, popId){
+    const btn = document.getElementById(btnId);
+    const pop = document.getElementById(popId);
+    if(!btn || !pop) return;
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const willOpen = !pop.classList.contains('open');
+      closeAllNavPops();
+      if(willOpen){ pop.classList.add('open'); if(popId === 'navSearchPop' && searchInput) searchInput.focus(); }
+    });
+    pop.addEventListener('click', e=> e.stopPropagation());
+  }
+  wireToggle('navSearchBtn','navSearchPop');
+  wireToggle('navBellBtn','navBellPop');
+  wireToggle('navProfileBtn','navProfilePop');
+  document.addEventListener('click', closeAllNavPops);
+
+  const editBtn = document.getElementById('navEditNameBtn');
+  if(editBtn){
+    editBtn.addEventListener('click', ()=>{
+      const current = (getProfile() && getProfile().name) || '';
+      const name = window.prompt('¿Cómo te llamas?', current);
+      if(name !== null){ setProfileName(name.trim()); location.reload(); }
+    });
+  }
+
+  const subBtn = document.getElementById('navManageSubBtn');
+  if(subBtn){
+    subBtn.addEventListener('click', ()=>{
+      window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN) vía Mercado Pago.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
+    });
+  }
+
+  const logoutBtn = document.getElementById('navLogoutBtn');
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', async ()=>{
+      await LeoBackend.signOut();
+      location.href = 'miembros.html';
+    });
+  }
+
+  block.style.display = 'flex';
+}
+
 function initOnboarding(onSaved){
   if(getProfile()) return;
 

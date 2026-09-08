@@ -27,6 +27,49 @@
       <a href="miembros.html" class="current">Miembros</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
+
+    <div class="nav-actions" id="navUserBlock" style="display:none;">
+      <div class="nav-search-wrap">
+        <button type="button" class="nav-icon-btn" id="navSearchBtn" aria-label="Buscar">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="nav-pop nav-search-pop" id="navSearchPop">
+          <input type="text" id="navSearchInput" placeholder="Buscar en el sitio...">
+          <div class="nav-search-results" id="navSearchResults"></div>
+        </div>
+      </div>
+      <div class="nav-bell-wrap">
+        <button type="button" class="nav-icon-btn" id="navBellBtn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 0112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="nav-bell-dot" id="navBellDot" style="display:none;"></span>
+        </button>
+        <div class="nav-pop nav-bell-pop" id="navBellPop">
+          <div class="nav-pop-title">Notificaciones</div>
+          <div id="navBellContent"></div>
+        </div>
+      </div>
+      <div class="nav-profile-wrap">
+        <button type="button" class="nav-profile-btn" id="navProfileBtn">
+          <span class="nav-avatar" id="navAvatar">?</span>
+          <span class="nav-profile-name" id="navProfileName">Cuenta</span>
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-pop nav-profile-pop" id="navProfilePop">
+          <div class="nav-profile-pop-head">
+            <span class="nav-avatar lg" id="navAvatarLg">?</span>
+            <div>
+              <div class="nav-profile-pop-name" id="navProfilePopName">Cuenta</div>
+              <div class="nav-profile-pop-email" id="navProfilePopEmail"></div>
+            </div>
+          </div>
+          <button type="button" class="nav-pop-item" id="navEditNameBtn">Editar tu nombre</button>
+          <a href="progreso.html" class="nav-pop-item">Tu progreso</a>
+          <button type="button" class="nav-pop-item" id="navManageSubBtn">Administrar suscripción</button>
+          <button type="button" class="nav-pop-item danger" id="navLogoutBtn">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+
     <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
   </div>
 </header>
@@ -294,6 +337,7 @@
     gate.style.display = 'none';
     memberContent.style.display = 'block';
     startDashboard();
+    if(typeof initMemberHeader === 'function') initMemberHeader();
   }
 
   async function afterAuthSuccess(){

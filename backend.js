@@ -256,6 +256,9 @@ const LeoBackend = (function(){
    Uso: guardMemberPage(function(){ ...arrancar la página... }); */
 function guardMemberPage(startFn){
   LeoBackend.requireMemberAsync().then(function(ok){
-    if(ok) startFn();
+    if(ok){
+      startFn();
+      if(typeof initMemberHeader === 'function') initMemberHeader();
+    }
   });
 }
