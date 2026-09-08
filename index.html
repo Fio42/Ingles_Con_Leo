@@ -57,6 +57,7 @@
       <a href="articulos.html">Artículos</a>
       <a href="practica.html">Practicar gratis</a>
       <a href="miembros.html">Miembros</a>
+      <a href="index.html#contacto">Contacto</a>
     </nav>
     <a href="miembros.html" class="btn btn-primary btn-sm nav-cta">Entrar a miembros</a>
     <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
@@ -205,6 +206,62 @@
     </div>
   </section>
 
+  <!-- CONTACTO -->
+  <section class="home-contact" id="contacto">
+    <div class="wrap home-contact-grid">
+      <div class="home-contact-copy">
+        <span class="badge badge-members"><svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg> CONTÁCTANOS</span>
+        <h2>¿Tienes dudas? Escríbenos</h2>
+        <p>Completa el formulario y te respondemos a tu correo lo antes posible.</p>
+        <div class="home-contact-info">
+          <div class="home-contact-info-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M4 7l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div class="home-contact-info-label">Correo</div>
+            <a href="mailto:inglesconleoreal@gmail.com" class="home-contact-info-value">inglesconleoreal@gmail.com</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-contact-card">
+        <h3>Envíanos un mensaje</h3>
+        <p>Completa tus datos y cuéntanos en qué te ayudamos.</p>
+        <form id="contactForm" class="home-contact-form">
+          <input type="checkbox" name="botcheck" id="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+          <input type="hidden" name="access_key" value="WEB3FORMS_ACCESS_KEY">
+          <input type="hidden" name="subject" value="Nuevo mensaje desde inglesconleo.com">
+          <input type="hidden" name="from_name" value="Inglés con Leo — Formulario de contacto">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cName">Nombre completo *</label>
+              <input type="text" id="cName" name="name" placeholder="Ej. María Pérez" required>
+            </div>
+            <div class="form-field">
+              <label for="cEmail">Correo electrónico *</label>
+              <input type="email" id="cEmail" name="email" placeholder="maria@ejemplo.com" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cSubject">¿En qué te ayudamos?</label>
+            <select id="cSubject" name="asunto">
+              <option value="Información general">Información general</option>
+              <option value="Quiero ser miembro">Quiero ser miembro</option>
+              <option value="Problema técnico">Problema técnico</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="cMessage">Mensaje *</label>
+            <textarea id="cMessage" name="message" rows="4" placeholder="Cuéntanos en qué te podemos ayudar..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="contactSubmitBtn">Enviar mensaje</button>
+          <div class="form-status" id="contactStatus" role="status"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -256,6 +313,42 @@
 <script src="app.js"></script>
 <script src="chatbot.js"></script>
 <script>initOnboarding(); personalizeNav(); renderDailyMiniLesson();</script>
+<script>
+  (function(){
+    var form = document.getElementById('contactForm');
+    if(!form) return;
+    var statusEl = document.getElementById('contactStatus');
+    var btn = document.getElementById('contactSubmitBtn');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      if(form.botcheck && form.botcheck.checked) return; // spam bot caught
+      statusEl.textContent = '';
+      statusEl.className = 'form-status';
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      var data = new FormData(form);
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: data
+      }).then(function(res){ return res.json(); }).then(function(json){
+        if(json.success){
+          statusEl.textContent = '¡Mensaje enviado! Te responderemos a tu correo pronto.';
+          statusEl.className = 'form-status ok';
+          form.reset();
+        } else {
+          throw new Error(json.message || 'error');
+        }
+      }).catch(function(){
+        statusEl.textContent = 'No pudimos enviar tu mensaje. Escríbenos directo a inglesconleoreal@gmail.com';
+        statusEl.className = 'form-status error';
+      }).finally(function(){
+        btn.disabled = false;
+        btn.textContent = 'Enviar mensaje';
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
