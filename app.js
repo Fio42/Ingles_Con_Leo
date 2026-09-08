@@ -1261,7 +1261,7 @@ function renderContinueCard(container){
 }
 function applyDashboardGreeting(el){
   const profile = getProfile();
-  el.textContent = (profile && profile.name) ? `Hola, ${profile.name}` : 'Hola';
+  el.textContent = (profile && profile.name) ? `Hola, ${profile.name} \uD83D\uDC4B` : 'Hola \uD83D\uDC4B';
 }
 
 /* ---------- Dashboard v2: stats, anillos de progreso, actividad ---------- */
@@ -1317,7 +1317,7 @@ function ringSvg(pct, color, size, strokeWidth){
       <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"
         stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}"
         transform="rotate(-90 ${center} ${center})"/>
-      <text x="${center}" y="${center}" text-anchor="middle" dominant-baseline="central" class="ring-pct" font-size="${size*0.24}">${pct}%</text>
+      <text x="${center}" y="${center}" text-anchor="middle" dominant-baseline="central" class="ring-pct" font-size="${size*0.29}">${pct}%</text>
     </svg>`;
 }
 
@@ -1444,7 +1444,18 @@ function renderStreakCard(container){
           <span class="streak-dot-label">${d.label.slice(0,1)}</span>
         </div>`).join('')}
     </div>
-    <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>`;
+    <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>
+    <div class="streak-goal">${streakGoalMessage(streak, practicedCount)}</div>`;
+}
+
+/* Meta semanal simple (5 días): mensaje corto segun racha y dias practicados
+   esta semana, con los mismos datos que ya calculamos arriba. */
+function streakGoalMessage(streak, practicedCount){
+  const WEEKLY_GOAL = 5;
+  if(practicedCount >= WEEKLY_GOAL) return '¡Meta semanal cumplida! 🎉';
+  if(streak === 0) return 'Empieza hoy y arranca tu racha 🔥';
+  const left = WEEKLY_GOAL - practicedCount;
+  return `Te ${left === 1 ? 'falta' : 'faltan'} ${left} ${left === 1 ? 'día' : 'días'} para tu meta semanal.`;
 }
 
 /* ============================================================

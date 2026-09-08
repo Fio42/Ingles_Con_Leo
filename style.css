@@ -418,6 +418,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .streak-flame svg{width:26px;height:26px;}
 .streak-number{font-family:'Baloo 2';font-weight:700;font-size:2rem;line-height:1;}
 .streak-caption{color:var(--ink-soft);font-size:0.86rem;margin-top:4px;}
+.streak-goal{color:var(--blue-deep);font-weight:700;font-size:0.86rem;margin-top:12px;background:var(--blue-tint);border-radius:999px;padding:8px 14px;}
 .streak-dots{display:flex;gap:8px;margin-top:18px;}
 .streak-dot{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .streak-dot-mark{width:15px;height:15px;border-radius:50%;background:var(--paper-dim);border:2px solid var(--line);}
