@@ -44,6 +44,7 @@ const QUICK_NAV_LINKS = [
   { label:'Writing', href:'writing.html' },
   { label:'Speaking', href:'speaking.html' },
   { label:'Mixto', href:'mixto.html' },
+  { label:'Clases interactivas', href:'clases.html' },
   { label:'Tu progreso', href:'progreso.html' },
   { label:'Panel de miembros', href:'miembros.html' },
   { label:'Artículos', href:'articulos.html' },

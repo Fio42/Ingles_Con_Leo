@@ -1633,3 +1633,107 @@ const WRITING_BANK = {
     ]
   ]
 };
+
+// ============================================================
+// CLASES INTERACTIVAS — mini-clases situacionales (8 pasos)
+// ============================================================
+const CLASS_CATALOG = [
+  { id:'airport', title:'En el aeropuerto', category:'Viajes', desc:'Aprende a moverte en el aeropuerto: check-in, seguridad y abordaje.', minutes:6, available:true },
+  { id:'hotel', title:'En el hotel', category:'Viajes', desc:'Próximamente', minutes:6, available:false },
+  { id:'restaurant', title:'En un restaurante', category:'Viajes', desc:'Próximamente', minutes:6, available:false },
+  { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
+  { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
+  { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
+  { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Próximamente', minutes:7, available:false },
+  { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Próximamente', minutes:6, available:false },
+  { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Próximamente', minutes:6, available:false }
+];
+
+const CLASSES_BANK = {
+  airport: {
+    id:'airport',
+    title:'En el aeropuerto',
+    situation:{
+      en:"You're at the airport, checking in for your flight to New York. You need to check your bag and ask about your gate.",
+      es:'Estás en el aeropuerto, haciendo el check-in para tu vuelo a Nueva York. Necesitas facturar tu maleta y preguntar por tu puerta de embarque.'
+    },
+    phrases:[
+      { en:'Could I have your passport, please?', es:'¿Me da su pasaporte, por favor?' },
+      { en:"I'd like to check this bag.", es:'Quisiera facturar esta maleta.' },
+      { en:'What time does boarding start?', es:'¿A qué hora empieza el abordaje?' },
+      { en:'Which gate is my flight?', es:'¿Cuál es la puerta de mi vuelo?' },
+      { en:'Is this flight on time?', es:'¿Este vuelo va a tiempo?' }
+    ],
+    listening:{
+      audio:'audio/clases/aeropuerto-listening.mp3',
+      dialogue:[
+        { speaker:'Agente', en:'Good morning! Passport, please.' },
+        { speaker:'Tú', en:"Here you go. I'd like to check this bag too." },
+        { speaker:'Agente', en:'Sure. Your gate is B12, and boarding starts at 5:40.' }
+      ],
+      question:{
+        text:'¿Cuál es la puerta de embarque?',
+        options:['B12','B40','A12'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Agente', en:'Would you like a window or aisle seat?' },
+      options:[
+        { en:"Window seat, please.", correct:true, feedback:'¡Bien! Es una respuesta natural y directa.' },
+        { en:"Yes, I have a passport.", correct:false, feedback:'Esa respuesta no tiene sentido aquí — te preguntaron por el asiento, no por el pasaporte.' },
+        { en:"The flight is at 5:40.", correct:false, feedback:'Estás respondiendo con información de vuelo, pero te preguntaron por el tipo de asiento.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿A qué hora empieza el abordaje?',
+      words:['does','time','boarding','What','start?'],
+      correctOrder:['What','time','does','boarding','start?']
+    },
+    speaking:{
+      audio:'audio/clases/aeropuerto-speaking.mp3',
+      prompt:"I'd like to check this bag, please.",
+      es:'Practica diciendo: "Quisiera facturar esta maleta, por favor."'
+    },
+    miniChallenge:{
+      start:'security',
+      nodes:{
+        security:{
+          en:'A security officer says: "Please remove your laptop and place it in the tray."',
+          es:'Un oficial de seguridad dice: "Por favor, saque su laptop y colóquela en la bandeja."',
+          options:[
+            { en:'Okay, one moment.', next:'gate', correct:true },
+            { en:'No, I prefer not to.', next:'security-fail', correct:false }
+          ]
+        },
+        'security-fail':{
+          en:'The officer insists: "I need you to remove it, it\'s the rule."',
+          es:'El oficial insiste: "Necesito que la saque, es la regla."',
+          options:[
+            { en:'Okay, sorry. Here it is.', next:'gate', correct:true }
+          ]
+        },
+        gate:{
+          en:'At the gate, staff announce: "Flight 220 is now boarding at gate B12."',
+          es:'En la puerta, el personal anuncia: "El vuelo 220 ahora está abordando en la puerta B12."',
+          options:[
+            { en:'That\'s my flight — thank you!', next:'end', correct:true },
+            { en:'I think I\'ll wait for the next one.', next:'gate-miss', correct:false }
+          ]
+        },
+        'gate-miss':{
+          en:'Staff clarifies: "This is the final boarding call for flight 220."',
+          es:'El personal aclara: "Esta es la última llamada de abordaje para el vuelo 220."',
+          options:[
+            { en:'Oh, I\'m on that flight — I\'m coming!', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'You board the plane just in time. ¡Buen viaje!', es:'Abordas el avión justo a tiempo. ¡Buen viaje!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['Could I have your passport, please?', "I'd like to check this bag.", 'What time does boarding start?', 'Which gate is my flight?'],
+      tip:'Hoy practicaste el vocabulario esencial para moverte en un aeropuerto en inglés: check-in, seguridad y embarque.'
+    }
+  }
+};
