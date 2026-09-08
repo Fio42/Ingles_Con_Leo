@@ -40,6 +40,68 @@
 }
 .leobot-reopen:hover{color:var(--ink,#1B2333);border-color:var(--blue,#3554F0);}
 
+/* Burbuja de saludo discreta: aparece sola junto al ícono para invitar a
+   abrir el chat, sin abrir el panel completo. No compite visualmente con
+   el resto del sitio (fondo blanco, sombra suave, sin colores llamativos). */
+.leobot-greet{
+  position:fixed;
+  right:24px;
+  bottom:136px;
+  z-index:9998;
+  max-width:220px;
+  background:#fff;
+  color:var(--ink,#1B2333);
+  font-size:0.86rem;
+  font-weight:600;
+  line-height:1.35;
+  padding:12px 32px 12px 16px;
+  border-radius:16px;
+  border:1px solid var(--line,#E4E7F0);
+  box-shadow:0 10px 26px rgba(27,35,51,0.14);
+  opacity:0;
+  transform:translateY(6px) scale(0.98);
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  cursor:pointer;
+}
+.leobot-greet::after{
+  content:'';
+  position:absolute;
+  right:34px;
+  bottom:-6px;
+  width:12px;
+  height:12px;
+  background:#fff;
+  border-right:1px solid var(--line,#E4E7F0);
+  border-bottom:1px solid var(--line,#E4E7F0);
+  transform:rotate(45deg);
+}
+.leobot-greet.show{
+  opacity:1;
+  transform:translateY(0) scale(1);
+  pointer-events:auto;
+}
+.leobot-greet-close{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:22px;
+  height:22px;
+  border:none;
+  background:none;
+  color:var(--ink-faint,#8A90A6);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+}
+.leobot-greet-close:hover{background:var(--paper-dim,#F3EFE6);color:var(--ink,#1B2333);}
+.leobot-greet-close svg{width:13px;height:13px;}
+@media(prefers-reduced-motion:reduce){
+  .leobot-greet{transition:none;}
+}
+
 /* ---------- Panel ---------- */
 .leobot-panel{
   position:fixed;
@@ -227,6 +289,8 @@
   }
   .leobot-fab{right:14px;bottom:calc(76px + env(safe-area-inset-bottom));width:78px;height:78px;}
   .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
+  .leobot-greet{right:14px;bottom:calc(166px + env(safe-area-inset-bottom));max-width:180px;font-size:0.82rem;}
+  .leobot-greet::after{right:26px;}
   .leobot-header{padding:16px 16px;}
   .leobot-header .leobot-avatar{width:48px;height:48px;}
   .leobot-body{padding:16px 16px 4px;}
@@ -240,4 +304,5 @@
   .leobot-fab{bottom:calc(76px + env(safe-area-inset-bottom));}
   .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
   .leobot-panel{bottom:calc(164px + env(safe-area-inset-bottom));}
+  .leobot-greet{bottom:calc(188px + env(safe-area-inset-bottom));}
 }

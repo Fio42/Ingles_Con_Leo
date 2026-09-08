@@ -15,6 +15,10 @@
 
   var HIDDEN_KEY = 'leobot_hidden_v1';
   var AUTO_OPEN_KEY = 'leobot_auto_opened_v1';
+  /* A diferencia de AUTO_OPEN_KEY (una sola vez por navegador, para siempre),
+     esta usa sessionStorage: se resetea cada vez que se abre una pestaña/
+     sesión nueva, para dar un saludo discreto sin ser pesado. */
+  var GREET_SESSION_KEY = 'leobot_greeted_session_v1';
 
   function currentPage(){
     var path = location.pathname.split('/').pop();
@@ -254,6 +258,12 @@
     root.id = 'leobotRoot';
 
     root.innerHTML =
+      '<div class="leobot-greet" id="leobotGreet" role="status">' +
+        '<button type="button" class="leobot-greet-close" id="leobotGreetClose" aria-label="Cerrar aviso">' +
+          '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+        '</button>' +
+        '<span>\u00bfNecesitas ayuda? \uD83D\uDC4B</span>' +
+      '</div>' +
       '<button type="button" class="leobot-fab" id="leobotFab" aria-label="Abrir asistente LeoBot" aria-haspopup="dialog" aria-expanded="false">' +
         '<div class="leobot-avatar" id="leobotFabAvatar"></div>' +
       '</button>' +
@@ -286,6 +296,8 @@
     document.getElementById('leobotHeaderAvatar').innerHTML = buildAvatarHtml();
 
     var fab = document.getElementById('leobotFab');
+    var greet = document.getElementById('leobotGreet');
+    var greetClose = document.getElementById('leobotGreetClose');
     var panel = document.getElementById('leobotPanel');
     var body = document.getElementById('leobotBody');
     var optionsEl = document.getElementById('leobotOptions');
@@ -298,9 +310,16 @@
     var isOpen = false;
     var hasOpenedOnce = false;
     var history = []; // pila de nodos visitados en esta sesión de chat (para "Volver")
+    var sessionGreeted = false;
+    try{ sessionGreeted = sessionStorage.getItem(GREET_SESSION_KEY) === '1'; }catch(e){}
+
+    function hideGreet(){
+      if(greet) greet.classList.remove('show');
+    }
 
     function open(isAutomatic){
       isOpen = true;
+      hideGreet();
       panel.classList.add('open');
       fab.setAttribute('aria-expanded', 'true');
       if(!hasOpenedOnce){
@@ -449,24 +468,55 @@
        Si el modal de onboarding (.onb-overlay) está abierto, esperamos a que
        el usuario lo cierre (Empezar o Saltar) y damos ~2.5s de aire antes de
        abrir LeoBot, para que nunca compitan por la atención al mismo tiempo. */
-    if(localStorage.getItem(AUTO_OPEN_KEY) !== '1'){
-      var tryAutoOpen = function(){
-        if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
-        localStorage.setItem(AUTO_OPEN_KEY, '1');
-        open(true);
-      };
+    if(greetClose){
+      greetClose.addEventListener('click', function(e){
+        e.stopPropagation();
+        hideGreet();
+        try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
+      });
+    }
+    if(greet){
+      greet.addEventListener('click', function(){
+        if(!isOpen) open();
+      });
+    }
+
+    function afterWelcomeGap(cb, gapIfOnboarding, gapDefault){
       var onbOverlay = document.querySelector('.onb-overlay');
       if(onbOverlay){
         var onbObserver = new MutationObserver(function(){
           if(!document.body.contains(onbOverlay)){
             onbObserver.disconnect();
-            window.setTimeout(tryAutoOpen, 2500);
+            window.setTimeout(cb, gapIfOnboarding);
           }
         });
         onbObserver.observe(document.body, { childList:true });
       } else {
-        window.setTimeout(tryAutoOpen, 900);
+        window.setTimeout(cb, gapDefault);
       }
+    }
+
+    /* Primera vez que alguien visita el sitio en este navegador: se abre el
+       panel completo una sola vez para siempre (comportamiento ya existente). */
+    if(localStorage.getItem(AUTO_OPEN_KEY) !== '1'){
+      afterWelcomeGap(function(){
+        if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
+        localStorage.setItem(AUTO_OPEN_KEY, '1');
+        try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
+        open(true);
+      }, 2500, 900);
+    } else if(!sessionGreeted){
+      /* Visitas siguientes: nada de panel completo — solo una burbuja
+         pequeña y discreta junto al ícono, una vez por sesión del navegador. */
+      afterWelcomeGap(function(){
+        if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
+        try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
+        if(greet){
+          greet.classList.add('show');
+          setAvatarState(fabAvatar, 'wink', 900);
+          window.setTimeout(hideGreet, 6000);
+        }
+      }, 2000, 1200);
     }
   }
 
