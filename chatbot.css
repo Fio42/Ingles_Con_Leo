@@ -27,9 +27,29 @@
 .leobot-fab:focus-visible{outline:3px solid var(--blue,#3554F0);outline-offset:3px;}
 .leobot-fab .leobot-avatar{width:100%;height:100%;animation:leobotFloat 3.8s ease-in-out infinite;}
 
+/* Punto de notificación: avisa "tienes algo nuevo" mientras la burbuja de
+   saludo está visible, sin ser tan grande como para distraer. */
+.leobot-fab-dot{
+  position:absolute;
+  top:14px;right:16px;
+  width:14px;height:14px;
+  border-radius:50%;
+  background:var(--coral,#EF5A45);
+  border:2.5px solid #fff;
+  box-shadow:0 2px 6px rgba(239,90,69,.4);
+  animation:leobotDotPulse 1.8s ease-in-out infinite;
+}
+.leobot-fab-dot[hidden]{display:none;}
+
+@keyframes leobotDotPulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.25);}
+}
+
 /* Pastilla discreta para reactivar el asistente cuando el usuario lo ocultó */
 .leobot-reopen{
   position:fixed;right:16px;bottom:16px;z-index:9999;
+  display:flex;align-items:center;gap:6px;
   background:rgba(255,255,255,0.95);
   border:1px solid var(--line,#E4E7F0);
   color:var(--ink-faint,#8A90A6);
@@ -38,6 +58,7 @@
   cursor:pointer;
   box-shadow:0 6px 16px rgba(27,35,51,0.1);
 }
+.leobot-reopen svg{width:14px;height:14px;flex-shrink:0;}
 .leobot-reopen:hover{color:var(--ink,#1B2333);border-color:var(--blue,#3554F0);}
 
 /* Burbuja de saludo discreta: aparece sola junto al ícono para invitar a
@@ -59,9 +80,9 @@
   border:1px solid var(--line,#E4E7F0);
   box-shadow:0 10px 26px rgba(27,35,51,0.14);
   opacity:0;
-  transform:translateY(6px) scale(0.98);
+  transform:translateY(10px) scale(0.9);
   pointer-events:none;
-  transition:opacity .25s ease, transform .25s ease;
+  transition:opacity .3s ease, transform .4s cubic-bezier(.34,1.56,.64,1);
   cursor:pointer;
 }
 .leobot-greet::after{
@@ -239,7 +260,10 @@
   font-size:0.85rem;
   min-height:34px;
   grid-column:1 / -1;
+  justify-content:center;
+  gap:6px;
 }
+.leobot-opt-btn.ghost svg{width:14px;height:14px;flex-shrink:0;}
 
 .leobot-footer{
   padding:10px 20px 16px;
@@ -274,6 +298,7 @@
 
 @media (prefers-reduced-motion: reduce){
   .leobot-avatar[data-state], .leobot-fab .leobot-avatar{animation:none;}
+  .leobot-fab-dot{animation:none;}
   .leobot-typing-dots span{animation:none;opacity:.7;}
   .leobot-panel, .leobot-fab{transition:none;}
 }

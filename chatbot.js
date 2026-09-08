@@ -14,10 +14,9 @@
   'use strict';
 
   var HIDDEN_KEY = 'leobot_hidden_v1';
-  var AUTO_OPEN_KEY = 'leobot_auto_opened_v1';
-  /* A diferencia de AUTO_OPEN_KEY (una sola vez por navegador, para siempre),
-     esta usa sessionStorage: se resetea cada vez que se abre una pestaña/
-     sesión nueva, para dar un saludo discreto sin ser pesado. */
+  /* Usa sessionStorage: se resetea cada vez que se abre una pestaña/sesión
+     nueva, así el saludo aparece "cuando alguien entra a la página" en cada
+     visita, sin repetirse varias veces dentro de la misma sesión. */
   var GREET_SESSION_KEY = 'leobot_greeted_session_v1';
 
   function currentPage(){
@@ -25,10 +24,23 @@
     return path || 'index.html';
   }
 
+  /* El estado real de membresía vive en Supabase (LeoBackend), y consultarlo
+     es async. Lo cacheamos en esta variable apenas carga el bot para que
+     isMember() se pueda usar de forma síncrona en el resto del árbol de
+     nodos; refreshMemberStatus() la actualiza en segundo plano. En páginas
+     públicas (sin backend.js cargado, como index.html) simplemente no hay
+     nada que consultar y se asume que no es miembro. */
+  var memberStatusCache = false;
   function isMember(){
+    return memberStatusCache;
+  }
+  function refreshMemberStatus(){
     try{
-      return typeof window.isMemberUnlocked === 'function' && window.isMemberUnlocked();
-    }catch(e){ return false; }
+      if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+      LeoBackend.getMemberProfile().then(function(profile){
+        memberStatusCache = !!(profile && profile.is_member);
+      }).catch(function(){});
+    }catch(e){}
   }
 
   function membersCta(){
@@ -113,7 +125,7 @@
     },
 
     level: {
-      text:'Depende de tu experiencia actual:<br><br>🟢 <strong>Fácil (A1–A2)</strong> — para quien está empezando o todavía usa frases sencillas.<br>🟠 <strong>Medio (B1–B2)</strong> — para quien ya entiende bastante y quiere expresarse mejor.<br>🔴 <strong>Avanzado (C1+)</strong> — para trabajar matices, precisión y estructuras más complejas.<br><br>Puedes cambiar de nivel cuando quieras.',
+      text:'Depende de tu experiencia actual:<br><br><strong style="color:var(--green)">Fácil (A1–A2)</strong> — para quien está empezando o todavía usa frases sencillas.<br><strong style="color:var(--amber)">Medio (B1–B2)</strong> — para quien ya entiende bastante y quiere expresarse mejor.<br><strong style="color:var(--coral)">Avanzado (C1+)</strong> — para trabajar matices, precisión y estructuras más complejas.<br><br>Puedes cambiar de nivel cuando quieras, tanto en práctica gratis como en tu cuenta de miembro.',
       options:[
         { label:'Ver práctica →', href:'practica.html' }
       ]
@@ -167,17 +179,23 @@
     },
 
     progress: {
-      text:'Tu progreso se guarda automáticamente en este navegador (no necesitas cuenta ni contraseña). Ahí ves cuánto has cubierto de cada habilidad, tu precisión reciente y tus últimas sesiones.',
-      options:[
-        { label:'Ver mi progreso →', href:'progreso.html' }
-      ]
+      text: function(){
+        return isMember()
+          ? 'Como ya iniciaste sesión, tu progreso se guarda en tu cuenta: cuánto has cubierto de cada habilidad, tu precisión reciente y tus últimas sesiones. Puedes verlo desde cualquier dispositivo en el que inicies sesión.'
+          : 'Mientras practicas gratis, tu progreso se guarda en este navegador. Si creas una cuenta de miembro, pasa a guardarse en la nube y lo puedes ver desde cualquier dispositivo.';
+      },
+      options: function(){
+        var opts = [{ label:'Ver mi progreso →', href:'progreso.html' }];
+        if(!isMember()) opts.push(membersCta());
+        return opts;
+      }
     },
 
     members: {
       text: function(){
         return isMember()
-          ? 'Ya entraste al área de miembros en este navegador. Ahí tienes las 5 habilidades completas y tu progreso guardado.'
-          : 'El área de miembros tiene ejercicios completos de Gramática, Vocabulario, Listening, Writing y Speaking, además de tu progreso guardado. Necesitas el código de acceso para entrar.';
+          ? 'Ya iniciaste sesión como miembro. Tienes las 5 habilidades completas (Gramática, Vocabulario, Listening, Writing y Speaking) y tu progreso se guarda en tu cuenta.'
+          : 'El área de miembros tiene ejercicios completos de Gramática, Vocabulario, Listening, Writing y Speaking, además de tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, ≈$40 MXN, vía Mercado Pago).';
       },
       options: function(){
         var opts = [membersCta()];
@@ -249,6 +267,8 @@
   function initLeoBot(){
     if(document.getElementById('leobotFab')) return; // ya inicializado
 
+    refreshMemberStatus();
+
     if(localStorage.getItem(HIDDEN_KEY) === '1'){
       renderReopenPill();
       return;
@@ -266,6 +286,7 @@
       '</div>' +
       '<button type="button" class="leobot-fab" id="leobotFab" aria-label="Abrir asistente LeoBot" aria-haspopup="dialog" aria-expanded="false">' +
         '<div class="leobot-avatar" id="leobotFabAvatar"></div>' +
+        '<span class="leobot-fab-dot" id="leobotFabDot" hidden></span>' +
       '</button>' +
       '<div class="leobot-panel" id="leobotPanel" role="dialog" aria-modal="false" aria-label="Asistente LeoBot">' +
         '<div class="leobot-header">' +
@@ -306,6 +327,7 @@
     var hideBtn = document.getElementById('leobotHideBtn');
     var fabAvatar = document.getElementById('leobotFabAvatar');
     var headerAvatar = document.getElementById('leobotHeaderAvatar');
+    var fabDot = document.getElementById('leobotFabDot');
 
     var isOpen = false;
     var hasOpenedOnce = false;
@@ -315,6 +337,7 @@
 
     function hideGreet(){
       if(greet) greet.classList.remove('show');
+      if(fabDot) fabDot.hidden = true;
     }
 
     function open(isAutomatic){
@@ -399,7 +422,7 @@
         var menuBtn = document.createElement('button');
         menuBtn.type = 'button';
         menuBtn.className = 'leobot-opt-btn ghost';
-        menuBtn.textContent = '🏠 Menú principal';
+        menuBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Menú principal</span>';
         menuBtn.addEventListener('click', function(){ goTo('root', true); });
         optionsEl.appendChild(menuBtn);
       }
@@ -496,27 +519,21 @@
       }
     }
 
-    /* Primera vez que alguien visita el sitio en este navegador: se abre el
-       panel completo una sola vez para siempre (comportamiento ya existente). */
-    if(localStorage.getItem(AUTO_OPEN_KEY) !== '1'){
-      afterWelcomeGap(function(){
-        if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
-        localStorage.setItem(AUTO_OPEN_KEY, '1');
-        try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
-        open(true);
-      }, 2500, 900);
-    } else if(!sessionGreeted){
-      /* Visitas siguientes: nada de panel completo — solo una burbuja
-         pequeña y discreta junto al ícono, una vez por sesión del navegador. */
+    /* Cada vez que alguien entra al sitio (una vez por sesión de navegador,
+       no en cada página que visite dentro de esa sesión): una burbuja
+       pequeña junto al ícono invita a pedir ayuda, sin abrir el panel
+       completo — nunca competimos por la atención con el onboarding. */
+    if(!sessionGreeted){
       afterWelcomeGap(function(){
         if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
         try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
         if(greet){
           greet.classList.add('show');
+          if(fabDot) fabDot.hidden = false;
           setAvatarState(fabAvatar, 'wink', 900);
-          window.setTimeout(hideGreet, 6000);
+          window.setTimeout(hideGreet, 7000);
         }
-      }, 2000, 1200);
+      }, 1600, 1300);
     }
   }
 
@@ -526,7 +543,7 @@
     pill.type = 'button';
     pill.id = 'leobotReopen';
     pill.className = 'leobot-reopen';
-    pill.textContent = '🤖 Asistente';
+    pill.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 5h16v11H9l-4 4v-4H4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Asistente</span>';
     pill.setAttribute('aria-label', 'Reactivar asistente LeoBot');
     pill.addEventListener('click', function(){
       localStorage.removeItem(HIDDEN_KEY);
