@@ -1218,6 +1218,24 @@ const LISTENING_BANK = {
         transcript:"Those shoes over there are too expensive for me.", translation:"Esos zapatos de allá son demasiado caros para mí.",
         question:"What does the speaker think about the shoes?", options:["They are too expensive","They are too cheap","They are comfortable"], correct:0,
         explain:"“Too expensive” dice que el precio le parece demasiado alto." }
+    ],
+    [
+      { id:'l-facil4-1', audioFile:'audio/a1/a1listening-008.mp3',
+        transcript:"The bus leaves in ten minutes.", translation:"El autobús sale en diez minutos.",
+        question:"When does the bus leave?", options:["In ten minutes","In ten hours","In ten days"], correct:0,
+        explain:"“Minutes” es la unidad de tiempo que se menciona, no “hours” ni “days”." },
+      { id:'l-facil4-2', audioFile:'audio/a1/a1listening-009.mp3',
+        transcript:"I need to buy new shoes for the party.", translation:"Necesito comprar zapatos nuevos para la fiesta.",
+        question:"What does the speaker need to buy?", options:["Shoes","A dress","A gift"], correct:0,
+        explain:"“Buy new shoes” indica claramente qué necesita comprar." },
+      { id:'l-facil4-3', audioFile:'audio/a1/a1listening-010.mp3',
+        transcript:"He always forgets his umbrella.", translation:"Él siempre olvida su paraguas.",
+        question:"What does he always forget?", options:["His umbrella","His keys","His phone"], correct:0,
+        explain:"“Umbrella” es el objeto que menciona la frase." },
+      { id:'l-facil4-4', audioFile:'audio/a1/a1listening-011.mp3',
+        transcript:"We are going to the park this afternoon.", translation:"Vamos al parque esta tarde.",
+        question:"Where are they going?", options:["To the park","To the store","To school"], correct:0,
+        explain:"“Going to the park” dice el lugar al que van." }
     ]
   ],
   medio: [
@@ -1254,6 +1272,24 @@ const LISTENING_BANK = {
         transcript:"Even though he was busy, he helped his friend.", translation:"Aunque estaba ocupado, ayudó a su amigo.",
         question:"Did he help his friend?", options:["Yes","No","He couldn't"], correct:0,
         explain:"“Even though” introduce un contraste, pero la acción sí ocurrió." }
+    ],
+    [
+      { id:'l-medio4-1', audioFile:'audio/b1/b1listening-008.mp3',
+        transcript:"Although the flight was delayed, we still made it to the meeting.", translation:"Aunque el vuelo se retrasó, aún así llegamos a la reunión.",
+        question:"Did they make it to the meeting?", options:["Yes","No","They cancelled it"], correct:0,
+        explain:"“We still made it” confirma que sí llegaron, a pesar del retraso." },
+      { id:'l-medio4-2', audioFile:'audio/b1/b1listening-009.mp3',
+        transcript:"She has been working on this project for three months.", translation:"Ella ha estado trabajando en este proyecto durante tres meses.",
+        question:"How long has she been working on the project?", options:["Three months","Three weeks","Three days"], correct:0,
+        explain:"“For three months” indica la duración de la acción." },
+      { id:'l-medio4-3', audioFile:'audio/b1/b1listening-010.mp3',
+        transcript:"If I had more time, I would learn to play the guitar.", translation:"Si tuviera más tiempo, aprendería a tocar la guitarra.",
+        question:"What would the speaker do with more time?", options:["Learn to play the guitar","Travel more","Read more books"], correct:0,
+        explain:"Condicional tipo 2 describe algo hipotético: aprender guitarra." },
+      { id:'l-medio4-4', audioFile:'audio/b1/b1listening-011.mp3',
+        transcript:"The company is planning to open a new office next year.", translation:"La empresa está planeando abrir una nueva oficina el próximo año.",
+        question:"What is the company planning to do?", options:["Open a new office","Close an office","Hire more people"], correct:0,
+        explain:"“Planning to open a new office” dice específicamente el plan." }
     ]
   ],
   avanzado: [
@@ -1290,6 +1326,24 @@ const LISTENING_BANK = {
         transcript:"Rarely have I seen such dedication.", translation:"Rara vez he visto tanta dedicación.",
         question:"What does this sentence suggest?", options:["The speaker rarely sees this level of dedication","The speaker sees it often","The speaker has never seen dedication"], correct:0,
         explain:"“Rarely” + inversión enfatiza que ocurre pocas veces, no nunca." }
+    ],
+    [
+      { id:'l-avz4-1', audioFile:'audio/c1/c1listening-008.mp3',
+        transcript:"Not only did the negotiations fail, but the deal was also cancelled.", translation:"No solo fracasaron las negociaciones, sino que además se canceló el trato.",
+        question:"What happened to the deal?", options:["It was cancelled","It was signed","It was postponed"], correct:0,
+        explain:"“But the deal was also cancelled” confirma el resultado final." },
+      { id:'l-avz4-2', audioFile:'audio/c1/c1listening-009.mp3',
+        transcript:"It is believed that the new policy will reduce costs significantly.", translation:"Se cree que la nueva política reducirá los costos significativamente.",
+        question:"What is the new policy expected to do?", options:["Reduce costs","Increase costs","Have no effect"], correct:0,
+        explain:"“Reduce costs significantly” es lo que se espera de la política." },
+      { id:'l-avz4-3', audioFile:'audio/c1/c1listening-010.mp3',
+        transcript:"Had the team communicated better, the project would have finished on time.", translation:"Si el equipo se hubiera comunicado mejor, el proyecto habría terminado a tiempo.",
+        question:"Did the project finish on time?", options:["No","Yes","It's unclear"], correct:0,
+        explain:"Condicional tipo 3 implica que en realidad NO terminó a tiempo." },
+      { id:'l-avz4-4', audioFile:'audio/c1/c1listening-011.mp3',
+        transcript:"Rarely does a company achieve such rapid growth without external investment.", translation:"Rara vez una empresa logra un crecimiento tan rápido sin inversión externa.",
+        question:"What does this sentence suggest about rapid growth without external investment?", options:["It's rare","It's common","It's impossible"], correct:0,
+        explain:"“Rarely” + inversión enfatiza que es poco común, no imposible." }
     ]
   ]
 };
