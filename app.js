@@ -1587,17 +1587,6 @@ function streakGoalMessage(streak, practicedCount){
 /* ============================================================
    PÁGINA DE PROGRESO (progreso.html)
    ============================================================ */
-/* ---------- Iconos por habilidad (mismos trazos que las tarjetas de miembros.html) ---------- */
-const SKILL_ICONS = {
-  gramatica: '<path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  vocabulario: '<path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" stroke="currentColor" stroke-width="2"/>',
-  listening: '<path d="M4 13v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/>',
-  writing: '<path d="M4 20l1-4L16 5l3 3-11 11-4 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
-  speaking: '<rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  mixto: '<path d="M4 6h6M4 12h4M4 18h8M14 6h6M17 12h3M12 18h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
-};
-const SKILL_TINTS = { gramatica:'coral', vocabulario:'green', listening:'blue', writing:'amber', speaking:'violet', mixto:'blue' };
-
 /* ---------- Estadísticas semanales con comparación vs. la semana anterior ---------- */
 function computeWeeklyStatsWithDelta(){
   const p = loadProgress();
@@ -1720,13 +1709,9 @@ function renderSkillsPanel(container, p){
     const pct = computeSkillCoverage(p, skill);
     const attempted = attemptedItemIdsFor(p, skill).size;
     const color = SKILL_COLORS[skill];
-    const tint = `var(--${SKILL_TINTS[skill]}-tint)`;
     const fb = skillFeedback(pct, attempted);
     return `
       <a href="${SKILL_PAGE[skill]}" class="skill-row-link">
-        <span class="skill-row-icon" style="background:${tint};color:${color};">
-          <svg viewBox="0 0 24 24" fill="none">${SKILL_ICONS[skill]}</svg>
-        </span>
         <span class="skill-row-label">${SKILL_LABELS[skill]}</span>
         <span class="skill-row-track"><span class="skill-row-fill" style="width:${pct}%;background:${color};"></span></span>
         <span class="skill-row-pct">${pct}%</span>
@@ -1736,16 +1721,47 @@ function renderSkillsPanel(container, p){
   }).join('');
 }
 
-function renderProgressMascotCard(container, streak, practicedCount){
+/* Consejo específico según los datos reales del usuario, no un genérico
+   repetido siempre igual. */
+function pickProgressTip(p, streak){
+  const skills = Object.keys(SKILL_LABELS);
+  const started = skills.filter(sk => attemptedItemIdsFor(p, sk).size > 0);
+  const untried = skills.filter(sk => attemptedItemIdsFor(p, sk).size === 0);
+
+  if(streak === 0){
+    return { skill: null, text: 'Una sesión corta hoy vale más que una larga dentro de unos días: las sesiones cortas y seguidas ayudan más a fijar lo que aprendes.' };
+  }
+  if(untried.length && started.length){
+    const next = untried[0];
+    return { skill: next, text: `Todavía no has probado ${SKILL_LABELS[next]}. Practicar varias habilidades te da una base más completa que enfocarte solo en una.` };
+  }
+  if(started.length){
+    let lowest = null;
+    started.forEach(sk=>{
+      const cov = computeSkillCoverage(p, sk);
+      if(!lowest || cov < lowest.cov) lowest = { sk, cov };
+    });
+    if(lowest && lowest.cov < 100){
+      return { skill: lowest.sk, text: `${SKILL_LABELS[lowest.sk]} es donde tienes más margen ahora mismo. Unos minutos hoy suman más de lo que parece.` };
+    }
+  }
+  if(streak >= 3){
+    return { skill: null, text: `Llevas ${streak} días seguidos. Volver a repasar algo que ya practicaste, después de un par de días, es lo que más ayuda a que se quede en la memoria.` };
+  }
+  return { skill: null, text: 'Repasar el material después de un par de días ayuda a que se quede en la memoria a largo plazo.' };
+}
+
+function renderProgressTipCard(container, p, streak){
   if(!container) return;
-  const msg = streak > 0
-    ? `Llevas ${streak} ${streak===1?'día':'días'} de racha. La práctica constante te acerca a tus metas.`
-    : 'Un poco cada día te acerca a tus metas. ¡Empieza hoy!';
+  const tip = pickProgressTip(p, streak);
+  const href = tip.skill ? SKILL_PAGE[tip.skill] : 'miembros.html';
   container.innerHTML = `
-    <img src="leo-pointing.png" alt="" width="90" height="150" loading="lazy">
-    <h4>Sigue aprendiendo</h4>
-    <p>${msg}</p>
-    <a href="miembros.html" class="btn btn-primary">Practicar ahora →</a>`;
+    <div class="tip-card-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.4.3.6.8.6 1.3V16h5.8v-.8c0-.5.2-1 .6-1.3A6 6 0 0012 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="tip-card-eyebrow">Consejo para ti</div>
+    <p class="tip-card-text">${tip.text}</p>
+    <a href="${href}" class="btn btn-primary">Practicar ahora →</a>`;
 }
 
 function renderProgressPage(root){
@@ -1801,7 +1817,7 @@ function renderProgressPage(root){
     <div class="bottom-grid" id="progressBottomGrid">
       <div class="activity-card" id="progressRecent"></div>
       <div class="weekly-chart-card" id="progressWeekly"></div>
-      <div class="mascot-card" id="progressMascot"></div>
+      <div class="tip-card" id="progressTip"></div>
     </div>
 
     <div class="section-head" style="margin-top:44px;">
@@ -1820,7 +1836,7 @@ function renderProgressPage(root){
   renderSkillsPanel(document.getElementById('skillsPanel'), p);
   renderRecentActivityV2(document.getElementById('progressRecent'));
   renderWeeklyChart(document.getElementById('progressWeekly'));
-  renderProgressMascotCard(document.getElementById('progressMascot'), streak, practicedCount);
+  renderProgressTipCard(document.getElementById('progressTip'), p, streak);
 }
 
 /* ============================================================
