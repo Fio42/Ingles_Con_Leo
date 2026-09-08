@@ -230,6 +230,74 @@ const GRAMMAR_BANK = {
             ]}
         ]
       }
+    ],
+    [
+      {
+        topic: 'Question words (What / Where / When / Who)',
+        items: [
+          { id:'g-facil4-qw-1', type:'choice', prompt:"___ is your name?",
+            options:["What","Where","Who"], correct:0,
+            explain:"Usamos “what” para preguntar por una cosa o información, como el nombre.",
+            examples:[
+              {en:"What is your name?", es:"¿Cuál es tu nombre?"},
+              {en:"What is your favorite color?", es:"¿Cuál es tu color favorito?"}
+            ]},
+          { id:'g-facil4-qw-2', type:'fill', sentence:["___","do","you","live","?"], blankIndex:0,
+            bank:["Where","What","Who"], correct:"Where",
+            explain:"“Where” se usa para preguntar por un lugar.",
+            examples:[
+              {en:"Where do you live?", es:"¿Dónde vives?"},
+              {en:"Where is the bathroom?", es:"¿Dónde está el baño?"}
+            ]},
+          { id:'g-facil4-qw-3', type:'choice', prompt:"___ is your birthday?",
+            options:["When","Who","What"], correct:0,
+            explain:"“When” se usa para preguntar por el momento o la fecha.",
+            examples:[
+              {en:"When is your birthday?", es:"¿Cuándo es tu cumpleaños?"},
+              {en:"When does the movie start?", es:"¿Cuándo empieza la película?"}
+            ]},
+          { id:'g-facil4-qw-4', type:'error', wrong:"Were is the bathroom?", wrongWord:"Were",
+            right:"Where is the bathroom?", rightWord:"Where",
+            explain:"“Were” (pasado de “to be”) y “where” (dónde) suenan parecido pero significan cosas distintas.",
+            examples:[
+              {en:"Where is the bathroom?", es:"¿Dónde está el baño?"},
+              {en:"They were at home yesterday.", es:"Ellos estaban en casa ayer."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Adverbios de frecuencia (always / usually / sometimes / never)',
+        items: [
+          { id:'g-facil4-freq-1', type:'choice', prompt:"I ___ drink coffee in the morning.",
+            options:["always","never","yesterday"], correct:0,
+            explain:"Los adverbios de frecuencia como “always” van antes del verbo principal.",
+            examples:[
+              {en:"I always drink coffee in the morning.", es:"Siempre tomo café en la mañana."},
+              {en:"She always arrives on time.", es:"Ella siempre llega a tiempo."}
+            ]},
+          { id:'g-facil4-freq-2', type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
+            bank:["always","yesterday","tomorrow"], correct:"always",
+            explain:"Con el verbo “to be”, el adverbio de frecuencia va después: “is always”.",
+            examples:[
+              {en:"She is always late.", es:"Ella siempre llega tarde."},
+              {en:"He is never hungry in the morning.", es:"Él nunca tiene hambre en la mañana."}
+            ]},
+          { id:'g-facil4-freq-3', type:'choice', prompt:"We ___ go to the beach in summer.",
+            options:["usually","yesterday","tomorrow"], correct:0,
+            explain:"“Usually” describe algo habitual; “yesterday” y “tomorrow” son momentos específicos, no frecuencia.",
+            examples:[
+              {en:"We usually go to the beach in summer.", es:"Normalmente vamos a la playa en verano."},
+              {en:"They usually eat dinner at eight.", es:"Ellos normalmente cenan a las ocho."}
+            ]},
+          { id:'g-facil4-freq-4', type:'error', wrong:"She never is late.", wrongWord:"never is",
+            right:"She is never late.", rightWord:"is never",
+            explain:"Con “to be”, el orden correcto es verbo + adverbio: “is never”, no “never is”.",
+            examples:[
+              {en:"She is never late.", es:"Ella nunca llega tarde."},
+              {en:"He is sometimes tired after work.", es:"Él a veces está cansado después del trabajo."}
+            ]}
+        ]
+      }
     ]
   ],
   medio: [
@@ -433,6 +501,74 @@ const GRAMMAR_BANK = {
             examples:[
               {en:"He said that he was busy yesterday.", es:"Él dijo que estaba ocupado ayer."},
               {en:"She said she was happy.", es:"Ella dijo que estaba feliz."}
+            ]}
+        ]
+      }
+    ],
+    [
+      {
+        topic: 'Voz pasiva (presente y pasado simple)',
+        items: [
+          { id:'g-medio4-pass-1', type:'choice', prompt:"This bridge ___ in 1990.",
+            options:["built","was built","is built"], correct:1,
+            explain:"Voz pasiva en pasado: “was/were” + participio. La acción ocurrió en el pasado.",
+            examples:[
+              {en:"This bridge was built in 1990.", es:"Este puente fue construido en 1990."},
+              {en:"The letter was written yesterday.", es:"La carta fue escrita ayer."}
+            ]},
+          { id:'g-medio4-pass-2', type:'fill', sentence:["English","___","spoken","all","over","the","world","."], blankIndex:1,
+            bank:["is","was","are"], correct:"is",
+            explain:"Voz pasiva en presente con sujeto singular: “is” + participio.",
+            examples:[
+              {en:"English is spoken all over the world.", es:"El inglés se habla en todo el mundo."},
+              {en:"This product is made in Mexico.", es:"Este producto se hace en México."}
+            ]},
+          { id:'g-medio4-pass-3', type:'choice', prompt:"The letters ___ every day.",
+            options:["deliver","are delivered","delivered"], correct:1,
+            explain:"Con sujeto plural en presente, la voz pasiva usa “are” + participio.",
+            examples:[
+              {en:"The letters are delivered every day.", es:"Las cartas se entregan todos los días."},
+              {en:"These cars are made in Japan.", es:"Estos carros se fabrican en Japón."}
+            ]},
+          { id:'g-medio4-pass-4', type:'error', wrong:"The cake was make by my mom.", wrongWord:"make",
+            right:"The cake was made by my mom.", rightWord:"made",
+            explain:"Después de “was/were” en voz pasiva necesitamos el participio: “made”, no la forma base “make”.",
+            examples:[
+              {en:"The cake was made by my mom.", es:"El pastel fue hecho por mi mamá."},
+              {en:"The house was built by my grandfather.", es:"La casa fue construida por mi abuelo."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Verbos modales de obligación (must / have to / should)',
+        items: [
+          { id:'g-medio4-mod-1', type:'choice', prompt:"You ___ wear a seatbelt, it's the law.",
+            options:["must","should","could"], correct:0,
+            explain:"“Must” expresa una obligación fuerte, como una regla o ley.",
+            examples:[
+              {en:"You must wear a seatbelt.", es:"Debes usar cinturón de seguridad (es obligatorio)."},
+              {en:"Employees must wash their hands.", es:"Los empleados deben lavarse las manos."}
+            ]},
+          { id:'g-medio4-mod-2', type:'choice', prompt:"You ___ see a doctor if you feel sick — it's a good idea.",
+            options:["should","must","can"], correct:0,
+            explain:"“Should” es un consejo, no una obligación estricta como “must”.",
+            examples:[
+              {en:"You should see a doctor.", es:"Deberías ver a un doctor (es un consejo)."},
+              {en:"You should drink more water.", es:"Deberías tomar más agua."}
+            ]},
+          { id:'g-medio4-mod-3', type:'fill', sentence:["I","___","go","to","work","tomorrow,","it's","a","holiday","."], blankIndex:1,
+            bank:["don't have to","must","should"], correct:"don't have to",
+            explain:"“Don't have to” significa que no hay obligación, es diferente de “mustn't” (prohibido).",
+            examples:[
+              {en:"I don't have to go to work tomorrow.", es:"No tengo que ir a trabajar mañana."},
+              {en:"You don't have to bring anything, we have everything.", es:"No tienes que traer nada, ya tenemos de todo."}
+            ]},
+          { id:'g-medio4-mod-4', type:'error', wrong:"You must to be careful.", wrongWord:"must to",
+            right:"You must be careful.", rightWord:"must",
+            explain:"Después de un verbo modal como “must” va el verbo base directo, sin “to”.",
+            examples:[
+              {en:"You must be careful.", es:"Debes tener cuidado."},
+              {en:"She must finish the report today.", es:"Ella debe terminar el informe hoy."}
             ]}
         ]
       }
@@ -642,6 +778,74 @@ const GRAMMAR_BANK = {
             ]}
         ]
       }
+    ],
+    [
+      {
+        topic: 'Wish / If only',
+        items: [
+          { id:'g-avz4-wish-1', type:'choice', prompt:"I wish I ___ more time to travel.",
+            options:["have","had","will have"], correct:1,
+            explain:"“Wish” + pasado simple expresa un deseo sobre algo que no es cierto ahora.",
+            examples:[
+              {en:"I wish I had more time to travel.", es:"Ojalá tuviera más tiempo para viajar."},
+              {en:"She wishes she lived closer to her family.", es:"Ella desearía vivir más cerca de su familia."}
+            ]},
+          { id:'g-avz4-wish-2', type:'choice', prompt:"If only she ___ arrived earlier!",
+            options:["had","has","have"], correct:0,
+            explain:"“If only” + pasado perfecto expresa un lamento sobre el pasado.",
+            examples:[
+              {en:"If only she had arrived earlier!", es:"¡Ojalá hubiera llegado más temprano!"},
+              {en:"If only I had known about the meeting.", es:"Ojalá hubiera sabido sobre la reunión."}
+            ]},
+          { id:'g-avz4-wish-3', type:'fill', sentence:["I","wish","I","___","how","to","swim","."], blankIndex:3,
+            bank:["knew","know","will know"], correct:"knew",
+            explain:"“Wish” + pasado simple para un deseo sobre el presente.",
+            examples:[
+              {en:"I wish I knew how to swim.", es:"Ojalá supiera nadar."},
+              {en:"He wishes he spoke French.", es:"Él desearía hablar francés."}
+            ]},
+          { id:'g-avz4-wish-4', type:'error', wrong:"I wish I am taller.", wrongWord:"am",
+            right:"I wish I were taller.", rightWord:"were",
+            explain:"Después de “wish”, usamos “were” (no “am/is/was”) para todas las personas en deseos hipotéticos.",
+            examples:[
+              {en:"I wish I were taller.", es:"Ojalá fuera más alto."},
+              {en:"She wishes she were more patient.", es:"Ella desearía ser más paciente."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Condicionales mixtos',
+        items: [
+          { id:'g-avz4-mix-1', type:'choice', prompt:"If I had studied medicine, I ___ a doctor now.",
+            options:["would be","would have been","will be"], correct:0,
+            explain:"Condicional mixto: condición en el pasado (“had studied”) con resultado en el presente (“would be”).",
+            examples:[
+              {en:"If I had studied medicine, I would be a doctor now.", es:"Si hubiera estudiado medicina, ahora sería doctor."},
+              {en:"If she had taken that job, she would live in Madrid now.", es:"Si hubiera tomado ese trabajo, ahora viviría en Madrid."}
+            ]},
+          { id:'g-avz4-mix-2', type:'choice', prompt:"If she weren't so busy, she ___ to the party last night.",
+            options:["would have gone","would go","will go"], correct:0,
+            explain:"Condicional mixto: condición en el presente (“weren't busy”) con resultado en el pasado (“would have gone”).",
+            examples:[
+              {en:"If she weren't so busy, she would have gone to the party last night.", es:"Si no estuviera tan ocupada, habría ido a la fiesta anoche."},
+              {en:"If he weren't so shy, he would have said something.", es:"Si no fuera tan tímido, habría dicho algo."}
+            ]},
+          { id:'g-avz4-mix-3', type:'fill', sentence:["If","I","were","you,","I","___","have","accepted","the","offer","."], blankIndex:5,
+            bank:["would","will","had"], correct:"would",
+            explain:"“Would have” + participio expresa el resultado hipotético en el pasado.",
+            examples:[
+              {en:"If I were you, I would have accepted the offer.", es:"Si yo fuera tú, habría aceptado la oferta."},
+              {en:"If I were rich, I would have bought that house.", es:"Si fuera rico, habría comprado esa casa."}
+            ]},
+          { id:'g-avz4-mix-4', type:'error', wrong:"If I was rich, I would have bought that house years ago.", wrongWord:"was",
+            right:"If I were rich, I would have bought that house years ago.", rightWord:"were",
+            explain:"En condicionales hipotéticos, usamos “were” (no “was”) con “I/he/she”, especialmente en registro formal.",
+            examples:[
+              {en:"If I were rich, I would have bought that house years ago.", es:"Si fuera rico, habría comprado esa casa hace años."},
+              {en:"If he were more careful, he wouldn't have made that mistake.", es:"Si él fuera más cuidadoso, no habría cometido ese error."}
+            ]}
+        ]
+      }
     ]
   ]
 };
@@ -730,6 +934,32 @@ const VOCAB_BANK = {
       { id:'v-facil3-8', word:'Guess', translation:'Guess · decir algo sin estar seguro',
         examples:[{en:"I don't know, but I'll guess.", es:"No sé, pero adivinaré."},{en:"Can you guess how old I am?", es:"¿Puedes adivinar cuántos años tengo?"}],
         quiz:{ prompt:"¿Cuál oración usa \"guess\" correctamente?", options:["Can you guess my age?","Can you guess of my age?","Can you guessing my age?"], correct:0, explain:"“Guess” es un verbo simple: “guess + objeto”, sin preposición extra." } }
+    ],
+    [
+      { id:'v-facil4-1', word:'Receipt', translation:'Receipt · papel que prueba que compraste algo',
+        examples:[{en:"Can I have the receipt, please?", es:"¿Me puede dar el recibo, por favor?"},{en:"I lost my receipt from the store.", es:"Perdí mi recibo de la tienda."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"papel que prueba que compraste algo\"?", options:["receipt","discount","change"], correct:0, explain:"“Receipt” es el recibo de compra." } },
+      { id:'v-facil4-2', word:'Discount', translation:'Discount · rebaja en el precio',
+        examples:[{en:"I got a 20% discount on these shoes.", es:"Me dieron un 20% de descuento en estos zapatos."},{en:"Is there a discount for students?", es:"¿Hay descuento para estudiantes?"}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"rebaja en el precio\"?", options:["discount","refund","size"], correct:0, explain:"“Discount” es una rebaja en el precio." } },
+      { id:'v-facil4-3', word:'Refund', translation:'Refund · devolución del dinero pagado',
+        examples:[{en:"I want a refund for this shirt.", es:"Quiero que me devuelvan el dinero por esta camisa."},{en:"They gave me a full refund.", es:"Me devolvieron todo el dinero."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"devolución del dinero pagado\"?", options:["refund","receipt","cash"], correct:0, explain:"“Refund” es cuando te devuelven el dinero." } },
+      { id:'v-facil4-4', word:'Cash', translation:'Cash · dinero en efectivo',
+        examples:[{en:"Do you accept cash?", es:"¿Aceptan efectivo?"},{en:"I only have cash, no card.", es:"Solo tengo efectivo, no tarjeta."}],
+        quiz:{ prompt:"¿Cuál oración usa \"cash\" correctamente?", options:["Do you accept cash?","Do you accept cash of?","Do you cash accept?"], correct:0, explain:"“Cash” va después del verbo “accept”: “accept cash”." } },
+      { id:'v-facil4-5', word:'Change', translation:'Change · el dinero que te devuelven al pagar',
+        examples:[{en:"Here's your change.", es:"Aquí está tu cambio."},{en:"Keep the change.", es:"Quédate con el cambio."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"el dinero que te devuelven al pagar\"?", options:["change","discount","refund"], correct:0, explain:"“Change” es el cambio o vuelto que te dan." } },
+      { id:'v-facil4-6', word:'Size', translation:'Size · talla o tamaño',
+        examples:[{en:"What size do you wear?", es:"¿Qué talla usas?"},{en:"This shirt is the wrong size.", es:"Esta camisa es la talla equivocada."}],
+        quiz:{ prompt:"¿Qué significa \"size\"?", options:["Color","Talla o tamaño","Precio"], correct:1, explain:"“Size” significa talla o tamaño." } },
+      { id:'v-facil4-7', word:'Try on', translation:'Try on · probarse ropa antes de comprarla',
+        examples:[{en:"Can I try on these pants?", es:"¿Puedo probarme estos pantalones?"},{en:"She tried on three dresses.", es:"Ella se probó tres vestidos."}],
+        quiz:{ prompt:"¿Cuál oración usa \"try on\" correctamente?", options:["Can I try on this jacket?","Can I try this on of jacket?","Can I try on of this jacket?"], correct:0, explain:"“Try on” es una frase verbal: “try on + prenda”." } },
+      { id:'v-facil4-8', word:'Checkout', translation:'Checkout · caja donde pagas en una tienda',
+        examples:[{en:"The line at the checkout was long.", es:"La fila en la caja estaba larga."},{en:"Please pay at the checkout.", es:"Por favor pague en la caja."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"caja donde pagas en una tienda\"?", options:["checkout","receipt","wallet"], correct:0, explain:"“Checkout” es la caja o mostrador donde pagas." } }
     ]
   ],
   medio: [
@@ -810,6 +1040,32 @@ const VOCAB_BANK = {
       { id:'v-medio3-8', word:'Resent', translation:'Resent · sentir molestia o rencor por algo',
         examples:[{en:"She resented having to work on weekends.", es:"Ella sentía rencor por tener que trabajar los fines de semana."},{en:"He resents being told what to do.", es:"Él se molesta de que le digan qué hacer."}],
         quiz:{ prompt:"¿Cuál oración usa \"resent\" correctamente?", options:["She resents working on weekends.","She resents of working on weekends.","She resents to work on weekends."], correct:0, explain:"“Resent” va seguido de gerundio directo, sin preposición: “resent working”." } }
+    ],
+    [
+      { id:'v-medio4-1', word:'Itinerary', translation:'Itinerary · plan detallado de un viaje',
+        examples:[{en:"Our itinerary includes three cities.", es:"Nuestro itinerario incluye tres ciudades."},{en:"Can you send me the trip itinerary?", es:"¿Me puedes enviar el itinerario del viaje?"}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"plan detallado de un viaje\"?", options:["itinerary","luggage","departure"], correct:0, explain:"“Itinerary” es el plan del viaje." } },
+      { id:'v-medio4-2', word:'Luggage', translation:'Luggage · maletas y bolsos que llevas al viajar',
+        examples:[{en:"My luggage didn't arrive at the airport.", es:"Mi equipaje no llegó al aeropuerto."},{en:"We packed light luggage for the trip.", es:"Empacamos equipaje ligero para el viaje."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"maletas y bolsos que llevas al viajar\"?", options:["luggage","itinerary","souvenir"], correct:0, explain:"“Luggage” es el equipaje." } },
+      { id:'v-medio4-3', word:'Layover', translation:'Layover · escala entre dos vuelos',
+        examples:[{en:"We have a two-hour layover in Miami.", es:"Tenemos una escala de dos horas en Miami."},{en:"I hate long layovers.", es:"Odio las escalas largas."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"escala entre dos vuelos\"?", options:["layover","departure","currency exchange"], correct:0, explain:"“Layover” es la escala entre vuelos." } },
+      { id:'v-medio4-4', word:'Accommodation', translation:'Accommodation · lugar donde te hospedas',
+        examples:[{en:"We booked our accommodation online.", es:"Reservamos nuestro alojamiento en línea."},{en:"The accommodation was close to the beach.", es:"El alojamiento estaba cerca de la playa."}],
+        quiz:{ prompt:"¿Cuál oración usa \"accommodation\" correctamente?", options:["We booked our accommodation online.","We booked our accommodation of online.","We accommodation booked online."], correct:0, explain:"“Accommodation” es un sustantivo incontable en inglés (sin “s”)." } },
+      { id:'v-medio4-5', word:'Departure', translation:'Departure · el momento de salir o partir',
+        examples:[{en:"Our departure time is 6 a.m.", es:"Nuestra hora de salida es las 6 a.m."},{en:"Check the departure board for your gate.", es:"Revisa el tablero de salidas para tu puerta."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"el momento de salir o partir\"?", options:["departure","arrival","layover"], correct:0, explain:"“Departure” es la salida; lo opuesto es “arrival”." } },
+      { id:'v-medio4-6', word:'Currency exchange', translation:'Currency exchange · lugar o proceso para cambiar dinero de un país a otro',
+        examples:[{en:"There's a currency exchange at the airport.", es:"Hay una casa de cambio en el aeropuerto."},{en:"I need to do a currency exchange before the trip.", es:"Necesito cambiar dinero antes del viaje."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cambiar dinero de un país a otro\"?", options:["currency exchange","refund","discount"], correct:0, explain:"“Currency exchange” es cambio de moneda." } },
+      { id:'v-medio4-7', word:'Souvenir', translation:'Souvenir · recuerdo que compras en un viaje',
+        examples:[{en:"I bought a souvenir for my sister.", es:"Le compré un recuerdo a mi hermana."},{en:"These souvenirs are too expensive.", es:"Estos recuerdos son muy caros."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"recuerdo que compras en un viaje\"?", options:["souvenir","luggage","itinerary"], correct:0, explain:"“Souvenir” es un recuerdo de viaje." } },
+      { id:'v-medio4-8', word:'Delayed', translation:'Delayed · retrasado, que no llega a tiempo',
+        examples:[{en:"Our flight was delayed by two hours.", es:"Nuestro vuelo se retrasó dos horas."},{en:"The train is delayed again.", es:"El tren está retrasado otra vez."}],
+        quiz:{ prompt:"¿Cuál oración usa \"delayed\" correctamente?", options:["Our flight was delayed.","Our flight was delayed of.","Our flight delayed was."], correct:0, explain:"“Delayed” funciona como adjetivo después de “was/were”." } }
     ]
   ],
   avanzado: [
@@ -890,6 +1146,32 @@ const VOCAB_BANK = {
       { id:'v-avz3-8', word:'Unassuming', translation:'Unassuming · modesto, que no busca llamar la atención',
         examples:[{en:"He's a brilliant but unassuming scientist.", es:"Él es un científico brillante pero modesto."},{en:"She has an unassuming manner.", es:"Ella tiene una manera modesta de ser."}],
         quiz:{ prompt:"¿Cuál oración usa \"unassuming\" correctamente?", options:["He is a brilliant, unassuming scientist.","He is a brilliant, unassuming of scientist.","He unassuming is a scientist."], correct:0, explain:"“Unassuming” es un adjetivo simple antes del sustantivo: “an unassuming scientist”." } }
+    ],
+    [
+      { id:'v-avz4-1', word:'Negotiate', translation:'Negotiate · llegar a un acuerdo discutiendo términos',
+        examples:[{en:"We need to negotiate a better price.", es:"Necesitamos negociar un mejor precio."},{en:"She negotiated her salary before accepting the job.", es:"Ella negoció su salario antes de aceptar el trabajo."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"llegar a un acuerdo discutiendo términos\"?", options:["negotiate","outsource","leverage"], correct:0, explain:"“Negotiate” es negociar un acuerdo." } },
+      { id:'v-avz4-2', word:'Deadline', translation:'Deadline · fecha límite para entregar algo',
+        examples:[{en:"The deadline for the project is Friday.", es:"La fecha límite del proyecto es el viernes."},{en:"We missed the deadline.", es:"No cumplimos con la fecha límite."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"fecha límite para entregar algo\"?", options:["deadline","revenue","merger"], correct:0, explain:"“Deadline” es la fecha límite." } },
+      { id:'v-avz4-3', word:'Stakeholder', translation:'Stakeholder · persona o grupo con interés en un proyecto o empresa',
+        examples:[{en:"We presented the plan to all stakeholders.", es:"Presentamos el plan a todas las partes interesadas."},{en:"Every stakeholder has different priorities.", es:"Cada parte interesada tiene prioridades distintas."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"persona o grupo con interés en un proyecto o empresa\"?", options:["stakeholder","deadline","overhead"], correct:0, explain:"“Stakeholder” es una parte interesada en el negocio." } },
+      { id:'v-avz4-4', word:'Revenue', translation:'Revenue · dinero que gana una empresa por sus ventas',
+        examples:[{en:"The company's revenue grew by 15% this year.", es:"Los ingresos de la empresa crecieron un 15% este año."},{en:"Revenue was lower than expected.", es:"Los ingresos fueron menores de lo esperado."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"dinero que gana una empresa por sus ventas\"?", options:["revenue","overhead","merger"], correct:0, explain:"“Revenue” son los ingresos de una empresa." } },
+      { id:'v-avz4-5', word:'Merger', translation:'Merger · unión de dos empresas en una sola',
+        examples:[{en:"The merger created the largest company in the industry.", es:"La fusión creó la empresa más grande de la industria."},{en:"Employees were nervous about the merger.", es:"Los empleados estaban nerviosos por la fusión."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"unión de dos empresas en una sola\"?", options:["merger","stakeholder","leverage"], correct:0, explain:"“Merger” es la fusión de dos empresas." } },
+      { id:'v-avz4-6', word:'Outsource', translation:'Outsource · contratar a otra empresa para hacer una tarea',
+        examples:[{en:"We outsource our customer service to another company.", es:"Subcontratamos nuestro servicio al cliente a otra empresa."},{en:"Many companies outsource software development.", es:"Muchas empresas subcontratan el desarrollo de software."}],
+        quiz:{ prompt:"¿Cuál oración usa \"outsource\" correctamente?", options:["We outsource our customer service.","We outsource of our customer service.","We outsource to our customer service to."], correct:0, explain:"“Outsource” va seguido directamente del objeto, sin preposición extra." } },
+      { id:'v-avz4-7', word:'Overhead', translation:'Overhead · gastos generales de operar un negocio',
+        examples:[{en:"We need to reduce our overhead costs.", es:"Necesitamos reducir nuestros gastos generales."},{en:"Rent is a big part of our overhead.", es:"El alquiler es una parte grande de nuestros gastos generales."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"gastos generales de operar un negocio\"?", options:["overhead","revenue","deadline"], correct:0, explain:"“Overhead” son los gastos generales de un negocio." } },
+      { id:'v-avz4-8', word:'Leverage', translation:'Leverage · usar algo a tu favor para lograr una ventaja',
+        examples:[{en:"They leveraged their experience to win the contract.", es:"Aprovecharon su experiencia para ganar el contrato."},{en:"We should leverage our existing network.", es:"Deberíamos aprovechar nuestra red de contactos existente."}],
+        quiz:{ prompt:"¿Qué significa \"leverage\"?", options:["Ignorar algo","Aprovechar algo a tu favor","Rechazar una oferta"], correct:1, explain:"“Leverage” significa usar algo a tu favor para obtener ventaja." } }
     ]
   ]
 };
@@ -1128,6 +1410,24 @@ const WRITING_BANK = {
         checkPattern:"[a-z]+'s [a-z]+", hint:"Estructura esperada: “Nombre's + cosa.”",
         example:{en:"Ana's book is on the table.", es:"El libro de Ana está en la mesa."},
         checklist:["¿Usaste ‘s para mostrar posesión?","¿Se entiende de quién es la cosa?","¿La frase tiene sentido?"] }
+    ],
+    [
+      { id:'w-facil4-1', prompt:"Escribe una frase usando “have to” sobre algo que debes hacer.", target:"have to",
+        checkPattern:"\\b(have to|has to)\\b [a-z]+", hint:"Estructura esperada: “I have to + verbo base.”",
+        example:{en:"I have to finish my homework tonight.", es:"Tengo que terminar mi tarea esta noche."},
+        checklist:["¿Usaste “have to” o “has to”?","¿Le sigue un verbo base?","¿La frase describe una obligación?"] },
+      { id:'w-facil4-2', prompt:"Escribe una pregunta con “Where is” o “Where are”.", target:"where is / where are",
+        checkPattern:"^where (is|are) ", hint:"Estructura esperada: “Where is/are ___?”",
+        example:{en:"Where is the nearest bank?", es:"¿Dónde está el banco más cercano?"},
+        checklist:["¿Empezaste con “Where is” o “Where are”?","¿Es una pregunta completa?","¿Usaste el verbo correcto según singular/plural?"] },
+      { id:'w-facil4-3', prompt:"Escribe una frase sobre tu comida o actividad favorita usando “favorite”.", target:"favorite",
+        checkPattern:"\\bfavorite\\b", hint:"Estructura esperada: “My favorite ___ is ___.”",
+        example:{en:"My favorite food is pizza.", es:"Mi comida favorita es la pizza."},
+        checklist:["¿Usaste la palabra “favorite”?","¿Mencionaste algo específico (comida, color, etc.)?","¿La frase tiene sentido?"] },
+      { id:'w-facil4-4', prompt:"Escribe una pregunta con “How many” sobre una cantidad.", target:"how many",
+        checkPattern:"^how many [a-z]+", hint:"Estructura esperada: “How many ___ do you have?”",
+        example:{en:"How many books do you have?", es:"¿Cuántos libros tienes?"},
+        checklist:["¿Empezaste con “How many”?","¿Usaste un sustantivo contable en plural?","¿Es una pregunta completa?"] }
     ]
   ],
   medio: [
@@ -1184,6 +1484,24 @@ const WRITING_BANK = {
         checkPattern:"\\b(have|has)\\b (been|gone)\\b", hint:"Estructura esperada: “She has been/gone to ___.”",
         example:{en:"She has gone to the store.", es:"Ella se fue a la tienda (todavía no ha vuelto)."},
         checklist:["¿Usaste “has been” o “has gone”?","¿El significado corresponde (ida y vuelta vs. todavía fuera)?","¿La frase tiene sentido?"] }
+    ],
+    [
+      { id:'w-medio4-1', prompt:"Escribe una predicción sobre el futuro usando “will”.", target:"will (predicción)",
+        checkPattern:"\\bwill\\b [a-z]+", hint:"Estructura esperada: “I think ___ will ___.”",
+        example:{en:"I think it will rain tomorrow.", es:"Creo que va a llover mañana."},
+        checklist:["¿Usaste “will” + verbo base?","¿Es una predicción, no un plan fijo?","¿La frase tiene sentido?"] },
+      { id:'w-medio4-2', prompt:"Escribe una frase dando un consejo con “should”.", target:"should (consejo)",
+        checkPattern:"\\bshould\\b [a-z]+", hint:"Estructura esperada: “You should + verbo base.”",
+        example:{en:"You should talk to your manager about it.", es:"Deberías hablar con tu jefe sobre eso."},
+        checklist:["¿Usaste “should” + verbo base?","¿Es un consejo, no una orden?","¿La frase tiene sentido?"] },
+      { id:'w-medio4-3', prompt:"Escribe una frase comparando dos cosas iguales con “as... as”.", target:"as...as",
+        checkPattern:"\\bas \\w+ as\\b", hint:"Estructura esperada: “___ is as ___ as ___.”",
+        example:{en:"This test is as difficult as the last one.", es:"Este examen es tan difícil como el anterior."},
+        checklist:["¿Usaste “as ___ as”?","¿Compara dos cosas que son iguales en algo?","¿La frase tiene sentido?"] },
+      { id:'w-medio4-4', prompt:"Escribe una frase con un gerundio después de una preposición (ej. “before leaving”).", target:"gerundio tras preposición",
+        checkPattern:"\\b(before|after|without|by|for)\\b [a-z]+ing", hint:"Estructura esperada: “before/after/without + verbo-ing.”",
+        example:{en:"She checked her email before leaving the office.", es:"Ella revisó su correo antes de salir de la oficina."},
+        checklist:["¿Usaste una preposición (before/after/without/by/for)?","¿El verbo después termina en “-ing”?","¿La frase tiene sentido?"] }
     ]
   ],
   avanzado: [
@@ -1240,6 +1558,24 @@ const WRITING_BANK = {
         checkPattern:"\\b(must have|can't have|couldn't have|might have)\\b", hint:"Estructura esperada: “She/He must have/can't have + participio.”",
         example:{en:"He must have forgotten the meeting.", es:"Debe haberse olvidado de la reunión."},
         checklist:["¿Usaste “must have”, “can't have” o similar?","¿Le sigue un participio pasado?","¿La frase expresa una deducción lógica?"] }
+    ],
+    [
+      { id:'w-avz4-1', prompt:"Escribe una frase enfática tipo “What... is/was...” (cleft sentence).", target:"cleft sentence",
+        checkPattern:"^what [a-z].*\\b(is|was)\\b", hint:"Estructura esperada: “What ___ is/was ___.”",
+        example:{en:"What surprised me most was her honesty.", es:"Lo que más me sorprendió fue su honestidad."},
+        checklist:["¿Empezaste con “What”?","¿Usaste “is/was” para enfatizar la parte final?","¿La frase suena natural en inglés?"] },
+      { id:'w-avz4-2', prompt:"Escribe una frase usando lenguaje de matización (“hedging”) como “tend to” o “it seems that”.", target:"hedging language",
+        checkPattern:"\\b(tend to|it seems that|it appears that|may|might)\\b", hint:"Estructura esperada: usar “tend to”, “it seems that”, “may” o “might” para suavizar una afirmación.",
+        example:{en:"It seems that the results are inconclusive.", es:"Parece que los resultados no son concluyentes."},
+        checklist:["¿Usaste una expresión de matización?","¿La afirmación suena menos categórica?","¿Es apropiado para un registro formal o académico?"] },
+      { id:'w-avz4-3', prompt:"Escribe una frase en voz pasiva de registro académico (ej. “It is believed that…”).", target:"voz pasiva académica",
+        checkPattern:"it (is|was) (believed|argued|suggested|considered|assumed) that", hint:"Estructura esperada: “It is/was believed/argued/suggested that ___.”",
+        example:{en:"It is believed that the policy will reduce costs.", es:"Se cree que la política reducirá los costos."},
+        checklist:["¿Usaste la estructura “It is/was + participio + that”?","¿Evitaste decir quién lo cree o afirma?","¿Suena a un registro académico o formal?"] },
+      { id:'w-avz4-4', prompt:"Escribe una frase usando “not only… but also”.", target:"not only...but also",
+        checkPattern:"not only.*but also", hint:"Estructura esperada: “Not only ___, but also ___.”",
+        example:{en:"Not only did she finish the project, but she also improved it.", es:"No solo terminó el proyecto, sino que también lo mejoró."},
+        checklist:["¿Usaste “not only” y “but also”?","¿Si empiezas la frase con “Not only”, invertiste el orden verbo–sujeto?","¿La frase tiene sentido?"] }
     ]
   ]
 };
