@@ -6,6 +6,7 @@ Disallow: /vocabulario.html
 Disallow: /listening.html
 Disallow: /writing.html
 Disallow: /speaking.html
+Disallow: /mixto.html
 Disallow: /progreso.html
 
-Sitemap: https://fio42.github.io/Ingles_Con_Leo/sitemap.xml
+Sitemap: https://inglesconleo.com/sitemap.xml
