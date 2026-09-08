@@ -1,7 +1,9 @@
 /* ============================================================
    Inglés con Leo — backend.js
    Conexión con Supabase para la zona de miembros:
-   - Login por enlace mágico (sin contraseña).
+   - Login por correo + contraseña (crear cuenta / iniciar
+     sesión no necesitan que llegue ningún correo).
+   - "Olvidé mi contraseña" sí manda un correo, pero se usa poco.
    - Progreso guardado de verdad en la nube (además del
      localStorage que ya usa app.js), para que se vea igual
      si el usuario cambia de dispositivo.
@@ -45,21 +47,76 @@ const LeoBackend = (function(){
     }catch(e){ return null; }
   }
 
-  /* Envía el enlace mágico al correo. El usuario vuelve a esta
-     misma página (miembros.html) ya con sesión iniciada. */
-  async function sendMagicLink(email){
+  /* Crea la cuenta con correo + contraseña. No manda ningún
+     correo (la confirmación de email está apagada en Supabase),
+     así que si no hay error queda logueado al instante. */
+  async function signUp(email, password){
     const sb = getClient();
     if(!sb) return { ok:false, error:'not_configured' };
     try{
-      const { error } = await sb.auth.signInWithOtp({
-        email: email,
-        options: { emailRedirectTo: window.location.origin + window.location.pathname }
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if(error) return { ok:false, error: error.message };
+      if(!data.session) return { ok:false, error: 'no_session' };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
+  /* Inicia sesión con correo + contraseña de una cuenta ya
+     creada. Tampoco necesita ningún correo. */
+  async function signInWithPassword(email, password){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
+  /* "Olvidé mi contraseña": este sí manda un correo con un
+     enlace que trae de vuelta a esta página en modo "elige tu
+     nueva contraseña" (ver onAuthEvent más abajo). */
+  async function sendPasswordReset(email){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
       });
       if(error) return { ok:false, error: error.message };
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
     }
+  }
+
+  /* Guarda la nueva contraseña luego de volver del enlace de
+     "olvidé mi contraseña". */
+  async function updatePassword(newPassword){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const { error } = await sb.auth.updateUser({ password: newPassword });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
+  /* Avisa cuando el usuario vuelve de un enlace de "olvidé mi
+     contraseña" (evento PASSWORD_RECOVERY de Supabase), para
+     mostrarle el formulario de nueva contraseña. */
+  function onPasswordRecovery(cb){
+    const sb = getClient();
+    if(!sb) return;
+    sb.auth.onAuthStateChange(function(event){
+      if(event === 'PASSWORD_RECOVERY') cb();
+    });
   }
 
   async function signOut(){
@@ -160,7 +217,8 @@ const LeoBackend = (function(){
   }
 
   return {
-    isConfigured, getClient, getSession, sendMagicLink, signOut,
+    isConfigured, getClient, getSession, signOut,
+    signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync
   };
 })();

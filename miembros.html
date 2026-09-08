@@ -63,19 +63,28 @@
       </svg>
       <div id="loginStep1">
         <input type="email" class="gate-input" id="emailInput" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
-        <div class="gate-error" id="loginError">Escribe un correo válido.</div>
-        <button class="btn btn-primary btn-block" id="sendLinkBtn">Entrar con mi correo</button>
-        <p class="gate-hint">Sin contraseña: te enviamos un enlace para entrar directo.</p>
+        <input type="password" class="gate-input" id="passwordInput" placeholder="Contraseña" autocomplete="current-password" style="margin-top:10px;">
+        <button class="btn btn-primary btn-block" id="authBtn" style="margin-top:10px;">Entrar</button>
+        <p class="gate-hint" style="margin-top:10px;"><a href="#" id="toggleModeLink" style="color:var(--blue);font-weight:600;">¿Primera vez? Crea tu cuenta</a></p>
+        <p class="gate-hint" id="forgotWrap" style="margin-top:2px;"><a href="#" id="forgotPasswordLink" style="color:var(--ink-soft);">¿Olvidaste tu contraseña?</a></p>
       </div>
+      <div class="gate-error" id="loginError">Escribe un correo válido.</div>
       <div id="loginStep2" style="display:none;text-align:center;">
         <p style="margin:0 0 6px;font-weight:700;">Revisa tu correo 📩</p>
-        <p class="gate-hint" style="margin:0;">Te enviamos un enlace a tu email. Ábrelo desde este mismo dispositivo para entrar.</p>
+        <p class="gate-hint" style="margin:0 0 14px;">Te enviamos un enlace a <strong id="loginStep2Email"></strong> para restablecer tu contraseña. A veces tarda unos minutos, y puede caer en spam/promociones.</p>
+        <button class="btn btn-ghost btn-block" id="resendLinkBtn">Reenviar enlace</button>
+        <p class="gate-hint" style="margin-top:10px;"><a href="#" id="changeEmailLink" style="color:var(--blue);font-weight:600;">Volver</a></p>
+      </div>
+      <div id="loginRecovery" style="display:none;text-align:center;">
+        <p style="margin:0 0 10px;font-weight:700;">Elige tu nueva contraseña</p>
+        <input type="password" class="gate-input" id="newPasswordInput" placeholder="Nueva contraseña" autocomplete="new-password">
+        <button class="btn btn-primary btn-block" id="setNewPasswordBtn" style="margin-top:10px;">Guardar contraseña</button>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 10px;">Ya iniciaste sesión, pero tu membresía todavía no está activa.<br>Hazte miembro arriba y en cuanto veamos el pago te activamos el acceso.</p>
         <button class="btn btn-ghost btn-block" id="logoutBtn">Cerrar sesión</button>
       </div>
-      <p class="gate-hint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
+      <p class="gate-hint" id="freeSampleHint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
     </div>
   </div>
 
@@ -199,16 +208,40 @@
   const memberContent = document.getElementById('memberContent');
   const loginStep1 = document.getElementById('loginStep1');
   const loginStep2 = document.getElementById('loginStep2');
+  const loginRecovery = document.getElementById('loginRecovery');
   const loginPending = document.getElementById('loginPending');
   const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
   const loginError = document.getElementById('loginError');
-  const sendLinkBtn = document.getElementById('sendLinkBtn');
+  const authBtn = document.getElementById('authBtn');
+  const toggleModeLink = document.getElementById('toggleModeLink');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const resendLinkBtn = document.getElementById('resendLinkBtn');
+  const changeEmailLink = document.getElementById('changeEmailLink');
+  const loginStep2Email = document.getElementById('loginStep2Email');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const setNewPasswordBtn = document.getElementById('setNewPasswordBtn');
   const logoutBtn = document.getElementById('logoutBtn');
+  let lastEmailSent = '';
+  let authMode = 'login'; // 'login' | 'signup'
 
   function showLoginStep(step){
     loginStep1.style.display = step === 1 ? 'block' : 'none';
     loginStep2.style.display = step === 2 ? 'block' : 'none';
     loginPending.style.display = step === 3 ? 'block' : 'none';
+    loginRecovery.style.display = step === 4 ? 'block' : 'none';
+  }
+
+  function updateAuthModeUI(){
+    if(authMode === 'signup'){
+      authBtn.textContent = 'Crear cuenta';
+      toggleModeLink.textContent = '¿Ya tienes cuenta? Inicia sesión';
+      forgotPasswordLink.parentElement.style.display = 'none';
+    } else {
+      authBtn.textContent = 'Entrar';
+      toggleModeLink.textContent = '¿Primera vez? Crea tu cuenta';
+      forgotPasswordLink.parentElement.style.display = 'block';
+    }
   }
 
   function startDashboard(){
@@ -222,28 +255,130 @@
     startDashboard();
   }
 
-  sendLinkBtn.addEventListener('click', async ()=>{
+  async function afterAuthSuccess(){
+    const profile = await LeoBackend.getMemberProfile();
+    if(profile && profile.is_member){
+      await LeoBackend.syncProgressFromCloud();
+      unlock();
+    } else {
+      showLoginStep(3);
+    }
+  }
+
+  function translateAuthError(msg){
+    const m = (msg || '').toLowerCase();
+    if(m.indexOf('invalid login credentials') !== -1) return 'Correo o contraseña incorrectos.';
+    if(m.indexOf('already registered') !== -1 || m.indexOf('already exists') !== -1) return 'Ya existe una cuenta con ese correo. Inicia sesión en vez de crear una nueva.';
+    if(m.indexOf('password') !== -1 && m.indexOf('least') !== -1) return 'La contraseña debe tener al menos 6 caracteres.';
+    if(m.indexOf('rate') !== -1 || m.indexOf('security purposes') !== -1) return 'Espera un momento antes de intentar de nuevo.';
+    return 'Algo no funcionó. Intenta de nuevo en un momento.';
+  }
+
+  authBtn.addEventListener('click', async ()=>{
     const email = emailInput.value.trim();
+    const password = passwordInput.value;
     if(!email || email.indexOf('@') === -1 || email.indexOf('.') === -1){
       loginError.textContent = 'Escribe un correo válido.';
       loginError.classList.add('show');
       return;
     }
+    if(!password || password.length < 6){
+      loginError.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+      loginError.classList.add('show');
+      return;
+    }
     loginError.classList.remove('show');
-    sendLinkBtn.disabled = true;
-    sendLinkBtn.textContent = 'Enviando...';
-    const res = await LeoBackend.sendMagicLink(email);
-    sendLinkBtn.disabled = false;
-    sendLinkBtn.textContent = 'Entrar con mi correo';
+    authBtn.disabled = true;
+    const defaultLabel = authMode === 'signup' ? 'Crear cuenta' : 'Entrar';
+    authBtn.textContent = authMode === 'signup' ? 'Creando cuenta...' : 'Entrando...';
+    const res = authMode === 'signup'
+      ? await LeoBackend.signUp(email, password)
+      : await LeoBackend.signInWithPassword(email, password);
+    authBtn.disabled = false;
+    authBtn.textContent = defaultLabel;
     if(res.ok){
-      showLoginStep(2);
+      await afterAuthSuccess();
     } else {
-      loginError.textContent = 'No pudimos enviar el enlace. Intenta de nuevo en un momento.';
+      loginError.textContent = translateAuthError(res.error);
       loginError.classList.add('show');
     }
   });
 
-  emailInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') sendLinkBtn.click(); });
+  passwordInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') authBtn.click(); });
+
+  toggleModeLink.addEventListener('click', (e)=>{
+    e.preventDefault();
+    authMode = authMode === 'signup' ? 'login' : 'signup';
+    loginError.classList.remove('show');
+    updateAuthModeUI();
+  });
+
+  async function sendResetTo(email, btn, defaultLabel){
+    loginError.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    const res = await LeoBackend.sendPasswordReset(email);
+    btn.disabled = false;
+    btn.textContent = defaultLabel;
+    if(res.ok){
+      lastEmailSent = email;
+      loginStep2Email.textContent = email;
+      showLoginStep(2);
+      return true;
+    }
+    loginError.textContent = translateAuthError(res.error);
+    loginError.classList.add('show');
+    return false;
+  }
+
+  forgotPasswordLink.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if(!email || email.indexOf('@') === -1 || email.indexOf('.') === -1){
+      loginError.textContent = 'Escribe primero tu correo arriba.';
+      loginError.classList.add('show');
+      return;
+    }
+    await sendResetTo(email, forgotPasswordLink, forgotPasswordLink.textContent);
+  });
+
+  if(resendLinkBtn){
+    resendLinkBtn.addEventListener('click', async ()=>{
+      if(!lastEmailSent) return;
+      await sendResetTo(lastEmailSent, resendLinkBtn, 'Reenviar enlace');
+    });
+  }
+
+  if(changeEmailLink){
+    changeEmailLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      loginError.classList.remove('show');
+      showLoginStep(1);
+    });
+  }
+
+  if(setNewPasswordBtn){
+    setNewPasswordBtn.addEventListener('click', async ()=>{
+      const pw = newPasswordInput.value;
+      if(!pw || pw.length < 6){
+        loginError.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        loginError.classList.add('show');
+        return;
+      }
+      loginError.classList.remove('show');
+      setNewPasswordBtn.disabled = true;
+      setNewPasswordBtn.textContent = 'Guardando...';
+      const res = await LeoBackend.updatePassword(pw);
+      setNewPasswordBtn.disabled = false;
+      setNewPasswordBtn.textContent = 'Guardar contraseña';
+      if(res.ok){
+        await afterAuthSuccess();
+      } else {
+        loginError.textContent = translateAuthError(res.error);
+        loginError.classList.add('show');
+      }
+    });
+  }
 
   if(logoutBtn){
     logoutBtn.addEventListener('click', async ()=>{
@@ -252,8 +387,11 @@
     });
   }
 
+  updateAuthModeUI();
+
   (async function initGate(){
     if(!LeoBackend.isConfigured()) return; // backend aún no configurado: se queda el login normal
+    LeoBackend.onPasswordRecovery(()=>{ showLoginStep(4); });
     const profile = await LeoBackend.getMemberProfile();
     if(profile && profile.is_member){
       await LeoBackend.syncProgressFromCloud();
