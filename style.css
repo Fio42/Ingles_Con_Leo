@@ -633,53 +633,53 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 .hero-v2-character{position:relative;z-index:1;max-width:430px;width:92%;height:auto;filter:drop-shadow(0 18px 26px rgba(27,35,51,0.14));}
 
+/* La tarjeta se posiciona sobre la mano del personaje (como en desktop)
+   usando porcentajes relativos a .hero-v2-media, que en mobile tiene el
+   mismo alto que la imagen (align-items:flex-end + sin alto fijo), así
+   que el punto de la mano cae en el mismo % sin importar el ancho de
+   pantalla. En mobile es una version compacta para no tapar la cara. */
 .hero-v2-card{
-  position:relative;
-  margin-top:-28px;
+  position:absolute;
   z-index:2;
   background:#fff;
   border:1px solid var(--line);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow);
-  padding:20px 22px;
-  width:min(280px, 84%);
-  margin-left:auto;
-  margin-right:6%;
-}
-/* En mobile la tarjeta queda debajo del personaje (no encima de la mano
-   como en desktop). Esta puntita simula una burbuja de dialogo para que
-   se sienta como si Leo la estuviera mostrando, sin depender de una
-   posicion absoluta fragil que se desalinee segun el tamaño de pantalla. */
-.hero-v2-card::before{
-  content:'';
-  position:absolute;
-  top:-9px;
-  right:36px;
-  width:16px;
-  height:16px;
-  background:#fff;
-  border-left:1px solid var(--line);
-  border-top:1px solid var(--line);
-  transform:rotate(45deg);
-  border-radius:3px 0 0 0;
+  top:26%;
+  right:1%;
+  width:min(172px, 46%);
+  padding:11px 13px;
 }
 @media(min-width:900px){
   .hero-v2-card{
-    position:absolute;
     right:-2%;
     top:23%;
     transform:translateY(-50%);
-    margin-top:0;
-    margin-left:0;
-    margin-right:0;
+    width:min(280px, 84%);
+    padding:20px 22px;
   }
-  .hero-v2-card::before{display:none;}
 }
-.hero-v2-card-tag{display:inline-block;background:var(--blue-tint);color:var(--blue-deep);font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:12px;}
-.hero-v2-card-en{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.15rem;}
-.hero-v2-card-es{color:var(--ink-soft);font-size:0.9rem;margin-top:2px;}
-.hero-v2-card-explain{background:var(--paper-dim);border-radius:var(--radius-md);padding:12px 14px;font-size:0.86rem;color:var(--ink-soft);margin-top:14px;line-height:1.5;}
-.hero-v2-card-link{display:inline-block;margin-top:14px;font-weight:700;color:var(--blue);font-size:0.88rem;}
+.hero-v2-card-tag{display:inline-block;background:var(--blue-tint);color:var(--blue-deep);font-size:0.62rem;font-weight:700;padding:3px 8px;border-radius:999px;margin-bottom:8px;}
+.hero-v2-card-en{
+  font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.86rem;line-height:1.25;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
+}
+.hero-v2-card-es{
+  color:var(--ink-soft);font-size:0.72rem;margin-top:2px;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+.hero-v2-card-explain{
+  background:var(--paper-dim);border-radius:var(--radius-md);padding:7px 9px;font-size:0.67rem;color:var(--ink-soft);margin-top:8px;line-height:1.4;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
+}
+.hero-v2-card-link{display:inline-block;margin-top:8px;font-weight:700;color:var(--blue);font-size:0.7rem;}
+@media(min-width:900px){
+  .hero-v2-card-tag{font-size:0.74rem;padding:4px 10px;margin-bottom:12px;}
+  .hero-v2-card-en{font-size:1.15rem;-webkit-line-clamp:unset;}
+  .hero-v2-card-es{font-size:0.9rem;-webkit-line-clamp:unset;}
+  .hero-v2-card-explain{padding:12px 14px;font-size:0.86rem;margin-top:14px;line-height:1.5;-webkit-line-clamp:unset;}
+  .hero-v2-card-link{margin-top:14px;font-size:0.88rem;}
+}
 
 @media(max-width:520px){
   /* En mobile, "Practicar gratis" debe dominar el ancho disponible */

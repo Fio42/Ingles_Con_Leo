@@ -2525,8 +2525,14 @@ function pickDailyGrammarExample(){
     });
   });
   if(!pool.length) return null;
-  const randomIndex = Math.floor(Math.random() * pool.length);
-  return pool[randomIndex];
+  /* La tarjeta del inicio es compacta (en mobile queda junto a la mano
+     del personaje), así que preferimos ejemplos cortos para que quepan
+     bien. Si por algún motivo no hay ninguno corto, usamos el pool
+     completo como respaldo (nunca se queda sin mini lección). */
+  const shortPool = pool.filter(p => p.en.length <= 45 && p.explain.length <= 90);
+  const finalPool = shortPool.length ? shortPool : pool;
+  const randomIndex = Math.floor(Math.random() * finalPool.length);
+  return finalPool[randomIndex];
 }
 function renderDailyMiniLesson(){
   const lesson = pickDailyGrammarExample();
