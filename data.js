@@ -5680,6 +5680,7 @@ const CLASS_CATALOG = [
   { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Aprende a buscar tu talla, probarte ropa y preguntar el precio en una tienda.', minutes:5, available:true },
   { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Aprende a presentarte, hacer plática y conocer gente nueva en inglés.', minutes:5, available:true },
   { id:'pharmacy', title:'En la farmacia', category:'Vida diaria', desc:'Aprende a explicar cómo te sientes, pedir un medicamento y entender cómo tomarlo.', minutes:6, available:true },
+  { id:'gym', title:'En el gimnasio', category:'Vida diaria', desc:'Aprende a registrarte, preguntar por una clase y hablar de tu rutina en el gimnasio.', minutes:6, available:true },
   { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Aprende a hablar de tu experiencia y tus fortalezas en una entrevista de trabajo.', minutes:7, available:true },
   { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Aprende a hacer una llamada, agendar una cita y manejar malentendidos por teléfono.', minutes:6, available:true },
   { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true }
@@ -6544,6 +6545,92 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:['I have a headache.', 'Do you have something for it?', 'How often should I take it?', 'Are there any side effects?'],
       tip:'Hoy practicaste cómo explicar un síntoma, pedir un medicamento y entender cómo tomarlo en una farmacia.'
+    }
+  },
+  gym: {
+    id:'gym',
+    title:'En el gimnasio',
+    situation:{
+      en:"You're at a gym for the first time. You want to ask about a class and find out where the lockers are.",
+      es:'Estás en un gimnasio por primera vez. Quieres preguntar por una clase y saber dónde están los casilleros.'
+    },
+    phrases:[
+      { en:"I'd like to sign up for a class.", es:'Quisiera inscribirme a una clase.' },
+      { en:'What time does the yoga class start?', es:'¿A qué hora empieza la clase de yoga?' },
+      { en:'Where are the lockers?', es:'¿Dónde están los casilleros?' },
+      { en:'Do I need to bring a towel?', es:'¿Necesito traer una toalla?' },
+      { en:"I'm new here.", es:'Soy nuevo aquí.' }
+    ],
+    listening:{
+      audio:'audio/clases/gimnasio-listening.mp3',
+      dialogue:[
+        { speaker:'Recepcionista', en:'Hi! Welcome. Is this your first time here?' },
+        { speaker:'Tú', en:"Yes, I'm new here. I'd like to sign up for a yoga class." },
+        { speaker:'Recepcionista', en:'Great! The next class starts at six. The lockers are next to the changing rooms.' }
+      ],
+      question:{
+        text:'¿A qué hora empieza la próxima clase?',
+        options:['A las seis','A las cinco','A las siete'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Recepcionista', en:'Do you need a towel for your workout?' },
+      options:[
+        { en:'Yes, please. Do I need to bring my own?', correct:true, feedback:'¡Bien! Respondes y haces una pregunta útil de forma natural.' },
+        { en:"I'm new here.", correct:false, feedback:'Eso sirve al presentarte, pero no responde la pregunta sobre la toalla.' },
+        { en:'The yoga class starts at six.', correct:false, feedback:'Eso habla del horario, pero te preguntaron si necesitas una toalla.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿A qué hora empieza la clase de yoga?',
+      words:['does','time','yoga','What','class','start?','the'],
+      correctOrder:['What','time','does','the','yoga','class','start?']
+    },
+    speaking:{
+      audio:'audio/clases/gimnasio-speaking.mp3',
+      prompt:"I'm new here. I'd like to sign up for a yoga class.",
+      es:'Practica diciendo: "Soy nuevo aquí. Quisiera inscribirme a una clase de yoga."'
+    },
+    miniChallenge:{
+      start:'arrival',
+      nodes:{
+        arrival:{
+          en:'At the front desk, the receptionist asks: "How can I help you today?"',
+          es:'En recepción, la persona pregunta: "¿Cómo puedo ayudarte hoy?"',
+          options:[
+            { en:"I'd like to sign up for a class.", next:'locker', correct:true },
+            { en:'Where are the lockers?', next:'arrival-fail', correct:false }
+          ]
+        },
+        'arrival-fail':{
+          en:'The receptionist says: "They are nearby, but would you like to join a class first?"',
+          es:'La persona dice: "Están cerca, pero ¿te gustaría inscribirte primero a una clase?"',
+          options:[
+            { en:"Yes, I'd like to sign up for a yoga class.", next:'locker', correct:true }
+          ]
+        },
+        locker:{
+          en:'The receptionist says: "You are all set. Do you know where the lockers are?"',
+          es:'La persona dice: "Todo está listo. ¿Sabes dónde están los casilleros?"',
+          options:[
+            { en:'Not yet. Where are the lockers?', next:'end', correct:true },
+            { en:'The class starts at six.', next:'locker-fail', correct:false }
+          ]
+        },
+        'locker-fail':{
+          en:'The receptionist says: "That is right. Now, do you need help finding the lockers?"',
+          es:'La persona dice: "Así es. Ahora, ¿necesitas ayuda para encontrar los casilleros?"',
+          options:[
+            { en:'Yes, where are the lockers?', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The receptionist points you in the right direction. Enjoy your class!', es:'La persona te señala la dirección correcta. ¡Disfruta tu clase!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["I'd like to sign up for a class.", 'What time does the yoga class start?', 'Where are the lockers?', "I'm new here."],
+      tip:'Hoy practicaste cómo registrarte, preguntar por una clase y orientarte en un gimnasio en inglés.'
     }
   }
 };

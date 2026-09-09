@@ -214,3 +214,9 @@ DEVLOG — Inglés con Leo
 - El contenido enseña a explicar un dolor de cabeza, pedir un medicamento, preguntar cada cuánto tomarlo y consultar por efectos secundarios. Se añadió como una entrada nueva e independiente en CLASS_CATALOG y CLASSES_BANK; las 9 clases anteriores no se modificaron.
 - Se agregaron las rutas de audio nuevas audio/clases/farmacia-listening.mp3 y audio/clases/farmacia-speaking.mp3. Los scripts de Python ahora aceptan opcionalmente una ruta concreta para generar solo un audio, conservando sin argumentos el comportamiento anterior de generar todos. Así se pudieron crear los dos MP3 nuevos sin sobrescribir los audios existentes.
 - Verificado: sintaxis de JavaScript y Python, estructura completa de la clase (diálogo, opciones, frase construible y rutas de audio) y presencia de los dos MP3 generados.
+
+2026-09-09 (14) — Nueva clase de prueba: En el gimnasio (voz femenina Jenny)
+- Se agregó la undécima clase activa, "En el gimnasio", en Vida diaria. Conserva los 8 pasos del motor existente: situación, frases clave, escucha, elegir respuesta, construir frase, habla, mini reto y resumen.
+- Sirve también para probar una voz femenina más conversacional: solo los dos audios de esta clase usan en-US-JennyNeural, a velocidad normal. La voz Aria y los MP3 existentes no se cambiaron ni se regeneraron.
+- Se añadieron las rutas audio/clases/gimnasio-listening.mp3 y audio/clases/gimnasio-speaking.mp3, junto con sus entradas en los dos generadores de audio.
+- Verificado: sintaxis, estructura de la clase, orden válido de la frase construible y presencia de ambos MP3 nuevos.
