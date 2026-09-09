@@ -296,10 +296,31 @@ function renderStepBuild(body, state, next){
     <div class="clase-build-target" id="claseBuildTarget"></div>
     <div class="clase-build-bank" id="claseBuildBank"></div>
     <div id="claseFeedback"></div>
-    <div class="next-row" id="nextRow">
+    <div class="next-row" id="nextRow"></div>`;
+
+  function wireCheckRow(){
+    const row = body.querySelector('#nextRow');
+    row.innerHTML = `
       <button class="btn btn-ghost btn-sm" id="claseResetBtn">Reiniciar</button>
-      <button class="btn btn-primary btn-sm" id="claseCheckBtn">Comprobar</button>
-    </div>`;
+      <button class="btn btn-primary btn-sm" id="claseCheckBtn">Comprobar</button>`;
+    row.querySelector('#claseResetBtn').addEventListener('click', ()=>{ chosen = []; renderChips(); });
+    row.querySelector('#claseCheckBtn').addEventListener('click', onCheck);
+  }
+
+  function onCheck(){
+    const correct = chosen.join(' ') === buildSentence.correctOrder.join(' ');
+    state.results.push({ itemId:'buildSentence', isCorrect:correct });
+    body.querySelector('#claseFeedback').innerHTML = correct
+      ? `<p class="clase-fb-ok">${OK_ICON} ¡Perfecto: "${buildSentence.correctOrder.join(' ')}"</p>`
+      : `<p class="clase-fb-bad">${BAD_ICON} Casi. La frase correcta es: "${buildSentence.correctOrder.join(' ')}"</p>`;
+    showRetryOrNextButtons(body, correct, ()=>{
+      state.results.pop();
+      chosen = [];
+      renderChips();
+      body.querySelector('#claseFeedback').innerHTML = '';
+      wireCheckRow();
+    }, next);
+  }
 
   function renderChips(){
     body.querySelector('#claseBuildTarget').innerHTML = chosen.length
@@ -323,16 +344,7 @@ function renderStepBuild(body, state, next){
     });
   }
   renderChips();
-
-  body.querySelector('#claseResetBtn').addEventListener('click', ()=>{ chosen = []; renderChips(); });
-  body.querySelector('#claseCheckBtn').addEventListener('click', ()=>{
-    const correct = chosen.join(' ') === buildSentence.correctOrder.join(' ');
-    state.results.push({ itemId:'buildSentence', isCorrect:correct });
-    body.querySelector('#claseFeedback').innerHTML = correct
-      ? `<p class="clase-fb-ok">${OK_ICON} ¡Perfecto: "${buildSentence.correctOrder.join(' ')}"</p>`
-      : `<p class="clase-fb-bad">${BAD_ICON} Casi. La frase correcta es: "${buildSentence.correctOrder.join(' ')}"</p>`;
-    showNextButton(body, 'Continuar →', next);
-  });
+  wireCheckRow();
 }
 
 function renderStepSpeak(body, state, next){
