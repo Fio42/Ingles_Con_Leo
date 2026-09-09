@@ -536,13 +536,24 @@ function saveLastVariantMap(map){
   try{ localStorage.setItem(LAST_VARIANT_KEY, JSON.stringify(map)); }
   catch(e){ /* localStorage no disponible: simplemente no recordamos la última variante */ }
 }
-function pickVariantIndex(skill, level, variantCount){
+/* Indice exacto (dentro de cada BANK[skill][level]) de la variante que se
+   agrego pensada solo para Miembros (ver DEVLOG). Se guarda por indice fijo,
+   no por posicion relativa, para que agregar mas contenido despues (para
+   todos o solo miembros) nunca desordene cual variante sigue bloqueada. */
+const MEMBERS_ONLY_VARIANT_INDEX = {
+  gramatica:   { principiante:2, facil:6, medio:6, avanzado:6 },
+  vocabulario: { principiante:2, facil:6, medio:6, avanzado:6 },
+  listening:   { principiante:5, facil:10, medio:7, avanzado:7 },
+  writing:     { principiante:2, facil:6, medio:6, avanzado:6 },
+  speaking:    { principiante:5, facil:6, medio:6, avanzado:6 }
+};
+function pickVariantIndex(skill, level, variantCount, excludeIndex){
   if(!variantCount || variantCount <= 1) return 0;
   const map = getLastVariantMap();
   const key = skill + '_' + level;
   const last = map[key];
   const choices = [];
-  for(let i=0; i<variantCount; i++){ if(i !== last) choices.push(i); }
+  for(let i=0; i<variantCount; i++){ if(i !== last && i !== excludeIndex) choices.push(i); }
   const pool = choices.length ? choices : [0];
   const pick = pool[Math.floor(Math.random() * pool.length)];
   map[key] = pick;
@@ -1270,25 +1281,25 @@ function pickMixItems(level, isFree){
     return copy.slice(0, Math.min(n, copy.length));
   }
 
-  const gVariantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length - (isFree ? 1 : 0));
+  const gVariantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.gramatica[level] : undefined);
   const gTopics = GRAMMAR_BANK[level][gVariantIdx];
   const gPool = [];
   gTopics.forEach(t=> t.items.forEach(it=> gPool.push(it)));
   const grammarPicks = sample(gPool, 2).map(item=>({ kind:'grammar', item }));
 
-  const vVariantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length - (isFree ? 1 : 0));
+  const vVariantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level] : undefined);
   const vPool = VOCAB_BANK[level][vVariantIdx];
   const vocabPicks = sample(vPool, 2).map(item=>({ kind:'vocab', item }));
 
-  const lVariantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length - (isFree ? 1 : 0));
+  const lVariantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.listening[level] : undefined);
   const lPool = LISTENING_BANK[level][lVariantIdx];
   const listeningPicks = sample(lPool, 1).map(item=>({ kind:'listening', item }));
 
-  const sVariantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length - (isFree ? 1 : 0));
+  const sVariantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.speaking[level] : undefined);
   const sPool = SPEAKING_BANK[level][sVariantIdx];
   const speakingPicks = sample(sPool, 1).map(item=>({ kind:'speaking', item }));
 
-  const wVariantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length - (isFree ? 1 : 0));
+  const wVariantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.writing[level] : undefined);
   const wPool = WRITING_BANK[level][wVariantIdx];
   const writingPicks = sample(wPool, 2).map(item=>({ kind:'writing', item }));
 
@@ -2136,7 +2147,7 @@ function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
 
 /* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
 function runFreeGrammarSession({ container, level, onOtherSkill }){
-  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length - 1);
+  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]);
   const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
   const maxLen = Math.max(...topics.map(t=>t.items.length));
@@ -2180,7 +2191,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
 
 /* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
 function runFreeVocabSession({ container, level, onOtherSkill }){
-  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length - 1);
+  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
   const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
@@ -2245,7 +2256,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
 
 /* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
 function runFreeListeningSession({ container, level, onOtherSkill }){
-  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length - 1);
+  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
   const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
@@ -2333,7 +2344,7 @@ function checkWritingAnswer(text, item){
   }
 }
 function runFreeWritingSession({ container, level, onOtherSkill }){
-  const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length - 1);
+  const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.writing[level]);
   const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];
@@ -2430,7 +2441,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 /* ---------- Speaking gratis: las 3 frases/audio existentes del nivel.
    Mismo sistema de grabación que Miembros, sin puntuación inventada. ---------- */
 function runFreeSpeakingSession({ container, level, onOtherSkill }){
-  const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length - 1);
+  const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.speaking[level]);
   const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
   const results = [];

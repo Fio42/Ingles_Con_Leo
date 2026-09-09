@@ -300,6 +300,213 @@ const GRAMMAR_BANK = {
         ]
       }
     ]
+  ,
+  [
+ {
+  "topic": "Borrow vs Lend (prestar)",
+  "items": [
+   {
+    "id": "g-principiante4-borrowlend-1",
+    "translation": "¿Cómo se dice \"pedir prestado\" en inglés?",
+    "type": "choice",
+    "prompt": "How do you say \"pedir algo prestado\" in English?",
+    "options": [
+     "Borrow",
+     "Lend",
+     "Buy"
+    ],
+    "correct": 0,
+    "explain": "“Borrow” es pedir prestado (yo lo recibo). “Lend” es prestar (yo lo doy).",
+    "examples": [
+     {
+      "en": "Can I borrow your pen?",
+      "es": "¿Me prestas tu lápiz? (yo lo pido)"
+     },
+     {
+      "en": "I will lend you my book.",
+      "es": "Te prestaré mi libro. (yo lo doy)"
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-borrowlend-2",
+    "translation": "Ella me prestó su bicicleta.",
+    "type": "fill",
+    "sentence": [
+     "She",
+     "___",
+     "me",
+     "her",
+     "bike",
+     "."
+    ],
+    "blankIndex": 1,
+    "bank": [
+     "lent",
+     "borrowed",
+     "bought"
+    ],
+    "correct": "lent",
+    "explain": "“Lend” (dar prestado) en pasado es “lent”. Ella me lo dio a mí.",
+    "examples": [
+     {
+      "en": "She lent me her bike.",
+      "es": "Ella me prestó su bicicleta."
+     },
+     {
+      "en": "I lent him five dollars.",
+      "es": "Le presté cinco dólares."
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-borrowlend-3",
+    "translation": "¿Puedo pedirte prestado tu paraguas?",
+    "type": "choice",
+    "prompt": "Can I ___ your umbrella?",
+    "options": [
+     "borrow",
+     "lend",
+     "sell"
+    ],
+    "correct": 0,
+    "explain": "Cuando yo pido algo para usarlo, uso “borrow”.",
+    "examples": [
+     {
+      "en": "Can I borrow your umbrella?",
+      "es": "¿Me prestas tu paraguas?"
+     },
+     {
+      "en": "He borrowed my jacket.",
+      "es": "Él me pidió prestada mi chaqueta."
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-borrowlend-4",
+    "translation": "Yo le presto dinero a mi hermano.",
+    "type": "error",
+    "wrong": "I borrow money to my brother.",
+    "wrongWord": "borrow",
+    "right": "I lend money to my brother.",
+    "rightWord": "lend",
+    "explain": "Cuando YO doy algo a otra persona, es “lend”, no “borrow”.",
+    "examples": [
+     {
+      "en": "I lend money to my brother.",
+      "es": "Yo le presto dinero a mi hermano."
+     },
+     {
+      "en": "Banks lend money to people.",
+      "es": "Los bancos prestan dinero a las personas."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "topic": "Good vs Well",
+  "items": [
+   {
+    "id": "g-principiante4-goodwell-1",
+    "translation": "Ella canta bien.",
+    "type": "choice",
+    "prompt": "She sings ___.",
+    "options": [
+     "well",
+     "good",
+     "goods"
+    ],
+    "correct": 0,
+    "explain": "“Well” describe cómo se hace una acción (verbo + well). “Good” describe una cosa o persona.",
+    "examples": [
+     {
+      "en": "She sings well.",
+      "es": "Ella canta bien."
+     },
+     {
+      "en": "She is a good singer.",
+      "es": "Ella es una buena cantante."
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-goodwell-2",
+    "translation": "Es un buen libro.",
+    "type": "fill",
+    "sentence": [
+     "It",
+     "is",
+     "a",
+     "___",
+     "book",
+     "."
+    ],
+    "blankIndex": 3,
+    "bank": [
+     "good",
+     "well",
+     "goods"
+    ],
+    "correct": "good",
+    "explain": "“Good” va antes de un sustantivo como “book”.",
+    "examples": [
+     {
+      "en": "It is a good book.",
+      "es": "Es un buen libro."
+     },
+     {
+      "en": "This is a good idea.",
+      "es": "Esta es una buena idea."
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-goodwell-3",
+    "translation": "¿Cómo estás? Estoy bien, gracias.",
+    "type": "choice",
+    "prompt": "How are you? I am ___, thanks.",
+    "options": [
+     "well",
+     "good",
+     "the good"
+    ],
+    "correct": 0,
+    "explain": "Para hablar de salud o estado, se usa “well” (I am well).",
+    "examples": [
+     {
+      "en": "I am well, thanks.",
+      "es": "Estoy bien, gracias."
+     },
+     {
+      "en": "He is not feeling well.",
+      "es": "Él no se siente bien."
+     }
+    ]
+   },
+   {
+    "id": "g-principiante4-goodwell-4",
+    "translation": "Él juega bien al fútbol.",
+    "type": "error",
+    "wrong": "He plays soccer good.",
+    "wrongWord": "good",
+    "right": "He plays soccer well.",
+    "rightWord": "well",
+    "explain": "Con un verbo como “plays” se necesita el adverbio “well”, no el adjetivo “good”.",
+    "examples": [
+     {
+      "en": "He plays soccer well.",
+      "es": "Él juega bien al fútbol."
+     },
+     {
+      "en": "They work well together.",
+      "es": "Ellos trabajan bien juntos."
+     }
+    ]
+   }
+  ]
+ }
+]
   ],
   facil: [
     [
@@ -780,6 +987,212 @@ const GRAMMAR_BANK = {
         ]
       }
     ]
+  ,
+  [
+ {
+  "topic": "Its vs It's",
+  "items": [
+   {
+    "id": "g-facil8-itsits-1",
+    "translation": "El perro movió su cola.",
+    "type": "choice",
+    "prompt": "The dog wagged ___ tail.",
+    "options": [
+     "its",
+     "it's",
+     "its'"
+    ],
+    "correct": 0,
+    "explain": "“Its” (sin apóstrofe) es posesivo: de él/ella (una cosa o animal).",
+    "examples": [
+     {
+      "en": "The dog wagged its tail.",
+      "es": "El perro movió su cola."
+     },
+     {
+      "en": "The cat licked its paw.",
+      "es": "El gato se lamió la pata."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-itsits-2",
+    "translation": "Está lloviendo hoy.",
+    "type": "fill",
+    "sentence": [
+     "___",
+     "raining",
+     "today",
+     "."
+    ],
+    "blankIndex": 0,
+    "bank": [
+     "It's",
+     "Its",
+     "Is"
+    ],
+    "correct": "It's",
+    "explain": "“It's” con apóstrofe es la contracción de “it is” o “it has”.",
+    "examples": [
+     {
+      "en": "It's raining today.",
+      "es": "Está lloviendo hoy."
+     },
+     {
+      "en": "It's been a long day.",
+      "es": "Ha sido un día largo."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-itsits-3",
+    "translation": "El libro perdió su portada.",
+    "type": "choice",
+    "prompt": "The book lost ___ cover.",
+    "options": [
+     "its",
+     "it's",
+     "it is"
+    ],
+    "correct": 0,
+    "explain": "“Its cover” significa la portada de ÉL (del libro), por eso es posesivo sin apóstrofe.",
+    "examples": [
+     {
+      "en": "The book lost its cover.",
+      "es": "El libro perdió su portada."
+     },
+     {
+      "en": "Every rule has its exception.",
+      "es": "Cada regla tiene su excepción."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-itsits-4",
+    "translation": "Es un día hermoso.",
+    "type": "error",
+    "wrong": "Its a beautiful day.",
+    "wrongWord": "Its",
+    "right": "It's a beautiful day.",
+    "rightWord": "It's",
+    "explain": "Aquí significa “it is”, así que necesita el apóstrofe: “It's”.",
+    "examples": [
+     {
+      "en": "It's a beautiful day.",
+      "es": "Es un día hermoso."
+     },
+     {
+      "en": "It's my favorite song.",
+      "es": "Es mi canción favorita."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "topic": "Then vs Than",
+  "items": [
+   {
+    "id": "g-facil8-thenthan-1",
+    "translation": "Ella es más alta que su hermano.",
+    "type": "choice",
+    "prompt": "She is taller ___ her brother.",
+    "options": [
+     "than",
+     "then",
+     "that"
+    ],
+    "correct": 0,
+    "explain": "“Than” se usa para comparar (taller than, faster than).",
+    "examples": [
+     {
+      "en": "She is taller than her brother.",
+      "es": "Ella es más alta que su hermano."
+     },
+     {
+      "en": "This is better than that.",
+      "es": "Esto es mejor que eso."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-thenthan-2",
+    "translation": "Primero comimos, luego dormimos.",
+    "type": "fill",
+    "sentence": [
+     "We",
+     "ate",
+     ",",
+     "___",
+     "we",
+     "slept",
+     "."
+    ],
+    "blankIndex": 3,
+    "bank": [
+     "then",
+     "than",
+     "when"
+    ],
+    "correct": "then",
+    "explain": "“Then” indica el siguiente paso en el tiempo (después, luego).",
+    "examples": [
+     {
+      "en": "We ate, then we slept.",
+      "es": "Comimos, luego dormimos."
+     },
+     {
+      "en": "First think, then act.",
+      "es": "Primero piensa, luego actúa."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-thenthan-3",
+    "translation": "Prefiero café más que té.",
+    "type": "choice",
+    "prompt": "I prefer coffee more ___ tea.",
+    "options": [
+     "than",
+     "then",
+     "so"
+    ],
+    "correct": 0,
+    "explain": "Al comparar dos cosas, usamos “than”.",
+    "examples": [
+     {
+      "en": "I prefer coffee more than tea.",
+      "es": "Prefiero café más que té."
+     },
+     {
+      "en": "He runs faster than me.",
+      "es": "Él corre más rápido que yo."
+     }
+    ]
+   },
+   {
+    "id": "g-facil8-thenthan-4",
+    "translation": "Terminamos la tarea, luego jugamos.",
+    "type": "error",
+    "wrong": "We finished the homework, than we played.",
+    "wrongWord": "than",
+    "right": "We finished the homework, then we played.",
+    "rightWord": "then",
+    "explain": "Aquí se habla de una secuencia de tiempo, no de una comparación, así que es “then”.",
+    "examples": [
+     {
+      "en": "We finished the homework, then we played.",
+      "es": "Terminamos la tarea, luego jugamos."
+     },
+     {
+      "en": "Open the door, then turn on the light.",
+      "es": "Abre la puerta, luego prende la luz."
+     }
+    ]
+   }
+  ]
+ }
+]
   ],
   medio: [
     [
@@ -1260,6 +1673,217 @@ const GRAMMAR_BANK = {
         ]
       }
     ]
+  ,
+  [
+ {
+  "topic": "Who vs Whom",
+  "items": [
+   {
+    "id": "g-medio8-whowhom-1",
+    "translation": "¿Quién llamó a la puerta?",
+    "type": "choice",
+    "prompt": "___ knocked on the door?",
+    "options": [
+     "Who",
+     "Whom",
+     "Which"
+    ],
+    "correct": 0,
+    "explain": "“Who” es el sujeto de la oración (el que hace la acción).",
+    "examples": [
+     {
+      "en": "Who knocked on the door?",
+      "es": "¿Quién llamó a la puerta?"
+     },
+     {
+      "en": "Who is coming to the party?",
+      "es": "¿Quién viene a la fiesta?"
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-whowhom-2",
+    "translation": "¿A quién viste en la tienda?",
+    "type": "fill",
+    "sentence": [
+     "___",
+     "did",
+     "you",
+     "see",
+     "at",
+     "the",
+     "store",
+     "?"
+    ],
+    "blankIndex": 0,
+    "bank": [
+     "Whom",
+     "Who",
+     "Whose"
+    ],
+    "correct": "Whom",
+    "explain": "“Whom” es el objeto de la oración (recibe la acción). Aquí “you” ve a alguien, ese alguien es “whom”.",
+    "examples": [
+     {
+      "en": "Whom did you see at the store?",
+      "es": "¿A quién viste en la tienda?"
+     },
+     {
+      "en": "To whom should I send this?",
+      "es": "¿A quién debo enviar esto?"
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-whowhom-3",
+    "translation": "Ese es el hombre a quien conocí ayer.",
+    "type": "choice",
+    "prompt": "That is the man ___ I met yesterday.",
+    "options": [
+     "whom",
+     "who",
+     "which"
+    ],
+    "correct": 0,
+    "explain": "“I met whom” (yo conocí a quien), es objeto de “met”, por eso es “whom”.",
+    "examples": [
+     {
+      "en": "That is the man whom I met yesterday.",
+      "es": "Ese es el hombre a quien conocí ayer."
+     },
+     {
+      "en": "She is the teacher whom we admire.",
+      "es": "Ella es la profesora a quien admiramos."
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-whowhom-4",
+    "translation": "¿Quién es responsable de esto?",
+    "type": "error",
+    "wrong": "Whom is responsible for this?",
+    "wrongWord": "Whom",
+    "right": "Who is responsible for this?",
+    "rightWord": "Who",
+    "explain": "“Is responsible” necesita un sujeto, y el sujeto es “who”, no “whom”.",
+    "examples": [
+     {
+      "en": "Who is responsible for this?",
+      "es": "¿Quién es responsable de esto?"
+     },
+     {
+      "en": "Who wrote this letter?",
+      "es": "¿Quién escribió esta carta?"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "topic": "Affect vs Effect",
+  "items": [
+   {
+    "id": "g-medio8-affecteffect-1",
+    "translation": "El clima afecta nuestro estado de ánimo.",
+    "type": "choice",
+    "prompt": "The weather ___ our mood.",
+    "options": [
+     "affects",
+     "effects",
+     "effect"
+    ],
+    "correct": 0,
+    "explain": "“Affect” es un verbo: influir en algo.",
+    "examples": [
+     {
+      "en": "The weather affects our mood.",
+      "es": "El clima afecta nuestro estado de ánimo."
+     },
+     {
+      "en": "Stress can affect your health.",
+      "es": "El estrés puede afectar tu salud."
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-affecteffect-2",
+    "translation": "El efecto del medicamento fue rápido.",
+    "type": "fill",
+    "sentence": [
+     "The",
+     "___",
+     "of",
+     "the",
+     "medicine",
+     "was",
+     "fast",
+     "."
+    ],
+    "blankIndex": 1,
+    "bank": [
+     "effect",
+     "affect",
+     "effected"
+    ],
+    "correct": "effect",
+    "explain": "“Effect” es un sustantivo: el resultado de algo.",
+    "examples": [
+     {
+      "en": "The effect of the medicine was fast.",
+      "es": "El efecto del medicamento fue rápido."
+     },
+     {
+      "en": "This has a positive effect.",
+      "es": "Esto tiene un efecto positivo."
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-affecteffect-3",
+    "translation": "El nuevo cambio tendrá efecto la próxima semana.",
+    "type": "choice",
+    "prompt": "The new change will take ___ next week.",
+    "options": [
+     "effect",
+     "affect",
+     "affects"
+    ],
+    "correct": 0,
+    "explain": "La expresión fija es “take effect” (entrar en vigencia).",
+    "examples": [
+     {
+      "en": "The new change will take effect next week.",
+      "es": "El nuevo cambio tendrá efecto la próxima semana."
+     },
+     {
+      "en": "The law takes effect in June.",
+      "es": "La ley entra en vigencia en junio."
+     }
+    ]
+   },
+   {
+    "id": "g-medio8-affecteffect-4",
+    "translation": "El ruido afectó su concentración.",
+    "type": "error",
+    "wrong": "The noise effected her concentration.",
+    "wrongWord": "effected",
+    "right": "The noise affected her concentration.",
+    "rightWord": "affected",
+    "explain": "Como es una acción (influir), se necesita el verbo “affect”, no el sustantivo “effect”.",
+    "examples": [
+     {
+      "en": "The noise affected her concentration.",
+      "es": "El ruido afectó su concentración."
+     },
+     {
+      "en": "The heat affected the crops.",
+      "es": "El calor afectó las cosechas."
+     }
+    ]
+   }
+  ]
+ }
+]
   ],
   avanzado: [
     [
@@ -1740,6 +2364,214 @@ const GRAMMAR_BANK = {
         ]
       }
     ]
+  ,
+  [
+ {
+  "topic": "Quiet vs Quite vs Quit",
+  "items": [
+   {
+    "id": "g-avanzado8-quietquite-1",
+    "translation": "Por favor, guarda silencio en la biblioteca.",
+    "type": "choice",
+    "prompt": "Please be ___ in the library.",
+    "options": [
+     "quiet",
+     "quite",
+     "quit"
+    ],
+    "correct": 0,
+    "explain": "“Quiet” significa silencioso, tranquilo.",
+    "examples": [
+     {
+      "en": "Please be quiet in the library.",
+      "es": "Por favor, guarda silencio en la biblioteca."
+     },
+     {
+      "en": "The room was very quiet.",
+      "es": "La habitación estaba muy silenciosa."
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-quietquite-2",
+    "translation": "Estoy bastante cansado hoy.",
+    "type": "fill",
+    "sentence": [
+     "I",
+     "am",
+     "___",
+     "tired",
+     "today",
+     "."
+    ],
+    "blankIndex": 2,
+    "bank": [
+     "quite",
+     "quiet",
+     "quit"
+    ],
+    "correct": "quite",
+    "explain": "“Quite” significa bastante, un adverbio de grado.",
+    "examples": [
+     {
+      "en": "I am quite tired today.",
+      "es": "Estoy bastante cansado hoy."
+     },
+     {
+      "en": "It's quite cold outside.",
+      "es": "Hace bastante frío afuera."
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-quietquite-3",
+    "translation": "Él renunció a su trabajo el mes pasado.",
+    "type": "choice",
+    "prompt": "He ___ his job last month.",
+    "options": [
+     "quit",
+     "quiet",
+     "quite"
+    ],
+    "correct": 0,
+    "explain": "“Quit” es el verbo dejar/renunciar (pasado y presente tienen la misma forma).",
+    "examples": [
+     {
+      "en": "He quit his job last month.",
+      "es": "Él renunció a su trabajo el mes pasado."
+     },
+     {
+      "en": "She wants to quit smoking.",
+      "es": "Ella quiere dejar de fumar."
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-quietquite-4",
+    "translation": "La calle estaba bastante tranquila esta noche.",
+    "type": "error",
+    "wrong": "The street was quit quiet tonight.",
+    "wrongWord": "quit",
+    "right": "The street was quite quiet tonight.",
+    "rightWord": "quite",
+    "explain": "Se necesita “quite” (bastante) para modificar el adjetivo “quiet” (tranquila), no “quit” (renunciar).",
+    "examples": [
+     {
+      "en": "The street was quite quiet tonight.",
+      "es": "La calle estaba bastante tranquila esta noche."
+     },
+     {
+      "en": "She was quite quiet during the meeting.",
+      "es": "Ella estuvo bastante callada durante la reunión."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "topic": "Farther vs Further",
+  "items": [
+   {
+    "id": "g-avanzado8-fartherfurther-1",
+    "translation": "El pueblo está más lejos que la ciudad.",
+    "type": "choice",
+    "prompt": "The village is ___ than the city.",
+    "options": [
+     "farther",
+     "further",
+     "father"
+    ],
+    "correct": 0,
+    "explain": "“Farther” se usa para distancia física.",
+    "examples": [
+     {
+      "en": "The village is farther than the city.",
+      "es": "El pueblo está más lejos que la ciudad."
+     },
+     {
+      "en": "We walked farther than planned.",
+      "es": "Caminamos más lejos de lo planeado."
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-fartherfurther-2",
+    "translation": "Necesitamos más información antes de decidir.",
+    "type": "fill",
+    "sentence": [
+     "We",
+     "need",
+     "___",
+     "information",
+     "before",
+     "deciding",
+     "."
+    ],
+    "blankIndex": 2,
+    "bank": [
+     "further",
+     "farther",
+     "father"
+    ],
+    "correct": "further",
+    "explain": "“Further” se usa para ideas abstractas, como más información.",
+    "examples": [
+     {
+      "en": "We need further information before deciding.",
+      "es": "Necesitamos más información antes de decidir."
+     },
+     {
+      "en": "Let's discuss this further.",
+      "es": "Discutamos esto más a fondo."
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-fartherfurther-3",
+    "translation": "No podemos avanzar más lejos sin un mapa.",
+    "type": "choice",
+    "prompt": "We cannot go any ___ without a map.",
+    "options": [
+     "farther",
+     "further",
+     "farthest"
+    ],
+    "correct": 0,
+    "explain": "Cuando se habla de distancia real (avanzar en el camino), se prefiere “farther”.",
+    "examples": [
+     {
+      "en": "We cannot go any farther without a map.",
+      "es": "No podemos avanzar más lejos sin un mapa."
+     },
+     {
+      "en": "How much farther is the beach?",
+      "es": "¿Qué tan lejos está la playa?"
+     }
+    ]
+   },
+   {
+    "id": "g-avanzado8-fartherfurther-4",
+    "translation": "El proyecto necesita más desarrollo.",
+    "type": "error",
+    "wrong": "The project needs farther development.",
+    "wrongWord": "farther",
+    "right": "The project needs further development.",
+    "rightWord": "further",
+    "explain": "“Development” es una idea abstracta, no una distancia física, así que se usa “further”.",
+    "examples": [
+     {
+      "en": "The project needs further development.",
+      "es": "El proyecto necesita más desarrollo."
+     },
+     {
+      "en": "No further questions, thank you.",
+      "es": "No más preguntas, gracias."
+     }
+    ]
+   }
+  ]
+ }
+]
   ]
 };
 
@@ -1830,6 +2662,209 @@ const VOCAB_BANK = {
         examples:[{en:"She is happy today.", es:"Ella está feliz hoy."},{en:"I feel happy.", es:"Me siento feliz."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"te sientes bien y contento\"?", options:["happy","sad","tired"], correct:0, explain:"“Happy” es feliz." } }
     ]
+  ,
+  [
+ {
+  "id": "v-principiante4-1",
+  "word": "Buy",
+  "translation": "Comprar · dar dinero para obtener algo",
+  "examples": [
+   {
+    "en": "I want to buy a book.",
+    "es": "Quiero comprar un libro."
+   },
+   {
+    "en": "She buys milk every day.",
+    "es": "Ella compra leche todos los días."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"dar dinero para obtener algo\"?",
+   "options": [
+    "buy",
+    "by",
+    "sell"
+   ],
+   "correct": 0,
+   "explain": "“Buy” es comprar."
+  }
+ },
+ {
+  "id": "v-principiante4-2",
+  "word": "By",
+  "translation": "Por / cerca de · una palabra pequeña que indica cercanía o medio",
+  "examples": [
+   {
+    "en": "The book is by the window.",
+    "es": "El libro está cerca de la ventana."
+   },
+   {
+    "en": "I go to school by bus.",
+    "es": "Voy a la escuela en bus."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"cerca de\" o \"por medio de\"?",
+   "options": [
+    "by",
+    "buy",
+    "bye"
+   ],
+   "correct": 0,
+   "explain": "“By” significa por o cerca de."
+  }
+ },
+ {
+  "id": "v-principiante4-3",
+  "word": "Sea",
+  "translation": "Mar · agua grande y salada",
+  "examples": [
+   {
+    "en": "We swim in the sea.",
+    "es": "Nadamos en el mar."
+   },
+   {
+    "en": "The sea is blue.",
+    "es": "El mar es azul."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"agua grande y salada\"?",
+   "options": [
+    "sea",
+    "see",
+    "lake"
+   ],
+   "correct": 0,
+   "explain": "“Sea” es el mar."
+  }
+ },
+ {
+  "id": "v-principiante4-4",
+  "word": "See",
+  "translation": "Ver · usar los ojos para mirar algo",
+  "examples": [
+   {
+    "en": "I can see the moon.",
+    "es": "Puedo ver la luna."
+   },
+   {
+    "en": "Do you see the bird?",
+    "es": "¿Ves al pájaro?"
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"usar los ojos para mirar algo\"?",
+   "options": [
+    "see",
+    "sea",
+    "look"
+   ],
+   "correct": 0,
+   "explain": "“See” es ver."
+  }
+ },
+ {
+  "id": "v-principiante4-5",
+  "word": "Rain",
+  "translation": "Lluvia · agua que cae del cielo",
+  "examples": [
+   {
+    "en": "I like the rain.",
+    "es": "Me gusta la lluvia."
+   },
+   {
+    "en": "It will rain today.",
+    "es": "Va a llover hoy."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"agua que cae del cielo\"?",
+   "options": [
+    "rain",
+    "snow",
+    "sun"
+   ],
+   "correct": 0,
+   "explain": "“Rain” es lluvia."
+  }
+ },
+ {
+  "id": "v-principiante4-6",
+  "word": "Snow",
+  "translation": "Nieve · agua blanca y fría que cae en invierno",
+  "examples": [
+   {
+    "en": "The snow is white.",
+    "es": "La nieve es blanca."
+   },
+   {
+    "en": "We play in the snow.",
+    "es": "Jugamos en la nieve."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"agua blanca y fría que cae en invierno\"?",
+   "options": [
+    "snow",
+    "rain",
+    "cloud"
+   ],
+   "correct": 0,
+   "explain": "“Snow” es nieve."
+  }
+ },
+ {
+  "id": "v-principiante4-7",
+  "word": "Cold",
+  "translation": "Frío · temperatura baja",
+  "examples": [
+   {
+    "en": "The water is cold.",
+    "es": "El agua está fría."
+   },
+   {
+    "en": "It is cold today.",
+    "es": "Hoy hace frío."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"temperatura baja\"?",
+   "options": [
+    "cold",
+    "hot",
+    "warm"
+   ],
+   "correct": 0,
+   "explain": "“Cold” es frío."
+  }
+ },
+ {
+  "id": "v-principiante4-8",
+  "word": "Hot",
+  "translation": "Caliente · temperatura alta",
+  "examples": [
+   {
+    "en": "The soup is hot.",
+    "es": "La sopa está caliente."
+   },
+   {
+    "en": "Summer days are hot.",
+    "es": "Los días de verano son calientes."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"temperatura alta\"?",
+   "options": [
+    "hot",
+    "cold",
+    "cool"
+   ],
+   "correct": 0,
+   "explain": "“Hot” es caliente."
+  }
+ }
+]
   ],
   facil: [
     [
@@ -2016,6 +3051,209 @@ const VOCAB_BANK = {
         examples:[{en:"Can I get a refill of coffee?", es:"¿Puedo tener una recarga de café?"},{en:"I need to refill my water bottle.", es:"Necesito rellenar mi botella de agua."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"volver a llenar algo\"?", options:["refill","empty","spill"], correct:0, explain:"“Refill” significa rellenar o recargar." } }
     ]
+  ,
+  [
+ {
+  "id": "v-facil8-1",
+  "word": "Lend",
+  "translation": "Prestar · dar algo a alguien por un tiempo",
+  "examples": [
+   {
+    "en": "I will lend you my pen.",
+    "es": "Te prestaré mi lápiz."
+   },
+   {
+    "en": "Banks lend money.",
+    "es": "Los bancos prestan dinero."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"dar algo a alguien por un tiempo\"?",
+   "options": [
+    "lend",
+    "borrow",
+    "give"
+   ],
+   "correct": 0,
+   "explain": "“Lend” es prestar (yo lo doy)."
+  }
+ },
+ {
+  "id": "v-facil8-2",
+  "word": "Then",
+  "translation": "Luego / entonces · palabra que indica el siguiente momento",
+  "examples": [
+   {
+    "en": "First eat, then sleep.",
+    "es": "Primero come, luego duerme."
+   },
+   {
+    "en": "We will go then.",
+    "es": "Iremos entonces."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"luego\" o \"entonces\"?",
+   "options": [
+    "then",
+    "than",
+    "when"
+   ],
+   "correct": 0,
+   "explain": "“Then” es luego/entonces."
+  }
+ },
+ {
+  "id": "v-facil8-3",
+  "word": "Than",
+  "translation": "Que · palabra usada para comparar dos cosas",
+  "examples": [
+   {
+    "en": "She is faster than him.",
+    "es": "Ella es más rápida que él."
+   },
+   {
+    "en": "This is better than that.",
+    "es": "Esto es mejor que eso."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"que\" (para comparar)?",
+   "options": [
+    "than",
+    "then",
+    "as"
+   ],
+   "correct": 0,
+   "explain": "“Than” se usa para comparar."
+  }
+ },
+ {
+  "id": "v-facil8-4",
+  "word": "Accept",
+  "translation": "Aceptar · decir sí a algo",
+  "examples": [
+   {
+    "en": "I accept your offer.",
+    "es": "Acepto tu oferta."
+   },
+   {
+    "en": "She accepted the gift.",
+    "es": "Ella aceptó el regalo."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"decir sí a algo\"?",
+   "options": [
+    "accept",
+    "except",
+    "reject"
+   ],
+   "correct": 0,
+   "explain": "“Accept” es aceptar."
+  }
+ },
+ {
+  "id": "v-facil8-5",
+  "word": "Except",
+  "translation": "Excepto · todo menos una cosa",
+  "examples": [
+   {
+    "en": "Everyone came except John.",
+    "es": "Todos vinieron excepto Juan."
+   },
+   {
+    "en": "I like all fruits except bananas.",
+    "es": "Me gustan todas las frutas excepto las bananas."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"todo menos una cosa\"?",
+   "options": [
+    "except",
+    "accept",
+    "expect"
+   ],
+   "correct": 0,
+   "explain": "“Except” significa excepto."
+  }
+ },
+ {
+  "id": "v-facil8-6",
+  "word": "Suggest",
+  "translation": "Sugerir · dar una idea o consejo",
+  "examples": [
+   {
+    "en": "I suggest you rest.",
+    "es": "Sugiero que descanses."
+   },
+   {
+    "en": "She suggested a new plan.",
+    "es": "Ella sugirió un nuevo plan."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"dar una idea o consejo\"?",
+   "options": [
+    "suggest",
+    "suppose",
+    "explain"
+   ],
+   "correct": 0,
+   "explain": "“Suggest” es sugerir."
+  }
+ },
+ {
+  "id": "v-facil8-7",
+  "word": "Improve",
+  "translation": "Mejorar · hacer algo mejor",
+  "examples": [
+   {
+    "en": "I want to improve my English.",
+    "es": "Quiero mejorar mi inglés."
+   },
+   {
+    "en": "Practice will improve your skills.",
+    "es": "La práctica mejorará tus habilidades."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"hacer algo mejor\"?",
+   "options": [
+    "improve",
+    "impress",
+    "prove"
+   ],
+   "correct": 0,
+   "explain": "“Improve” es mejorar."
+  }
+ },
+ {
+  "id": "v-facil8-8",
+  "word": "Explain",
+  "translation": "Explicar · hacer que algo se entienda",
+  "examples": [
+   {
+    "en": "Can you explain this word?",
+    "es": "¿Puedes explicar esta palabra?"
+   },
+   {
+    "en": "The teacher explained the lesson.",
+    "es": "El profesor explicó la lección."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"hacer que algo se entienda\"?",
+   "options": [
+    "explain",
+    "explore",
+    "expect"
+   ],
+   "correct": 0,
+   "explain": "“Explain” es explicar."
+  }
+ }
+]
   ],
   medio: [
     [
@@ -2202,6 +3440,209 @@ const VOCAB_BANK = {
         examples:[{en:"This medicine will alleviate the pain.", es:"Esta medicina aliviará el dolor."},{en:"The plan alleviates traffic problems.", es:"El plan alivia los problemas de tráfico."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"reducir el dolor o un problema\"?", options:["alleviate","worsen","ignore"], correct:0, explain:"“Alleviate” significa aliviar." } }
     ]
+  ,
+  [
+ {
+  "id": "v-medio8-1",
+  "word": "Affect",
+  "translation": "Afectar (verbo) · influir en algo",
+  "examples": [
+   {
+    "en": "The rain affected the game.",
+    "es": "La lluvia afectó el juego."
+   },
+   {
+    "en": "Sleep affects your mood.",
+    "es": "El sueño afecta tu estado de ánimo."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"influir en algo\" (verbo)?",
+   "options": [
+    "affect",
+    "effect",
+    "impact"
+   ],
+   "correct": 0,
+   "explain": "“Affect” es el verbo influir."
+  }
+ },
+ {
+  "id": "v-medio8-2",
+  "word": "Effect",
+  "translation": "Efecto (sustantivo) · el resultado de algo",
+  "examples": [
+   {
+    "en": "The medicine had a good effect.",
+    "es": "El medicamento tuvo un buen efecto."
+   },
+   {
+    "en": "Every action has an effect.",
+    "es": "Cada acción tiene un efecto."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"el resultado de algo\" (sustantivo)?",
+   "options": [
+    "effect",
+    "affect",
+    "cause"
+   ],
+   "correct": 0,
+   "explain": "“Effect” es el sustantivo resultado."
+  }
+ },
+ {
+  "id": "v-medio8-3",
+  "word": "Loose",
+  "translation": "Suelto · que no está ajustado o apretado",
+  "examples": [
+   {
+    "en": "These pants are loose.",
+    "es": "Estos pantalones están sueltos."
+   },
+   {
+    "en": "The dog got loose.",
+    "es": "El perro se soltó."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"que no está ajustado\"?",
+   "options": [
+    "loose",
+    "lose",
+    "close"
+   ],
+   "correct": 0,
+   "explain": "“Loose” es suelto."
+  }
+ },
+ {
+  "id": "v-medio8-4",
+  "word": "Lose",
+  "translation": "Perder · no tener algo más, o perder un juego",
+  "examples": [
+   {
+    "en": "Don't lose your keys.",
+    "es": "No pierdas tus llaves."
+   },
+   {
+    "en": "We don't want to lose the game.",
+    "es": "No queremos perder el juego."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"no tener algo más\"?",
+   "options": [
+    "lose",
+    "loose",
+    "miss"
+   ],
+   "correct": 0,
+   "explain": "“Lose” es perder."
+  }
+ },
+ {
+  "id": "v-medio8-5",
+  "word": "Weather",
+  "translation": "Clima · condición del cielo (lluvia, sol, frío)",
+  "examples": [
+   {
+    "en": "The weather is nice today.",
+    "es": "El clima está agradable hoy."
+   },
+   {
+    "en": "I check the weather every morning.",
+    "es": "Reviso el clima cada mañana."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"condición del cielo\"?",
+   "options": [
+    "weather",
+    "whether",
+    "climate"
+   ],
+   "correct": 0,
+   "explain": "“Weather” es el clima."
+  }
+ },
+ {
+  "id": "v-medio8-6",
+  "word": "Whether",
+  "translation": "Si (o no) · palabra para presentar dos opciones",
+  "examples": [
+   {
+    "en": "I don't know whether he is coming.",
+    "es": "No sé si él viene."
+   },
+   {
+    "en": "Decide whether to stay or go.",
+    "es": "Decide si quedarte o irte."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"si\" (para presentar opciones)?",
+   "options": [
+    "whether",
+    "weather",
+    "if only"
+   ],
+   "correct": 0,
+   "explain": "“Whether” significa si (entre opciones)."
+  }
+ },
+ {
+  "id": "v-medio8-7",
+  "word": "Complement",
+  "translation": "Complemento · algo que combina bien y completa otra cosa",
+  "examples": [
+   {
+    "en": "The wine is a nice complement to the meal.",
+    "es": "El vino es un buen complemento para la comida."
+   },
+   {
+    "en": "These colors complement each other.",
+    "es": "Estos colores se complementan."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"algo que completa otra cosa\"?",
+   "options": [
+    "complement",
+    "compliment",
+    "supplement"
+   ],
+   "correct": 0,
+   "explain": "“Complement” es complemento (completar)."
+  }
+ },
+ {
+  "id": "v-medio8-8",
+  "word": "Compliment",
+  "translation": "Cumplido · una frase amable sobre alguien",
+  "examples": [
+   {
+    "en": "She gave me a nice compliment.",
+    "es": "Ella me hizo un lindo cumplido."
+   },
+   {
+    "en": "He complimented my English.",
+    "es": "Él elogió mi inglés."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"una frase amable sobre alguien\"?",
+   "options": [
+    "compliment",
+    "complement",
+    "praise only"
+   ],
+   "correct": 0,
+   "explain": "“Compliment” es un cumplido o elogio."
+  }
+ }
+]
   ],
   avanzado: [
     [
@@ -2388,6 +3829,209 @@ const VOCAB_BANK = {
         examples:[{en:"The auditors scrutinized every transaction.", es:"Los auditores examinaron minuciosamente cada transacción."},{en:"She scrutinized the contract before signing.", es:"Ella examinó minuciosamente el contrato antes de firmar."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"revisar algo con mucho cuidado\"?", options:["scrutinize","ignore","skim"], correct:0, explain:"“Scrutinize” significa examinar minuciosamente." } }
     ]
+  ,
+  [
+ {
+  "id": "v-avanzado8-1",
+  "word": "Principal",
+  "translation": "Principal (adjetivo) / director(a) · el más importante, o jefe de escuela",
+  "examples": [
+   {
+    "en": "The principal reason is cost.",
+    "es": "La razón principal es el costo."
+   },
+   {
+    "en": "She is the school principal.",
+    "es": "Ella es la directora de la escuela."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"el más importante\" o \"director de escuela\"?",
+   "options": [
+    "principal",
+    "principle",
+    "primary only"
+   ],
+   "correct": 0,
+   "explain": "“Principal” es principal o director."
+  }
+ },
+ {
+  "id": "v-avanzado8-2",
+  "word": "Principle",
+  "translation": "Principio · una regla o creencia fundamental",
+  "examples": [
+   {
+    "en": "Honesty is his main principle.",
+    "es": "La honestidad es su principio principal."
+   },
+   {
+    "en": "We follow the same principles.",
+    "es": "Seguimos los mismos principios."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"una regla o creencia fundamental\"?",
+   "options": [
+    "principle",
+    "principal",
+    "rule only"
+   ],
+   "correct": 0,
+   "explain": "“Principle” es un principio (regla, creencia)."
+  }
+ },
+ {
+  "id": "v-avanzado8-3",
+  "word": "Farther",
+  "translation": "Más lejos (distancia física) · más lejos en el espacio",
+  "examples": [
+   {
+    "en": "The store is farther than I thought.",
+    "es": "La tienda está más lejos de lo que pensé."
+   },
+   {
+    "en": "We drove farther north.",
+    "es": "Manejamos más lejos hacia el norte."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"más lejos\" en distancia física?",
+   "options": [
+    "farther",
+    "further",
+    "father"
+   ],
+   "correct": 0,
+   "explain": "“Farther” es distancia física."
+  }
+ },
+ {
+  "id": "v-avanzado8-4",
+  "word": "Further",
+  "translation": "Más (idea abstracta) · más allá, adicional",
+  "examples": [
+   {
+    "en": "We need further discussion.",
+    "es": "Necesitamos más discusión."
+   },
+   {
+    "en": "Further details will follow.",
+    "es": "Más detalles vendrán después."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"más\" en un sentido abstracto?",
+   "options": [
+    "further",
+    "farther",
+    "additional only"
+   ],
+   "correct": 0,
+   "explain": "“Further” es para ideas abstractas."
+  }
+ },
+ {
+  "id": "v-avanzado8-5",
+  "word": "Stationary",
+  "translation": "Estacionario · que no se mueve, fijo en un lugar",
+  "examples": [
+   {
+    "en": "The car remained stationary.",
+    "es": "El carro permaneció estacionario."
+   },
+   {
+    "en": "Ride a stationary bike at the gym.",
+    "es": "Monta una bicicleta estacionaria en el gimnasio."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"que no se mueve\"?",
+   "options": [
+    "stationary",
+    "stationery",
+    "moving"
+   ],
+   "correct": 0,
+   "explain": "“Stationary” significa fijo, sin movimiento."
+  }
+ },
+ {
+  "id": "v-avanzado8-6",
+  "word": "Stationery",
+  "translation": "Papelería · papel, lápices y artículos de escritorio",
+  "examples": [
+   {
+    "en": "I bought new stationery for the office.",
+    "es": "Compré papelería nueva para la oficina."
+   },
+   {
+    "en": "The stationery store sells notebooks.",
+    "es": "La papelería vende cuadernos."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"papel y artículos de escritorio\"?",
+   "options": [
+    "stationery",
+    "stationary",
+    "paperwork only"
+   ],
+   "correct": 0,
+   "explain": "“Stationery” es papelería (con E, como Envelope)."
+  }
+ },
+ {
+  "id": "v-avanzado8-7",
+  "word": "Elicit",
+  "translation": "Provocar / obtener · sacar una reacción o respuesta de alguien",
+  "examples": [
+   {
+    "en": "The question elicited a strong reaction.",
+    "es": "La pregunta provocó una fuerte reacción."
+   },
+   {
+    "en": "Try to elicit her opinion.",
+    "es": "Intenta obtener su opinión."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"sacar una reacción de alguien\"?",
+   "options": [
+    "elicit",
+    "illicit",
+    "solicit only"
+   ],
+   "correct": 0,
+   "explain": "“Elicit” es provocar u obtener (una reacción)."
+  }
+ },
+ {
+  "id": "v-avanzado8-8",
+  "word": "Illicit",
+  "translation": "Ilícito · que no es legal o permitido",
+  "examples": [
+   {
+    "en": "They were involved in illicit activities.",
+    "es": "Estaban involucrados en actividades ilícitas."
+   },
+   {
+    "en": "The illicit trade was stopped.",
+    "es": "El comercio ilícito fue detenido."
+   }
+  ],
+  "quiz": {
+   "prompt": "¿Qué palabra significa esto: \"que no es legal\"?",
+   "options": [
+    "illicit",
+    "elicit",
+    "illegal only"
+   ],
+   "correct": 0,
+   "explain": "“Illicit” significa ilícito, ilegal."
+  }
+ }
+]
   ]
 };
 
@@ -2478,6 +4122,51 @@ const LISTENING_BANK = {
         question:"What is this?", options:["A book","A pen","A chair"], correct:0,
         explain:"“Book” significa libro." }
     ]
+  ,
+  [
+ {
+  "id": "l-principiante7-1",
+  "audioFile": "audio/a0/a0listening-017.mp3",
+  "transcript": "Can I borrow your pen?",
+  "translation": "¿Me prestas tu lápiz?",
+  "question": "What does the speaker want?",
+  "options": [
+   "To borrow a pen",
+   "To buy a pen",
+   "To sell a pen"
+  ],
+  "correct": 0,
+  "explain": "“Borrow” significa pedir prestado."
+ },
+ {
+  "id": "l-principiante7-2",
+  "audioFile": "audio/a0/a0listening-018.mp3",
+  "transcript": "She sings very well.",
+  "translation": "Ella canta muy bien.",
+  "question": "How does she sing?",
+  "options": [
+   "Very well",
+   "Very badly",
+   "Very loud"
+  ],
+  "correct": 0,
+  "explain": "“Well” significa bien."
+ },
+ {
+  "id": "l-principiante7-3",
+  "audioFile": "audio/a0/a0listening-019.mp3",
+  "transcript": "It is cold today.",
+  "translation": "Hoy hace frío.",
+  "question": "How is the weather?",
+  "options": [
+   "Cold",
+   "Hot",
+   "Sunny"
+  ],
+  "correct": 0,
+  "explain": "“Cold” significa frío."
+ }
+]
   ],
   facil: [
     [
@@ -2644,6 +4333,51 @@ const LISTENING_BANK = {
         question:"Which road is faster?", options:["This one","The other one","Neither"], correct:0,
         explain:"“This road is faster” indica cuál es más rápido." }
     ]
+  ,
+  [
+ {
+  "id": "l-facil12-1",
+  "audioFile": "audio/a1/a1listening-036.mp3",
+  "transcript": "First we ate, then we slept.",
+  "translation": "Primero comimos, luego dormimos.",
+  "question": "What happened after eating?",
+  "options": [
+   "They slept",
+   "They walked",
+   "They cooked"
+  ],
+  "correct": 0,
+  "explain": "“Then” indica lo que pasó después."
+ },
+ {
+  "id": "l-facil12-2",
+  "audioFile": "audio/a1/a1listening-037.mp3",
+  "transcript": "Coffee is stronger than tea.",
+  "translation": "El café es más fuerte que el té.",
+  "question": "What is being compared to tea?",
+  "options": [
+   "Coffee",
+   "Water",
+   "Juice"
+  ],
+  "correct": 0,
+  "explain": "“Than” se usa para comparar coffee y tea."
+ },
+ {
+  "id": "l-facil12-3",
+  "audioFile": "audio/a1/a1listening-038.mp3",
+  "transcript": "Everyone came except Maria.",
+  "translation": "Todos vinieron excepto María.",
+  "question": "Who did not come?",
+  "options": [
+   "Maria",
+   "Everyone",
+   "The teacher"
+  ],
+  "correct": 0,
+  "explain": "“Except” significa que Maria fue la única que no vino."
+ }
+]
   ],
   medio: [
     [
@@ -2760,6 +4494,51 @@ const LISTENING_BANK = {
         question:"Who reviewed the report?", options:["The whole team","Only the manager","No one"], correct:0,
         explain:"“By the whole team” indica quién revisó el informe." }
     ]
+  ,
+  [
+ {
+  "id": "l-medio9-1",
+  "audioFile": "audio/b1/b1listening-025.mp3",
+  "transcript": "Stress can affect your sleep.",
+  "translation": "El estrés puede afectar tu sueño.",
+  "question": "What can stress affect?",
+  "options": [
+   "Your sleep",
+   "Your money",
+   "Your car"
+  ],
+  "correct": 0,
+  "explain": "“Affect” es el verbo influir en algo."
+ },
+ {
+  "id": "l-medio9-2",
+  "audioFile": "audio/b1/b1listening-026.mp3",
+  "transcript": "I don't know whether it will rain.",
+  "translation": "No sé si va a llover.",
+  "question": "What is the speaker unsure about?",
+  "options": [
+   "Whether it will rain",
+   "Whether it is cold",
+   "Whether to sleep"
+  ],
+  "correct": 0,
+  "explain": "“Whether” presenta dos opciones (lloverá o no)."
+ },
+ {
+  "id": "l-medio9-3",
+  "audioFile": "audio/b1/b1listening-027.mp3",
+  "transcript": "She gave me a nice compliment.",
+  "translation": "Ella me hizo un lindo cumplido.",
+  "question": "What did she give?",
+  "options": [
+   "A compliment",
+   "A complaint",
+   "A complement"
+  ],
+  "correct": 0,
+  "explain": "“Compliment” significa un cumplido o elogio."
+ }
+]
   ],
   avanzado: [
     [
@@ -2876,6 +4655,51 @@ const LISTENING_BANK = {
         question:"How is the proposal described?", options:["As the most ambitious one","As the weakest one","As unrealistic"], correct:0,
         explain:"“The most ambitious one” describe la propuesta." }
     ]
+  ,
+  [
+ {
+  "id": "l-avanzado9-1",
+  "audioFile": "audio/c1/c1listening-025.mp3",
+  "transcript": "We need further information before deciding.",
+  "translation": "Necesitamos más información antes de decidir.",
+  "question": "What do they need?",
+  "options": [
+   "Further information",
+   "Less time",
+   "A new plan"
+  ],
+  "correct": 0,
+  "explain": "“Further” significa más, en un sentido abstracto."
+ },
+ {
+  "id": "l-avanzado9-2",
+  "audioFile": "audio/c1/c1listening-026.mp3",
+  "transcript": "The car remained stationary for hours.",
+  "translation": "El carro permaneció estacionario por horas.",
+  "question": "What did the car do?",
+  "options": [
+   "It stayed still",
+   "It moved fast",
+   "It broke down"
+  ],
+  "correct": 0,
+  "explain": "“Stationary” significa que no se mueve."
+ },
+ {
+  "id": "l-avanzado9-3",
+  "audioFile": "audio/c1/c1listening-027.mp3",
+  "transcript": "The illicit trade was stopped by the police.",
+  "translation": "El comercio ilícito fue detenido por la policía.",
+  "question": "What kind of trade was it?",
+  "options": [
+   "Illicit (illegal)",
+   "Legal",
+   "International"
+  ],
+  "correct": 0,
+  "explain": "“Illicit” significa ilegal, no permitido."
+ }
+]
   ]
 };
 
@@ -2918,6 +4742,27 @@ const SPEAKING_BANK = {
       { id:"s-principiante6-2", sentence:"This is your pencil.", translation:"Este es tu lápiz.", audioFile:"audio/a0/a0speaking-015.mp3" },
       { id:"s-principiante6-3", sentence:"I am ten years old.", translation:"Tengo diez años.", audioFile:"audio/a0/a0speaking-016.mp3" }
     ]
+  ,
+  [
+ {
+  "id": "s-principiante7-1",
+  "sentence": "Can you lend me your umbrella?",
+  "translation": "¿Me prestas tu paraguas?",
+  "audioFile": "audio/a0/a0speaking-017.mp3"
+ },
+ {
+  "id": "s-principiante7-2",
+  "sentence": "He plays soccer well.",
+  "translation": "Él juega bien al fútbol.",
+  "audioFile": "audio/a0/a0speaking-018.mp3"
+ },
+ {
+  "id": "s-principiante7-3",
+  "sentence": "I want to buy a book.",
+  "translation": "Quiero comprar un libro.",
+  "audioFile": "audio/a0/a0speaking-019.mp3"
+ }
+]
   ],
   facil: [
     [
@@ -2957,6 +4802,27 @@ const SPEAKING_BANK = {
       { id:"s-facil8-2", sentence:"Do you like coffee?", translation:"¿Te gusta el café?", audioFile:"audio/a1/a1speaking-020.mp3" },
       { id:"s-facil8-3", sentence:"This car is faster than mine.", translation:"Este carro es más rápido que el mío.", audioFile:"audio/a1/a1speaking-021.mp3" }
     ]
+  ,
+  [
+ {
+  "id": "s-facil9-1",
+  "sentence": "First I study, then I rest.",
+  "translation": "Primero estudio, luego descanso.",
+  "audioFile": "audio/a1/a1speaking-022.mp3"
+ },
+ {
+  "id": "s-facil9-2",
+  "sentence": "This is better than that.",
+  "translation": "Esto es mejor que eso.",
+  "audioFile": "audio/a1/a1speaking-023.mp3"
+ },
+ {
+  "id": "s-facil9-3",
+  "sentence": "I suggest you rest a little.",
+  "translation": "Sugiero que descanses un poco.",
+  "audioFile": "audio/a1/a1speaking-024.mp3"
+ }
+]
   ],
   medio: [
     [
@@ -2995,6 +4861,27 @@ const SPEAKING_BANK = {
       { id:"s-medio8-2", sentence:"There is a lot of traffic today.", translation:"Hay mucho tráfico hoy.", audioFile:"audio/b1/b1speaking-019.mp3" },
       { id:"s-medio8-3", sentence:"The report was finished on time.", translation:"El informe se terminó a tiempo.", audioFile:"audio/b1/b1speaking-020.mp3" }
     ]
+  ,
+  [
+ {
+  "id": "s-medio9-1",
+  "sentence": "The rain affected the game.",
+  "translation": "La lluvia afectó el juego.",
+  "audioFile": "audio/b1/b1speaking-021.mp3"
+ },
+ {
+  "id": "s-medio9-2",
+  "sentence": "Don't lose your keys again.",
+  "translation": "No pierdas tus llaves otra vez.",
+  "audioFile": "audio/b1/b1speaking-022.mp3"
+ },
+ {
+  "id": "s-medio9-3",
+  "sentence": "These colors complement each other.",
+  "translation": "Estos colores se complementan.",
+  "audioFile": "audio/b1/b1speaking-023.mp3"
+ }
+]
   ],
   avanzado: [
     [
@@ -3033,6 +4920,27 @@ const SPEAKING_BANK = {
       { id:"s-avanzado7-2", sentence:"It is important that you arrive early.", translation:"Es importante que llegues temprano.", audioFile:"audio/c1/c1speaking-019.mp3" },
       { id:"s-avanzado7-3", sentence:"The plan is, arguably, too ambitious.", translation:"El plan es, podría decirse, demasiado ambicioso.", audioFile:"audio/c1/c1speaking-020.mp3" }
     ]
+  ,
+  [
+ {
+  "id": "s-avanzado8-1",
+  "sentence": "Honesty is his main principle.",
+  "translation": "La honestidad es su principio principal.",
+  "audioFile": "audio/c1/c1speaking-021.mp3"
+ },
+ {
+  "id": "s-avanzado8-2",
+  "sentence": "We drove farther north than planned.",
+  "translation": "Manejamos más al norte de lo planeado.",
+  "audioFile": "audio/c1/c1speaking-022.mp3"
+ },
+ {
+  "id": "s-avanzado8-3",
+  "sentence": "The question elicited a strong reaction.",
+  "translation": "La pregunta provocó una fuerte reacción.",
+  "audioFile": "audio/c1/c1speaking-023.mp3"
+ }
+]
   ]
 };
 
@@ -3100,6 +5008,73 @@ const WRITING_BANK = {
         example:{en:"I am ten years old.", es:"Tengo diez años."},
         checklist:["¿Empezaste con “I am”?","¿Usaste un número antes de “years old”?","¿Terminaste con “years old”?"] }
     ]
+  ,
+  [
+ {
+  "id": "w-principiante4-1",
+  "prompt": "Escribe una frase pidiendo algo prestado (usa \"Can I borrow ___?\").",
+  "target": "Can I borrow [thing]",
+  "checkPattern": "can i borrow [a-z]+",
+  "hint": "Estructura esperada: “Can I borrow ___?”",
+  "example": {
+   "en": "Can I borrow your pen?",
+   "es": "¿Me prestas tu lápiz?"
+  },
+  "checklist": [
+   "¿Empezaste con “Can I borrow”?",
+   "¿Escribiste un objeto en inglés?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-principiante4-2",
+  "prompt": "Escribe una frase diciendo que alguien hace algo bien (usa \"He/She plays ___ well\").",
+  "target": "He plays [sport] well",
+  "checkPattern": "(he|she) (plays|sings|cooks) [a-z]+ well",
+  "hint": "Estructura esperada: “He/She plays ___ well.”",
+  "example": {
+   "en": "She plays soccer well.",
+   "es": "Ella juega bien al fútbol."
+  },
+  "checklist": [
+   "¿Usaste “He” o “She”?",
+   "¿Terminaste la frase con “well”?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-principiante4-3",
+  "prompt": "Escribe una frase sobre el clima (usa \"It is ___\" con hot, cold, rainy, etc.).",
+  "target": "It is [weather word]",
+  "checkPattern": "it is (hot|cold|rainy|sunny|cloudy|windy|snowy)",
+  "hint": "Estructura esperada: “It is ___.”",
+  "example": {
+   "en": "It is cold today.",
+   "es": "Hoy hace frío."
+  },
+  "checklist": [
+   "¿Empezaste con “It is”?",
+   "¿Usaste una palabra de clima?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-principiante4-4",
+  "prompt": "Escribe una frase sobre comprar algo (usa \"I want to buy ___\").",
+  "target": "I want to buy [thing]",
+  "checkPattern": "i want to buy [a-z]+",
+  "hint": "Estructura esperada: “I want to buy ___.”",
+  "example": {
+   "en": "I want to buy a book.",
+   "es": "Quiero comprar un libro."
+  },
+  "checklist": [
+   "¿Empezaste con “I want to buy”?",
+   "¿Escribiste un objeto en inglés?",
+   "¿La frase tiene sentido?"
+  ]
+ }
+]
   ],
   facil: [
     [
@@ -3230,6 +5205,73 @@ const WRITING_BANK = {
         example:{en:"My car is faster than his car.", es:"Mi carro es más rápido que el suyo."},
         checklist:["¿Usaste una palabra comparativa terminada en “-er”?","¿Usaste “than”?","¿La frase tiene sentido?"] }
     ]
+  ,
+  [
+ {
+  "id": "w-facil8-1",
+  "prompt": "Escribe una frase usando \"then\" para mostrar un orden de acciones.",
+  "target": "First [action], then [action]",
+  "checkPattern": "first [a-z ]+, ?then [a-z ]+",
+  "hint": "Estructura esperada: “First ___, then ___.”",
+  "example": {
+   "en": "First I eat, then I study.",
+   "es": "Primero como, luego estudio."
+  },
+  "checklist": [
+   "¿Usaste “First” y “then”?",
+   "¿Escribiste dos acciones?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-facil8-2",
+  "prompt": "Escribe una comparación usando \"than\" (usa \"___ is more ___ than ___\").",
+  "target": "[thing] is more [adjective] than [thing]",
+  "checkPattern": "[a-z ]+ is (more )?[a-z]+ than [a-z ]+",
+  "hint": "Estructura esperada: “___ is ___ than ___.”",
+  "example": {
+   "en": "Coffee is stronger than tea.",
+   "es": "El café es más fuerte que el té."
+  },
+  "checklist": [
+   "¿Usaste la palabra “than”?",
+   "¿Comparaste dos cosas?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-facil8-3",
+  "prompt": "Escribe una frase pidiendo prestado algo a un amigo (usa \"lend\" o \"borrow\").",
+  "target": "sentence with lend or borrow",
+  "checkPattern": "(lend|borrow|lent|borrowed)",
+  "hint": "Usa la palabra “lend” (prestar) o “borrow” (pedir prestado).",
+  "example": {
+   "en": "Can you lend me your umbrella?",
+   "es": "¿Me prestas tu paraguas?"
+  },
+  "checklist": [
+   "¿Usaste “lend” o “borrow”?",
+   "¿La frase está en inglés?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-facil8-4",
+  "prompt": "Escribe una frase con \"except\" diciendo que todos hicieron algo menos una persona.",
+  "target": "Everyone [verb] except [name]",
+  "checkPattern": "everyone [a-z]+ except [a-z]+",
+  "hint": "Estructura esperada: “Everyone ___ except ___.”",
+  "example": {
+   "en": "Everyone came except Maria.",
+   "es": "Todos vinieron excepto María."
+  },
+  "checklist": [
+   "¿Empezaste con “Everyone”?",
+   "¿Usaste la palabra “except”?",
+   "¿La frase tiene sentido?"
+  ]
+ }
+]
   ],
   medio: [
     [
@@ -3360,6 +5402,73 @@ const WRITING_BANK = {
         example:{en:"I need to find out the truth.", es:"Necesito averiguar la verdad."},
         checklist:["¿Usaste uno de los phrasal verbs?","¿La frase tiene sujeto y verbo completo?","¿La frase tiene sentido?"] }
     ]
+  ,
+  [
+ {
+  "id": "w-medio8-1",
+  "prompt": "Escribe una frase sobre cómo algo afecta a otra cosa (usa el verbo \"affect\").",
+  "target": "[thing] affects [thing]",
+  "checkPattern": "[a-z ]+ affects? [a-z ]+",
+  "hint": "Estructura esperada: “___ affects ___.”",
+  "example": {
+   "en": "Stress affects your sleep.",
+   "es": "El estrés afecta tu sueño."
+  },
+  "checklist": [
+   "¿Usaste el verbo “affect” o “affects”?",
+   "¿La frase está completa?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-medio8-2",
+  "prompt": "Escribe una frase sobre el efecto de algo (usa el sustantivo \"effect\").",
+  "target": "The effect of [thing] was [adjective]",
+  "checkPattern": "the effect of [a-z ]+ (was|is) [a-z]+",
+  "hint": "Estructura esperada: “The effect of ___ was ___.”",
+  "example": {
+   "en": "The effect of the rain was positive.",
+   "es": "El efecto de la lluvia fue positivo."
+  },
+  "checklist": [
+   "¿Usaste la palabra “effect”?",
+   "¿La frase describe un resultado?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-medio8-3",
+  "prompt": "Escribe una frase preguntando si algo va a pasar (usa \"whether\").",
+  "target": "I don't know whether [clause]",
+  "checkPattern": "i (don't|do not) know whether [a-z ]+",
+  "hint": "Estructura esperada: “I don't know whether ___.”",
+  "example": {
+   "en": "I don't know whether it will rain.",
+   "es": "No sé si va a llover."
+  },
+  "checklist": [
+   "¿Empezaste con “I don't know whether”?",
+   "¿Escribiste una idea completa?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-medio8-4",
+  "prompt": "Escribe una frase con un cumplido para alguien (usa \"compliment\").",
+  "target": "sentence with compliment",
+  "checkPattern": "compliment",
+  "hint": "Usa la palabra “compliment” (cumplido, elogio).",
+  "example": {
+   "en": "She gave me a nice compliment.",
+   "es": "Ella me hizo un lindo cumplido."
+  },
+  "checklist": [
+   "¿Usaste la palabra “compliment”?",
+   "¿La frase está en inglés?",
+   "¿La frase tiene sentido?"
+  ]
+ }
+]
   ],
   avanzado: [
     [
@@ -3490,6 +5599,73 @@ const WRITING_BANK = {
         example:{en:"This is arguably the best solution.", es:"Esta es, podría decirse, la mejor solución."},
         checklist:["¿Usaste “arguably” o “tend to/tends to”?","¿La frase suena natural y formal?","¿La frase tiene sentido?"] }
     ]
+  ,
+  [
+ {
+  "id": "w-avanzado8-1",
+  "prompt": "Escribe una frase usando \"principle\" para hablar de una creencia importante.",
+  "target": "sentence with principle",
+  "checkPattern": "principle",
+  "hint": "Usa la palabra “principle” (principio, creencia fundamental).",
+  "example": {
+   "en": "Honesty is an important principle for me.",
+   "es": "La honestidad es un principio importante para mí."
+  },
+  "checklist": [
+   "¿Usaste la palabra “principle”?",
+   "¿La frase expresa una idea o creencia?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-avanzado8-2",
+  "prompt": "Escribe una frase usando \"further\" para pedir más información.",
+  "target": "sentence with further",
+  "checkPattern": "further",
+  "hint": "Usa la palabra “further” (adicional, más allá).",
+  "example": {
+   "en": "We need further information before deciding.",
+   "es": "Necesitamos más información antes de decidir."
+  },
+  "checklist": [
+   "¿Usaste la palabra “further”?",
+   "¿La frase pide o menciona algo adicional?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-avanzado8-3",
+  "prompt": "Escribe una frase usando \"stationary\" o \"stationery\" correctamente.",
+  "target": "sentence with stationary or stationery",
+  "checkPattern": "(stationary|stationery)",
+  "hint": "“Stationary” = fijo, sin movimiento. “Stationery” = papelería.",
+  "example": {
+   "en": "I bought new stationery for school.",
+   "es": "Compré papelería nueva para la escuela."
+  },
+  "checklist": [
+   "¿Usaste “stationary” o “stationery”?",
+   "¿La usaste con el significado correcto?",
+   "¿La frase tiene sentido?"
+  ]
+ },
+ {
+  "id": "w-avanzado8-4",
+  "prompt": "Escribe una frase usando \"illicit\" para describir algo ilegal.",
+  "target": "sentence with illicit",
+  "checkPattern": "illicit",
+  "hint": "Usa la palabra “illicit” (ilícito, ilegal).",
+  "example": {
+   "en": "The illicit trade was stopped by police.",
+   "es": "El comercio ilícito fue detenido por la policía."
+  },
+  "checklist": [
+   "¿Usaste la palabra “illicit”?",
+   "¿La frase describe algo ilegal?",
+   "¿La frase tiene sentido?"
+  ]
+ }
+]
   ]
 };
 
