@@ -145,3 +145,9 @@ DEVLOG — Inglés con Leo
 - Verificado con el mismo script automático que las veces anteriores: las 9 clases tienen las palabras de "construye la frase" coincidiendo exactamente con el orden correcto, y no se encontraron duplicados nuevos de contenido entre clases distintas.
 - Audio pendiente del usuario: se agregaron los 3 diálogos nuevos (dos voces) a tools/generar_dialogos.py y 3 filas nuevas a tools/lista_audios.csv para las frases de "Habla" — correr generar_dialogos.py y generar_audios.py de nuevo generará también estos 6 archivos.
 - Verificado con node --check en data.js, app.js y clases.js sin errores de sintaxis.
+
+2026-09-09 (7) — Corrección: el primer clic en "Escuchar esta frase" tardaba unos segundos
+- Bug reportado por el usuario: en "Frases clave" de las Clases, la primera vez que se tocaba el botón de escuchar una frase, tardaba unos segundos en sonar; después de eso, todos los siguientes sonaban al instante.
+- Causa: la voz del navegador (speechSynthesis) carga su lista de voces de forma perezosa la primera vez que se usa, no cuando se abre la página. Ese primer uso es el que se sentía lento.
+- Arreglo (clases.js): apenas se carga la página (no cuando se toca el botón), se le pide al navegador que cargue esa lista de voces por adelantado. Para cuando el usuario llega al paso de "Frases clave" y toca el botón, la voz ya está lista y responde al instante desde el primer clic.
+- Verificado con node --check sin errores.

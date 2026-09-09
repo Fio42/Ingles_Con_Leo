@@ -18,6 +18,21 @@ function speakPhrase(text){
   }catch(e){}
 }
 
+/* "Calienta" la sintesis de voz del navegador apenas se carga esta
+   pagina, no hasta que alguien toca el boton. Muchos navegadores
+   cargan la lista de voces de forma perezosa la primera vez que se
+   usan, lo que hace que el primer clic en "Escuchar esta frase" tarde
+   unos segundos; los siguientes ya son instantaneos. Llamando
+   getVoices() (y de nuevo cuando el navegador avisa que ya cargo la
+   lista) desde el principio evita esa espera cuando el usuario llega
+   al paso de Frases clave. */
+if('speechSynthesis' in window){
+  window.speechSynthesis.getVoices();
+  if(window.speechSynthesis.addEventListener){
+    window.speechSynthesis.addEventListener('voiceschanged', ()=>{ window.speechSynthesis.getVoices(); });
+  }
+}
+
 /* showRetryOrNextButtons() ahora vive en app.js (se comparte con
    Gramática/Vocabulario/Listening/Mixto) — app.js siempre se carga
    antes que este archivo en clases.html. */
