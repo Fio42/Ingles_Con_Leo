@@ -1,0 +1,13 @@
+# Nunca subir archivos de configuracion con claves o contraseñas reales
+.env
+.env.*
+*.key
+*.pem
+secrets.json
+config.local.js
+
+# Basura tipica del sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
