@@ -220,3 +220,7 @@ DEVLOG — Inglés con Leo
 - Sirve también para probar una voz femenina más conversacional: solo los dos audios de esta clase usan en-US-JennyNeural, a velocidad normal. La voz Aria y los MP3 existentes no se cambiaron ni se regeneraron.
 - Se añadieron las rutas audio/clases/gimnasio-listening.mp3 y audio/clases/gimnasio-speaking.mp3, junto con sus entradas en los dos generadores de audio.
 - Verificado: sintaxis, estructura de la clase, orden válido de la frase construible y presencia de ambos MP3 nuevos.
+
+2026-09-09 (15) — Jenny queda como voz femenina predeterminada para audios nuevos
+- Tras comparar la clase "En el gimnasio", se dejó en-US-JennyNeural como voz femenina predeterminada en los dos generadores: frases individuales y diálogos de clases. La velocidad se mantiene normal.
+- No se regeneró ni modificó ningún MP3 existente; el cambio solo se aplicará a contenido nuevo o a audios antiguos que el usuario decida regenerar expresamente en el futuro.

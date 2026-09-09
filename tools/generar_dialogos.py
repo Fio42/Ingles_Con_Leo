@@ -41,10 +41,7 @@ except ImportError:
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 VOZ_PERSONAL = "en-US-GuyNeural"   # voz de hombre para el personal (agente/recepcionista/mesero)
-VOZ_TU = "en-US-AriaNeural"        # voz de mujer para "Tu" (la misma voz que el resto del sitio)
-# Voz de prueba más conversacional. Solo se usa en los audios de la clase
-# "En el gimnasio" para comparar sin modificar ningún audio ya generado.
-VOZ_TU_JENNY = "en-US-JennyNeural"
+VOZ_TU = "en-US-JennyNeural"       # voz de mujer más conversacional para "Tú"
 
 # Cada dialogo es una lista de (texto, voz), en el orden en que se deben
 # escuchar. Esto tiene que coincidir exactamente con el campo "dialogue"
@@ -102,7 +99,7 @@ DIALOGOS = {
     ],
     "audio/clases/gimnasio-listening.mp3": [
         ("Hi! Welcome. Is this your first time here?", VOZ_PERSONAL),
-        ("Yes, I'm new here. I'd like to sign up for a yoga class.", VOZ_TU_JENNY),
+        ("Yes, I'm new here. I'd like to sign up for a yoga class.", VOZ_TU),
         ("Great! The next class starts at six. The lockers are next to the changing rooms.", VOZ_PERSONAL),
     ],
 }

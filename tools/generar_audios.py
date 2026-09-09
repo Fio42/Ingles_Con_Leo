@@ -50,7 +50,9 @@ except ImportError:
 CSV_FILE = os.path.join(os.path.dirname(__file__), "lista_audios.csv")
 # Carpeta raiz del proyecto = un nivel arriba de esta carpeta "tools"
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-VOZ_POR_DEFECTO = "en-US-AriaNeural"
+# Jenny suena más conversacional que la voz anterior (Aria) y será la
+# predeterminada para todo audio NUEVO. Los MP3 existentes no cambian.
+VOZ_POR_DEFECTO = "en-US-JennyNeural"
 
 
 async def generar_uno(texto, ruta_salida, voz):
