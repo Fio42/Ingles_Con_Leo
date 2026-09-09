@@ -2099,6 +2099,52 @@ const LISTENING_BANK = {
         transcript:"My sister is younger than me, but she is taller.", translation:"Mi hermana es menor que yo, pero es más alta.",
         question:"Who is taller?", options:["The sister","The speaker","They are the same height"], correct:0,
         explain:"“She is taller” se refiere a la hermana, aunque sea menor en edad." }
+    ],
+    [
+      { id:'l-facil6-1', audioFile:'audio/a1/a1listening-015.mp3',
+        transcript:"The kids are playing in the garden.", translation:"Los ni\u00f1os est\u00e1n jugando en el jard\u00edn.",
+        question:"Where are the kids playing?", options:["In the garden","In the kitchen","At school"], correct:0,
+        explain:"“In the garden” indica el lugar donde juegan los ni\u00f1os." },
+      { id:'l-facil6-2', audioFile:'audio/a1/a1listening-016.mp3',
+        transcript:"I don't like spicy food.", translation:"No me gusta la comida picante.",
+        question:"What does the speaker not like?", options:["Sweet food","Cold food","Spicy food"], correct:2,
+        explain:"“Don't like” + comida indica lo que no le gusta: comida picante." },
+      { id:'l-facil6-3', audioFile:'audio/a1/a1listening-017.mp3',
+        transcript:"We have lunch at noon every day.", translation:"Almorzamos al mediod\u00eda todos los d\u00edas.",
+        question:"When do they have lunch?", options:["At night","At noon","In the morning"], correct:1,
+        explain:"“At noon” es la hora que se menciona para el almuerzo." },
+      { id:'l-facil6-4', audioFile:'audio/a1/a1listening-018.mp3',
+        transcript:"She is wearing a red jacket today.", translation:"Ella lleva puesta una chaqueta roja hoy.",
+        question:"What is she wearing?", options:["A red jacket","A blue dress","A black coat"], correct:0,
+        explain:"“Wearing” describe la ropa que lleva puesta en este momento." }
+    ],
+    [
+      { id:'l-facil7-1', audioFile:'audio/a1/a1listening-019.mp3',
+        transcript:"The train arrives at half past six.", translation:"El tren llega a las seis y media.",
+        question:"What time does the train arrive?", options:["Six o'clock","Six fifteen","Half past six"], correct:2,
+        explain:"“Half past six” significa las seis y media." },
+      { id:'l-facil7-2', audioFile:'audio/a1/a1listening-020.mp3',
+        transcript:"He never eats breakfast before work.", translation:"\u00c9l nunca desayuna antes de ir al trabajo.",
+        question:"What does he never do before work?", options:["Drink coffee","Eat breakfast","Take a shower"], correct:1,
+        explain:"“Never” indica que nunca hace esa acci\u00f3n antes del trabajo." },
+      { id:'l-facil7-3', audioFile:'audio/a1/a1listening-021.mp3',
+        transcript:"There are three chairs around the table.", translation:"Hay tres sillas alrededor de la mesa.",
+        question:"How many chairs are there?", options:["Three","Two","Four"], correct:0,
+        explain:"“Three chairs” es el n\u00famero que se menciona en la frase." }
+    ],
+    [
+      { id:'l-facil8-1', audioFile:'audio/a1/a1listening-022.mp3',
+        transcript:"My brother is taller than my father.", translation:"Mi hermano es m\u00e1s alto que mi pap\u00e1.",
+        question:"Who is taller?", options:["The father","They are the same height","The brother"], correct:2,
+        explain:"“Taller than” compara la estatura entre el hermano y el padre." },
+      { id:'l-facil8-2', audioFile:'audio/a1/a1listening-023.mp3',
+        transcript:"I am going to visit my grandparents this weekend.", translation:"Voy a visitar a mis abuelos este fin de semana.",
+        question:"What is the speaker going to do this weekend?", options:["Go to work","Visit grandparents","Clean the house"], correct:1,
+        explain:"“Going to visit” indica un plan futuro para el fin de semana." },
+      { id:'l-facil8-3', audioFile:'audio/a1/a1listening-024.mp3',
+        transcript:"The weather is cold so wear a coat.", translation:"El clima est\u00e1 fr\u00edo, as\u00ed que usa un abrigo.",
+        question:"What should you do because it's cold?", options:["Wear a coat","Open the window","Drink cold water"], correct:0,
+        explain:"“So wear a coat” es la recomendaci\u00f3n que sigue por el fr\u00edo." }
     ]
   ],
   medio: [
