@@ -231,10 +231,11 @@
       </div>
 
       <div class="social-row" data-social-row>
-        <a href="https://www.youtube.com/@inglesconleooficial" target="_blank" rel="noopener" data-social="youtube">YouTube</a>
-        <a href="https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn" target="_blank" rel="noopener" data-social="instagram">Instagram</a>
-        <a href="https://www.tiktok.com/@inglesconleooficial?_r=1&_t=ZS-99Y9bGwp6HM" target="_blank" rel="noopener" data-social="tiktok">TikTok</a>
-        <a href="https://www.facebook.com/share/19c4zQLsEn/" target="_blank" rel="noopener" data-social="facebook">Facebook</a>
+        <span class="social-row-label">¿Quieres ver más videos nuevos?</span>
+        <a href="https://www.youtube.com/@inglesconleooficial" target="_blank" rel="noopener" data-social="youtube">Ver todos en YouTube ↗</a>
+        <a href="https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn" target="_blank" rel="noopener" data-social="instagram">Instagram ↗</a>
+        <a href="https://www.tiktok.com/@inglesconleooficial?_r=1&_t=ZS-99Y9bGwp6HM" target="_blank" rel="noopener" data-social="tiktok">TikTok ↗</a>
+        <a href="https://www.facebook.com/share/19c4zQLsEn/" target="_blank" rel="noopener" data-social="facebook">Facebook ↗</a>
       </div>
     </div>
   </section>
@@ -290,17 +291,20 @@
 <script>initOnboarding(); personalizeNav();</script>
 <script>
   /* ============================================================
-     Sección de videos: miniaturas automáticas, oculta placeholders,
-     y arma los filtros de categoría solo si hay más de una.
+     Sección de videos: miniaturas automáticas, enlaces de redes y carrusel.
      Para agregar un video nuevo: copia una tarjeta de .video-card-v2,
      pon la URL real de YouTube en data-youtube-url, y en cada
-     data-platform-link pon la URL real de esa red (o déjala como
-     "PON_AQUI_LA_URL_DE_..." y ese botón se oculta solo).
-     Para cambiar el video destacado: mueve otra tarjeta arriba del
-     todo y dale la misma estructura que .video-featured.
+     data-platform-link pon la URL real de esa publicación. Si queda un
+     placeholder, el botón llevará al perfil oficial de esa red.
      ============================================================ */
   (function(){
     var PLACEHOLDER_PREFIX = 'PON_AQUI_LA_URL_DE_';
+    var SOCIAL_URLS = {
+      youtube: 'https://www.youtube.com/@inglesconleooficial',
+      instagram: 'https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn',
+      tiktok: 'https://www.tiktok.com/@inglesconleooficial?_r=1&_t=ZS-99Y9bGwp6HM',
+      facebook: 'https://www.facebook.com/share/19c4zQLsEn/'
+    };
 
     function isPlaceholder(url){
       return !url || url === '#' || url.indexOf(PLACEHOLDER_PREFIX) === 0;
@@ -320,10 +324,19 @@
       if(thumb) img.src = thumb;
     });
 
-    // 2) Oculta (sin borrar) cada botón de red social que aún sea un placeholder
+    // 2) Los botones sin URL individual llevan al perfil oficial de esa red.
     document.querySelectorAll('[data-platform-link]').forEach(function(link){
       var url = link.getAttribute('data-url');
-      if(isPlaceholder(url)) link.hidden = true;
+      if(isPlaceholder(url)){
+        var platform = link.getAttribute('data-platform');
+        if(SOCIAL_URLS[platform]){
+          link.href = SOCIAL_URLS[platform];
+          link.setAttribute('data-url', SOCIAL_URLS[platform]);
+          link.setAttribute('aria-label', 'Ver más en ' + platform);
+        } else {
+          link.hidden = true;
+        }
+      }
     });
 
     // 3) Oculta una tarjeta completa (destacada o de la grilla) si su video
@@ -373,7 +386,53 @@
       }
     }
 
-    // 5) Botones de "síguenos" al final: igual, oculta los que sean placeholder
+    // 5) Convierte los videos visibles en un carrusel manual. Así se puede
+    // recorrer cada explicación sin que la sección se sienta como una grilla
+    // estática, y no se inventa contenido que aún no existe.
+    if(visibleItems.length > 1){
+      var firstItem = visibleItems[0];
+      var carousel = document.createElement('div');
+      carousel.className = 'video-carousel';
+      carousel.setAttribute('data-video-carousel', '');
+      carousel.setAttribute('aria-label', 'Carrusel de videos de Inglés con Leo');
+      carousel.innerHTML = '<div class="video-carousel-viewport"><div class="video-carousel-track"></div></div><div class="video-carousel-controls"><button type="button" class="video-carousel-arrow" data-carousel-prev aria-label="Video anterior">←</button><div class="video-carousel-status"><span data-carousel-count></span><div class="video-carousel-dots" data-carousel-dots aria-label="Elegir video"></div></div><button type="button" class="video-carousel-arrow" data-carousel-next aria-label="Video siguiente">→</button></div>';
+      firstItem.parentNode.insertBefore(carousel, firstItem);
+      var track = carousel.querySelector('.video-carousel-track');
+      visibleItems.forEach(function(item, index){
+        item.classList.add('video-carousel-slide');
+        item.setAttribute('aria-label', 'Video ' + (index + 1) + ' de ' + visibleItems.length);
+        track.appendChild(item);
+      });
+      var originalGrid = document.querySelector('[data-video-grid]');
+      if(originalGrid) originalGrid.hidden = true;
+
+      var current = 0;
+      var count = carousel.querySelector('[data-carousel-count]');
+      var dots = carousel.querySelector('[data-carousel-dots]');
+      visibleItems.forEach(function(_, index){
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'video-carousel-dot';
+        dot.setAttribute('aria-label', 'Mostrar video ' + (index + 1));
+        dot.addEventListener('click', function(){ showSlide(index); });
+        dots.appendChild(dot);
+      });
+      function showSlide(index){
+        current = (index + visibleItems.length) % visibleItems.length;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        count.textContent = (current + 1) + ' de ' + visibleItems.length;
+        dots.querySelectorAll('.video-carousel-dot').forEach(function(dot, dotIndex){
+          var active = dotIndex === current;
+          dot.classList.toggle('active', active);
+          dot.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+      }
+      carousel.querySelector('[data-carousel-prev]').addEventListener('click', function(){ showSlide(current - 1); });
+      carousel.querySelector('[data-carousel-next]').addEventListener('click', function(){ showSlide(current + 1); });
+      showSlide(0);
+    }
+
+    // 6) Botones de "síguenos" al final: oculta los que sean placeholder.
     var socialLinks = document.querySelectorAll('.social-row a[data-social]');
     var visibleSocial = 0;
     socialLinks.forEach(function(link){
@@ -385,7 +444,7 @@
       }
     });
 
-    // 6) Si al final no quedó ningún video ni ninguna red, oculta toda la sección
+    // 7) Si al final no quedó ningún video ni ninguna red, oculta toda la sección
     var videosSection = document.querySelector('[data-videos-section]');
     if(videosSection && visibleItems.length === 0 && visibleSocial === 0){
       videosSection.hidden = true;

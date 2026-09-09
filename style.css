@@ -670,7 +670,35 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .video-card-v2-body h4{font-size:1.02rem;}
 .video-card-v2-body p{color:var(--ink-soft);font-size:0.88rem;margin:0;line-height:1.5;}
 
-.social-row{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-faint);font-size:0.85rem;font-weight:600;margin-top:26px;}
+/* Carrusel de videos: muestra una explicación a la vez, con navegación manual. */
+.video-carousel{overflow:hidden;margin-bottom:20px;}
+.video-carousel-viewport{overflow:hidden;border-radius:var(--radius-lg);}
+.video-carousel-track{display:flex;transition:transform .35s ease;will-change:transform;}
+.video-carousel-slide{box-sizing:border-box;flex:0 0 100%;margin:0;min-width:0;}
+.video-carousel-slide.video-card-v2{display:flex;flex-direction:row;min-height:280px;}
+.video-carousel-slide .video-card-v2-thumb{flex:0 0 44%;aspect-ratio:auto;min-height:200px;}
+.video-carousel-slide .video-card-v2-body{justify-content:center;padding:26px 28px;}
+.video-carousel-slide .video-card-v2-body h4{font-size:1.35rem;}
+.video-carousel-slide .video-card-v2-body p{font-size:0.95rem;line-height:1.55;}
+.video-carousel-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px;}
+.video-carousel-arrow{width:38px;height:38px;border:2px solid var(--line);border-radius:50%;background:#fff;color:var(--blue-deep);font-size:1.2rem;font-weight:800;cursor:pointer;transition:transform .15s ease,border-color .15s ease,background .15s ease;}
+.video-carousel-arrow:hover{transform:translateY(-1px);border-color:var(--blue);background:var(--blue-tint);}
+.video-carousel-status{display:flex;align-items:center;gap:12px;color:var(--ink-soft);font-size:.82rem;font-weight:700;}
+.video-carousel-dots{display:flex;gap:7px;}
+.video-carousel-dot{width:9px;height:9px;border:0;border-radius:50%;background:var(--line);padding:0;cursor:pointer;transition:transform .15s ease,background .15s ease;}
+.video-carousel-dot.active{background:var(--blue);transform:scale(1.25);}
+@media(max-width:760px){
+  .video-carousel-slide.video-card-v2{flex-direction:column;min-height:0;}
+  .video-carousel-slide .video-card-v2-thumb{flex:none;aspect-ratio:16/9;min-height:0;}
+  .video-carousel-slide .video-card-v2-body{padding:20px;}
+  .video-carousel-slide .video-card-v2-body h4{font-size:1.2rem;}
+}
+@media(prefers-reduced-motion:reduce){.video-carousel-track,.video-carousel-arrow,.video-carousel-dot{transition:none;}}
+
+.social-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--ink-faint);font-size:0.85rem;font-weight:600;margin-top:26px;}
+.social-row-label{margin-right:4px;color:var(--ink);}
+.social-row a{display:inline-flex;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;transition:border-color .15s ease,background .15s ease,color .15s ease;}
+.social-row a:hover{border-color:var(--blue);background:var(--blue-tint);color:var(--blue-deep);}
 
 /* ---------- Componente reusable: video + mini práctica en artículos ---------- */
 .mini-video-block{background:var(--paper-dim);border-radius:var(--radius-lg);padding:22px;margin:30px 0;}

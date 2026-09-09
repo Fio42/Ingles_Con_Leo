@@ -225,6 +225,11 @@ DEVLOG — Inglés con Leo
 - Tras comparar la clase "En el gimnasio", se dejó en-US-JennyNeural como voz femenina predeterminada en los dos generadores: frases individuales y diálogos de clases. La velocidad se mantiene normal.
 - No se regeneró ni modificó ningún MP3 existente; el cambio solo se aplicará a contenido nuevo o a audios antiguos que el usuario decida regenerar expresamente en el futuro.
 
+2026-09-09 (16) — Carrusel de videos y accesos completos a redes
+- La sección "Aprende también en video" de articulos.html dejó de mostrar los tres videos como una tarjeta destacada más dos tarjetas estáticas. Ahora es un carrusel manual con flechas, puntos y contador, que muestra una explicación a la vez y se adapta a escritorio y celular.
+- Los botones de red que no tenían un enlace individual de la publicación ya no se ocultan: apuntan al perfil oficial correspondiente de Inglés con Leo. Se agregó además una fila clara de "¿Quieres ver más videos nuevos?" con accesos a YouTube, Instagram, TikTok y Facebook.
+- No se inventaron publicaciones ni se instaló un feed externo: por ahora el carrusel recorre los 3 videos reales enlazados. Las publicaciones futuras podrán añadirse con sus URLs reales y entrarán al carrusel automáticamente.
+
 2026-09-09 (13) — Nueva sección "Mis errores" (solo Miembros)
 - Pedido del usuario (a partir de una lista de ideas de otra IA): agregar una sección que guarde automáticamente los ejercicios que el usuario falla, con un botón "Practicar mis errores".
 - Decisión clave: no se creó ninguna tabla ni columna nueva en Supabase. Cada sesión ya guarda en el historial de progreso (progress_sessions / localStorage) el resultado de cada ejercicio como { itemId, isCorrect }, así que "un error pendiente" se calcula recorriendo ese historial y quedándose con el ÚLTIMO resultado de cada ejercicio: si el más reciente fue incorrecto, es un error pendiente; en cuanto se vuelve a responder bien, deja de serlo automáticamente, sin "borrar" nada aparte. Speaking no entra (nunca se califica automático, isCorrect siempre es null ahí).
