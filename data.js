@@ -2934,8 +2934,8 @@ const WRITING_BANK = {
 // ============================================================
 const CLASS_CATALOG = [
   { id:'airport', title:'En el aeropuerto', category:'Viajes', desc:'Aprende a moverte en el aeropuerto: check-in, seguridad y abordaje.', minutes:6, available:true },
-  { id:'hotel', title:'En el hotel', category:'Viajes', desc:'Próximamente', minutes:6, available:false },
-  { id:'restaurant', title:'En un restaurante', category:'Viajes', desc:'Próximamente', minutes:6, available:false },
+  { id:'hotel', title:'En el hotel', category:'Viajes', desc:'Aprende a hacer el check-in, pedir servicios y resolver problemas en un hotel.', minutes:6, available:true },
+  { id:'restaurant', title:'En un restaurante', category:'Viajes', desc:'Aprende a pedir el menú, ordenar tu comida y pagar la cuenta.', minutes:6, available:true },
   { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
   { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
   { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
@@ -3029,6 +3029,178 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:['Could I have your passport, please?', "I'd like to check this bag.", 'What time does boarding start?', 'Which gate is my flight?'],
       tip:'Hoy practicaste el vocabulario esencial para moverte en un aeropuerto en inglés: check-in, seguridad y embarque.'
+    }
+  },
+  hotel: {
+    id:'hotel',
+    title:'En el hotel',
+    situation:{
+      en:"You're checking in at a hotel after a long trip. You need to give your name, get your room key, and ask about breakfast.",
+      es:'Estás haciendo el check-in en un hotel después de un viaje largo. Necesitas dar tu nombre, recibir la llave de tu habitación y preguntar por el desayuno.'
+    },
+    phrases:[
+      { en:'I have a reservation under the name Martinez.', es:'Tengo una reservación a nombre de Martínez.' },
+      { en:'Could I get a room with a view?', es:'¿Podría tener una habitación con vista?' },
+      { en:'What time is breakfast served?', es:'¿A qué hora se sirve el desayuno?' },
+      { en:'Is there Wi-Fi in the room?', es:'¿Hay wifi en la habitación?' },
+      { en:'What time is check-out?', es:'¿A qué hora es el check-out?' }
+    ],
+    listening:{
+      audio:'audio/clases/hotel-listening.mp3',
+      dialogue:[
+        { speaker:'Recepcionista', en:'Good afternoon! Welcome. Do you have a reservation?' },
+        { speaker:'Tú', en:'Yes, under the name Martinez. Two nights.' },
+        { speaker:'Recepcionista', en:"Perfect, here's your key. Breakfast is served from 7 to 10 in the lobby." }
+      ],
+      question:{
+        text:'¿A qué hora empieza el desayuno?',
+        options:['A las 7','A las 10','A las 9'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Recepcionista', en:'Would you like a wake-up call tomorrow morning?' },
+      options:[
+        { en:'Yes, at seven, please.', correct:true, feedback:'¡Bien! Es una respuesta directa y natural.' },
+        { en:"No, I don't have a reservation.", correct:false, feedback:'Esa respuesta no encaja: te preguntaron por una llamada para despertarte, no por la reservación.' },
+        { en:'The room is on the third floor.', correct:false, feedback:'Estás dando información del cuarto, pero te preguntaron si quieres una llamada para despertar.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿A qué hora se sirve el desayuno?',
+      words:['is','breakfast','served?','What','time'],
+      correctOrder:['What','time','is','breakfast','served?']
+    },
+    speaking:{
+      audio:'audio/clases/hotel-speaking.mp3',
+      prompt:'Could I get a room with a view, please?',
+      es:'Practica diciendo: "¿Podría tener una habitación con vista, por favor?"'
+    },
+    miniChallenge:{
+      start:'noise',
+      nodes:{
+        noise:{
+          en:'At night, you call the front desk: "Excuse me, the room next door is very noisy."',
+          es:'En la noche, llamas a recepción: "Disculpe, la habitación de al lado hace mucho ruido."',
+          options:[
+            { en:'Could you please ask them to be quieter?', next:'towel', correct:true },
+            { en:'I would like to order pizza.', next:'noise-fail', correct:false }
+          ]
+        },
+        'noise-fail':{
+          en:'The staff asks: "Sorry, what do you need exactly?"',
+          es:'El personal pregunta: "Disculpe, ¿qué necesita exactamente?"',
+          options:[
+            { en:'Sorry, I meant the noise next door is a problem.', next:'towel', correct:true }
+          ]
+        },
+        towel:{
+          en:'The next morning, housekeeping asks: "Do you need extra towels?"',
+          es:'A la mañana siguiente, la mucama pregunta: "¿Necesita toallas extra?"',
+          options:[
+            { en:'Yes, two more please.', next:'end', correct:true },
+            { en:'The breakfast was delicious.', next:'towel-fail', correct:false }
+          ]
+        },
+        'towel-fail':{
+          en:"She clarifies: \"I'm asking about towels for your room.\"",
+          es:'Ella aclara: "Le pregunto por toallas para su habitación."',
+          options:[
+            { en:'Oh sorry, yes, two towels please.', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'Everything is sorted and you enjoy the rest of your stay. ¡Buena estadía!', es:'Todo se resuelve y disfrutas el resto de tu estadía. ¡Buena estadía!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['I have a reservation under the name Martinez.', 'Could I get a room with a view?', 'What time is breakfast served?', 'What time is check-out?'],
+      tip:'Hoy practicaste el vocabulario esencial para hacer check-in en un hotel en inglés: reservación, habitación y servicios.'
+    }
+  },
+  restaurant: {
+    id:'restaurant',
+    title:'En un restaurante',
+    situation:{
+      en:"You're at a restaurant ready to order dinner. You need to ask about the menu, order your food, and ask for the check.",
+      es:'Estás en un restaurante listo para pedir la cena. Necesitas preguntar por el menú, ordenar tu comida y pedir la cuenta.'
+    },
+    phrases:[
+      { en:'Could I see the menu, please?', es:'¿Podría ver el menú, por favor?' },
+      { en:"I'll have the grilled chicken.", es:'Voy a pedir el pollo a la parrilla.' },
+      { en:'Is this dish spicy?', es:'¿Este plato es picante?' },
+      { en:'Could we get the check, please?', es:'¿Nos trae la cuenta, por favor?' },
+      { en:'Do you accept credit cards?', es:'¿Aceptan tarjetas de crédito?' }
+    ],
+    listening:{
+      audio:'audio/clases/restaurante-listening.mp3',
+      dialogue:[
+        { speaker:'Mesero', en:'Good evening! Are you ready to order?' },
+        { speaker:'Tú', en:"Yes, I'll have the grilled chicken, please." },
+        { speaker:'Mesero', en:'Great choice. Would you like anything to drink? We also have a soup of the day.' }
+      ],
+      question:{
+        text:'¿Qué pidió la persona para comer?',
+        options:['Pollo a la parrilla','Sopa del día','Pescado'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Mesero', en:'Would you like anything to drink?' },
+      options:[
+        { en:'Just water, please.', correct:true, feedback:'¡Bien! Es una respuesta simple y natural.' },
+        { en:"I'll have the grilled chicken.", correct:false, feedback:'Esa respuesta ya la diste antes; ahora te preguntan por la bebida.' },
+        { en:'The check, please.', correct:false, feedback:'Todavía es muy pronto para pedir la cuenta, apenas te preguntaron por la bebida.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿Nos trae la cuenta, por favor?',
+      words:['check,','the','bring','Could','you','please?'],
+      correctOrder:['Could','you','bring','the','check,','please?']
+    },
+    speaking:{
+      audio:'audio/clases/restaurante-speaking.mp3',
+      prompt:'Could I see the menu, please?',
+      es:'Practica diciendo: "¿Podría ver el menú, por favor?"'
+    },
+    miniChallenge:{
+      start:'allergy',
+      nodes:{
+        allergy:{
+          en:'The waiter asks: "Do you have any food allergies?"',
+          es:'El mesero pregunta: "¿Tiene alguna alergia alimentaria?"',
+          options:[
+            { en:"No, I don't have any allergies.", next:'order', correct:true },
+            { en:'Yes, please.', next:'allergy-fail', correct:false }
+          ]
+        },
+        'allergy-fail':{
+          en:'The waiter asks again: "Sorry, could you tell me which foods you are allergic to?"',
+          es:'El mesero pregunta de nuevo: "Disculpe, ¿podría decirme a qué alimentos es alérgico?"',
+          options:[
+            { en:"Actually, I don't have any allergies.", next:'order', correct:true }
+          ]
+        },
+        order:{
+          en:'The waiter says: "Your food will be ready in about fifteen minutes."',
+          es:'El mesero dice: "Su comida estará lista en unos quince minutos."',
+          options:[
+            { en:'Perfect, thank you!', next:'end', correct:true },
+            { en:'Could I see the menu, please?', next:'order-fail', correct:false }
+          ]
+        },
+        'order-fail':{
+          en:'The waiter reminds you: "You already ordered, remember?"',
+          es:'El mesero te recuerda: "Ya ordenó, ¿recuerda?"',
+          options:[
+            { en:'Oh, right! Thank you.', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'Your food arrives and it looks delicious. ¡Buen provecho!', es:'Tu comida llega y se ve deliciosa. ¡Buen provecho!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['Could I see the menu, please?', "I'll have the grilled chicken.", 'Could we get the check, please?', 'Do you accept credit cards?'],
+      tip:'Hoy practicaste el vocabulario esencial para pedir comida en un restaurante en inglés: ordenar, preguntar por el menú y pedir la cuenta.'
     }
   }
 };
