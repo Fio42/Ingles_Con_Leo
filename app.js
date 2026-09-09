@@ -171,6 +171,10 @@ function initOnboarding(onSaved){
         <label>¿Cuál es tu nivel de inglés?</label>
         <div class="onb-levels" id="onbLevels">
           <label class="onb-level-opt">
+            <input type="radio" name="onbLevel" value="principiante">
+            <span>Principiante (A0) — nunca he estudiado inglés</span>
+          </label>
+          <label class="onb-level-opt">
             <input type="radio" name="onbLevel" value="facil" checked>
             <span>Fácil (A1–A2) — estoy empezando</span>
           </label>

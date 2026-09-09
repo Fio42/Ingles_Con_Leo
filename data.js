@@ -13,8 +13,9 @@
    repetir inmediatamente la última usada (ver pickVariantIndex).
    ============================================================ */
 
-const LEVELS = ['facil', 'medio', 'avanzado'];
+const LEVELS = ['principiante', 'facil', 'medio', 'avanzado'];
 const LEVEL_META = {
+  principiante: { label: 'Principiante', range: 'A0',    audioFolder: 'a0', desc: 'Lo más básico: saludos, números, colores y palabras simples.' },
   facil:    { label: 'Fácil',    range: 'A1–A2', audioFolder: 'a1', desc: 'Palabras y frases del día a día.' },
   medio:    { label: 'Medio',    range: 'B1–B2', audioFolder: 'b1', desc: 'Conversaciones más largas y matices.' },
   avanzado: { label: 'Avanzado', range: 'C1+',   audioFolder: 'c1', desc: 'Matices y precisión de nativo.' }
@@ -26,6 +27,210 @@ const LEVEL_META = {
    examples: siempre en+es, para reforzar con contexto real.
 --------------------------------------------------------- */
 const GRAMMAR_BANK = {
+  principiante: [
+    [
+      {
+        topic: 'Los números (1-10)',
+        items: [
+          { id:'g-principiante-num-1', type:'choice', prompt:"How do you say \"3\" in English?",
+            options:["Three","Seven","Nine"], correct:0,
+            explain:"“Three” es el número 3.",
+            examples:[
+              {en:"I have three brothers.", es:"Tengo tres hermanos."},
+              {en:"She has three cats.", es:"Ella tiene tres gatos."}
+            ]},
+          { id:'g-principiante-num-2', type:'fill', sentence:["I","have","___","apples","."], blankIndex:2,
+            bank:["two","twenty","second"], correct:"two",
+            explain:"“Two” es el número 2.",
+            examples:[
+              {en:"I have two dogs.", es:"Tengo dos perros."},
+              {en:"She has two books.", es:"Ella tiene dos libros."}
+            ]},
+          { id:'g-principiante-num-3', type:'choice', prompt:"She has five books. How many books does she have?",
+            options:["Five","Four","Nine"], correct:0,
+            explain:"“Five” es el número 5.",
+            examples:[
+              {en:"He has five pencils.", es:"Él tiene cinco lapices."},
+              {en:"We have five chairs.", es:"Tenemos cinco sillas."}
+            ]},
+          { id:'g-principiante-num-4', type:'error', wrong:"I have three cat.", wrongWord:"cat",
+            right:"I have three cats.", rightWord:"cats",
+            explain:"Cuando hay más de uno, la palabra lleva “-s” al final.",
+            examples:[
+              {en:"I have three cats.", es:"Tengo tres gatos."},
+              {en:"She has two dogs.", es:"Ella tiene dos perros."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Plural: agregar "-s"',
+        items: [
+          { id:'g-principiante-plural-1', type:'choice', prompt:"One dog, two ___.",
+            options:["dogs","dog","doges"], correct:0,
+            explain:"Para más de uno, agregamos “-s” a la palabra.",
+            examples:[
+              {en:"I have two dogs.", es:"Tengo dos perros."},
+              {en:"They have three cats.", es:"Ellos tienen tres gatos."}
+            ]},
+          { id:'g-principiante-plural-2', type:'fill', sentence:["I","have","two","___","."], blankIndex:3,
+            bank:["cats","cat","cates"], correct:"cats",
+            explain:"“Cats” es el plural de “cat” (gato).",
+            examples:[
+              {en:"I have two cats.", es:"Tengo dos gatos."},
+              {en:"She has two books.", es:"Ella tiene dos libros."}
+            ]},
+          { id:'g-principiante-plural-3', type:'choice', prompt:"How do you say more than one \"book\"?",
+            options:["Books","Bookes","Boo"], correct:0,
+            explain:"El plural de “book” es “books”, solo se agrega “-s”.",
+            examples:[
+              {en:"I have five books.", es:"Tengo cinco libros."},
+              {en:"The books are on the table.", es:"Los libros están en la mesa."}
+            ]},
+          { id:'g-principiante-plural-4', type:'error', wrong:"She has three sister.", wrongWord:"sister",
+            right:"She has three sisters.", rightWord:"sisters",
+            explain:"Con más de una persona o cosa, agregamos “-s”.",
+            examples:[
+              {en:"She has three sisters.", es:"Ella tiene tres hermanas."},
+              {en:"I have two brothers.", es:"Tengo dos hermanos."}
+            ]}
+        ]
+      },
+      {
+        topic: '"This is..." (esto es...)',
+        items: [
+          { id:'g-principiante-this-1', type:'choice', prompt:"(You are pointing at one apple) ___ is an apple.",
+            options:["This","These","They"], correct:0,
+            explain:"Usamos “this” para senalar UNA sola cosa cerca de ti.",
+            examples:[
+              {en:"This is an apple.", es:"Esto es una manzana."},
+              {en:"This is my book.", es:"Este es mi libro."}
+            ]},
+          { id:'g-principiante-this-2', type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
+            bank:["This","These","They"], correct:"This",
+            explain:"“This” se usa para una sola cosa cerca de ti.",
+            examples:[
+              {en:"This is my house.", es:"Esta es mi casa."},
+              {en:"This is my friend.", es:"Este es mi amigo."}
+            ]},
+          { id:'g-principiante-this-3', type:'choice', prompt:"What do you say when you show ONE thing?",
+            options:["This is...","These are...","They is..."], correct:0,
+            explain:"“This is...” se usa para presentar una sola cosa o persona.",
+            examples:[
+              {en:"This is my mother.", es:"Esta es mi mama."},
+              {en:"This is a cat.", es:"Esto es un gato."}
+            ]},
+          { id:'g-principiante-this-4', type:'error', wrong:"This is my keys.", wrongWord:"This",
+            right:"These are my keys.", rightWord:"These",
+            explain:"Usamos “these” cuando hablamos de más de una cosa (las llaves son varias).",
+            examples:[
+              {en:"These are my keys.", es:"Estas son mis llaves."},
+              {en:"These are my books.", es:"Estos son mis libros."}
+            ]}
+        ]
+      }
+    ],
+    [
+      {
+        topic: 'Los colores',
+        items: [
+          { id:'g-principiante2-color-1', type:'choice', prompt:"What color is the sky?",
+            options:["Blue","Red","Green"], correct:0,
+            explain:"El cielo normalmente es “blue” (azul).",
+            examples:[
+              {en:"The sky is blue.", es:"El cielo es azul."},
+              {en:"My shirt is blue.", es:"Mi camisa es azul."}
+            ]},
+          { id:'g-principiante2-color-2', type:'fill', sentence:["The","apple","is","___","."], blankIndex:3,
+            bank:["red","seven","house"], correct:"red",
+            explain:"Las manzanas normalmente son “red” (rojas).",
+            examples:[
+              {en:"The apple is red.", es:"La manzana es roja."},
+              {en:"Her dress is red.", es:"Su vestido es rojo."}
+            ]},
+          { id:'g-principiante2-color-3', type:'choice', prompt:"How do you say \"amarillo\" in English?",
+            options:["Yellow","Purple","Brown"], correct:0,
+            explain:"“Yellow” significa amarillo.",
+            examples:[
+              {en:"The banana is yellow.", es:"El plátano es amarillo."},
+              {en:"I like your yellow hat.", es:"Me gusta tu sombrero amarillo."}
+            ]},
+          { id:'g-principiante2-color-4', type:'error', wrong:"The grass is blue.", wrongWord:"blue",
+            right:"The grass is green.", rightWord:"green",
+            explain:"El pasto normalmente es “green” (verde), no azul.",
+            examples:[
+              {en:"The grass is green.", es:"El pasto es verde."},
+              {en:"The leaves are green.", es:"Las hojas son verdes."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Preguntas simples: "What is this?"',
+        items: [
+          { id:'g-principiante2-what-1', type:'choice', prompt:"Someone points at a book and asks \"What is this?\" What do you answer?",
+            options:["It's a book.","It's a books.","It is book."], correct:0,
+            explain:"La respuesta correcta es “It's a ___” con una sola cosa.",
+            examples:[
+              {en:"It's a book.", es:"Es un libro."},
+              {en:"It's a cat.", es:"Es un gato."}
+            ]},
+          { id:'g-principiante2-what-2', type:'fill', sentence:["What","is","___","?"], blankIndex:2,
+            bank:["this","these","they"], correct:"this",
+            explain:"Para preguntar por UNA cosa cerca de ti, usamos “this”.",
+            examples:[
+              {en:"What is this?", es:"¿Qué es esto?"},
+              {en:"This is a pen.", es:"Esto es un lapicero."}
+            ]},
+          { id:'g-principiante2-what-3', type:'choice', prompt:"How do you ask about ONE object in front of you?",
+            options:["What is this?","What is these?","What is they?"], correct:0,
+            explain:"“What is this?” se usa para preguntar por una sola cosa.",
+            examples:[
+              {en:"What is this?", es:"¿Qué es esto?"},
+              {en:"It's a table.", es:"Es una mesa."}
+            ]},
+          { id:'g-principiante2-what-4', type:'error', wrong:"What is these?", wrongWord:"these",
+            right:"What is this?", rightWord:"this",
+            explain:"Para una sola cosa usamos “this”, no “these”.",
+            examples:[
+              {en:"What is this?", es:"¿Qué es esto?"},
+              {en:"This is my phone.", es:"Este es mi telefono."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Yes / No básico',
+        items: [
+          { id:'g-principiante2-yn-1', type:'choice', prompt:"Is this a cat? Answer: ___, it is.",
+            options:["Yes","No","Not"], correct:0,
+            explain:"“Yes, it is” se usa para responder que si.",
+            examples:[
+              {en:"Yes, it is.", es:"Si, lo es."},
+              {en:"Is this a dog? Yes, it is.", es:"¿Es esto un perro? Si, lo es."}
+            ]},
+          { id:'g-principiante2-yn-2', type:'fill', sentence:["Yes",",","it","___","."], blankIndex:3,
+            bank:["is","isn't","are"], correct:"is",
+            explain:"Para responder “si” a una pregunta con “is”, contestamos “it is”.",
+            examples:[
+              {en:"Is this a book? Yes, it is.", es:"¿Es esto un libro? Si, lo es."},
+              {en:"Is this your bag? Yes, it is.", es:"¿Es esta tu bolsa? Si, lo es."}
+            ]},
+          { id:'g-principiante2-yn-3', type:'choice', prompt:"Is this a dog? (No, it's a cat) Answer: ___",
+            options:["No, it isn't.","Yes, it is.","No, it is."], correct:0,
+            explain:"“No, it isn't” se usa para responder que no.",
+            examples:[
+              {en:"No, it isn't.", es:"No, no lo es."},
+              {en:"Is this a cat? No, it isn't.", es:"¿Es esto un gato? No, no lo es."}
+            ]},
+          { id:'g-principiante2-yn-4', type:'error', wrong:"Yes, it not.", wrongWord:"not",
+            right:"Yes, it is.", rightWord:"is",
+            explain:"Para responder “si”, decimos “it is”, no “it not”.",
+            examples:[
+              {en:"Yes, it is.", es:"Si, lo es."},
+              {en:"Is this a pen? Yes, it is.", es:"¿Es esto un lapicero? Si, lo es."}
+            ]}
+        ]
+      }
+    ]
+  ],
   facil: [
     [
       {
@@ -1264,6 +1469,60 @@ const GRAMMAR_BANK = {
    con 8 palabras.
 --------------------------------------------------------- */
 const VOCAB_BANK = {
+  principiante: [
+    [
+      { id:'v-principiante-1', word:'Cat', translation:'Gato · animal doméstico que dice miau',
+        examples:[{en:"I have a cat.", es:"Tengo un gato."},{en:"The cat is sleeping.", es:"El gato está durmiendo."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"animal doméstico que dice miau\"?", options:["cat","dog","bird"], correct:0, explain:"“Cat” es gato." } },
+      { id:'v-principiante-2', word:'Dog', translation:'Perro · animal doméstico que dice guau',
+        examples:[{en:"I have a dog.", es:"Tengo un perro."},{en:"The dog is big.", es:"El perro es grande."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"animal doméstico que dice guau\"?", options:["dog","cat","fish"], correct:0, explain:"“Dog” es perro." } },
+      { id:'v-principiante-3', word:'House', translation:'Casa · donde vives',
+        examples:[{en:"My house is big.", es:"Mi casa es grande."},{en:"This is my house.", es:"Esta es mi casa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"donde vives\"?", options:["house","school","car"], correct:0, explain:"“House” es casa." } },
+      { id:'v-principiante-4', word:'Water', translation:'Agua · lo que tomas cuando tienes sed',
+        examples:[{en:"I drink water every day.", es:"Tomo agua todos los días."},{en:"The water is cold.", es:"El agua está fría."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que tomas cuando tienes sed\"?", options:["water","milk","bread"], correct:0, explain:"“Water” es agua." } },
+      { id:'v-principiante-5', word:'Book', translation:'Libro · lo que lees',
+        examples:[{en:"I have two books.", es:"Tengo dos libros."},{en:"This book is good.", es:"Este libro es bueno."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que lees\"?", options:["book","pen","table"], correct:0, explain:"“Book” es libro." } },
+      { id:'v-principiante-6', word:'Table', translation:'Mesa · mueble donde comes o escribes',
+        examples:[{en:"The book is on the table.", es:"El libro está en la mesa."},{en:"We eat at the table.", es:"Comemos en la mesa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"mueble donde comes o escribes\"?", options:["table","chair","door"], correct:0, explain:"“Table” es mesa." } },
+      { id:'v-principiante-7', word:'Chair', translation:'Silla · mueble donde te sientas',
+        examples:[{en:"Sit on the chair.", es:"Siéntate en la silla."},{en:"The chair is red.", es:"La silla es roja."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"mueble donde te sientas\"?", options:["chair","table","window"], correct:0, explain:"“Chair” es silla." } },
+      { id:'v-principiante-8', word:'Hello', translation:'Hola · lo que dices para saludar',
+        examples:[{en:"Hello! My name is Ana.", es:"¡Hola! Me llamo Ana."},{en:"Hello, how are you?", es:"Hola, ¿cómo estás?"}],
+        quiz:{ prompt:"¿Qué palabra usas para saludar?", options:["Hello","Goodbye","Please"], correct:0, explain:"“Hello” es el saludo básico." } }
+    ],
+    [
+      { id:'v-principiante2-1', word:'Family', translation:'Familia · tus padres, hermanos, etc.',
+        examples:[{en:"I love my family.", es:"Amo a mi familia."},{en:"My family is big.", es:"Mi familia es grande."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"tus padres, hermanos, etc.\"?", options:["family","friend","school"], correct:0, explain:"“Family” es familia." } },
+      { id:'v-principiante2-2', word:'Mother', translation:'Madre · tu mamá',
+        examples:[{en:"This is my mother.", es:"Esta es mi mamá."},{en:"My mother is kind.", es:"Mi mamá es amable."}],
+        quiz:{ prompt:"¿Qué palabra significa \"mamá\"?", options:["Mother","Father","Sister"], correct:0, explain:"“Mother” es mamá." } },
+      { id:'v-principiante2-3', word:'Father', translation:'Padre · tu papá',
+        examples:[{en:"This is my father.", es:"Este es mi papá."},{en:"My father works a lot.", es:"Mi papá trabaja mucho."}],
+        quiz:{ prompt:"¿Qué palabra significa \"papa\"?", options:["Father","Mother","Brother"], correct:0, explain:"“Father” es papá." } },
+      { id:'v-principiante2-4', word:'Red', translation:'Rojo · color de una manzana o un tomate',
+        examples:[{en:"The apple is red.", es:"La manzana es roja."},{en:"I like the red car.", es:"Me gusta el carro rojo."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"color de una manzana o un tomate\"?", options:["red","blue","yellow"], correct:0, explain:"“Red” es rojo." } },
+      { id:'v-principiante2-5', word:'Blue', translation:'Azul · color del cielo',
+        examples:[{en:"The sky is blue.", es:"El cielo es azul."},{en:"My shirt is blue.", es:"Mi camisa es azul."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"color del cielo\"?", options:["blue","green","red"], correct:0, explain:"“Blue” es azul." } },
+      { id:'v-principiante2-6', word:'One', translation:'Uno · el número 1',
+        examples:[{en:"I have one dog.", es:"Tengo un perro."},{en:"One, two, three.", es:"Uno, dos, tres."}],
+        quiz:{ prompt:"¿Qué palabra es el número 1?", options:["One","Two","Ten"], correct:0, explain:"“One” es uno." } },
+      { id:'v-principiante2-7', word:'Two', translation:'Dos · el número 2',
+        examples:[{en:"I have two cats.", es:"Tengo dos gatos."},{en:"Two plus two is four.", es:"Dos más dos es cuatro."}],
+        quiz:{ prompt:"¿Qué palabra es el número 2?", options:["Two","Three","One"], correct:0, explain:"“Two” es dos." } },
+      { id:'v-principiante2-8', word:'School', translation:'Escuela · donde estudias',
+        examples:[{en:"I go to school every day.", es:"Voy a la escuela todos los días."},{en:"My school is big.", es:"Mi escuela es grande."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"donde estudias\"?", options:["school","house","store"], correct:0, explain:"“School” es escuela." } }
+    ]
+  ],
   facil: [
     [
       { id:'v-facil-1', word:'Breakfast', translation:'Desayuno · comida de la mañana',
@@ -1748,6 +2007,32 @@ const VOCAB_BANK = {
    variante2 (2 ítems) ]. Los MP3 nuevos continúan la numeración.
 --------------------------------------------------------- */
 const LISTENING_BANK = {
+  principiante: [
+    [
+      { id:'l-principiante-1', audioFile:'audio/a0/a0listening-001.mp3',
+        transcript:"I have a cat.", translation:"Tengo un gato.",
+        question:"What animal does the speaker have?", options:["A cat","A dog","A bird"], correct:0,
+        explain:"\u201cCat\u201d significa gato." },
+      { id:'l-principiante-2', audioFile:'audio/a0/a0listening-002.mp3',
+        transcript:"My house is big.", translation:"Mi casa es grande.",
+        question:"What is big?", options:["The house","The car","The dog"], correct:0,
+        explain:"\u201cHouse\u201d es la palabra para casa." },
+      { id:'l-principiante-3', audioFile:'audio/a0/a0listening-003.mp3',
+        transcript:"I have two books.", translation:"Tengo dos libros.",
+        question:"How many books does the speaker have?", options:["Two","Three","One"], correct:0,
+        explain:"\u201cTwo\u201d es el n\u00famero 2." }
+    ],
+    [
+      { id:'l-principiante2-1', audioFile:'audio/a0/a0listening-004.mp3',
+        transcript:"The apple is red.", translation:"La manzana es roja.",
+        question:"What color is the apple?", options:["Red","Blue","Green"], correct:0,
+        explain:"\u201cRed\u201d significa rojo." },
+      { id:'l-principiante2-2', audioFile:'audio/a0/a0listening-005.mp3',
+        transcript:"This is my mother.", translation:"Esta es mi mam\u00e1.",
+        question:"Who is this?", options:["Mother","Father","Friend"], correct:0,
+        explain:"\u201cMother\u201d significa mam\u00e1." }
+    ]
+  ],
   facil: [
     [
       { id:'l-facil-1', audioFile:'audio/a1/a1listening-001.mp3',
@@ -1962,6 +2247,17 @@ const LISTENING_BANK = {
    variante2 (2 ítems) ]. Los MP3 nuevos continúan la numeración.
 --------------------------------------------------------- */
 const SPEAKING_BANK = {
+  principiante: [
+    [
+      { id:'s-principiante-1', sentence:"I have a cat.", translation:"Tengo un gato.", audioFile:'audio/a0/a0speaking-001.mp3' },
+      { id:'s-principiante-2', sentence:"My house is big.", translation:"Mi casa es grande.", audioFile:'audio/a0/a0speaking-002.mp3' },
+      { id:'s-principiante-3', sentence:"I have two books.", translation:"Tengo dos libros.", audioFile:'audio/a0/a0speaking-003.mp3' }
+    ],
+    [
+      { id:'s-principiante2-1', sentence:"The apple is red.", translation:"La manzana es roja.", audioFile:'audio/a0/a0speaking-004.mp3' },
+      { id:'s-principiante2-2', sentence:"This is my mother.", translation:"Esta es mi mam\u00e1.", audioFile:'audio/a0/a0speaking-005.mp3' }
+    ]
+  ],
   facil: [
     [
       { id:'s-facil-1', sentence:"What time is it?", translation:"¿Qué hora es?", audioFile:'audio/a1/a1speaking-001.mp3' },
@@ -2031,6 +2327,44 @@ const SPEAKING_BANK = {
    variante2 (4 ítems) ].
 --------------------------------------------------------- */
 const WRITING_BANK = {
+  principiante: [
+    [
+      { id:'w-principiante-1', prompt:"Escribe una frase diciendo qu\u00e9 animal tienes (usa \u201cI have a ___\u201d).", target:"I have a [animal]",
+        checkPattern:"i have (a|an) [a-z]+", hint:"Estructura esperada: \u201cI have a ___.\u201d",
+        example:{en:"I have a cat.", es:"Tengo un gato."},
+        checklist:["\u00bfEmpezaste con \u201cI have\u201d?","\u00bfUsaste \u201ca\u201d antes del animal?","\u00bfEscribiste el nombre del animal en ingl\u00e9s?"] },
+      { id:'w-principiante-2', prompt:"Escribe una frase con un color (usa \u201cThe ___ is ___\u201d).", target:"the [object] is [color]",
+        checkPattern:"the [a-z]+ is (red|blue|green|yellow|black|white|brown|purple|orange|pink)", hint:"Estructura esperada: \u201cThe ___ is ___.\u201d",
+        example:{en:"The car is blue.", es:"El carro es azul."},
+        checklist:["\u00bfEmpezaste con \u201cThe\u201d?","\u00bfUsaste \u201cis\u201d antes del color?","\u00bfEl color est\u00e1 en ingl\u00e9s?"] },
+      { id:'w-principiante-3', prompt:"Escribe cu\u00e1ntos hermanos o mascotas tienes (usa un n\u00famero).", target:"I have [number] ...",
+        checkPattern:"i have (one|two|three|four|five|six|seven|eight|nine|ten) [a-z]+", hint:"Estructura esperada: \u201cI have ___ ___.\u201d",
+        example:{en:"I have two brothers.", es:"Tengo dos hermanos."},
+        checklist:["\u00bfEmpezaste con \u201cI have\u201d?","\u00bfUsaste un n\u00famero en ingl\u00e9s?","\u00bfLa palabra despu\u00e9s del n\u00famero tiene sentido?"] },
+      { id:'w-principiante-4', prompt:"Pres\u00e9ntate con un saludo simple (usa \u201cHello, my name is ___\u201d).", target:"hello / my name is",
+        checkPattern:"hello.*my name is [a-z]+", hint:"Estructura esperada: \u201cHello, my name is ___.\u201d",
+        example:{en:"Hello, my name is Carlos.", es:"Hola, me llamo Carlos."},
+        checklist:["\u00bfEmpezaste con \u201cHello\u201d?","\u00bfUsaste \u201cmy name is\u201d?","\u00bfEscribiste tu nombre?"] }
+    ],
+    [
+      { id:'w-principiante2-1', prompt:"Describe tu casa con un adjetivo simple (usa \u201cMy house is ___\u201d).", target:"my house is [adj]",
+        checkPattern:"my house is [a-z]+", hint:"Estructura esperada: \u201cMy house is ___.\u201d",
+        example:{en:"My house is big.", es:"Mi casa es grande."},
+        checklist:["\u00bfEmpezaste con \u201cMy house is\u201d?","\u00bfUsaste un adjetivo en ingl\u00e9s?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-principiante2-2', prompt:"Escribe cu\u00e1ntos libros tienes (usa \u201cI have ___ books\u201d).", target:"I have [number] books",
+        checkPattern:"i have (one|two|three|four|five|six|seven|eight|nine|ten) books?", hint:"Estructura esperada: \u201cI have ___ books.\u201d",
+        example:{en:"I have three books.", es:"Tengo tres libros."},
+        checklist:["\u00bfUsaste \u201cI have\u201d?","\u00bfUsaste un n\u00famero en ingl\u00e9s?","\u00bfEscribiste \u201cbooks\u201d al final?"] },
+      { id:'w-principiante2-3', prompt:"Escribe el nombre de un familiar (usa \u201cThis is my ___\u201d).", target:"this is my [family member]",
+        checkPattern:"this is my [a-z]+", hint:"Estructura esperada: \u201cThis is my ___.\u201d",
+        example:{en:"This is my mother.", es:"Esta es mi mam\u00e1."},
+        checklist:["\u00bfEmpezaste con \u201cThis is my\u201d?","\u00bfEscribiste un familiar en ingl\u00e9s (mother, father, brother, sister)?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-principiante2-4', prompt:"Responde \u201cno\u201d a esta pregunta: \u201cIs this a dog?\u201d (usa \u201cNo, it isn't.\u201d)", target:"no, it isn't",
+        checkPattern:"no,? ?it isn.?t", hint:"Estructura esperada: \u201cNo, it isn't.\u201d",
+        example:{en:"No, it isn't.", es:"No, no lo es."},
+        checklist:["\u00bfEmpezaste con \u201cNo\u201d?","\u00bfUsaste \u201cit isn't\u201d?","\u00bfEscribiste la frase completa?"] }
+    ]
+  ],
   facil: [
     [
       { id:'w-facil-1', prompt:"Escribe una frase presentándote (tu nombre y de dónde eres).", target:"my name / from",

@@ -153,6 +153,7 @@ section{padding:52px 0;}
 .level-desc{color:var(--ink-soft);font-size:0.95rem;}
 .level-check{position:absolute;top:18px;right:18px;width:26px;height:26px;border-radius:50%;background:var(--tone);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.6);transition:opacity .15s ease, transform .15s ease;}
 .level-card[aria-pressed="true"] .level-check{opacity:1;transform:scale(1);}
+.lvl-principiante{--tone:var(--blue);--tone-tint:var(--blue-tint);}
 .lvl-facil{--tone:var(--green);--tone-tint:var(--green-tint);}
 .lvl-medio{--tone:var(--amber);--tone-tint:var(--amber-tint);}
 .lvl-avanzado{--tone:var(--coral);--tone-tint:var(--coral-tint);}
