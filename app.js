@@ -2500,7 +2500,7 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     run({ container: bodyEl, level: currentLevel, onOtherSkill: focusTabs });
   }
 
-  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); });
+  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); });
   renderTabs();
   renderCurrent();
 }
