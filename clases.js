@@ -18,23 +18,31 @@ function speakPhrase(text){
   }catch(e){}
 }
 
-/* Pinta los botones despues de responder una pregunta dentro de una
-   clase. Si acertaste, solo "Continuar". Si fallaste, deja
-   "Volver a intentar" (vuelve a esta misma pregunta) ademas de
-   "Continuar" (avanza igual, sin quedar trabado). */
-function showRetryOrNextButtons(container, isCorrect, onRetry, onNext){
-  const row = container.querySelector('#nextRow');
-  if(!row) return;
-  if(isCorrect){
-    row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">Continuar →</button>`;
-    row.querySelector('.next-btn').addEventListener('click', onNext);
-  } else {
-    row.innerHTML = `
-      <button class="btn btn-ghost btn-sm retry-btn">↺ Volver a intentar</button>
-      <button class="btn btn-primary btn-sm next-btn">Continuar →</button>`;
-    row.querySelector('.retry-btn').addEventListener('click', onRetry);
-    row.querySelector('.next-btn').addEventListener('click', onNext);
-  }
+/* showRetryOrNextButtons() ahora vive en app.js (se comparte con
+   Gramática/Vocabulario/Listening/Mixto) — app.js siempre se carga
+   antes que este archivo en clases.html. */
+
+function saveClaseProgress(state){
+  try{
+    localStorage.setItem('leo_clase_inflight', JSON.stringify({
+      classId: state.data.id,
+      stepIndex: state.stepIndex,
+      results: state.results,
+      challengePath: state.challengePath,
+      startedAt: state.startedAt
+    }));
+  }catch(e){}
+}
+function loadClaseProgress(classId){
+  try{
+    const raw = localStorage.getItem('leo_clase_inflight');
+    if(!raw) return null;
+    const saved = JSON.parse(raw);
+    return (saved && saved.classId === classId) ? saved : null;
+  }catch(e){ return null; }
+}
+function clearClaseProgress(){
+  try{ localStorage.removeItem('leo_clase_inflight'); }catch(e){}
 }
 
 function renderClassList(container){
@@ -68,7 +76,14 @@ function renderClassList(container){
 function startClass(classId, rootContainer){
   const data = CLASSES_BANK[classId];
   if(!data) return;
-  const state = {
+  const saved = loadClaseProgress(classId);
+  const state = saved ? {
+    data,
+    startedAt: saved.startedAt,
+    results: saved.results || [],
+    stepIndex: saved.stepIndex || 0,
+    challengePath: saved.challengePath || []
+  } : {
     data,
     startedAt: Date.now(),
     results: [],
@@ -89,6 +104,7 @@ function startClass(classId, rootContainer){
 
   function goTo(i){
     state.stepIndex = i;
+    saveClaseProgress(state);
     rootContainer.innerHTML = `
       <div class="clase-shell">
         <div class="clase-stepper">
@@ -106,7 +122,7 @@ function startClass(classId, rootContainer){
     const body = rootContainer.querySelector('#claseBody');
     steps[i](body, state, ()=> goTo(i+1));
   }
-  goTo(0);
+  goTo(state.stepIndex);
 }
 
 function renderStepSituation(body, state, next){
@@ -462,6 +478,7 @@ function renderStepChallenge(body, state, next){
 
 function renderStepSummary(body, state){
   const { summary, title } = state.data;
+  clearClaseProgress();
   recordSession({ skill:'clases', level:'facil', topics:[title], results: state.results, startedAt: state.startedAt });
   body.innerHTML = `
     <div class="session-summary">

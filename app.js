@@ -602,6 +602,46 @@ function showNextButton(container, label, cb){
   row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">${label}</button>`;
   row.querySelector('.next-btn').addEventListener('click', cb);
 }
+// Igual que showNextButton, pero si la respuesta fue incorrecta (isCorrect
+// === false) deja ADEMÁS un botón "Volver a intentar" que vuelve a mostrar
+// la misma pregunta desde cero, en vez de forzar avanzar tras un solo
+// intento. Si isCorrect es true (o null, ej. Speaking que no se califica),
+// se comporta igual que showNextButton. Se usa en Gramática, Vocabulario,
+// Listening y Mixto (Miembros y Gratis).
+function showRetryOrNextButtons(container, isCorrect, onRetry, onNext, nextLabel){
+  const row = container.querySelector('#nextRow');
+  if(!row) return;
+  const label = nextLabel || 'Continuar →';
+  if(isCorrect === false){
+    row.innerHTML = `
+      <button class="btn btn-ghost btn-sm retry-btn">↺ Volver a intentar</button>
+      <button class="btn btn-primary btn-sm next-btn">${label}</button>`;
+    row.querySelector('.retry-btn').addEventListener('click', onRetry);
+    row.querySelector('.next-btn').addEventListener('click', onNext);
+  } else {
+    row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">${label}</button>`;
+    row.querySelector('.next-btn').addEventListener('click', onNext);
+  }
+}
+
+// Guarda/recupera una sesión de Miembros a medio terminar (localStorage),
+// para que si se refresca la página o se pierde la conexión a medio
+// ejercicio, al volver a entrar continúe donde se quedó en vez de
+// reiniciar desde cero. Solo se usa en sesiones de Miembros (no Gratis).
+// Se borra automáticamente al terminar la sesión completa.
+function inflightKey(skill, level){ return 'leo_inflight_' + skill + '_' + level; }
+function saveInflightSession(skill, level, data){
+  try{ localStorage.setItem(inflightKey(skill, level), JSON.stringify(data)); }catch(e){}
+}
+function loadInflightSession(skill, level){
+  try{
+    const raw = localStorage.getItem(inflightKey(skill, level));
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function clearInflightSession(skill, level){
+  try{ localStorage.removeItem(inflightKey(skill, level)); }catch(e){}
+}
 function sessionHeaderHtml(skillLabel, level, current, total){
   const pct = Math.round((current/total)*100);
   return `
@@ -640,7 +680,8 @@ function playAudioFile(path, container){
    Una sesión = todos los ítems del nivel (mezcla de sus 2 temas).
    ============================================================ */
 function runGrammarSession({ container, level, onExit }){
-  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
+  const saved = loadInflightSession('gramatica', level);
+  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
   const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
   const maxLen = Math.max(...topics.map(t=>t.items.length));
@@ -648,12 +689,13 @@ function runGrammarSession({ container, level, onExit }){
     topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
   }
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('gramatica', level, { variantIdx, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
     const card = document.createElement('div');
@@ -663,15 +705,16 @@ function runGrammarSession({ container, level, onExit }){
     container.appendChild(wrap);
     renderGrammarItemInto(card, item, (isCorrect)=>{
       results.push({ itemId:item.id, isCorrect });
-      showNextButton(card, idx+1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
-      });
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
     });
   }
 
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('gramatica', level);
     recordSession({ skill:'gramatica', level, topics: topics.map(t=>t.topic), results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
@@ -831,15 +874,17 @@ function renderGrammarItemInto(container, item, onAnswered){
    SESIÓN DE VOCABULARIO
    ============================================================ */
 function runVocabSession({ container, level, onExit }){
-  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
+  const saved = loadInflightSession('vocabulario', level);
+  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
   const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('vocabulario', level, { variantIdx, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
     const card = document.createElement('div');
@@ -873,16 +918,17 @@ function runVocabSession({ container, level, onExit }){
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
-        showNextButton(card, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →', ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
-        });
+        }, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →');
       });
       list.appendChild(b);
     });
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('vocabulario', level);
     recordSession({ skill:'vocabulario', level, topics:['Vocabulario general'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`Repasaste ${total} palabras · ${correct}/${total} en el mini quiz`,
@@ -899,15 +945,17 @@ function runVocabSession({ container, level, onExit }){
    no existe todavía, se avisa sin romper el ejercicio.
    ============================================================ */
 function runListeningSession({ container, level, onExit }){
-  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length);
+  const saved = loadInflightSession('listening', level);
+  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('listening', level, LISTENING_BANK[level].length);
   const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('listening', level, { variantIdx, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
     const card = document.createElement('div');
@@ -953,16 +1001,17 @@ function runListeningSession({ container, level, onExit }){
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
         results.push({ itemId:item.id, isCorrect });
-        showNextButton(card, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →', ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
-        });
+        }, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →');
       });
       list.appendChild(b);
     });
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('listening', level);
     recordSession({ skill:'listening', level, topics:['Comprensión auditiva'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
@@ -978,12 +1027,13 @@ function runListeningSession({ container, level, onExit }){
    Ofrecemos ejemplo + checklist de autorrevisión, honesto.
    ============================================================ */
 function runWritingSession({ container, level, onExit }){
-  const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length);
+  const saved = loadInflightSession('writing', level);
+  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('writing', level, WRITING_BANK[level].length);
   const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
 
   // Validación estructural honesta: no es IA, es una comprobación de patrón
   // (¿aparece la estructura objetivo en el texto?). No mide "buen inglés"
@@ -1001,6 +1051,7 @@ function runWritingSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('writing', level, { variantIdx, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
     const card = document.createElement('div');
@@ -1079,6 +1130,7 @@ function runWritingSession({ container, level, onExit }){
   }
   function finish(){
     const okCount = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('writing', level);
     recordSession({ skill:'writing', level, topics:['Escritura guiada'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${okCount} / ${total} frases bien encaminadas`,
@@ -1094,15 +1146,17 @@ function runWritingSession({ container, level, onExit }){
    Solo comparar: pronunciación original vs. tu grabación.
    ============================================================ */
 function runSpeakingSession({ container, level, onExit }){
-  const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
+  const saved = loadInflightSession('speaking', level);
+  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
   const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('speaking', level, { variantIdx, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
     const card = document.createElement('div');
@@ -1192,6 +1246,7 @@ function runSpeakingSession({ container, level, onExit }){
     }
   }
   function finish(){
+    clearInflightSession('speaking', level);
     recordSession({ skill:'speaking', level, topics:['Pronunciación guiada'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`Practicaste ${total} frases en voz alta`,
@@ -1419,14 +1474,17 @@ function renderMixItemInto(card, entry, onAnswered){
 }
 
 function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
-  const pool = pickMixItems(level);
+  const saved = !isFree ? loadInflightSession('mixto', level) : null;
+  const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
+  const pool = useSaved ? saved.pool : pickMixItems(level);
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const startedAt = useSaved ? saved.startedAt : Date.now();
+  const results = useSaved ? saved.results.slice() : [];
+  let idx = useSaved ? saved.idx : 0;
 
   function renderItem(){
     const entry = pool[idx];
+    if(!isFree) saveInflightSession('mixto', level, { pool, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Mixto · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
     const card = document.createElement('div');
@@ -1436,14 +1494,15 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect)=>{
       results.push({ itemId: entry.item.id, isCorrect });
-      showNextButton(card, idx+1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
-      });
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
     });
   }
 
   function finish(){
+    if(!isFree) clearInflightSession('mixto', level);
     const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
     const correct = graded.filter(r=>r.isCorrect).length;
     const score = graded.length ? `${correct} / ${graded.length} correctas · ${total} ejercicios en total` : `${total} ejercicios completados`;
@@ -2068,10 +2127,10 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
     container.appendChild(wrap);
     renderGrammarItemInto(card, item, (isCorrect)=>{
       results.push({ itemId:item.id, isCorrect });
-      showNextButton(card, idx+1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
-      });
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
     });
   }
   function finish(){
@@ -2131,10 +2190,10 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
-        showNextButton(card, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →', ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
-        });
+        }, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →');
       });
       list.appendChild(b);
     });
@@ -2208,10 +2267,10 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
         results.push({ itemId:item.id, isCorrect });
-        showNextButton(card, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →', ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
-        });
+        }, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →');
       });
       list.appendChild(b);
     });
