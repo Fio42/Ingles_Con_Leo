@@ -102,13 +102,31 @@ initMobileNavToggle();
    mientras exista un modal de onboarding o una sesión de práctica
    activa en la página (ver chatbot.css: body.leobot-away). */
 function initLeobotAutoHide(){
-  function sync(){
-    const shouldHide = !!document.querySelector('.onb-overlay, .session-card');
-    document.body.classList.toggle('leobot-away', shouldHide);
+  let overlayOrSession = false;
+  let heroCardVisible = false;
+
+  function apply(){
+    document.body.classList.toggle('leobot-away', overlayOrSession || heroCardVisible);
   }
-  sync();
-  const observer = new MutationObserver(sync);
+  function syncOverlay(){
+    overlayOrSession = !!document.querySelector('.onb-overlay, .session-card');
+    apply();
+  }
+  syncOverlay();
+  const observer = new MutationObserver(syncOverlay);
   observer.observe(document.body, { childList:true, subtree:true });
+
+  /* En el inicio, la tarjeta "Mini lección" (junto a la mano de Leo)
+     también puede quedar debajo del flotante en mobile. La escondemos
+     mientras esa tarjeta esté visible en pantalla. */
+  const heroCard = document.querySelector('.hero-v2-card');
+  if(heroCard && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries)=>{
+      heroCardVisible = entries.some(entry => entry.isIntersecting);
+      apply();
+    }, { threshold: 0.1 });
+    io.observe(heroCard);
+  }
 }
 initLeobotAutoHide();
 

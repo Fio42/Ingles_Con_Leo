@@ -646,6 +646,23 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   margin-left:auto;
   margin-right:6%;
 }
+/* En mobile la tarjeta queda debajo del personaje (no encima de la mano
+   como en desktop). Esta puntita simula una burbuja de dialogo para que
+   se sienta como si Leo la estuviera mostrando, sin depender de una
+   posicion absoluta fragil que se desalinee segun el tamaño de pantalla. */
+.hero-v2-card::before{
+  content:'';
+  position:absolute;
+  top:-9px;
+  right:36px;
+  width:16px;
+  height:16px;
+  background:#fff;
+  border-left:1px solid var(--line);
+  border-top:1px solid var(--line);
+  transform:rotate(45deg);
+  border-radius:3px 0 0 0;
+}
 @media(min-width:900px){
   .hero-v2-card{
     position:absolute;
@@ -656,6 +673,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
     margin-left:0;
     margin-right:0;
   }
+  .hero-v2-card::before{display:none;}
 }
 .hero-v2-card-tag{display:inline-block;background:var(--blue-tint);color:var(--blue-deep);font-size:0.74rem;font-weight:700;padding:4px 10px;border-radius:999px;margin-bottom:12px;}
 .hero-v2-card-en{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.15rem;}
