@@ -421,6 +421,17 @@ const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listen
 const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3554F0', writing:'#F5A524', speaking:'#8B5CF6', mixto:'#0EA5A0' };
 const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', writing:'writing.html', speaking:'speaking.html', mixto:'mixto.html' };
 
+// "Clases interactivas" es una actividad aparte de las 5 habilidades de
+// arriba (no debe sumarse a sus anillos/porcentajes de cobertura, ver
+// computeTotalStats y renderSkillsPanel), pero SÍ necesita su propia
+// etiqueta/color/página para mostrarse bien en "Continúa donde te
+// quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
+// en vez de agregarse a SKILL_LABELS (que también se usa para listar
+// las 5 habilidades principales con Object.keys()).
+const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html' }, SKILL_PAGE);
+
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
 // para que la barra de cobertura en Progreso tenga un total razonable.
@@ -1420,6 +1431,22 @@ function renderContinueCard(container){
       </div>`;
     return;
   }
+  if(last.skill === 'clases'){
+    // Las clases interactivas no se miden en "X de Y ejercicios" como las
+    // otras habilidades (no vienen de un banco con tamaño fijo), así que
+    // mostramos la última clase practicada en su lugar.
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">Clases interactivas${last.topic ? ' · ' + last.topic : ''}</div>
+          <div class="continue-sub">Practica otra situación real en inglés.</div>
+        </div>
+        <a href="clases.html" class="btn btn-primary">Continuar →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
   const total = bankSizeForLevel(last.skill, last.level);
   const attempted = Math.min(attemptedItemIdsFor(p, last.skill).size, total);
   container.innerHTML = `
@@ -1589,9 +1616,9 @@ function renderRecentActivityV2(container){
     const scoreText = graded.length ? `${correct}/${graded.length} correctas` : `${s.results.length} completados`;
     const dateLabel = s.date === today ? 'Hoy' : (s.date === yesterday ? 'Ayer' : s.date);
     return `
-      <div class="recent-row" style="border-left-color:${SKILL_COLORS[s.skill]};">
+      <div class="recent-row" style="border-left-color:${DISPLAY_SKILL_COLORS[s.skill] || 'var(--line)'};">
         <div>
-          <div class="recent-skill">${SKILL_LABELS[s.skill]} · ${(s.topics && s.topics[0]) || ''}</div>
+          <div class="recent-skill">${DISPLAY_SKILL_LABELS[s.skill] || s.skill} · ${(s.topics && s.topics[0]) || ''}</div>
           <div class="recent-score">${scoreText}</div>
         </div>
         <div class="recent-date">${dateLabel}</div>
