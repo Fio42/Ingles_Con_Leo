@@ -1591,12 +1591,14 @@ function renderContinueCard(container){
   }
   const total = bankSizeForLevel(last.skill, last.level);
   const attempted = Math.min(attemptedItemIdsFor(p, last.skill).size, total);
+  const continuePct = total ? Math.round((attempted / total) * 100) : 0;
   container.innerHTML = `
     <div class="continue-card">
       <div>
         <div class="continue-eyebrow">Continúa donde te quedaste</div>
         <div class="continue-title">${SKILL_LABELS[last.skill]} · ${LEVEL_META[last.level].label} ${LEVEL_META[last.level].range}</div>
         <div class="continue-sub">${attempted} de ${total} ejercicios practicados</div>
+        <div class="continue-progress-bar"><div class="continue-progress-fill" style="width:${continuePct}%;"></div></div>
       </div>
       <a href="${SKILL_PAGE[last.skill]}" class="btn btn-primary">Continuar →</a>
       <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
@@ -1652,13 +1654,20 @@ function ringSvg(pct, color, size, strokeWidth){
   size = size || 72; strokeWidth = strokeWidth || 7;
   const r = (size - strokeWidth) / 2;
   const c = 2 * Math.PI * r;
-  const offset = c * (1 - Math.min(100, Math.max(0, pct)) / 100);
+  const clampedPct = Math.min(100, Math.max(0, pct));
+  const offset = c * (1 - clampedPct / 100);
   const center = size / 2;
+  const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // Arranca en 0% (offset = circunferencia completa) y luego, ya insertado
+  // en el DOM, se anima hasta el porcentaje real (ver renderSkillRings).
+  // Si el usuario prefiere menos movimiento, se dibuja directo en su
+  // valor final, sin animar.
+  const startOffset = reduceMotion ? offset : c;
   return `
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
       <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="var(--paper-dim)" stroke-width="${strokeWidth}"/>
-      <circle cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"
-        stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}"
+      <circle class="ring-progress-arc" cx="${center}" cy="${center}" r="${r}" fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+        stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${startOffset}" data-final-offset="${offset}"
         transform="rotate(-90 ${center} ${center})"/>
       <text x="${center}" y="${center}" text-anchor="middle" dominant-baseline="central" class="ring-pct" font-size="${size*0.29}">${pct}%</text>
     </svg>`;
@@ -1669,9 +1678,10 @@ function renderStatCards(container){
   const streak = computeStreak();
   const level = getUserLevel();
   const totals = computeTotalStats();
+  const totalPct = totals.total ? Math.round((totals.attempted / totals.total) * 100) : 0;
   container.innerHTML = `
     <div class="stat-card">
-      <div class="stat-card-icon" style="background:var(--green-tint);color:var(--green);">
+      <div class="stat-card-icon stat-icon-member" style="background:var(--green-tint);color:var(--green);">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.2L21 9l-5 4.4L17.4 20 12 16.6 6.6 20 8 13.4 3 9l6.4-.8L12 2z" fill="currentColor"/></svg>
       </div>
       <div>
@@ -1680,7 +1690,7 @@ function renderStatCards(container){
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+      <div class="stat-card-icon stat-icon-streak" style="background:var(--coral-tint);color:var(--coral);">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
       </div>
       <div>
@@ -1689,8 +1699,12 @@ function renderStatCards(container){
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-icon" style="background:var(--blue-tint);color:var(--blue);">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <div class="stat-card-icon stat-icon-level" style="background:var(--blue-tint);color:var(--blue);">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path class="stat-bar stat-bar-1" d="M4 20V10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path class="stat-bar stat-bar-2" d="M11 20V4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path class="stat-bar stat-bar-3" d="M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
       </div>
       <div>
         <div class="stat-card-label">Nivel actual</div>
@@ -1698,14 +1712,21 @@ function renderStatCards(container){
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-icon" style="background:var(--violet-tint);color:var(--violet);">
+      <div class="stat-card-icon stat-icon-exercises" style="background:var(--violet-tint);color:var(--violet);">
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
       </div>
       <div>
         <div class="stat-card-label">Ejercicios completados</div>
         <div class="stat-card-value">${totals.attempted} <span style="color:var(--ink-faint);font-weight:600;font-size:0.8rem;">de ${totals.total}</span></div>
+        <div class="stat-mini-bar"><div class="stat-mini-bar-fill" data-final-width="${totalPct}" style="width:0%;"></div></div>
       </div>
     </div>`;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const fill = container.querySelector('.stat-mini-bar-fill');
+      if(fill) fill.style.width = fill.dataset.finalWidth + '%';
+    });
+  });
 }
 
 function renderSkillRings(container){
@@ -1719,6 +1740,16 @@ function renderSkillRings(container){
         <span class="ring-label">${SKILL_LABELS[sk]}</span>
       </div>`;
   }).join('');
+  // Doble requestAnimationFrame: asegura que el navegador ya pinto el
+  // estado inicial (0%) antes de moverlo al valor real, para que la
+  // transicion CSS de stroke-dashoffset se vea (en vez de saltar directo).
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      container.querySelectorAll('.ring-progress-arc').forEach(arc=>{
+        arc.setAttribute('stroke-dashoffset', arc.getAttribute('data-final-offset'));
+      });
+    });
+  });
 }
 
 function renderWeeklyChart(container){
