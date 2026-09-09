@@ -198,6 +198,8 @@ section{padding:52px 0;}
 .practice-body{padding:26px 22px 28px;min-height:340px;}
 .practice-level-tag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);margin-bottom:16px;}
 .practice-prompt{font-family:'Baloo 2';font-weight:600;font-size:1.3rem;color:var(--ink);margin-bottom:20px;}
+.practice-instruction{font-size:0.8rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;}
+.practice-translation{font-size:0.95rem;color:var(--ink-soft);font-style:italic;margin:-14px 0 18px;}
 .option-list{display:flex;flex-direction:column;gap:10px;}
 .option{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:#fff;border:2px solid var(--line);border-radius:var(--radius-sm);padding:15px 16px;font-size:1rem;font-weight:500;color:var(--ink);transition:border-color .15s ease, background .15s ease;}
 .option:hover:not(:disabled){border-color:var(--blue);background:var(--blue-tint);}

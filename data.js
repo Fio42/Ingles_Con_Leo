@@ -32,28 +32,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Los números (1-10)',
         items: [
-          { id:'g-principiante-num-1', type:'choice', prompt:"How do you say \"3\" in English?",
+          { id:'g-principiante-num-1', translation:"¿Cómo se dice \"3\" en inglés?", type:'choice', prompt:"How do you say \"3\" in English?",
             options:["Three","Seven","Nine"], correct:0,
             explain:"“Three” es el número 3.",
             examples:[
               {en:"I have three brothers.", es:"Tengo tres hermanos."},
               {en:"She has three cats.", es:"Ella tiene tres gatos."}
             ]},
-          { id:'g-principiante-num-2', type:'fill', sentence:["I","have","___","apples","."], blankIndex:2,
+          { id:'g-principiante-num-2', translation:"Tengo dos manzanas.", type:'fill', sentence:["I","have","___","apples","."], blankIndex:2,
             bank:["two","twenty","second"], correct:"two",
             explain:"“Two” es el número 2.",
             examples:[
               {en:"I have two dogs.", es:"Tengo dos perros."},
               {en:"She has two books.", es:"Ella tiene dos libros."}
             ]},
-          { id:'g-principiante-num-3', type:'choice', prompt:"She has five books. How many books does she have?",
+          { id:'g-principiante-num-3', translation:"Ella tiene cinco libros. ¿Cuántos libros tiene ella?", type:'choice', prompt:"She has five books. How many books does she have?",
             options:["Five","Four","Nine"], correct:0,
             explain:"“Five” es el número 5.",
             examples:[
               {en:"He has five pencils.", es:"Él tiene cinco lapices."},
               {en:"We have five chairs.", es:"Tenemos cinco sillas."}
             ]},
-          { id:'g-principiante-num-4', type:'error', wrong:"I have three cat.", wrongWord:"cat",
+          { id:'g-principiante-num-4', translation:"Tengo tres gatos.", type:'error', wrong:"I have three cat.", wrongWord:"cat",
             right:"I have three cats.", rightWord:"cats",
             explain:"Cuando hay más de uno, la palabra lleva “-s” al final.",
             examples:[
@@ -65,28 +65,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Plural: agregar "-s"',
         items: [
-          { id:'g-principiante-plural-1', type:'choice', prompt:"One dog, two ___.",
+          { id:'g-principiante-plural-1', translation:"Un perro, dos perros.", type:'choice', prompt:"One dog, two ___.",
             options:["dogs","dog","doges"], correct:0,
             explain:"Para más de uno, agregamos “-s” a la palabra.",
             examples:[
               {en:"I have two dogs.", es:"Tengo dos perros."},
               {en:"They have three cats.", es:"Ellos tienen tres gatos."}
             ]},
-          { id:'g-principiante-plural-2', type:'fill', sentence:["I","have","two","___","."], blankIndex:3,
+          { id:'g-principiante-plural-2', translation:"Tengo dos gatos.", type:'fill', sentence:["I","have","two","___","."], blankIndex:3,
             bank:["cats","cat","cates"], correct:"cats",
             explain:"“Cats” es el plural de “cat” (gato).",
             examples:[
               {en:"I have two cats.", es:"Tengo dos gatos."},
               {en:"She has two books.", es:"Ella tiene dos libros."}
             ]},
-          { id:'g-principiante-plural-3', type:'choice', prompt:"How do you say more than one \"book\"?",
+          { id:'g-principiante-plural-3', translation:"¿Cómo se dice más de un \"libro\"?", type:'choice', prompt:"How do you say more than one \"book\"?",
             options:["Books","Bookes","Boo"], correct:0,
             explain:"El plural de “book” es “books”, solo se agrega “-s”.",
             examples:[
               {en:"I have five books.", es:"Tengo cinco libros."},
               {en:"The books are on the table.", es:"Los libros están en la mesa."}
             ]},
-          { id:'g-principiante-plural-4', type:'error', wrong:"She has three sister.", wrongWord:"sister",
+          { id:'g-principiante-plural-4', translation:"Ella tiene tres hermanas.", type:'error', wrong:"She has three sister.", wrongWord:"sister",
             right:"She has three sisters.", rightWord:"sisters",
             explain:"Con más de una persona o cosa, agregamos “-s”.",
             examples:[
@@ -98,28 +98,28 @@ const GRAMMAR_BANK = {
       {
         topic: '"This is..." (esto es...)',
         items: [
-          { id:'g-principiante-this-1', type:'choice', prompt:"(You are pointing at one apple) ___ is an apple.",
+          { id:'g-principiante-this-1', translation:"(Estás señalando una manzana) Esto es una manzana.", type:'choice', prompt:"(You are pointing at one apple) ___ is an apple.",
             options:["This","These","They"], correct:0,
             explain:"Usamos “this” para senalar UNA sola cosa cerca de ti.",
             examples:[
               {en:"This is an apple.", es:"Esto es una manzana."},
               {en:"This is my book.", es:"Este es mi libro."}
             ]},
-          { id:'g-principiante-this-2', type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
+          { id:'g-principiante-this-2', translation:"Este es mi libro.", type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
             bank:["This","These","They"], correct:"This",
             explain:"“This” se usa para una sola cosa cerca de ti.",
             examples:[
               {en:"This is my house.", es:"Esta es mi casa."},
               {en:"This is my friend.", es:"Este es mi amigo."}
             ]},
-          { id:'g-principiante-this-3', type:'choice', prompt:"What do you say when you show ONE thing?",
+          { id:'g-principiante-this-3', translation:"¿Qué dices cuando muestras UNA cosa?", type:'choice', prompt:"What do you say when you show ONE thing?",
             options:["This is...","These are...","They is..."], correct:0,
             explain:"“This is...” se usa para presentar una sola cosa o persona.",
             examples:[
               {en:"This is my mother.", es:"Esta es mi mama."},
               {en:"This is a cat.", es:"Esto es un gato."}
             ]},
-          { id:'g-principiante-this-4', type:'error', wrong:"This is my keys.", wrongWord:"This",
+          { id:'g-principiante-this-4', translation:"Estas son mis llaves.", type:'error', wrong:"This is my keys.", wrongWord:"This",
             right:"These are my keys.", rightWord:"These",
             explain:"Usamos “these” cuando hablamos de más de una cosa (las llaves son varias).",
             examples:[
@@ -133,28 +133,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Los colores',
         items: [
-          { id:'g-principiante2-color-1', type:'choice', prompt:"What color is the sky?",
+          { id:'g-principiante2-color-1', translation:"¿De qué color es el cielo?", type:'choice', prompt:"What color is the sky?",
             options:["Blue","Red","Green"], correct:0,
             explain:"El cielo normalmente es “blue” (azul).",
             examples:[
               {en:"The sky is blue.", es:"El cielo es azul."},
               {en:"My shirt is blue.", es:"Mi camisa es azul."}
             ]},
-          { id:'g-principiante2-color-2', type:'fill', sentence:["The","apple","is","___","."], blankIndex:3,
+          { id:'g-principiante2-color-2', translation:"La manzana es roja.", type:'fill', sentence:["The","apple","is","___","."], blankIndex:3,
             bank:["red","seven","house"], correct:"red",
             explain:"Las manzanas normalmente son “red” (rojas).",
             examples:[
               {en:"The apple is red.", es:"La manzana es roja."},
               {en:"Her dress is red.", es:"Su vestido es rojo."}
             ]},
-          { id:'g-principiante2-color-3', type:'choice', prompt:"How do you say \"amarillo\" in English?",
+          { id:'g-principiante2-color-3', translation:"¿Cómo se dice \"amarillo\" en inglés?", type:'choice', prompt:"How do you say \"amarillo\" in English?",
             options:["Yellow","Purple","Brown"], correct:0,
             explain:"“Yellow” significa amarillo.",
             examples:[
               {en:"The banana is yellow.", es:"El plátano es amarillo."},
               {en:"I like your yellow hat.", es:"Me gusta tu sombrero amarillo."}
             ]},
-          { id:'g-principiante2-color-4', type:'error', wrong:"The grass is blue.", wrongWord:"blue",
+          { id:'g-principiante2-color-4', translation:"El pasto es verde.", type:'error', wrong:"The grass is blue.", wrongWord:"blue",
             right:"The grass is green.", rightWord:"green",
             explain:"El pasto normalmente es “green” (verde), no azul.",
             examples:[
@@ -166,28 +166,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Preguntas simples: "What is this?"',
         items: [
-          { id:'g-principiante2-what-1', type:'choice', prompt:"Someone points at a book and asks \"What is this?\" What do you answer?",
+          { id:'g-principiante2-what-1', translation:"Alguien señala un libro y pregunta \"¿Qué es esto?\" ¿Qué respondes?", type:'choice', prompt:"Someone points at a book and asks \"What is this?\" What do you answer?",
             options:["It's a book.","It's a books.","It is book."], correct:0,
             explain:"La respuesta correcta es “It's a ___” con una sola cosa.",
             examples:[
               {en:"It's a book.", es:"Es un libro."},
               {en:"It's a cat.", es:"Es un gato."}
             ]},
-          { id:'g-principiante2-what-2', type:'fill', sentence:["What","is","___","?"], blankIndex:2,
+          { id:'g-principiante2-what-2', translation:"¿Qué es esto?", type:'fill', sentence:["What","is","___","?"], blankIndex:2,
             bank:["this","these","they"], correct:"this",
             explain:"Para preguntar por UNA cosa cerca de ti, usamos “this”.",
             examples:[
               {en:"What is this?", es:"¿Qué es esto?"},
               {en:"This is a pen.", es:"Esto es un lapicero."}
             ]},
-          { id:'g-principiante2-what-3', type:'choice', prompt:"How do you ask about ONE object in front of you?",
+          { id:'g-principiante2-what-3', translation:"¿Cómo preguntas sobre UN objeto frente a ti?", type:'choice', prompt:"How do you ask about ONE object in front of you?",
             options:["What is this?","What is these?","What is they?"], correct:0,
             explain:"“What is this?” se usa para preguntar por una sola cosa.",
             examples:[
               {en:"What is this?", es:"¿Qué es esto?"},
               {en:"It's a table.", es:"Es una mesa."}
             ]},
-          { id:'g-principiante2-what-4', type:'error', wrong:"What is these?", wrongWord:"these",
+          { id:'g-principiante2-what-4', translation:"¿Qué es esto?", type:'error', wrong:"What is these?", wrongWord:"these",
             right:"What is this?", rightWord:"this",
             explain:"Para una sola cosa usamos “this”, no “these”.",
             examples:[
@@ -199,28 +199,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Yes / No básico',
         items: [
-          { id:'g-principiante2-yn-1', type:'choice', prompt:"Is this a cat? Answer: ___, it is.",
+          { id:'g-principiante2-yn-1', translation:"¿Es esto un gato? Respuesta: Sí, lo es.", type:'choice', prompt:"Is this a cat? Answer: ___, it is.",
             options:["Yes","No","Not"], correct:0,
             explain:"“Yes, it is” se usa para responder que si.",
             examples:[
               {en:"Yes, it is.", es:"Si, lo es."},
               {en:"Is this a dog? Yes, it is.", es:"¿Es esto un perro? Si, lo es."}
             ]},
-          { id:'g-principiante2-yn-2', type:'fill', sentence:["Yes",",","it","___","."], blankIndex:3,
+          { id:'g-principiante2-yn-2', translation:"Sí, lo es.", type:'fill', sentence:["Yes",",","it","___","."], blankIndex:3,
             bank:["is","isn't","are"], correct:"is",
             explain:"Para responder “si” a una pregunta con “is”, contestamos “it is”.",
             examples:[
               {en:"Is this a book? Yes, it is.", es:"¿Es esto un libro? Si, lo es."},
               {en:"Is this your bag? Yes, it is.", es:"¿Es esta tu bolsa? Si, lo es."}
             ]},
-          { id:'g-principiante2-yn-3', type:'choice', prompt:"Is this a dog? (No, it's a cat) Answer: ___",
+          { id:'g-principiante2-yn-3', translation:"¿Es esto un perro? (No, es un gato) Respuesta: No, no lo es.", type:'choice', prompt:"Is this a dog? (No, it's a cat) Answer: ___",
             options:["No, it isn't.","Yes, it is.","No, it is."], correct:0,
             explain:"“No, it isn't” se usa para responder que no.",
             examples:[
               {en:"No, it isn't.", es:"No, no lo es."},
               {en:"Is this a cat? No, it isn't.", es:"¿Es esto un gato? No, no lo es."}
             ]},
-          { id:'g-principiante2-yn-4', type:'error', wrong:"Yes, it not.", wrongWord:"not",
+          { id:'g-principiante2-yn-4', translation:"Sí, lo es.", type:'error', wrong:"Yes, it not.", wrongWord:"not",
             right:"Yes, it is.", rightWord:"is",
             explain:"Para responder “si”, decimos “it is”, no “it not”.",
             examples:[
@@ -236,28 +236,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Presente simple y "to be"',
         items: [
-          { id:'g-facil-tobe-1', type:'choice', prompt:"What time is it?",
+          { id:'g-facil-tobe-1', translation:"¿Qué hora es?", type:'choice', prompt:"What time is it?",
             options:["It nine o'clock.","It is nine o'clock.","It are nine o'clock."], correct:1,
             explain:"Usamos “it is” (o “it's”) para hablar de la hora.",
             examples:[
               {en:"It is nine o'clock.", es:"Son las nueve."},
               {en:"It is Monday today.", es:"Hoy es lunes."}
             ]},
-          { id:'g-facil-tobe-2', type:'fill', sentence:["The","cat","___","on","the","table","."], blankIndex:2,
+          { id:'g-facil-tobe-2', translation:"El gato está sobre la mesa.", type:'fill', sentence:["The","cat","___","on","the","table","."], blankIndex:2,
             bank:["is","are","am"], correct:"is",
             explain:"“Cat” es singular, así que va con “is”.",
             examples:[
               {en:"The dog is in the garden.", es:"El perro está en el jardín."},
               {en:"My parents are at home.", es:"Mis padres están en casa."}
             ]},
-          { id:'g-facil-tobe-3', type:'choice', prompt:"She ___ a teacher.",
+          { id:'g-facil-tobe-3', translation:"Ella es maestra.", type:'choice', prompt:"She ___ a teacher.",
             options:["is","are","am"], correct:0,
             explain:"Con “she” (ella) siempre usamos “is”.",
             examples:[
               {en:"He is a doctor.", es:"Él es doctor."},
               {en:"They are students.", es:"Ellos son estudiantes."}
             ]},
-          { id:'g-facil-tobe-4', type:'error', wrong:"The keys are on my bag.", wrongWord:"on",
+          { id:'g-facil-tobe-4', translation:"Las llaves están en mi bolso.", type:'error', wrong:"The keys are on my bag.", wrongWord:"on",
             right:"The keys are in my bag.", rightWord:"in",
             explain:"Usamos “in” para cosas que están dentro de algo, como una mochila.",
             examples:[
@@ -269,28 +269,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'There / Their / They\'re',
         items: [
-          { id:'g-facil-there-1', type:'choice', prompt:"___ is a cat on the roof.",
+          { id:'g-facil-there-1', translation:"Hay un gato en el techo.", type:'choice', prompt:"___ is a cat on the roof.",
             options:["Their","There","They're"], correct:1,
             explain:"“There is / there are” se usa para decir que algo existe.",
             examples:[
               {en:"There is a book on the table.", es:"Hay un libro en la mesa."},
               {en:"There are two cars outside.", es:"Hay dos carros afuera."}
             ]},
-          { id:'g-facil-there-2', type:'choice', prompt:"___ house is very big.",
+          { id:'g-facil-there-2', translation:"Su casa es muy grande.", type:'choice', prompt:"___ house is very big.",
             options:["There","Their","They're"], correct:1,
             explain:"“Their” indica posesión: de ellos.",
             examples:[
               {en:"Their dog is friendly.", es:"El perro de ellos es amigable."},
               {en:"That is their car.", es:"Ese es el carro de ellos."}
             ]},
-          { id:'g-facil-there-3', type:'choice', prompt:"___ going to the beach tomorrow.",
+          { id:'g-facil-there-3', translation:"Ellos van a ir a la playa mañana.", type:'choice', prompt:"___ going to the beach tomorrow.",
             options:["There","Their","They're"], correct:2,
             explain:"“They're” es la contracción de “they are”.",
             examples:[
               {en:"They're my best friends.", es:"Ellos son mis mejores amigos."},
               {en:"They're studying English.", es:"Ellos están estudiando inglés."}
             ]},
-          { id:'g-facil-there-4', type:'fill', sentence:["___","are","many","people","here","."], blankIndex:0,
+          { id:'g-facil-there-4', translation:"Hay mucha gente aquí.", type:'fill', sentence:["___","are","many","people","here","."], blankIndex:0,
             bank:["There","Their","They're"], correct:"There",
             explain:"Para decir que “hay” algo, usamos “there”.",
             examples:[
@@ -304,28 +304,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'A / An',
         items: [
-          { id:'g-facil-art-1', type:'choice', prompt:"I saw ___ elephant at the zoo.",
+          { id:'g-facil-art-1', translation:"Vi un elefante en el zoológico.", type:'choice', prompt:"I saw ___ elephant at the zoo.",
             options:["a","an","some"], correct:1,
             explain:"Usamos “an” antes de sonido de vocal, como “elephant”.",
             examples:[
               {en:"I saw an elephant.", es:"Vi un elefante."},
               {en:"She has a dog.", es:"Ella tiene un perro."}
             ]},
-          { id:'g-facil-art-2', type:'fill', sentence:["She","is","___","nurse","."], blankIndex:2,
+          { id:'g-facil-art-2', translation:"Ella es enfermera.", type:'fill', sentence:["She","is","___","nurse","."], blankIndex:2,
             bank:["a","an","some"], correct:"a",
             explain:"“Nurse” empieza con sonido de consonante, así que usamos “a”.",
             examples:[
               {en:"He is a teacher.", es:"Él es maestro."},
               {en:"It's an apple.", es:"Es una manzana."}
             ]},
-          { id:'g-facil-art-3', type:'choice', prompt:"That is ___ umbrella.",
+          { id:'g-facil-art-3', translation:"Eso es un paraguas.", type:'choice', prompt:"That is ___ umbrella.",
             options:["a","an","the"], correct:1,
             explain:"“Umbrella” empieza con sonido de vocal, entonces usamos “an”.",
             examples:[
               {en:"That is an umbrella.", es:"Esa es una sombrilla."},
               {en:"This is a book.", es:"Este es un libro."}
             ]},
-          { id:'g-facil-art-4', type:'error', wrong:"I need a hour to finish.", wrongWord:"a",
+          { id:'g-facil-art-4', translation:"Necesito una hora para terminar.", type:'error', wrong:"I need a hour to finish.", wrongWord:"a",
             right:"I need an hour to finish.", rightWord:"an",
             explain:"“Hour” suena como si empezara con vocal (la “h” es muda), así que usamos “an”.",
             examples:[
@@ -337,28 +337,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'In / On / At',
         items: [
-          { id:'g-facil-prep-1', type:'choice', prompt:"The keys are ___ the table.",
+          { id:'g-facil-prep-1', translation:"Las llaves están sobre la mesa.", type:'choice', prompt:"The keys are ___ the table.",
             options:["in","on","at"], correct:1,
             explain:"Usamos “on” para superficies, como una mesa.",
             examples:[
               {en:"The keys are on the table.", es:"Las llaves están en la mesa."},
               {en:"There's a picture on the wall.", es:"Hay un cuadro en la pared."}
             ]},
-          { id:'g-facil-prep-2', type:'fill', sentence:["I","live","___","Bogotá","."], blankIndex:2,
+          { id:'g-facil-prep-2', translation:"Vivo en Bogotá.", type:'fill', sentence:["I","live","___","Bogotá","."], blankIndex:2,
             bank:["in","on","at"], correct:"in",
             explain:"Usamos “in” para ciudades y países.",
             examples:[
               {en:"I live in Bogotá.", es:"Vivo en Bogotá."},
               {en:"She was born in Peru.", es:"Ella nació en Perú."}
             ]},
-          { id:'g-facil-prep-3', type:'choice', prompt:"We'll meet ___ 5 o'clock.",
+          { id:'g-facil-prep-3', translation:"Nos encontraremos a las 5.", type:'choice', prompt:"We'll meet ___ 5 o'clock.",
             options:["in","on","at"], correct:2,
             explain:"Usamos “at” para horas exactas.",
             examples:[
               {en:"We'll meet at 5 o'clock.", es:"Nos veremos a las cinco."},
               {en:"The class starts at nine.", es:"La clase empieza a las nueve."}
             ]},
-          { id:'g-facil-prep-4', type:'error', wrong:"My birthday is in Monday.", wrongWord:"in",
+          { id:'g-facil-prep-4', translation:"Mi cumpleaños es el lunes.", type:'error', wrong:"My birthday is in Monday.", wrongWord:"in",
             right:"My birthday is on Monday.", rightWord:"on",
             explain:"Usamos “on” para días específicos, como “Monday”.",
             examples:[
@@ -372,28 +372,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Some / Any',
         items: [
-          { id:'g-facil-some-1', type:'choice', prompt:"I don't have ___ money.",
+          { id:'g-facil-some-1', translation:"No tengo nada de dinero.", type:'choice', prompt:"I don't have ___ money.",
             options:["some","any","much"], correct:1,
             explain:"En negaciones usamos “any”, no “some”.",
             examples:[
               {en:"I don't have any money.", es:"No tengo nada de dinero."},
               {en:"There isn't any milk.", es:"No hay nada de leche."}
             ]},
-          { id:'g-facil-some-2', type:'fill', sentence:["Can","I","have","___","water","?"], blankIndex:3,
+          { id:'g-facil-some-2', translation:"¿Me puedes dar un poco de agua?", type:'fill', sentence:["Can","I","have","___","water","?"], blankIndex:3,
             bank:["some","any","many"], correct:"some",
             explain:"En ofrecimientos y peticiones usamos “some”, aunque sea una pregunta.",
             examples:[
               {en:"Can I have some water?", es:"¿Me das un poco de agua?"},
               {en:"Would you like some coffee?", es:"¿Quieres café?"}
             ]},
-          { id:'g-facil-some-3', type:'choice', prompt:"Do you have ___ questions?",
+          { id:'g-facil-some-3', translation:"¿Tienes alguna pregunta?", type:'choice', prompt:"Do you have ___ questions?",
             options:["some","any","much"], correct:1,
             explain:"En preguntas normales usamos “any”.",
             examples:[
               {en:"Do you have any questions?", es:"¿Tienes alguna pregunta?"},
               {en:"Is there any bread left?", es:"¿Queda algo de pan?"}
             ]},
-          { id:'g-facil-some-4', type:'error', wrong:"There isn't some sugar left.", wrongWord:"some",
+          { id:'g-facil-some-4', translation:"No queda nada de azúcar.", type:'error', wrong:"There isn't some sugar left.", wrongWord:"some",
             right:"There isn't any sugar left.", rightWord:"any",
             explain:"Con negaciones usamos “any”, no “some”.",
             examples:[
@@ -405,28 +405,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'This / That / These / Those',
         items: [
-          { id:'g-facil-this-1', type:'choice', prompt:"___ shoes are new (they're right here).",
+          { id:'g-facil-this-1', translation:"Estos zapatos son nuevos (están aquí).", type:'choice', prompt:"___ shoes are new (they're right here).",
             options:["This","These","That"], correct:1,
             explain:"Para plural + cerca usamos “these”.",
             examples:[
               {en:"These shoes are new.", es:"Estos zapatos son nuevos."},
               {en:"This book is mine.", es:"Este libro es mío."}
             ]},
-          { id:'g-facil-this-2', type:'fill', sentence:["___","house","over","there","is","big","."], blankIndex:0,
+          { id:'g-facil-this-2', translation:"Esa casa de allá es grande.", type:'fill', sentence:["___","house","over","there","is","big","."], blankIndex:0,
             bank:["This","That","These"], correct:"That",
             explain:"Para singular + lejos usamos “that”.",
             examples:[
               {en:"That house over there is big.", es:"Esa casa de allá es grande."},
               {en:"Those cars are expensive.", es:"Esos carros son caros."}
             ]},
-          { id:'g-facil-this-3', type:'choice', prompt:"Look at ___ birds up there (far away).",
+          { id:'g-facil-this-3', translation:"Mira esos pájaros allá arriba (lejos).", type:'choice', prompt:"Look at ___ birds up there (far away).",
             options:["this","these","those"], correct:2,
             explain:"Para plural + lejos usamos “those”.",
             examples:[
               {en:"Look at those birds.", es:"Mira esos pájaros."},
               {en:"These flowers smell nice.", es:"Estas flores huelen bien."}
             ]},
-          { id:'g-facil-this-4', type:'error', wrong:"This shoes are too small.", wrongWord:"This",
+          { id:'g-facil-this-4', translation:"Estos zapatos son muy pequeños.", type:'error', wrong:"This shoes are too small.", wrongWord:"This",
             right:"These shoes are too small.", rightWord:"These",
             explain:"“Shoes” es plural, entonces necesitamos “these”, no “this”.",
             examples:[
@@ -440,28 +440,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Question words (What / Where / When / Who)',
         items: [
-          { id:'g-facil4-qw-1', type:'choice', prompt:"___ is your name?",
+          { id:'g-facil4-qw-1', translation:"¿Cómo te llamas?", type:'choice', prompt:"___ is your name?",
             options:["What","Where","Who"], correct:0,
             explain:"Usamos “what” para preguntar por una cosa o información, como el nombre.",
             examples:[
               {en:"What is your name?", es:"¿Cuál es tu nombre?"},
               {en:"What is your favorite color?", es:"¿Cuál es tu color favorito?"}
             ]},
-          { id:'g-facil4-qw-2', type:'fill', sentence:["___","do","you","live","?"], blankIndex:0,
+          { id:'g-facil4-qw-2', translation:"¿Dónde vives?", type:'fill', sentence:["___","do","you","live","?"], blankIndex:0,
             bank:["Where","What","Who"], correct:"Where",
             explain:"“Where” se usa para preguntar por un lugar.",
             examples:[
               {en:"Where do you live?", es:"¿Dónde vives?"},
               {en:"Where is the bathroom?", es:"¿Dónde está el baño?"}
             ]},
-          { id:'g-facil4-qw-3', type:'choice', prompt:"___ is your birthday?",
+          { id:'g-facil4-qw-3', translation:"¿Cuándo es tu cumpleaños?", type:'choice', prompt:"___ is your birthday?",
             options:["When","Who","What"], correct:0,
             explain:"“When” se usa para preguntar por el momento o la fecha.",
             examples:[
               {en:"When is your birthday?", es:"¿Cuándo es tu cumpleaños?"},
               {en:"When does the movie start?", es:"¿Cuándo empieza la película?"}
             ]},
-          { id:'g-facil4-qw-4', type:'error', wrong:"Were is the bathroom?", wrongWord:"Were",
+          { id:'g-facil4-qw-4', translation:"¿Dónde está el baño?", type:'error', wrong:"Were is the bathroom?", wrongWord:"Were",
             right:"Where is the bathroom?", rightWord:"Where",
             explain:"“Were” (pasado de “to be”) y “where” (dónde) suenan parecido pero significan cosas distintas.",
             examples:[
@@ -473,28 +473,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Adverbios de frecuencia (always / usually / sometimes / never)',
         items: [
-          { id:'g-facil4-freq-1', type:'choice', prompt:"I ___ drink coffee in the morning.",
+          { id:'g-facil4-freq-1', translation:"Siempre tomo café en la mañana.", type:'choice', prompt:"I ___ drink coffee in the morning.",
             options:["always","never","yesterday"], correct:0,
             explain:"Los adverbios de frecuencia como “always” van antes del verbo principal.",
             examples:[
               {en:"I always drink coffee in the morning.", es:"Siempre tomo café en la mañana."},
               {en:"She always arrives on time.", es:"Ella siempre llega a tiempo."}
             ]},
-          { id:'g-facil4-freq-2', type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
+          { id:'g-facil4-freq-2', translation:"Ella siempre llega tarde.", type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
             bank:["always","yesterday","tomorrow"], correct:"always",
             explain:"Con el verbo “to be”, el adverbio de frecuencia va después: “is always”.",
             examples:[
               {en:"She is always late.", es:"Ella siempre llega tarde."},
               {en:"He is never hungry in the morning.", es:"Él nunca tiene hambre en la mañana."}
             ]},
-          { id:'g-facil4-freq-3', type:'choice', prompt:"We ___ go to the beach in summer.",
+          { id:'g-facil4-freq-3', translation:"Normalmente vamos a la playa en verano.", type:'choice', prompt:"We ___ go to the beach in summer.",
             options:["usually","yesterday","tomorrow"], correct:0,
             explain:"“Usually” describe algo habitual; “yesterday” y “tomorrow” son momentos específicos, no frecuencia.",
             examples:[
               {en:"We usually go to the beach in summer.", es:"Normalmente vamos a la playa en verano."},
               {en:"They usually eat dinner at eight.", es:"Ellos normalmente cenan a las ocho."}
             ]},
-          { id:'g-facil4-freq-4', type:'error', wrong:"She never is late.", wrongWord:"never is",
+          { id:'g-facil4-freq-4', translation:"Ella nunca llega tarde.", type:'error', wrong:"She never is late.", wrongWord:"never is",
             right:"She is never late.", rightWord:"is never",
             explain:"Con “to be”, el orden correcto es verbo + adverbio: “is never”, no “never is”.",
             examples:[
@@ -508,28 +508,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Can / Can\'t (habilidad)',
         items: [
-          { id:'g-facil5-can-1', type:'choice', prompt:"___ you swim?",
+          { id:'g-facil5-can-1', translation:"¿Sabes nadar?", type:'choice', prompt:"___ you swim?",
             options:["Can","Do","Are"], correct:0,
             explain:"Usamos “can” para preguntar sobre habilidad, no “do” ni “are”.",
             examples:[
               {en:"Can you swim?", es:"¿Sabes nadar?"},
               {en:"I can ride a bike.", es:"Sé andar en bicicleta."}
             ]},
-          { id:'g-facil5-can-2', type:'fill', sentence:["She","___","play","the","piano","."], blankIndex:1,
+          { id:'g-facil5-can-2', translation:"Ella sabe tocar el piano.", type:'fill', sentence:["She","___","play","the","piano","."], blankIndex:1,
             bank:["can","cans","canning"], correct:"can",
             explain:"“Can” no cambia con la persona: siempre “can”, nunca “cans”.",
             examples:[
               {en:"She can play the piano.", es:"Ella sabe tocar el piano."},
               {en:"They can speak French.", es:"Ellos saben hablar francés."}
             ]},
-          { id:'g-facil5-can-3', type:'choice', prompt:"He ___ drive yet, he's only 15.",
+          { id:'g-facil5-can-3', translation:"Él todavía no puede manejar, solo tiene 15 años.", type:'choice', prompt:"He ___ drive yet, he's only 15.",
             options:["can't","doesn't can","not can"], correct:0,
             explain:"La forma negativa de “can” es “can't” (o “cannot”), no “doesn't can”.",
             examples:[
               {en:"He can't drive yet.", es:"Él todavía no sabe manejar."},
               {en:"We can't come tonight.", es:"No podemos ir esta noche."}
             ]},
-          { id:'g-facil5-can-4', type:'error', wrong:"She can to sing very well.", wrongWord:"can to",
+          { id:'g-facil5-can-4', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"can to",
             right:"She can sing very well.", rightWord:"can",
             explain:"Después de “can” va el verbo base sin “to”.",
             examples:[
@@ -541,28 +541,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Posesivos (my / your / his / her / our / their)',
         items: [
-          { id:'g-facil5-poss-1', type:'choice', prompt:"This is Ana. ___ car is red.",
+          { id:'g-facil5-poss-1', translation:"Esta es Ana. Su carro es rojo.", type:'choice', prompt:"This is Ana. ___ car is red.",
             options:["Her","His","Their"], correct:0,
             explain:"Ana es mujer, así que usamos “her”.",
             examples:[
               {en:"This is Ana. Her car is red.", es:"Esta es Ana. Su carro es rojo."},
               {en:"Her house is near the park.", es:"Su casa está cerca del parque."}
             ]},
-          { id:'g-facil5-poss-2', type:'fill', sentence:["We","love","___","new","house","."], blankIndex:2,
+          { id:'g-facil5-poss-2', translation:"Nos encanta nuestra casa nueva.", type:'fill', sentence:["We","love","___","new","house","."], blankIndex:2,
             bank:["our","us","we"], correct:"our",
             explain:"“Our” es el posesivo de “we”.",
             examples:[
               {en:"We love our new house.", es:"Amamos nuestra casa nueva."},
               {en:"Our team won the game.", es:"Nuestro equipo ganó el juego."}
             ]},
-          { id:'g-facil5-poss-3', type:'choice', prompt:"That is Tom and Lisa's dog. It's ___ dog.",
+          { id:'g-facil5-poss-3', translation:"Ese es el perro de Tom y Lisa. Es su perro.", type:'choice', prompt:"That is Tom and Lisa's dog. It's ___ dog.",
             options:["their","his","your"], correct:0,
             explain:"Tom y Lisa son varias personas, así que usamos “their”.",
             examples:[
               {en:"It's their dog.", es:"Es el perro de ellos."},
               {en:"Their kids go to my school.", es:"Sus hijos van a mi escuela."}
             ]},
-          { id:'g-facil5-poss-4', type:'error', wrong:"He loves he's job.", wrongWord:"he's",
+          { id:'g-facil5-poss-4', translation:"A él le encanta su trabajo.", type:'error', wrong:"He loves he's job.", wrongWord:"he's",
             right:"He loves his job.", rightWord:"his",
             explain:"“His” es el posesivo; “he's” significa “he is” o “he has”.",
             examples:[
@@ -576,28 +576,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Presente continuo (I am ___ing)',
         items: [
-          { id:'g-facil6-cont-1', type:'choice', prompt:"Look! It ___ outside.",
+          { id:'g-facil6-cont-1', translation:"¡Mira! Está lloviendo afuera.", type:'choice', prompt:"Look! It ___ outside.",
             options:["is raining","rains","rain"], correct:0,
             explain:"Para acciones que pasan ahora mismo usamos presente continuo: “is raining”.",
             examples:[
               {en:"Look! It is raining outside.", es:"¡Mira! Está lloviendo afuera."},
               {en:"She is watching TV right now.", es:"Ella está viendo tele ahora mismo."}
             ]},
-          { id:'g-facil6-cont-2', type:'fill', sentence:["They","___","dinner","right","now","."], blankIndex:1,
+          { id:'g-facil6-cont-2', translation:"Ellos están cocinando la cena en este momento.", type:'fill', sentence:["They","___","dinner","right","now","."], blankIndex:1,
             bank:["are cooking","cooks","cook"], correct:"are cooking",
             explain:"“They” + “are” + verbo-ing para acción en progreso.",
             examples:[
               {en:"They are cooking dinner right now.", es:"Están cocinando la cena ahora mismo."},
               {en:"We are waiting for the bus.", es:"Estamos esperando el autobús."}
             ]},
-          { id:'g-facil6-cont-3', type:'choice', prompt:"I ___ a book at the moment.",
+          { id:'g-facil6-cont-3', translation:"Estoy leyendo un libro en este momento.", type:'choice', prompt:"I ___ a book at the moment.",
             options:["am reading","read","reads"], correct:0,
             explain:"“At the moment” indica que la acción ocurre ahora: presente continuo.",
             examples:[
               {en:"I am reading a book at the moment.", es:"Estoy leyendo un libro en este momento."},
               {en:"He is working at the moment.", es:"Él está trabajando en este momento."}
             ]},
-          { id:'g-facil6-cont-4', type:'error', wrong:"She is study English now.", wrongWord:"study",
+          { id:'g-facil6-cont-4', translation:"Ella está estudiando inglés ahora.", type:'error', wrong:"She is study English now.", wrongWord:"study",
             right:"She is studying English now.", rightWord:"studying",
             explain:"Después de “is/am/are” el verbo lleva “-ing”.",
             examples:[
@@ -609,28 +609,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Comparativos (-er / more ... than)',
         items: [
-          { id:'g-facil6-comp-1', type:'choice', prompt:"This book is ___ than that one.",
+          { id:'g-facil6-comp-1', translation:"Este libro es más interesante que ese.", type:'choice', prompt:"This book is ___ than that one.",
             options:["interesting","more interesting","most interesting"], correct:1,
             explain:"Con adjetivos largos usamos “more + adjetivo” para comparar.",
             examples:[
               {en:"This book is more interesting than that one.", es:"Este libro es más interesante que ese."},
               {en:"This movie is more exciting than the last one.", es:"Esta película es más emocionante que la anterior."}
             ]},
-          { id:'g-facil6-comp-2', type:'fill', sentence:["My","brother","is","___","than","me","."], blankIndex:3,
+          { id:'g-facil6-comp-2', translation:"Mi hermano es más alto que yo.", type:'fill', sentence:["My","brother","is","___","than","me","."], blankIndex:3,
             bank:["taller","tall","tallest"], correct:"taller",
             explain:"Con adjetivos cortos agregamos “-er” para comparar: tall → taller.",
             examples:[
               {en:"My brother is taller than me.", es:"Mi hermano es más alto que yo."},
               {en:"This road is shorter than that one.", es:"Este camino es más corto que ese."}
             ]},
-          { id:'g-facil6-comp-3', type:'choice', prompt:"This exercise is ___ than the last one.",
+          { id:'g-facil6-comp-3', translation:"Este ejercicio es más fácil que el anterior.", type:'choice', prompt:"This exercise is ___ than the last one.",
             options:["easyer","more easy","easier"], correct:2,
             explain:"“Easy” cambia la “y” por “i” y agrega “-er”: easier.",
             examples:[
               {en:"This exercise is easier than the last one.", es:"Este ejercicio es más fácil que el anterior."},
               {en:"This test was easier than I expected.", es:"Este examen fue más fácil de lo que esperaba."}
             ]},
-          { id:'g-facil6-comp-4', type:'error', wrong:"This car is more fast than mine.", wrongWord:"more fast",
+          { id:'g-facil6-comp-4', translation:"Este carro es más rápido que el mío.", type:'error', wrong:"This car is more fast than mine.", wrongWord:"more fast",
             right:"This car is faster than mine.", rightWord:"faster",
             explain:"“Fast” es una palabra corta, así que usa “-er” (faster), no “more fast”.",
             examples:[

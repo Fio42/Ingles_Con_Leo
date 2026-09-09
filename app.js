@@ -700,7 +700,9 @@ function shuffleOptions(options, correctIndex){
 function renderGrammarItemInto(container, item, onAnswered){
   if(item.type === 'choice'){
     container.innerHTML = `
+      <div class="practice-instruction">Elige la opción correcta</div>
       <div class="practice-prompt">${item.prompt}</div>
+      ${item.translation ? `<div class="practice-translation">${item.translation}</div>` : ''}
       <div class="option-list" id="optList"></div>
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
@@ -724,8 +726,9 @@ function renderGrammarItemInto(container, item, onAnswered){
     });
   } else if(item.type === 'fill'){
     container.innerHTML = `
-      <div class="practice-prompt">Completa la frase</div>
+      <div class="practice-instruction">Completa la frase</div>
       <div class="blank-row" id="sentenceRow"></div>
+      ${item.translation ? `<div class="practice-translation">${item.translation}</div>` : ''}
       <div class="word-bank" id="bank"></div>
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
@@ -779,8 +782,9 @@ function renderGrammarItemInto(container, item, onAnswered){
     ).join(' ');
 
     container.innerHTML = `
-      <div class="practice-prompt">Encuentra el error — toca la palabra incorrecta</div>
+      <div class="practice-instruction">Encuentra el error, toca la palabra incorrecta</div>
       <div class="error-sentence">${wordsHtml}</div>
+      ${item.translation ? `<div class="practice-translation">${item.translation}</div>` : ''}
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
 
