@@ -45,8 +45,18 @@ function clearClaseProgress(){
   try{ localStorage.removeItem('leo_clase_inflight'); }catch(e){}
 }
 
+function getClaseInProgress(){
+  try{
+    const raw = localStorage.getItem('leo_clase_inflight');
+    if(!raw) return null;
+    const saved = JSON.parse(raw);
+    return (saved && saved.stepIndex > 0) ? saved : null;
+  }catch(e){ return null; }
+}
+
 function renderClassList(container){
   if(!container) return;
+  const inProgress = getClaseInProgress();
   const byCategory = {};
   CLASS_CATALOG.forEach(c=>{
     if(!byCategory[c.category]) byCategory[c.category] = [];
@@ -56,15 +66,18 @@ function renderClassList(container){
     <div class="clases-category">
       <h3 class="clases-category-title">${cat}</h3>
       <div class="clases-grid">
-        ${byCategory[cat].map(c=>`
-          <div class="clase-card ${c.available ? '' : 'soon'}" data-id="${c.id}">
+        ${byCategory[cat].map(c=>{
+          const isInProgress = c.available && inProgress && inProgress.classId === c.id;
+          return `
+          <div class="clase-card ${c.available ? '' : 'soon'} ${isInProgress ? 'in-progress' : ''}" data-id="${c.id}">
             <div class="clase-card-top">
               <span class="clase-card-title">${c.title}</span>
-              ${c.available ? '' : '<span class="clase-soon-tag">Próximamente</span>'}
+              ${isInProgress ? '<span class="clase-progress-tag">Continuar</span>' : (c.available ? '' : '<span class="clase-soon-tag">Próximamente</span>')}
             </div>
             <p class="clase-card-desc">${c.available ? c.desc : 'Estamos preparando esta clase.'}</p>
-            ${c.available ? `<div class="clase-card-meta">${c.minutes} min · 8 pasos</div>` : ''}
-          </div>`).join('')}
+            ${c.available ? `<div class="clase-card-meta">${isInProgress ? 'Vas en el paso ' + (inProgress.stepIndex + 1) + ' de 8' : c.minutes + ' min · 8 pasos'}</div>` : ''}
+          </div>`;
+        }).join('')}
       </div>
     </div>`).join('');
 
