@@ -569,9 +569,24 @@
 
   updateAuthModeUI();
 
+  // Si el enlace con el que llegó a la página trae "type=recovery"
+  // (viene de un correo de "olvidé mi contraseña"), lo detectamos
+  // ANTES de revisar si ya hay sesión iniciada. Si no hiciéramos
+  // esto, como el enlace de recuperación también deja al usuario
+  // con una sesión válida por un momento, la página lo metía
+  // directo a la plataforma (o mostraba el formulario de nueva
+  // contraseña solo un instante y luego lo quitaba) sin dejarlo
+  // escribir la contraseña nueva.
+  const isPasswordRecoveryLink = /type=recovery/.test(window.location.hash);
+
   (async function initGate(){
     if(!LeoBackend.isConfigured()){ showGate(); return; } // backend aún no configurado: se queda el login normal
     LeoBackend.onPasswordRecovery(()=>{ showGate(); showLoginStep(4); });
+    if(isPasswordRecoveryLink){
+      showGate();
+      showLoginStep(4);
+      return;
+    }
     try{
       const profile = await LeoBackend.getMemberProfile();
       if(profile){
