@@ -77,17 +77,31 @@ const LeoBackend = (function(){
     }
   }
 
-  /* "Olvidé mi contraseña": este sí manda un correo con un
-     enlace que trae de vuelta a esta página en modo "elige tu
-     nueva contraseña" (ver onAuthEvent más abajo). */
+  /* "Olvidé mi contraseña": manda un correo con un enlace que
+     trae de vuelta a esta página en modo "elige tu nueva
+     contraseña" (ver onAuthEvent más abajo).
+
+     Ojo: esto YA NO deja que lo mande el propio Supabase (llegaba
+     poco y decía "supabase" en vez de tu dominio). En vez de eso
+     llama a la función "clever-responder" (a la función del
+     archivo send-password-reset.ts, Supabase le puso ese nombre
+     al crearla), que genera el enlace y lo manda por Resend,
+     igual que el correo de bienvenida. */
   async function sendPasswordReset(email){
-    const sb = getClient();
-    if(!sb) return { ok:false, error:'not_configured' };
+    if(!isConfigured()) return { ok:false, error:'not_configured' };
     try{
-      const { error } = await sb.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
+      const res = await fetch(SUPABASE_URL + '/functions/v1/clever-responder', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          redirectTo: window.location.origin + window.location.pathname
+        })
       });
-      if(error) return { ok:false, error: error.message };
+      if(!res.ok) return { ok:false, error:'reset_email_error' };
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
