@@ -2031,6 +2031,44 @@ const LISTENING_BANK = {
         transcript:"This is my mother.", translation:"Esta es mi mam\u00e1.",
         question:"Who is this?", options:["Mother","Father","Friend"], correct:0,
         explain:"\u201cMother\u201d significa mam\u00e1." }
+    ],
+    [
+      { id:"l-principiante3-1", audioFile:"audio/a0/a0listening-006.mp3",
+        transcript:"I like ice cream.", translation:"Me gusta el helado.",
+        question:"What does the speaker like?", options:["Pizza","Ice cream","Cake"], correct:1,
+        explain:"“Ice cream” significa helado." },
+      { id:"l-principiante3-2", audioFile:"audio/a0/a0listening-007.mp3",
+        transcript:"The ball is yellow.", translation:"La pelota es amarilla.",
+        question:"What color is the ball?", options:["Blue","Yellow","Red"], correct:1,
+        explain:"“Yellow” significa amarillo." },
+      { id:"l-principiante3-3", audioFile:"audio/a0/a0listening-008.mp3",
+        transcript:"She has one brother.", translation:"Ella tiene un hermano.",
+        question:"How many brothers does she have?", options:["Two","One","Three"], correct:1,
+        explain:"“One brother” indica que tiene un hermano." }
+    ],
+    [
+      { id:"l-principiante4-1", audioFile:"audio/a0/a0listening-009.mp3",
+        transcript:"My dog is small.", translation:"Mi perro es pequeño.",
+        question:"What size is the dog?", options:["Big","Medium","Small"], correct:2,
+        explain:"“Small” significa pequeño." },
+      { id:"l-principiante4-2", audioFile:"audio/a0/a0listening-010.mp3",
+        transcript:"We have four chairs.", translation:"Tenemos cuatro sillas.",
+        question:"How many chairs do they have?", options:["Five","Four","Three"], correct:1,
+        explain:"“Four” es el número 4." },
+      { id:"l-principiante4-3", audioFile:"audio/a0/a0listening-011.mp3",
+        transcript:"This is my sister.", translation:"Esta es mi hermana.",
+        question:"Who is this?", options:["Brother","Friend","Sister"], correct:2,
+        explain:"“Sister” significa hermana." }
+    ],
+    [
+      { id:"l-principiante5-1", audioFile:"audio/a0/a0listening-012.mp3",
+        transcript:"The bird is black.", translation:"El pájaro es negro.",
+        question:"What color is the bird?", options:["White","Black","Brown"], correct:1,
+        explain:"“Black” significa negro." },
+      { id:"l-principiante5-2", audioFile:"audio/a0/a0listening-013.mp3",
+        transcript:"I have a pencil.", translation:"Tengo un lápiz.",
+        question:"What does the speaker have?", options:["A pen","A pencil","A book"], correct:1,
+        explain:"“A pencil” significa un lápiz." }
     ]
   ],
   facil: [
@@ -2145,6 +2183,42 @@ const LISTENING_BANK = {
         transcript:"The weather is cold so wear a coat.", translation:"El clima est\u00e1 fr\u00edo, as\u00ed que usa un abrigo.",
         question:"What should you do because it's cold?", options:["Wear a coat","Open the window","Drink cold water"], correct:0,
         explain:"“So wear a coat” es la recomendaci\u00f3n que sigue por el fr\u00edo." }
+    ],
+    [
+      { id:"l-facil9-1", audioFile:"audio/a1/a1listening-025.mp3",
+        transcript:"The museum opens at ten in the morning.", translation:"El museo abre a las diez de la mañana.",
+        question:"When does the museum open?", options:["At eleven","At ten","At nine"], correct:1,
+        explain:"“At ten” es la hora que se menciona para abrir el museo." },
+      { id:"l-facil9-2", audioFile:"audio/a1/a1listening-026.mp3",
+        transcript:"I forgot my umbrella at home.", translation:"Olvidé mi paraguas en casa.",
+        question:"What did the speaker forget?", options:["Keys","Umbrella","Phone"], correct:1,
+        explain:"“Forgot my umbrella” indica qué olvidó el hablante." },
+      { id:"l-facil9-3", audioFile:"audio/a1/a1listening-027.mp3",
+        transcript:"The soup is too hot to eat.", translation:"La sopa está demasiado caliente para comer.",
+        question:"What is wrong with the soup?", options:["Too cold","Too hot","Too salty"], correct:1,
+        explain:"“Too hot” describe el problema con la sopa." },
+      { id:"l-facil9-4", audioFile:"audio/a1/a1listening-028.mp3",
+        transcript:"My father works in a hospital.", translation:"Mi papá trabaja en un hospital.",
+        question:"Where does the father work?", options:["School","Hospital","Store"], correct:1,
+        explain:"“Hospital” es el lugar donde trabaja el papá." }
+    ],
+    [
+      { id:"l-facil10-1", audioFile:"audio/a1/a1listening-029.mp3",
+        transcript:"She always arrives early to class.", translation:"Ella siempre llega temprano a clase.",
+        question:"What does she always do?", options:["Arrive late","Miss class","Arrive early"], correct:2,
+        explain:"“Always arrives early” describe su hábito." },
+      { id:"l-facil10-2", audioFile:"audio/a1/a1listening-030.mp3",
+        transcript:"The library is next to the park.", translation:"La biblioteca está junto al parque.",
+        question:"Where is the library?", options:["Behind the school","In front of the store","Next to the park"], correct:2,
+        explain:"“Next to the park” indica dónde está la biblioteca." },
+      { id:"l-facil10-3", audioFile:"audio/a1/a1listening-031.mp3",
+        transcript:"I need to charge my phone.", translation:"Necesito cargar mi teléfono.",
+        question:"What does the speaker need to do?", options:["Buy a phone","Charge the phone","Fix the phone"], correct:1,
+        explain:"“Charge my phone” es lo que necesita hacer." },
+      { id:"l-facil10-4", audioFile:"audio/a1/a1listening-032.mp3",
+        transcript:"This coffee is stronger than that one.", translation:"Este café es más fuerte que ese.",
+        question:"Which coffee is stronger?", options:["That one","They are the same","This one"], correct:2,
+        explain:"“Stronger than” compara los dos cafés." }
     ]
   ],
   medio: [
@@ -2213,6 +2287,38 @@ const LISTENING_BANK = {
         transcript:"She's looking for a new apartment closer to her office.", translation:"Ella está buscando un nuevo apartamento más cerca de su oficina.",
         question:"What is she looking for?", options:["A new apartment","A new job","A new car"], correct:0,
         explain:"“Looking for a new apartment” indica exactamente lo que busca." }
+    ],
+    [
+      { id:"l-medio6-1", audioFile:"audio/b1/b1listening-015.mp3",
+        transcript:"I have never seen such a beautiful sunset.", translation:"Nunca he visto un atardecer tan hermoso.",
+        question:"What has the speaker never seen?", options:["A beautiful sunrise","Such a beautiful sunset","A big city"], correct:1,
+        explain:"“Have never seen” es presente perfecto para experiencias de vida." },
+      { id:"l-medio6-2", audioFile:"audio/b1/b1listening-016.mp3",
+        transcript:"The report needs to be finished by Friday.", translation:"El informe debe estar terminado para el viernes.",
+        question:"When does the report need to be finished?", options:["By Monday","By next week","By Friday"], correct:2,
+        explain:"“By Friday” indica la fecha límite." },
+      { id:"l-medio6-3", audioFile:"audio/b1/b1listening-017.mp3",
+        transcript:"If she had more money, she would travel more.", translation:"Si ella tuviera más dinero, viajaría más.",
+        question:"What would she do with more money?", options:["Save it all","Travel more","Buy a house"], correct:1,
+        explain:"Segundo condicional: situación hipotética con “would”." },
+      { id:"l-medio6-4", audioFile:"audio/b1/b1listening-018.mp3",
+        transcript:"He apologized for being late to the meeting.", translation:"Él se disculpó por llegar tarde a la reunión.",
+        question:"What did he apologize for?", options:["Missing the meeting","Being late","Forgetting his notes"], correct:1,
+        explain:"“Apologized for” + gerundio indica el motivo de la disculpa." }
+    ],
+    [
+      { id:"l-medio7-1", audioFile:"audio/b1/b1listening-019.mp3",
+        transcript:"The bridge was built over a hundred years ago.", translation:"El puente fue construido hace más de cien años.",
+        question:"When was the bridge built?", options:["Fifty years ago","Last year","Over a hundred years ago"], correct:2,
+        explain:"Voz pasiva: “was built” describe cuándo se construyó." },
+      { id:"l-medio7-2", audioFile:"audio/b1/b1listening-020.mp3",
+        transcript:"She must be tired after such a long trip.", translation:"Ella debe estar cansada después de un viaje tan largo.",
+        question:"What does the speaker think about her?", options:["She must be happy","She must be angry","She must be tired"], correct:2,
+        explain:"“Must be” expresa una deducción lógica." },
+      { id:"l-medio7-3", audioFile:"audio/b1/b1listening-021.mp3",
+        transcript:"Despite the rain, the game continued.", translation:"A pesar de la lluvia, el partido continuó.",
+        question:"Did the game continue?", options:["No","It was cancelled","Yes"], correct:2,
+        explain:"“Despite” introduce un contraste, pero la acción sí ocurrió." }
     ]
   ],
   avanzado: [
@@ -2281,6 +2387,38 @@ const LISTENING_BANK = {
         transcript:"Arguably, this has been the company's most challenging quarter to date.", translation:"Posiblemente, este ha sido el trimestre más desafiante de la empresa hasta la fecha.",
         question:"What does the speaker suggest about this quarter?", options:["It was the most challenging one","It was an easy quarter","It was average"], correct:0,
         explain:"“Most challenging quarter to date” indica que fue el más difícil hasta ahora." }
+    ],
+    [
+      { id:"l-avz6-1", audioFile:"audio/c1/c1listening-015.mp3",
+        transcript:"Seldom do we encounter such dedication in this industry.", translation:"Rara vez encontramos tanta dedicación en esta industria.",
+        question:"What does this suggest?", options:["It's common","It's rare","It's expected"], correct:1,
+        explain:"Inversión con “seldom” enfatiza que es poco frecuente." },
+      { id:"l-avz6-2", audioFile:"audio/c1/c1listening-016.mp3",
+        transcript:"The proposal, once rejected, was later approved unanimously.", translation:"La propuesta, una vez rechazada, fue aprobada después por unanimidad.",
+        question:"What eventually happened to the proposal?", options:["It stayed rejected","It was withdrawn","It was approved"], correct:2,
+        explain:"Cláusula reducida “once rejected” = después de ser rechazada." },
+      { id:"l-avz6-3", audioFile:"audio/c1/c1listening-017.mp3",
+        transcript:"Were it not for her guidance, the project would have failed.", translation:"Si no fuera por su guía, el proyecto habría fracasado.",
+        question:"What does this imply about her guidance?", options:["It was unnecessary","It was essential to success","It caused the failure"], correct:1,
+        explain:"“Were it not for” es una forma formal de condicional tipo 3 sin “if”." },
+      { id:"l-avz6-4", audioFile:"audio/c1/c1listening-018.mp3",
+        transcript:"The findings, though preliminary, suggest a significant shift in the market.", translation:"Los hallazgos, aunque preliminares, sugieren un cambio significativo en el mercado.",
+        question:"What do the findings suggest?", options:["No change at all","A significant market shift","A minor error"], correct:1,
+        explain:"“Though preliminary” introduce un contraste concesivo." }
+    ],
+    [
+      { id:"l-avz7-1", audioFile:"audio/c1/c1listening-019.mp3",
+        transcript:"Not until the deadline passed did they realize the mistake.", translation:"No fue sino hasta que pasó la fecha límite que se dieron cuenta del error.",
+        question:"When did they realize the mistake?", options:["Before the deadline","During the meeting","After the deadline passed"], correct:2,
+        explain:"Inversión con “not until” enfatiza el momento exacto." },
+      { id:"l-avz7-2", audioFile:"audio/c1/c1listening-020.mp3",
+        transcript:"It was the CEO who ultimately made the final decision.", translation:"Fue el director ejecutivo quien finalmente tomó la decisión final.",
+        question:"Who made the final decision?", options:["The board","The manager","The CEO"], correct:2,
+        explain:"Oración hendida (“it was... who...”) enfatiza quién tomó la decisión." },
+      { id:"l-avz7-3", audioFile:"audio/c1/c1listening-021.mp3",
+        transcript:"Should the negotiations collapse, both parties will suffer losses.", translation:"Si las negociaciones fracasan, ambas partes sufrirán pérdidas.",
+        question:"What will happen if negotiations collapse?", options:["Only one side will lose","Nothing will change","Both parties will suffer losses"], correct:2,
+        explain:"“Should” + infinitivo es una forma formal de condicional tipo 1." }
     ]
   ]
 };
@@ -2302,6 +2440,20 @@ const SPEAKING_BANK = {
     [
       { id:'s-principiante2-1', sentence:"I drink water.", translation:"Tomo agua.", audioFile:'audio/a0/a0speaking-004.mp3' },
       { id:'s-principiante2-2', sentence:"Hello, my name is Ana.", translation:"Hola, me llamo Ana.", audioFile:'audio/a0/a0speaking-005.mp3' }
+    ],
+    [
+      { id:"s-principiante3-1", sentence:"I have a red ball.", translation:"Tengo una pelota roja.", audioFile:"audio/a0/a0speaking-006.mp3" },
+      { id:"s-principiante3-2", sentence:"My mother is nice.", translation:"Mi mamá es amable.", audioFile:"audio/a0/a0speaking-007.mp3" },
+      { id:"s-principiante3-3", sentence:"I like my school.", translation:"Me gusta mi escuela.", audioFile:"audio/a0/a0speaking-008.mp3" }
+    ],
+    [
+      { id:"s-principiante4-1", sentence:"The dog is big.", translation:"El perro es grande.", audioFile:"audio/a0/a0speaking-009.mp3" },
+      { id:"s-principiante4-2", sentence:"She has blue eyes.", translation:"Ella tiene ojos azules.", audioFile:"audio/a0/a0speaking-010.mp3" },
+      { id:"s-principiante4-3", sentence:"We have a new car.", translation:"Tenemos un carro nuevo.", audioFile:"audio/a0/a0speaking-011.mp3" }
+    ],
+    [
+      { id:"s-principiante5-1", sentence:"I eat an apple every day.", translation:"Como una manzana todos los días.", audioFile:"audio/a0/a0speaking-012.mp3" },
+      { id:"s-principiante5-2", sentence:"This is my friend.", translation:"Este es mi amigo.", audioFile:"audio/a0/a0speaking-013.mp3" }
     ]
   ],
   facil: [
@@ -2315,53 +2467,87 @@ const SPEAKING_BANK = {
       { id:'s-facil2-2', sentence:"He can cook well, but he can't bake.", translation:"Él cocina bien, pero no sabe hornear.", audioFile:'audio/a1/a1speaking-006.mp3' }
     ],
     [
-      { id:'s-facil3-1', sentence:"This bag is bigger than that one.", translation:"Esta bolsa es más grande que esa.", audioFile:'audio/a1/a1speaking-005.mp3' },
+      { id:'s-facil3-1', sentence:"My backpack is lighter than his.", translation:"Mi mochila es más liviana que la de él.", audioFile:'audio/a1/a1speaking-005.mp3' },
       { id:'s-facil3-2', sentence:"There are too many people here.", translation:"Hay demasiada gente aquí.", audioFile:'audio/a1/a1speaking-007.mp3' }
     ],
     [
       { id:'s-facil5-1', sentence:"I usually take the bus to work.", translation:"Normalmente tomo el autobús para ir al trabajo.", audioFile:'audio/a1/a1speaking-008.mp3' },
       { id:'s-facil5-2', sentence:"Can you close the window, please?", translation:"¿Puedes cerrar la ventana, por favor?", audioFile:'audio/a1/a1speaking-009.mp3' },
-      { id:'s-facil5-3', sentence:"My sister is younger than me, but she is taller.", translation:"Mi hermana es menor que yo, pero es más alta.", audioFile:'audio/a1/a1speaking-010.mp3' }
+      { id:'s-facil5-3', sentence:"My brother is older than me, but he is shorter.", translation:"Mi hermano es mayor que yo, pero es más bajo.", audioFile:'audio/a1/a1speaking-010.mp3' }
+    ],
+    [
+      { id:"s-facil6-1", sentence:"I forgot my keys at home.", translation:"Olvidé mis llaves en casa.", audioFile:"audio/a1/a1speaking-011.mp3" },
+      { id:"s-facil6-2", sentence:"The soup is too salty for me.", translation:"La sopa está muy salada para mí.", audioFile:"audio/a1/a1speaking-012.mp3" },
+      { id:"s-facil6-3", sentence:"My mother works in a school.", translation:"Mi mamá trabaja en una escuela.", audioFile:"audio/a1/a1speaking-013.mp3" },
+      { id:"s-facil6-4", sentence:"He always arrives late to work.", translation:"Él siempre llega tarde al trabajo.", audioFile:"audio/a1/a1speaking-014.mp3" }
+    ],
+    [
+      { id:"s-facil7-1", sentence:"The park is next to my house.", translation:"El parque está junto a mi casa.", audioFile:"audio/a1/a1speaking-015.mp3" },
+      { id:"s-facil7-2", sentence:"I need to buy a new phone.", translation:"Necesito comprar un teléfono nuevo.", audioFile:"audio/a1/a1speaking-016.mp3" },
+      { id:"s-facil7-3", sentence:"This tea is weaker than that one.", translation:"Este té es más débil que ese.", audioFile:"audio/a1/a1speaking-017.mp3" },
+      { id:"s-facil7-4", sentence:"The museum closes at six in the evening.", translation:"El museo cierra a las seis de la tarde.", audioFile:"audio/a1/a1speaking-018.mp3" }
     ]
   ],
   medio: [
     [
-      { id:'s-medio-1', sentence:"By the time we arrived, the movie had already started.", translation:"Para cuando llegamos, la película ya había empezado.", audioFile:'audio/b1/b1speaking-001.mp3' },
+      { id:'s-medio-1', sentence:"By the time I finished cooking, everyone had already left.", translation:"Para cuando terminé de cocinar, todos ya se habían ido.", audioFile:'audio/b1/b1speaking-001.mp3' },
       { id:'s-medio-2', sentence:"I'm used to working late.", translation:"Estoy acostumbrado a trabajar hasta tarde.", audioFile:'audio/b1/b1speaking-002.mp3' },
       { id:'s-medio-3', sentence:"Nevertheless, we decided to continue.", translation:"Sin embargo, decidimos continuar.", audioFile:'audio/b1/b1speaking-003.mp3' }
     ],
     [
-      { id:'s-medio2-1', sentence:"She said that she was tired.", translation:"Ella dijo que estaba cansada.", audioFile:'audio/b1/b1speaking-004.mp3' },
+      { id:'s-medio2-1', sentence:"He said that he needed more time.", translation:"Él dijo que necesitaba más tiempo.", audioFile:'audio/b1/b1speaking-004.mp3' },
       { id:'s-medio2-2', sentence:"She enjoys reading before bed.", translation:"A ella le gusta leer antes de dormir.", audioFile:'audio/b1/b1speaking-006.mp3' }
     ],
     [
-      { id:'s-medio3-1', sentence:"If it rains tomorrow, we will stay home.", translation:"Si llueve mañana, nos quedaremos en casa.", audioFile:'audio/b1/b1speaking-005.mp3' },
+      { id:'s-medio3-1', sentence:"If she studies hard, she will pass the exam.", translation:"Si ella estudia duro, aprobará el examen.", audioFile:'audio/b1/b1speaking-005.mp3' },
       { id:'s-medio3-2', sentence:"The book that I read was fantastic.", translation:"El libro que leí fue fantástico.", audioFile:'audio/b1/b1speaking-007.mp3' }
     ],
     [
       { id:'s-medio5-1', sentence:"I would have joined you, but I had other plans.", translation:"Me habría unido a ustedes, pero tenía otros planes.", audioFile:'audio/b1/b1speaking-008.mp3' },
-      { id:'s-medio5-2', sentence:"She's looking for a new apartment closer to her office.", translation:"Ella está buscando un nuevo apartamento más cerca de su oficina.", audioFile:'audio/b1/b1speaking-009.mp3' },
-      { id:'s-medio5-3', sentence:"The manager recommended that we reconsider the budget.", translation:"El gerente recomendó que reconsideráramos el presupuesto.", audioFile:'audio/b1/b1speaking-010.mp3' }
+      { id:'s-medio5-2', sentence:"He's looking for a job with better hours.", translation:"Él está buscando un trabajo con mejor horario.", audioFile:'audio/b1/b1speaking-009.mp3' },
+      { id:'s-medio5-3', sentence:"The teacher suggested that we practice more.", translation:"La maestra sugirió que practicáramos más.", audioFile:'audio/b1/b1speaking-010.mp3' }
+    ],
+    [
+      { id:"s-medio6-1", sentence:"I have never tried sushi before.", translation:"Nunca he probado el sushi.", audioFile:"audio/b1/b1speaking-011.mp3" },
+      { id:"s-medio6-2", sentence:"The project needs to be ready by Monday.", translation:"El proyecto debe estar listo para el lunes.", audioFile:"audio/b1/b1speaking-012.mp3" },
+      { id:"s-medio6-3", sentence:"If I had more free time, I would read more.", translation:"Si tuviera más tiempo libre, leería más.", audioFile:"audio/b1/b1speaking-013.mp3" },
+      { id:"s-medio6-4", sentence:"She apologized for forgetting the appointment.", translation:"Ella se disculpó por olvidar la cita.", audioFile:"audio/b1/b1speaking-014.mp3" }
+    ],
+    [
+      { id:"s-medio7-1", sentence:"The house was built fifty years ago.", translation:"La casa fue construida hace cincuenta años.", audioFile:"audio/b1/b1speaking-015.mp3" },
+      { id:"s-medio7-2", sentence:"He must be exhausted after the exam.", translation:"Él debe estar agotado después del examen.", audioFile:"audio/b1/b1speaking-016.mp3" },
+      { id:"s-medio7-3", sentence:"Despite the traffic, we arrived on time.", translation:"A pesar del tráfico, llegamos a tiempo.", audioFile:"audio/b1/b1speaking-017.mp3" }
     ]
   ],
   avanzado: [
     [
-      { id:'s-avz-1', sentence:"Had I known about the delay, I would have acted differently.", translation:"Si hubiera sabido sobre el retraso, habría actuado diferente.", audioFile:'audio/c1/c1speaking-001.mp3' },
-      { id:'s-avz-2', sentence:"No sooner had she arrived than it started raining.", translation:"Apenas había llegado cuando empezó a llover.", audioFile:'audio/c1/c1speaking-002.mp3' },
-      { id:'s-avz-3', sentence:"Despite the criticism, the policy remains ubiquitous.", translation:"A pesar de las críticas, la política sigue siendo omnipresente.", audioFile:'audio/c1/c1speaking-003.mp3' }
+      { id:'s-avz-1', sentence:"Had we left earlier, we wouldn't have missed the flight.", translation:"Si hubiéramos salido más temprano, no habríamos perdido el vuelo.", audioFile:'audio/c1/c1speaking-001.mp3' },
+      { id:'s-avz-2', sentence:"No sooner had he sat down than the phone rang.", translation:"Apenas se había sentado cuando sonó el teléfono.", audioFile:'audio/c1/c1speaking-002.mp3' },
+      { id:'s-avz-3', sentence:"Despite the setbacks, morale remains high.", translation:"A pesar de los contratiempos, la moral se mantiene alta.", audioFile:'audio/c1/c1speaking-003.mp3' }
     ],
     [
       { id:'s-avz2-1', sentence:"Nevertheless, the team kept working.", translation:"Sin embargo, el equipo siguió trabajando.", audioFile:'audio/c1/c1speaking-004.mp3' },
       { id:'s-avz2-2', sentence:"He must have forgotten the meeting.", translation:"Debe haberse olvidado de la reunión.", audioFile:'audio/c1/c1speaking-006.mp3' }
     ],
     [
-      { id:'s-avz3-1', sentence:"The report written by the team was well received.", translation:"El informe escrito por el equipo fue bien recibido.", audioFile:'audio/c1/c1speaking-005.mp3' },
+      { id:'s-avz3-1', sentence:"The proposal submitted by the client was rejected.", translation:"La propuesta presentada por el cliente fue rechazada.", audioFile:'audio/c1/c1speaking-005.mp3' },
       { id:'s-avz3-2', sentence:"Should you need anything, just ask.", translation:"Si necesitas algo, solo pregunta.", audioFile:'audio/c1/c1speaking-007.mp3' }
     ],
     [
       { id:'s-avz5-1', sentence:"Despite the setbacks, the team managed to launch the product on schedule.", translation:"A pesar de los contratiempos, el equipo logró lanzar el producto a tiempo.", audioFile:'audio/c1/c1speaking-008.mp3' },
       { id:'s-avz5-2', sentence:"The committee is expected to announce its decision sometime next week.", translation:"Se espera que el comité anuncie su decisión en algún momento de la próxima semana.", audioFile:'audio/c1/c1speaking-009.mp3' },
       { id:'s-avz5-3', sentence:"Few people anticipated how quickly the market would recover.", translation:"Pocas personas anticiparon qué tan rápido se recuperaría el mercado.", audioFile:'audio/c1/c1speaking-010.mp3' }
+    ],
+    [
+      { id:"s-avz6-1", sentence:"Seldom have I witnessed such professionalism.", translation:"Rara vez he presenciado tanto profesionalismo.", audioFile:"audio/c1/c1speaking-011.mp3" },
+      { id:"s-avz6-2", sentence:"The plan, once dismissed, was eventually reconsidered.", translation:"El plan, una vez descartado, fue reconsiderado con el tiempo.", audioFile:"audio/c1/c1speaking-012.mp3" },
+      { id:"s-avz6-3", sentence:"Were it not for his support, we would have given up.", translation:"Si no fuera por su apoyo, habríamos desistido.", audioFile:"audio/c1/c1speaking-013.mp3" },
+      { id:"s-avz6-4", sentence:"The data, though incomplete, points to a clear trend.", translation:"Los datos, aunque incompletos, apuntan a una tendencia clara.", audioFile:"audio/c1/c1speaking-014.mp3" }
+    ],
+    [
+      { id:"s-avz7-1", sentence:"Not until she called did we learn the truth.", translation:"No fue sino hasta que ella llamó que supimos la verdad.", audioFile:"audio/c1/c1speaking-015.mp3" },
+      { id:"s-avz7-2", sentence:"It was the manager who approved the final budget.", translation:"Fue el gerente quien aprobó el presupuesto final.", audioFile:"audio/c1/c1speaking-016.mp3" },
+      { id:"s-avz7-3", sentence:"Should the deal fall through, we will look elsewhere.", translation:"Si el trato no se concreta, buscaremos en otro lugar.", audioFile:"audio/c1/c1speaking-017.mp3" }
     ]
   ]
 };
