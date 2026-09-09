@@ -2249,13 +2249,13 @@ const LISTENING_BANK = {
 const SPEAKING_BANK = {
   principiante: [
     [
-      { id:'s-principiante-1', sentence:"I have a cat.", translation:"Tengo un gato.", audioFile:'audio/a0/a0speaking-001.mp3' },
-      { id:'s-principiante-2', sentence:"My house is big.", translation:"Mi casa es grande.", audioFile:'audio/a0/a0speaking-002.mp3' },
-      { id:'s-principiante-3', sentence:"I have two books.", translation:"Tengo dos libros.", audioFile:'audio/a0/a0speaking-003.mp3' }
+      { id:'s-principiante-1', sentence:"I have a dog.", translation:"Tengo un perro.", audioFile:'audio/a0/a0speaking-001.mp3' },
+      { id:'s-principiante-2', sentence:"The chair is blue.", translation:"La silla es azul.", audioFile:'audio/a0/a0speaking-002.mp3' },
+      { id:'s-principiante-3', sentence:"This is my father.", translation:"Este es mi pap\u00e1.", audioFile:'audio/a0/a0speaking-003.mp3' }
     ],
     [
-      { id:'s-principiante2-1', sentence:"The apple is red.", translation:"La manzana es roja.", audioFile:'audio/a0/a0speaking-004.mp3' },
-      { id:'s-principiante2-2', sentence:"This is my mother.", translation:"Esta es mi mam\u00e1.", audioFile:'audio/a0/a0speaking-005.mp3' }
+      { id:'s-principiante2-1', sentence:"I drink water.", translation:"Tomo agua.", audioFile:'audio/a0/a0speaking-004.mp3' },
+      { id:'s-principiante2-2', sentence:"Hello, my name is Ana.", translation:"Hola, me llamo Ana.", audioFile:'audio/a0/a0speaking-005.mp3' }
     ]
   ],
   facil: [
