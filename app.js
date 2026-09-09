@@ -45,6 +45,7 @@ const QUICK_NAV_LINKS = [
   { label:'Speaking', href:'speaking.html' },
   { label:'Mixto', href:'mixto.html' },
   { label:'Clases interactivas', href:'clases.html' },
+  { label:'Mis errores', href:'errores.html' },
   { label:'Tu progreso', href:'progreso.html' },
   { label:'Panel de miembros', href:'miembros.html' },
   { label:'Artículos', href:'articulos.html' },
@@ -507,9 +508,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -1543,6 +1544,152 @@ function runFreeMixSession({ container, level, onOtherSkill }){
   runMixSessionCore({ container, level, onOtherSkill, isFree:true });
 }
 
+/* ============================================================
+   MIS ERRORES — repasar lo que se ha fallado (solo Miembros)
+   ------------------------------------------------------------
+   No se creó ninguna tabla ni columna nueva para esto: se
+   reutiliza el historial de sesiones que ya se guarda para el
+   progreso (cada resultado es { itemId, isCorrect }). Se recorre
+   ese historial en orden y se guarda el ÚLTIMO resultado de cada
+   ejercicio que el usuario ya intentó alguna vez. Si ese último
+   resultado fue incorrecto, es un "error pendiente". En cuanto lo
+   vuelve a responder bien (aquí, en "Practicar mis errores"), ese
+   intento nuevo queda como el más reciente y el ejercicio sale de
+   la lista solo, sin tener que "borrar" nada aparte.
+   Speaking no entra aquí porque nunca se califica automático
+   (isCorrect siempre es null en esa habilidad).
+   ============================================================ */
+
+// Índice id -> { kind, item } de TODO el contenido calificable
+// (gramática, vocabulario, listening, writing) de los 4 niveles.
+// Se arma una sola vez y se reutiliza (data.js no cambia mientras
+// la página está abierta). Los ids son únicos en todo el archivo,
+// así que un solo índice sirve para buscar sin importar el nivel
+// o la habilidad con la que se guardó la sesión original.
+let _mistakesItemIndexCache = null;
+function getMistakesItemIndex(){
+  if(_mistakesItemIndexCache) return _mistakesItemIndexCache;
+  const index = new Map();
+  LEVELS.forEach(level=>{
+    GRAMMAR_BANK[level].forEach(variant=>{
+      variant.forEach(topic=> topic.items.forEach(item=> index.set(item.id, { kind:'grammar', item })));
+    });
+    VOCAB_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'vocab', item })));
+    LISTENING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'listening', item })));
+    WRITING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'writing', item })));
+  });
+  _mistakesItemIndexCache = index;
+  return index;
+}
+
+// ids de ejercicios cuyo intento más reciente fue incorrecto, del
+// más reciente al más antiguo (para repasar primero lo más fresco).
+function computeMistakeIds(){
+  const p = loadProgress();
+  const latest = new Map(); // itemId -> { isCorrect, when }
+  p.sessions.forEach(s=>{
+    (s.results || []).forEach(r=>{
+      if(r.isCorrect !== true && r.isCorrect !== false) return; // sin calificar, se ignora
+      latest.set(r.itemId, { isCorrect: r.isCorrect, when: s.startedAt || 0 });
+    });
+  });
+  const wrong = [];
+  latest.forEach((v, id)=>{ if(v.isCorrect === false) wrong.push({ id, when: v.when }); });
+  wrong.sort((a,b)=> b.when - a.when);
+  return wrong.map(w=>w.id);
+}
+
+function buildMistakePool(maxItems){
+  maxItems = maxItems || 20;
+  const index = getMistakesItemIndex();
+  const ids = computeMistakeIds();
+  const pool = [];
+  for(let i=0; i<ids.length && pool.length<maxItems; i++){
+    const found = index.get(ids[i]);
+    if(found) pool.push({ kind: found.kind, item: found.item }); // mismo formato que pickMixItems
+  }
+  return pool;
+}
+
+// Banner "Tus errores frecuentes" del panel de miembros. Si no hay
+// errores pendientes, se oculta la sección entera (no se inventa
+// un mensaje de "0 errores", simplemente no aparece).
+function renderMistakesBanner(sectionEl, textEl){
+  if(!sectionEl) return;
+  const count = computeMistakeIds().length;
+  if(!count){ sectionEl.style.display = 'none'; return; }
+  sectionEl.style.display = '';
+  if(textEl){
+    textEl.textContent = count === 1
+      ? 'Tienes 1 ejercicio pendiente de repasar. Un rato corto y lo dejas listo.'
+      : `Tienes ${count} ejercicios pendientes de repasar. Un rato corto y los dejas listos.`;
+  }
+}
+
+function runMistakesSessionCore({ container }){
+  const saved = loadInflightSession('errores', 'todos');
+  const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
+  const pool = useSaved ? saved.pool : buildMistakePool();
+  const total = pool.length;
+
+  if(!total){
+    clearInflightSession('errores', 'todos');
+    container.innerHTML = `
+      <div class="session-summary">
+        <h2>¡Vas muy bien!</h2>
+        <p class="summary-score">No tienes errores pendientes por repasar ahora mismo.</p>
+        <div class="summary-actions">
+          <a href="miembros.html" class="btn btn-primary">Volver a tu panel</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const startedAt = useSaved ? saved.startedAt : Date.now();
+  const results = useSaved ? saved.results.slice() : [];
+  let idx = useSaved ? saved.idx : 0;
+
+  function renderItem(){
+    const entry = pool[idx];
+    saveInflightSession('errores', 'todos', { pool, idx, results, startedAt });
+    const pct = Math.round(((idx+1)/total)*100);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="session-head">
+        <span class="practice-level-tag">Mis errores · ${MIX_KIND_LABEL[entry.kind]}</span>
+        <span class="session-count">Ejercicio ${idx+1} de ${total}</span>
+      </div>
+      <div class="session-progress"><div class="session-progress-fill" style="width:${pct}%;"></div></div>`;
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderMixItemInto(card, entry, (isCorrect)=>{
+      results.push({ itemId: entry.item.id, isCorrect });
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
+    });
+  }
+
+  function finish(){
+    clearInflightSession('errores', 'todos');
+    recordSession({ skill:'errores', level:'todos', topics:['Repaso de errores'], results, startedAt });
+    const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const score = graded.length ? `${correct} / ${graded.length} correctas` : `${total} ejercicios completados`;
+    container.innerHTML = renderSessionSummary({ title:'¡Listo!', score, topics: ['Repaso de errores'] });
+    wireSummaryButtons(container, ()=> runMistakesSessionCore({ container }));
+  }
+
+  renderItem();
+}
+function runMistakesSession({ container }){
+  runMistakesSessionCore({ container });
+}
+
 /* ---------- Resumen de sesión (compartido) ---------- */
 function renderSessionSummary({ title, score, topics }){
   return `
@@ -1596,6 +1743,23 @@ function renderContinueCard(container){
           <div class="continue-sub">Practica otra situación real en inglés.</div>
         </div>
         <a href="clases.html" class="btn btn-primary">Continuar →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill === 'errores'){
+    // "Mis errores" mezcla ejercicios de varios niveles y habilidades a
+    // la vez, así que tampoco encaja en el "X de Y ejercicios de tal
+    // nivel" del bloque genérico de abajo (que además reventaría al
+    // buscar LEVEL_META de un nivel que no existe, como 'todos').
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">Repaso de errores</div>
+          <div class="continue-sub">Sigue repasando lo que se te ha complicado.</div>
+        </div>
+        <a href="errores.html" class="btn btn-primary">Continuar →</a>
         <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;

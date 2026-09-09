@@ -194,6 +194,19 @@
       </div>
     </section>
 
+    <section style="padding-top:8px;" id="mistakesSection">
+      <div class="wrap wrap-dash">
+        <div class="clases-banner">
+          <div>
+            <div class="clases-banner-eyebrow">Repaso</div>
+            <h2>Tus errores frecuentes</h2>
+            <p id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
+          </div>
+          <a href="errores.html" class="btn btn-primary">Practicar mis errores →</a>
+        </div>
+      </div>
+    </section>
+
     <section style="padding-top:8px;">
       <div class="wrap wrap-dash">
         <div class="clases-banner">
@@ -374,6 +387,7 @@
     renderWeeklyChart(document.getElementById('weeklyChart'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
     renderStreakCard(document.getElementById('streakCard'));
+    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'));
   }
 
   function unlock(){
