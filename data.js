@@ -2939,9 +2939,9 @@ const CLASS_CATALOG = [
   { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Aprende a pedir tu café como te gusta y platicar un poco con el barista.', minutes:5, available:true },
   { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Aprende a buscar tu talla, probarte ropa y preguntar el precio en una tienda.', minutes:5, available:true },
   { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Aprende a presentarte, hacer plática y conocer gente nueva en inglés.', minutes:5, available:true },
-  { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Próximamente', minutes:7, available:false },
-  { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Próximamente', minutes:6, available:false },
-  { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Próximamente', minutes:6, available:false }
+  { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Aprende a hablar de tu experiencia y tus fortalezas en una entrevista de trabajo.', minutes:7, available:true },
+  { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Aprende a hacer una llamada, agendar una cita y manejar malentendidos por teléfono.', minutes:6, available:true },
+  { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true }
 ];
 
 const CLASSES_BANK = {
@@ -3459,6 +3459,264 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:["Hi, I'm Alex. Nice to meet you.", 'What do you do for a living?', 'Where are you from?', 'It was great talking to you.'],
       tip:'Hoy practicaste cómo presentarte y hacer plática con alguien nuevo en inglés.'
+    }
+  },
+  'job-interview': {
+    id:'job-interview',
+    title:'Entrevista de trabajo',
+    situation:{
+      en:"You're in a job interview and need to talk about your experience and your strengths.",
+      es:'Estás en una entrevista de trabajo y necesitas hablar de tu experiencia y tus fortalezas.'
+    },
+    phrases:[
+      { en:'I have three years of experience in customer service.', es:'Tengo tres años de experiencia en servicio al cliente.' },
+      { en:'My biggest strength is problem-solving.', es:'Mi mayor fortaleza es resolver problemas.' },
+      { en:'What are the next steps in the process?', es:'¿Cuáles son los siguientes pasos en el proceso?' },
+      { en:"I'm a fast learner.", es:'Aprendo rápido.' },
+      { en:'Thank you for the opportunity.', es:'Gracias por la oportunidad.' }
+    ],
+    listening:{
+      audio:'audio/clases/entrevista-listening.mp3',
+      dialogue:[
+        { speaker:'Entrevistador', en:'So, tell me a little about your work experience.' },
+        { speaker:'Tú', en:'I have three years of experience in customer service.' },
+        { speaker:'Entrevistador', en:"That's great. What would you say is your biggest strength?" }
+      ],
+      question:{
+        text:'¿De qué habló la persona primero?',
+        options:['Su experiencia laboral','Su salario esperado','Sus estudios'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Entrevistador', en:'What would you say is your biggest strength?' },
+      options:[
+        { en:'My biggest strength is problem-solving.', correct:true, feedback:'¡Bien! Respondes directamente lo que te preguntan.' },
+        { en:'I have three years of experience.', correct:false, feedback:'Eso ya lo dijiste; ahora te preguntan por tu fortaleza.' },
+        { en:'What are the next steps?', correct:false, feedback:'Esa es una pregunta, no responde cuál es tu fortaleza.' }
+      ]
+    },
+    buildSentence:{
+      es:'Aprendo rápido.',
+      words:['fast','learner.',"I'm",'a'],
+      correctOrder:["I'm",'a','fast','learner.']
+    },
+    speaking:{
+      audio:'audio/clases/entrevista-speaking.mp3',
+      prompt:'My biggest strength is problem-solving.',
+      es:'Practica diciendo: "Mi mayor fortaleza es resolver problemas."'
+    },
+    miniChallenge:{
+      start:'experience',
+      nodes:{
+        experience:{
+          en:'The interviewer asks: "Why should we hire you?"',
+          es:'El entrevistador pregunta: "¿Por qué deberíamos contratarte?"',
+          options:[
+            { en:"Because I'm a fast learner and I work well in a team.", next:'salary', correct:true },
+            { en:'Thank you for the opportunity.', next:'experience-fail', correct:false }
+          ]
+        },
+        'experience-fail':{
+          en:"The interviewer says: \"That's kind, but I asked why we should hire you.\"",
+          es:'El entrevistador dice: "Qué amable, pero te pregunté por qué deberíamos contratarte."',
+          options:[
+            { en:"Sorry! Because I'm a fast learner.", next:'salary', correct:true }
+          ]
+        },
+        salary:{
+          en:'The interviewer asks: "What are your salary expectations?"',
+          es:'El entrevistador pregunta: "¿Cuáles son tus expectativas salariales?"',
+          options:[
+            { en:"I'm open to discussing that.", next:'end', correct:true },
+            { en:"I'm a fast learner.", next:'salary-fail', correct:false }
+          ]
+        },
+        'salary-fail':{
+          en:'The interviewer says: "I see, but I actually asked about salary."',
+          es:'El entrevistador dice: "Ya veo, pero en realidad pregunté por el salario."',
+          options:[
+            { en:"Sorry, I'm open to discussing that.", next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The interviewer smiles and says: "We\'ll be in touch soon."', es:'El entrevistador sonríe y dice: "Nos pondremos en contacto pronto."', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['I have three years of experience in customer service.', 'My biggest strength is problem-solving.', "I'm a fast learner.", 'Thank you for the opportunity.'],
+      tip:'Hoy practicaste cómo hablar de tu experiencia y tus fortalezas en una entrevista de trabajo en inglés.'
+    }
+  },
+  'phone-calls': {
+    id:'phone-calls',
+    title:'Llamadas',
+    situation:{
+      en:"You're making a phone call to schedule an appointment.",
+      es:'Estás haciendo una llamada para agendar una cita.'
+    },
+    phrases:[
+      { en:"Hi, I'd like to make an appointment.", es:'Hola, quisiera hacer una cita.' },
+      { en:'Could you repeat that, please?', es:'¿Podría repetir eso, por favor?' },
+      { en:'Can I call you back later?', es:'¿Puedo llamarte más tarde?' },
+      { en:'Sorry, I have the wrong number.', es:'Disculpe, marqué el número equivocado.' },
+      { en:'Thanks for your help. Bye!', es:'Gracias por su ayuda. ¡Adiós!' }
+    ],
+    listening:{
+      audio:'audio/clases/llamadas-listening.mp3',
+      dialogue:[
+        { speaker:'Recepcionista', en:"Good morning, Dr. Lee's office. How can I help you?" },
+        { speaker:'Tú', en:"Hi, I'd like to make an appointment for next week." },
+        { speaker:'Recepcionista', en:'Sure, does Tuesday at 3 PM work for you?' }
+      ],
+      question:{
+        text:'¿Para qué llamó la persona?',
+        options:['Para hacer una cita','Para cancelar una cita','Para pedir un producto'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Recepcionista', en:'Does Tuesday at 3 PM work for you?' },
+      options:[
+        { en:'Yes, that works great.', correct:true, feedback:'¡Bien! Confirmas el horario de forma natural.' },
+        { en:'Could you repeat that, please?', correct:false, feedback:'Eso se usa cuando no entendiste algo, no para confirmar el horario.' },
+        { en:"I'd like to make an appointment.", correct:false, feedback:'Eso ya lo dijiste; ahora solo confirman el horario.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿Podría repetir eso, por favor?',
+      words:['repeat','Could','please?','that,','you'],
+      correctOrder:['Could','you','repeat','that,','please?']
+    },
+    speaking:{
+      audio:'audio/clases/llamadas-speaking.mp3',
+      prompt:"Hi, I'd like to make an appointment.",
+      es:'Practica diciendo: "Hola, quisiera hacer una cita."'
+    },
+    miniChallenge:{
+      start:'connect',
+      nodes:{
+        connect:{
+          en:'The phone rings and someone says: "Hello, thank you for calling. How can I help you?"',
+          es:'El teléfono suena y alguien dice: "Hola, gracias por llamar. ¿Cómo puedo ayudarle?"',
+          options:[
+            { en:"Hi, I'd like to make an appointment.", next:'time', correct:true },
+            { en:'Sorry, wrong number.', next:'connect-fail', correct:false }
+          ]
+        },
+        'connect-fail':{
+          en:'The person asks: "Is there something else I can help you with?"',
+          es:'La persona pregunta: "¿Hay algo más en lo que pueda ayudarle?"',
+          options:[
+            { en:"Actually, I'd like to make an appointment.", next:'time', correct:true }
+          ]
+        },
+        time:{
+          en:'The person asks: "What day works best for you?"',
+          es:'La persona pregunta: "¿Qué día le queda mejor?"',
+          options:[
+            { en:'Tuesday would be great.', next:'end', correct:true },
+            { en:'Thanks for your help. Bye!', next:'time-fail', correct:false }
+          ]
+        },
+        'time-fail':{
+          en:'The person says: "Wait, we still need to pick a day."',
+          es:'La persona dice: "Espere, todavía necesitamos elegir un día."',
+          options:[
+            { en:'Oh, sorry! Tuesday works.', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The appointment is confirmed for Tuesday. ¡Todo listo!', es:'La cita quedó confirmada para el martes. ¡Todo listo!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Hi, I'd like to make an appointment.", 'Could you repeat that, please?', 'Can I call you back later?', 'Thanks for your help. Bye!'],
+      tip:'Hoy practicaste cómo hacer una llamada, agendar una cita y manejar malentendidos por teléfono en inglés.'
+    }
+  },
+  meetings: {
+    id:'meetings',
+    title:'Reuniones',
+    situation:{
+      en:"You're in a work meeting and need to share an update and ask a question.",
+      es:'Estás en una reunión de trabajo y necesitas dar una actualización y hacer una pregunta.'
+    },
+    phrases:[
+      { en:'Can everyone hear me okay?', es:'¿Todos me escuchan bien?' },
+      { en:"I'd like to give a quick update.", es:'Quisiera dar una actualización rápida.' },
+      { en:'Could you clarify that point?', es:'¿Podría aclarar ese punto?' },
+      { en:'I agree with that.', es:'Estoy de acuerdo con eso.' },
+      { en:"Let's follow up on this next week.", es:'Sigamos con esto la próxima semana.' }
+    ],
+    listening:{
+      audio:'audio/clases/reuniones-listening.mp3',
+      dialogue:[
+        { speaker:'Jefe', en:"Okay, let's start. Can you give us a quick update on the project?" },
+        { speaker:'Tú', en:"Sure, we're on track to finish by Friday." },
+        { speaker:'Jefe', en:'Great. Does anyone have questions about that?' }
+      ],
+      question:{
+        text:'¿Qué dijo la persona sobre el proyecto?',
+        options:['Que van a terminar el viernes','Que hay un retraso','Que necesitan más dinero'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Jefe', en:'Does anyone have questions about that?' },
+      options:[
+        { en:'Could you clarify the deadline?', correct:true, feedback:'¡Bien! Haces una pregunta clara relacionada con el tema.' },
+        { en:"I'd like to give a quick update.", correct:false, feedback:'Eso ya lo hiciste; ahora están pidiendo preguntas.' },
+        { en:"Let's follow up next week.", correct:false, feedback:'Eso no es una pregunta; te están preguntando si tienes dudas.' }
+      ]
+    },
+    buildSentence:{
+      es:'Sigamos con esto la próxima semana.',
+      words:['on','week.',"Let's",'next','this','follow','up'],
+      correctOrder:["Let's",'follow','up','on','this','next','week.']
+    },
+    speaking:{
+      audio:'audio/clases/reuniones-speaking.mp3',
+      prompt:"I'd like to give a quick update.",
+      es:'Practica diciendo: "Quisiera dar una actualización rápida."'
+    },
+    miniChallenge:{
+      start:'start',
+      nodes:{
+        start:{
+          en:'The meeting begins and someone says: "Can everyone hear me okay?"',
+          es:'La reunión empieza y alguien dice: "¿Todos me escuchan bien?"',
+          options:[
+            { en:'Yes, loud and clear.', next:'update', correct:true },
+            { en:'I agree with that.', next:'start-fail', correct:false }
+          ]
+        },
+        'start-fail':{
+          en:'The person asks again: "Sorry, can everyone hear me?"',
+          es:'La persona pregunta de nuevo: "Disculpen, ¿todos me escuchan?"',
+          options:[
+            { en:'Yes, we can hear you.', next:'update', correct:true }
+          ]
+        },
+        update:{
+          en:'Your manager asks: "Can you give us a quick update?"',
+          es:'Tu jefe pregunta: "¿Nos puedes dar una actualización rápida?"',
+          options:[
+            { en:"Sure, we're on track to finish by Friday.", next:'end', correct:true },
+            { en:'Could you clarify that point?', next:'update-fail', correct:false }
+          ]
+        },
+        'update-fail':{
+          en:'Your manager says: "I asked for an update, not a question."',
+          es:'Tu jefe dice: "Pedí una actualización, no una pregunta."',
+          options:[
+            { en:"Sorry! We're on track to finish by Friday.", next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The team nods and moves to the next topic. ¡Buena actualización!', es:'El equipo asiente y pasa al siguiente tema. ¡Buena actualización!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['Can everyone hear me okay?', "I'd like to give a quick update.", 'Could you clarify that point?', "Let's follow up on this next week."],
+      tip:'Hoy practicaste cómo dar una actualización, hacer preguntas y participar en una reunión de trabajo en inglés.'
     }
   }
 };

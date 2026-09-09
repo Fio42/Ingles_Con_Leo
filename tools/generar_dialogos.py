@@ -73,6 +73,21 @@ DIALOGOS = {
         ("Hi Sam, nice to meet you. I'm Alex.", VOZ_TU),
         ("Nice to meet you too, Alex! So, how do you know Maria?", VOZ_PERSONAL),
     ],
+    "audio/clases/entrevista-listening.mp3": [
+        ("So, tell me a little about your work experience.", VOZ_PERSONAL),
+        ("I have three years of experience in customer service.", VOZ_TU),
+        ("That's great. What would you say is your biggest strength?", VOZ_PERSONAL),
+    ],
+    "audio/clases/llamadas-listening.mp3": [
+        ("Good morning, Dr. Lee's office. How can I help you?", VOZ_PERSONAL),
+        ("Hi, I'd like to make an appointment for next week.", VOZ_TU),
+        ("Sure, does Tuesday at 3 PM work for you?", VOZ_PERSONAL),
+    ],
+    "audio/clases/reuniones-listening.mp3": [
+        ("Okay, let's start. Can you give us a quick update on the project?", VOZ_PERSONAL),
+        ("Sure, we're on track to finish by Friday.", VOZ_TU),
+        ("Great. Does anyone have questions about that?", VOZ_PERSONAL),
+    ],
 }
 
 PAUSA_MS = 450  # pequena pausa de silencio entre lineas, para que no se amontonen
