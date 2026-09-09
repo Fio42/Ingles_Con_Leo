@@ -155,8 +155,11 @@
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, ≈$40 MXN):</p>
-        <p class="gate-hint" style="margin:0 0 6px;text-align:left;">Correo de tu cuenta de Mercado Pago (puede ser distinto al de tu cuenta de Inglés con Leo):</p>
+        <p class="gate-hint" style="margin:0 0 2px;text-align:left;font-weight:600;">Correo de tu cuenta de Mercado Pago</p>
+        <p class="gate-hint" style="margin:0 0 6px;text-align:left;">Puede ser diferente al correo que usas en Inglés con Leo.</p>
         <input type="email" class="gate-input" id="mpEmailInput" placeholder="tu-correo@ejemplo.com" autocomplete="email">
+        <p class="gate-hint" style="margin:6px 0 0;text-align:left;font-size:12px;">Usa el mismo correo que tienes registrado en Mercado Pago para evitar problemas con el pago.</p>
+        <p class="gate-hint" style="margin:2px 0 0;text-align:left;font-size:12px;">¿No sabes qué correo usas en Mercado Pago? Revisa el correo asociado a tu cuenta desde tu perfil en Mercado Pago.</p>
         <div class="gate-error" id="mpEmailError">Escribe el correo de tu cuenta de Mercado Pago.</div>
         <button class="btn btn-primary btn-block" id="payBtn" style="margin-top:10px;">Pagar con Mercado Pago</button>
         <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
