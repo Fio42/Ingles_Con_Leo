@@ -155,7 +155,10 @@
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, ≈$40 MXN):</p>
-        <button class="btn btn-primary btn-block" id="payBtn">Pagar con Mercado Pago</button>
+        <p class="gate-hint" style="margin:0 0 6px;text-align:left;">Correo de tu cuenta de Mercado Pago (puede ser distinto al de tu cuenta de Inglés con Leo):</p>
+        <input type="email" class="gate-input" id="mpEmailInput" placeholder="tu-correo@ejemplo.com" autocomplete="email">
+        <div class="gate-error" id="mpEmailError">Escribe el correo de tu cuenta de Mercado Pago.</div>
+        <button class="btn btn-primary btn-block" id="payBtn" style="margin-top:10px;">Pagar con Mercado Pago</button>
         <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
         <button class="btn btn-ghost btn-block" id="logoutBtn" style="margin-top:10px;">Cerrar sesión</button>
       </div>
@@ -335,6 +338,8 @@
   const pricingCtaBtn = document.getElementById('pricingCtaBtn');
   const payBtn = document.getElementById('payBtn');
   const payError = document.getElementById('payError');
+  const mpEmailInput = document.getElementById('mpEmailInput');
+  const mpEmailError = document.getElementById('mpEmailError');
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   let hasSession = false;
@@ -388,18 +393,37 @@
     }
   }
 
+  function isValidEmail(str){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((str || '').trim());
+  }
+
   async function goToCheckout(btn){
     payError.classList.remove('show');
+    mpEmailError.classList.remove('show');
+    // Normalizado igual que del lado del servidor: sin espacios y en
+    // minúsculas, para que no cuente como "otro correo" por un
+    // espacio o mayúsculas de más.
+    const mpEmail = (mpEmailInput.value || '').trim().toLowerCase();
+    if(!isValidEmail(mpEmail)){
+      mpEmailError.classList.add('show');
+      mpEmailInput.focus();
+      return;
+    }
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = 'Generando link de pago...';
-    const res = await LeoBackend.startCheckout();
+    const res = await LeoBackend.startCheckout(mpEmail);
     if(res.ok){
       window.location.href = res.url;
       return;
     }
     btn.disabled = false;
     btn.textContent = originalText;
+    if(res.error === 'already_subscribed'){
+      payError.textContent = 'Ya tienes una suscripción en proceso o activa. Si ya pagaste, espera unos minutos y recarga la página. Si sigue así, contáctanos.';
+    } else {
+      payError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
+    }
     payError.classList.add('show');
   }
 

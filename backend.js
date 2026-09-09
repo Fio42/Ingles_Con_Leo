@@ -206,7 +206,7 @@ const LeoBackend = (function(){
      desplegada. Nota: Supabase le puso el nombre "super-service"
      a esa función en vez de "create-checkout" al crearla, por eso
      la URL de abajo usa ese nombre — es la misma función. */
-  async function startCheckout(){
+  async function startCheckout(mpEmail){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
     const session = await getSession();
     if(!session) return { ok:false, error:'no_session' };
@@ -216,7 +216,8 @@ const LeoBackend = (function(){
         headers: {
           'Authorization': 'Bearer ' + session.access_token,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ payer_email: mpEmail })
       });
       const data = await res.json();
       if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
