@@ -2400,9 +2400,10 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
 }
 
 /* ---------- Mini lección del día (home) ----------
-   Elige un ejemplo de GRAMMAR_BANK de forma determinista según la fecha,
-   así todos ven la misma "lección del día" y cambia sola cada día,
-   sin backend: solo usa la fecha del navegador. */
+   Elige un ejemplo al azar de GRAMMAR_BANK cada vez que se carga la
+   página, para que se sienta distinta en cada visita/refresh en vez
+   de repetir siempre la misma. No requiere backend: todo pasa en el
+   navegador. */
 function pickDailyGrammarExample(){
   if(typeof GRAMMAR_BANK === 'undefined') return null;
   const pool = [];
@@ -2418,10 +2419,8 @@ function pickDailyGrammarExample(){
     });
   });
   if(!pool.length) return null;
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now - startOfYear) / 86400000);
-  return pool[dayOfYear % pool.length];
+  const randomIndex = Math.floor(Math.random() * pool.length);
+  return pool[randomIndex];
 }
 function renderDailyMiniLesson(){
   const lesson = pickDailyGrammarExample();
