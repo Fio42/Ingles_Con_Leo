@@ -35,14 +35,6 @@
   "isPartOf": { "@type": "WebSite", "name": "Inglés con Leo", "url": "https://inglesconleo.com/" }
 }
 </script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-0DRL810MYR');
-</script>
 </head>
 <body>
 
@@ -129,20 +121,94 @@
         <h2>Aprende también en video</h2>
         <p>Explicaciones cortas de Inglés con Leo en redes sociales.</p>
       </div>
-      <div class="video-grid" data-video-grid>
-        <a href="https://www.youtube.com/shorts/JPq1KBBsbtI" target="_blank" rel="noopener" class="video-card-mini" data-youtube-url="https://www.youtube.com/shorts/JPq1KBBsbtI">
-          <span class="video-mini-icon">🎬</span>
-          <span class="video-mini-text"><strong>Quiet vs Quite</strong><span>Mira el video</span></span>
-        </a>
-        <a href="https://www.youtube.com/shorts/gf9T2K-zWcQ" target="_blank" rel="noopener" class="video-card-mini" data-youtube-url="https://www.youtube.com/shorts/gf9T2K-zWcQ">
-          <span class="video-mini-icon">🎬</span>
-          <span class="video-mini-text"><strong>To vs Too</strong><span>Mira el video</span></span>
-        </a>
-        <a href="https://www.youtube.com/shorts/fhbmGfsFAwY" target="_blank" rel="noopener" class="video-card-mini" data-youtube-url="https://www.youtube.com/shorts/fhbmGfsFAwY">
-          <span class="video-mini-icon">🎬</span>
-          <span class="video-mini-text"><strong>Remember vs Remind</strong><span>Mira el video</span></span>
-        </a>
+
+      <div class="video-filters" data-video-filters hidden>
+        <button type="button" class="video-filter active" data-filter="all">Todos</button>
       </div>
+
+      <!-- Video destacado: la tarjeta grande de arriba. Para cambiar cuál video
+           se destaca, solo mueve otra tarjeta aquí arriba (misma estructura). -->
+      <div class="video-featured" data-video-featured data-category="confusiones"
+           data-youtube-url="https://www.youtube.com/shorts/JPq1KBBsbtI">
+        <a href="https://www.youtube.com/shorts/JPq1KBBsbtI" target="_blank" rel="noopener" class="video-featured-thumb">
+          <img data-yt-thumb alt="Miniatura del video: Quiet vs Quite">
+          <span class="video-play-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+        </a>
+        <div class="video-featured-body">
+          <span class="video-featured-tag">Video destacado</span>
+          <h3>Quiet vs Quite</h3>
+          <p>La diferencia que casi todos confunden, explicada en menos de un minuto con ejemplos reales.</p>
+          <div class="video-platform-row">
+            <a href="https://www.youtube.com/shorts/JPq1KBBsbtI" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="youtube" data-url="https://www.youtube.com/shorts/JPq1KBBsbtI">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 00-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 00-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 002 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 002-2C22 15.2 22 12 22 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor"/></svg>
+              YouTube
+            </a>
+            <a href="PON_AQUI_LA_URL_DE_INSTAGRAM" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="instagram" data-url="PON_AQUI_LA_URL_DE_INSTAGRAM">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/></svg>
+              Instagram
+            </a>
+            <a href="PON_AQUI_LA_URL_DE_TIKTOK" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="tiktok" data-url="PON_AQUI_LA_URL_DE_TIKTOK">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M16 3c.4 2.2 1.9 3.8 4 4v3c-1.5 0-2.9-.4-4-1.2v6.1a5.9 5.9 0 11-5-5.8v3.1a2.9 2.9 0 102.4 2.8V3H16z" fill="currentColor"/></svg>
+              TikTok
+            </a>
+            <a href="PON_AQUI_LA_URL_DE_FACEBOOK" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="facebook" data-url="PON_AQUI_LA_URL_DE_FACEBOOK">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M14 8.5h2.5V5H14c-2.2 0-4 1.8-4 4v2H8v3.5h2V21h3.5v-6.5H16l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+              Facebook
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="video-grid-v2" data-video-grid>
+
+        <div class="video-card-v2" data-video-card data-category="confusiones">
+          <a href="https://www.youtube.com/shorts/gf9T2K-zWcQ" target="_blank" rel="noopener" class="video-card-v2-thumb" data-youtube-url="https://www.youtube.com/shorts/gf9T2K-zWcQ">
+            <img data-yt-thumb alt="Miniatura del video: To vs Too">
+            <span class="video-play-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+          </a>
+          <div class="video-card-v2-body">
+            <h4>To vs Too</h4>
+            <p>Dos palabras casi idénticas, con un significado totalmente distinto.</p>
+            <div class="video-platform-row">
+              <a href="https://www.youtube.com/shorts/gf9T2K-zWcQ" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="youtube" data-url="https://www.youtube.com/shorts/gf9T2K-zWcQ">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 00-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 00-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 002 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 002-2C22 15.2 22 12 22 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor"/></svg>
+                YouTube
+              </a>
+              <a href="PON_AQUI_LA_URL_DE_INSTAGRAM" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="instagram" data-url="PON_AQUI_LA_URL_DE_INSTAGRAM">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/></svg>
+                Instagram
+              </a>
+              <a href="PON_AQUI_LA_URL_DE_TIKTOK" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="tiktok" data-url="PON_AQUI_LA_URL_DE_TIKTOK">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M16 3c.4 2.2 1.9 3.8 4 4v3c-1.5 0-2.9-.4-4-1.2v6.1a5.9 5.9 0 11-5-5.8v3.1a2.9 2.9 0 102.4 2.8V3H16z" fill="currentColor"/></svg>
+                TikTok
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card-v2" data-video-card data-category="confusiones">
+          <a href="https://www.youtube.com/shorts/fhbmGfsFAwY" target="_blank" rel="noopener" class="video-card-v2-thumb" data-youtube-url="https://www.youtube.com/shorts/fhbmGfsFAwY">
+            <img data-yt-thumb alt="Miniatura del video: Remember vs Remind">
+            <span class="video-play-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+          </a>
+          <div class="video-card-v2-body">
+            <h4>Remember vs Remind</h4>
+            <p>Cuál usar cuando quieres decir "acordarte de algo" o "recordarle algo a alguien".</p>
+            <div class="video-platform-row">
+              <a href="https://www.youtube.com/shorts/fhbmGfsFAwY" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="youtube" data-url="https://www.youtube.com/shorts/fhbmGfsFAwY">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 00-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 00-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 002 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 002-2C22 15.2 22 12 22 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor"/></svg>
+                YouTube
+              </a>
+              <a href="PON_AQUI_LA_URL_DE_FACEBOOK" target="_blank" rel="noopener" class="video-platform-btn" data-platform-link data-platform="facebook" data-url="PON_AQUI_LA_URL_DE_FACEBOOK">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M14 8.5h2.5V5H14c-2.2 0-4 1.8-4 4v2H8v3.5h2V21h3.5v-6.5H16l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+                Facebook
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="social-row" data-social-row>
         <a href="https://www.youtube.com/@inglesconleooficial" target="_blank" rel="noopener" data-social="youtube">YouTube</a>
         <a href="https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn" target="_blank" rel="noopener" data-social="instagram">Instagram</a>
@@ -202,21 +268,91 @@
 <script src="chatbot.js"></script>
 <script>initOnboarding(); personalizeNav();</script>
 <script>
-  /* Oculta (sin borrar) videos y redes que todavía son placeholders.
-     Para reactivar: solo reemplaza data-youtube-url o el href="#" real y
-     esto deja de ocultarlos automáticamente. */
+  /* ============================================================
+     Sección de videos: miniaturas automáticas, oculta placeholders,
+     y arma los filtros de categoría solo si hay más de una.
+     Para agregar un video nuevo: copia una tarjeta de .video-card-v2,
+     pon la URL real de YouTube en data-youtube-url, y en cada
+     data-platform-link pon la URL real de esa red (o déjala como
+     "PON_AQUI_LA_URL_DE_..." y ese botón se oculta solo).
+     Para cambiar el video destacado: mueve otra tarjeta arriba del
+     todo y dale la misma estructura que .video-featured.
+     ============================================================ */
   (function(){
-    var PLACEHOLDER_URL = 'PON_AQUI_LA_URL_DE_YOUTUBE';
-    var videoCards = document.querySelectorAll('.video-card-mini');
-    var visibleVideos = 0;
-    videoCards.forEach(function(card){
-      var url = card.getAttribute('data-youtube-url');
-      if(!url || url === PLACEHOLDER_URL){
-        card.hidden = true;
+    var PLACEHOLDER_PREFIX = 'PON_AQUI_LA_URL_DE_';
+
+    function isPlaceholder(url){
+      return !url || url === '#' || url.indexOf(PLACEHOLDER_PREFIX) === 0;
+    }
+
+    function youtubeThumbFromUrl(url){
+      if(!url) return null;
+      var match = url.match(/(?:shorts\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+      return match ? 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg' : null;
+    }
+
+    // 1) Miniaturas automáticas a partir de la URL de YouTube
+    document.querySelectorAll('[data-yt-thumb]').forEach(function(img){
+      var wrapper = img.closest('[data-youtube-url]');
+      var url = wrapper ? wrapper.getAttribute('data-youtube-url') : null;
+      var thumb = youtubeThumbFromUrl(url);
+      if(thumb) img.src = thumb;
+    });
+
+    // 2) Oculta (sin borrar) cada botón de red social que aún sea un placeholder
+    document.querySelectorAll('[data-platform-link]').forEach(function(link){
+      var url = link.getAttribute('data-url');
+      if(isPlaceholder(url)) link.hidden = true;
+    });
+
+    // 3) Oculta una tarjeta completa (destacada o de la grilla) si su video
+    //    principal es un placeholder Y no le quedó ningún link de red visible
+    var items = document.querySelectorAll('[data-video-featured], [data-video-card]');
+    var visibleItems = [];
+    items.forEach(function(item){
+      var mainUrl = item.getAttribute('data-youtube-url');
+      var hasRealPlatformLink = !!item.querySelector('[data-platform-link]:not([hidden])');
+      if(isPlaceholder(mainUrl) && !hasRealPlatformLink){
+        item.hidden = true;
       } else {
-        visibleVideos++;
+        visibleItems.push(item);
       }
     });
+
+    // 4) Arma los filtros de categoría, pero solo si hay más de una entre
+    //    los videos visibles (si no, se quedan ocultos para no verse vacíos)
+    var filtersBar = document.querySelector('[data-video-filters]');
+    if(filtersBar){
+      var categories = [];
+      visibleItems.forEach(function(item){
+        var cat = item.getAttribute('data-category');
+        if(cat && categories.indexOf(cat) === -1) categories.push(cat);
+      });
+      if(categories.length > 1){
+        categories.forEach(function(cat){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'video-filter';
+          btn.setAttribute('data-filter', cat);
+          btn.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+          filtersBar.appendChild(btn);
+        });
+        filtersBar.hidden = false;
+        filtersBar.addEventListener('click', function(e){
+          var btn = e.target.closest('.video-filter');
+          if(!btn) return;
+          filtersBar.querySelectorAll('.video-filter').forEach(function(b){ b.classList.remove('active'); });
+          btn.classList.add('active');
+          var filter = btn.getAttribute('data-filter');
+          visibleItems.forEach(function(item){
+            var match = filter === 'all' || item.getAttribute('data-category') === filter;
+            item.hidden = !match;
+          });
+        });
+      }
+    }
+
+    // 5) Botones de "síguenos" al final: igual, oculta los que sean placeholder
     var socialLinks = document.querySelectorAll('.social-row a[data-social]');
     var visibleSocial = 0;
     socialLinks.forEach(function(link){
@@ -227,8 +363,10 @@
         visibleSocial++;
       }
     });
+
+    // 6) Si al final no quedó ningún video ni ninguna red, oculta toda la sección
     var videosSection = document.querySelector('[data-videos-section]');
-    if(videosSection && visibleVideos === 0 && visibleSocial === 0){
+    if(videosSection && visibleItems.length === 0 && visibleSocial === 0){
       videosSection.hidden = true;
     }
   })();
