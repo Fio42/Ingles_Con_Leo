@@ -21,6 +21,10 @@ COMO USARLO (una sola vez para preparar todo):
    Los mp3 apareceran automaticamente dentro de la carpeta audio/
    de tu proyecto, ya con el nombre correcto.
 
+   Si solo quieres generar una fila concreta sin reemplazar los otros
+   audios del CSV, agrega su ruta al final. Por ejemplo:
+       python generar_audios.py audio/clases/farmacia-speaking.mp3
+
 VOCES DISPONIBLES (puedes dejarlo vacio para usar la voz por defecto):
    en-US-AriaNeural    (mujer, US, natural)
    en-US-GuyNeural     (hombre, US)
@@ -61,6 +65,7 @@ async def main():
         print("Crea 'lista_audios.csv' en la misma carpeta que este script.")
         return
 
+    solicitados = set(sys.argv[1:])
     filas = []
     with open(CSV_FILE, newline="", encoding="utf-8") as f:
         lector = csv.reader(f)
@@ -70,11 +75,16 @@ async def main():
             if not fila or not fila[0].strip():
                 continue
             archivo = fila[0].strip()
+            if solicitados and archivo not in solicitados:
+                continue
             texto = fila[1].strip() if len(fila) > 1 else ""
             voz = fila[2].strip() if len(fila) > 2 and fila[2].strip() else VOZ_POR_DEFECTO
             filas.append((archivo, texto, voz))
 
     if not filas:
+        if solicitados:
+            print("No encontré audios con esas rutas en lista_audios.csv")
+            return
         print("El CSV esta vacio. Agrega filas como:")
         print("audio/a1/a1listening-005.mp3,I go to the market every Sunday.,")
         return

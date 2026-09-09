@@ -21,6 +21,10 @@ COMO USARLO:
        audio/clases/restaurante-listening.mp3
    con version de dos voces. No necesitas tocar nada mas, todo esta
    escrito aqui abajo.
+
+   Para generar solo un diálogo nuevo sin reemplazar los demás, agrega
+   su ruta al final del comando. Por ejemplo:
+       python generar_dialogos.py audio/clases/farmacia-listening.mp3
 """
 
 import asyncio
@@ -88,6 +92,11 @@ DIALOGOS = {
         ("Sure, we're on track to finish by Friday.", VOZ_TU),
         ("Great. Does anyone have questions about that?", VOZ_PERSONAL),
     ],
+    "audio/clases/farmacia-listening.mp3": [
+        ("Hi, how can I help you today?", VOZ_PERSONAL),
+        ("I have a headache. Do you have something for it?", VOZ_TU),
+        ("Yes. These tablets should help. Take one every six hours.", VOZ_PERSONAL),
+    ],
 }
 
 PAUSA_MS = 450  # pequena pausa de silencio entre lineas, para que no se amontonen
@@ -133,8 +142,17 @@ async def generar_dialogo(ruta_relativa, lineas):
 
 
 async def main():
-    print(f"Generando {len(DIALOGOS)} dialogo(s) con dos voces...\n")
-    for ruta_relativa, lineas in DIALOGOS.items():
+    # Sin argumentos conserva el comportamiento original: genera todos.
+    # Con rutas concretas, solo genera esas y evita reemplazar los demás MP3.
+    solicitados = set(sys.argv[1:])
+    dialogos = DIALOGOS if not solicitados else {
+        ruta: lineas for ruta, lineas in DIALOGOS.items() if ruta in solicitados
+    }
+    if solicitados and not dialogos:
+        print("No encontré diálogos con esas rutas. Revisa el nombre del archivo.")
+        return
+    print(f"Generando {len(dialogos)} dialogo(s) con dos voces...\n")
+    for ruta_relativa, lineas in dialogos.items():
         try:
             await generar_dialogo(ruta_relativa, lineas)
         except Exception as e:

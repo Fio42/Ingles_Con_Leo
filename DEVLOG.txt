@@ -208,3 +208,9 @@ DEVLOG — Inglés con Leo
 2026-09-08 (extra) — Access key real de Web3Forms conectado
 - El usuario genero su access key en web3forms.com y se reemplazo el placeholder "WEB3FORMS_ACCESS_KEY" en index.html por la key real, dejando el formulario de contacto funcional de punta a punta.
 - Commit: a39a8e9.
+
+2026-09-09 (13) — Nueva clase interactiva: En la farmacia
+- Se agregó la décima clase activa, "En la farmacia", dentro de la categoría Vida diaria. Mantiene exactamente los 8 pasos de las clases existentes: situación, frases clave, escucha, elegir respuesta, construir frase, habla, mini reto y resumen.
+- El contenido enseña a explicar un dolor de cabeza, pedir un medicamento, preguntar cada cuánto tomarlo y consultar por efectos secundarios. Se añadió como una entrada nueva e independiente en CLASS_CATALOG y CLASSES_BANK; las 9 clases anteriores no se modificaron.
+- Se agregaron las rutas de audio nuevas audio/clases/farmacia-listening.mp3 y audio/clases/farmacia-speaking.mp3. Los scripts de Python ahora aceptan opcionalmente una ruta concreta para generar solo un audio, conservando sin argumentos el comportamiento anterior de generar todos. Así se pudieron crear los dos MP3 nuevos sin sobrescribir los audios existentes.
+- Verificado: sintaxis de JavaScript y Python, estructura completa de la clase (diálogo, opciones, frase construible y rutas de audio) y presencia de los dos MP3 generados.

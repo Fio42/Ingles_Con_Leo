@@ -5679,6 +5679,7 @@ const CLASS_CATALOG = [
   { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Aprende a pedir tu café como te gusta y platicar un poco con el barista.', minutes:5, available:true },
   { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Aprende a buscar tu talla, probarte ropa y preguntar el precio en una tienda.', minutes:5, available:true },
   { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Aprende a presentarte, hacer plática y conocer gente nueva en inglés.', minutes:5, available:true },
+  { id:'pharmacy', title:'En la farmacia', category:'Vida diaria', desc:'Aprende a explicar cómo te sientes, pedir un medicamento y entender cómo tomarlo.', minutes:6, available:true },
   { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Aprende a hablar de tu experiencia y tus fortalezas en una entrevista de trabajo.', minutes:7, available:true },
   { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Aprende a hacer una llamada, agendar una cita y manejar malentendidos por teléfono.', minutes:6, available:true },
   { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true }
@@ -6457,6 +6458,92 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:['Can everyone hear me okay?', "I'd like to give a quick update.", 'Could you clarify that point?', "Let's follow up on this next week."],
       tip:'Hoy practicaste cómo dar una actualización, hacer preguntas y participar en una reunión de trabajo en inglés.'
+    }
+  },
+  pharmacy: {
+    id:'pharmacy',
+    title:'En la farmacia',
+    situation:{
+      en:"You're at a pharmacy because you have a headache. You need to ask for medicine and understand how to take it.",
+      es:'Estás en una farmacia porque te duele la cabeza. Necesitas pedir un medicamento y entender cómo tomarlo.'
+    },
+    phrases:[
+      { en:'I have a headache.', es:'Me duele la cabeza.' },
+      { en:'Do you have something for it?', es:'¿Tiene algo para eso?' },
+      { en:'How often should I take it?', es:'¿Cada cuánto debo tomarlo?' },
+      { en:'Take one every six hours.', es:'Tome una cada seis horas.' },
+      { en:'Are there any side effects?', es:'¿Tiene efectos secundarios?' }
+    ],
+    listening:{
+      audio:'audio/clases/farmacia-listening.mp3',
+      dialogue:[
+        { speaker:'Farmacéutica', en:'Hi, how can I help you today?' },
+        { speaker:'Tú', en:'I have a headache. Do you have something for it?' },
+        { speaker:'Farmacéutica', en:'Yes. These tablets should help. Take one every six hours.' }
+      ],
+      question:{
+        text:'¿Cada cuánto debe tomar la persona una tableta?',
+        options:['Cada seis horas','Una vez al día','Cada dos horas'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Farmacéutica', en:'Do you have any allergies?' },
+      options:[
+        { en:"No, I don't have any allergies.", correct:true, feedback:'¡Bien! Respondes directamente a una pregunta importante antes de tomar un medicamento.' },
+        { en:'I have a headache.', correct:false, feedback:'Eso explica por qué vienes, pero te preguntaron si tienes alergias.' },
+        { en:'Take one every six hours.', correct:false, feedback:'Esa es la instrucción de la farmacéutica, no una respuesta sobre tus alergias.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿Cada cuánto debo tomarlo?',
+      words:['take','should','it?','How','often','I'],
+      correctOrder:['How','often','should','I','take','it?']
+    },
+    speaking:{
+      audio:'audio/clases/farmacia-speaking.mp3',
+      prompt:'I have a headache. Do you have something for it?',
+      es:'Practica diciendo: "Me duele la cabeza. ¿Tiene algo para eso?"'
+    },
+    miniChallenge:{
+      start:'symptom',
+      nodes:{
+        symptom:{
+          en:'The pharmacist asks: "What seems to be the problem?"',
+          es:'La farmacéutica pregunta: "¿Cuál parece ser el problema?"',
+          options:[
+            { en:'I have a headache.', next:'instructions', correct:true },
+            { en:'Take one every six hours.', next:'symptom-fail', correct:false }
+          ]
+        },
+        'symptom-fail':{
+          en:'The pharmacist says: "I understand, but what symptom do you have?"',
+          es:'La farmacéutica dice: "Entiendo, pero ¿qué síntoma tienes?"',
+          options:[
+            { en:'I have a headache.', next:'instructions', correct:true }
+          ]
+        },
+        instructions:{
+          en:'The pharmacist gives you the medicine and says: "Take one every six hours."',
+          es:'La farmacéutica te da el medicamento y dice: "Tome una cada seis horas."',
+          options:[
+            { en:'Thank you. Are there any side effects?', next:'end', correct:true },
+            { en:'I have a headache.', next:'instructions-fail', correct:false }
+          ]
+        },
+        'instructions-fail':{
+          en:'The pharmacist says: "Yes, I know. Do you have a question about the medicine?"',
+          es:'La farmacéutica dice: "Sí, lo sé. ¿Tienes alguna pregunta sobre el medicamento?"',
+          options:[
+            { en:'Are there any side effects?', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The pharmacist explains the side effects, and you leave feeling prepared. ¡Cuídate!', es:'La farmacéutica te explica los efectos secundarios y sales preparado. ¡Cuídate!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['I have a headache.', 'Do you have something for it?', 'How often should I take it?', 'Are there any side effects?'],
+      tip:'Hoy practicaste cómo explicar un síntoma, pedir un medicamento y entender cómo tomarlo en una farmacia.'
     }
   }
 };
