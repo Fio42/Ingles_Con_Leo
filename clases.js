@@ -4,6 +4,39 @@
    sessionHeaderHtml, showNextButton, recordSession() de app.js.
    ============================================================ */
 
+/* Lee una frase en voz alta usando la sintesis de voz del navegador
+   (no necesita ningun mp3 grabado, funciona al instante). Si el
+   navegador no soporta esto, el boton simplemente no hace nada. */
+function speakPhrase(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 0.92;
+    window.speechSynthesis.speak(utter);
+  }catch(e){}
+}
+
+/* Pinta los botones despues de responder una pregunta dentro de una
+   clase. Si acertaste, solo "Continuar". Si fallaste, deja
+   "Volver a intentar" (vuelve a esta misma pregunta) ademas de
+   "Continuar" (avanza igual, sin quedar trabado). */
+function showRetryOrNextButtons(container, isCorrect, onRetry, onNext){
+  const row = container.querySelector('#nextRow');
+  if(!row) return;
+  if(isCorrect){
+    row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">Continuar →</button>`;
+    row.querySelector('.next-btn').addEventListener('click', onNext);
+  } else {
+    row.innerHTML = `
+      <button class="btn btn-ghost btn-sm retry-btn">↺ Volver a intentar</button>
+      <button class="btn btn-primary btn-sm next-btn">Continuar →</button>`;
+    row.querySelector('.retry-btn').addEventListener('click', onRetry);
+    row.querySelector('.next-btn').addEventListener('click', onNext);
+  }
+}
+
 function renderClassList(container){
   if(!container) return;
   const byCategory = {};
@@ -101,9 +134,16 @@ function renderStepPhrases(body, state, next){
             <div class="clase-phrase-en">${p.en}</div>
             <div class="clase-phrase-es">${p.es}</div>
           </div>
+          <button type="button" class="clase-phrase-listen-btn" data-idx="${idx}" aria-label="Escuchar esta frase">${PLAY_ICON}</button>
         </div>`).join('')}
     </div>
     <div class="next-row"><button class="btn btn-primary btn-sm" id="claseNext">Continuar →</button></div>`;
+  body.querySelectorAll('.clase-phrase-listen-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.dataset.idx, 10);
+      speakPhrase(phrases[idx].en);
+    });
+  });
   body.querySelector('#claseNext').addEventListener('click', next);
 }
 
@@ -127,32 +167,47 @@ function renderStepListening(body, state, next){
     <div class="next-row" id="nextRow"></div>`;
 
   body.querySelector('#claseHear').addEventListener('click', ()=> playAudioFile(listening.audio, body));
-  body.querySelectorAll('.clase-option-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(answered) return;
-      answered = true;
-      const idx = parseInt(btn.dataset.idx,10);
-      const correct = idx === listening.question.correctIndex;
-      state.results.push({ itemId:'listening', isCorrect:correct });
-      btn.classList.add(correct ? 'correct' : 'incorrect');
-      if(!correct){
-        const rightBtn = body.querySelector(`.clase-option-btn[data-idx="${listening.question.correctIndex}"]`);
-        if(rightBtn) rightBtn.classList.add('correct');
-      }
-      const transcriptHtml = `
-        <div class="clase-dialogue" style="margin-top:14px;">
-          ${listening.dialogue.map(d=>`
-            <div class="clase-dialogue-line">
-              <span class="clase-dialogue-speaker">${d.speaker}:</span>
-              <span class="clase-dialogue-text">${d.en}</span>
-            </div>`).join('')}
-        </div>`;
-      body.querySelector('#claseFeedback').innerHTML = (correct
-        ? `<p class="clase-fb-ok">${OK_ICON} ¡Correcto!</p>`
-        : `<p class="clase-fb-bad">${BAD_ICON} Casi — aquí tienes la transcripción.</p>`) + transcriptHtml;
-      showNextButton(body, 'Continuar →', next);
+
+  function wireOptions(){
+    answered = false;
+    body.querySelectorAll('.clase-option-btn').forEach(btn=>{
+      btn.classList.remove('correct','incorrect');
+      btn.disabled = false;
+      btn.addEventListener('click', onOptionClick);
     });
-  });
+    body.querySelector('#claseFeedback').innerHTML = '';
+    const row = body.querySelector('#nextRow');
+    if(row) row.innerHTML = '';
+  }
+
+  function onOptionClick(){
+    if(answered) return;
+    answered = true;
+    const btn = this;
+    const idx = parseInt(btn.dataset.idx,10);
+    const correct = idx === listening.question.correctIndex;
+    state.results.push({ itemId:'listening', isCorrect:correct });
+    btn.classList.add(correct ? 'correct' : 'incorrect');
+    body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
+    if(!correct){
+      const rightBtn = body.querySelector(`.clase-option-btn[data-idx="${listening.question.correctIndex}"]`);
+      if(rightBtn) rightBtn.classList.add('correct');
+    }
+    const transcriptHtml = `
+      <div class="clase-dialogue" style="margin-top:14px;">
+        ${listening.dialogue.map(d=>`
+          <div class="clase-dialogue-line">
+            <span class="clase-dialogue-speaker">${d.speaker}:</span>
+            <span class="clase-dialogue-text">${d.en}</span>
+          </div>`).join('')}
+      </div>`;
+    body.querySelector('#claseFeedback').innerHTML = (correct
+      ? `<p class="clase-fb-ok">${OK_ICON} ¡Correcto!</p>`
+      : `<p class="clase-fb-bad">${BAD_ICON} Casi — aquí tienes la transcripción.</p>`) + transcriptHtml;
+    showRetryOrNextButtons(body, correct, wireOptions, next);
+  }
+
+  wireOptions();
 }
 
 function renderStepChoose(body, state, next){
@@ -173,18 +228,32 @@ function renderStepChoose(body, state, next){
     <div id="claseFeedback"></div>
     <div class="next-row" id="nextRow"></div>`;
 
-  body.querySelectorAll('.clase-option-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      if(answered) return;
-      answered = true;
-      const idx = parseInt(btn.dataset.idx,10);
-      const opt = chooseResponse.options[idx];
-      state.results.push({ itemId:'chooseResponse', isCorrect:opt.correct });
-      btn.classList.add(opt.correct ? 'correct' : 'incorrect');
-      body.querySelector('#claseFeedback').innerHTML = `<p class="${opt.correct ? 'clase-fb-ok' : 'clase-fb-bad'}">${opt.correct ? OK_ICON : BAD_ICON} ${opt.feedback}</p>`;
-      showNextButton(body, 'Continuar →', next);
+  function wireOptions(){
+    answered = false;
+    body.querySelectorAll('.clase-option-btn').forEach(btn=>{
+      btn.classList.remove('correct','incorrect');
+      btn.disabled = false;
+      btn.addEventListener('click', onOptionClick);
     });
-  });
+    body.querySelector('#claseFeedback').innerHTML = '';
+    const row = body.querySelector('#nextRow');
+    if(row) row.innerHTML = '';
+  }
+
+  function onOptionClick(){
+    if(answered) return;
+    answered = true;
+    const btn = this;
+    const idx = parseInt(btn.dataset.idx,10);
+    const opt = chooseResponse.options[idx];
+    state.results.push({ itemId:'chooseResponse', isCorrect:opt.correct });
+    btn.classList.add(opt.correct ? 'correct' : 'incorrect');
+    body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
+    body.querySelector('#claseFeedback').innerHTML = `<p class="${opt.correct ? 'clase-fb-ok' : 'clase-fb-bad'}">${opt.correct ? OK_ICON : BAD_ICON} ${opt.feedback}</p>`;
+    showRetryOrNextButtons(body, opt.correct, wireOptions, next);
+  }
+
+  wireOptions();
 }
 
 function renderStepBuild(body, state, next){
@@ -316,12 +385,18 @@ function renderStepSpeak(body, state, next){
 
 function renderStepChallenge(body, state, next){
   const { miniChallenge } = state.data;
+  const scoredNodes = new Set();
+  let correctCount = 0, attemptCount = 0;
 
   function renderNode(nodeId){
     const node = miniChallenge.nodes[nodeId];
     const isEnd = !node.options || node.options.length === 0;
+    const progressHtml = attemptCount > 0
+      ? `<div class="clase-challenge-progress">Reto: ${correctCount} de ${attemptCount} correctas hasta ahora</div>`
+      : `<div class="clase-challenge-progress">Objetivo: responde correctamente en cada paso para completar el reto</div>`;
     body.innerHTML = `
       <div class="clase-eyebrow">Mini reto final</div>
+      ${progressHtml}
       <div class="clase-dialogue">
         <div class="clase-dialogue-line">
           <span class="clase-dialogue-text">${node.en}</span>
@@ -332,28 +407,55 @@ function renderStepChallenge(body, state, next){
         ${node.options.map((opt,idx)=>`<button class="clase-option-btn" data-idx="${idx}">${opt.en}</button>`).join('')}
       </div>`}
       <div id="claseFeedback"></div>
-      <div class="next-row" id="nextRow">${isEnd ? '<button class="btn btn-primary btn-sm" id="claseChallengeNext">Ver resumen →</button>' : ''}</div>`;
+      <div class="next-row" id="nextRow"></div>`;
 
     if(isEnd){
+      const pct = attemptCount > 0 ? Math.round((correctCount/attemptCount)*100) : 100;
+      const badge = pct === 100
+        ? '🏆 ¡Reto completado a la perfección!'
+        : (pct >= 50 ? '👍 ¡Reto completado!' : '💪 ¡Reto completado! Sigue practicando para mejorar tu puntaje.');
+      body.querySelector('#claseFeedback').innerHTML = `<p class="clase-fb-ok">${OK_ICON} ${badge}</p>` +
+        (attemptCount > 0 ? `<p class="clase-challenge-final-score">Acertaste ${correctCount} de ${attemptCount} decisiones.</p>` : '');
+      body.querySelector('#nextRow').innerHTML = '<button class="btn btn-primary btn-sm" id="claseChallengeNext">Ver resumen →</button>';
       body.querySelector('#claseChallengeNext').addEventListener('click', next);
       return;
     }
+
     let answered = false;
-    body.querySelectorAll('.clase-option-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        if(answered) return;
-        answered = true;
-        const idx = parseInt(btn.dataset.idx,10);
-        const opt = node.options[idx];
-        state.results.push({ itemId:'miniChallenge:'+nodeId, isCorrect:opt.correct });
-        state.challengePath.push(nodeId);
-        btn.classList.add(opt.correct ? 'correct' : 'incorrect');
-        body.querySelector('#claseFeedback').innerHTML = opt.correct
-          ? `<p class="clase-fb-ok">${OK_ICON} ¡Bien hecho!</p>`
-          : `<p class="clase-fb-bad">${BAD_ICON} Vamos a intentarlo de otra forma.</p>`;
-        showNextButton(body, 'Continuar →', ()=> renderNode(opt.next));
+    function wireOptions(){
+      answered = false;
+      body.querySelectorAll('.clase-option-btn').forEach(btn=>{
+        btn.classList.remove('correct','incorrect');
+        btn.disabled = false;
+        btn.addEventListener('click', onOptionClick);
       });
-    });
+      body.querySelector('#claseFeedback').innerHTML = '';
+      const row = body.querySelector('#nextRow');
+      if(row) row.innerHTML = '';
+    }
+
+    function onOptionClick(){
+      if(answered) return;
+      answered = true;
+      const btn = this;
+      const idx = parseInt(btn.dataset.idx,10);
+      const opt = node.options[idx];
+      if(!scoredNodes.has(nodeId)){
+        scoredNodes.add(nodeId);
+        attemptCount++;
+        if(opt.correct) correctCount++;
+      }
+      state.results.push({ itemId:'miniChallenge:'+nodeId, isCorrect:opt.correct });
+      state.challengePath.push(nodeId);
+      btn.classList.add(opt.correct ? 'correct' : 'incorrect');
+      body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
+      body.querySelector('#claseFeedback').innerHTML = opt.correct
+        ? `<p class="clase-fb-ok">${OK_ICON} ¡Bien hecho!</p>`
+        : `<p class="clase-fb-bad">${BAD_ICON} Vamos a intentarlo de otra forma.</p>`;
+      showRetryOrNextButtons(body, opt.correct, wireOptions, ()=> renderNode(opt.next));
+    }
+
+    wireOptions();
   }
   renderNode(miniChallenge.start);
 }

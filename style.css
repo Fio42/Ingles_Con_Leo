@@ -882,9 +882,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .clase-situation-es{color:var(--ink-soft);margin:0 0 20px;}
 
 .clase-phrase-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.clase-phrase-row{background:var(--paper-dim);border-radius:var(--radius-sm);padding:14px 16px;}
+.clase-phrase-row{background:var(--paper-dim);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .clase-phrase-en{font-weight:700;}
 .clase-phrase-es{color:var(--ink-soft);font-size:0.88rem;margin-top:2px;}
+.clase-phrase-listen-btn{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;}
+.clase-phrase-listen-btn:hover{border-color:var(--blue);background:var(--blue-tint);}
+.clase-phrase-listen-btn svg{width:16px;height:16px;}
+.clase-challenge-progress{font-size:0.82rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em;margin-bottom:12px;}
+.clase-challenge-final-score{color:var(--ink-soft);font-size:0.9rem;margin-top:4px;}
 
 .clase-audio-row{margin-bottom:16px;}
 .clase-dialogue{background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px;display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
