@@ -688,7 +688,7 @@ function renderGrammarItemInto(container, item, onAnswered){
     });
   } else if(item.type === 'error'){
     const tokens = item.wrong.split(' ');
-    const cleanTokens = tokens.map(w => w.replace(/[.,]/g,''));
+    const cleanTokens = tokens.map(w => w.replace(/[.,?!]/g,''));
     const wrongTokens = item.wrongWord ? item.wrongWord.split(' ') : [];
     let wrongStart = -1;
     if(wrongTokens.length){
@@ -723,7 +723,7 @@ function renderGrammarItemInto(container, item, onAnswered){
         }
 
         const rightTokens = item.right.split(' ');
-        const rightClean = rightTokens.map(w => w.replace(/[.,]/g,''));
+        const rightClean = rightTokens.map(w => w.replace(/[.,?!]/g,''));
         const rightWordTokens = item.rightWord ? item.rightWord.split(' ') : [];
         let rightStart = -1;
         if(rightWordTokens.length){
