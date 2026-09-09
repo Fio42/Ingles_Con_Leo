@@ -193,3 +193,18 @@ DEVLOG — Inglés con Leo
 - Bug encontrado y corregido en miembros.html: al entrar por el enlace del correo, la página revisaba si ya había una sesión iniciada (el enlace de recuperación deja una sesión válida por un instante) y metía al usuario directo a la plataforma antes de dejarlo escribir su contraseña nueva (se alcanzaba a ver el formulario un instante y desaparecía). Se corrigió detectando "type=recovery" en la URL antes de esa revisión, para que en ese caso la página se quede en el formulario de nueva contraseña sin importar que ya haya sesión.
 - Mejoras chicas pedidas por el usuario tras probar de verdad: el mensaje de error ahora dice "Usa una contraseña diferente a la actual" cuando Supabase rechaza la nueva contraseña por ser igual a la anterior (antes salía el mensaje genérico de error); y ahora se puede presionar Enter en el campo de nueva contraseña en vez de tener que hacer clic en "Guardar contraseña" con el mouse.
 - Verificado con node --check en backend.js y en el JS embebido de miembros.html sin errores de sintaxis, y probado de punta a punta por el usuario en el sitio real: correo recibido desde su dominio, enlace llevando a la página correcta, formulario de nueva contraseña quedándose visible, y contraseña guardada con éxito.
+
+2026-09-08 (extra) — Links reales a redes sociales (footer + seccion "Mas ingles con Leo")
+- Se agregaron los 4 iconos (YouTube, TikTok, Instagram, Facebook) con los links reales del usuario en el footer de las 14 paginas del sitio (antes no existian).
+- Se detecto que ya existia un bloque separado en el Home ("Mas ingles con Leo") con los mismos 4 botones pero apuntando a "#" (placeholder sin terminar); se conectaron ahi tambien los 4 links reales.
+- Commits: f4d8ff7 (footer), f5d7f95 (bloque del Home).
+
+2026-09-08 (extra) — SEO: dominio propio inglesconleo.com
+- El usuario compro el dominio inglesconleo.com y lo asigno en GitHub Pages. Se agrego el archivo CNAME (necesario para que Pages sirva el dominio propio) y se actualizaron canonical, sitemap.xml y robots.txt de las 6 paginas indexables (antes apuntaban a fio42.github.io/Ingles_Con_Leo/).
+- Se agregaron etiquetas og:url, og:image y Twitter Card (antes faltaban, asi que compartir el link en WhatsApp/redes no mostraba tarjeta con imagen) y dos bloques JSON-LD (Organization + WebSite) en el Home para que Google entienda mejor la marca.
+- GitHub ya tenia su propio commit "Create CNAME" (creado automaticamente al configurar el dominio en Settings -> Pages) con el mismo contenido; se resolvio con un rebase sin conflictos reales.
+- Commit: 9778949.
+
+2026-09-08 (extra) — Access key real de Web3Forms conectado
+- El usuario genero su access key en web3forms.com y se reemplazo el placeholder "WEB3FORMS_ACCESS_KEY" en index.html por la key real, dejando el formulario de contacto funcional de punta a punta.
+- Commit: a39a8e9.
