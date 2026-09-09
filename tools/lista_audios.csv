@@ -1,5 +1,4 @@
 archivo,texto,voz
-audio/clases/hotel-listening.mp3,"Good afternoon! Welcome. Do you have a reservation? Yes, under the name Martinez. Two nights. Perfect, here's your key. Breakfast is served from 7 to 10 in the lobby.",en-US-AriaNeural
-audio/clases/hotel-speaking.mp3,"Could I get a room with a view, please?",en-US-AriaNeural
-audio/clases/restaurante-listening.mp3,"Good evening! Are you ready to order? Yes, I'll have the grilled chicken, please. Great choice. Would you like anything to drink? We also have a soup of the day.",en-US-AriaNeural
-audio/clases/restaurante-speaking.mp3,"Could I see the menu, please?",en-US-AriaNeural
+audio/clases/cafe-speaking.mp3,"Can I get a medium latte, please?",en-US-AriaNeural
+audio/clases/compras-speaking.mp3,Can I try this on?,en-US-AriaNeural
+audio/clases/conocer-speaking.mp3,"Hi, I'm Alex. Nice to meet you.",en-US-AriaNeural

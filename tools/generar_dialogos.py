@@ -58,6 +58,21 @@ DIALOGOS = {
         ("Yes, I'll have the grilled chicken, please.", VOZ_TU),
         ("Great choice. Would you like anything to drink? We also have a soup of the day.", VOZ_PERSONAL),
     ],
+    "audio/clases/cafe-listening.mp3": [
+        ("Hi! What can I get started for you today?", VOZ_PERSONAL),
+        ("I'd like a medium latte with oat milk, please.", VOZ_TU),
+        ("Sure thing. Is that for here or to go? It'll be six dollars.", VOZ_PERSONAL),
+    ],
+    "audio/clases/compras-listening.mp3": [
+        ("Hi, welcome! Are you looking for anything in particular?", VOZ_PERSONAL),
+        ("Yes, I'm looking for a jacket in a medium.", VOZ_TU),
+        ("We have a few options. The fitting rooms are right over there.", VOZ_PERSONAL),
+    ],
+    "audio/clases/conocer-listening.mp3": [
+        ("Hi! I don't think we've met before. I'm Sam.", VOZ_PERSONAL),
+        ("Hi Sam, nice to meet you. I'm Alex.", VOZ_TU),
+        ("Nice to meet you too, Alex! So, how do you know Maria?", VOZ_PERSONAL),
+    ],
 }
 
 PAUSA_MS = 450  # pequena pausa de silencio entre lineas, para que no se amontonen

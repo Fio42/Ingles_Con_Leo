@@ -2936,9 +2936,9 @@ const CLASS_CATALOG = [
   { id:'airport', title:'En el aeropuerto', category:'Viajes', desc:'Aprende a moverte en el aeropuerto: check-in, seguridad y abordaje.', minutes:6, available:true },
   { id:'hotel', title:'En el hotel', category:'Viajes', desc:'Aprende a hacer el check-in, pedir servicios y resolver problemas en un hotel.', minutes:6, available:true },
   { id:'restaurant', title:'En un restaurante', category:'Viajes', desc:'Aprende a pedir el menú, ordenar tu comida y pagar la cuenta.', minutes:6, available:true },
-  { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
-  { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
-  { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Próximamente', minutes:5, available:false },
+  { id:'coffee', title:'Pedir un café', category:'Vida diaria', desc:'Aprende a pedir tu café como te gusta y platicar un poco con el barista.', minutes:5, available:true },
+  { id:'shopping', title:'Ir de compras', category:'Vida diaria', desc:'Aprende a buscar tu talla, probarte ropa y preguntar el precio en una tienda.', minutes:5, available:true },
+  { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Aprende a presentarte, hacer plática y conocer gente nueva en inglés.', minutes:5, available:true },
   { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Próximamente', minutes:7, available:false },
   { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Próximamente', minutes:6, available:false },
   { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Próximamente', minutes:6, available:false }
@@ -3201,6 +3201,264 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:['Could I see the menu, please?', "I'll have the grilled chicken.", 'Could we get the check, please?', 'Do you accept credit cards?'],
       tip:'Hoy practicaste el vocabulario esencial para pedir comida en un restaurante en inglés: ordenar, preguntar por el menú y pedir la cuenta.'
+    }
+  },
+  coffee: {
+    id:'coffee',
+    title:'Pedir un café',
+    situation:{
+      en:"You're at a coffee shop and want to order a coffee to go, just the way you like it.",
+      es:'Estás en una cafetería y quieres pedir un café para llevar, justo como te gusta.'
+    },
+    phrases:[
+      { en:'Can I get a medium latte, please?', es:'¿Me da un latte mediano, por favor?' },
+      { en:'Could you make that with oat milk?', es:'¿Podría hacerlo con leche de avena?' },
+      { en:'Can I have that to go?', es:'¿Me lo da para llevar?' },
+      { en:'Do you have Wi-Fi here?', es:'¿Tienen wifi aquí?' },
+      { en:"How much do I owe you?", es:'¿Cuánto le debo?' }
+    ],
+    listening:{
+      audio:'audio/clases/cafe-listening.mp3',
+      dialogue:[
+        { speaker:'Barista', en:'Hi! What can I get started for you today?' },
+        { speaker:'Tú', en:"I'd like a medium latte with oat milk, please." },
+        { speaker:'Barista', en:"Sure thing. Is that for here or to go? It'll be six dollars." }
+      ],
+      question:{
+        text:'¿Qué pidió la persona?',
+        options:['Un latte mediano con leche de avena','Un té helado','Un café negro'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Barista', en:'Is that for here or to go?' },
+      options:[
+        { en:'To go, please.', correct:true, feedback:'¡Bien! Es una respuesta directa y natural.' },
+        { en:'A medium latte, please.', correct:false, feedback:'Esa ya la pediste; ahora te preguntan cómo lo quieres.' },
+        { en:'Do you have Wi-Fi?', correct:false, feedback:'Esa pregunta no responde si es para aquí o para llevar.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿Podría hacerlo con leche de avena?',
+      words:['with','Could','oat','milk?','make','you','that'],
+      correctOrder:['Could','you','make','that','with','oat','milk?']
+    },
+    speaking:{
+      audio:'audio/clases/cafe-speaking.mp3',
+      prompt:'Can I get a medium latte, please?',
+      es:'Practica diciendo: "¿Me da un latte mediano, por favor?"'
+    },
+    miniChallenge:{
+      start:'order',
+      nodes:{
+        order:{
+          en:'The barista asks: "What size would you like?"',
+          es:'La barista pregunta: "¿Qué tamaño le gustaría?"',
+          options:[
+            { en:'Medium, please.', next:'milk', correct:true },
+            { en:'To go, please.', next:'order-fail', correct:false }
+          ]
+        },
+        'order-fail':{
+          en:'The barista clarifies: "Sorry, I meant what size cup would you like?"',
+          es:'La barista aclara: "Disculpe, me refiero a qué tamaño de vaso le gustaría."',
+          options:[
+            { en:'Oh, sorry! Medium, please.', next:'milk', correct:true }
+          ]
+        },
+        milk:{
+          en:'The barista asks: "Would you like regular milk or a plant-based option?"',
+          es:'La barista pregunta: "¿Quiere leche regular o una opción vegetal?"',
+          options:[
+            { en:'Oat milk, please.', next:'end', correct:true },
+            { en:'No, thank you.', next:'milk-fail', correct:false }
+          ]
+        },
+        'milk-fail':{
+          en:'The barista asks again: "So, regular milk then?"',
+          es:'La barista pregunta de nuevo: "¿Entonces leche regular?"',
+          options:[
+            { en:'Actually, oat milk, please.', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'Your latte is ready and smells amazing. ¡Disfruta tu café!', es:'Tu latte está listo y huele delicioso. ¡Disfruta tu café!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['Can I get a medium latte, please?', 'Could you make that with oat milk?', 'Can I have that to go?', 'Do you have Wi-Fi here?'],
+      tip:'Hoy practicaste cómo pedir un café exactamente como te gusta y pedirlo para llevar en inglés.'
+    }
+  },
+  shopping: {
+    id:'shopping',
+    title:'Ir de compras',
+    situation:{
+      en:"You're at a clothing store looking for a jacket in your size.",
+      es:'Estás en una tienda de ropa buscando una chaqueta en tu talla.'
+    },
+    phrases:[
+      { en:'Do you have this in a medium?', es:'¿Tienen esto en talla mediana?' },
+      { en:'Can I try this on?', es:'¿Puedo probarme esto?' },
+      { en:'Where are the fitting rooms?', es:'¿Dónde están los probadores?' },
+      { en:'Do you have this in another color?', es:'¿Tienen esto en otro color?' },
+      { en:'How much does this cost?', es:'¿Cuánto cuesta esto?' }
+    ],
+    listening:{
+      audio:'audio/clases/compras-listening.mp3',
+      dialogue:[
+        { speaker:'Vendedora', en:'Hi, welcome! Are you looking for anything in particular?' },
+        { speaker:'Tú', en:"Yes, I'm looking for a jacket in a medium." },
+        { speaker:'Vendedora', en:'We have a few options. The fitting rooms are right over there.' }
+      ],
+      question:{
+        text:'¿Qué está buscando la persona?',
+        options:['Una chaqueta talla mediana','Unos zapatos','Un vestido'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Vendedora', en:'Would you like to try it on?' },
+      options:[
+        { en:'Yes, please. Where are the fitting rooms?', correct:true, feedback:'¡Perfecto! Aceptas y preguntas dónde probarte la ropa.' },
+        { en:'How much does this cost?', correct:false, feedback:'Todavía no te preguntaron el precio; te preguntaron si quieres probártela.' },
+        { en:'Do you have this in blue?', correct:false, feedback:'Esa pregunta es sobre el color, no responde si quieres probártela.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿Tienen esto en otro color?',
+      words:['this','Do','have','another','you','color?','in'],
+      correctOrder:['Do','you','have','this','in','another','color?']
+    },
+    speaking:{
+      audio:'audio/clases/compras-speaking.mp3',
+      prompt:'Can I try this on?',
+      es:'Practica diciendo: "¿Puedo probarme esto?"'
+    },
+    miniChallenge:{
+      start:'size',
+      nodes:{
+        size:{
+          en:'The clerk asks: "What size are you looking for?"',
+          es:'La vendedora pregunta: "¿Qué talla está buscando?"',
+          options:[
+            { en:'A medium, please.', next:'fit', correct:true },
+            { en:'A blue one, please.', next:'size-fail', correct:false }
+          ]
+        },
+        'size-fail':{
+          en:'The clerk clarifies: "Sorry, I meant what size, small, medium, or large?"',
+          es:'La vendedora aclara: "Disculpe, me refiero a qué talla: chica, mediana o grande."',
+          options:[
+            { en:'Oh, sorry! A medium, please.', next:'fit', correct:true }
+          ]
+        },
+        fit:{
+          en:'The clerk says: "Great, here you go. Would you like to try it on?"',
+          es:'La vendedora dice: "Perfecto, aquí tiene. ¿Quiere probárselo?"',
+          options:[
+            { en:'Yes, please.', next:'end', correct:true },
+            { en:'How much does it cost?', next:'fit-fail', correct:false }
+          ]
+        },
+        'fit-fail':{
+          en:"The clerk says: \"Sure, but let's make sure it fits first.\"",
+          es:'La vendedora dice: "Claro, pero primero asegurémonos de que le quede."',
+          options:[
+            { en:"You're right, let me try it on.", next:'end', correct:true }
+          ]
+        },
+        end:{ en:'The jacket fits perfectly. ¡Buena compra!', es:'La chaqueta te queda perfecta. ¡Buena compra!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['Do you have this in a medium?', 'Can I try this on?', 'Where are the fitting rooms?', 'How much does this cost?'],
+      tip:'Hoy practicaste cómo buscar tu talla, probarte ropa y preguntar el precio en una tienda en inglés.'
+    }
+  },
+  'meeting-someone': {
+    id:'meeting-someone',
+    title:'Conocer a alguien',
+    situation:{
+      en:"You're at a party and meet someone new. You want to introduce yourself and make a bit of small talk.",
+      es:'Estás en una fiesta y conoces a alguien nuevo. Quieres presentarte y platicar un poco.'
+    },
+    phrases:[
+      { en:"Hi, I'm Alex. Nice to meet you.", es:'Hola, soy Alex. Mucho gusto.' },
+      { en:'What do you do for a living?', es:'¿A qué te dedicas?' },
+      { en:'How do you know the host?', es:'¿Cómo conoces al anfitrión?' },
+      { en:'Where are you from?', es:'¿De dónde eres?' },
+      { en:'It was great talking to you.', es:'Fue un gusto hablar contigo.' }
+    ],
+    listening:{
+      audio:'audio/clases/conocer-listening.mp3',
+      dialogue:[
+        { speaker:'Persona', en:"Hi! I don't think we've met before. I'm Sam." },
+        { speaker:'Tú', en:"Hi Sam, nice to meet you. I'm Alex." },
+        { speaker:'Persona', en:'Nice to meet you too, Alex! So, how do you know Maria?' }
+      ],
+      question:{
+        text:'¿Qué le preguntó Sam a Alex?',
+        options:['Cómo conoce a Maria','De dónde es','A qué se dedica'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Persona', en:'So, how do you know Maria?' },
+      options:[
+        { en:'We used to work together.', correct:true, feedback:'¡Bien! Respondes directamente cómo la conoces.' },
+        { en:'Nice to meet you too.', correct:false, feedback:'Eso ya lo dijiste; ahora te preguntan cómo conoces a Maria.' },
+        { en:"I'm from Mexico.", correct:false, feedback:'Esa respuesta es sobre de dónde eres, no sobre cómo conoces a Maria.' }
+      ]
+    },
+    buildSentence:{
+      es:'¿A qué te dedicas?',
+      words:['do','for','What','you','a','do','living?'],
+      correctOrder:['What','do','you','do','for','a','living?']
+    },
+    speaking:{
+      audio:'audio/clases/conocer-speaking.mp3',
+      prompt:"Hi, I'm Alex. Nice to meet you.",
+      es:'Practica diciendo: "Hola, soy Alex. Mucho gusto."'
+    },
+    miniChallenge:{
+      start:'intro',
+      nodes:{
+        intro:{
+          en:"Someone new walks up and says: \"Hi, I don't think we've met. I'm Jordan.\"",
+          es:'Alguien nuevo se acerca y dice: "Hola, no creo que nos conozcamos. Soy Jordan."',
+          options:[
+            { en:"Hi Jordan, I'm Alex. Nice to meet you.", next:'job', correct:true },
+            { en:'How do you know the host?', next:'intro-fail', correct:false }
+          ]
+        },
+        'intro-fail':{
+          en:"Jordan says: \"Sorry, I didn't catch your name.\"",
+          es:'Jordan dice: "Disculpa, no escuché tu nombre."',
+          options:[
+            { en:"Oh sorry, I'm Alex!", next:'job', correct:true }
+          ]
+        },
+        job:{
+          en:'Jordan asks: "So, what do you do for a living?"',
+          es:'Jordan pregunta: "¿A qué te dedicas?"',
+          options:[
+            { en:"I'm a teacher. And you?", next:'end', correct:true },
+            { en:"I'm from Mexico.", next:'job-fail', correct:false }
+          ]
+        },
+        'job-fail':{
+          en:"Jordan laughs and says: \"That's cool, but I actually asked about your job.\"",
+          es:'Jordan se ríe y dice: "Qué bien, pero en realidad te pregunté por tu trabajo."',
+          options:[
+            { en:"Oh, sorry! I'm a teacher.", next:'end', correct:true }
+          ]
+        },
+        end:{ en:'You and Jordan keep chatting and exchange contact info. ¡Nuevo amigo!', es:'Tú y Jordan siguen platicando e intercambian contacto. ¡Nuevo amigo!', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Hi, I'm Alex. Nice to meet you.", 'What do you do for a living?', 'Where are you from?', 'It was great talking to you.'],
+      tip:'Hoy practicaste cómo presentarte y hacer plática con alguien nuevo en inglés.'
     }
   }
 };
