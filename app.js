@@ -55,6 +55,63 @@ function closeAllNavPops(){
   document.querySelectorAll('.nav-pop.open').forEach(el=> el.classList.remove('open'));
 }
 
+/* ---------- Menú móvil (hamburguesa) ----------
+   El botón .nav-burger existe en el header de todas las páginas.
+   En mobile (<900px) despliega los mismos enlaces de .nav-links
+   como un panel debajo del header; en desktop no se usa (los
+   enlaces ya están visibles). */
+function initMobileNavToggle(){
+  const burger = document.querySelector('.nav-burger');
+  const links = document.querySelector('.nav-links');
+  if(!burger || !links) return;
+
+  function closeMenu(){
+    links.classList.remove('mnav-open');
+    burger.setAttribute('aria-expanded','false');
+  }
+  function openMenu(){
+    links.classList.add('mnav-open');
+    burger.setAttribute('aria-expanded','true');
+  }
+
+  burger.setAttribute('aria-expanded','false');
+  burger.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    const isOpen = links.classList.contains('mnav-open');
+    if(isOpen) closeMenu(); else openMenu();
+  });
+  links.addEventListener('click', (e)=>{
+    if(e.target.closest('a')) closeMenu();
+  });
+  document.addEventListener('click', (e)=>{
+    if(!links.classList.contains('mnav-open')) return;
+    if(e.target.closest('.nav-links') || e.target.closest('.nav-burger')) return;
+    closeMenu();
+  });
+  window.addEventListener('resize', ()=>{
+    if(window.innerWidth >= 900) closeMenu();
+  });
+}
+initMobileNavToggle();
+
+/* ---------- LeoBot: no tapar contenido importante ----------
+   El botón flotante de LeoBot es fijo (position:fixed) y puede
+   quedar encima de botones reales: el modal de bienvenida, las
+   opciones de una pregunta, el botón "Siguiente", etc. En vez de
+   perseguir cada caso a mano, ocultamos el flotante por completo
+   mientras exista un modal de onboarding o una sesión de práctica
+   activa en la página (ver chatbot.css: body.leobot-away). */
+function initLeobotAutoHide(){
+  function sync(){
+    const shouldHide = !!document.querySelector('.onb-overlay, .session-card');
+    document.body.classList.toggle('leobot-away', shouldHide);
+  }
+  sync();
+  const observer = new MutationObserver(sync);
+  observer.observe(document.body, { childList:true, subtree:true });
+}
+initLeobotAutoHide();
+
 async function initMemberHeader(){
   const block = document.getElementById('navUserBlock');
   if(!block) return;

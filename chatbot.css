@@ -27,6 +27,14 @@
 .leobot-fab:focus-visible{outline:3px solid var(--blue,#3554F0);outline-offset:3px;}
 .leobot-fab .leobot-avatar{width:100%;height:100%;animation:leobotFloat 3.8s ease-in-out infinite;}
 
+/* Mientras hay un modal de bienvenida o una sesión de práctica activa,
+   escondemos el flotante para que nunca tape un botón real (ver app.js,
+   initLeobotAutoHide). El panel abierto (si el usuario ya lo abrió) se
+   deja intacto: solo se oculta el lanzador y el aviso/reopen. */
+body.leobot-away .leobot-fab,
+body.leobot-away .leobot-reopen,
+body.leobot-away .leobot-greet{display:none !important;}
+
 /* Punto de notificación: avisa "tienes algo nuevo" mientras la burbuja de
    saludo está visible, sin ser tan grande como para distraer. */
 .leobot-fab-dot{
@@ -312,7 +320,7 @@
     max-height:min(68vh, 560px);
     border-radius:20px;
   }
-  .leobot-fab{right:14px;bottom:calc(76px + env(safe-area-inset-bottom));width:78px;height:78px;}
+  .leobot-fab{right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:64px;height:64px;}
   .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
   .leobot-greet{right:14px;bottom:calc(166px + env(safe-area-inset-bottom));max-width:180px;font-size:0.82rem;}
   .leobot-greet::after{right:26px;}

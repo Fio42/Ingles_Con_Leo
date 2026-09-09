@@ -57,7 +57,7 @@ header{
   backdrop-filter:blur(8px);
   border-bottom:1px solid var(--line);
 }
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;position:relative;}
 .logo{display:flex;align-items:center;gap:8px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.28rem;color:var(--ink);flex-shrink:0;}
 .logo .leo{color:var(--blue);}
 .logo-mark{width:34px;height:34px;flex-shrink:0;object-fit:contain;border-radius:50%;background:#F5A524;}
@@ -65,11 +65,14 @@ header{
 .nav-links a:hover{color:var(--ink);}
 .nav-links a.current{color:var(--blue);}
 .nav .nav-cta{display:none;}
-.nav-burger{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;}
-.nav-burger span{display:block;width:20px;height:2px;background:var(--ink);position:relative;}
-.nav-burger span::before,.nav-burger span::after{content:'';position:absolute;left:0;width:20px;height:2px;background:var(--ink);}
+.nav-burger{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;flex-shrink:0;}
+.nav-burger span{display:block;width:20px;height:2px;background:var(--ink);position:relative;transition:background .15s ease;}
+.nav-burger span::before,.nav-burger span::after{content:'';position:absolute;left:0;width:20px;height:2px;background:var(--ink);transition:transform .18s ease,top .18s ease,opacity .18s ease;}
 .nav-burger span::before{top:-6px;}
 .nav-burger span::after{top:6px;}
+.nav-burger[aria-expanded="true"] span{background:transparent;}
+.nav-burger[aria-expanded="true"] span::before{top:0;transform:rotate(45deg);}
+.nav-burger[aria-expanded="true"] span::after{top:0;transform:rotate(-45deg);}
 
 /* ---------- Header de miembros: buscador, notificaciones, cuenta ---------- */
 .nav-actions{display:flex;align-items:center;gap:4px;}
@@ -106,6 +109,32 @@ header{
 @media(max-width:899px){
   .nav-search-wrap,.nav-bell-wrap{display:none;}
   .nav-profile-name,.nav-chevron{display:none;}
+
+  /* Menú móvil: el boton hamburguesa abre esta lista como un panel
+     desplegable debajo del header (ver app.js, initMobileNavToggle). */
+  .nav-links.mnav-open{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    position:absolute;
+    top:calc(100% + 1px);
+    left:0;
+    right:0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-top:none;
+    border-radius:0 0 var(--radius-md) var(--radius-md);
+    box-shadow:0 12px 24px rgba(27,35,51,0.12);
+    padding:8px;
+    z-index:70;
+  }
+  .nav-links.mnav-open a{
+    padding:12px 12px;
+    border-radius:10px;
+    font-size:1rem;
+  }
+  .nav-links.mnav-open a:hover,.nav-links.mnav-open a:active{background:var(--paper-dim);}
+  .nav-links.mnav-open a.current{background:var(--blue-tint);}
 }
 @media(min-width:900px){
   .nav-links{display:flex;}
@@ -275,7 +304,7 @@ section{padding:52px 0;}
 .gate-icon{width:56px;height:56px;margin:0 auto 16px;}
 .gate-card h1{font-size:1.5rem;margin-bottom:8px;}
 .gate-card p{color:var(--ink-soft);font-size:0.98rem;margin-bottom:22px;}
-.gate-input{width:100%;padding:15px 16px;border-radius:var(--radius-sm);border:2px solid var(--line);font-size:1.1rem;letter-spacing:0.08em;text-align:center;font-weight:700;text-transform:uppercase;margin-bottom:12px;}
+.gate-input{width:100%;padding:14px 16px;border-radius:var(--radius-sm);border:2px solid var(--line);font-size:1rem;text-align:left;font-weight:600;margin-bottom:12px;}
 .gate-input:focus{border-color:var(--blue);}
 .gate-error{color:var(--coral);font-size:0.9rem;font-weight:600;margin-bottom:12px;display:none;}
 .gate-error.show{display:block;}
