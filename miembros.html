@@ -436,6 +436,7 @@
     if(m.indexOf('already registered') !== -1 || m.indexOf('already exists') !== -1) return 'Ya existe una cuenta con ese correo. Inicia sesión en vez de crear una nueva.';
     if(m.indexOf('password') !== -1 && m.indexOf('least') !== -1) return 'La contraseña debe tener al menos 6 caracteres.';
     if(m.indexOf('rate') !== -1 || m.indexOf('security purposes') !== -1) return 'Espera un momento antes de intentar de nuevo.';
+    if(m.indexOf('different from the old password') !== -1 || m.indexOf('should be different') !== -1) return 'Usa una contraseña diferente a la actual.';
     return 'Algo no funcionó. Intenta de nuevo en un momento.';
   }
 
@@ -519,6 +520,12 @@
       e.preventDefault();
       loginError.classList.remove('show');
       showLoginStep(1);
+    });
+  }
+
+  if(newPasswordInput){
+    newPasswordInput.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){ e.preventDefault(); setNewPasswordBtn.click(); }
     });
   }
 
