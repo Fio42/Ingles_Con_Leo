@@ -234,6 +234,11 @@ DEVLOG — Inglés con Leo
 - El carrusel ahora avanza automáticamente cada 6.5 segundos. Se pausa mientras el visitante pasa el cursor o navega con el teclado por sus controles, y no se reproduce automáticamente si el sistema solicita reducir movimiento.
 - Se añadieron 6 Shorts recientes y reales del canal de YouTube de Inglés con Leo: Wrote vs Written, How long vs How much, Then vs Than, A vs An, Rise vs Raise y Advice. Junto a los 3 anteriores, la sección ahora tiene 9 videos distintos.
 
+2026-09-09 (18) — SEO reforzado para los 3 primeros artículos
+- Se optimizaron articulo-habito-diario.html, articulo-errores-comunes.html y articulo-vocabulario-basico.html alrededor de intenciones de búsqueda coherentes con su contenido: aprender inglés desde cero/todos los días, errores comunes en inglés de hispanohablantes y vocabulario básico en inglés para principiantes.
+- Se conservaron las tres URLs actuales y sus canonical. Son descriptivas y ya están en el sitemap; cambiarlas sin un sistema de redirecciones podría perder señales de indexación y enlaces existentes.
+- Cada artículo recibió title, meta description, Open Graph, Twitter y H1 más específicos; contenido adicional útil, preguntas frecuentes visibles, enlaces internos y JSON-LD Article + FAQPage válido. Se actualizó la fecha de modificación del artículo de errores en sitemap.xml.
+
 2026-09-09 (13) — Nueva sección "Mis errores" (solo Miembros)
 - Pedido del usuario (a partir de una lista de ideas de otra IA): agregar una sección que guarde automáticamente los ejercicios que el usuario falla, con un botón "Practicar mis errores".
 - Decisión clave: no se creó ninguna tabla ni columna nueva en Supabase. Cada sesión ya guarda en el historial de progreso (progress_sessions / localStorage) el resultado de cada ejercicio como { itemId, isCorrect }, así que "un error pendiente" se calcula recorriendo ese historial y quedándose con el ÚLTIMO resultado de cada ejercicio: si el más reciente fue incorrecto, es un error pendiente; en cuanto se vuelve a responder bien, deja de serlo automáticamente, sin "borrar" nada aparte. Speaking no entra (nunca se califica automático, isCorrect siempre es null ahí).
