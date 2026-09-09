@@ -196,13 +196,17 @@
 
     <section style="padding-top:8px;" id="mistakesSection">
       <div class="wrap wrap-dash">
-        <div class="clases-banner">
-          <div>
-            <div class="clases-banner-eyebrow">Repaso</div>
-            <h2>Tus errores frecuentes</h2>
-            <p id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
+        <div class="mistakes-card">
+          <div class="mistakes-card-top">
+            <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="mistakes-eyebrow">Repaso personal</span>
           </div>
-          <a href="errores.html" class="btn btn-primary">Practicar mis errores →</a>
+          <h2>Tus errores frecuentes</h2>
+          <p class="mistakes-sub" id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
+          <div class="mistakes-chips" id="mistakesChips"></div>
+          <a href="errores.html" class="mistakes-btn">Practicar mis errores →</a>
         </div>
       </div>
     </section>
@@ -387,7 +391,7 @@
     renderWeeklyChart(document.getElementById('weeklyChart'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
     renderStreakCard(document.getElementById('streakCard'));
-    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'));
+    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'));
   }
 
   function unlock(){

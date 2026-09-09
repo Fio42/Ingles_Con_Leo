@@ -1004,3 +1004,27 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media (max-width:640px){
   .clases-banner{padding:22px 20px;}
 }
+
+/* "Tus errores frecuentes" (panel de Miembros): a propósito NO comparte
+   estilos con .clases-banner. Esa es un banner promocional (fondo azul
+   sólido, botón grande); esta es una herramienta personal de repaso, así
+   que se ve como el resto de tarjetas del dashboard (fondo blanco, borde
+   suave) con acentos en coral solo en los detalles (icono, etiqueta,
+   número y botón), nunca como fondo completo. */
+.mistakes-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:12px;transition:transform .2s ease, box-shadow .2s ease;}
+.mistakes-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(27,35,51,0.06);}
+.mistakes-card-top{display:flex;align-items:center;gap:12px;}
+.mistakes-card-top .stat-card-icon{width:44px;height:44px;}
+.mistakes-card-top .stat-card-icon svg{width:22px;height:22px;}
+.mistakes-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--coral);}
+.mistakes-card h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.mistakes-sub{margin:0;color:var(--ink-soft);font-size:0.95rem;}
+.mistakes-sub .mistakes-count{color:var(--coral);font-weight:700;}
+.mistakes-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.mistakes-chip{background:var(--coral-tint);color:var(--ink-soft);font-size:0.8rem;font-weight:600;padding:5px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;}
+.mistakes-chip b{color:var(--coral);font-weight:700;}
+.mistakes-btn{align-self:flex-start;background:var(--coral-tint);color:var(--coral);border:2px solid var(--coral);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
+.mistakes-btn:hover{background:var(--coral);color:#fff;box-shadow:0 6px 14px rgba(239,90,69,0.25);}
+@media (max-width:640px){
+  .mistakes-card{padding:18px 18px;}
+}

@@ -1611,18 +1611,41 @@ function buildMistakePool(maxItems){
   return pool;
 }
 
+// Cuenta, por habilidad, cuántos errores pendientes hay ahora mismo
+// (grammar/vocab/listening/writing; Speaking nunca aparece aquí porque
+// nunca se califica automático). Son conteos reales, no inventados:
+// mismo origen de datos que buildMistakePool().
+function computeMistakeCountsByKind(){
+  const index = getMistakesItemIndex();
+  const counts = { grammar:0, vocab:0, listening:0, writing:0 };
+  computeMistakeIds().forEach(id=>{
+    const found = index.get(id);
+    if(found && counts.hasOwnProperty(found.kind)) counts[found.kind]++;
+  });
+  return counts;
+}
+
 // Banner "Tus errores frecuentes" del panel de miembros. Si no hay
 // errores pendientes, se oculta la sección entera (no se inventa
-// un mensaje de "0 errores", simplemente no aparece).
-function renderMistakesBanner(sectionEl, textEl){
+// un mensaje de "0 errores", simplemente no aparece). chipsEl es
+// opcional: si se pasa, se llena con el desglose real por habilidad
+// (solo las que sí tienen errores pendientes, nunca un "0").
+function renderMistakesBanner(sectionEl, textEl, chipsEl){
   if(!sectionEl) return;
   const count = computeMistakeIds().length;
   if(!count){ sectionEl.style.display = 'none'; return; }
   sectionEl.style.display = '';
   if(textEl){
-    textEl.textContent = count === 1
-      ? 'Tienes 1 ejercicio pendiente de repasar. Un rato corto y lo dejas listo.'
-      : `Tienes ${count} ejercicios pendientes de repasar. Un rato corto y los dejas listos.`;
+    textEl.innerHTML = count === 1
+      ? 'Tienes <span class="mistakes-count">1 ejercicio</span> pendiente de repasar.'
+      : `Tienes <span class="mistakes-count">${count} ejercicios</span> pendientes de repasar.`;
+  }
+  if(chipsEl){
+    const counts = computeMistakeCountsByKind();
+    chipsEl.innerHTML = ['grammar','vocab','listening','writing']
+      .filter(kind => counts[kind] > 0)
+      .map(kind => `<span class="mistakes-chip">${MIX_KIND_LABEL[kind]} <b>${counts[kind]}</b></span>`)
+      .join('');
   }
 }
 
