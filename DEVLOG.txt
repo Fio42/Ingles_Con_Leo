@@ -311,3 +311,8 @@ DEVLOG — Inglés con Leo
 - No se puede distinguir con certeza entre "esa cuenta no existe" y "la contraseña está mal": Supabase Auth a propósito devuelve el mismo error genérico para los dos casos (así nadie puede usar el login para adivinar qué correos sí tienen cuenta, un tema de seguridad/privacidad). Se explicó esto al usuario antes de tocar nada.
 - miembros.html: el mensaje de ese error ahora dice "Correo o contraseña incorrectos. Si es tu primera vez aquí, usa '¿Primera vez? Crea tu cuenta' abajo." para guiar a alguien que en realidad no tiene cuenta, sin revelar si el correo existe o no.
 - Verificado con node --check en el JS embebido de miembros.html sin errores de sintaxis.
+
+2026-09-10 (10) — Webhooks más resistentes: crean la fila en profiles si no existe
+- A raíz del caso donde el usuario borró por error una fila de la tabla profiles (en vez de borrar la cuenta completa en Authentication -> Users), se notó que el paso de activar la membresía usaba "update" (actualizar), que no hace nada si la fila no existe. Un pago real en ese caso se hubiera perdido en silencio: se cobra pero nadie queda activado.
+- Arreglo: tanto mp-webhook.ts como stripe-webhook.ts ahora usan "upsert" en vez de "update" al activar la membresía: si la fila ya existe la actualiza igual que antes (sin tocar sus otras columnas), y si no existe la crea directamente con is_member=true. No cambia nada del comportamiento normal, solo evita que un caso raro (fila faltante) haga que un pago real no active a nadie.
+- Pendiente del usuario: subir con git push y volver a pegar el contenido actualizado de ambos archivos en sus funciones correspondientes en Supabase (mp-webhook y stripe-webhook).

@@ -84,14 +84,20 @@ Deno.serve(async (req: Request) => {
           .maybeSingle()
 
         const yaEraMiembro = !!(existing && existing.is_member)
+        const correoDestino = (existing && existing.email) || obj.customer_details?.email || obj.customer_email
 
+        // upsert en vez de update: si por lo que sea la fila de profiles
+        // no existiera todavía (por ejemplo alguien la borró a mano por
+        // error, o algo raro pasó justo al crear la cuenta), esto la
+        // crea directamente en vez de no hacer nada. Si ya existe, la
+        // actualiza normal (no borra el resto de sus columnas).
         const { error } = await supabase
           .from('profiles')
-          .update({ is_member: true, member_since: new Date().toISOString(), stripe_customer_id: customerId })
-          .eq('id', userId)
+          .upsert(
+            { id: userId, email: correoDestino, is_member: true, member_since: new Date().toISOString(), stripe_customer_id: customerId },
+            { onConflict: 'id' }
+          )
         if (error) console.error('Error activando miembro (Stripe):', error)
-
-        const correoDestino = (existing && existing.email) || obj.customer_details?.email || obj.customer_email
         if (!yaEraMiembro && correoDestino) {
           await mandarCorreoBienvenida(correoDestino)
         }
