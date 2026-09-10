@@ -5681,6 +5681,7 @@ const CLASS_CATALOG = [
   { id:'meeting-someone', title:'Conocer a alguien', category:'Vida diaria', desc:'Aprende a presentarte, hacer plática y conocer gente nueva en inglés.', minutes:5, available:true },
   { id:'pharmacy', title:'En la farmacia', category:'Vida diaria', desc:'Aprende a explicar cómo te sientes, pedir un medicamento y entender cómo tomarlo.', minutes:6, available:true },
   { id:'gym', title:'En el gimnasio', category:'Vida diaria', desc:'Aprende a registrarte, preguntar por una clase y hablar de tu rutina en el gimnasio.', minutes:6, available:true },
+  { id:'numbers-symbols', title:'Números, teléfonos y símbolos', category:'Vida diaria', desc:'Aprende a decir un número de teléfono, el + de WhatsApp y caracteres como @, punto, guion, _ y /.', minutes:6, available:true },
   { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Aprende a hablar de tu experiencia y tus fortalezas en una entrevista de trabajo.', minutes:7, available:true },
   { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Aprende a hacer una llamada, agendar una cita y manejar malentendidos por teléfono.', minutes:6, available:true },
   { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true }
@@ -6631,6 +6632,95 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:["I'd like to sign up for a class.", 'What time does the yoga class start?', 'Where are the lockers?', "I'm new here."],
       tip:'Hoy practicaste cómo registrarte, preguntar por una clase y orientarte en un gimnasio en inglés.'
+    }
+  },
+  'numbers-symbols': {
+    id:'numbers-symbols',
+    title:'Números, teléfonos y símbolos',
+    situation:{
+      en:"You're sharing your WhatsApp number and email address with someone. You need to say the country code, numbers, and symbols clearly.",
+      es:'Vas a compartir tu número de WhatsApp y tu correo con alguien. Necesitas decir con claridad el código de país, los números y los símbolos.'
+    },
+    phrases:[
+      { en:'My phone number is ...', es:'Mi número de teléfono es ...' },
+      { en:'The plus sign is +.', es:'El signo más es +.' },
+      { en:'At is the symbol @ in an email address.', es:'At es el símbolo @ en una dirección de correo.' },
+      { en:'Dot is the symbol .', es:'Dot es el símbolo punto (.).' },
+      { en:'Hyphen, or dash, is the symbol -.', es:'Hyphen, o dash, es el símbolo guion (-).' },
+      { en:'Underscore is the symbol _.', es:'Underscore es el símbolo _.' },
+      { en:'Slash is the symbol /.', es:'Slash es el símbolo /.' },
+      { en:'Hash is the symbol #.', es:'Hash es el símbolo #.' }
+    ],
+    listening:{
+      audio:'audio/clases/numeros-simbolos-listening.mp3',
+      dialogue:[
+        { speaker:'Persona', en:'Could you give me your WhatsApp number and email address, please?' },
+        { speaker:'Tú', en:'Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is leo dot study at gmail dot com.' },
+        { speaker:'Persona', en:'Perfect. I have your number and email address.' }
+      ],
+      question:{
+        text:'¿Cuál es el código de país que escuchaste?',
+        options:['57','312','24'],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:'Persona', en:'How do you say @ in an email address?' },
+      options:[
+        { en:'At.', correct:true, feedback:'¡Exacto! En un correo, @ se dice “at”.' },
+        { en:'Dot.', correct:false, feedback:'“Dot” es el punto (.), no el símbolo @.' },
+        { en:'Plus.', correct:false, feedback:'“Plus” es el signo +, no el símbolo @.' }
+      ]
+    },
+    buildSentence:{
+      es:'Mi correo es leo.study@gmail.com.',
+      words:['gmail','dot','My','is','study','email','leo','at','dot','com.'],
+      correctOrder:['My','email','is','leo','dot','study','at','gmail','dot','com.']
+    },
+    speaking:{
+      audio:'audio/clases/numeros-simbolos-speaking.mp3',
+      prompt:'My WhatsApp number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen.',
+      es:'Practica diciendo: “Mi número de WhatsApp es +57 312 560 2418.”'
+    },
+    miniChallenge:{
+      start:'email',
+      nodes:{
+        email:{
+          en:'Someone asks: “What is your email address?”',
+          es:'Alguien pregunta: “¿Cuál es tu dirección de correo?”',
+          options:[
+            { en:'It is leo dot study at gmail dot com.', next:'whatsapp', correct:true },
+            { en:'My name is Leo.', next:'email-fail', correct:false }
+          ]
+        },
+        'email-fail':{
+          en:'They say: “Thanks, but I need your email address.”',
+          es:'La persona dice: “Gracias, pero necesito tu dirección de correo.”',
+          options:[
+            { en:'It is leo dot study at gmail dot com.', next:'whatsapp', correct:true }
+          ]
+        },
+        whatsapp:{
+          en:'They ask: “And what is your WhatsApp number?”',
+          es:'La persona pregunta: “¿Y cuál es tu número de WhatsApp?”',
+          options:[
+            { en:'It is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen.', next:'end', correct:true },
+            { en:'It is leo dot study at gmail dot com.', next:'whatsapp-fail', correct:false }
+          ]
+        },
+        'whatsapp-fail':{
+          en:'They say: “That is your email. I need the phone number.”',
+          es:'La persona dice: “Ese es tu correo. Necesito el número de teléfono.”',
+          options:[
+            { en:'It is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen.', next:'end', correct:true }
+          ]
+        },
+        end:{ en:'Great. They save your contact details correctly.', es:'Perfecto. La persona guarda correctamente tus datos de contacto.', options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:['My phone number is ...', 'The plus sign is +.', 'At is the symbol @.', 'Dot is the symbol .'],
+      tip:'Hoy practicaste cómo decir números de teléfono, el código + de WhatsApp y los símbolos más usados en un correo.'
     }
   }
 };

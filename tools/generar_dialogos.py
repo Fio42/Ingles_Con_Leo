@@ -102,6 +102,11 @@ DIALOGOS = {
         ("Yes, I'm new here. I'd like to sign up for a yoga class.", VOZ_TU),
         ("Great! The next class starts at six. The lockers are next to the changing rooms.", VOZ_PERSONAL),
     ],
+    "audio/clases/numeros-simbolos-listening.mp3": [
+        ("Could you give me your WhatsApp number and email address, please?", VOZ_PERSONAL),
+        ("Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is leo dot study at gmail dot com.", VOZ_TU),
+        ("Perfect. I have your number and email address.", VOZ_PERSONAL),
+    ],
 }
 
 PAUSA_MS = 450  # pequena pausa de silencio entre lineas, para que no se amontonen
