@@ -215,7 +215,18 @@ async function initMemberHeader(){
   const subBtn = document.getElementById('navManageSubBtn');
   if(subBtn){
     subBtn.addEventListener('click', ()=>{
-      window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN) vía Mercado Pago.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
+      // Ahora hay dos formas de pago posibles (Mercado Pago o
+      // Stripe), así que el mensaje depende de con cuál pagó esta
+      // persona. Lo sabemos por qué columna quedó llena en su fila
+      // de profiles (mp_preapproval_id la pone create-checkout/
+      // mp-webhook, stripe_customer_id la pone stripe-webhook).
+      if(memberProfile && memberProfile.stripe_customer_id){
+        window.alert('Tu membresía es de $2 USD / mes vía tarjeta internacional (Stripe).\n\nPara cambiar tu método de pago o cancelarla, escríbenos a hola@inglesconleo.com y con gusto te ayudamos.');
+      } else if(memberProfile && memberProfile.mp_preapproval_id){
+        window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN) vía Mercado Pago.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
+      } else {
+        window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN).\n\nPara cambiar tu método de pago o cancelarla, escríbenos a hola@inglesconleo.com y con gusto te ayudamos.');
+      }
     });
   }
 

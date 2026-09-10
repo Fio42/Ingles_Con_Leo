@@ -322,3 +322,14 @@ DEVLOG — Inglés con Leo
 - miembros.html: la pantalla de "activar membresía" ahora muestra primero un selector (#payChooser) con los dos botones azules "Pagar con Mercado Pago" y "Pagar con tarjeta internacional (Stripe)", sin pedir ningún correo todavía. El campo de correo de Mercado Pago (#mpEmailStep) solo aparece si se elige esa opción, con un enlace "‹ Elegir otra forma de pago" para volver atrás. Stripe sigue funcionando igual que antes (no necesita ese paso extra).
 - resetPayChooser() deja siempre el selector visible por defecto al entrar a este paso (incluyendo cuando se hace clic en el botón de precio "Hazte miembro" más abajo en la página, que antes saltaba directo al flujo de Mercado Pago).
 - Verificado con node --check en el JS embebido de miembros.html sin errores de sintaxis.
+
+2026-09-10 (12) — Stripe pasado a modo producción (Live)
+- El usuario activó su cuenta de Stripe para cobrar de verdad, creó el producto/precio de $2 USD/mes en modo Live, creó el webhook de producción apuntando a la misma URL de siempre (https://iviksyhzhiygkuaojply.supabase.co/functions/v1/stripe-webhook), y actualizó los 3 secretos en Supabase (STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET) con los valores de producción.
+- No hizo falta tocar código: stripe-checkout.ts y stripe-webhook.ts ya estaban escritos para funcionar igual en modo prueba o producción, solo dependen de qué llaves tengan configuradas como secretos.
+- Pendiente: probar con un pago real (tarjeta de verdad, ya no la de prueba 4242...) para confirmar que la activación de membresía y el correo de bienvenida funcionan igual que en sandbox.
+
+2026-09-10 (13) — "Administrar suscripción" ahora distingue Mercado Pago de Stripe
+- El usuario notó que el mensaje de "Administrar suscripción" (en el menú del avatar) siempre decía "vía Mercado Pago", aunque ahora también existe Stripe.
+- app.js: el mensaje ahora revisa el perfil del usuario (memberProfile, ya se trae en initMemberHeader) para saber con cuál método pagó: si tiene stripe_customer_id, explica que puede escribir a hola@inglesconleo.com para cambiar/cancelar (todavía no hay un portal de autoservicio de Stripe conectado); si tiene mp_preapproval_id, muestra el mensaje de siempre con los pasos dentro de Mercado Pago; si no tiene ninguno de los dos (cuentas activadas a mano antes de que existieran esas columnas), muestra un mensaje genérico pidiendo escribir a hola@inglesconleo.com.
+- Pendiente si el usuario lo pide más adelante: conectar el "Customer Portal" de Stripe para que quien pagó con Stripe pueda cancelar/cambiar de tarjeta sin escribir un correo. No se hizo ahora porque implica una función de Supabase nueva y no se pidió explícitamente.
+- Verificado con node --check en app.js sin errores de sintaxis.
