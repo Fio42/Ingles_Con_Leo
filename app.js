@@ -866,7 +866,6 @@ function renderGrammarItemInto(container, item, onAnswered){
     container.innerHTML = `
       <div class="practice-instruction">Encuentra el error, toca la palabra incorrecta</div>
       <div class="error-sentence">${wordsHtml}</div>
-      ${item.translation ? `<div class="practice-translation">${item.translation}</div>` : ''}
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
 
@@ -899,7 +898,9 @@ function renderGrammarItemInto(container, item, onAnswered){
 
         const box = document.createElement('div');
         box.className = 'error-correct-box';
-        box.innerHTML = rightHtml;
+        box.innerHTML = `
+          <div>${rightHtml}</div>
+          ${item.translation ? `<div class="error-correct-translation">${item.translation}</div>` : ''}`;
         container.querySelector('.error-sentence').after(box);
 
         renderFeedback(container, isCorrect, item.explain, item.examples);

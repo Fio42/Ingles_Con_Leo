@@ -286,3 +286,7 @@ DEVLOG — Inglés con Leo
 - clases.js: se añadió el botón "Anterior" en los pasos intermedios. Al volver y contestar otra vez, el resultado anterior se reemplaza y no se duplica en el resumen. No se muestra en el resumen para evitar registrar una sesión terminada por segunda vez.
 - app.js: se limita el sitio a una sola pista activa y el botón que la inició queda deshabilitado hasta que termine o falle. Así dos clics rápidos no producen audios superpuestos.
 - La clase "Números, teléfonos y símbolos" ahora usa ana.lopez@gmail.com como ejemplo, sin mencionar a Leo.
+
+2026-09-10 (6) — Corrección móvil en Gramática: “Encuentra el error”
+- Se corrigió el solapamiento de la traducción con el borde de la frase corregida que aparecía en móvil. La traducción ya no usa el margen negativo general de las preguntas: ahora vive dentro de la tarjeta verde de corrección, debajo de la frase y con su propio espaciado y altura de línea.
+- El cambio está en el renderizador compartido de Gramática, por lo que corrige el ejercicio tanto para Miembros como para la práctica gratis, en móvil y escritorio.
