@@ -14,6 +14,7 @@
   --green:#1FA463;
   --green-tint:#E7F7EE;
   --violet:#8B5CF6;
+  --violet-deep:#6D28D9;
   --violet-tint:#F1EBFF;
   --line:#E7E2D6;
   --radius-lg:28px;
@@ -1079,4 +1080,35 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .daily-btn:hover{background:var(--amber);color:#fff;box-shadow:0 6px 14px rgba(245,165,36,0.3);}
 @media (max-width:640px){
   .daily-card{padding:18px 18px;}
+}
+
+/* "Prepárate para el TOEFL" (panel de Miembros): mismo formato de
+   banner promocional que .clases-banner (fondo con degradado, texto
+   blanco, boton grande), pero en violeta para distinguirse de
+   "Clases interactivas" (que usa azul) y sentirse como su propia
+   seccion, sin inventar un lenguaje visual nuevo. */
+.toefl-banner{background:linear-gradient(135deg, var(--violet-deep), var(--violet));color:#fff;border-radius:var(--radius-lg);padding:28px 30px;display:flex;flex-direction:column;gap:14px;}
+.toefl-banner-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;opacity:0.85;}
+.toefl-banner h2{font-family:'Baloo 2';margin:0;font-size:1.3rem;color:#fff;}
+.toefl-banner p{margin:0;opacity:0.9;max-width:480px;}
+.toefl-banner-skills{display:flex;flex-wrap:wrap;gap:8px;}
+.toefl-skill-pill{background:rgba(255,255,255,0.16);color:#fff;font-size:0.82rem;font-weight:700;padding:6px 14px;border-radius:999px;}
+.toefl-banner .btn-primary{background:#fff;color:var(--violet-deep);align-self:flex-start;}
+.toefl-banner .btn-primary:hover{background:#EEE;}
+@media (max-width:640px){
+  .toefl-banner{padding:22px 20px;}
+}
+
+/* Tarjeta "Proximamente" de toefl.html (pagina placeholder mientras
+   no existe el contenido completo). Reutiliza el mismo acento
+   violeta del banner de arriba para que se sienta parte de la misma
+   seccion nueva. */
+.toefl-soon-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:28px 30px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-width:640px;}
+.toefl-soon-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--violet);}
+.toefl-soon-card h2{font-family:'Baloo 2';margin:0;font-size:1.3rem;color:var(--ink);}
+.toefl-soon-card p{margin:0;color:var(--ink-soft);}
+.toefl-soon-skills{display:flex;flex-wrap:wrap;gap:8px;}
+.toefl-soon-card .toefl-skill-pill{background:var(--violet-tint);color:var(--violet);}
+@media (max-width:640px){
+  .toefl-soon-card{padding:20px 20px;}
 }

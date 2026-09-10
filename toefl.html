@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#030b1a">
+<title>Preparación para el TOEFL - Miembros - Inglés con Leo</title>
+<meta name="description" content="Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato del examen TOEFL.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20260910">
+<link rel="stylesheet" href="chatbot.css?v=20260910">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0DRL810MYR');
+</script>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <img src="logo.png" class="logo-mark" alt="Inglés con Leo">
+      Inglés con <span class="leo">Leo</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar gratis</a>
+      <a href="miembros.html" class="current">Miembros</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+
+    <div class="nav-actions" id="navUserBlock" style="display:none;">
+      <div class="nav-search-wrap">
+        <button type="button" class="nav-icon-btn" id="navSearchBtn" aria-label="Buscar">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="nav-pop nav-search-pop" id="navSearchPop">
+          <input type="text" id="navSearchInput" placeholder="Buscar en el sitio...">
+          <div class="nav-search-results" id="navSearchResults"></div>
+        </div>
+      </div>
+      <div class="nav-bell-wrap">
+        <button type="button" class="nav-icon-btn" id="navBellBtn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 0112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="nav-bell-dot" id="navBellDot" style="display:none;"></span>
+        </button>
+        <div class="nav-pop nav-bell-pop" id="navBellPop">
+          <div class="nav-pop-title">Notificaciones</div>
+          <div id="navBellContent"></div>
+        </div>
+      </div>
+      <div class="nav-profile-wrap">
+        <button type="button" class="nav-profile-btn" id="navProfileBtn">
+          <span class="nav-avatar" id="navAvatar">?</span>
+          <span class="nav-profile-name" id="navProfileName">Cuenta</span>
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-pop nav-profile-pop" id="navProfilePop">
+          <div class="nav-profile-pop-head">
+            <span class="nav-avatar lg" id="navAvatarLg">?</span>
+            <div>
+              <div class="nav-profile-pop-name" id="navProfilePopName">Cuenta</div>
+              <div class="nav-profile-pop-email" id="navProfilePopEmail"></div>
+            </div>
+          </div>
+          <button type="button" class="nav-pop-item" id="navEditNameBtn">Editar tu nombre</button>
+          <a href="progreso.html" class="nav-pop-item">Tu progreso</a>
+          <button type="button" class="nav-pop-item" id="navManageSubBtn">Administrar suscripción</button>
+          <button type="button" class="nav-pop-item danger" id="navLogoutBtn">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero" style="padding-bottom:8px;">
+    <div class="wrap wrap-dash">
+      <span class="badge badge-members">Miembros</span>
+      <h1 style="margin-top:10px;">Preparación para el TOEFL</h1>
+      <p style="color:var(--ink-soft);max-width:560px;">Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato del examen.</p>
+      <a href="miembros.html" style="display:inline-block;margin-top:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;">← Volver a tu panel</a>
+    </div>
+  </section>
+
+  <section style="padding-top:8px;">
+    <div class="wrap wrap-dash">
+      <div class="toefl-soon-card">
+        <span class="toefl-soon-eyebrow">Próximamente</span>
+        <h2>Estamos preparando este contenido</h2>
+        <p>Muy pronto vas a poder practicar aquí las cuatro secciones del examen TOEFL, con ejercicios enfocados en su formato real. Mientras tanto, sigue avanzando con tu práctica normal: te va a ayudar muchísimo también para el examen.</p>
+        <div class="toefl-soon-skills">
+          <span class="toefl-skill-pill">Reading</span>
+          <span class="toefl-skill-pill">Listening</span>
+          <span class="toefl-skill-pill">Speaking</span>
+          <span class="toefl-skill-pill">Writing</span>
+        </div>
+        <a href="miembros.html" class="btn btn-primary">Volver a tu panel →</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Artículos</a>
+      <a href="practica.html">Practicar</a>
+      <a href="miembros.html">Miembros</a>
+    </div>
+    <div class="foot-social">
+      <a href="https://www.youtube.com/@inglesconleooficial" target="_blank" rel="noopener" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 00-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 00-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 002 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 002-2C22 15.2 22 12 22 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@inglesconleooficial?_r=1&_t=ZS-99Y9bGwp6HM" target="_blank" rel="noopener" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M16 3c.4 2.2 1.9 3.8 4 4v3c-1.5 0-2.9-.4-4-1.2v6.1a5.9 5.9 0 11-5-5.8v3.1a2.9 2.9 0 102.4 2.8V3H16z" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.facebook.com/share/19c4zQLsEn/" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M14 8.5h2.5V5H14c-2.2 0-4 1.8-4 4v2H8v3.5h2V21h3.5v-6.5H16l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+      </a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
+
+<nav class="mobile-nav">
+  <button class="mnav-item" onclick="location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    Inicio
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Artículos
+  </button>
+  <button class="mnav-item" onclick="location.href='practica.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    Practicar
+  </button>
+  <button class="mnav-item active" onclick="location.href='miembros.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+    Miembros
+  </button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="data.js?v=20260910"></script>
+<script src="app.js?v=20260910"></script>
+<script src="backend.js"></script>
+<script src="chatbot.js?v=20260910"></script>
+<script>
+  guardMemberPage(function(){});
+</script>
+
+</body>
+</html>
