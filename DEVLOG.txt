@@ -350,3 +350,9 @@ DEVLOG — Inglés con Leo
 - backend.js: signInWithPassword() ahora, justo después de un login exitoso, le pide a Supabase que cierre cualquier otra sesión abierta con esa misma cuenta (usa el scope:'others' de Supabase Auth, que deja intacta la sesión del dispositivo que acaba de entrar y cierra todas las demás). Se explicó al usuario antes de hacerlo que esto no es instantáneo en el otro dispositivo (tarda hasta una hora, cuando esa sesión intenta refrescarse sola) y que también afecta a la misma persona usando dos dispositivos propios (por ejemplo celular y computadora); confirmó que así está bien.
 - No se tocó signUp() (una cuenta recién creada no tiene otras sesiones que cerrar).
 - Verificado con node --check en backend.js sin errores de sintaxis.
+
+2026-09-10 (17) — Imagen de vista previa al compartir: logo en vez de la cara
+- El usuario notó que al compartir el link en Facebook, la vista previa mostraba su cara (el archivo logo.png en realidad es un dibujo de su cara, no el logo de texto) en vez del logo de "Inglés con Leo".
+- Se agregó un archivo nuevo, og-logo.png (el logo de texto con fondo oscuro que mandó el usuario), y se actualizaron las etiquetas og:image y twitter:image en las 13 páginas que las tienen (index, articulos, los 9 artículos, miembros, practica) para que usen ese archivo nuevo en vez de logo.png.
+- A propósito NO se tocó el ícono chiquito del encabezado (logo-mark, 28x28px, sigue usando logo.png/la cara) ni el campo "logo" del JSON-LD de datos estructurados, porque solo se pidió cambiar la imagen de vista previa al compartir.
+- Nota para el usuario: Facebook guarda en caché la vista previa vieja de un link por un tiempo. Si comparte el link y sigue viendo la cara, puede forzar que Facebook la actualice pegando la URL en https://developers.facebook.com/tools/debug/ y dando clic en "Scrape Again".
