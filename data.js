@@ -257,9 +257,9 @@ const GRAMMAR_BANK = {
               {en:"Saturday comes after Friday.", es:"El sábado viene después del viernes."},
               {en:"We have no school on Saturday.", es:"No hay escuela el sábado."}
             ]},
-          { id:'g-principiante3-days-4', translation:"Hoy es domingo.", type:'error', wrong:"Today is Sunday is.", wrongWord:"is.",
-            right:"Today is Sunday.", rightWord:"Sunday.",
-            explain:"No se repite “is” dos veces; solo “Today is Sunday.”",
+          { id:'g-principiante3-days-4', translation:"Hoy es domingo.", type:'error', wrong:"Today am Sunday.", wrongWord:"am",
+            right:"Today is Sunday.", rightWord:"is",
+            explain:"Con “today” usamos “is”, no “am”.",
             examples:[
               {en:"Today is Sunday.", es:"Hoy es domingo."},
               {en:"On Sunday, I visit my grandma.", es:"El domingo, visito a mi abuela."}
@@ -806,9 +806,9 @@ const GRAMMAR_BANK = {
               {en:"He can't drive yet.", es:"Él todavía no sabe manejar."},
               {en:"We can't come tonight.", es:"No podemos ir esta noche."}
             ]},
-          { id:'g-facil5-can-4', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"can to",
-            right:"She can sing very well.", rightWord:"can",
-            explain:"Después de “can” va el verbo base sin “to”.",
+          { id:'g-facil5-can-4', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"to",
+            right:"She can sing very well.", rightWord:"",
+            explain:"Después de “can” va el verbo base sin “to”: sobra la palabra “to”.",
             examples:[
               {en:"She can sing very well.", es:"Ella canta muy bien."},
               {en:"He can cook Italian food.", es:"Él sabe cocinar comida italiana."}
@@ -1457,9 +1457,9 @@ const GRAMMAR_BANK = {
               {en:"I don't have to go to work tomorrow.", es:"No tengo que ir a trabajar mañana."},
               {en:"You don't have to bring anything, we have everything.", es:"No tienes que traer nada, ya tenemos de todo."}
             ]},
-          { id:'g-medio4-mod-4', type:'error', wrong:"You must to be careful.", wrongWord:"must to",
-            right:"You must be careful.", rightWord:"must",
-            explain:"Después de un verbo modal como “must” va el verbo base directo, sin “to”.",
+          { id:'g-medio4-mod-4', type:'error', wrong:"You must to be careful.", wrongWord:"to",
+            right:"You must be careful.", rightWord:"",
+            explain:"Después de un verbo modal como “must” va el verbo base directo, sin “to”: sobra la palabra “to”.",
             examples:[
               {en:"You must be careful.", es:"Debes tener cuidado."},
               {en:"She must finish the report today.", es:"Ella debe terminar el informe hoy."}
@@ -1492,9 +1492,9 @@ const GRAMMAR_BANK = {
               {en:"I will get it!", es:"¡Yo contesto!"},
               {en:"I will help you with that.", es:"Te ayudaré con eso."}
             ]},
-          { id:'g-medio5-fut-4', type:'error', wrong:"I think it will to rain tomorrow.", wrongWord:"will to",
-            right:"I think it will rain tomorrow.", rightWord:"will",
-            explain:"Después de “will” va el verbo base sin “to”.",
+          { id:'g-medio5-fut-4', type:'error', wrong:"I think it will to rain tomorrow.", wrongWord:"to",
+            right:"I think it will rain tomorrow.", rightWord:"",
+            explain:"Después de “will” va el verbo base sin “to”: sobra la palabra “to”.",
             examples:[
               {en:"I think it will rain tomorrow.", es:"Creo que va a llover mañana."},
               {en:"She will call you later.", es:"Ella te llamará más tarde."}
@@ -1560,8 +1560,8 @@ const GRAMMAR_BANK = {
               {en:"That's the man whose car was stolen.", es:"Ese es el hombre cuyo carro fue robado."},
               {en:"She's the teacher whose class I love.", es:"Ella es la maestra cuya clase amo."}
             ]},
-          { id:'g-medio6-rel-4', type:'error', wrong:"The house which I grew up was sold.", wrongWord:"which I grew up",
-            right:"The house where I grew up was sold.", rightWord:"where I grew up",
+          { id:'g-medio6-rel-4', type:'error', wrong:"The house which I grew up was sold.", wrongWord:"which",
+            right:"The house where I grew up was sold.", rightWord:"where",
             explain:"Para lugares usamos “where”, no “which”, cuando no hay preposición extra.",
             examples:[
               {en:"The house where I grew up was sold.", es:"La casa donde crecí fue vendida."},
@@ -1593,8 +1593,8 @@ const GRAMMAR_BANK = {
               {en:"I need to find out what time the train leaves.", es:"Necesito averiguar a qué hora sale el tren."},
               {en:"We found out the news yesterday.", es:"Nos enteramos de la noticia ayer."}
             ]},
-          { id:'g-medio6-phr-4', type:'error', wrong:"I will find out this problem tomorrow.", wrongWord:"find out this problem",
-            right:"I will look into this problem tomorrow.", rightWord:"look into this problem",
+          { id:'g-medio6-phr-4', type:'error', wrong:"I will find out this problem tomorrow.", wrongWord:"find out",
+            right:"I will look into this problem tomorrow.", rightWord:"look into",
             explain:"“Find out” es para descubrir información puntual; para investigar un problema se usa “look into”.",
             examples:[
               {en:"I will look into this problem tomorrow.", es:"Investigaré este problema mañana."},
@@ -1630,9 +1630,9 @@ const GRAMMAR_BANK = {
               {en:"We may travel next year.", es:"Podríamos viajar el próximo año."},
               {en:"They may change the plan.", es:"Podrían cambiar el plan."}
             ]},
-          { id:'g-medio7-modal-4', translation:"Podría ser tarde para llamarla.", type:'error', wrong:"It might to be late to call her.", wrongWord:"to be",
-            right:"It might be late to call her.", rightWord:"be",
-            explain:"Después de “might” no se usa “to”: “might be”, no “might to be”.",
+          { id:'g-medio7-modal-4', translation:"Podría ser tarde para llamarla.", type:'error', wrong:"It might to be late to call her.", wrongWord:"to",
+            right:"It might be late to call her.", rightWord:"",
+            explain:"Después de “might” no se usa “to”: sobra la palabra “to”.",
             examples:[
               {en:"It might be late to call her.", es:"Podría ser tarde para llamarla."},
               {en:"It might be a good idea.", es:"Podría ser una buena idea."}
@@ -2251,8 +2251,8 @@ const GRAMMAR_BANK = {
               {en:"She asked me if I would come to the party.", es:"Ella me preguntó si yo iría a la fiesta."},
               {en:"He asked if she would help him.", es:"Él preguntó si ella lo ayudaría."}
             ]},
-          { id:'g-avz6-rep-4', type:'error', wrong:"He said that he will call me later that day.", wrongWord:"will call",
-            right:"He said that he would call me later that day.", rightWord:"would call",
+          { id:'g-avz6-rep-4', type:'error', wrong:"He said that he will call me later that day.", wrongWord:"will",
+            right:"He said that he would call me later that day.", rightWord:"would",
             explain:"En discurso indirecto pasado, “will” cambia a “would”.",
             examples:[
               {en:"He said that he would call me later that day.", es:"Él dijo que me llamaría más tarde ese día."},
@@ -2354,9 +2354,9 @@ const GRAMMAR_BANK = {
               {en:"It was in Paris that they met.", es:"Fue en París donde se conocieron."},
               {en:"It was on Monday that the decision was made.", es:"Fue el lunes cuando se tomó la decisión."}
             ]},
-          { id:'g-avanzado7-cleft-4', translation:"Fue el cliente quien se quejó, no el equipo.", type:'error', wrong:"It was the client that complained who, not the team.", wrongWord:"that complained who",
-            right:"It was the client who complained, not the team.", rightWord:"who complained",
-            explain:"Para personas usamos “who” (o “that”), pero no se combinan ambos ni en ese orden.",
+          { id:'g-avanzado7-cleft-4', translation:"Fue el cliente quien se quejó, no el equipo.", type:'error', wrong:"It was the client which complained, not the team.", wrongWord:"which",
+            right:"It was the client who complained, not the team.", rightWord:"who",
+            explain:"Para personas usamos “who”, no “which”.",
             examples:[
               {en:"It was the client who complained, not the team.", es:"Fue el cliente quien se quejó, no el equipo."},
               {en:"It was the teacher who noticed the mistake.", es:"Fue el maestro quien notó el error."}
