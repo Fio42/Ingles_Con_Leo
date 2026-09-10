@@ -519,9 +519,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -2017,6 +2017,22 @@ function renderContinueCard(container){
           <div class="continue-sub">Un reto rápido de 5 ejercicios y sigues con tu racha.</div>
         </div>
         <a href="miembros.html" class="btn btn-primary">Ir al panel →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill && last.skill.indexOf('toefl-') === 0){
+    // Las secciones TOEFL no usan niveles (A1-C1) ni un bankSizeForLevel
+    // normal, así que necesitan su propia rama aquí (si no, el bloque
+    // genérico de abajo truena buscando LEVEL_META[last.level]).
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">${DISPLAY_SKILL_LABELS[last.skill] || 'TOEFL'}</div>
+          <div class="continue-sub">Sigue practicando el formato del examen.</div>
+        </div>
+        <a href="toefl.html" class="btn btn-primary">Continuar →</a>
         <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;

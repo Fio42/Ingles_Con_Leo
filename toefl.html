@@ -93,25 +93,15 @@
     <div class="wrap wrap-dash">
       <span class="badge badge-members">Miembros</span>
       <h1 style="margin-top:10px;">Preparación para el TOEFL</h1>
-      <p style="color:var(--ink-soft);max-width:560px;">Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato del examen.</p>
+      <p style="color:var(--ink-soft);max-width:560px;">Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato actual del examen (TOEFL iBT, vigente desde enero de 2026).</p>
       <a href="miembros.html" style="display:inline-block;margin-top:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;">← Volver a tu panel</a>
     </div>
   </section>
 
-  <section style="padding-top:8px;">
+  <section style="padding-top:8px;padding-bottom:48px;">
     <div class="wrap wrap-dash">
-      <div class="toefl-soon-card">
-        <span class="toefl-soon-eyebrow">Próximamente</span>
-        <h2>Estamos preparando este contenido</h2>
-        <p>Muy pronto vas a poder practicar aquí las cuatro secciones del examen TOEFL, con ejercicios enfocados en su formato real. Mientras tanto, sigue avanzando con tu práctica normal: te va a ayudar muchísimo también para el examen.</p>
-        <div class="toefl-soon-skills">
-          <span class="toefl-skill-pill">Reading</span>
-          <span class="toefl-skill-pill">Listening</span>
-          <span class="toefl-skill-pill">Speaking</span>
-          <span class="toefl-skill-pill">Writing</span>
-        </div>
-        <a href="miembros.html" class="btn btn-primary">Volver a tu panel →</a>
-      </div>
+      <div id="toeflLandingArea"></div>
+      <div class="session-shell" id="toeflSessionArea" hidden></div>
     </div>
   </section>
 </main>
@@ -166,9 +156,25 @@
 <script src="data.js?v=20260910"></script>
 <script src="app.js?v=20260910"></script>
 <script src="backend.js"></script>
+<script src="toefl-data.js?v=20260910"></script>
+<script src="toefl.js?v=20260910"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
-  guardMemberPage(function(){});
+  guardMemberPage(function(){
+    const landingArea = document.getElementById('toeflLandingArea');
+    const sessionArea = document.getElementById('toeflSessionArea');
+    function showLanding(){
+      sessionArea.hidden = true;
+      sessionArea.innerHTML = '';
+      landingArea.hidden = false;
+      renderToeflLanding(landingArea, function(key){
+        landingArea.hidden = true;
+        sessionArea.hidden = false;
+        startToeflSection(key, sessionArea, showLanding);
+      });
+    }
+    showLanding();
+  });
 </script>
 
 </body>

@@ -1286,3 +1286,30 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .ring-grid svg{max-width:92px;}
   #memberContent .ring-grid{gap:10px 4px;}
 }
+
+/* ============================================================
+   Página TOEFL (toefl.html) — landing de 4 secciones + detalles
+   de ejercicios que no existían en otras páginas (pasaje de
+   lectura, armar oración, link de "volver").
+   ============================================================ */
+.toefl-landing-intro{max-width:640px;margin-bottom:26px;}
+.toefl-landing-intro h2{font-family:'Baloo 2';margin:0 0 8px;font-size:1.4rem;color:var(--ink);}
+.toefl-landing-intro p{margin:0;color:var(--ink-soft);}
+.toefl-landing-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:700px){
+  .toefl-landing-grid{grid-template-columns:1fr 1fr;}
+}
+.toefl-landing-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 22px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+.toefl-landing-icon{width:42px;height:42px;border-radius:12px;background:var(--violet-tint);color:var(--violet);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
+.toefl-landing-icon svg{width:22px;height:22px;}
+.toefl-landing-card h3{font-family:'Baloo 2';margin:0;font-size:1.1rem;color:var(--ink);}
+.toefl-landing-card p{margin:0;color:var(--ink-soft);font-size:0.92rem;}
+.toefl-landing-count{font-size:0.78rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.03em;margin:2px 0 10px;}
+.toefl-landing-card .btn{align-self:stretch;justify-content:center;}
+.toefl-back-link{display:inline-block;margin-bottom:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;text-decoration:none;}
+.toefl-back-link:hover{color:var(--ink);}
+.reading-passage{background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px 18px;}
+.reading-passage h4{font-family:'Baloo 2';margin:0 0 8px;font-size:1rem;color:var(--ink);}
+.reading-passage p{margin:0;color:var(--ink-soft);line-height:1.55;}
+.assembled-row{display:flex;flex-wrap:wrap;gap:10px;background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px;min-height:56px;margin-bottom:14px;align-items:center;}
+.word-chip.filled{border-color:var(--blue);background:var(--blue-tint);}

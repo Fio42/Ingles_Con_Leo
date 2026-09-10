@@ -101,6 +101,26 @@ DIALOGOS = {
         ("Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is ana dot lopez at gmail dot com.", VOZ_TU),
         ("Perfect. I have your number and email address.", VOZ_PERSONAL),
     ],
+
+    # --- TOEFL Listening: Listen to a Conversation ---
+    "audio/toefl/tl-cv-1.mp3": [
+        ("Hi, I was wondering if I could get an extension on the essay that's due tomorrow.", VOZ_TU),
+        ("I see. What's the reason for the request?", VOZ_PERSONAL),
+        ("I've been sick since Monday and I'm behind on the reading too.", VOZ_TU),
+        ("That's fine, just email me before midnight and I'll extend it to Friday.", VOZ_PERSONAL),
+    ],
+    "audio/toefl/tl-cv-2.mp3": [
+        ("Excuse me, is this the line for the campus shuttle to the library?", VOZ_TU),
+        ("Yes, but it's running about fifteen minutes late today because of traffic.", VOZ_PERSONAL),
+        ("Oh, should I just walk instead? I have a class in twenty minutes.", VOZ_TU),
+        ("If it's close, walking might actually be faster right now.", VOZ_PERSONAL),
+    ],
+    "audio/toefl/tl-cv-3.mp3": [
+        ("Did you finish the group project slides?", VOZ_PERSONAL),
+        ("Almost. I still need to add the data from chapter four.", VOZ_TU),
+        ("I can send you those numbers tonight if that helps.", VOZ_PERSONAL),
+        ("That would be great, thanks. Then I can finish everything by tomorrow morning.", VOZ_TU),
+    ],
 }
 
 PAUSA_MS = 450  # pequena pausa de silencio entre lineas, para que no se amontonen
