@@ -138,17 +138,25 @@
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, ≈$40 MXN):</p>
-        <p class="gate-hint" style="margin:0 0 2px;text-align:left;font-weight:600;">Correo de tu cuenta de Mercado Pago</p>
-        <p class="gate-hint" style="margin:0 0 6px;text-align:left;">Puede ser diferente al correo que usas en Inglés con Leo.</p>
-        <input type="email" class="gate-input" id="mpEmailInput" placeholder="tu-correo@ejemplo.com" autocomplete="email">
-        <p class="gate-hint" style="margin:6px 0 0;text-align:left;font-size:12px;">Usa el mismo correo que tienes registrado en Mercado Pago para evitar problemas con el pago.</p>
-        <p class="gate-hint" style="margin:2px 0 0;text-align:left;font-size:12px;">¿No sabes qué correo usas en Mercado Pago? Revisa el correo asociado a tu cuenta desde tu perfil en Mercado Pago.</p>
-        <div class="gate-error" id="mpEmailError">Escribe el correo de tu cuenta de Mercado Pago.</div>
-        <button class="btn btn-primary btn-block" id="payBtn" style="margin-top:10px;">Pagar con Mercado Pago</button>
-        <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
-        <p class="gate-hint" style="margin:14px 0 6px;text-align:center;">¿Pagas con una tarjeta de fuera de México?</p>
-        <button class="btn btn-ghost btn-block" id="payStripeBtn">Pagar con tarjeta internacional (Stripe)</button>
-        <div class="gate-error" id="payStripeError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+
+        <div id="payChooser">
+          <button class="btn btn-primary btn-block" id="payBtnMP">Pagar con Mercado Pago</button>
+          <button class="btn btn-primary btn-block" id="payStripeBtn" style="margin-top:10px;">Pagar con tarjeta internacional (Stripe)</button>
+          <div class="gate-error" id="payStripeError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+        </div>
+
+        <div id="mpEmailStep" style="display:none;">
+          <p class="gate-hint" style="margin:0 0 2px;text-align:left;font-weight:600;">Correo de tu cuenta de Mercado Pago</p>
+          <p class="gate-hint" style="margin:0 0 6px;text-align:left;">Puede ser diferente al correo que usas en Inglés con Leo.</p>
+          <input type="email" class="gate-input" id="mpEmailInput" placeholder="tu-correo@ejemplo.com" autocomplete="email">
+          <p class="gate-hint" style="margin:6px 0 0;text-align:left;font-size:12px;">Usa el mismo correo que tienes registrado en Mercado Pago para evitar problemas con el pago.</p>
+          <p class="gate-hint" style="margin:2px 0 0;text-align:left;font-size:12px;">¿No sabes qué correo usas en Mercado Pago? Revisa el correo asociado a tu cuenta desde tu perfil en Mercado Pago.</p>
+          <div class="gate-error" id="mpEmailError">Escribe el correo de tu cuenta de Mercado Pago.</div>
+          <button class="btn btn-primary btn-block" id="payBtn" style="margin-top:10px;">Continuar a Mercado Pago</button>
+          <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+          <p class="gate-hint" style="margin-top:10px;"><a href="#" id="backToPayChooser" style="color:var(--blue);font-weight:600;">‹ Elegir otra forma de pago</a></p>
+        </div>
+
         <button class="btn btn-ghost btn-block" id="logoutBtn" style="margin-top:10px;">Cerrar sesión</button>
       </div>
       <p class="gate-hint" id="freeSampleHint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
@@ -380,6 +388,10 @@
   const mpEmailError = document.getElementById('mpEmailError');
   const payStripeBtn = document.getElementById('payStripeBtn');
   const payStripeError = document.getElementById('payStripeError');
+  const payBtnMP = document.getElementById('payBtnMP');
+  const payChooser = document.getElementById('payChooser');
+  const mpEmailStep = document.getElementById('mpEmailStep');
+  const backToPayChooser = document.getElementById('backToPayChooser');
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   let hasSession = false;
@@ -389,6 +401,17 @@
     loginStep2.style.display = step === 2 ? 'block' : 'none';
     loginPending.style.display = step === 3 ? 'block' : 'none';
     loginRecovery.style.display = step === 4 ? 'block' : 'none';
+    if(step === 3) resetPayChooser();
+  }
+
+  // Vuelve a mostrar las dos opciones de pago (Mercado Pago / Stripe)
+  // y esconde el formulario de correo de Mercado Pago. Se usa al
+  // entrar a este paso, y al volver desde el formulario de correo.
+  function resetPayChooser(){
+    payChooser.style.display = 'block';
+    mpEmailStep.style.display = 'none';
+    payError.classList.remove('show');
+    mpEmailError.classList.remove('show');
   }
 
   function updateAuthModeUI(){
@@ -618,9 +641,10 @@
   }
 
   if(pricingCtaBtn){
-    pricingCtaBtn.addEventListener('click', async ()=>{
+    pricingCtaBtn.addEventListener('click', ()=>{
       if(hasSession){
-        await goToCheckout(pricingCtaBtn);
+        resetPayChooser();
+        loginPending.scrollIntoView({ behavior:'smooth', block:'center' });
       } else {
         document.getElementById('loginStep1').scrollIntoView({ behavior:'smooth', block:'center' });
         emailInput.focus();
@@ -634,6 +658,21 @@
 
   if(payStripeBtn){
     payStripeBtn.addEventListener('click', ()=>{ goToStripeCheckout(payStripeBtn); });
+  }
+
+  if(payBtnMP){
+    payBtnMP.addEventListener('click', ()=>{
+      payChooser.style.display = 'none';
+      mpEmailStep.style.display = 'block';
+      mpEmailInput.focus();
+    });
+  }
+
+  if(backToPayChooser){
+    backToPayChooser.addEventListener('click', (e)=>{
+      e.preventDefault();
+      resetPayChooser();
+    });
   }
 
   updateAuthModeUI();
