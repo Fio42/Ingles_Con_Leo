@@ -2771,6 +2771,26 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
+  // "Probar otra habilidad" (botón del resumen de una sesión gratis):
+  // antes solo hacía scroll hacia las pestañas de arriba y dejaba que
+  // el usuario eligiera, pero el usuario reportó que en la práctica
+  // sentía que lo empujaba hacia el botón de pago de más abajo en vez
+  // de dejarlo probar algo gratis de verdad. Ahora este botón cambia
+  // directamente a la SIGUIENTE habilidad de la lista (nunca a pagar,
+  // nunca fuerza nada) y hace scroll hasta arriba para que se vea que
+  // ya está en una habilidad distinta. El aviso de "¿Quieres seguir?"
+  // con el botón de $2/mes al final del resumen no se tocó: sigue
+  // apareciendo igual, solo que ya no es lo único a donde este botón
+  // parece llevar.
+  function tryAnotherSkill(){
+    const currentIdx = SKILL_ORDER.indexOf(currentSkill);
+    const nextIdx = (currentIdx + 1) % SKILL_ORDER.length;
+    currentSkill = SKILL_ORDER[nextIdx];
+    renderTabs();
+    renderCurrent();
+    focusTabs();
+  }
+
   function renderHead(){
     headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
   }
@@ -2789,7 +2809,7 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   function renderCurrent(){
     renderHead();
     const run = RUNNERS[currentSkill] || runFreeGrammarSession;
-    run({ container: bodyEl, level: currentLevel, onOtherSkill: focusTabs });
+    run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill });
   }
 
   renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); });
