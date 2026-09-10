@@ -508,9 +508,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -1713,6 +1713,185 @@ function runMistakesSession({ container }){
   runMistakesSessionCore({ container });
 }
 
+/* ============================================================
+   RETO DIARIO — 5 ejercicios mezclados para tener una razón
+   concreta de volver cada día.
+   ------------------------------------------------------------
+   - Practicar gratis (sin cuenta): 1 reto al día, guardado en el
+     navegador de esa persona (no hay cuenta con la que guardarlo
+     en la nube). Al terminarlo, queda bloqueado hasta el día
+     siguiente (con una invitación a hacerse miembro para
+     repetirlo).
+   - Miembros: sin límite de repeticiones al día, cada vez con una
+     mezcla nueva de 5 ejercicios. Usa el mismo guardado de "no
+     perder el progreso al refrescar" que ya usan Mixto y Mis
+     errores (loadInflightSession / saveInflightSession), y cada
+     reto terminado se registra como una sesión normal (cuenta
+     para la racha y las estadísticas ya existentes).
+   ============================================================ */
+const DAILY_CHALLENGE_FREE_KEY = 'leo_daily_challenge_free';
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function getDailyChallengeFreeStatus(){
+  try{
+    const raw = localStorage.getItem(DAILY_CHALLENGE_FREE_KEY);
+    const saved = raw ? JSON.parse(raw) : null;
+    return (saved && saved.date === todayStr()) ? saved : null;
+  }catch(e){ return null; }
+}
+function markDailyChallengeFreeDone(score){
+  try{ localStorage.setItem(DAILY_CHALLENGE_FREE_KEY, JSON.stringify({ date: todayStr(), done:true, score })); }catch(e){}
+}
+
+// Arma los 5 ejercicios del reto: uno de Gramática, uno de
+// Vocabulario, uno de Listening, uno de Writing, y un quinto extra
+// de Gramática o Vocabulario (los bancos con más contenido). Reusa
+// pickVariantIndex igual que Mixto, así que en el modo gratis nunca
+// puede tocar una variante exclusiva de Miembros.
+function pickDailyChallengeItems(level, isFree){
+  function sample(arr, n){
+    const copy = arr.slice();
+    for(let i=copy.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [copy[i],copy[j]]=[copy[j],copy[i]]; }
+    return copy.slice(0, Math.min(n, copy.length));
+  }
+
+  const gVariantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.gramatica[level] : undefined);
+  const gPool = [];
+  GRAMMAR_BANK[level][gVariantIdx].forEach(t=> t.items.forEach(it=> gPool.push(it)));
+
+  const vVariantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level] : undefined);
+  const vPool = VOCAB_BANK[level][vVariantIdx];
+
+  const lVariantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.listening[level] : undefined);
+  const lPool = LISTENING_BANK[level][lVariantIdx];
+
+  const wVariantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, isFree ? MEMBERS_ONLY_VARIANT_INDEX.writing[level] : undefined);
+  const wPool = WRITING_BANK[level][wVariantIdx];
+
+  const picks = [
+    { kind:'grammar', item: sample(gPool,1)[0] },
+    { kind:'vocab', item: sample(vPool,1)[0] },
+    { kind:'listening', item: sample(lPool,1)[0] },
+    { kind:'writing', item: sample(wPool,1)[0] }
+  ];
+  const extraPool = gPool.filter(it=> it.id !== picks[0].item.id).map(it=>({ kind:'grammar', item:it }))
+    .concat(vPool.filter(it=> it.id !== picks[1].item.id).map(it=>({ kind:'vocab', item:it })));
+  picks.push(sample(extraPool,1)[0]);
+
+  for(let i=picks.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [picks[i],picks[j]]=[picks[j],picks[i]]; }
+  return picks;
+}
+
+function renderDailyChallengeIntro(container, { isFree, doneState, onStart }){
+  if(doneState){
+    const scoreTxt = doneState.score ? `${doneState.score.correct} / ${doneState.score.total} correctas` : '';
+    container.innerHTML = `
+      <p class="daily-done-msg">${OK_ICON} Ya hiciste tu reto de hoy${scoreTxt ? ' · ' + scoreTxt : ''}.</p>
+      <p class="daily-sub">Vuelve mañana para el siguiente, o hazte miembro para repetirlo las veces que quieras.</p>
+      <a href="miembros.html" class="daily-btn">Hazte miembro →</a>`;
+    return;
+  }
+  container.innerHTML = `
+    <p class="daily-sub">5 ejercicios mezclados: gramática, vocabulario, listening y writing.</p>
+    <button type="button" class="daily-btn" id="dailyStartBtn">Empezar reto diario →</button>`;
+  const btn = container.querySelector('#dailyStartBtn');
+  if(btn) btn.addEventListener('click', onStart);
+}
+
+function runDailyChallengeSession({ container, isFree, level }){
+  level = level || getUserLevel();
+  const saved = !isFree ? loadInflightSession('reto-diario', level) : null;
+  const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
+  const pool = useSaved ? saved.pool : pickDailyChallengeItems(level, isFree);
+  const total = pool.length;
+  const startedAt = useSaved ? saved.startedAt : Date.now();
+  const results = useSaved ? saved.results.slice() : [];
+  let idx = useSaved ? saved.idx : 0;
+
+  function renderItem(){
+    const entry = pool[idx];
+    if(!isFree) saveInflightSession('reto-diario', level, { pool, idx, results, startedAt });
+    const pct = Math.round(((idx+1)/total)*100);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+      <div class="session-head">
+        <span class="practice-level-tag">Reto diario · ${MIX_KIND_LABEL[entry.kind]}</span>
+        <span class="session-count">Ejercicio ${idx+1} de ${total}</span>
+      </div>
+      <div class="session-progress"><div class="session-progress-fill" style="width:${pct}%;"></div></div>`;
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderMixItemInto(card, entry, (isCorrect)=>{
+      results.push({ itemId: entry.item.id, isCorrect });
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
+    });
+  }
+
+  function finish(){
+    const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const score = { correct, total: graded.length };
+    if(isFree){
+      markDailyChallengeFreeDone(score);
+      container.innerHTML = `
+        <div class="session-summary" style="padding:0;">
+          <h2>¡Reto completado!</h2>
+          <p class="summary-score">${correct} / ${graded.length} correctas</p>
+          <p class="daily-sub" style="margin-top:10px;">Vuelve mañana para el siguiente reto, o hazte miembro para repetirlo las veces que quieras hoy mismo.</p>
+          <div class="summary-actions">
+            <a href="miembros.html" class="btn btn-primary">Hazte miembro →</a>
+          </div>
+        </div>`;
+    } else {
+      clearInflightSession('reto-diario', level);
+      recordSession({ skill:'reto-diario', level, topics:['Reto diario'], results, startedAt });
+      container.innerHTML = `
+        <div class="session-summary" style="padding:0;">
+          <h2>¡Reto completado!</h2>
+          <p class="summary-score">${correct} / ${graded.length} correctas</p>
+          <div class="summary-actions">
+            <button type="button" class="btn btn-primary" id="dailyAgainBtn">Hacer otro reto →</button>
+          </div>
+        </div>`;
+      const again = container.querySelector('#dailyAgainBtn');
+      if(again) again.addEventListener('click', ()=> runDailyChallengeSession({ container, isFree:false, level }));
+    }
+  }
+
+  renderItem();
+}
+
+// Punto de entrada único para ambas páginas (practica.html y
+// miembros.html): decide solo si mostrar la intro, el aviso de "ya
+// lo hiciste hoy" (solo gratis) o retomar un reto a medias (solo
+// Miembros), y arranca la sesión cuando corresponda.
+function initDailyChallenge(container, { isFree }){
+  if(!container) return;
+  if(isFree){
+    const status = getDailyChallengeFreeStatus();
+    if(status && status.done){
+      renderDailyChallengeIntro(container, { isFree:true, doneState: status });
+      return;
+    }
+    renderDailyChallengeIntro(container, { isFree:true, doneState:null, onStart: ()=> runDailyChallengeSession({ container, isFree:true }) });
+    return;
+  }
+  const level = getUserLevel();
+  const saved = loadInflightSession('reto-diario', level);
+  if(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length){
+    runDailyChallengeSession({ container, isFree:false, level });
+    return;
+  }
+  renderDailyChallengeIntro(container, { isFree:false, doneState:null, onStart: ()=> runDailyChallengeSession({ container, isFree:false, level }) });
+}
+
 /* ---------- Resumen de sesión (compartido) ---------- */
 function renderSessionSummary({ title, score, topics }){
   return `
@@ -1783,6 +1962,22 @@ function renderContinueCard(container){
           <div class="continue-sub">Sigue repasando lo que se te ha complicado.</div>
         </div>
         <a href="errores.html" class="btn btn-primary">Continuar →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill === 'reto-diario'){
+    // El reto diario vive como tarjeta dentro del panel (no tiene una
+    // página propia), así que el botón manda de vuelta a miembros.html
+    // en vez de a una página de habilidad como gramatica.html/etc.
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">Reto diario</div>
+          <div class="continue-sub">Un reto rápido de 5 ejercicios y sigues con tu racha.</div>
+        </div>
+        <a href="miembros.html" class="btn btn-primary">Ir al panel →</a>
         <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;

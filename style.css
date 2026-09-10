@@ -1056,3 +1056,24 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media (max-width:640px){
   .mistakes-card{padding:18px 18px;}
 }
+
+/* "Reto diario" (Practicar gratis y panel de Miembros): mismo
+   lenguaje visual que .mistakes-card (tarjeta blanca, acento solo en
+   detalles) pero en ámbar en vez de coral, para que se distinga a
+   simple vista de "Mis errores". El cuerpo (#dailyChallengeBody en
+   cada página) lo llena initDailyChallenge() en app.js: intro, aviso
+   de "ya lo hiciste hoy", o la sesión de 5 ejercicios en curso. */
+.daily-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:12px;transition:transform .2s ease, box-shadow .2s ease;}
+.daily-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(27,35,51,0.06);}
+.daily-card-top{display:flex;align-items:center;gap:12px;}
+.daily-card-top .stat-card-icon{width:44px;height:44px;}
+.daily-card-top .stat-card-icon svg{width:22px;height:22px;}
+.daily-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--amber);}
+.daily-card h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.daily-sub{margin:0;color:var(--ink-soft);font-size:0.95rem;}
+.daily-done-msg{margin:0;font-weight:700;color:var(--ink);}
+.daily-btn{align-self:flex-start;background:var(--amber-tint);color:var(--amber);border:2px solid var(--amber);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-decoration:none;font-family:inherit;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
+.daily-btn:hover{background:var(--amber);color:#fff;box-shadow:0 6px 14px rgba(245,165,36,0.3);}
+@media (max-width:640px){
+  .daily-card{padding:18px 18px;}
+}
