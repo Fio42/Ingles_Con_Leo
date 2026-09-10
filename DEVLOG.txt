@@ -279,3 +279,10 @@ DEVLOG — Inglés con Leo
 2026-09-10 (4) — Nueva clase de Miembros: números, teléfonos y símbolos
 - Se agregó la duodécima clase activa, "Números, teléfonos y símbolos", dentro de Vida diaria. Enseña a compartir un número de WhatsApp con código de país (+57), decir una dirección de correo y reconocer +, @, punto, guion, _, / y #, conservando los 8 pasos de las clases existentes.
 - Se añadieron las rutas de audio audio/clases/numeros-simbolos-listening.mp3 y audio/clases/numeros-simbolos-speaking.mp3 en los generadores. Los MP3 quedan pendientes de generarse por el usuario con los comandos de Python habituales; no se modificó ningún audio existente.
+
+2026-09-10 (5) — Voz consistente y controles de navegación en Clases
+- Las frases clave de todas las clases dejan de usar la voz interna del navegador, que variaba por equipo y podía sonar robótica. Ahora cada una usa su propio MP3 generado con en-US-JennyNeural. Los diálogos también se regenerarán íntegramente con esa misma voz femenina, para que toda la experiencia tenga la voz que el usuario prefirió.
+- tools/generar_audios.py ahora acepta una ruta de carpeta terminada en / para generar un grupo de audios. El comando audio/clases/frases/ genera únicamente las 63 frases clave nuevas, sin regenerar el resto del sitio.
+- clases.js: se añadió el botón "Anterior" en los pasos intermedios. Al volver y contestar otra vez, el resultado anterior se reemplaza y no se duplica en el resumen. No se muestra en el resumen para evitar registrar una sesión terminada por segunda vez.
+- app.js: se limita el sitio a una sola pista activa y el botón que la inició queda deshabilitado hasta que termine o falle. Así dos clics rápidos no producen audios superpuestos.
+- La clase "Números, teléfonos y símbolos" ahora usa ana.lopez@gmail.com como ejemplo, sin mencionar a Leo.

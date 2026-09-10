@@ -25,6 +25,9 @@ COMO USARLO (una sola vez para preparar todo):
    audios del CSV, agrega su ruta al final. Por ejemplo:
        python generar_audios.py audio/clases/farmacia-speaking.mp3
 
+   Para generar todas las frases clave de las Clases con la voz Jenny:
+       python generar_audios.py audio/clases/frases/
+
 VOCES DISPONIBLES (puedes dejarlo vacio para usar la voz por defecto):
    en-US-AriaNeural    (mujer, US, natural)
    en-US-GuyNeural     (hombre, US)
@@ -67,7 +70,9 @@ async def main():
         print("Crea 'lista_audios.csv' en la misma carpeta que este script.")
         return
 
-    solicitados = set(sys.argv[1:])
+    # Una ruta exacta genera solo ese audio. Una ruta terminada en / sirve
+    # como grupo, por ejemplo audio/clases/frases/ para las frases clave.
+    solicitados = {ruta.replace("\\", "/") for ruta in sys.argv[1:]}
     filas = []
     with open(CSV_FILE, newline="", encoding="utf-8") as f:
         lector = csv.reader(f)
@@ -77,7 +82,12 @@ async def main():
             if not fila or not fila[0].strip():
                 continue
             archivo = fila[0].strip()
-            if solicitados and archivo not in solicitados:
+            coincide = any(
+                archivo == solicitado or
+                (solicitado.endswith('/') and archivo.startswith(solicitado))
+                for solicitado in solicitados
+            )
+            if solicitados and not coincide:
                 continue
             texto = fila[1].strip() if len(fila) > 1 else ""
             voz = fila[2].strip() if len(fila) > 2 and fila[2].strip() else VOZ_POR_DEFECTO

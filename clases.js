@@ -4,33 +4,10 @@
    sessionHeaderHtml, showNextButton, recordSession() de app.js.
    ============================================================ */
 
-/* Lee una frase en voz alta usando la sintesis de voz del navegador
-   (no necesita ningun mp3 grabado, funciona al instante). Si el
-   navegador no soporta esto, el boton simplemente no hace nada. */
-function speakPhrase(text){
-  if(!('speechSynthesis' in window)) return;
-  try{
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
-    utter.rate = 0.92;
-    window.speechSynthesis.speak(utter);
-  }catch(e){}
-}
-
-/* "Calienta" la sintesis de voz del navegador apenas se carga esta
-   pagina, no hasta que alguien toca el boton. Muchos navegadores
-   cargan la lista de voces de forma perezosa la primera vez que se
-   usan, lo que hace que el primer clic en "Escuchar esta frase" tarde
-   unos segundos; los siguientes ya son instantaneos. Llamando
-   getVoices() (y de nuevo cuando el navegador avisa que ya cargo la
-   lista) desde el principio evita esa espera cuando el usuario llega
-   al paso de Frases clave. */
-if('speechSynthesis' in window){
-  window.speechSynthesis.getVoices();
-  if(window.speechSynthesis.addEventListener){
-    window.speechSynthesis.addEventListener('voiceschanged', ()=>{ window.speechSynthesis.getVoices(); });
-  }
+// Las frases clave usan MP3 generados con Jenny, no la voz interna del
+// navegador (que cambia según el equipo y podía sonar robótica).
+function phraseAudioPath(classId, index){
+  return `audio/clases/frases/${classId}-${index + 1}.mp3`;
 }
 
 /* showRetryOrNextButtons() ahora vive en app.js (se comparte con
@@ -75,6 +52,18 @@ function clearClaseProgress(classId){
     delete all[classId];
     saveAllClaseProgress(all);
   }
+}
+
+// Si se vuelve a un paso anterior y se responde de nuevo, reemplazamos
+// ese resultado en vez de sumarlo dos veces a la sesión.
+function recordClaseResult(state, itemId, isCorrect){
+  const existing = state.results.findIndex(result=> result.itemId === itemId);
+  const result = { itemId, isCorrect };
+  if(existing >= 0) state.results[existing] = result;
+  else state.results.push(result);
+}
+function clearClaseResult(state, itemId){
+  state.results = state.results.filter(result=> result.itemId !== itemId);
 }
 
 // Devuelve un mapa { classId: progreso } de todas las clases con al
@@ -151,12 +140,16 @@ function startClass(classId, rootContainer){
   const STEP_LABELS = ['Situación','Frases clave','Escucha','Elige','Construye','Habla','Reto final','Resumen'];
 
   function goTo(i){
+    if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile();
     state.stepIndex = i;
     saveClaseProgress(state);
     rootContainer.innerHTML = `
       <div class="clase-shell">
         <div class="clase-stepper">
-          <button class="clase-back-btn" id="claseBackBtn">← Clases</button>
+          <div class="clase-nav-actions">
+            <button class="clase-back-btn" id="claseBackBtn">← Clases</button>
+            ${i > 0 && i < steps.length - 1 ? '<button class="clase-back-btn" id="clasePreviousBtn">← Anterior</button>' : ''}
+          </div>
           <div class="clase-stepper-track">
             ${STEP_LABELS.map((label,idx)=>`
               <span class="clase-step-dot ${idx < i ? 'done' : ''} ${idx === i ? 'active' : ''}"></span>
@@ -166,7 +159,9 @@ function startClass(classId, rootContainer){
         </div>
         <div class="clase-body" id="claseBody"></div>
       </div>`;
-    rootContainer.querySelector('#claseBackBtn').addEventListener('click', ()=> renderClassList(rootContainer));
+    rootContainer.querySelector('#claseBackBtn').addEventListener('click', ()=>{ if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile(); renderClassList(rootContainer); });
+    const previousBtn = rootContainer.querySelector('#clasePreviousBtn');
+    if(previousBtn) previousBtn.addEventListener('click', ()=> goTo(i - 1));
     const body = rootContainer.querySelector('#claseBody');
     steps[i](body, state, ()=> goTo(i+1));
   }
@@ -205,7 +200,7 @@ function renderStepPhrases(body, state, next){
   body.querySelectorAll('.clase-phrase-listen-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const idx = parseInt(btn.dataset.idx, 10);
-      speakPhrase(phrases[idx].en);
+      playAudioFile(phraseAudioPath(state.data.id, idx), body, btn);
     });
   });
   body.querySelector('#claseNext').addEventListener('click', next);
@@ -230,7 +225,7 @@ function renderStepListening(body, state, next){
     </div>
     <div class="next-row" id="nextRow"></div>`;
 
-  body.querySelector('#claseHear').addEventListener('click', ()=> playAudioFile(listening.audio, body));
+  body.querySelector('#claseHear').addEventListener('click', event=> playAudioFile(listening.audio, body, event.currentTarget));
 
   function wireOptions(){
     answered = false;
@@ -250,7 +245,7 @@ function renderStepListening(body, state, next){
     const btn = this;
     const idx = parseInt(btn.dataset.idx,10);
     const correct = idx === listening.question.correctIndex;
-    state.results.push({ itemId:'listening', isCorrect:correct });
+    recordClaseResult(state, 'listening', correct);
     btn.classList.add(correct ? 'correct' : 'incorrect');
     body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
     if(!correct){
@@ -310,7 +305,7 @@ function renderStepChoose(body, state, next){
     const btn = this;
     const idx = parseInt(btn.dataset.idx,10);
     const opt = chooseResponse.options[idx];
-    state.results.push({ itemId:'chooseResponse', isCorrect:opt.correct });
+    recordClaseResult(state, 'chooseResponse', opt.correct);
     btn.classList.add(opt.correct ? 'correct' : 'incorrect');
     body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
     body.querySelector('#claseFeedback').innerHTML = `<p class="${opt.correct ? 'clase-fb-ok' : 'clase-fb-bad'}">${opt.correct ? OK_ICON : BAD_ICON} ${opt.feedback}</p>`;
@@ -344,12 +339,12 @@ function renderStepBuild(body, state, next){
 
   function onCheck(){
     const correct = chosen.join(' ') === buildSentence.correctOrder.join(' ');
-    state.results.push({ itemId:'buildSentence', isCorrect:correct });
+    recordClaseResult(state, 'buildSentence', correct);
     body.querySelector('#claseFeedback').innerHTML = correct
       ? `<p class="clase-fb-ok">${OK_ICON} ¡Perfecto: "${buildSentence.correctOrder.join(' ')}"</p>`
       : `<p class="clase-fb-bad">${BAD_ICON} Casi. La frase correcta es: "${buildSentence.correctOrder.join(' ')}"</p>`;
     showRetryOrNextButtons(body, correct, ()=>{
-      state.results.pop();
+      clearClaseResult(state, 'buildSentence');
       chosen = [];
       renderChips();
       body.querySelector('#claseFeedback').innerHTML = '';
@@ -403,9 +398,9 @@ function renderStepSpeak(body, state, next){
       <button class="btn btn-primary btn-sm" id="claseSpeakNext">Continuar →</button>
     </div>`;
 
-  body.querySelector('#claseHearSpeak').addEventListener('click', ()=> playAudioFile(speaking.audio, body));
+  body.querySelector('#claseHearSpeak').addEventListener('click', event=> playAudioFile(speaking.audio, body, event.currentTarget));
   body.querySelector('#claseSpeakNext').addEventListener('click', ()=>{
-    state.results.push({ itemId:'speaking', isCorrect:null });
+    recordClaseResult(state, 'speaking', null);
     next();
   });
 
@@ -440,7 +435,7 @@ function renderStepSpeak(body, state, next){
             <div class="compare-label">Tu grabación</div>
             <audio controls src="${url}"></audio>
           </div>`;
-        compareRow.querySelector('#claseOrigBtn').addEventListener('click', ()=> playAudioFile(speaking.audio, body));
+        compareRow.querySelector('#claseOrigBtn').addEventListener('click', event=> playAudioFile(speaking.audio, body, event.currentTarget));
         retryBtn.style.display = 'inline-flex';
         stream.getTracks().forEach(t=>t.stop());
         recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
@@ -521,7 +516,7 @@ function renderStepChallenge(body, state, next){
         attemptCount++;
         if(opt.correct) correctCount++;
       }
-      state.results.push({ itemId:'miniChallenge:'+nodeId, isCorrect:opt.correct });
+      recordClaseResult(state, 'miniChallenge:'+nodeId, opt.correct);
       state.challengePath.push(nodeId);
       btn.classList.add(opt.correct ? 'correct' : 'incorrect');
       body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });

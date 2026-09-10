@@ -2,10 +2,9 @@
 """
 generar_dialogos.py
 --------------------
-Genera los 3 audios de "Escucha el dialogo" de las Clases (aeropuerto,
-hotel, restaurante) pero con DOS VOCES DIFERENTES: una para el personal
-(agente / recepcionista / mesero) y otra para "Tu", para que suene como
-dos personas distintas hablando, no una sola voz leyendo todo.
+Genera los audios de "Escucha el dialogo" de las Clases con la voz femenina
+Jenny. Se usa una voz consistente en toda la experiencia, incluidas las
+frases clave y los diálogos.
 
 Usa la misma herramienta gratuita que generar_audios.py (Edge TTS).
 
@@ -15,12 +14,8 @@ COMO USARLO:
 2. Abre la Terminal / simbolo del sistema (CMD) en la carpeta "tools".
 3. Ejecuta:
        python generar_dialogos.py
-   Esto va a REEMPLAZAR los 3 archivos:
-       audio/clases/aeropuerto-listening.mp3
-       audio/clases/hotel-listening.mp3
-       audio/clases/restaurante-listening.mp3
-   con version de dos voces. No necesitas tocar nada mas, todo esta
-   escrito aqui abajo.
+   Esto va a REEMPLAZAR únicamente los audios de diálogo de las Clases
+   con su versión de Jenny. No afecta los demás audios del sitio.
 
    Para generar solo un diálogo nuevo sin reemplazar los demás, agrega
    su ruta al final del comando. Por ejemplo:
@@ -40,12 +35,11 @@ except ImportError:
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-VOZ_PERSONAL = "en-US-GuyNeural"   # voz de hombre para el personal (agente/recepcionista/mesero)
-VOZ_TU = "en-US-JennyNeural"       # voz de mujer más conversacional para "Tú"
+VOZ_PERSONAL = "en-US-JennyNeural"
+VOZ_TU = "en-US-JennyNeural"
 
-# Cada dialogo es una lista de (texto, voz), en el orden en que se deben
-# escuchar. Esto tiene que coincidir exactamente con el campo "dialogue"
-# de cada clase en data.js.
+# Cada diálogo es una lista de (texto, voz), en el orden en que se debe
+# escuchar. El texto coincide con el campo "dialogue" de cada clase en data.js.
 DIALOGOS = {
     "audio/clases/aeropuerto-listening.mp3": [
         ("Good morning! Passport, please.", VOZ_PERSONAL),
@@ -104,7 +98,7 @@ DIALOGOS = {
     ],
     "audio/clases/numeros-simbolos-listening.mp3": [
         ("Could you give me your WhatsApp number and email address, please?", VOZ_PERSONAL),
-        ("Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is leo dot study at gmail dot com.", VOZ_TU),
+        ("Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is ana dot lopez at gmail dot com.", VOZ_TU),
         ("Perfect. I have your number and email address.", VOZ_PERSONAL),
     ],
 }

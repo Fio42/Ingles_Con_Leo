@@ -672,7 +672,26 @@ function showAudioMissingNote(container){
   note.textContent = 'Audio próximamente.';
   container.appendChild(note);
 }
-function playAudioFile(path, container){
+let activeAudioFile = null;
+let activeAudioTrigger = null;
+function clearActiveAudioFile(){
+  if(activeAudioTrigger){
+    activeAudioTrigger.disabled = false;
+    activeAudioTrigger.removeAttribute('aria-busy');
+  }
+  activeAudioFile = null;
+  activeAudioTrigger = null;
+}
+function stopActiveAudioFile(){
+  if(activeAudioFile){
+    try{ activeAudioFile.pause(); activeAudioFile.currentTime = 0; }catch(e){}
+  }
+  clearActiveAudioFile();
+}
+function playAudioFile(path, container, trigger){
+  // Una sola pista a la vez: evita que dos clics rápidos creen voces
+  // superpuestas. Al terminar, el mismo botón vuelve a estar disponible.
+  if(activeAudioFile) return;
   let audio;
   try{
     audio = new Audio(path);
@@ -680,10 +699,18 @@ function playAudioFile(path, container){
     showAudioMissingNote(container);
     return;
   }
-  audio.addEventListener('error', ()=> showAudioMissingNote(container));
+  activeAudioFile = audio;
+  activeAudioTrigger = trigger || null;
+  if(activeAudioTrigger){
+    activeAudioTrigger.disabled = true;
+    activeAudioTrigger.setAttribute('aria-busy','true');
+  }
+  const finish = ()=> clearActiveAudioFile();
+  audio.addEventListener('ended', finish, { once:true });
+  audio.addEventListener('error', ()=>{ showAudioMissingNote(container); finish(); }, { once:true });
   const p = audio.play();
   if(p && typeof p.catch === 'function'){
-    p.catch(()=> showAudioMissingNote(container));
+    p.catch(()=>{ showAudioMissingNote(container); finish(); });
   }
 }
 

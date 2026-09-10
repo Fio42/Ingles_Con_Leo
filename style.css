@@ -973,6 +973,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .clase-shell{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
 .clase-stepper{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:2px solid var(--line);flex-wrap:wrap;}
+.clase-nav-actions{display:flex;align-items:center;gap:12px;}
 .clase-back-btn{background:none;border:none;font-weight:600;font-size:0.85rem;color:var(--ink-faint);cursor:pointer;font-family:inherit;padding:0;}
 .clase-stepper-track{display:flex;gap:6px;flex:1;}
 .clase-step-dot{width:10px;height:10px;border-radius:50%;background:var(--line);}
