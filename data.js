@@ -2321,8 +2321,8 @@ const GRAMMAR_BANK = {
               {en:"The news is surprising.", es:"La noticia es sorprendente."},
               {en:"Everyone was surprised by the news.", es:"Todos quedaron sorprendidos por la noticia."}
             ]},
-          { id:'g-avanzado7-edng-4', translation:"Estoy cansado después de un día agotador.", type:'error', wrong:"I am tiring after an exhausted day.", wrongWord:"tiring / exhausted",
-            right:"I am tired after an exhausting day.", rightWord:"tired / exhausting",
+          { id:'g-avanzado7-edng-4', translation:"Estoy cansado después de un día agotador.", type:'error', wrong:"I am tiring after an exhausting day.", wrongWord:"tiring",
+            right:"I am tired after an exhausting day.", rightWord:"tired",
             explain:"La persona se siente “tired” (cansada); el día es “exhausting” (agotador, causa cansancio).",
             examples:[
               {en:"I am tired after an exhausting day.", es:"Estoy cansado después de un día agotador."},
@@ -6655,7 +6655,7 @@ const CLASSES_BANK = {
       audio:'audio/clases/numeros-simbolos-listening.mp3',
       dialogue:[
         { speaker:'Persona', en:'Could you give me your WhatsApp number and email address, please?' },
-        { speaker:'Tú', en:'Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is leo dot study at gmail dot com.' },
+        { speaker:'Tú', en:'Sure. My number is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen. My email is ana dot lopez at gmail dot com.' },
         { speaker:'Persona', en:'Perfect. I have your number and email address.' }
       ],
       question:{
@@ -6673,9 +6673,9 @@ const CLASSES_BANK = {
       ]
     },
     buildSentence:{
-      es:'Mi correo es leo.study@gmail.com.',
-      words:['gmail','dot','My','is','study','email','leo','at','dot','com.'],
-      correctOrder:['My','email','is','leo','dot','study','at','gmail','dot','com.']
+      es:'Mi correo es ana.lopez@gmail.com.',
+      words:['gmail','dot','My','is','lopez','email','ana','at','dot','com.'],
+      correctOrder:['My','email','is','ana','dot','lopez','at','gmail','dot','com.']
     },
     speaking:{
       audio:'audio/clases/numeros-simbolos-speaking.mp3',
@@ -6689,7 +6689,7 @@ const CLASSES_BANK = {
           en:'Someone asks: “What is your email address?”',
           es:'Alguien pregunta: “¿Cuál es tu dirección de correo?”',
           options:[
-            { en:'It is leo dot study at gmail dot com.', next:'whatsapp', correct:true },
+            { en:'It is ana dot lopez at gmail dot com.', next:'whatsapp', correct:true },
             { en:'My name is Leo.', next:'email-fail', correct:false }
           ]
         },
@@ -6697,7 +6697,7 @@ const CLASSES_BANK = {
           en:'They say: “Thanks, but I need your email address.”',
           es:'La persona dice: “Gracias, pero necesito tu dirección de correo.”',
           options:[
-            { en:'It is leo dot study at gmail dot com.', next:'whatsapp', correct:true }
+            { en:'It is ana dot lopez at gmail dot com.', next:'whatsapp', correct:true }
           ]
         },
         whatsapp:{
@@ -6705,7 +6705,7 @@ const CLASSES_BANK = {
           es:'La persona pregunta: “¿Y cuál es tu número de WhatsApp?”',
           options:[
             { en:'It is plus fifty-seven, three hundred twelve, five hundred sixty, twenty-four, eighteen.', next:'end', correct:true },
-            { en:'It is leo dot study at gmail dot com.', next:'whatsapp-fail', correct:false }
+            { en:'It is ana dot lopez at gmail dot com.', next:'whatsapp-fail', correct:false }
           ]
         },
         'whatsapp-fail':{
