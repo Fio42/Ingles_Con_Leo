@@ -490,7 +490,7 @@
 
   function translateAuthError(msg){
     const m = (msg || '').toLowerCase();
-    if(m.indexOf('invalid login credentials') !== -1) return 'Correo o contraseña incorrectos.';
+    if(m.indexOf('invalid login credentials') !== -1) return 'Correo o contraseña incorrectos. Si es tu primera vez aquí, usa "¿Primera vez? Crea tu cuenta" abajo.';
     if(m.indexOf('already registered') !== -1 || m.indexOf('already exists') !== -1) return 'Ya existe una cuenta con ese correo. Inicia sesión en vez de crear una nueva.';
     if(m.indexOf('password') !== -1 && m.indexOf('least') !== -1) return 'La contraseña debe tener al menos 6 caracteres.';
     if(m.indexOf('rate') !== -1 || m.indexOf('security purposes') !== -1) return 'Espera un momento antes de intentar de nuevo.';
