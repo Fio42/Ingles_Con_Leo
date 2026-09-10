@@ -2161,6 +2161,33 @@ function renderStatCards(container){
   });
 }
 
+/* Frase corta de animo en la parte superior del panel de miembros
+   (junto al saludo). Se elige una de una lista chica segun el dia
+   del ano, asi cambia de un dia a otro sin depender de nada externo
+   ni de que el usuario haga algo. Puramente decorativo, no guarda
+   nada ni afecta ninguna otra logica. */
+const DASH_QUOTES = [
+  { es: 'Pequeños pasos, grandes resultados.', en: 'Keep going.' },
+  { es: 'Cada ejercicio cuenta.', en: 'You are doing great.' },
+  { es: 'La práctica constante vence al talento.', en: 'Do not stop now.' },
+  { es: 'Hoy puedes aprender algo nuevo.', en: 'Let us go further.' },
+  { es: 'Tu inglés mejora cada día que practicas.', en: 'Keep it up.' },
+  { es: 'Un poco cada día suma muchísimo.', en: 'Small steps count.' },
+];
+function renderDashQuote(container){
+  if(!container) return;
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  const q = DASH_QUOTES[dayOfYear % DASH_QUOTES.length];
+  container.innerHTML = `
+    <span class="dash-quote-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M9.5 7.5c-2.2 0-4 1.8-4 4v5h5v-5h-2.6c0-1.4 1.1-2.5 2.5-2.5V7.5zm9 0c-2.2 0-4 1.8-4 4v5h5v-5h-2.6c0-1.4 1.1-2.5 2.5-2.5V7.5z" fill="currentColor"/></svg>
+    </span>
+    <span>
+      <span class="dash-quote-es">${q.es}</span>
+      <span class="dash-quote-en">${q.en}</span>
+    </span>`;
+}
+
 function renderSkillRings(container){
   if(!container) return;
   const p = loadProgress();

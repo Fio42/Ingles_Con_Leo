@@ -186,38 +186,42 @@
   <div id="memberContent" style="display:none;">
     <section class="page-hero" style="padding-bottom:8px;">
       <div class="wrap wrap-dash">
-        <div class="dash-greeting" id="greetLine">Hola</div>
-        <p class="dash-sub">Continúa tu práctica y revisa tu avance.</p>
+        <div class="dash-head-row">
+          <div>
+            <div class="dash-greeting" id="greetLine">Hola</div>
+            <p class="dash-sub">Continúa tu práctica y revisa tu avance.</p>
+          </div>
+          <div class="dash-quote" id="dashQuote"></div>
+        </div>
 
         <div class="stat-cards" id="statCards"></div>
 
-        <div class="dash-grid">
-          <div class="rings-panel">
-            <div class="rings-panel-head">
-              <div>
-                <h3>Tu progreso</h3>
-                <p>Así vas en cada habilidad. ¡Sigue practicando!</p>
-              </div>
-              <a href="progreso.html" class="see-all">Ver progreso completo →</a>
-            </div>
-            <div class="ring-grid" id="ringGrid"></div>
-          </div>
+        <div class="dash-top-grid">
           <div id="continueCard"></div>
-        </div>
-      </div>
-    </section>
 
-    <section style="padding-top:8px;">
-      <div class="wrap wrap-dash">
-        <div class="daily-card" id="dailyChallengeCard">
-          <div class="daily-card-top">
-            <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <div class="daily-card" id="dailyChallengeCard">
+            <div class="daily-card-top">
+              <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="daily-eyebrow">Reto diario</span>
             </div>
-            <span class="daily-eyebrow">Reto diario</span>
+            <h2>5 ejercicios, un minuto al día</h2>
+            <div id="dailyChallengeBody"></div>
           </div>
-          <h2>5 ejercicios, un minuto al día</h2>
-          <div id="dailyChallengeBody"></div>
+
+          <div class="mistakes-card" id="mistakesSection">
+            <div class="mistakes-card-top">
+              <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="mistakes-eyebrow">Repaso personal</span>
+            </div>
+            <h2>Tus errores frecuentes</h2>
+            <p class="mistakes-sub" id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
+            <div class="mistakes-chips" id="mistakesChips"></div>
+            <a href="errores.html" class="mistakes-btn">Practicar mis errores →</a>
+          </div>
         </div>
       </div>
     </section>
@@ -270,44 +274,65 @@
 
     <section style="padding-top:8px;">
       <div class="wrap wrap-dash">
-        <div class="toefl-banner">
-          <div class="toefl-banner-copy">
-            <span class="toefl-banner-eyebrow">Preparación para examen</span>
-            <h2>Prepárate para el TOEFL</h2>
-            <p>Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato del examen.</p>
-            <div class="toefl-banner-skills">
-              <span class="toefl-skill-pill">Reading</span>
-              <span class="toefl-skill-pill">Listening</span>
-              <span class="toefl-skill-pill">Speaking</span>
-              <span class="toefl-skill-pill">Writing</span>
+        <div class="performance-card">
+          <div class="performance-head">
+            <div class="performance-head-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h2>Mi rendimiento</h2>
+              <p>Así vas en cada habilidad y en tu progreso general.</p>
+            </div>
+            <a href="progreso.html" class="see-all">Ver progreso completo →</a>
+          </div>
+          <div class="performance-grid">
+            <div class="performance-col">
+              <div class="performance-col-title">Por habilidad</div>
+              <div class="ring-grid" id="ringGrid"></div>
+            </div>
+            <div class="weekly-chart-card performance-col" id="weeklyChart"></div>
+            <div class="performance-col">
+              <div class="performance-col-title">Racha actual</div>
+              <div class="streak-card" id="streakCard"></div>
             </div>
           </div>
-          <a href="toefl.html" class="btn btn-primary">Comenzar preparación →</a>
         </div>
       </div>
     </section>
 
-    <section style="padding-top:8px;" id="mistakesSection">
+    <section style="padding-top:8px;">
       <div class="wrap wrap-dash">
         <div class="side-grid">
-          <div class="mistakes-card">
-            <div class="mistakes-card-top">
-              <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div class="toefl-banner">
+            <div class="toefl-banner-copy">
+              <div class="toefl-banner-badge">
+                <span class="toefl-banner-icon">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="toefl-banner-eyebrow">Preparación para examen</span>
               </div>
-              <span class="mistakes-eyebrow">Repaso personal</span>
+              <h2>Prepárate para el TOEFL</h2>
+              <p>Practica Reading, Listening, Speaking y Writing con ejercicios enfocados en el formato del examen.</p>
+              <div class="toefl-banner-skills">
+                <span class="toefl-skill-pill">Reading</span>
+                <span class="toefl-skill-pill">Listening</span>
+                <span class="toefl-skill-pill">Speaking</span>
+                <span class="toefl-skill-pill">Writing</span>
+              </div>
             </div>
-            <h2>Tus errores frecuentes</h2>
-            <p class="mistakes-sub" id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
-            <div class="mistakes-chips" id="mistakesChips"></div>
-            <a href="errores.html" class="mistakes-btn">Practicar mis errores →</a>
+            <a href="toefl.html" class="btn btn-primary">Comenzar →</a>
           </div>
 
           <div class="clases-banner">
             <div>
-              <div class="clases-banner-eyebrow">Nuevo</div>
+              <div class="toefl-banner-badge">
+                <span class="toefl-banner-icon">
+                  <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M10 9l5 3-5 3V9z" fill="currentColor"/></svg>
+                </span>
+                <span class="clases-banner-eyebrow">Nuevo</span>
+              </div>
               <h2>Clases interactivas</h2>
-              <p>Practica inglés dentro de situaciones reales: aeropuerto, restaurante y más: escucha, habla y arma frases en una sola mini-clase.</p>
+              <p>Practica inglés con situaciones reales: aeropuerto, restaurante, trabajo y más.</p>
             </div>
             <a href="clases.html" class="btn btn-primary">Explorar clases →</a>
           </div>
@@ -317,11 +342,11 @@
 
     <section style="padding-top:8px;">
       <div class="wrap wrap-dash">
-        <div class="bottom-grid">
-          <div class="activity-card" id="recentActivity"></div>
-          <div class="weekly-chart-card" id="weeklyChart"></div>
-          <div class="streak-card" id="streakCard"></div>
+        <div class="activity-section-head">
+          <h2>Tu actividad reciente</h2>
+          <a href="progreso.html" class="see-all">Ver toda tu actividad →</a>
         </div>
+        <div class="activity-card-full" id="recentActivity"></div>
       </div>
     </section>
   </div>
@@ -447,6 +472,7 @@
 
   function startDashboard(){
     applyDashboardGreeting(document.getElementById('greetLine'));
+    renderDashQuote(document.getElementById('dashQuote'));
     renderStatCards(document.getElementById('statCards'));
     renderSkillRings(document.getElementById('ringGrid'));
     renderContinueCard(document.getElementById('continueCard'));
@@ -455,6 +481,14 @@
     renderStreakCard(document.getElementById('streakCard'));
     renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
+    // Si no hay errores pendientes, renderMistakesBanner esconde esa
+    // tarjeta (display:none). Le avisamos a la fila de 3 columnas para
+    // que se acomode en 2 columnas en vez de dejar un hueco vacio.
+    const mistakesEl = document.getElementById('mistakesSection');
+    const topGrid = mistakesEl ? mistakesEl.closest('.dash-top-grid') : null;
+    if(topGrid && mistakesEl){
+      topGrid.classList.toggle('no-mistakes', mistakesEl.style.display === 'none');
+    }
   }
 
   function unlock(){

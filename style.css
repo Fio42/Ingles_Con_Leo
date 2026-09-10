@@ -1177,14 +1177,36 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .toefl-banner .btn-primary{flex-shrink:0;}
 }
 
-/* Errores frecuentes + Clases interactivas: lado a lado en escritorio,
-   apiladas pero compactas en movil. */
-#memberContent .side-grid{display:grid;grid-template-columns:1fr;gap:12px;}
-@media(min-width:820px){
-  #memberContent .side-grid{grid-template-columns:1fr 1fr;align-items:stretch;}
+/* Saludo + frase de animo, en fila (se apila en movil) */
+#memberContent .dash-head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+#memberContent .dash-quote{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:flex-start;gap:12px;max-width:360px;}
+#memberContent .dash-quote-icon{width:30px;height:30px;border-radius:50%;background:var(--blue-tint);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#memberContent .dash-quote-icon svg{width:16px;height:16px;}
+#memberContent .dash-quote-es{display:block;font-weight:700;font-size:0.88rem;color:var(--ink);}
+#memberContent .dash-quote-en{display:block;font-size:0.8rem;color:var(--ink-faint);font-style:italic;margin-top:2px;}
+
+/* Continua donde te quedaste + Reto diario + Tus errores frecuentes:
+   las 3 en una sola fila en escritorio, apiladas en movil. Si no hay
+   errores pendientes, renderMistakesBanner() esconde esa tarjeta y
+   el script de miembros.html agrega la clase "no-mistakes" para que
+   las otras dos no dejen un hueco vacio. */
+#memberContent .dash-top-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;align-items:stretch;}
+@media(min-width:900px){
+  #memberContent .dash-top-grid{grid-template-columns:1.3fr 1fr 1fr;}
+  #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1.3fr 1fr;}
 }
-#memberContent .side-grid .mistakes-card,
-#memberContent .side-grid .clases-banner{height:100%;box-sizing:border-box;}
+#memberContent .dash-top-grid .continue-card{height:100%;box-sizing:border-box;max-width:none;padding:18px 20px;}
+#memberContent .continue-title{font-size:1.25rem;}
+#memberContent .continue-note{padding:9px 12px;margin-top:10px;}
+#memberContent .dash-top-grid .daily-card,
+#memberContent .dash-top-grid .mistakes-card{height:100%;box-sizing:border-box;}
+#memberContent .daily-card{padding:14px 18px;gap:6px;}
+#memberContent .daily-card-top{gap:8px;}
+#memberContent .daily-card-top .stat-card-icon{width:32px;height:32px;}
+#memberContent .daily-card-top .stat-card-icon svg{width:16px;height:16px;}
+#memberContent .daily-card h2{font-size:1rem;}
+#memberContent .daily-sub{font-size:0.86rem;}
+#memberContent .daily-btn{padding:7px 14px;font-size:0.82rem;}
 #memberContent .mistakes-card{padding:14px 18px;gap:8px;}
 #memberContent .mistakes-card-top{gap:8px;}
 #memberContent .mistakes-card-top .stat-card-icon{width:32px;height:32px;}
@@ -1192,22 +1214,57 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 #memberContent .mistakes-card h2{font-size:1rem;}
 #memberContent .mistakes-sub{font-size:0.86rem;}
 #memberContent .mistakes-btn{padding:7px 14px;font-size:0.82rem;margin-top:2px;}
-#memberContent .side-grid .clases-banner{padding:16px 18px;gap:10px;flex-direction:column;align-items:flex-start;}
+
+/* TOEFL + Clases interactivas: lado a lado en escritorio, apiladas en movil */
+#memberContent .side-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:820px){
+  #memberContent .side-grid{grid-template-columns:1fr 1fr;align-items:stretch;}
+}
+#memberContent .side-grid .clases-banner{height:100%;box-sizing:border-box;padding:16px 18px;gap:10px;flex-direction:column;align-items:flex-start;}
 #memberContent .side-grid .clases-banner h2{font-size:1.05rem;}
 #memberContent .side-grid .clases-banner p{font-size:0.86rem;}
+#memberContent .toefl-banner-badge{display:flex;align-items:center;gap:8px;margin-bottom:2px;}
+#memberContent .toefl-banner-icon{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+#memberContent .toefl-banner-icon svg{width:14px;height:14px;}
+#memberContent .clases-banner-eyebrow{margin-bottom:0;}
 
-/* Actividad reciente / progreso semanal / racha: mas compactas */
-#memberContent .bottom-grid{gap:12px;}
-#memberContent .activity-card,
-#memberContent .weekly-chart-card,
-#memberContent .streak-card{padding:16px 16px 14px;}
+/* "Mi rendimiento": una sola tarjeta con 3 columnas (habilidades,
+   semana, racha) en vez de 3 tarjetas separadas. */
+#memberContent .performance-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;}
+#memberContent .performance-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+#memberContent .performance-head-icon{width:38px;height:38px;border-radius:50%;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#memberContent .performance-head-icon svg{width:18px;height:18px;}
+#memberContent .performance-head h2{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;margin:0;}
+#memberContent .performance-head p{color:var(--ink-soft);font-size:0.86rem;margin-top:3px;}
+#memberContent .performance-head .see-all{margin-left:auto;font-weight:700;color:var(--blue);font-size:0.86rem;white-space:nowrap;}
+#memberContent .performance-grid{display:grid;grid-template-columns:1fr;gap:22px;}
+@media(min-width:820px){
+  #memberContent .performance-grid{grid-template-columns:1.3fr 1fr 0.9fr;gap:0;}
+  #memberContent .performance-grid > *{padding:0 22px;}
+  #memberContent .performance-grid > *:first-child{padding-left:0;}
+  #memberContent .performance-grid > *:not(:first-child){border-left:1px solid var(--line);}
+}
+#memberContent .performance-col-title{font-weight:700;font-size:0.86rem;color:var(--ink-soft);margin-bottom:10px;}
+#memberContent .performance-grid .weekly-chart-card,
+#memberContent .performance-grid .streak-card{background:none;border:none;padding:0;height:auto;}
+#memberContent .performance-grid .weekly-chart-card{padding:0;}
 #memberContent .bottom-panel-title{margin-bottom:10px;font-size:1rem;}
-#memberContent .recent-list{gap:6px;}
-#memberContent .recent-row{padding:10px 14px;}
-#memberContent .weekly-bars{height:100px;margin-top:10px;}
+#memberContent .weekly-bars{height:110px;margin-top:10px;}
 #memberContent .streak-number{font-size:1.6rem;}
 #memberContent .streak-flame{width:44px;height:44px;margin-bottom:2px;}
 #memberContent .streak-dots{margin-top:12px;gap:6px;}
+
+/* Tu actividad reciente: ahora su propia tarjeta de ancho completo */
+#memberContent .activity-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+#memberContent .activity-section-head h2{font-family:'Baloo 2';font-size:1.2rem;margin:0;}
+#memberContent .activity-section-head .see-all{font-weight:700;color:var(--blue);font-size:0.86rem;white-space:nowrap;}
+#memberContent .activity-card-full{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:16px 18px;}
+#memberContent .activity-card-full .recent-list{gap:6px;}
+#memberContent .activity-card-full .recent-row{padding:10px 14px;}
+/* Ya hay un titulo "Tu actividad reciente" afuera de la tarjeta (activity-section-head),
+   asi que escondemos el que renderRecentActivityV2() mete adentro por defecto (es una
+   funcion compartida con progreso.html, donde si hace falta, asi que no se toco el JS). */
+#memberContent .activity-card-full .bottom-panel-title{display:none;}
 
 /* Ajuste extra movil: "Que quieres practicar hoy" en 2 columnas desde
    pantallas angostas (en vez de 1 sola columna apilada) para no
