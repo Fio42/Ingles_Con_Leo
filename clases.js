@@ -37,41 +37,60 @@ if('speechSynthesis' in window){
    Gramática/Vocabulario/Listening/Mixto) — app.js siempre se carga
    antes que este archivo en clases.html. */
 
-function saveClaseProgress(state){
+// Guarda el progreso de CADA clase por separado (antes solo se
+// guardaba una a la vez: si empezabas otra clase, se perdía el
+// progreso de la anterior). Ahora es un objeto { classId: progreso },
+// así que puedes tener varias clases a medias al mismo tiempo y cada
+// una recuerda su propio paso.
+const CLASE_PROGRESS_KEY = 'leo_clases_inflight_v2';
+
+function loadAllClaseProgress(){
   try{
-    localStorage.setItem('leo_clase_inflight', JSON.stringify({
-      classId: state.data.id,
-      stepIndex: state.stepIndex,
-      results: state.results,
-      challengePath: state.challengePath,
-      startedAt: state.startedAt
-    }));
-  }catch(e){}
+    const raw = localStorage.getItem(CLASE_PROGRESS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  }catch(e){ return {}; }
 }
-function loadClaseProgress(classId){
-  try{
-    const raw = localStorage.getItem('leo_clase_inflight');
-    if(!raw) return null;
-    const saved = JSON.parse(raw);
-    return (saved && saved.classId === classId) ? saved : null;
-  }catch(e){ return null; }
-}
-function clearClaseProgress(){
-  try{ localStorage.removeItem('leo_clase_inflight'); }catch(e){}
+function saveAllClaseProgress(all){
+  try{ localStorage.setItem(CLASE_PROGRESS_KEY, JSON.stringify(all)); }catch(e){}
 }
 
-function getClaseInProgress(){
-  try{
-    const raw = localStorage.getItem('leo_clase_inflight');
-    if(!raw) return null;
-    const saved = JSON.parse(raw);
-    return (saved && saved.stepIndex > 0) ? saved : null;
-  }catch(e){ return null; }
+function saveClaseProgress(state){
+  const all = loadAllClaseProgress();
+  all[state.data.id] = {
+    stepIndex: state.stepIndex,
+    results: state.results,
+    challengePath: state.challengePath,
+    startedAt: state.startedAt
+  };
+  saveAllClaseProgress(all);
+}
+function loadClaseProgress(classId){
+  const all = loadAllClaseProgress();
+  return all[classId] || null;
+}
+function clearClaseProgress(classId){
+  const all = loadAllClaseProgress();
+  if(all[classId]){
+    delete all[classId];
+    saveAllClaseProgress(all);
+  }
+}
+
+// Devuelve un mapa { classId: progreso } de todas las clases con al
+// menos un paso avanzado (no solo la última que se tocó).
+function getClasesInProgress(){
+  const all = loadAllClaseProgress();
+  const result = {};
+  Object.keys(all).forEach(id=>{
+    if(all[id] && all[id].stepIndex > 0) result[id] = all[id];
+  });
+  return result;
 }
 
 function renderClassList(container){
   if(!container) return;
-  const inProgress = getClaseInProgress();
+  const inProgressMap = getClasesInProgress();
   const byCategory = {};
   CLASS_CATALOG.forEach(c=>{
     if(!byCategory[c.category]) byCategory[c.category] = [];
@@ -82,7 +101,8 @@ function renderClassList(container){
       <h3 class="clases-category-title">${cat}</h3>
       <div class="clases-grid">
         ${byCategory[cat].map(c=>{
-          const isInProgress = c.available && inProgress && inProgress.classId === c.id;
+          const prog = c.available ? inProgressMap[c.id] : null;
+          const isInProgress = !!prog;
           return `
           <div class="clase-card ${c.available ? '' : 'soon'} ${isInProgress ? 'in-progress' : ''}" data-id="${c.id}">
             <div class="clase-card-top">
@@ -90,7 +110,7 @@ function renderClassList(container){
               ${isInProgress ? '<span class="clase-progress-tag">Continuar</span>' : (c.available ? '' : '<span class="clase-soon-tag">Próximamente</span>')}
             </div>
             <p class="clase-card-desc">${c.available ? c.desc : 'Estamos preparando esta clase.'}</p>
-            ${c.available ? `<div class="clase-card-meta">${isInProgress ? 'Vas en el paso ' + (inProgress.stepIndex + 1) + ' de 8' : c.minutes + ' min · 8 pasos'}</div>` : ''}
+            ${c.available ? `<div class="clase-card-meta">${isInProgress ? 'Vas en el paso ' + (prog.stepIndex + 1) + ' de 8' : c.minutes + ' min · 8 pasos'}</div>` : ''}
           </div>`;
         }).join('')}
       </div>
@@ -518,7 +538,7 @@ function renderStepChallenge(body, state, next){
 
 function renderStepSummary(body, state){
   const { summary, title } = state.data;
-  clearClaseProgress();
+  clearClaseProgress(state.data.id);
   recordSession({ skill:'clases', level:'facil', topics:[title], results: state.results, startedAt: state.startedAt });
   body.innerHTML = `
     <div class="session-summary">
