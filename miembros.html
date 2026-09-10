@@ -146,6 +146,9 @@
         <div class="gate-error" id="mpEmailError">Escribe el correo de tu cuenta de Mercado Pago.</div>
         <button class="btn btn-primary btn-block" id="payBtn" style="margin-top:10px;">Pagar con Mercado Pago</button>
         <div class="gate-error" id="payError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+        <p class="gate-hint" style="margin:14px 0 6px;text-align:center;">¿Pagas con una tarjeta de fuera de México?</p>
+        <button class="btn btn-ghost btn-block" id="payStripeBtn">Pagar con tarjeta internacional (Stripe)</button>
+        <div class="gate-error" id="payStripeError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
         <button class="btn btn-ghost btn-block" id="logoutBtn" style="margin-top:10px;">Cerrar sesión</button>
       </div>
       <p class="gate-hint" id="freeSampleHint">¿No tienes cuenta aún? <a href="articulos.html" style="color:var(--blue);font-weight:600;">Prueba los artículos gratis</a> o <a href="practica.html" style="color:var(--blue);font-weight:600;">la práctica de muestra</a>.</p>
@@ -375,6 +378,8 @@
   const payError = document.getElementById('payError');
   const mpEmailInput = document.getElementById('mpEmailInput');
   const mpEmailError = document.getElementById('mpEmailError');
+  const payStripeBtn = document.getElementById('payStripeBtn');
+  const payStripeError = document.getElementById('payStripeError');
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   let hasSession = false;
@@ -462,6 +467,25 @@
       payError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
     }
     payError.classList.add('show');
+  }
+
+  // Igual que goToCheckout, pero para Stripe: no pide un correo
+  // aparte (Stripe ya pide correo y tarjeta dentro de su propia
+  // pantalla de pago), así que solo pide el link y redirige.
+  async function goToStripeCheckout(btn){
+    payStripeError.classList.remove('show');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Generando link de pago...';
+    const res = await LeoBackend.startStripeCheckout();
+    if(res.ok){
+      window.location.href = res.url;
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = originalText;
+    payStripeError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
+    payStripeError.classList.add('show');
   }
 
   function translateAuthError(msg){
@@ -606,6 +630,10 @@
 
   if(payBtn){
     payBtn.addEventListener('click', ()=>{ goToCheckout(payBtn); });
+  }
+
+  if(payStripeBtn){
+    payStripeBtn.addEventListener('click', ()=>{ goToStripeCheckout(payStripeBtn); });
   }
 
   updateAuthModeUI();

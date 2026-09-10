@@ -16,8 +16,16 @@ create table if not exists public.profiles (
   email text,
   is_member boolean not null default false,
   member_since timestamptz,
+  stripe_customer_id text,
   created_at timestamptz not null default now()
 );
+
+-- Por si ya tenías la tabla creada de antes (sin esta columna, de
+-- cuando solo existía Mercado Pago): la agrega sin borrar nada.
+-- La usa el webhook de Stripe para identificar de quién es una
+-- suscripción en avisos que ya no traen el id de usuario.
+alter table public.profiles add column if not exists stripe_customer_id text;
+create unique index if not exists profiles_stripe_customer_id_idx on public.profiles(stripe_customer_id) where stripe_customer_id is not null;
 
 -- Sesiones de práctica de cada miembro (una fila por sesión
 -- terminada: gramática, vocabulario, listening, writing, speaking,
@@ -46,9 +54,11 @@ drop policy if exists "profiles: select own" on public.profiles;
 create policy "profiles: select own" on public.profiles
   for select using (auth.uid() = id);
 
-drop policy if exists "profiles: update own" on public.profiles;
-create policy "profiles: update own" on public.profiles
-  for update using (auth.uid() = id);
+-- NOTA: aquí NO hay una política de "update own" a propósito.
+-- Se quitó porque permitía que cualquier usuario logueado se
+-- marcara a sí mismo como is_member=true desde el navegador, sin
+-- pagar. Ni Mercado Pago ni Stripe la necesitan: sus webhooks usan
+-- la service_role key, que se salta RLS por diseño.
 
 drop policy if exists "progress_sessions: select own" on public.progress_sessions;
 create policy "progress_sessions: select own" on public.progress_sessions

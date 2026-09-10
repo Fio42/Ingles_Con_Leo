@@ -241,6 +241,34 @@ const LeoBackend = (function(){
     }
   }
 
+  /* Pide un link de pago de Stripe (tarjeta internacional) para
+     el usuario logueado, ligado a su id. Es el equivalente de
+     startCheckout() pero para Stripe: se usa cuando alguien paga
+     desde fuera de México o con una tarjeta que Mercado Pago no
+     acepta. Devuelve { ok:true, url } o { ok:false, error }.
+     Depende de que la función de Supabase "stripe-checkout" esté
+     desplegada (ver supabase_functions/stripe-checkout.ts). */
+  async function startStripeCheckout(){
+    if(!isConfigured()) return { ok:false, error:'not_configured' };
+    const session = await getSession();
+    if(!session) return { ok:false, error:'no_session' };
+    try{
+      const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + session.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
+      return { ok:true, url: data.init_point };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   /* Verifica que haya una sesión iniciada Y que is_member sea
      true. Si no, redirige a miembros.html. Úsala desde las
      páginas de miembros vía guardMemberPage() (más abajo). */
@@ -261,7 +289,7 @@ const LeoBackend = (function(){
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout
+    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout
   };
 })();
 
