@@ -2591,7 +2591,7 @@ function renderFreeSessionSummary({ title, score, topics }){
       </div>
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
-        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, explora clases interactivas, prepárate para un examen y más.</p>
+        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
         <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
       </div>
     </div>`;
