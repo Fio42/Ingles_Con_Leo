@@ -2590,15 +2590,9 @@ function renderFreeSessionSummary({ title, score, topics }){
         <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
       </div>
       <div class="summary-unlock">
-        <p class="summary-unlock-label">¿Quieres seguir?</p>
-        <div class="summary-unlock-grid">
-          <span>🔒 Más ejercicios</span>
-          <span>🔒 Listening</span>
-          <span>🔒 Speaking</span>
-          <span>🔒 Tu progreso</span>
-          <span>🔒 Todos los niveles</span>
-        </div>
-        <a href="miembros.html" class="btn btn-primary btn-block">Desbloquear por $2/mes</a>
+        <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
+        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, explora clases interactivas, prepárate para un examen y más.</p>
+        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
       </div>
     </div>`;
 }
