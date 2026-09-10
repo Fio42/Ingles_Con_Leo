@@ -58,7 +58,8 @@
     { label:'¿Qué puedo practicar?', to:'practice' },
     { label:'¿Qué incluye Miembros?', to:'members' },
     { label:'¿Cómo funciona mi progreso?', to:'progress' },
-    { label:'Ver artículos y videos', to:'articles' }
+    { label:'Ver artículos y videos', to:'articles' },
+    { label:'Reportar un problema', to:'reportBug' }
   ];
 
   var PAGE_EXTRA_ROOT = {
@@ -104,7 +105,7 @@
       if(seen[o.label]) continue;
       seen[o.label] = true;
       out.push(o);
-      if(out.length >= 6) break;
+      if(out.length >= 7) break;
     }
     return out;
   }
@@ -244,6 +245,13 @@
     continueSession: {
       text:'Cuando entras a Miembros, la tarjeta de arriba de todo te muestra exactamente dónde quedaste y te lleva ahí con un clic.',
       options: function(){ return [membersCta()]; }
+    },
+
+    reportBug: {
+      text:'¿Algo no funcionó como esperabas (un ejercicio, un audio, tu progreso, un pago)? Cuéntanos por WhatsApp y lo revisamos.',
+      options:[
+        { label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, encontré un problema en Inglés con Leo: '), external:true }
+      ]
     }
   };
 
@@ -458,7 +466,20 @@
       if(opt.href){
         addTypingIndicator();
         window.setTimeout(function(){
-          window.location.href = opt.href;
+          if(opt.external){
+            // No navega fuera del sitio (se abre en pestaña nueva), así
+            // que hay que quitar el "escribiendo..." y dejar los mismos
+            // botones disponibles otra vez, en vez de dejar el chat
+            // colgado esperando una navegación que no va a pasar.
+            window.open(opt.href, '_blank', 'noopener');
+            var t = document.getElementById('leobotTyping');
+            if(t) t.remove();
+            var currentNodeId = history[history.length - 1];
+            var currentNode = NODES[currentNodeId];
+            if(currentNode) renderOptions(currentNodeId, resolveOptions(currentNode));
+          } else {
+            window.location.href = opt.href;
+          }
         }, 280);
         return;
       }
