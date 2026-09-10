@@ -372,3 +372,15 @@ DEVLOG — Inglés con Leo
 - Página nueva toefl.html: un "próximamente" simple (incluye las 4 áreas como etiquetas y un botón para volver al panel), protegida igual que las demás páginas de miembros (guardMemberPage, no accesible sin haber iniciado sesión como miembro). No está en el menú principal del sitio, solo se llega ahí desde el botón nuevo en miembros.html; cuando haya contenido real para cada área, se reemplaza esta página.
 - No se tocó ninguna lógica de progreso, sesión, pagos ni el resto de tarjetas existentes.
 - Verificado que las etiquetas <section>/<div> de miembros.html quedan balanceadas y que el diff solo afecta las secciones movidas y la nueva.
+
+2026-09-10 (20) — Panel de Miembros mucho más compacto (menos scroll)
+- Pedido del usuario: el panel de miembros pedía demasiado scroll, sobre todo en celular. Sin rediseñar nada ni cambiar colores/tipografía/lógica, se pidió reducir alturas y paddings de forma inteligente.
+- Métricas superiores (Miembro activo / Racha / Nivel / Ejercicios): tarjetas más chicas; en celular ahora son una sola fila con scroll horizontal (antes eran 2 filas apiladas, ocupando más alto).
+- "Tu progreso" + "Continúa donde te quedaste": mismo contenido, solo menos padding; en celular los anillos de progreso también se hicieron un poco más chicos.
+- Reto diario: la tarjeta bajó bastante de altura (menos padding, ícono más chico, texto más compacto), sin quitar el botón ni el texto.
+- "¿Qué quieres practicar hoy?": tarjetas un poco más bajas; en celular ahora se acomodan en 2 columnas en vez de 1 sola columna apilada (6 tarjetas en 3 filas en vez de 6 filas), que es lo que más ahorra scroll ahí.
+- Preparación para TOEFL: el banner se hizo compacto y ahora en pantallas medianas y grandes el texto/chips quedan a la izquierda y el botón a la derecha en la misma fila (antes todo apilado verticalmente, ocupando una franja más alta).
+- Tus errores frecuentes + Clases interactivas: antes cada una era su propia sección de ancho completo, una debajo de la otra. Ahora, en escritorio (desde 820px) quedan lado a lado en dos columnas; en celular se apilan pero con menos padding.
+- Actividad reciente / Progreso semanal / Racha: mismas 3 tarjetas de abajo, solo con menos padding y textos más compactos, sin quitar información.
+- Técnico: todos estos ajustes de tamaño se escribieron con el selector "#memberContent" delante (por ejemplo "#memberContent .stat-card"), para que solo apliquen dentro del panel de miembros y no afecten estas mismas clases cuando se reutilizan en progreso.html o practica.html.
+- Verificación: se armó una vista previa local (fuera del sitio, solo para revisar) con contenido de ejemplo en las mismas tarjetas y se comparó en pantalla de escritorio (1280px) y de celular (390px) antes/después. La altura total en celular bajó de forma notable sin perder ninguna tarjeta, botón ni dato. También se confirmó que las etiquetas <section>/<div> quedan balanceadas en miembros.html.

@@ -1112,3 +1112,120 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media (max-width:640px){
   .toefl-soon-card{padding:20px 20px;}
 }
+
+/* ============================================================
+   PANEL DE MIEMBROS: version compacta (menos scroll, sobre todo
+   en movil). Todo aqui usa el selector "#memberContent" para
+   quedar limitado solo al panel de miembros y no afectar estas
+   mismas clases cuando se reutilizan en progreso.html o
+   practica.html (por ejemplo .stat-card, .daily-card, .recent-list).
+   Solo cambia tamanos/espacios, no colores, tipografia base ni logica.
+   ============================================================ */
+
+#memberContent .page-hero{padding-top:22px;}
+#memberContent .dash-sub{margin-bottom:14px;}
+
+/* Metricas superiores: mas chicas, y en movil una sola fila con
+   scroll horizontal en vez de 2 filas apiladas. */
+#memberContent .stat-cards{margin:14px 0 16px;gap:10px;}
+#memberContent .stat-card{padding:14px 16px;gap:12px;}
+#memberContent .stat-card-icon{width:42px;height:42px;}
+#memberContent .stat-card-icon svg{width:20px;height:20px;}
+#memberContent .stat-card-value{font-size:1.15rem;}
+@media(max-width:759px){
+  #memberContent .stat-cards{display:flex;grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding-bottom:2px;margin:12px -2px 14px;scrollbar-width:none;}
+  #memberContent .stat-cards::-webkit-scrollbar{display:none;}
+  #memberContent .stat-card{flex:0 0 auto;min-width:156px;scroll-snap-align:start;}
+}
+
+/* "Tu progreso" + "Continua donde te quedaste" */
+#memberContent .dash-grid{gap:12px;margin-bottom:8px;}
+#memberContent .rings-panel{padding:18px 20px 16px;}
+#memberContent .rings-panel-head h3{font-size:1.2rem;}
+#memberContent .rings-panel-head p{font-size:0.86rem;margin-top:3px;}
+#memberContent .ring-grid{padding-top:14px;gap:12px 8px;}
+#memberContent .dash-grid .continue-card{padding:18px 20px;}
+#memberContent .continue-title{font-size:1.25rem;}
+#memberContent .continue-note{padding:9px 12px;margin-top:10px;}
+
+/* Reto diario: tarjeta mucho mas compacta */
+#memberContent .daily-card{padding:14px 18px;gap:6px;}
+#memberContent .daily-card-top{gap:8px;}
+#memberContent .daily-card-top .stat-card-icon{width:32px;height:32px;}
+#memberContent .daily-card-top .stat-card-icon svg{width:16px;height:16px;}
+#memberContent .daily-card h2{font-size:1rem;}
+#memberContent .daily-sub{font-size:0.86rem;}
+#memberContent .daily-btn{padding:7px 14px;font-size:0.82rem;}
+
+/* "Que quieres practicar hoy": cards un poco mas bajas */
+#memberContent .section-head{margin-bottom:12px;}
+#memberContent .section-head h2{font-size:1.35rem;}
+#memberContent .skill-cards-grid{gap:10px;}
+#memberContent .skill-card-link{padding:16px 16px;gap:6px;}
+#memberContent .skill-icon{width:26px;height:26px;}
+#memberContent .skill-card-link h3{font-size:1.02rem;}
+#memberContent .skill-card-link p{font-size:0.84rem;}
+
+/* Preparacion TOEFL: banner compacto, en fila en pantallas medianas+ */
+#memberContent .toefl-banner{padding:16px 20px;gap:12px;}
+#memberContent .toefl-banner p{font-size:0.9rem;}
+#memberContent .toefl-banner-skills{gap:6px;margin-top:2px;}
+#memberContent .toefl-skill-pill{padding:4px 11px;font-size:0.76rem;}
+@media(min-width:640px){
+  #memberContent .toefl-banner{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+  #memberContent .toefl-banner-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+  #memberContent .toefl-banner .btn-primary{flex-shrink:0;}
+}
+
+/* Errores frecuentes + Clases interactivas: lado a lado en escritorio,
+   apiladas pero compactas en movil. */
+#memberContent .side-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:820px){
+  #memberContent .side-grid{grid-template-columns:1fr 1fr;align-items:stretch;}
+}
+#memberContent .side-grid .mistakes-card,
+#memberContent .side-grid .clases-banner{height:100%;box-sizing:border-box;}
+#memberContent .mistakes-card{padding:14px 18px;gap:8px;}
+#memberContent .mistakes-card-top{gap:8px;}
+#memberContent .mistakes-card-top .stat-card-icon{width:32px;height:32px;}
+#memberContent .mistakes-card-top .stat-card-icon svg{width:16px;height:16px;}
+#memberContent .mistakes-card h2{font-size:1rem;}
+#memberContent .mistakes-sub{font-size:0.86rem;}
+#memberContent .mistakes-btn{padding:7px 14px;font-size:0.82rem;margin-top:2px;}
+#memberContent .side-grid .clases-banner{padding:16px 18px;gap:10px;flex-direction:column;align-items:flex-start;}
+#memberContent .side-grid .clases-banner h2{font-size:1.05rem;}
+#memberContent .side-grid .clases-banner p{font-size:0.86rem;}
+
+/* Actividad reciente / progreso semanal / racha: mas compactas */
+#memberContent .bottom-grid{gap:12px;}
+#memberContent .activity-card,
+#memberContent .weekly-chart-card,
+#memberContent .streak-card{padding:16px 16px 14px;}
+#memberContent .bottom-panel-title{margin-bottom:10px;font-size:1rem;}
+#memberContent .recent-list{gap:6px;}
+#memberContent .recent-row{padding:10px 14px;}
+#memberContent .weekly-bars{height:100px;margin-top:10px;}
+#memberContent .streak-number{font-size:1.6rem;}
+#memberContent .streak-flame{width:44px;height:44px;margin-bottom:2px;}
+#memberContent .streak-dots{margin-top:12px;gap:6px;}
+
+/* Ajuste extra movil: "Que quieres practicar hoy" en 2 columnas desde
+   pantallas angostas (en vez de 1 sola columna apilada) para no
+   convertir 6 tarjetas en 6 filas completas en el celular. */
+@media(max-width:639px) and (min-width:380px){
+  #memberContent .skill-cards-grid{grid-template-columns:repeat(2,1fr);}
+  #memberContent .skill-card-link{padding:14px 12px;gap:4px;}
+  #memberContent .skill-card-link h3{font-size:0.95rem;}
+  #memberContent .skill-card-link p{font-size:0.78rem;line-height:1.35;}
+  #memberContent .skill-icon{width:22px;height:22px;}
+}
+@media(max-width:379px){
+  #memberContent .skill-card-link{padding:14px 14px;}
+}
+
+/* Anillos de progreso un poco mas chicos en movil, sin perder el
+   texto del porcentaje ni la etiqueta. */
+@media(max-width:639px){
+  #memberContent .ring-grid svg{max-width:92px;}
+  #memberContent .ring-grid{gap:10px 4px;}
+}
