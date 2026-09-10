@@ -64,13 +64,25 @@ const LeoBackend = (function(){
   }
 
   /* Inicia sesión con correo + contraseña de una cuenta ya
-     creada. Tampoco necesita ningún correo. */
+     creada. Tampoco necesita ningún correo.
+
+     Una sola sesión activa a la vez: apenas el login es exitoso,
+     le pedimos a Supabase que cierre cualquier OTRA sesión abierta
+     con esta misma cuenta (scope:'others', deja la de este
+     dispositivo intacta). Esto es para que compartir el usuario y
+     contraseña no sirva de mucho: en cuanto alguien más entra, a
+     los demás se les va a pedir volver a iniciar sesión la próxima
+     vez que su sesión se refresque (dentro de una hora aprox, no
+     es instantáneo). Ojo: esto también afecta a la misma persona
+     si usa dos dispositivos propios (celular y computadora); es
+     una decisión a propósito, no un descuido. */
   async function signInWithPassword(email, password){
     const sb = getClient();
     if(!sb) return { ok:false, error:'not_configured' };
     try{
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if(error) return { ok:false, error: error.message };
+      try{ await sb.auth.signOut({ scope: 'others' }); }catch(e){}
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
