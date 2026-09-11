@@ -451,7 +451,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-cards-grid{display:grid;gap:16px;grid-template-columns:1fr;}
 @media(min-width:640px){.skill-cards-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:1000px){.skill-cards-grid{grid-template-columns:repeat(3,1fr);}}
-.skill-card-link{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:26px 22px;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+.skill-card-link{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:26px 22px;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
 .skill-card-link:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--blue);}
 .skill-card-link h3{font-family:'Baloo 2';font-size:1.15rem;}
 .skill-card-link p{color:var(--ink-soft);font-size:0.9rem;}
@@ -464,6 +464,21 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-icon-wrap.tint-writing{background:var(--amber-tint);color:var(--amber);}
 .skill-icon-wrap.tint-speaking{background:var(--violet-tint);color:var(--violet);}
 .skill-icon-wrap.tint-mixto{background:var(--paper-dim);color:var(--ink-soft);}
+.skill-icon-wrap.tint-toefl{background:var(--violet-tint);color:var(--violet-deep);}
+.skill-icon-wrap.tint-clases{background:var(--blue-tint);color:var(--blue-deep);}
+
+/* Tarjetas destacadas (TOEFL y Clases interactivas): mismo tamaño que las
+   demas, pero con borde de color y fondo con degradado suave para que se
+   distingan de un vistazo dentro de la misma cuadricula. */
+.skill-card-link .card-badge{position:absolute;top:14px;right:14px;font-size:0.68rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:4px 10px;border-radius:999px;color:#fff;}
+.skill-card-link.featured-toefl{border-color:var(--violet);background:linear-gradient(180deg, var(--violet-tint) 0%, #fff 60%);}
+.skill-card-link.featured-toefl:hover{border-color:var(--violet-deep);}
+.skill-card-link.featured-toefl .card-badge{background:var(--violet);}
+.skill-card-link.featured-toefl .go{color:var(--violet-deep);}
+.skill-card-link.featured-clases{border-color:var(--blue);background:linear-gradient(180deg, var(--blue-tint) 0%, #fff 60%);}
+.skill-card-link.featured-clases:hover{border-color:var(--blue-deep);}
+.skill-card-link.featured-clases .card-badge{background:var(--blue);}
+.skill-card-link.featured-clases .go{color:var(--blue-deep);}
 
 /* ---------- Dashboard v3: contenedor mas ancho, jerarquia mas grande ---------- */
 .wrap-dash{max-width:1260px;}
