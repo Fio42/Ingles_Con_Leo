@@ -1596,6 +1596,51 @@ function renderMixItemInto(card, entry, onAnswered){
   }
 }
 
+/* ---------- Límite diario de ejercicios gratis (practica.html) ----------
+   Pensado para frenar el abuso normal (alguien haciendo decenas de
+   ejercicios sin parar), NO como un bloqueo a prueba de trampas: se
+   guarda en el navegador (localStorage), así que abrir una ventana de
+   incógnito o borrar los datos del sitio reinicia el contador. Cuenta
+   cada ejercicio individual que el usuario CONTESTA y avanza (no cada
+   sesión completa, y los "Volver a intentar" de la misma pregunta no
+   suman de más). Se reinicia solo al cambiar de día (fecha local del
+   navegador). Solo aplica a las sesiones gratis (isFree / practica.html),
+   nunca a Miembros. */
+var FREE_DAILY_EXERCISE_LIMIT = 50;
+function freeDailyLimitKey(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `leoFreeDailyCount:${y}-${m}-${day}`;
+}
+function getFreeDailyExerciseCount(){
+  try{
+    return parseInt(localStorage.getItem(freeDailyLimitKey()), 10) || 0;
+  }catch(e){ return 0; }
+}
+function bumpFreeDailyExerciseCount(){
+  try{
+    const next = getFreeDailyExerciseCount() + 1;
+    localStorage.setItem(freeDailyLimitKey(), String(next));
+  }catch(e){}
+}
+function freeDailyLimitReached(){
+  return getFreeDailyExerciseCount() >= FREE_DAILY_EXERCISE_LIMIT;
+}
+function renderFreeDailyLimitReachedBlock(){
+  return `
+    <div class="session-summary">
+      <h2>Hiciste tus 50 ejercicios gratis de hoy</h2>
+      <p class="summary-score">Vuelve mañana para seguir practicando gratis, o hazte miembro y practica sin límite desde ahora.</p>
+      <div class="summary-unlock">
+        <p class="summary-unlock-label">¿Quieres seguir ahora mismo?</p>
+        <p class="summary-unlock-copy">Como miembro no tienes límite diario, guardas tu progreso, repasas tus errores y accedes a todo el contenido.</p>
+        <a href="miembros.html" class="btn btn-primary btn-block">Hazte miembro por $2 USD/mes</a>
+      </div>
+    </div>`;
+}
+
 function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   const saved = !isFree ? loadInflightSession('mixto', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
@@ -1606,6 +1651,10 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   let idx = useSaved ? saved.idx : 0;
 
   function renderItem(){
+    if(isFree && freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const entry = pool[idx];
     if(!isFree) saveInflightSession('mixto', level, { pool, idx, results, startedAt });
     const wrap = document.createElement('div');
@@ -1618,6 +1667,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     renderMixItemInto(card, entry, (isCorrect)=>{
       results.push({ itemId: entry.item.id, isCorrect });
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        if(isFree) bumpFreeDailyExerciseCount();
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -2689,6 +2739,10 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   let idx = 0;
 
   function renderItem(){
+    if(freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const item = pool[idx];
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
@@ -2700,6 +2754,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
     renderGrammarItemInto(card, item, (isCorrect)=>{
       results.push({ itemId:item.id, isCorrect });
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        bumpFreeDailyExerciseCount();
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -2728,6 +2783,10 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
   let idx = 0;
 
   function renderItem(){
+    if(freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const item = pool[idx];
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
@@ -2763,6 +2822,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+          bumpFreeDailyExerciseCount();
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →');
@@ -2793,6 +2853,10 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
   let idx = 0;
 
   function renderItem(){
+    if(freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const item = pool[idx];
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
@@ -2840,6 +2904,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
           </div>`;
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+          bumpFreeDailyExerciseCount();
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →');
@@ -2881,6 +2946,10 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
   let idx = 0;
 
   function renderItem(){
+    if(freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const item = pool[idx];
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
@@ -2947,6 +3016,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
       nextBtn.className = 'btn btn-primary btn-sm';
       nextBtn.textContent = idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →';
       nextBtn.addEventListener('click', ()=>{
+        bumpFreeDailyExerciseCount();
         idx++;
         if(idx < total) renderItem(); else finish();
       });
@@ -2978,6 +3048,10 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
   let idx = 0;
 
   function renderItem(){
+    if(freeDailyLimitReached()){
+      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      return;
+    }
     const item = pool[idx];
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
@@ -3010,6 +3084,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
 
     card.querySelector('#hearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
     card.querySelector('#nextSpeakBtn').addEventListener('click', ()=>{
+      bumpFreeDailyExerciseCount();
       results.push({ itemId:item.id, isCorrect:null });
       idx++;
       if(idx < total) renderItem(); else finish();
