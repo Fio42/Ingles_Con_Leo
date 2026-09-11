@@ -7,6 +7,22 @@
    No hay backend: todo se guarda en el navegador del usuario.
    ============================================================ */
 
+/* Fecha de calendario LOCAL (no UTC) como "YYYY-MM-DD". Todo el sitio
+   debe usar esta función (nunca Date#toISOString().slice(0,10) directo)
+   para decidir "a qué día pertenece" una sesión, la racha, o el
+   resumen semanal. toISOString() siempre da la fecha en UTC: para
+   alguien en México (UTC-6), cualquier práctica hecha después de las
+   6pm ya cae en el día siguiente según UTC, aunque para la persona
+   siga siendo el mismo día. Eso causaba rachas que bajaban solas y
+   días de la semana con datos en el día equivocado (o "saltados"). */
+function localDateStr(d){
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 /* ---------- Perfil / onboarding ---------- */
 const PROFILE_KEY = 'leo_profile';
 
@@ -152,7 +168,7 @@ async function initMemberHeader(){
   if(popEmailEl) popEmailEl.textContent = email;
 
   const p = loadProgress();
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   const practicedToday = p.sessions.some(s=> s.date === today);
   const streak = computeStreak();
   const bellContent = document.getElementById('navBellContent');
@@ -451,7 +467,7 @@ function recordSession({ skill, level, topics, results, startedAt }){
   const session = {
     skill, level,
     topics: topics || [],
-    date: new Date(now).toISOString().slice(0,10),
+    date: localDateStr(new Date(now)),
     startedAt: startedAt || now,
     durationMs: Math.max(0, now - (startedAt || now)),
     results: results || []
@@ -517,13 +533,13 @@ function computeStreak(){
   let streak = 0;
   let cursor = new Date();
   for(let i=0;i<dates.length;i++){
-    const cursorStr = cursor.toISOString().slice(0,10);
+    const cursorStr = localDateStr(cursor);
     if(dates[i] === cursorStr){
       streak++;
       cursor.setDate(cursor.getDate()-1);
     } else if(i===0 && dates[0] !== cursorStr){
       const yest = new Date(); yest.setDate(yest.getDate()-1);
-      if(dates[0] === yest.toISOString().slice(0,10)){
+      if(dates[0] === localDateStr(yest)){
         streak = 1;
         cursor = yest;
         cursor.setDate(cursor.getDate()-1);
@@ -1795,7 +1811,7 @@ function runMistakesSession({ container }){
    ============================================================ */
 const DAILY_CHALLENGE_FREE_KEY = 'leo_daily_challenge_free';
 
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function todayStr(){ return localDateStr(); }
 
 function getDailyChallengeFreeStatus(){
   try{
@@ -2106,12 +2122,12 @@ function computeWeeklyBarData(){
   monday.setDate(monday.getDate() - mondayOffset);
 
   const labels = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const todayStr = now.toISOString().slice(0,10);
+  const todayStr = localDateStr(now);
   const days = [];
   for(let i=0;i<7;i++){
     const d = new Date(monday);
     d.setDate(monday.getDate()+i);
-    const dateStr = d.toISOString().slice(0,10);
+    const dateStr = localDateStr(d);
     days.push({ label: labels[i], date: dateStr, isToday: dateStr === todayStr, count: 0 });
   }
   const byDate = {};
@@ -2281,8 +2297,8 @@ function renderRecentActivityV2(container){
     container.innerHTML += `<p class="progress-empty">Aún no tienes sesiones registradas. ¡Empieza tu primera práctica hoy!</p>`;
     return;
   }
-  const today = new Date().toISOString().slice(0,10);
-  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const today = localDateStr();
+  const yesterday = localDateStr(new Date(Date.now()-86400000));
   const rows = recent.map(s=>{
     const graded = (s.results||[]).filter(r=>r.isCorrect===true || r.isCorrect===false);
     const correct = graded.filter(r=>r.isCorrect).length;
