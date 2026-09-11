@@ -447,12 +447,43 @@ function initAccessGate({ gateEl, contentEl, inputEl, btnEl, errorEl }){
      lógica de evaluación de nivel real detrás).
    ============================================================ */
 const PROGRESS_KEY = 'leo_progress_v2';
+const PROGRESS_DATE_MIGRATION_KEY = 'leo_progress_localdate_migrated_v1';
 const MIN_SESSIONS_FOR_STATS = 1;
+
+/* Migracion de una sola vez: antes de que existiera localDateStr(), el
+   campo "date" de cada sesion se calculaba con Date#toISOString(), que
+   siempre da la fecha en UTC. Para alguien en Mexico (UTC-6), cualquier
+   sesion hecha despues de las 6pm hora local quedaba guardada con la
+   fecha del dia SIGUIENTE. El campo "startedAt" (timestamp en
+   milisegundos) nunca tuvo ese problema, asi que aqui se usa para
+   recalcular la fecha correcta de cada sesion ya guardada, una sola vez
+   por navegador. Despues de correr, no se vuelve a tocar. */
+function migrateProgressDatesIfNeeded(p){
+  try{
+    if(localStorage.getItem(PROGRESS_DATE_MIGRATION_KEY)) return p;
+  }catch(e){ return p; }
+  let changed = false;
+  (p.sessions || []).forEach(s=>{
+    if(!s || !s.startedAt) return;
+    const correctDate = localDateStr(new Date(s.startedAt));
+    if(s.date !== correctDate){
+      s.date = correctDate;
+      changed = true;
+    }
+  });
+  if(changed && p.sessions && p.sessions.length){
+    const last = p.sessions[p.sessions.length - 1];
+    p.lastActivity = { skill: last.skill, level: last.level, topic: (last.topics && last.topics[0]) || null, date: last.date };
+  }
+  if(changed) saveProgressRaw(p);
+  try{ localStorage.setItem(PROGRESS_DATE_MIGRATION_KEY, '1'); }catch(e){}
+  return p;
+}
 
 function loadProgress(){
   try{
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    if(p && Array.isArray(p.sessions)) return p;
+    if(p && Array.isArray(p.sessions)) return migrateProgressDatesIfNeeded(p);
   }catch(e){}
   return { sessions: [], lastActivity: null };
 }
