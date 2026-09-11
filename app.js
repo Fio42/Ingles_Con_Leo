@@ -2070,13 +2070,27 @@ function pickDailyChallengeItems(level, isFree){
   return picks;
 }
 
-function renderDailyChallengeIntro(container, { isFree, doneState, onStart }){
+function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, onStart }){
   if(doneState){
     const scoreTxt = doneState.score ? `${doneState.score.correct} / ${doneState.score.total} correctas` : '';
     container.innerHTML = `
       <p class="daily-done-msg">${OK_ICON} Ya hiciste tu reto de hoy${scoreTxt ? ' · ' + scoreTxt : ''}.</p>
       <p class="daily-sub">Vuelve mañana para el siguiente, o hazte miembro para repetirlo las veces que quieras.</p>
       <a href="miembros.html" class="daily-btn">Hazte miembro →</a>`;
+    return;
+  }
+  // Si ya había un reto a medias (guardado con saveInflightSession),
+  // antes esta tarjeta saltaba directo al ejercicio a medio terminar
+  // en cuanto se cargaba el panel. Leo pidió que el panel nunca
+  // muestre el ejercicio de una vez: siempre se ve esta tarjeta
+  // compacta primero, y el ejercicio (nuevo o retomado) solo aparece
+  // al darle clic al botón.
+  if(inProgress){
+    container.innerHTML = `
+      <p class="daily-sub">Tienes un reto a medias. Sigue justo donde te quedaste.</p>
+      <button type="button" class="daily-btn" id="dailyStartBtn">Continuar reto diario →</button>`;
+    const btn = container.querySelector('#dailyStartBtn');
+    if(btn) btn.addEventListener('click', onStart);
     return;
   }
   container.innerHTML = `
@@ -2172,11 +2186,8 @@ function initDailyChallenge(container, { isFree }){
   }
   const level = getUserLevel();
   const saved = loadInflightSession('reto-diario', level);
-  if(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length){
-    runDailyChallengeSession({ container, isFree:false, level });
-    return;
-  }
-  renderDailyChallengeIntro(container, { isFree:false, doneState:null, onStart: ()=> runDailyChallengeSession({ container, isFree:false, level }) });
+  const inProgress = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
+  renderDailyChallengeIntro(container, { isFree:false, doneState:null, inProgress, onStart: ()=> runDailyChallengeSession({ container, isFree:false, level }) });
 }
 
 /* ---------- Resumen de sesión (compartido) ---------- */
