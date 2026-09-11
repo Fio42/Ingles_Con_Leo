@@ -59,7 +59,50 @@
       <a href="miembros.html">Miembros</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
-    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta">Entrar a miembros</a>
+
+    <div class="nav-actions" id="navUserBlock" style="display:none;">
+      <div class="nav-search-wrap">
+        <button type="button" class="nav-icon-btn" id="navSearchBtn" aria-label="Buscar">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <div class="nav-pop nav-search-pop" id="navSearchPop">
+          <input type="text" id="navSearchInput" placeholder="Buscar en el sitio...">
+          <div class="nav-search-results" id="navSearchResults"></div>
+        </div>
+      </div>
+      <div class="nav-bell-wrap">
+        <button type="button" class="nav-icon-btn" id="navBellBtn" aria-label="Notificaciones">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 0112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 12 6 8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="nav-bell-dot" id="navBellDot" style="display:none;"></span>
+        </button>
+        <div class="nav-pop nav-bell-pop" id="navBellPop">
+          <div class="nav-pop-title">Notificaciones</div>
+          <div id="navBellContent"></div>
+        </div>
+      </div>
+      <div class="nav-profile-wrap">
+        <button type="button" class="nav-profile-btn" id="navProfileBtn">
+          <span class="nav-avatar" id="navAvatar">?</span>
+          <span class="nav-profile-name" id="navProfileName">Cuenta</span>
+          <svg class="nav-chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-pop nav-profile-pop" id="navProfilePop">
+          <div class="nav-profile-pop-head">
+            <span class="nav-avatar lg" id="navAvatarLg">?</span>
+            <div>
+              <div class="nav-profile-pop-name" id="navProfilePopName">Cuenta</div>
+              <div class="nav-profile-pop-email" id="navProfilePopEmail"></div>
+            </div>
+          </div>
+          <button type="button" class="nav-pop-item" id="navEditNameBtn">Editar tu nombre</button>
+          <a href="progreso.html" class="nav-pop-item">Tu progreso</a>
+          <button type="button" class="nav-pop-item" id="navManageSubBtn">Administrar suscripción</button>
+          <button type="button" class="nav-pop-item danger" id="navLogoutBtn">Cerrar sesión</button>
+        </div>
+      </div>
+    </div>
+
+    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta" id="navCta">Entrar a miembros</a>
     <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
   </div>
 </header>
@@ -164,8 +207,10 @@
   </button>
 </nav>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260910"></script>
 <script src="app.js?v=20260910"></script>
+<script src="backend.js"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
   initFreePractice({
@@ -175,7 +220,25 @@
     bodyEl: document.getElementById('skillBody')
   });
   initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: true });
-  initOnboarding(); personalizeNav();
+  initOnboarding();
+
+  // A diferencia de las páginas de Miembros (que usan guardMemberPage,
+  // el cual redirige si no hay sesión), esta página debe seguir siendo
+  // visible para cualquiera. Solo revisamos si YA hay una sesión de
+  // miembro activa para mostrar el menú de cuenta en vez del botón
+  // "Entrar a miembros" (antes esta página nunca cargaba backend.js,
+  // así que nunca podía saber si el usuario ya había iniciado sesión).
+  (async function(){
+    if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+    try{
+      const profile = await LeoBackend.getMemberProfile();
+      if(profile && profile.is_member){
+        const cta = document.getElementById('navCta');
+        if(cta) cta.style.display = 'none';
+        if(typeof initMemberHeader === 'function') await initMemberHeader();
+      }
+    }catch(e){}
+  })();
 </script>
 
 </body>

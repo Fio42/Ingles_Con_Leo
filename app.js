@@ -203,6 +203,15 @@ async function initMemberHeader(){
   wireToggle('navProfileBtn','navProfilePop');
   document.addEventListener('click', closeAllNavPops);
 
+  // Para alguien que ya es miembro, la palabra "gratis" en el link de
+  // "Practicar gratis" del menú ya no aplica (esa página es la de
+  // práctica sin guardar progreso, pero el usuario ya está pagando su
+  // membresía). Se deja como "Practicar" solo para miembros logeados;
+  // para cualquier otra persona el link sigue diciendo "Practicar gratis".
+  document.querySelectorAll('.nav-links a[href="practica.html"]').forEach(a=>{
+    a.textContent = 'Practicar';
+  });
+
   const editBtn = document.getElementById('navEditNameBtn');
   if(editBtn){
     editBtn.addEventListener('click', ()=>{
