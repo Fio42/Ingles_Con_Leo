@@ -625,10 +625,10 @@ function saveLastVariantMap(map){
    no por posicion relativa, para que agregar mas contenido despues (para
    todos o solo miembros) nunca desordene cual variante sigue bloqueada. */
 const MEMBERS_ONLY_VARIANT_INDEX = {
-  gramatica:   { principiante:2, facil:6, medio:6, avanzado:6 },
-  vocabulario: { principiante:2, facil:6, medio:6, avanzado:6 },
-  listening:   { principiante:5, facil:10, medio:7, avanzado:7 },
-  writing:     { principiante:2, facil:6, medio:6, avanzado:6 },
+  gramatica:   { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
+  vocabulario: { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
+  listening:   { principiante:[5,7], facil:[10,12], medio:[7,9], avanzado:[7,9] },
+  writing:     { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
   speaking:    { principiante:5, facil:6, medio:6, avanzado:6 }
 };
 function pickVariantIndex(skill, level, variantCount, excludeIndex){
@@ -636,8 +636,9 @@ function pickVariantIndex(skill, level, variantCount, excludeIndex){
   const map = getLastVariantMap();
   const key = skill + '_' + level;
   const last = map[key];
+  const excludeSet = Array.isArray(excludeIndex) ? excludeIndex : (excludeIndex === undefined ? [] : [excludeIndex]);
   const choices = [];
-  for(let i=0; i<variantCount; i++){ if(i !== last && i !== excludeIndex) choices.push(i); }
+  for(let i=0; i<variantCount; i++){ if(i !== last && excludeSet.indexOf(i) === -1) choices.push(i); }
   const pool = choices.length ? choices : [0];
   const pick = pool[Math.floor(Math.random() * pool.length)];
   map[key] = pick;

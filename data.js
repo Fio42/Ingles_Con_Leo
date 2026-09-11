@@ -6724,3 +6724,1359 @@ const CLASSES_BANK = {
     }
   }
 };
+
+/* ============================================================
+   CONTENIDO EXTRA PARA MIEMBROS (100 ejercicios nuevos)
+   ------------------------------------------------------------
+   Un batch de gramática, vocabulario, listening y writing sobre
+   puntos que suelen confundir a quien aprende inglés (this/these,
+   do/does, some/any, actually/currently, despite/although,
+   who/whom, etc.), con explicaciones sencillas en español. Se
+   agrega como una variante NUEVA y exclusiva de Miembros en cada
+   nivel (nunca se modifica contenido existente), y se registra en
+   MEMBERS_ONLY_VARIANT_INDEX (ver app.js) para que Practica Gratis
+   nunca la toque. La dificultad respeta cada nivel: principiante
+   son confusiones muy básicas, fácil un poco más, medio ya usa
+   distinciones más finas, y avanzado tiene comprensión y preguntas
+   más exigentes.
+   ============================================================ */
+
+GRAMMAR_BANK.principiante.push([
+  {
+    topic: "This / These",
+    items: [
+      {
+        id: "g-principiante5-thisthese-1",
+        translation: "Este es mi libro.",
+        type: "choice",
+        prompt: "How do you say this for ONE thing close to you?",
+        options: ["This is my book.", "These is my book.", "This are my book."],
+        correct: 0,
+        explain: "“This” se usa para UNA sola cosa cerca de ti. Para varias cosas se usa “these”.",
+        examples: [
+          { en: "This is my book.", es: "Este es mi libro." },
+          { en: "These are my books.", es: "Estos son mis libros." }
+        ]
+      },
+      {
+        id: "g-principiante5-thisthese-2",
+        translation: "Estos son mis zapatos.",
+        type: "fill",
+        sentence: ["___", "are", "my", "shoes", "."],
+        blankIndex: 0,
+        bank: ["These", "This", "That"],
+        correct: "These",
+        explain: "“Shoes” es plural (varios zapatos), así que usamos “these”, no “this”.",
+        examples: [
+          { en: "These are my shoes.", es: "Estos son mis zapatos." },
+          { en: "This is my shoe.", es: "Este es mi zapato." }
+        ]
+      },
+      {
+        id: "g-principiante5-thisthese-3",
+        translation: "¿Cuál oración es correcta para varios lápices cerca de ti?",
+        type: "choice",
+        prompt: "Which sentence is correct for many pencils near you?",
+        options: ["These are my pencils.", "This are my pencils.", "These is my pencils."],
+        correct: 0,
+        explain: "Con varias cosas cerca, el verbo también va en plural: “these are”.",
+        examples: [
+          { en: "These are my pencils.", es: "Estos son mis lápices." },
+          { en: "This is my pencil.", es: "Este es mi lápiz." }
+        ]
+      },
+      {
+        id: "g-principiante5-thisthese-4",
+        translation: "Estos son mis zapatos.",
+        type: "error",
+        wrong: "This are my shoes.",
+        wrongWord: "This",
+        right: "These are my shoes.",
+        rightWord: "These",
+        explain: "“Shoes” es plural, así que necesita “these”, no “this”.",
+        examples: [
+          { en: "These are my shoes.", es: "Estos son mis zapatos." },
+          { en: "This is my shoe.", es: "Este es mi zapato." }
+        ]
+      }
+    ]
+  },
+  {
+    topic: "Do / Does",
+    items: [
+      {
+        id: "g-principiante5-dodoes-1",
+        translation: "¿Le gusta el café a ella?",
+        type: "choice",
+        prompt: "How do you ask a question with she?",
+        options: ["Does she like coffee?", "Do she like coffee?", "Does she likes coffee?"],
+        correct: 0,
+        explain: "Con “he/she/it” usamos “does”, y el verbo principal se queda sin “s”: “does she like”.",
+        examples: [
+          { en: "Does she like coffee?", es: "¿Le gusta el café a ella?" },
+          { en: "Do you like coffee?", es: "¿Te gusta el café a ti?" }
+        ]
+      },
+      {
+        id: "g-principiante5-dodoes-2",
+        translation: "¿Te gusta el té?",
+        type: "fill",
+        sentence: ["___", "you", "like", "tea", "?"],
+        blankIndex: 0,
+        bank: ["Do", "Does", "Is"],
+        correct: "Do",
+        explain: "Con “you” siempre usamos “do”, nunca “does”.",
+        examples: [
+          { en: "Do you like tea?", es: "¿Te gusta el té?" },
+          { en: "Does he like tea?", es: "¿Le gusta el té a él?" }
+        ]
+      },
+      {
+        id: "g-principiante5-dodoes-3",
+        translation: "¿Cuál es correcta para “he”?",
+        type: "choice",
+        prompt: "Which is correct for he?",
+        options: ["Does he play soccer?", "Do he play soccer?", "Does he plays soccer?"],
+        correct: 0,
+        explain: "Con “he” usamos “does”, y “play” se queda sin “s” porque el “s” ya está en “does”.",
+        examples: [
+          { en: "Does he play soccer?", es: "¿Juega fútbol él?" },
+          { en: "Do they play soccer?", es: "¿Juegan fútbol ellos?" }
+        ]
+      },
+      {
+        id: "g-principiante5-dodoes-4",
+        translation: "¿Te gusta la pizza?",
+        type: "error",
+        wrong: "Does you like pizza?",
+        wrongWord: "Does",
+        right: "Do you like pizza?",
+        rightWord: "Do",
+        explain: "Con “you” se usa “do”, no “does”.",
+        examples: [
+          { en: "Do you like pizza?", es: "¿Te gusta la pizza?" },
+          { en: "Does she like pizza?", es: "¿Le gusta la pizza a ella?" }
+        ]
+      }
+    ]
+  }
+]);
+
+GRAMMAR_BANK.facil.push([
+  {
+    topic: "Some / Any",
+    items: [
+      {
+        id: "g-facil9-someany-1",
+        translation: "Tengo algo de dinero.",
+        type: "choice",
+        prompt: "Which is correct in a positive sentence?",
+        options: ["I have some money.", "I have any money.", "I have a some money."],
+        correct: 0,
+        explain: "En frases afirmativas usamos “some”.",
+        examples: [
+          { en: "I have some money.", es: "Tengo algo de dinero." },
+          { en: "Do you have any money?", es: "¿Tienes algo de dinero?" }
+        ]
+      },
+      {
+        id: "g-facil9-someany-2",
+        translation: "¿Tienes alguna pregunta?",
+        type: "fill",
+        sentence: ["Do", "you", "have", "___", "questions", "?"],
+        blankIndex: 3,
+        bank: ["any", "some", "much"],
+        correct: "any",
+        explain: "En preguntas normalmente usamos “any”.",
+        examples: [
+          { en: "Do you have any questions?", es: "¿Tienes alguna pregunta?" },
+          { en: "I have some questions.", es: "Tengo algunas preguntas." }
+        ]
+      },
+      {
+        id: "g-facil9-someany-3",
+        translation: "No tengo nada de tiempo.",
+        type: "choice",
+        prompt: "Which is correct in a negative sentence?",
+        options: ["I don't have any time.", "I don't have some time.", "I have no any time."],
+        correct: 0,
+        explain: "En frases negativas usamos “any”.",
+        examples: [
+          { en: "I don't have any time.", es: "No tengo nada de tiempo." },
+          { en: "I have some time.", es: "Tengo algo de tiempo." }
+        ]
+      },
+      {
+        id: "g-facil9-someany-4",
+        translation: "Tengo algunas manzanas.",
+        type: "error",
+        wrong: "I have any apples.",
+        wrongWord: "any",
+        right: "I have some apples.",
+        rightWord: "some",
+        explain: "En una frase afirmativa se usa “some”, no “any”.",
+        examples: [
+          { en: "I have some apples.", es: "Tengo algunas manzanas." },
+          { en: "I don't have any apples.", es: "No tengo manzanas." }
+        ]
+      }
+    ]
+  },
+  {
+    topic: "Much / Many",
+    items: [
+      {
+        id: "g-facil9-muchmany-1",
+        translation: "Tengo muchos libros.",
+        type: "choice",
+        prompt: "Which is correct with a countable noun (books)?",
+        options: ["I have many books.", "I have much books.", "I have a much books."],
+        correct: 0,
+        explain: "“Many” se usa con cosas que se pueden contar (books, friends).",
+        examples: [
+          { en: "I have many books.", es: "Tengo muchos libros." },
+          { en: "I don't have much time.", es: "No tengo mucho tiempo." }
+        ]
+      },
+      {
+        id: "g-facil9-muchmany-2",
+        translation: "No tengo mucho tiempo.",
+        type: "fill",
+        sentence: ["I", "don't", "have", "___", "time", "."],
+        blankIndex: 3,
+        bank: ["much", "many", "a"],
+        correct: "much",
+        explain: "“Time” no se puede contar uno por uno, así que usamos “much”.",
+        examples: [
+          { en: "I don't have much time.", es: "No tengo mucho tiempo." },
+          { en: "I have many friends.", es: "Tengo muchos amigos." }
+        ]
+      },
+      {
+        id: "g-facil9-muchmany-3",
+        translation: "¿Cuál funciona con cosas que se pueden contar y también con las que no?",
+        type: "choice",
+        prompt: "Which expression works with both countable and uncountable nouns?",
+        options: ["a lot of", "much", "many"],
+        correct: 0,
+        explain: "“a lot of” funciona con las dos: “a lot of friends” y “a lot of money”.",
+        examples: [
+          { en: "I have a lot of friends.", es: "Tengo muchos amigos." },
+          { en: "I have a lot of money.", es: "Tengo mucho dinero." }
+        ]
+      },
+      {
+        id: "g-facil9-muchmany-4",
+        translation: "Ella tiene muchos amigos.",
+        type: "error",
+        wrong: "She has much friends.",
+        wrongWord: "much",
+        right: "She has many friends.",
+        rightWord: "many",
+        explain: "“Friends” se puede contar uno por uno, así que va con “many”.",
+        examples: [
+          { en: "She has many friends.", es: "Ella tiene muchos amigos." },
+          { en: "She doesn't have much time.", es: "Ella no tiene mucho tiempo." }
+        ]
+      }
+    ]
+  }
+]);
+
+GRAMMAR_BANK.medio.push([
+  {
+    topic: "Actually / Currently",
+    items: [
+      {
+        id: "g-medio9-actcurr-1",
+        translation: "En realidad, no estoy de acuerdo.",
+        type: "choice",
+        prompt: "How do you say en realidad, no estoy de acuerdo?",
+        options: ["Actually, I disagree.", "Currently, I disagree.", "Actual, I disagree."],
+        correct: 0,
+        explain: "“Actually” significa “en realidad”, no “actualmente”. Es una trampa clásica para hispanohablantes.",
+        examples: [
+          { en: "Actually, I disagree.", es: "En realidad, no estoy de acuerdo." },
+          { en: "I currently live in Spain.", es: "Actualmente vivo en España." }
+        ]
+      },
+      {
+        id: "g-medio9-actcurr-2",
+        translation: "Actualmente vivo en España.",
+        type: "fill",
+        sentence: ["I", "___", "live", "in", "Spain", "."],
+        blankIndex: 1,
+        bank: ["currently", "actually", "actual"],
+        correct: "currently",
+        explain: "Para decir “actualmente / en este momento” se usa “currently”.",
+        examples: [
+          { en: "I currently live in Spain.", es: "Actualmente vivo en España." },
+          { en: "Actually, I disagree.", es: "En realidad, no estoy de acuerdo." }
+        ]
+      },
+      {
+        id: "g-medio9-actcurr-3",
+        translation: "¿Cuál oración usa correctamente “en este momento”?",
+        type: "choice",
+        prompt: "Which sentence correctly says she is living in Spain right now?",
+        options: ["She is currently living in Spain.", "She is actually living in Spain.", "She is actual living in Spain."],
+        correct: 0,
+        explain: "“Currently” es para “en este momento”; “actually” significa “en realidad”.",
+        examples: [
+          { en: "She is currently living in Spain.", es: "Ella actualmente vive en España." },
+          { en: "Actually, she lives in Madrid.", es: "En realidad, ella vive en Madrid." }
+        ]
+      },
+      {
+        id: "g-medio9-actcurr-4",
+        translation: "Actualmente, ella vive en Madrid ahora mismo.",
+        type: "error",
+        wrong: "Actually, she lives in Madrid right now.",
+        wrongWord: "Actually",
+        right: "Currently, she lives in Madrid right now.",
+        rightWord: "Currently",
+        explain: "Para hablar de “ahora mismo / en este momento” se usa “currently”, no “actually”.",
+        examples: [
+          { en: "Currently, she lives in Madrid right now.", es: "Actualmente, ella vive en Madrid ahora mismo." },
+          { en: "Actually, I think you're right.", es: "En realidad, creo que tienes razón." }
+        ]
+      }
+    ]
+  },
+  {
+    topic: "Despite / Although / Instead of",
+    items: [
+      {
+        id: "g-medio9-despalth-1",
+        translation: "A pesar de la lluvia, salimos.",
+        type: "choice",
+        prompt: "Which is correct? Despite is followed by a noun or -ing, not a full sentence.",
+        options: ["Despite the rain, we went out.", "Although the rain, we went out.", "Despite it rained, we went out."],
+        correct: 0,
+        explain: "“Despite” va seguido de un sustantivo o un verbo en “-ing”, nunca de una oración completa con sujeto y verbo.",
+        examples: [
+          { en: "Despite the rain, we went out.", es: "A pesar de la lluvia, salimos." },
+          { en: "Although it was raining, we went out.", es: "Aunque llovía, salimos." }
+        ]
+      },
+      {
+        id: "g-medio9-despalth-2",
+        translation: "A pesar de estar cansada, terminó la carrera.",
+        type: "fill",
+        sentence: ["___", "being", "tired", ",", "she", "finished", "the", "race", "."],
+        blankIndex: 0,
+        bank: ["Despite", "Although", "Instead"],
+        correct: "Despite",
+        explain: "“Despite” + verbo en “-ing” (being) es la forma correcta aquí.",
+        examples: [
+          { en: "Despite being tired, she finished the race.", es: "A pesar de estar cansada, terminó la carrera." },
+          { en: "Although she was tired, she finished the race.", es: "Aunque estaba cansada, terminó la carrera." }
+        ]
+      },
+      {
+        id: "g-medio9-despalth-3",
+        translation: "En vez de caminar, tomamos el bus.",
+        type: "choice",
+        prompt: "Which correctly says en vez de caminar, tomamos el bus?",
+        options: ["Instead of walking, we took the bus.", "Instead walking, we took the bus.", "Despite walking, we took the bus."],
+        correct: 0,
+        explain: "“Instead of” + verbo en “-ing” significa “en vez de”.",
+        examples: [
+          { en: "Instead of walking, we took the bus.", es: "En vez de caminar, tomamos el bus." },
+          { en: "Despite the distance, we walked.", es: "A pesar de la distancia, caminamos." }
+        ]
+      },
+      {
+        id: "g-medio9-despalth-4",
+        translation: "Aunque llovía, jugamos.",
+        type: "error",
+        wrong: "Despite it was raining, we played.",
+        wrongWord: "Despite",
+        right: "Although it was raining, we played.",
+        rightWord: "Although",
+        explain: "“Despite” no puede ir seguido de una oración completa (sujeto + verbo); para eso se usa “although”.",
+        examples: [
+          { en: "Although it was raining, we played.", es: "Aunque llovía, jugamos." },
+          { en: "Despite the rain, we played.", es: "A pesar de la lluvia, jugamos." }
+        ]
+      }
+    ]
+  }
+]);
+
+GRAMMAR_BANK.avanzado.push([
+  {
+    topic: "Who / Whom",
+    items: [
+      {
+        id: "g-avanzado9-whowhom-1",
+        translation: "¿A quién invitaste?",
+        type: "choice",
+        prompt: "Which is the traditionally correct form when asking about the OBJECT of a verb (formal English)?",
+        options: ["Whom did you invite?", "Who did you invite?", "Whom invited you?"],
+        correct: 0,
+        explain: "“Whom” se usa cuando es el OBJETO del verbo (en este caso, a quién invitaste). En inglés hablado, mucha gente usa “who” igual, pero “whom” es la forma formal correcta.",
+        examples: [
+          { en: "Whom did you invite?", es: "¿A quién invitaste?" },
+          { en: "Who invited you?", es: "¿Quién te invitó?" }
+        ]
+      },
+      {
+        id: "g-avanzado9-whowhom-2",
+        translation: "¿A quién le diste la carta?",
+        type: "fill",
+        sentence: ["To", "___", "did", "you", "give", "the", "letter", "?"],
+        blankIndex: 1,
+        bank: ["whom", "who", "which"],
+        correct: "whom",
+        explain: "Después de una preposición (“to”) siempre se usa “whom”, nunca “who”.",
+        examples: [
+          { en: "To whom did you give the letter?", es: "¿A quién le diste la carta?" },
+          { en: "Who gave you the letter?", es: "¿Quién te dio la carta?" }
+        ]
+      },
+      {
+        id: "g-avanzado9-whowhom-3",
+        translation: "¿Cuál oración usa correctamente “who” como sujeto?",
+        type: "choice",
+        prompt: "Which sentence uses who correctly as the SUBJECT?",
+        options: ["Who called you last night?", "Whom called you last night?", "Whom calls you last night?"],
+        correct: 0,
+        explain: "“Who” es correcto cuando es el SUJETO de la oración (quien hace la acción de llamar).",
+        examples: [
+          { en: "Who called you last night?", es: "¿Quién te llamó anoche?" },
+          { en: "Whom did you call last night?", es: "¿A quién llamaste anoche?" }
+        ]
+      },
+      {
+        id: "g-avanzado9-whowhom-4",
+        translation: "¿Quién viene a la fiesta?",
+        type: "error",
+        wrong: "Whom is coming to the party?",
+        wrongWord: "Whom",
+        right: "Who is coming to the party?",
+        rightWord: "Who",
+        explain: "“Who” es el sujeto de “is coming” (quien viene); “whom” solo se usa como objeto del verbo.",
+        examples: [
+          { en: "Who is coming to the party?", es: "¿Quién viene a la fiesta?" },
+          { en: "Whom did you invite to the party?", es: "¿A quién invitaste a la fiesta?" }
+        ]
+      }
+    ]
+  },
+  {
+    topic: "Despite vs In spite of vs Even though",
+    items: [
+      {
+        id: "g-avanzado9-despiteeventhough-1",
+        translation: "A pesar del tráfico, llegamos a tiempo.",
+        type: "choice",
+        prompt: "Which pair means exactly the same and both take a noun or -ing (not a full clause)?",
+        options: ["Despite / In spite of the traffic, we arrived on time.", "Despite / Even though the traffic, we arrived.", "In spite / Even though the traffic, we arrived."],
+        correct: 0,
+        explain: "“Despite” e “in spite of” significan lo mismo y siempre van con sustantivo o “-ing”, nunca con una oración completa.",
+        examples: [
+          { en: "Despite the traffic, we arrived on time.", es: "A pesar del tráfico, llegamos a tiempo." },
+          { en: "Even though there was traffic, we arrived on time.", es: "Aunque había tráfico, llegamos a tiempo." }
+        ]
+      },
+      {
+        id: "g-avanzado9-despiteeventhough-2",
+        translation: "Aunque estaba nerviosa, dio un gran discurso.",
+        type: "fill",
+        sentence: ["___", "she", "was", "nervous", ",", "she", "gave", "a", "great", "speech", "."],
+        blankIndex: 0,
+        bank: ["Even though", "Despite", "In spite of"],
+        correct: "Even though",
+        explain: "Como sigue una oración completa (“she was nervous”, con sujeto y verbo), se necesita “even though”, no “despite” ni “in spite of”.",
+        examples: [
+          { en: "Even though she was nervous, she gave a great speech.", es: "Aunque estaba nerviosa, dio un gran discurso." },
+          { en: "Despite her nerves, she gave a great speech.", es: "A pesar de sus nervios, dio un gran discurso." }
+        ]
+      },
+      {
+        id: "g-avanzado9-despiteeventhough-3",
+        translation: "A pesar de sentirse nerviosa, actuó muy bien.",
+        type: "choice",
+        prompt: "Which is correct with a plain -ing form (no subject of its own)?",
+        options: ["Despite feeling nervous, she performed well.", "Even though feeling nervous, she performed well.", "Even feeling nervous, she performed well."],
+        correct: 0,
+        explain: "Con un simple “-ing” (sin sujeto propio) se usa “despite”, no “even though”.",
+        examples: [
+          { en: "Despite feeling nervous, she performed well.", es: "A pesar de sentirse nerviosa, actuó muy bien." },
+          { en: "Even though she felt nervous, she performed well.", es: "Aunque se sentía nerviosa, actuó muy bien." }
+        ]
+      },
+      {
+        id: "g-avanzado9-despiteeventhough-4",
+        translation: "A pesar de la fuerte lluvia, el partido continuó.",
+        type: "error",
+        wrong: "Even though the heavy rain, the match continued.",
+        wrongWord: "Even though",
+        right: "Despite the heavy rain, the match continued.",
+        rightWord: "Despite",
+        explain: "“Even though” necesita una oración completa con sujeto y verbo. Aquí solo hay un sustantivo (“the heavy rain”), así que corresponde “despite”.",
+        examples: [
+          { en: "Despite the heavy rain, the match continued.", es: "A pesar de la fuerte lluvia, el partido continuó." },
+          { en: "Even though it was raining heavily, the match continued.", es: "Aunque llovía fuerte, el partido continuó." }
+        ]
+      }
+    ]
+  }
+]);
+
+VOCAB_BANK.principiante.push([
+  {
+    id: "v-principiante5-1",
+    word: "Borrow",
+    translation: "Pedir prestado (recibir algo) · no confundir con \"lend\" (prestar, dar)",
+    examples: [
+      { en: "Can I borrow your pen?", es: "¿Me prestas tu pluma?" },
+      { en: "She borrowed my book last week.", es: "Ella pidió prestado mi libro la semana pasada." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa esto: \"pedir prestado, recibir algo para usarlo y devolverlo\"?",
+      options: ["borrow", "lend", "buy"],
+      correct: 0,
+      explain: "\"Borrow\" es pedir prestado (tú recibes). \"Lend\" es prestar (tú das)."
+    }
+  },
+  {
+    id: "v-principiante5-2",
+    word: "Lend",
+    translation: "Prestar (dar algo) · lo opuesto de \"borrow\"",
+    examples: [
+      { en: "Can you lend me your pen?", es: "¿Me prestas tu pluma? (tú me la das)" },
+      { en: "I lent her my book.", es: "Le presté mi libro." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa esto: \"dar algo prestado a alguien\"?",
+      options: ["lend", "borrow", "keep"],
+      correct: 0,
+      explain: "\"Lend\" es dar algo prestado. Es lo opuesto de \"borrow\" (recibir prestado)."
+    }
+  },
+  {
+    id: "v-principiante5-3",
+    word: "Say",
+    translation: "Decir algo (sin mencionar a quién se le dice) · no confundir con \"tell\"",
+    examples: [
+      { en: "She said hello.", es: "Ella dijo hola." },
+      { en: "He told me the news.", es: "Él me contó la noticia." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando NO mencionas a quién le hablas? (ej. \"She ___ hello.\")",
+      options: ["say", "tell", "speak"],
+      correct: 0,
+      explain: "\"Say\" no necesita a quién. \"Tell\" siempre lleva a la persona: \"tell me\", \"tell him\"."
+    }
+  },
+  {
+    id: "v-principiante5-4",
+    word: "Tell",
+    translation: "Decir/contar algo a alguien · siempre menciona a quién",
+    examples: [
+      { en: "Tell me your name.", es: "Dime tu nombre." },
+      { en: "She said her name.", es: "Ella dijo su nombre." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando SÍ mencionas a quién le hablas? (ej. \"___ me your name.\")",
+      options: ["tell", "say", "talk"],
+      correct: 0,
+      explain: "\"Tell\" siempre va con la persona: \"tell me\", \"tell her\". \"Say\" no la necesita."
+    }
+  },
+  {
+    id: "v-principiante5-5",
+    word: "Bring",
+    translation: "Traer (hacia donde está el hablante) · no confundir con \"take\"",
+    examples: [
+      { en: "Please bring your book to school.", es: "Por favor trae tu libro a la escuela." },
+      { en: "Take your umbrella with you.", es: "Lleva tu paraguas contigo." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa esto: \"traer algo hacia aquí\"?",
+      options: ["bring", "take", "carry"],
+      correct: 0,
+      explain: "\"Bring\" es traer hacia el lugar donde estás. \"Take\" es llevar lejos de ahí."
+    }
+  },
+  {
+    id: "v-principiante5-6",
+    word: "Take",
+    translation: "Llevar (lejos de donde está el hablante) · opuesto de \"bring\"",
+    examples: [
+      { en: "Take this to your teacher.", es: "Lleva esto a tu maestro." },
+      { en: "Bring me some water, please.", es: "Tráeme agua, por favor." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa esto: \"llevar algo lejos de aquí\"?",
+      options: ["take", "bring", "carry"],
+      correct: 0,
+      explain: "\"Take\" es llevar algo a otro lugar. \"Bring\" es traerlo hacia aquí."
+    }
+  },
+  {
+    id: "v-principiante5-7",
+    word: "Listen",
+    translation: "Escuchar con atención (a propósito) · no confundir con \"hear\"",
+    examples: [
+      { en: "Listen to this song.", es: "Escucha esta canción." },
+      { en: "I can hear music next door.", es: "Puedo oír música en la casa de al lado." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando pones atención a propósito?",
+      options: ["listen", "hear", "look"],
+      correct: 0,
+      explain: "\"Listen\" es escuchar con atención, a propósito. \"Hear\" es oír sin esfuerzo."
+    }
+  },
+  {
+    id: "v-principiante5-8",
+    word: "Hear",
+    translation: "Oír (sin esfuerzo, sin buscarlo) · no confundir con \"listen\"",
+    examples: [
+      { en: "I hear a noise.", es: "Oigo un ruido." },
+      { en: "Listen carefully to the instructions.", es: "Escucha con atención las instrucciones." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando un sonido simplemente llega a tus oídos, sin esfuerzo?",
+      options: ["hear", "listen", "sound"],
+      correct: 0,
+      explain: "\"Hear\" pasa sin esfuerzo. \"Listen\" es poner atención a propósito."
+    }
+  }
+]);
+
+VOCAB_BANK.facil.push([
+  {
+    id: "v-facil9-1",
+    word: "Do",
+    translation: "Hacer una actividad o tarea (en general) · no confundir con \"make\" (crear/producir)",
+    examples: [
+      { en: "I need to do my homework.", es: "Necesito hacer mi tarea." },
+      { en: "She made a cake.", es: "Ella hizo (preparó) un pastel." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas para una actividad en general, como \"my homework\"?",
+      options: ["do", "make", "work"],
+      correct: 0,
+      explain: "\"Do\" se usa para actividades y tareas. \"Make\" se usa para crear o producir algo."
+    }
+  },
+  {
+    id: "v-facil9-2",
+    word: "Make",
+    translation: "Hacer/crear algo (producir) · no confundir con \"do\"",
+    examples: [
+      { en: "She made a beautiful cake.", es: "Ella hizo un pastel hermoso." },
+      { en: "I did my homework.", es: "Hice mi tarea." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando CREAS o produces algo, como un pastel?",
+      options: ["make", "do", "cook"],
+      correct: 0,
+      explain: "\"Make\" es crear o producir algo nuevo, como \"make a cake\"."
+    }
+  },
+  {
+    id: "v-facil9-3",
+    word: "See",
+    translation: "Ver algo sin esfuerzo (pasa por tus ojos) · no confundir con \"watch\"",
+    examples: [
+      { en: "I can see the mountains from here.", es: "Puedo ver las montañas desde aquí." },
+      { en: "We watched a movie.", es: "Vimos una película (con atención)." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas cuando algo simplemente está frente a tus ojos, sin esfuerzo?",
+      options: ["see", "watch", "look"],
+      correct: 0,
+      explain: "\"See\" pasa sin esfuerzo. \"Watch\" es prestar atención a algo que se mueve (TV, partido)."
+    }
+  },
+  {
+    id: "v-facil9-4",
+    word: "Watch",
+    translation: "Ver con atención algo que se mueve (TV, partido) · no confundir con \"see\"",
+    examples: [
+      { en: "We watched a movie at home.", es: "Vimos una película en casa." },
+      { en: "I saw a bird in the garden.", es: "Vi un pájaro en el jardín." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas para ver la televisión o un partido con atención?",
+      options: ["watch", "see", "hear"],
+      correct: 0,
+      explain: "\"Watch\" es para algo que se mueve y le pones atención, como la TV o un partido."
+    }
+  },
+  {
+    id: "v-facil9-5",
+    word: "Travel",
+    translation: "Viajar (verbo, la acción) · no confundir con \"trip\" (el viaje, sustantivo)",
+    examples: [
+      { en: "I love to travel.", es: "Me encanta viajar." },
+      { en: "Our trip to Mexico was amazing.", es: "Nuestro viaje a México fue increíble." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra es un VERBO (la acción de viajar)?",
+      options: ["travel", "trip", "vacation"],
+      correct: 0,
+      explain: "\"Travel\" es el verbo (viajar). \"Trip\" es el sustantivo (el viaje en sí)."
+    }
+  },
+  {
+    id: "v-facil9-6",
+    word: "Trip",
+    translation: "Viaje (sustantivo, el viaje en sí) · no confundir con \"travel\" (el verbo)",
+    examples: [
+      { en: "We had a great trip.", es: "Tuvimos un gran viaje." },
+      { en: "I like to travel alone.", es: "Me gusta viajar solo." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra es un SUSTANTIVO (el viaje en sí, no la acción)?",
+      options: ["trip", "travel", "journey verb"],
+      correct: 0,
+      explain: "\"Trip\" es el sustantivo. \"Travel\" es normalmente el verbo."
+    }
+  },
+  {
+    id: "v-facil9-7",
+    word: "Job",
+    translation: "Trabajo/empleo (una posición específica) · no confundir con \"work\" (en general)",
+    examples: [
+      { en: "I got a new job.", es: "Conseguí un nuevo trabajo (empleo)." },
+      { en: "I have a lot of work today.", es: "Tengo mucho trabajo (tareas) hoy." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"un empleo\", una posición específica?",
+      options: ["job", "work", "office"],
+      correct: 0,
+      explain: "\"Job\" es un empleo específico (por ejemplo, \"a job as a teacher\")."
+    }
+  },
+  {
+    id: "v-facil9-8",
+    word: "Work",
+    translation: "Trabajo/trabajar (en general) · no confundir con \"job\" (empleo específico)",
+    examples: [
+      { en: "I have a lot of work today.", es: "Tengo mucho trabajo hoy." },
+      { en: "She got a new job.", es: "Ella consiguió un nuevo empleo." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra usas para hablar de trabajo/tareas en general, no un empleo específico?",
+      options: ["work", "job", "office"],
+      correct: 0,
+      explain: "\"Work\" es más general (actividad de trabajar). \"Job\" es un puesto específico."
+    }
+  }
+]);
+
+VOCAB_BANK.medio.push([
+  {
+    id: "v-medio9-1",
+    word: "Actually",
+    translation: "En realidad, la verdad es que · NO significa \"actualmente\"",
+    examples: [
+      { en: "Actually, I disagree with you.", es: "En realidad, no estoy de acuerdo contigo." },
+      { en: "I currently work from home.", es: "Actualmente trabajo desde casa." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"en realidad\", NO \"actualmente\"?",
+      options: ["actually", "currently", "actual"],
+      correct: 0,
+      explain: "\"Actually\" es una trampa clásica: significa \"en realidad\", no \"actualmente\"."
+    }
+  },
+  {
+    id: "v-medio9-2",
+    word: "Currently",
+    translation: "Actualmente, en este momento · es la traducción real de \"actualmente\"",
+    examples: [
+      { en: "She is currently traveling.", es: "Ella actualmente está viajando." },
+      { en: "Actually, that's not correct.", es: "En realidad, eso no es correcto." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"actualmente / en este momento\"?",
+      options: ["currently", "actually", "actual"],
+      correct: 0,
+      explain: "\"Currently\" es la palabra correcta para \"actualmente\"."
+    }
+  },
+  {
+    id: "v-medio9-3",
+    word: "Sensible",
+    translation: "Sensato, razonable · NO significa \"sensible\" (emocional), eso es \"sensitive\"",
+    examples: [
+      { en: "That's a sensible decision.", es: "Esa es una decisión sensata." },
+      { en: "He's very sensitive about criticism.", es: "Él es muy sensible a las críticas." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"sensato, razonable\"?",
+      options: ["sensible", "sensitive", "sensible emotional"],
+      correct: 0,
+      explain: "\"Sensible\" en inglés significa sensato, no emocional. Para eso está \"sensitive\"."
+    }
+  },
+  {
+    id: "v-medio9-4",
+    word: "Sensitive",
+    translation: "Sensible (emocional, delicado) · no confundir con \"sensible\" (sensato)",
+    examples: [
+      { en: "She's a very sensitive person.", es: "Ella es una persona muy sensible." },
+      { en: "That was a sensible choice.", es: "Esa fue una elección sensata." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"sensible\" en el sentido emocional?",
+      options: ["sensitive", "sensible", "reasonable"],
+      correct: 0,
+      explain: "\"Sensitive\" es lo emocional/delicado; \"sensible\" en inglés es sensato."
+    }
+  },
+  {
+    id: "v-medio9-5",
+    word: "Embarrassed",
+    translation: "Avergonzado/a (cómo se siente una persona) · no confundir con \"embarrassing\"",
+    examples: [
+      { en: "I felt embarrassed when I forgot her name.", es: "Me sentí avergonzado cuando olvidé su nombre." },
+      { en: "That was an embarrassing situation.", es: "Esa fue una situación vergonzosa." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra describe CÓMO SE SIENTE una persona (avergonzada)?",
+      options: ["embarrassed", "embarrassing", "ashamed only"],
+      correct: 0,
+      explain: "\"Embarrassed\" describe a la persona que siente vergüenza."
+    }
+  },
+  {
+    id: "v-medio9-6",
+    word: "Embarrassing",
+    translation: "Vergonzoso, que causa pena · describe la situación, no a la persona",
+    examples: [
+      { en: "That was an embarrassing mistake.", es: "Ese fue un error vergonzoso." },
+      { en: "I felt embarrassed about it.", es: "Me sentí avergonzado por eso." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra describe una SITUACIÓN que causa vergüenza?",
+      options: ["embarrassing", "embarrassed", "shy"],
+      correct: 0,
+      explain: "\"Embarrassing\" describe la situación o cosa que causa vergüenza."
+    }
+  },
+  {
+    id: "v-medio9-7",
+    word: "Assist",
+    translation: "Ayudar, asistir a alguien · no significa \"atender\" un evento, eso es \"attend\"",
+    examples: [
+      { en: "Can you assist me with this box?", es: "¿Me puedes ayudar con esta caja?" },
+      { en: "I will attend the meeting.", es: "Voy a asistir a la reunión." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"ayudar\" a alguien?",
+      options: ["assist", "attend", "help only"],
+      correct: 0,
+      explain: "\"Assist\" es ayudar. \"Attend\" es ir/asistir a un evento."
+    }
+  },
+  {
+    id: "v-medio9-8",
+    word: "Attend",
+    translation: "Asistir a un evento (ir) · no confundir con \"assist\" (ayudar)",
+    examples: [
+      { en: "I will attend the conference.", es: "Voy a asistir a la conferencia." },
+      { en: "Can you assist me?", es: "¿Me puedes ayudar?" }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"ir/asistir\" a un evento?",
+      options: ["attend", "assist", "go only"],
+      correct: 0,
+      explain: "\"Attend\" es asistir a un evento. \"Assist\" es ayudar a alguien."
+    }
+  }
+]);
+
+VOCAB_BANK.avanzado.push([
+  {
+    id: "v-avanzado9-1",
+    word: "Despite",
+    translation: "A pesar de · va seguido de sustantivo o \"-ing\", nunca de una oración completa",
+    examples: [
+      { en: "Despite the rain, they went out.", es: "A pesar de la lluvia, salieron." },
+      { en: "Although it was raining, they went out.", es: "Aunque llovía, salieron." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra va seguida de un SUSTANTIVO o \"-ing\" (no una oración completa)?",
+      options: ["despite", "although", "because"],
+      correct: 0,
+      explain: "\"Despite\" + sustantivo/-ing. \"Although\" necesita una oración completa."
+    }
+  },
+  {
+    id: "v-avanzado9-2",
+    word: "Although",
+    translation: "Aunque · va seguido de una oración completa (sujeto + verbo)",
+    examples: [
+      { en: "Although she was tired, she kept working.", es: "Aunque estaba cansada, siguió trabajando." },
+      { en: "Despite her tiredness, she kept working.", es: "A pesar de su cansancio, siguió trabajando." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra necesita una ORACIÓN COMPLETA después (sujeto + verbo)?",
+      options: ["although", "despite", "instead of"],
+      correct: 0,
+      explain: "\"Although\" siempre va con una oración completa."
+    }
+  },
+  {
+    id: "v-avanzado9-3",
+    word: "Whereas",
+    translation: "Mientras que (contraste formal) · no indica tiempo, indica contraste",
+    examples: [
+      { en: "John likes mornings, whereas his sister likes evenings.", es: "A John le gustan las mañanas, mientras que a su hermana le gustan las noches." },
+      { en: "I was reading while she was cooking.", es: "Yo leía mientras ella cocinaba." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra se usa para mostrar un CONTRASTE formal entre dos cosas?",
+      options: ["whereas", "while", "since"],
+      correct: 0,
+      explain: "\"Whereas\" marca un contraste (formal), no simultaneidad en el tiempo."
+    }
+  },
+  {
+    id: "v-avanzado9-4",
+    word: "While",
+    translation: "Mientras (tiempo simultáneo), o también contraste informal · más flexible que \"whereas\"",
+    examples: [
+      { en: "I was cooking while she was cleaning.", es: "Yo cocinaba mientras ella limpiaba." },
+      { en: "He prefers tea, whereas I prefer coffee.", es: "Él prefiere té, mientras que yo prefiero café." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra se usa normalmente para dos acciones que pasan AL MISMO TIEMPO?",
+      options: ["while", "whereas", "despite"],
+      correct: 0,
+      explain: "\"While\" es para simultaneidad en el tiempo (o contraste informal)."
+    }
+  },
+  {
+    id: "v-avanzado9-5",
+    word: "Presume",
+    translation: "Presumir/suponer (creer algo sin prueba) · no significa \"presumir\" de algo (fanfarronear), eso es \"boast\"",
+    examples: [
+      { en: "I presume you've read the report.", es: "Supongo que has leído el reporte." },
+      { en: "He likes to boast about his car.", es: "A él le gusta presumir de su carro." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"suponer algo sin prueba\"?",
+      options: ["presume", "boast", "assume wrong meaning"],
+      correct: 0,
+      explain: "\"Presume\" es suponer. \"Presumir\" (fanfarronear) en inglés es \"boast\", una trampa clásica."
+    }
+  },
+  {
+    id: "v-avanzado9-6",
+    word: "Assume",
+    translation: "Asumir/dar por hecho · muy parecido a \"presume\" pero más común en el uso diario",
+    examples: [
+      { en: "I assumed you already knew.", es: "Asumí que ya lo sabías." },
+      { en: "I presume you've read the report.", es: "Supongo que has leído el reporte." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"dar algo por hecho, asumir\"?",
+      options: ["assume", "boast", "presume wrong"],
+      correct: 0,
+      explain: "\"Assume\" es asumir/dar por hecho, muy similar a \"presume\"."
+    }
+  },
+  {
+    id: "v-avanzado9-7",
+    word: "Discreet",
+    translation: "Discreto/a (cuidadoso, prudente) · no confundir con \"discrete\" (separado, distinto)",
+    examples: [
+      { en: "She was very discreet about her plans.", es: "Ella fue muy discreta sobre sus planes." },
+      { en: "These are two discrete categories.", es: "Estas son dos categorías separadas." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"discreto/a, prudente\"?",
+      options: ["discreet", "discrete", "quiet only"],
+      correct: 0,
+      explain: "\"Discreet\" es discreto/prudente. \"Discrete\" (sin la segunda \"e\" junta) significa separado."
+    }
+  },
+  {
+    id: "v-avanzado9-8",
+    word: "Discrete",
+    translation: "Separado, distinto, individual · no confundir con \"discreet\" (discreto/prudente)",
+    examples: [
+      { en: "The data is divided into discrete groups.", es: "Los datos están divididos en grupos separados." },
+      { en: "He was very discreet about it.", es: "Él fue muy discreto al respecto." }
+    ],
+    quiz: {
+      prompt: "¿Qué palabra significa \"separado, distinto\"?",
+      options: ["discrete", "discreet", "hidden"],
+      correct: 0,
+      explain: "\"Discrete\" es separado/distinto. Se escribe casi igual que \"discreet\" pero significa otra cosa."
+    }
+  }
+]);
+
+WRITING_BANK.principiante.push([
+  {
+    id: "w-principiante5-1",
+    prompt: "Escribe una frase usando \"This\" o \"These\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(this|these)\\b",
+    hint: "Usa \"this\" para una sola cosa cerca de ti, o \"these\" para varias cosas.",
+    example: { en: "This is my book.", es: "Este es mi libro." },
+    checklist: ["¿Usaste \"this\" o \"these\"?", "¿Coincide con singular (this) o plural (these)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-principiante5-2",
+    prompt: "Escribe una pregunta usando \"Do\" o \"Does\".",
+    target: "...",
+    checkPattern: "\\b(do|does)\\b",
+    hint: "Usa \"do\" con I/you/we/they, y \"does\" con he/she/it.",
+    example: { en: "Does she like coffee?", es: "¿Le gusta el café a ella?" },
+    checklist: ["¿Usaste \"do\" o \"does\"?", "¿Coincide con el sujeto (he/she/it usa does)?", "¿Termina con signo de pregunta?"]
+  },
+  {
+    id: "w-principiante5-3",
+    prompt: "Escribe una frase usando \"borrow\" (pedir prestado).",
+    target: "...",
+    checkPattern: "borrow",
+    hint: "\"Borrow\" es cuando TÚ recibes algo prestado.",
+    example: { en: "Can I borrow your pen?", es: "¿Me prestas tu pluma?" },
+    checklist: ["¿Usaste la palabra \"borrow\"?", "¿Queda claro que alguien recibe algo prestado?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-principiante5-4",
+    prompt: "Escribe una frase usando \"bring\" o \"take\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(bring|take)\\b",
+    hint: "\"Bring\" es traer hacia aquí; \"take\" es llevar lejos de aquí.",
+    example: { en: "Please bring your book to school.", es: "Por favor trae tu libro a la escuela." },
+    checklist: ["¿Usaste \"bring\" o \"take\"?", "¿La dirección tiene sentido (hacia aquí o hacia allá)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-principiante5-5",
+    prompt: "Escribe una frase usando \"listen\" o \"hear\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(listen|hear)\\b",
+    hint: "\"Listen\" es escuchar con atención; \"hear\" es oír sin esfuerzo.",
+    example: { en: "I can hear music next door.", es: "Puedo oír música en la casa de al lado." },
+    checklist: ["¿Usaste \"listen\" o \"hear\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  }
+]);
+
+WRITING_BANK.facil.push([
+  {
+    id: "w-facil9-1",
+    prompt: "Escribe una frase usando \"some\" o \"any\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(some|any)\\b",
+    hint: "\"Some\" en frases afirmativas, \"any\" en negativas y preguntas.",
+    example: { en: "I have some money.", es: "Tengo algo de dinero." },
+    checklist: ["¿Usaste \"some\" o \"any\"?", "¿Corresponde al tipo de frase (afirmativa/negativa/pregunta)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-facil9-2",
+    prompt: "Escribe una frase usando \"much\" o \"many\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(much|many)\\b",
+    hint: "\"Many\" con cosas contables (books), \"much\" con cosas no contables (time, money).",
+    example: { en: "I have many books.", es: "Tengo muchos libros." },
+    checklist: ["¿Usaste \"much\" o \"many\"?", "¿El sustantivo es contable (many) o no contable (much)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-facil9-3",
+    prompt: "Escribe una frase usando \"do\" o \"make\" correctamente (hacer una tarea vs. crear algo).",
+    target: "...",
+    checkPattern: "\\b(do|does|did|make|makes|made)\\b",
+    hint: "\"Do\" es para actividades/tareas; \"make\" es para crear o producir algo.",
+    example: { en: "I need to do my homework.", es: "Necesito hacer mi tarea." },
+    checklist: ["¿Usaste alguna forma de \"do\" o \"make\"?", "¿Corresponde al significado (tarea vs. crear)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-facil9-4",
+    prompt: "Escribe una frase usando \"see\" o \"watch\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(see|saw|watch|watched)\\b",
+    hint: "\"See\" es ver sin esfuerzo; \"watch\" es ver con atención algo que se mueve.",
+    example: { en: "We watched a movie at home.", es: "Vimos una película en casa." },
+    checklist: ["¿Usaste alguna forma de \"see\" o \"watch\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-facil9-5",
+    prompt: "Escribe una frase usando \"job\" o \"work\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(job|work)\\b",
+    hint: "\"Job\" es un empleo específico; \"work\" es trabajo/actividad en general.",
+    example: { en: "I got a new job.", es: "Conseguí un nuevo trabajo." },
+    checklist: ["¿Usaste \"job\" o \"work\"?", "¿Corresponde al significado (empleo específico vs. general)?", "¿La frase tiene sentido?"]
+  }
+]);
+
+WRITING_BANK.medio.push([
+  {
+    id: "w-medio9-1",
+    prompt: "Escribe una frase usando \"actually\" o \"currently\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(actually|currently)\\b",
+    hint: "\"Actually\" es \"en realidad\"; \"currently\" es \"actualmente/en este momento\".",
+    example: { en: "Actually, I disagree with you.", es: "En realidad, no estoy de acuerdo contigo." },
+    checklist: ["¿Usaste \"actually\" o \"currently\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-medio9-2",
+    prompt: "Escribe una frase usando \"despite\" o \"although\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(despite|although)\\b",
+    hint: "\"Despite\" + sustantivo/-ing; \"although\" + oración completa (sujeto + verbo).",
+    example: { en: "Despite the rain, we went out.", es: "A pesar de la lluvia, salimos." },
+    checklist: ["¿Usaste \"despite\" o \"although\"?", "¿Le sigue la estructura correcta (sustantivo/-ing o una oración completa)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-medio9-3",
+    prompt: "Escribe una frase usando \"sensible\" o \"sensitive\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(sensible|sensitive)\\b",
+    hint: "\"Sensible\" en inglés es sensato/razonable; \"sensitive\" es sensible en lo emocional.",
+    example: { en: "That's a sensible decision.", es: "Esa es una decisión sensata." },
+    checklist: ["¿Usaste \"sensible\" o \"sensitive\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-medio9-4",
+    prompt: "Escribe una frase usando \"embarrassed\" o \"embarrassing\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(embarrassed|embarrassing)\\b",
+    hint: "\"Embarrassed\" describe a la persona; \"embarrassing\" describe la situación.",
+    example: { en: "That was an embarrassing mistake.", es: "Ese fue un error vergonzoso." },
+    checklist: ["¿Usaste \"embarrassed\" o \"embarrassing\"?", "¿Corresponde al significado (persona vs. situación)?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-medio9-5",
+    prompt: "Escribe una frase usando \"assist\" o \"attend\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(assist|attend)\\b",
+    hint: "\"Assist\" es ayudar; \"attend\" es asistir/ir a un evento.",
+    example: { en: "Can you assist me with this box?", es: "¿Me puedes ayudar con esta caja?" },
+    checklist: ["¿Usaste \"assist\" o \"attend\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  }
+]);
+
+WRITING_BANK.avanzado.push([
+  {
+    id: "w-avanzado9-1",
+    prompt: "Escribe una pregunta usando \"who\" o \"whom\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(who|whom)\\b",
+    hint: "\"Who\" es sujeto; \"whom\" es objeto (y siempre después de una preposición como \"to\").",
+    example: { en: "To whom did you give the letter?", es: "¿A quién le diste la carta?" },
+    checklist: ["¿Usaste \"who\" o \"whom\"?", "¿Corresponde a sujeto (who) u objeto (whom)?", "¿Termina con signo de pregunta?"]
+  },
+  {
+    id: "w-avanzado9-2",
+    prompt: "Escribe una frase usando \"despite\", \"although\" o \"even though\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(despite|although|even though)\\b",
+    hint: "\"Despite\" + sustantivo/-ing. \"Although\"/\"even though\" + oración completa.",
+    example: { en: "Despite the heavy rain, the match continued.", es: "A pesar de la fuerte lluvia, el partido continuó." },
+    checklist: ["¿Usaste \"despite\", \"although\" o \"even though\"?", "¿Le sigue la estructura correcta?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-avanzado9-3",
+    prompt: "Escribe una frase usando \"whereas\" o \"while\" para mostrar un contraste.",
+    target: "...",
+    checkPattern: "\\b(whereas|while)\\b",
+    hint: "\"Whereas\" es más formal para contraste; \"while\" también sirve, y además indica simultaneidad.",
+    example: { en: "John likes mornings, whereas his sister likes evenings.", es: "A John le gustan las mañanas, mientras que a su hermana le gustan las noches." },
+    checklist: ["¿Usaste \"whereas\" o \"while\"?", "¿Muestra un contraste claro entre dos cosas?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-avanzado9-4",
+    prompt: "Escribe una frase usando \"presume\" o \"assume\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(presume|assume|presumed|assumed)\\b",
+    hint: "Ambas significan suponer/dar por hecho algo sin prueba directa.",
+    example: { en: "I presume you've read the report.", es: "Supongo que has leído el reporte." },
+    checklist: ["¿Usaste \"presume\" o \"assume\" (o su forma pasada)?", "¿Queda claro que se supone algo sin prueba?", "¿La frase tiene sentido?"]
+  },
+  {
+    id: "w-avanzado9-5",
+    prompt: "Escribe una frase usando \"discreet\" o \"discrete\" correctamente.",
+    target: "...",
+    checkPattern: "\\b(discreet|discrete)\\b",
+    hint: "\"Discreet\" es discreto/prudente; \"discrete\" es separado/distinto.",
+    example: { en: "She was very discreet about her plans.", es: "Ella fue muy discreta sobre sus planes." },
+    checklist: ["¿Usaste \"discreet\" o \"discrete\"?", "¿Corresponde al significado correcto?", "¿La frase tiene sentido?"]
+  }
+]);
+
+LISTENING_BANK.principiante.push([
+  {
+    id: "l-principiante8-1",
+    audioFile: "audio/a0/a0listening-020.mp3",
+    transcript: "Can I borrow your pen, please?",
+    translation: "¿Me prestas tu pluma, por favor?",
+    question: "What does the speaker want to do?",
+    options: ["Borrow the pen and give it back later", "Keep the pen forever", "Buy a new pen"],
+    correct: 0,
+    explain: "\"Borrow\" significa pedir prestado algo que después se devuelve."
+  },
+  {
+    id: "l-principiante8-2",
+    audioFile: "audio/a0/a0listening-021.mp3",
+    transcript: "Please bring your book to school tomorrow.",
+    translation: "Por favor trae tu libro a la escuela mañana.",
+    question: "What should the listener do?",
+    options: ["Bring the book to school", "Leave the book at home", "Buy a new book"],
+    correct: 0,
+    explain: "\"Bring\" es traer algo hacia el lugar donde estará el hablante (la escuela)."
+  },
+  {
+    id: "l-principiante8-3",
+    audioFile: "audio/a0/a0listening-022.mp3",
+    transcript: "Does she work on Saturdays?",
+    translation: "¿Ella trabaja los sábados?",
+    question: "What is being asked?",
+    options: ["If she works on Saturdays", "If she likes Saturdays", "If Saturday is a holiday"],
+    correct: 0,
+    explain: "La pregunta usa \"does\" con \"she\" para preguntar si trabaja los sábados."
+  },
+  {
+    id: "l-principiante8-4",
+    audioFile: "audio/a0/a0listening-023.mp3",
+    transcript: "I can hear music, but I am not really listening to it.",
+    translation: "Puedo oír música, pero en realidad no la estoy escuchando con atención.",
+    question: "What is true about the speaker?",
+    options: ["They notice the music without paying close attention", "They are listening very carefully", "They can't hear anything"],
+    correct: 0,
+    explain: "\"Hear\" es oír sin esfuerzo; \"listen\" es poner atención, y aquí dice que NO está haciendo eso."
+  }
+]);
+
+LISTENING_BANK.facil.push([
+  {
+    id: "l-facil13-1",
+    audioFile: "audio/a1/a1listening-039.mp3",
+    transcript: "She made a beautiful cake for the party.",
+    translation: "Ella hizo un pastel hermoso para la fiesta.",
+    question: "What did she do?",
+    options: ["She made a cake", "She bought a cake", "She ate a cake"],
+    correct: 0,
+    explain: "\"Made\" (de \"make\") significa que ella creó/preparó el pastel."
+  },
+  {
+    id: "l-facil13-2",
+    audioFile: "audio/a1/a1listening-040.mp3",
+    transcript: "We watched a movie at home last night.",
+    translation: "Vimos una película en casa anoche.",
+    question: "What did they do last night?",
+    options: ["Watched a movie", "Went to the cinema", "Read a book"],
+    correct: 0,
+    explain: "\"Watched\" (de \"watch\") es ver con atención algo como una película."
+  },
+  {
+    id: "l-facil13-3",
+    audioFile: "audio/a1/a1listening-041.mp3",
+    transcript: "I have a new job at a hospital.",
+    translation: "Tengo un nuevo trabajo en un hospital.",
+    question: "What is true about the speaker?",
+    options: ["They have a new job", "They are sick", "They are visiting a friend"],
+    correct: 0,
+    explain: "\"Job\" aquí significa un empleo específico, en un hospital."
+  },
+  {
+    id: "l-facil13-4",
+    audioFile: "audio/a1/a1listening-042.mp3",
+    transcript: "He doesn't have much time this week.",
+    translation: "Él no tiene mucho tiempo esta semana.",
+    question: "What does he have?",
+    options: ["Very little time", "A lot of time", "No job"],
+    correct: 0,
+    explain: "\"Doesn't have much time\" significa que tiene poco tiempo disponible."
+  }
+]);
+
+LISTENING_BANK.medio.push([
+  {
+    id: "l-medio10-1",
+    audioFile: "audio/b1/b1listening-028.mp3",
+    transcript: "Actually, I don't agree with that plan.",
+    translation: "En realidad, no estoy de acuerdo con ese plan.",
+    question: "What is the speaker really doing?",
+    options: ["Disagreeing with the plan", "Agreeing with the plan", "Asking about the plan"],
+    correct: 0,
+    explain: "\"Actually\" introduce que la persona no está de acuerdo, en realidad."
+  },
+  {
+    id: "l-medio10-2",
+    audioFile: "audio/b1/b1listening-029.mp3",
+    transcript: "Despite the traffic, we arrived on time.",
+    translation: "A pesar del tráfico, llegamos a tiempo.",
+    question: "What happened even though there was traffic?",
+    options: ["They arrived on time", "They arrived late", "They cancelled the trip"],
+    correct: 0,
+    explain: "\"Despite the traffic\" indica que a pesar del tráfico, sí llegaron a tiempo."
+  },
+  {
+    id: "l-medio10-3",
+    audioFile: "audio/b1/b1listening-030.mp3",
+    transcript: "I felt so embarrassed when I forgot her name.",
+    translation: "Me sentí tan avergonzado cuando olvidé su nombre.",
+    question: "How did the speaker feel?",
+    options: ["Embarrassed", "Excited", "Angry"],
+    correct: 0,
+    explain: "\"Embarrassed\" describe cómo se sintió la persona: avergonzada."
+  },
+  {
+    id: "l-medio10-4",
+    audioFile: "audio/b1/b1listening-031.mp3",
+    transcript: "Can you assist me with this heavy box?",
+    translation: "¿Me puedes ayudar con esta caja pesada?",
+    question: "What is the speaker asking for?",
+    options: ["Help carrying the box", "Permission to leave", "Directions"],
+    correct: 0,
+    explain: "\"Assist\" significa ayudar; están pidiendo ayuda con la caja."
+  }
+]);
+
+LISTENING_BANK.avanzado.push([
+  {
+    id: "l-avanzado10-1",
+    audioFile: "audio/c1/c1listening-028.mp3",
+    transcript: "Whom did they choose for the position?",
+    translation: "¿A quién eligieron para el puesto?",
+    question: "What is being asked?",
+    options: ["Who was chosen for the job", "Who is asking the question", "When the job starts"],
+    correct: 0,
+    explain: "\"Whom\" aquí es el objeto de \"choose\": preguntan a quién eligieron."
+  },
+  {
+    id: "l-avanzado10-2",
+    audioFile: "audio/c1/c1listening-029.mp3",
+    transcript: "Whereas John prefers mornings, his sister prefers evenings.",
+    translation: "Mientras que a John le gustan las mañanas, a su hermana le gustan las noches.",
+    question: "What does whereas show here?",
+    options: ["A contrast between John and his sister", "That John and his sister agree", "A reason for something"],
+    correct: 0,
+    explain: "\"Whereas\" marca un contraste entre las preferencias de John y su hermana."
+  },
+  {
+    id: "l-avanzado10-3",
+    audioFile: "audio/c1/c1listening-030.mp3",
+    transcript: "I assume you have already read the report.",
+    translation: "Supongo que ya has leído el reporte.",
+    question: "What is the speaker doing?",
+    options: ["Taking something for granted without proof", "Stating a fact they confirmed", "Asking a direct question"],
+    correct: 0,
+    explain: "\"Assume\" es suponer algo sin tener prueba directa de ello."
+  },
+  {
+    id: "l-avanzado10-4",
+    audioFile: "audio/c1/c1listening-031.mp3",
+    transcript: "She was very discreet about her plans.",
+    translation: "Ella fue muy discreta sobre sus planes.",
+    question: "How did she behave?",
+    options: ["Careful and quiet about her plans", "Loud and open about her plans", "Confused about her plans"],
+    correct: 0,
+    explain: "\"Discreet\" significa discreta, prudente, cuidadosa al no revelar información."
+  }
+]);
