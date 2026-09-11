@@ -210,21 +210,21 @@ async function initMemberHeader(){
   // para cualquier otra persona el link sigue diciendo "Practicar gratis".
   document.querySelectorAll('.nav-links a[href="practica.html"]').forEach(a=>{
     // Para un miembro logeado, "Practicar gratis" no debe ni existir: se
-    // cambia el texto Y el destino, así el clic va directo a practicar de
-    // verdad (mixto.html: sesión mixta con progreso guardado), no solo al
-    // panel donde tendría que volver a elegir. Nunca pasa por la página
-    // gratis. Antes solo se cambiaba el texto y practica.html hacía un
-    // redireccionamiento después, lo que se alcanzaba a ver como un
-    // parpadeo de un segundo.
+    // cambia el texto Y el destino, así el clic va directo a
+    // practica-miembros.html (mismo selector de nivel + pestañas de
+    // habilidad que la versión gratis, pero con las sesiones reales que
+    // sí guardan progreso). Nunca pasa por la página gratis. Antes solo
+    // se cambiaba el texto y practica.html hacía un redireccionamiento
+    // después, lo que se alcanzaba a ver como un parpadeo de un segundo.
     a.textContent = 'Practicar';
-    a.href = 'mixto.html';
+    a.href = 'practica-miembros.html';
   });
 
   // Mismo ajuste para el botón "Practicar" de la barra inferior en
   // móvil (usa onclick en vez de href, así que se sobreescribe distinto).
   document.querySelectorAll('.mobile-nav .mnav-item').forEach(btn=>{
     if(btn.getAttribute('onclick') === "location.href='practica.html'"){
-      btn.onclick = function(){ location.href = 'mixto.html'; };
+      btn.onclick = function(){ location.href = 'practica-miembros.html'; };
     }
   });
 
@@ -3106,6 +3106,71 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     renderHead();
     const run = RUNNERS[currentSkill] || runFreeGrammarSession;
     run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill });
+  }
+
+  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); });
+  renderTabs();
+  renderCurrent();
+}
+
+/* ---------- Orquestador de practica-miembros.html: mismo selector de
+   nivel + pestañas de habilidad que practica.html (para que un miembro
+   pueda elegir Listening, Speaking, etc. como quiera, no solo Mixto),
+   pero corriendo las sesiones REALES de Miembros (con progreso
+   guardado), no las gratis. A propósito NO comparte código con
+   initFreePractice(): usa otros runners (runGrammarSession en vez de
+   runFreeGrammarSession, etc.) y no tiene reto diario ni banner de
+   membresía, porque el usuario que llega aquí ya es miembro. ---------- */
+function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
+  const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing','mixto'];
+  const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing', mix:'mixto' };
+  const SKILL_DESC = {
+    gramatica: '8 preguntas cortas con explicación y ejemplos.',
+    vocabulario: '8 palabras útiles en contexto, no solo la traducción.',
+    listening: '3 audios reales: escucha y responde.',
+    speaking: '3 frases: escucha, grábate y compara.',
+    writing: '4 frases guiadas con revisión honesta.',
+    mixto: 'Un poco de todo: gramática, vocabulario, listening, speaking y writing en una sola sesión.'
+  };
+  const RUNNERS = {
+    gramatica: runGrammarSession,
+    vocabulario: runVocabSession,
+    listening: runListeningSession,
+    speaking: runSpeakingSession,
+    writing: runWritingSession,
+    mixto: runMixSession
+  };
+
+  let currentLevel = getUserLevel();
+  let currentSkill = 'gramatica';
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const skillParam = params.get('skill');
+    if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
+  }catch(e){}
+
+  function focusTabs(){
+    if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  function renderHead(){
+    headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
+  }
+  function renderTabs(){
+    tabsEl.innerHTML = SKILL_ORDER.map(sk => `
+      <button type="button" class="skill-tab-btn" data-skill="${sk}" role="tab" aria-selected="${sk===currentSkill}" aria-pressed="${sk===currentSkill}">${SKILL_LABELS[sk]}</button>`).join('');
+    tabsEl.querySelectorAll('.skill-tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(btn.dataset.skill === currentSkill) return;
+        currentSkill = btn.dataset.skill;
+        renderTabs();
+        renderCurrent();
+      });
+    });
+  }
+  function renderCurrent(){
+    renderHead();
+    const run = RUNNERS[currentSkill] || runGrammarSession;
+    run({ container: bodyEl, level: currentLevel });
   }
 
   renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); });

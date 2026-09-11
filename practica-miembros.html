@@ -9,32 +9,14 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#030b1a">
-<title>Practica inglés gratis - Inglés con Leo</title>
-<meta name="description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+.">
-<link rel="canonical" href="https://inglesconleo.com/practica.html">
-<meta property="og:title" content="Practica inglés gratis - Inglés con Leo">
-<meta property="og:description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://inglesconleo.com/practica.html">
-<meta property="og:image" content="https://inglesconleo.com/og-logo.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Practica inglés gratis - Inglés con Leo">
-<meta name="twitter:description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel.">
-<meta name="twitter:image" content="https://inglesconleo.com/og-logo.png">
+<title>Practicar - Miembros - Inglés con Leo</title>
+<meta name="description" content="Elige tu nivel y una habilidad, y haz una sesión real de práctica con tu progreso guardado.">
+<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=20260910">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Practica inglés gratis - Inglés con Leo",
-  "url": "https://inglesconleo.com/practica.html",
-  "isPartOf": { "@type": "WebSite", "name": "Inglés con Leo", "url": "https://inglesconleo.com/" }
-}
-</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script>
@@ -55,7 +37,7 @@
     <nav class="nav-links">
       <a href="index.html">Inicio</a>
       <a href="articulos.html">Artículos</a>
-      <a href="practica.html" class="current">Practicar gratis</a>
+      <a href="practica-miembros.html" class="current">Practicar</a>
       <a href="miembros.html">Miembros</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -102,32 +84,17 @@
       </div>
     </div>
 
-    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta" id="navCta">Entrar a miembros</a>
     <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
   </div>
 </header>
 
-<main id="practicaMain" style="visibility:hidden;">
-  <section class="page-hero">
+<main>
+  <section class="page-hero" style="padding-bottom:8px;">
     <div class="wrap">
-      <span class="badge badge-free">Gratis</span>
-      <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
-      <p class="lead">Elige tu nivel y una habilidad, y haz una mini sesión real de varios ejercicios. Sin registrarte.</p>
-    </div>
-  </section>
-
-  <section style="padding-top:8px;">
-    <div class="wrap">
-      <div class="daily-card" id="dailyChallengeCard">
-        <div class="daily-card-top">
-          <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </div>
-          <span class="daily-eyebrow">Reto diario</span>
-        </div>
-        <h2>5 ejercicios, un minuto al día</h2>
-        <div id="dailyChallengeBody"></div>
-      </div>
+      <span class="badge badge-members">Miembros</span>
+      <a href="miembros.html" style="display:inline-block;margin-top:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;">← Volver a tu panel</a>
+      <h1 style="margin-top:10px;">Elige tu nivel y practica</h1>
+      <p class="lead">Elige tu nivel y una habilidad, y haz una sesión real de varios ejercicios. Tu progreso se guarda.</p>
     </div>
   </section>
 
@@ -141,22 +108,6 @@
         <div class="skill-section-head" id="skillHead"></div>
         <div class="skill-section-body" id="skillBody"></div>
       </div>
-
-      <div class="article-cta practice-members-cta" style="margin-top:28px;">
-        <div class="practice-members-copy">
-          <h3>Haz que tu inglés avance de verdad</h3>
-          <p>Los ejercicios gratis son solo el comienzo. Como miembro puedes guardar tu progreso, repasar tus errores, completar retos diarios, acceder a clases interactivas y prepararte para exámenes oficiales, todo desde un mismo lugar.</p>
-          <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Hazte miembro por $2 USD/mes <span aria-hidden="true">→</span></a>
-          <p class="practice-members-price">Cancela cuando quieras</p>
-        </div>
-        <ul class="practice-members-features" aria-label="Por qué unirte hoy">
-          <li class="practice-members-features-title">Por qué unirte hoy</li>
-          <li>Cancela cuando quieras, sin contratos</li>
-          <li>Acceso inmediato en cuanto te unes</li>
-          <li>Un precio simple: $2 USD al mes</li>
-          <li>Practica a tu ritmo, cuando quieras</li>
-        </ul>
-      </div>
     </div>
   </section>
 </main>
@@ -167,7 +118,7 @@
     <div class="foot-links">
       <a href="index.html">Inicio</a>
       <a href="articulos.html">Artículos</a>
-      <a href="practica.html">Practicar</a>
+      <a href="practica-miembros.html">Practicar</a>
       <a href="miembros.html">Miembros</a>
     </div>
     <div class="foot-social">
@@ -197,7 +148,7 @@
     <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     Artículos
   </button>
-  <button class="mnav-item active" onclick="location.href='practica.html'">
+  <button class="mnav-item active" onclick="location.href='practica-miembros.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
     Practicar
   </button>
@@ -213,47 +164,14 @@
 <script src="backend.js"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
-  // Esta página es la práctica de muestra SIN guardar progreso, pensada
-  // para quien todavía no es miembro. Si alguien ya inició sesión como
-  // miembro (por ejemplo, dio clic en un link viejo de "Practicar gratis"
-  // en un artículo, o entró por un buscador), no tiene sentido que la
-  // vea: lo mandamos directo a practica-miembros.html (mismo selector de
-  // nivel y habilidad, pero con progreso guardado de verdad). Por eso el
-  // <main> empieza oculto: así no se alcanza a ver un parpadeo de la
-  // página gratis antes de mandarlo ahí.
-  (async function(){
-    let isLoggedInMember = false;
-    if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
-      try{
-        const profile = await LeoBackend.getMemberProfile();
-        isLoggedInMember = !!(profile && profile.is_member);
-      }catch(e){}
-    }
-
-    if(isLoggedInMember){
-      // Por si el redireccionamiento tarda un instante en disparar,
-      // ocultamos el botón "Entrar a miembros" de una vez (evita el
-      // parpadeo que reportaste, donde alcanzaba a verse ese botón
-      // aunque la persona ya tenía su sesión iniciada).
-      const cta = document.getElementById('navCta');
-      if(cta) cta.style.display = 'none';
-      window.location.replace('practica-miembros.html');
-      return;
-    }
-
-    // No es miembro (o no hay backend configurado): mostrar la página
-    // de práctica gratis normalmente, igual que siempre.
-    const main = document.getElementById('practicaMain');
-    if(main) main.style.visibility = 'visible';
-    initFreePractice({
+  guardMemberPage(function(){
+    initMemberPractice({
       levelsEl: document.getElementById('levelSelector'),
       tabsEl: document.getElementById('skillTabs'),
       headEl: document.getElementById('skillHead'),
       bodyEl: document.getElementById('skillBody')
     });
-    initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: true });
-    initOnboarding();
-  })();
+  });
 </script>
 
 </body>
