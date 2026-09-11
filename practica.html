@@ -107,7 +107,7 @@
   </div>
 </header>
 
-<main>
+<main id="practicaMain" style="visibility:hidden;">
   <section class="page-hero">
     <div class="wrap">
       <span class="badge badge-free">Gratis</span>
@@ -213,31 +213,45 @@
 <script src="backend.js"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
-  initFreePractice({
-    levelsEl: document.getElementById('levelSelector'),
-    tabsEl: document.getElementById('skillTabs'),
-    headEl: document.getElementById('skillHead'),
-    bodyEl: document.getElementById('skillBody')
-  });
-  initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: true });
-  initOnboarding();
-
-  // A diferencia de las páginas de Miembros (que usan guardMemberPage,
-  // el cual redirige si no hay sesión), esta página debe seguir siendo
-  // visible para cualquiera. Solo revisamos si YA hay una sesión de
-  // miembro activa para mostrar el menú de cuenta en vez del botón
-  // "Entrar a miembros" (antes esta página nunca cargaba backend.js,
-  // así que nunca podía saber si el usuario ya había iniciado sesión).
+  // Esta página es la práctica de muestra SIN guardar progreso, pensada
+  // para quien todavía no es miembro. Si alguien ya inició sesión como
+  // miembro (por ejemplo, dio clic en un link viejo de "Practicar gratis"
+  // en un artículo, o entró por un buscador), no tiene sentido que la
+  // vea: lo mandamos directo a su panel de miembros, donde sí se guarda
+  // todo. Por eso el <main> empieza oculto: así no se alcanza a ver un
+  // parpadeo de la página gratis antes de mandarlo a miembros.html.
   (async function(){
-    if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
-    try{
-      const profile = await LeoBackend.getMemberProfile();
-      if(profile && profile.is_member){
-        const cta = document.getElementById('navCta');
-        if(cta) cta.style.display = 'none';
-        if(typeof initMemberHeader === 'function') await initMemberHeader();
-      }
-    }catch(e){}
+    let isLoggedInMember = false;
+    if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
+      try{
+        const profile = await LeoBackend.getMemberProfile();
+        isLoggedInMember = !!(profile && profile.is_member);
+      }catch(e){}
+    }
+
+    if(isLoggedInMember){
+      // Por si el redireccionamiento tarda un instante en disparar,
+      // ocultamos el botón "Entrar a miembros" de una vez (evita el
+      // parpadeo que reportaste, donde alcanzaba a verse ese botón
+      // aunque la persona ya tenía su sesión iniciada).
+      const cta = document.getElementById('navCta');
+      if(cta) cta.style.display = 'none';
+      window.location.replace('miembros.html');
+      return;
+    }
+
+    // No es miembro (o no hay backend configurado): mostrar la página
+    // de práctica gratis normalmente, igual que siempre.
+    const main = document.getElementById('practicaMain');
+    if(main) main.style.visibility = 'visible';
+    initFreePractice({
+      levelsEl: document.getElementById('levelSelector'),
+      tabsEl: document.getElementById('skillTabs'),
+      headEl: document.getElementById('skillHead'),
+      bodyEl: document.getElementById('skillBody')
+    });
+    initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: true });
+    initOnboarding();
   })();
 </script>
 
