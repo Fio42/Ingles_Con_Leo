@@ -721,6 +721,7 @@ function scoreSpokenText(saidText, targetText){
   return wordListSimilarity(normalizeForSpeechCompare(saidText), normalizeForSpeechCompare(targetText));
 }
 function speechScoreFeedback(pct){
+  if(pct >= 100) return { ok:true, label:'¡Perfecto!', msg:'Se entendió exactamente igual a la frase original.' };
   if(pct >= 85) return { ok:true, label:'¡Muy bien!', msg:'Se entendió casi igual a la frase original.' };
   if(pct >= 60) return { ok:false, label:'Casi', msg:'Se entendieron varias palabras, pero no todas. Escucha de nuevo e inténtalo otra vez.' };
   return { ok:false, label:'Sigue practicando', msg:'El reconocimiento de voz no logró entender la frase completa. Puede ser el micrófono, el ruido de fondo o la pronunciación: inténtalo de nuevo.' };
@@ -772,8 +773,7 @@ function renderSpeechScoreBlock(el, targetText, saidText){
     <div class="examples-block">
       <div class="examples-label">Se entendió</div>
       <div class="example-pair"><div class="example-en">"${saidText || '(no se entendió nada)'}"</div></div>
-    </div>
-    <p class="audio-missing-note" style="margin-top:8px;">Comparación aproximada por palabras, no es una medición real de acento.</p>`;
+    </div>`;
 }
 
 function renderExamplesBlock(examples){
