@@ -209,7 +209,23 @@ async function initMemberHeader(){
   // membresía). Se deja como "Practicar" solo para miembros logeados;
   // para cualquier otra persona el link sigue diciendo "Practicar gratis".
   document.querySelectorAll('.nav-links a[href="practica.html"]').forEach(a=>{
+    // Para un miembro logeado, "Practicar gratis" no debe ni existir: se
+    // cambia el texto Y el destino, así el clic va directo a practicar de
+    // verdad (mixto.html: sesión mixta con progreso guardado), no solo al
+    // panel donde tendría que volver a elegir. Nunca pasa por la página
+    // gratis. Antes solo se cambiaba el texto y practica.html hacía un
+    // redireccionamiento después, lo que se alcanzaba a ver como un
+    // parpadeo de un segundo.
     a.textContent = 'Practicar';
+    a.href = 'mixto.html';
+  });
+
+  // Mismo ajuste para el botón "Practicar" de la barra inferior en
+  // móvil (usa onclick en vez de href, así que se sobreescribe distinto).
+  document.querySelectorAll('.mobile-nav .mnav-item').forEach(btn=>{
+    if(btn.getAttribute('onclick') === "location.href='practica.html'"){
+      btn.onclick = function(){ location.href = 'mixto.html'; };
+    }
   });
 
   const editBtn = document.getElementById('navEditNameBtn');

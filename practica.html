@@ -217,9 +217,10 @@
   // para quien todavía no es miembro. Si alguien ya inició sesión como
   // miembro (por ejemplo, dio clic en un link viejo de "Practicar gratis"
   // en un artículo, o entró por un buscador), no tiene sentido que la
-  // vea: lo mandamos directo a su panel de miembros, donde sí se guarda
-  // todo. Por eso el <main> empieza oculto: así no se alcanza a ver un
-  // parpadeo de la página gratis antes de mandarlo a miembros.html.
+  // vea: lo mandamos directo a practicar de verdad (mixto.html, sesión
+  // mixta con progreso guardado). Por eso el <main> empieza oculto: así
+  // no se alcanza a ver un parpadeo de la página gratis antes de mandarlo
+  // a mixto.html.
   (async function(){
     let isLoggedInMember = false;
     if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
@@ -236,7 +237,7 @@
       // aunque la persona ya tenía su sesión iniciada).
       const cta = document.getElementById('navCta');
       if(cta) cta.style.display = 'none';
-      window.location.replace('miembros.html');
+      window.location.replace('mixto.html');
       return;
     }
 
