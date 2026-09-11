@@ -673,6 +673,109 @@ const BAD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><c
 const PLAY_ICON = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 2l9 5-9 5V2z" fill="currentColor"/></svg>';
 const MIC_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
+/* ---------- Análisis de pronunciación en Speaking (gratis, sin costo) ----------
+   Usa el reconocimiento de voz del navegador (Web Speech API) mientras
+   la persona se graba, y compara por palabras lo que el navegador
+   entendió contra la frase que debía decir. IMPORTANTE: esto NO es un
+   análisis real de pronunciación/acento como el de apps de pago (que
+   analizan sonido por sonido con modelos entrenados para eso). Aquí
+   solo se compara texto reconocido vs. texto esperado, así que puede
+   ser injustamente estricto con acentos fuertes o con ruido de fondo,
+   y no detecta si un sonido específico está mal pronunciado dentro de
+   una palabra que igual se reconoció bien. Por eso el resultado
+   siempre se muestra con una aclaración. Además, solo funciona en
+   navegadores con SpeechRecognition (Chrome y Edge de escritorio y
+   Android); en Safari, Firefox y el navegador de iPhone no hay
+   análisis automático, y se avisa de eso en vez de fallar en silencio. */
+function getSpeechRecognitionCtor(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+function normalizeForSpeechCompare(text){
+  return (text || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s']/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+}
+// Distancia de edición (Levenshtein) a nivel de PALABRA entre lo que
+// se dijo y la frase objetivo, convertida a un puntaje de 0 a 100.
+// Tolera que falte o sobre alguna palabra suelta sin desplomar el
+// puntaje entero, a diferencia de compararlo carácter por carácter.
+function wordListSimilarity(saidWords, targetWords){
+  const n = saidWords.length, m = targetWords.length;
+  if(!m) return 0;
+  const dp = Array.from({ length:n+1 }, ()=> new Array(m+1).fill(0));
+  for(let i=0;i<=n;i++) dp[i][0] = i;
+  for(let j=0;j<=m;j++) dp[0][j] = j;
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      if(saidWords[i-1] === targetWords[j-1]) dp[i][j] = dp[i-1][j-1];
+      else dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  const dist = dp[n][m];
+  return Math.round(Math.max(0, 1 - dist / m) * 100);
+}
+function scoreSpokenText(saidText, targetText){
+  return wordListSimilarity(normalizeForSpeechCompare(saidText), normalizeForSpeechCompare(targetText));
+}
+function speechScoreFeedback(pct){
+  if(pct >= 85) return { ok:true, label:'¡Muy bien!', msg:'Se entendió casi igual a la frase original.' };
+  if(pct >= 60) return { ok:false, label:'Casi', msg:'Se entendieron varias palabras, pero no todas. Escucha de nuevo e inténtalo otra vez.' };
+  return { ok:false, label:'Sigue practicando', msg:'El reconocimiento de voz no logró entender la frase completa. Puede ser el micrófono, el ruido de fondo o la pronunciación: inténtalo de nuevo.' };
+}
+// Arranca el reconocimiento de voz (si el navegador lo soporta) y
+// entrega el texto reconocido a onDone cuando termina. onDone se llama
+// UNA sola vez, con null si no hay soporte o algo falla, para que el
+// resto del flujo de grabación nunca se rompa por esto. Devuelve el
+// objeto de reconocimiento (o null) para poder detenerlo manualmente.
+function startSpeechRecognitionCapture(onDone){
+  const Ctor = getSpeechRecognitionCtor();
+  if(!Ctor){ onDone(null); return null; }
+  let finished = false;
+  const finishOnce = (text)=>{ if(finished) return; finished = true; onDone(text); };
+  let recognition;
+  try{ recognition = new Ctor(); }catch(e){ onDone(null); return null; }
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  let bestTranscript = '';
+  recognition.onresult = (event)=>{
+    let text = '';
+    for(let i=0;i<event.results.length;i++){ text += event.results[i][0].transcript + ' '; }
+    bestTranscript = text.trim();
+  };
+  recognition.onerror = ()=> finishOnce(bestTranscript || null);
+  recognition.onend = ()=> finishOnce(bestTranscript || null);
+  try{ recognition.start(); }catch(e){ onDone(null); return null; }
+  return recognition;
+}
+// Pinta el resultado del análisis en un contenedor vacío que ya exista
+// en la tarjeta (reutiliza las mismas clases de feedback que el resto
+// del sitio, para que se vea igual que una respuesta de gramática/
+// listening en vez de inventar un estilo nuevo).
+function renderSpeechScoreBlock(el, targetText, saidText){
+  if(!el) return;
+  if(saidText === null){
+    el.innerHTML = `<p class="audio-missing-note">Tu navegador no puede analizar la pronunciación automáticamente aquí (funciona mejor en Chrome). Puedes seguir escuchando tu grabación y practicando igual.</p>`;
+    return;
+  }
+  const pct = scoreSpokenText(saidText, targetText);
+  const fb = speechScoreFeedback(pct);
+  el.classList.add('feedback', 'show');
+  el.classList.toggle('ok', fb.ok);
+  el.classList.toggle('bad', !fb.ok);
+  el.innerHTML = `
+    <div class="fb-head">${fb.ok ? OK_ICON : BAD_ICON}<span>${fb.label} · ${pct}%</span></div>
+    <p class="fb-explain">${fb.msg}</p>
+    <div class="examples-block">
+      <div class="examples-label">Se entendió</div>
+      <div class="example-pair"><div class="example-en">"${saidText || '(no se entendió nada)'}"</div></div>
+    </div>
+    <p class="audio-missing-note" style="margin-top:8px;">Comparación aproximada por palabras, no es una medición real de acento.</p>`;
+}
+
 function renderExamplesBlock(examples){
   if(!examples || !examples.length) return '';
   return `<div class="examples-block">
@@ -1304,6 +1407,7 @@ function runSpeakingSession({ container, level, onExit }){
           : `<p class="audio-missing-note">Tu navegador no permite grabar audio aquí. Puedes practicar en voz alta igual y avanzar.</p>`}
       </div>
       <div id="compareRow" class="compare-row"></div>
+      <div id="speechScoreBlock" style="margin-top:14px;"></div>
       <div class="next-row" id="nextRow">
         <button class="btn btn-ghost btn-sm" id="retryBtn" style="display:none;">Intentar otra vez</button>
         <button class="btn btn-primary btn-sm" id="nextSpeakBtn">${idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →'}</button>
@@ -1317,10 +1421,11 @@ function runSpeakingSession({ container, level, onExit }){
     });
 
     if(canRecord){
-      let stream = null, recorder = null, chunks = [];
+      let stream = null, recorder = null, chunks = [], recognition = null;
       const recordBtn = card.querySelector('#recordBtn');
       const compareRow = card.querySelector('#compareRow');
       const retryBtn = card.querySelector('#retryBtn');
+      const scoreBlock = card.querySelector('#speechScoreBlock');
 
       const recIndicator = card.querySelector('#recIndicator');
       recordBtn.addEventListener('click', async ()=>{
@@ -1329,6 +1434,8 @@ function runSpeakingSession({ container, level, onExit }){
           return;
         }
         compareRow.innerHTML = ''; // evitar mensajes/errores previos duplicados
+        scoreBlock.innerHTML = '';
+        scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
           stream = await navigator.mediaDevices.getUserMedia({ audio:true });
         }catch(err){
@@ -1355,13 +1462,21 @@ function runSpeakingSession({ container, level, onExit }){
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
           if(recIndicator) recIndicator.hidden = true;
+          scoreBlock.innerHTML = `<p class="audio-missing-note">Analizando pronunciación...</p>`;
+          if(recognition) recognition.stop();
+          else renderSpeechScoreBlock(scoreBlock, item.sentence, null);
         };
         recorder.start();
+        recognition = startSpeechRecognitionCapture((saidText)=>{
+          renderSpeechScoreBlock(scoreBlock, item.sentence, saidText);
+        });
         recordBtn.textContent = 'Detener grabación';
         if(recIndicator) recIndicator.hidden = false;
       });
       retryBtn.addEventListener('click', ()=>{
         compareRow.innerHTML = '';
+        scoreBlock.innerHTML = '';
+        scoreBlock.classList.remove('feedback','show','ok','bad');
         retryBtn.style.display = 'none';
         recordBtn.innerHTML = `${MIC_ICON} Grabar mi voz`;
         if(recIndicator) recIndicator.hidden = true;
@@ -1552,13 +1667,16 @@ function renderMixItemInto(card, entry, onAnswered){
       <div class="next-row" id="nextRow"></div>`;
     card.querySelector('#hearBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
     if(canRecord){
-      let stream = null, recorder = null, chunks = [];
+      let stream = null, recorder = null, chunks = [], recognition = null;
       const recordBtn = card.querySelector('#recordBtn');
       const compareRow = card.querySelector('#compareRow');
       const recIndicator = card.querySelector('#recIndicator');
+      const scoreBlock = card.querySelector('#fb');
       recordBtn.addEventListener('click', async ()=>{
         if(recorder && recorder.state === 'recording'){ recorder.stop(); return; }
         compareRow.innerHTML = '';
+        scoreBlock.innerHTML = '';
+        scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
           stream = await navigator.mediaDevices.getUserMedia({ audio:true });
         }catch(err){
@@ -1584,13 +1702,21 @@ function renderMixItemInto(card, entry, onAnswered){
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
           if(recIndicator) recIndicator.hidden = true;
+          scoreBlock.innerHTML = `<p class="audio-missing-note">Analizando pronunciación...</p>`;
+          if(recognition) recognition.stop();
+          else renderSpeechScoreBlock(scoreBlock, item.sentence, null);
         };
         recorder.start();
+        recognition = startSpeechRecognitionCapture((saidText)=>{
+          renderSpeechScoreBlock(scoreBlock, item.sentence, saidText);
+        });
         recordBtn.textContent = 'Detener grabación';
         if(recIndicator) recIndicator.hidden = false;
       });
     }
-    // Speaking no se califica: se avisa que quedó lista para continuar.
+    // Speaking no se califica con correcto/incorrecto: se avisa que
+    // quedó lista para continuar (el análisis de pronunciación de
+    // arriba es informativo, no cambia results.isCorrect).
     onAnswered(null);
     return;
   }
@@ -3077,6 +3203,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
           : `<p class="audio-missing-note">Tu navegador no permite grabar audio aquí. Puedes practicar en voz alta igual y avanzar.</p>`}
       </div>
       <div id="compareRow" class="compare-row"></div>
+      <div id="speechScoreBlock" style="margin-top:14px;"></div>
       <div class="next-row" id="nextRow">
         <button class="btn btn-ghost btn-sm" id="retryBtn" style="display:none;">Intentar otra vez</button>
         <button class="btn btn-primary btn-sm" id="nextSpeakBtn">${idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →'}</button>
@@ -3091,11 +3218,12 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
     });
 
     if(canRecord){
-      let stream = null, recorder = null, chunks = [];
+      let stream = null, recorder = null, chunks = [], recognition = null;
       const recordBtn = card.querySelector('#recordBtn');
       const compareRow = card.querySelector('#compareRow');
       const retryBtn = card.querySelector('#retryBtn');
       const recIndicator = card.querySelector('#recIndicator');
+      const scoreBlock = card.querySelector('#speechScoreBlock');
 
       recordBtn.addEventListener('click', async ()=>{
         if(recorder && recorder.state === 'recording'){
@@ -3103,6 +3231,8 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
           return;
         }
         compareRow.innerHTML = '';
+        scoreBlock.innerHTML = '';
+        scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
           stream = await navigator.mediaDevices.getUserMedia({ audio:true });
         }catch(err){
@@ -3129,13 +3259,21 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
           if(recIndicator) recIndicator.hidden = true;
+          scoreBlock.innerHTML = `<p class="audio-missing-note">Analizando pronunciación...</p>`;
+          if(recognition) recognition.stop();
+          else renderSpeechScoreBlock(scoreBlock, item.sentence, null);
         };
         recorder.start();
+        recognition = startSpeechRecognitionCapture((saidText)=>{
+          renderSpeechScoreBlock(scoreBlock, item.sentence, saidText);
+        });
         recordBtn.textContent = 'Detener grabación';
         if(recIndicator) recIndicator.hidden = false;
       });
       retryBtn.addEventListener('click', ()=>{
         compareRow.innerHTML = '';
+        scoreBlock.innerHTML = '';
+        scoreBlock.classList.remove('feedback','show','ok','bad');
         retryBtn.style.display = 'none';
         recordBtn.innerHTML = `${MIC_ICON} Grabar mi voz`;
         if(recIndicator) recIndicator.hidden = true;
