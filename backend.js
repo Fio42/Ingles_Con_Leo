@@ -291,7 +291,16 @@ const LeoBackend = (function(){
     }
     const profile = await getMemberProfile();
     if(profile && profile.is_member){
-      await syncProgressFromCloud();
+      /* syncProgressFromCloud() ya NO se espera aqui (antes tenia
+         "await"): eso hacia que la pantalla se quedara en blanco
+         mientras se hacian DOS consultas a Supabase una detras de
+         otra (primero el perfil, luego el progreso). Ahora la
+         pantalla arranca en cuanto se confirma que es miembro, y el
+         progreso de la nube se sincroniza en segundo plano (igual
+         que pushSession(), que ya funcionaba asi). Si el progreso
+         de otro dispositivo tarda medio segundo mas en aparecer,
+         no pasa nada: la sesion no se pierde. */
+      syncProgressFromCloud();
       return true;
     }
     window.location.href = 'miembros.html';
