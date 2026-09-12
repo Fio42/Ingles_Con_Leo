@@ -163,6 +163,7 @@
   guardMemberPage(function(){
     const area = document.getElementById('sessionArea');
     function start(level){
+      setUserLevel(level);
       runSpeakingSession({ container: area, level: level });
     }
     renderLevelSelector(document.getElementById('levelSelector'), getUserLevel(), start);
