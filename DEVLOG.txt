@@ -464,3 +464,10 @@ DEVLOG — Inglés con Leo
 - Extra de consistencia: al traer una sesión de nube, su fecha de calendario se deriva de `startedAt` con la hora local del navegador. Así datos creados antes del arreglo UTC no vuelven a desordenar la racha en un dispositivo nuevo.
 - El panel de progreso ahora se vuelve a renderizar automáticamente si la sincronización en segundo plano recibe sesiones de otro dispositivo.
 - Verificación: `node --check` en app.js y backend.js, `git diff --check`, y prueba simulada de navegador + Supabase que confirma que una sesión local y su fila remota se fusionan en una sola, conservan `cloudId` y actualizan el panel.
+
+2026-09-12 — Nuevo artículo SEO: examen IELTS
+- Se creó `articulo-examen-ielts.html`, una guía propia orientada a búsquedas como “examen IELTS”, “IELTS Academic”, “IELTS General Training”, “puntaje IELTS”, “IELTS para Canadá” y “cómo prepararse para IELTS”. Las keywords se integraron en explicaciones útiles, títulos, meta descripción, FAQ estructurado y enlaces internos, sin repetirlas artificialmente.
+- El artículo explica qué tipo de IELTS elegir, las cuatro secciones, bandas de 0 a 9, errores comunes y un plan de preparación. Los datos de formato se contrastaron con la documentación oficial de IELTS; no se fijó precio porque cambia según país y centro.
+- Incluye una práctica gratuita e interactiva de Reading creada para el sitio. Después de responder, aparece un CTA directo a Miembros para continuar practicando Reading, Listening, Writing y Speaking con progreso guardado.
+- Se agregó la tarjeta correspondiente a `articulos.html` y la URL al `sitemap.xml` para que los buscadores puedan descubrirla.
+- Verificación: vista previa local de la página, ejercicio correcto, CTA visible después de responder y cero errores de consola.
