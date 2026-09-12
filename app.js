@@ -2442,7 +2442,7 @@ function renderStatCards(container){
     </div>
     <div class="stat-card">
       <div class="stat-card-icon stat-icon-streak" style="background:var(--coral-tint);color:var(--coral);">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4.15 0 7-3.05 7-6.94 0-2.98-1.62-5.16-3.72-7.13.11 1.66-.44 2.99-1.47 3.83.17-3.5-1.73-6.48-4.35-8.76.16 3.34-1.31 5.37-3.18 7.41C4.88 11.93 5 14.08 5 15.06 5 18.95 7.85 22 12 22Z" fill="currentColor"/><path d="M12 19.1c1.9 0 3.12-1.37 3.12-3.2 0-1.17-.65-2.3-1.7-3.18-.03.95-.5 1.54-1.05 1.99.05-1.48-.7-2.89-1.76-3.98.1 1.5-.68 2.32-1.27 3.16-.5.72-.84 1.32-.84 2.01 0 1.83 1.22 3.2 3.1 3.2Z" fill="#FFD166"/></svg>
       </div>
       <div>
         <div class="stat-card-label">Racha</div>
@@ -2585,7 +2585,7 @@ function renderStreakCard(container){
   const practicedCount = days.filter(d=>d.count>0).length;
   container.innerHTML = `
     <div class="streak-flame">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4.15 0 7-3.05 7-6.94 0-2.98-1.62-5.16-3.72-7.13.11 1.66-.44 2.99-1.47 3.83.17-3.5-1.73-6.48-4.35-8.76.16 3.34-1.31 5.37-3.18 7.41C4.88 11.93 5 14.08 5 15.06 5 18.95 7.85 22 12 22Z" fill="currentColor"/><path d="M12 19.1c1.9 0 3.12-1.37 3.12-3.2 0-1.17-.65-2.3-1.7-3.18-.03.95-.5 1.54-1.05 1.99.05-1.48-.7-2.89-1.76-3.98.1 1.5-.68 2.32-1.27 3.16-.5.72-.84 1.32-.84 2.01 0 1.83 1.22 3.2 3.1 3.2Z" fill="#FFD166"/></svg>
     </div>
     <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
     <div class="streak-caption">de racha seguida</div>
