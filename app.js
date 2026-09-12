@@ -646,6 +646,129 @@ function pickVariantIndex(skill, level, variantCount, excludeIndex){
   return pick;
 }
 
+/* ---------- Largo de sesión (corta/media/larga) ----------
+   Preferencia global (como el nivel): se guarda una sola vez y se
+   respeta al cambiar de habilidad. La cantidad de ejercicios es la
+   misma sin importar la habilidad, para que "corta" se sienta igual
+   de corta en listening que en vocabulario. */
+const SESSION_LENGTHS = {
+  corta: { label:'Corta', sub:'~5 ejercicios', items:5 },
+  media: { label:'Media', sub:'~9 ejercicios', items:9 },
+  larga: { label:'Larga', sub:'~15 ejercicios', items:15 }
+};
+const SESSION_LENGTH_KEY = 'leo_session_length';
+function getSessionLength(){
+  try{
+    const v = localStorage.getItem(SESSION_LENGTH_KEY);
+    return SESSION_LENGTHS[v] ? v : 'media';
+  }catch(e){ return 'media'; }
+}
+function setSessionLength(len){
+  try{ if(SESSION_LENGTHS[len]) localStorage.setItem(SESSION_LENGTH_KEY, len); }catch(e){}
+}
+function renderSessionLengthSelector(container, selected, onChange){
+  if(!container) return;
+  container.innerHTML = Object.keys(SESSION_LENGTHS).map(key => `
+    <button type="button" class="length-card" data-length="${key}" aria-pressed="${key===selected}">
+      <span class="length-name">${SESSION_LENGTHS[key].label}</span>
+      <span class="length-sub">${SESSION_LENGTHS[key].sub}</span>
+    </button>`).join('');
+  container.querySelectorAll('.length-card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const len = btn.dataset.length;
+      container.querySelectorAll('.length-card').forEach(b=>b.setAttribute('aria-pressed', b===btn ? 'true':'false'));
+      setSessionLength(len);
+      onChange(len);
+    });
+  });
+}
+
+/* ---------- Armado de sesión combinando variantes ----------
+   Cada "variante" del banco trae una cantidad fija de ejercicios (8 en
+   gramática/vocabulario, 2 a 4 en listening/speaking/writing). Para que
+   "corta/media/larga" tengan un tamaño parecido sin importar la
+   habilidad, juntamos variantes completas (nunca repetidas dentro de la
+   misma sesión) hasta llegar a la cantidad pedida, y recortamos el
+   sobrante de la última. Usa su propia "memoria" de última variante
+   (separada de pickVariantIndex) porque ahora es un conjunto, no un
+   único índice. */
+const LAST_VARIANT_SET_KEY = 'leo_last_variant_set';
+function getLastVariantSetMap(){
+  try{ return JSON.parse(localStorage.getItem(LAST_VARIANT_SET_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveLastVariantSetMap(map){
+  try{ localStorage.setItem(LAST_VARIANT_SET_KEY, JSON.stringify(map)); }
+  catch(e){ /* sin localStorage, simplemente no recordamos */ }
+}
+function flattenVariant(skill, variant){
+  if(skill === 'gramatica'){
+    const items = [];
+    const maxLen = Math.max(...variant.map(t=>t.items.length));
+    for(let i=0;i<maxLen;i++){
+      variant.forEach(t=>{ if(t.items[i]) items.push(Object.assign({ topic:t.topic }, t.items[i])); });
+    }
+    return items;
+  }
+  return variant.slice();
+}
+function variantTopicLabels(skill, variant){
+  return skill === 'gramatica' ? variant.map(t=>t.topic) : null;
+}
+function shuffleArray(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+// Arma el pool de una sesion nueva: elige el orden de variantes (evitando
+// las usadas la ultima vez que se pueda) y va concatenando hasta juntar
+// targetCount ejercicios. freeExcluded son indices reservados para
+// miembros que hay que saltarse (solo aplica en practica.html).
+function buildSessionPool({ skill, level, bankLevel, targetCount, freeExcluded }){
+  const totalVariants = bankLevel.length;
+  const map = getLastVariantSetMap();
+  const key = skill + '_' + level;
+  const lastSet = Array.isArray(map[key]) ? map[key] : [];
+  const available = [];
+  for(let i=0;i<totalVariants;i++){ if(!freeExcluded || freeExcluded.indexOf(i) === -1) available.push(i); }
+  const fresh = shuffleArray(available.filter(i => lastSet.indexOf(i) === -1));
+  const rest = shuffleArray(available.filter(i => lastSet.indexOf(i) !== -1));
+  const order = fresh.concat(rest);
+
+  const usedVariantIdxs = [];
+  let pool = [];
+  let topics = [];
+  for(const vIdx of order){
+    if(pool.length >= targetCount) break;
+    usedVariantIdxs.push(vIdx);
+    const variant = bankLevel[vIdx];
+    pool = pool.concat(flattenVariant(skill, variant));
+    const t = variantTopicLabels(skill, variant);
+    if(t) topics = topics.concat(t);
+  }
+  if(pool.length > targetCount) pool = pool.slice(0, targetCount);
+  map[key] = usedVariantIdxs;
+  saveLastVariantSetMap(map);
+  return { pool, usedVariantIdxs, topics: [...new Set(topics)] };
+}
+// Reconstruye el mismo pool de una sesion que quedo a medias (guardamos
+// que variantes se usaron y cuantos ejercicios tenia en total).
+function rebuildPoolFromVariantIdxs({ skill, bankLevel, variantIdxs, targetCount }){
+  let pool = [];
+  let topics = [];
+  for(const vIdx of variantIdxs){
+    const variant = bankLevel[vIdx];
+    pool = pool.concat(flattenVariant(skill, variant));
+    const t = variantTopicLabels(skill, variant);
+    if(t) topics = topics.concat(t);
+  }
+  if(pool.length > targetCount) pool = pool.slice(0, targetCount);
+  return { pool, topics: [...new Set(topics)] };
+}
+
 /* ---------- UI: tarjetas de nivel reutilizables ---------- */
 function renderLevelSelector(container, selected, onChange){
   container.innerHTML = LEVELS.map(lvl => `
@@ -907,12 +1030,12 @@ function playAudioFile(path, container, trigger){
    ============================================================ */
 function runGrammarSession({ container, level, onExit }){
   const saved = loadInflightSession('gramatica', level);
-  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length);
-  const topics = GRAMMAR_BANK[level][variantIdx];
-  const pool = [];
-  const maxLen = Math.max(...topics.map(t=>t.items.length));
-  for(let i=0;i<maxLen;i++){
-    topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
+  let pool, topics, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool, topics } = rebuildPoolFromVariantIdxs({ skill:'gramatica', bankLevel:GRAMMAR_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs, topics } = buildSessionPool({ skill:'gramatica', level, bankLevel:GRAMMAR_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
   const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
@@ -921,7 +1044,7 @@ function runGrammarSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('gramatica', level, { variantIdx, idx, results, startedAt });
+    saveInflightSession('gramatica', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
     const card = document.createElement('div');
@@ -941,10 +1064,10 @@ function runGrammarSession({ container, level, onExit }){
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
     clearInflightSession('gramatica', level);
-    recordSession({ skill:'gramatica', level, topics: topics.map(t=>t.topic), results, startedAt });
+    recordSession({ skill:'gramatica', level, topics, results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
-      topics: topics.map(t=>t.topic), currentHref:'gramatica.html'
+      topics, currentHref:'gramatica.html'
     });
     wireSummaryButtons(container, ()=>runGrammarSession({ container, level, onExit }));
   }
@@ -1102,8 +1225,13 @@ function renderGrammarItemInto(container, item, onAnswered){
    ============================================================ */
 function runVocabSession({ container, level, onExit }){
   const saved = loadInflightSession('vocabulario', level);
-  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length);
-  const pool = VOCAB_BANK[level][variantIdx];
+  let pool, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'vocabulario', bankLevel:VOCAB_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'vocabulario', level, bankLevel:VOCAB_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
+  }
   const total = pool.length;
   const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
   const results = (saved && saved.idx < total) ? saved.results.slice() : [];
@@ -1111,7 +1239,7 @@ function runVocabSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('vocabulario', level, { variantIdx, idx, results, startedAt });
+    saveInflightSession('vocabulario', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
     const card = document.createElement('div');
@@ -1173,8 +1301,13 @@ function runVocabSession({ container, level, onExit }){
    ============================================================ */
 function runListeningSession({ container, level, onExit }){
   const saved = loadInflightSession('listening', level);
-  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('listening', level, LISTENING_BANK[level].length);
-  const pool = LISTENING_BANK[level][variantIdx];
+  let pool, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'listening', bankLevel:LISTENING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'listening', level, bankLevel:LISTENING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
+  }
   const total = pool.length;
   const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
   const results = (saved && saved.idx < total) ? saved.results.slice() : [];
@@ -1182,7 +1315,7 @@ function runListeningSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('listening', level, { variantIdx, idx, results, startedAt });
+    saveInflightSession('listening', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
     const card = document.createElement('div');
@@ -1255,8 +1388,13 @@ function runListeningSession({ container, level, onExit }){
    ============================================================ */
 function runWritingSession({ container, level, onExit }){
   const saved = loadInflightSession('writing', level);
-  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('writing', level, WRITING_BANK[level].length);
-  const pool = WRITING_BANK[level][variantIdx];
+  let pool, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'writing', bankLevel:WRITING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'writing', level, bankLevel:WRITING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
+  }
   const total = pool.length;
   const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
   const results = (saved && saved.idx < total) ? saved.results.slice() : [];
@@ -1278,7 +1416,7 @@ function runWritingSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('writing', level, { variantIdx, idx, results, startedAt });
+    saveInflightSession('writing', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
     const card = document.createElement('div');
@@ -1374,8 +1512,13 @@ function runWritingSession({ container, level, onExit }){
    ============================================================ */
 function runSpeakingSession({ container, level, onExit }){
   const saved = loadInflightSession('speaking', level);
-  const variantIdx = (saved && typeof saved.variantIdx === 'number') ? saved.variantIdx : pickVariantIndex('speaking', level, SPEAKING_BANK[level].length);
-  const pool = SPEAKING_BANK[level][variantIdx];
+  let pool, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'speaking', bankLevel:SPEAKING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'speaking', level, bankLevel:SPEAKING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
+  }
   const total = pool.length;
   const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
   const results = (saved && saved.idx < total) ? saved.results.slice() : [];
@@ -1383,7 +1526,7 @@ function runSpeakingSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('speaking', level, { variantIdx, idx, results, startedAt });
+    saveInflightSession('speaking', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
     const card = document.createElement('div');
