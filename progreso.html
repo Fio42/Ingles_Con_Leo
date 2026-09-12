@@ -153,9 +153,13 @@
 <script src="backend.js"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
-  guardMemberPage(function(){
+  function refreshProgressPage(){
     renderProgressPage(document.getElementById('progressRoot'));
-  });
+  }
+  /* guardMemberPage deja que la sincronización continúe en segundo plano.
+     Si llegan sesiones de otro dispositivo, el panel se actualiza solo. */
+  window.addEventListener('leo-progress-synced', refreshProgressPage);
+  guardMemberPage(refreshProgressPage);
 </script>
 
 </body>

@@ -180,25 +180,51 @@ const LeoBackend = (function(){
       if(error || !data) return;
       const local = loadProgress();
       const seenCloudIds = new Set(local.sessions.map(s => s.cloudId).filter(Boolean));
+      const localByIdentity = new Map(local.sessions.map(s => [progressSessionIdentity(s), s]));
+      let changed = false;
       data.forEach(row => {
         if(seenCloudIds.has(row.id)) return;
-        local.sessions.push({
+        const cloudSession = {
           cloudId: row.id,
           skill: row.skill,
           level: row.level,
           topics: row.topics || [],
-          date: row.date,
+          /* El timestamp es la fuente fiable para la fecha local. Así una
+             fila creada antes del arreglo UTC no vuelve a desordenar la
+             racha al descargarse en otro dispositivo. */
+          date: row.started_at ? localDateStr(new Date(row.started_at)) : row.date,
           startedAt: row.started_at,
           durationMs: row.duration_ms,
           results: row.results || []
-        });
+        };
+        const sameLocalSession = localByIdentity.get(progressSessionIdentity(cloudSession));
+        if(sameLocalSession){
+          /* recordSession() guarda primero en el navegador. Cuando llegue
+             su copia de Supabase, la vinculamos en vez de agregar otra. */
+          if(!sameLocalSession.cloudId){
+            sameLocalSession.cloudId = row.id;
+            changed = true;
+          }
+          return;
+        }
+        local.sessions.push(cloudSession);
+        localByIdentity.set(progressSessionIdentity(cloudSession), cloudSession);
+        changed = true;
       });
+      if(dedupeProgressSessions(local)) changed = true;
       local.sessions.sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
       if(local.sessions.length){
         const last = local.sessions[local.sessions.length-1];
         local.lastActivity = { skill:last.skill, level:last.level, topic:(last.topics&&last.topics[0])||null, date:last.date };
       }
-      saveProgressRaw(local);
+      if(changed){
+        saveProgressRaw(local);
+        /* Las páginas protegidas arrancan sin esperar la red para no
+           quedarse en blanco. Avisamos a las que muestran métricas para
+           que, cuando lleguen sesiones de otro dispositivo, se redibujen
+           con los datos ya sincronizados. */
+        window.dispatchEvent(new Event('leo-progress-synced'));
+      }
     }catch(e){}
   }
 

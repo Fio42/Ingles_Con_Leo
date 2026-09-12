@@ -450,6 +450,45 @@ const PROGRESS_KEY = 'leo_progress_v2';
 const PROGRESS_DATE_MIGRATION_KEY = 'leo_progress_localdate_migrated_v1';
 const MIN_SESSIONS_FOR_STATS = 1;
 
+/* Identidad estable de una sesión. La fecha se deja fuera a propósito:
+   versiones anteriores podían guardar la fecha en UTC y luego corregirla
+   localmente, pero startedAt, actividad, temas y respuestas sí describen
+   la misma sesión en el navegador y en Supabase. */
+function progressSessionIdentity(s){
+  if(!s) return '';
+  return [
+    s.startedAt || '', s.skill || '', s.level || '',
+    JSON.stringify(s.topics || []), JSON.stringify(s.results || [])
+  ].join('|');
+}
+
+/* Las versiones anteriores podían conservar la sesión local y añadir la
+   misma sesión al volver de la nube. Solo quitamos copias con la misma
+   identidad exacta; si una de ellas tiene cloudId, se conserva esa porque
+   ya está vinculada a su fila real de Supabase. Nunca toca datos remotos. */
+function dedupeProgressSessions(p){
+  if(!p || !Array.isArray(p.sessions)) return false;
+  const unique = new Map();
+  let changed = false;
+  p.sessions.forEach(s=>{
+    const key = progressSessionIdentity(s);
+    const previous = unique.get(key);
+    if(!previous){
+      unique.set(key, s);
+    } else {
+      changed = true;
+      if(!previous.cloudId && s.cloudId) unique.set(key, s);
+    }
+  });
+  if(!changed) return false;
+  p.sessions = Array.from(unique.values()).sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
+  if(p.sessions.length){
+    const last = p.sessions[p.sessions.length - 1];
+    p.lastActivity = { skill:last.skill, level:last.level, topic:(last.topics&&last.topics[0])||null, date:last.date };
+  }
+  return true;
+}
+
 /* Migracion de una sola vez: antes de que existiera localDateStr(), el
    campo "date" de cada sesion se calculaba con Date#toISOString(), que
    siempre da la fecha en UTC. Para alguien en Mexico (UTC-6), cualquier
@@ -483,7 +522,11 @@ function migrateProgressDatesIfNeeded(p){
 function loadProgress(){
   try{
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    if(p && Array.isArray(p.sessions)) return migrateProgressDatesIfNeeded(p);
+    if(p && Array.isArray(p.sessions)){
+      migrateProgressDatesIfNeeded(p);
+      if(dedupeProgressSessions(p)) saveProgressRaw(p);
+      return p;
+    }
   }catch(e){}
   return { sessions: [], lastActivity: null };
 }
