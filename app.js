@@ -944,7 +944,7 @@ function runGrammarSession({ container, level, onExit }){
     recordSession({ skill:'gramatica', level, topics: topics.map(t=>t.topic), results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
-      topics: topics.map(t=>t.topic)
+      topics: topics.map(t=>t.topic), currentHref:'gramatica.html'
     });
     wireSummaryButtons(container, ()=>runGrammarSession({ container, level, onExit }));
   }
@@ -1159,7 +1159,7 @@ function runVocabSession({ container, level, onExit }){
     recordSession({ skill:'vocabulario', level, topics:['Vocabulario general'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`Repasaste ${total} palabras · ${correct}/${total} en el mini quiz`,
-      topics: ['Vocabulario general']
+      topics: ['Vocabulario general'], currentHref:'vocabulario.html'
     });
     wireSummaryButtons(container, ()=>runVocabSession({ container, level, onExit }));
   }
@@ -1242,7 +1242,7 @@ function runListeningSession({ container, level, onExit }){
     recordSession({ skill:'listening', level, topics:['Comprensión auditiva'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
-      topics: ['Comprensión auditiva']
+      topics: ['Comprensión auditiva'], currentHref:'listening.html'
     });
     wireSummaryButtons(container, ()=>runListeningSession({ container, level, onExit }));
   }
@@ -1361,7 +1361,7 @@ function runWritingSession({ container, level, onExit }){
     recordSession({ skill:'writing', level, topics:['Escritura guiada'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`${okCount} / ${total} frases bien encaminadas`,
-      topics: ['Escritura guiada']
+      topics: ['Escritura guiada'], currentHref:'writing.html'
     });
     wireSummaryButtons(container, ()=>runWritingSession({ container, level, onExit }));
   }
@@ -1489,7 +1489,7 @@ function runSpeakingSession({ container, level, onExit }){
     recordSession({ skill:'speaking', level, topics:['Pronunciación guiada'], results, startedAt });
     container.innerHTML = renderSessionSummary({
       title:'¡Listo!', score:`Practicaste ${total} frases en voz alta`,
-      topics: ['Pronunciación guiada']
+      topics: ['Pronunciación guiada'], currentHref:'speaking.html'
     });
     wireSummaryButtons(container, ()=>runSpeakingSession({ container, level, onExit }));
   }
@@ -2192,7 +2192,19 @@ function initDailyChallenge(container, { isFree }){
 }
 
 /* ---------- Resumen de sesión (compartido) ---------- */
-function renderSessionSummary({ title, score, topics }){
+// Paginas de las 5 habilidades principales, para el atajo "practica otra
+// habilidad" al terminar una sesion. currentHref (opcional) oculta la
+// habilidad que se acaba de practicar, para no mostrar un enlace a la
+// misma pagina en la que ya estas.
+const SESSION_SWITCH_SKILLS = [
+  { label:'Gramática', href:'gramatica.html' },
+  { label:'Vocabulario', href:'vocabulario.html' },
+  { label:'Listening', href:'listening.html' },
+  { label:'Writing', href:'writing.html' },
+  { label:'Speaking', href:'speaking.html' }
+];
+function renderSessionSummary({ title, score, topics, currentHref }){
+  const switchLinks = SESSION_SWITCH_SKILLS.filter(s => s.href !== currentHref);
   return `
     <div class="session-summary">
       <h2>${title}</h2>
@@ -2205,6 +2217,12 @@ function renderSessionSummary({ title, score, topics }){
       <div class="summary-actions">
         <button class="btn btn-primary" id="againBtn">Hacer otra sesión</button>
         <a href="miembros.html" class="btn btn-ghost">Volver a miembros</a>
+      </div>
+      <div class="summary-switch">
+        <div class="examples-label">¿Prefieres practicar otra cosa?</div>
+        <div class="summary-switch-links">
+          ${switchLinks.map(s=>`<a href="${s.href}" class="summary-switch-pill">${s.label}</a>`).join('')}
+        </div>
       </div>
     </div>`;
 }
