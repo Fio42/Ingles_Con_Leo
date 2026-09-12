@@ -114,12 +114,15 @@ function runIeltsReadingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
   const pool = buildIeltsReadingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('ielts-reading', 'ielts');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('ielts-reading', 'ielts', { total, idx, results, startedAt });
     const card = renderIeltsSessionShell(container, ieltsSessionHeaderHtml('Reading', idx+1, total));
 
     if(item.kind === 'trueFalseNotGiven'){
@@ -196,6 +199,7 @@ function runIeltsReadingSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('ielts-reading', 'ielts');
     recordSession({ skill:'ielts-reading', level:'ielts', topics:['IELTS Reading'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['IELTS Reading'] });
     wireSummaryButtons(container, ()=>runIeltsReadingSession({ container, onExit }));
@@ -256,12 +260,15 @@ function runIeltsListeningSession({ container, onExit }){
   container._ieltsOnExit = onExit;
   const pool = buildIeltsListeningPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('ielts-listening', 'ielts');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('ielts-listening', 'ielts', { total, idx, results, startedAt });
     const card = renderIeltsSessionShell(container, ieltsSessionHeaderHtml('Listening', idx+1, total));
 
     if(item.kind === 'section1'){
@@ -360,6 +367,7 @@ function runIeltsListeningSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('ielts-listening', 'ielts');
     recordSession({ skill:'ielts-listening', level:'ielts', topics:['IELTS Listening'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['IELTS Listening'] });
     wireSummaryButtons(container, ()=>runIeltsListeningSession({ container, onExit }));
@@ -381,12 +389,15 @@ function runIeltsSpeakingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
   const pool = buildIeltsSpeakingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('ielts-speaking', 'ielts');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('ielts-speaking', 'ielts', { total, idx, results, startedAt });
     const card = renderIeltsSessionShell(container, ieltsSessionHeaderHtml('Speaking', idx+1, total));
     const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 
@@ -464,6 +475,7 @@ function runIeltsSpeakingSession({ container, onExit }){
     });
   }
   function finish(){
+    clearInflightSession('ielts-speaking', 'ielts');
     recordSession({ skill:'ielts-speaking', level:'ielts', topics:['IELTS Speaking'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Practicaste ${total} respuestas en voz alta`, topics:['IELTS Speaking'] });
     wireSummaryButtons(container, ()=>runIeltsSpeakingSession({ container, onExit }));
@@ -532,9 +544,11 @@ function runIeltsWritingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
   const pool = buildIeltsWritingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('ielts-writing', 'ielts');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderReviewFeedback(card, exampleHtml, checklist){
     const fb = card.querySelector('#fb');
@@ -547,6 +561,7 @@ function runIeltsWritingSession({ container, onExit }){
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('ielts-writing', 'ielts', { total, idx, results, startedAt });
     const card = renderIeltsSessionShell(container, ieltsSessionHeaderHtml('Writing', idx+1, total));
 
     if(item.kind === 'task1Letter'){
@@ -603,6 +618,7 @@ function runIeltsWritingSession({ container, onExit }){
     }
   }
   function finish(){
+    clearInflightSession('ielts-writing', 'ielts');
     recordSession({ skill:'ielts-writing', level:'ielts', topics:['IELTS Writing'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Completaste ${total} ejercicios de escritura`, topics:['IELTS Writing'] });
     wireSummaryButtons(container, ()=>runIeltsWritingSession({ container, onExit }));

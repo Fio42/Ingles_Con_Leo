@@ -100,12 +100,15 @@ function runToeflReadingSession({ container, onExit }){
   container._toeflOnExit = onExit;
   const pool = buildToeflReadingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('toefl-reading', 'toefl');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('toefl-reading', 'toefl', { total, idx, results, startedAt });
     const card = renderToeflSessionShell(container, toeflSessionHeaderHtml('Reading', idx+1, total));
     if(item.kind === 'completeWords'){
       card.innerHTML = `
@@ -148,6 +151,7 @@ function runToeflReadingSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('toefl-reading', 'toefl');
     recordSession({ skill:'toefl-reading', level:'toefl', topics:['TOEFL Reading'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['TOEFL Reading'] });
     wireSummaryButtons(container, ()=>runToeflReadingSession({ container, onExit }));
@@ -174,12 +178,15 @@ function runToeflListeningSession({ container, onExit }){
   container._toeflOnExit = onExit;
   const pool = buildToeflListeningPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('toefl-listening', 'toefl');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('toefl-listening', 'toefl', { total, idx, results, startedAt });
     const card = renderToeflSessionShell(container, toeflSessionHeaderHtml('Listening', idx+1, total));
     card.innerHTML = `
       <div class="practice-instruction">${TOEFL_LISTENING_KIND_LABEL[item.kind]}</div>
@@ -224,6 +231,7 @@ function runToeflListeningSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('toefl-listening', 'toefl');
     recordSession({ skill:'toefl-listening', level:'toefl', topics:['TOEFL Listening'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['TOEFL Listening'] });
     wireSummaryButtons(container, ()=>runToeflListeningSession({ container, onExit }));
@@ -247,12 +255,15 @@ function runToeflSpeakingSession({ container, onExit }){
   container._toeflOnExit = onExit;
   const pool = buildToeflSpeakingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('toefl-speaking', 'toefl');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('toefl-speaking', 'toefl', { total, idx, results, startedAt });
     const card = renderToeflSessionShell(container, toeflSessionHeaderHtml('Speaking', idx+1, total));
     const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 
@@ -345,6 +356,7 @@ function runToeflSpeakingSession({ container, onExit }){
     }
   }
   function finish(){
+    clearInflightSession('toefl-speaking', 'toefl');
     recordSession({ skill:'toefl-speaking', level:'toefl', topics:['TOEFL Speaking'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Practicaste ${total} respuestas en voz alta`, topics:['TOEFL Speaking'] });
     wireSummaryButtons(container, ()=>runToeflSpeakingSession({ container, onExit }));
@@ -369,12 +381,15 @@ function runToeflWritingSession({ container, onExit }){
   container._toeflOnExit = onExit;
   const pool = buildToeflWritingPool();
   const total = pool.length;
-  const startedAt = Date.now();
-  const results = [];
-  let idx = 0;
+  const saved = loadInflightSession('toefl-writing', 'toefl');
+  const resumable = saved && saved.idx < total;
+  const startedAt = resumable ? saved.startedAt : Date.now();
+  const results = resumable ? saved.results.slice() : [];
+  let idx = resumable ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
+    saveInflightSession('toefl-writing', 'toefl', { total, idx, results, startedAt });
     const card = renderToeflSessionShell(container, toeflSessionHeaderHtml('Writing', idx+1, total));
 
     if(item.kind === 'buildSentence'){
@@ -493,6 +508,7 @@ function runToeflWritingSession({ container, onExit }){
     const graded = results.filter(r=>r.isCorrect===true || r.isCorrect===false);
     const correct = graded.filter(r=>r.isCorrect).length;
     const scoreText = graded.length ? `${correct} / ${graded.length} oraciones correctas` : `Completaste ${total} ejercicios de escritura`;
+    clearInflightSession('toefl-writing', 'toefl');
     recordSession({ skill:'toefl-writing', level:'toefl', topics:['TOEFL Writing'], results, startedAt });
     container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:scoreText, topics:['TOEFL Writing'] });
     wireSummaryButtons(container, ()=>runToeflWritingSession({ container, onExit }));
