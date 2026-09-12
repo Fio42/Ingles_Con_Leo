@@ -289,8 +289,8 @@ function initOnboarding(onSaved){
   overlay.className = 'onb-overlay';
   overlay.innerHTML = `
     <div class="onb-card">
-      <h2>¡Bienvenido a Inglés con Leo!</h2>
-      <p>Cuéntanos un poco de ti para personalizar tu práctica. Esto queda guardado solo en tu navegador, no usamos servidores.</p>
+      <h2>¡Bienvenido(a) a Inglés con Leo!</h2>
+      <p>Cuéntanos un poco de ti para personalizar tu práctica.</p>
       <div class="onb-field">
         <label for="onbName">¿Cómo te llamas?</label>
         <input type="text" id="onbName" placeholder="Tu nombre" maxlength="30" autocomplete="off">
