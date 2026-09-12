@@ -450,45 +450,6 @@ const PROGRESS_KEY = 'leo_progress_v2';
 const PROGRESS_DATE_MIGRATION_KEY = 'leo_progress_localdate_migrated_v1';
 const MIN_SESSIONS_FOR_STATS = 1;
 
-/* Identidad estable de una sesión. La fecha se deja fuera a propósito:
-   versiones anteriores podían guardar la fecha en UTC y luego corregirla
-   localmente, pero startedAt, actividad, temas y respuestas sí describen
-   la misma sesión en el navegador y en Supabase. */
-function progressSessionIdentity(s){
-  if(!s) return '';
-  return [
-    s.startedAt || '', s.skill || '', s.level || '',
-    JSON.stringify(s.topics || []), JSON.stringify(s.results || [])
-  ].join('|');
-}
-
-/* Las versiones anteriores podían conservar la sesión local y añadir la
-   misma sesión al volver de la nube. Solo quitamos copias con la misma
-   identidad exacta; si una de ellas tiene cloudId, se conserva esa porque
-   ya está vinculada a su fila real de Supabase. Nunca toca datos remotos. */
-function dedupeProgressSessions(p){
-  if(!p || !Array.isArray(p.sessions)) return false;
-  const unique = new Map();
-  let changed = false;
-  p.sessions.forEach(s=>{
-    const key = progressSessionIdentity(s);
-    const previous = unique.get(key);
-    if(!previous){
-      unique.set(key, s);
-    } else {
-      changed = true;
-      if(!previous.cloudId && s.cloudId) unique.set(key, s);
-    }
-  });
-  if(!changed) return false;
-  p.sessions = Array.from(unique.values()).sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
-  if(p.sessions.length){
-    const last = p.sessions[p.sessions.length - 1];
-    p.lastActivity = { skill:last.skill, level:last.level, topic:(last.topics&&last.topics[0])||null, date:last.date };
-  }
-  return true;
-}
-
 /* Migracion de una sola vez: antes de que existiera localDateStr(), el
    campo "date" de cada sesion se calculaba con Date#toISOString(), que
    siempre da la fecha en UTC. Para alguien en Mexico (UTC-6), cualquier
@@ -522,11 +483,7 @@ function migrateProgressDatesIfNeeded(p){
 function loadProgress(){
   try{
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    if(p && Array.isArray(p.sessions)){
-      migrateProgressDatesIfNeeded(p);
-      if(dedupeProgressSessions(p)) saveProgressRaw(p);
-      return p;
-    }
+    if(p && Array.isArray(p.sessions)) return migrateProgressDatesIfNeeded(p);
   }catch(e){}
   return { sessions: [], lastActivity: null };
 }
@@ -668,11 +625,11 @@ function saveLastVariantMap(map){
    no por posicion relativa, para que agregar mas contenido despues (para
    todos o solo miembros) nunca desordene cual variante sigue bloqueada. */
 const MEMBERS_ONLY_VARIANT_INDEX = {
-  gramatica:   { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
-  vocabulario: { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
-  listening:   { principiante:[5,7], facil:[10,12], medio:[7,9], avanzado:[7,9] },
-  writing:     { principiante:[2,4], facil:[6,8], medio:[6,8], avanzado:[6,8] },
-  speaking:    { principiante:5, facil:6, medio:6, avanzado:6 }
+  gramatica:   { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
+  vocabulario: { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
+  listening:   { principiante:[5,7,8], facil:[10,12,13], medio:[7,9,10], avanzado:[7,9,10] },
+  writing:     { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
+  speaking:    { principiante:[5,7], facil:[6,8], medio:[6,8], avanzado:[6,8] }
 };
 function pickVariantIndex(skill, level, variantCount, excludeIndex){
   if(!variantCount || variantCount <= 1) return 0;
@@ -2442,7 +2399,7 @@ function renderStatCards(container){
     </div>
     <div class="stat-card">
       <div class="stat-card-icon stat-icon-streak" style="background:var(--coral-tint);color:var(--coral);">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4.15 0 7-3.05 7-6.94 0-2.98-1.62-5.16-3.72-7.13.11 1.66-.44 2.99-1.47 3.83.17-3.5-1.73-6.48-4.35-8.76.16 3.34-1.31 5.37-3.18 7.41C4.88 11.93 5 14.08 5 15.06 5 18.95 7.85 22 12 22Z" fill="currentColor"/><path d="M12 19.1c1.9 0 3.12-1.37 3.12-3.2 0-1.17-.65-2.3-1.7-3.18-.03.95-.5 1.54-1.05 1.99.05-1.48-.7-2.89-1.76-3.98.1 1.5-.68 2.32-1.27 3.16-.5.72-.84 1.32-.84 2.01 0 1.83 1.22 3.2 3.1 3.2Z" fill="#FFD166"/></svg>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
       </div>
       <div>
         <div class="stat-card-label">Racha</div>
@@ -2585,7 +2542,7 @@ function renderStreakCard(container){
   const practicedCount = days.filter(d=>d.count>0).length;
   container.innerHTML = `
     <div class="streak-flame">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c4.15 0 7-3.05 7-6.94 0-2.98-1.62-5.16-3.72-7.13.11 1.66-.44 2.99-1.47 3.83.17-3.5-1.73-6.48-4.35-8.76.16 3.34-1.31 5.37-3.18 7.41C4.88 11.93 5 14.08 5 15.06 5 18.95 7.85 22 12 22Z" fill="currentColor"/><path d="M12 19.1c1.9 0 3.12-1.37 3.12-3.2 0-1.17-.65-2.3-1.7-3.18-.03.95-.5 1.54-1.05 1.99.05-1.48-.7-2.89-1.76-3.98.1 1.5-.68 2.32-1.27 3.16-.5.72-.84 1.32-.84 2.01 0 1.83 1.22 3.2 3.1 3.2Z" fill="#FFD166"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
     </div>
     <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
     <div class="streak-caption">de racha seguida</div>

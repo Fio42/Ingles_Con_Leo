@@ -506,7 +506,137 @@ const GRAMMAR_BANK = {
    }
   ]
  }
-]
+],
+    [
+      {
+        topic: "He / She / It (pronombres)",
+        items: [
+          { id:'g-principiante6-1',
+            translation:"(Hablando de un niño) Él es mi amigo.",
+            type:'choice',
+            prompt:"(Talking about a boy) ___ is my friend.",
+            options:["He","She","It"],
+            correct:0,
+            explain:"Usamos “he” para hablar de un hombre o niño.",
+              examples:[
+              {en:"He is my friend.", es:"Él es mi amigo."},
+              {en:"He is tall.", es:"Él es alto."}
+            ]},
+          { id:'g-principiante6-2',
+            translation:"(Hablando de una niña) Ella es mi hermana.",
+            type:'choice',
+            prompt:"(Talking about a girl) ___ is my sister.",
+            options:["She","He","It"],
+            correct:0,
+            explain:"Usamos “she” para hablar de una mujer o niña.",
+              examples:[
+              {en:"She is my sister.", es:"Ella es mi hermana."},
+              {en:"She is happy.", es:"Ella está feliz."}
+            ]},
+          { id:'g-principiante6-3',
+            translation:"(Hablando de un perro) Es grande.",
+            type:'choice',
+            prompt:"(Talking about a dog) ___ is big.",
+            options:["It","He","She"],
+            correct:0,
+            explain:"Usamos “it” para hablar de animales o cosas.",
+              examples:[
+              {en:"It is big.", es:"Es grande."},
+              {en:"It is my book.", es:"Es mi libro."}
+            ]},
+          { id:'g-principiante6-4',
+            translation:"Ese es mi papá. Él es alto.",
+            type:'error',
+            wrong:"That is my dad. She is tall.",
+            wrongWord:"She",
+            right:"That is my dad. He is tall.",
+            rightWord:"He",
+            explain:"Para un hombre, se usa “he”, no “she”.",
+              examples:[
+              {en:"That is my dad. He is tall.", es:"Ese es mi papá. Él es alto."},
+              {en:"He works with my mom.", es:"Él trabaja con mi mamá."}
+            ]}
+        ]
+      },
+      {
+        topic: "Is / Are (singular y plural)",
+        items: [
+          { id:'g-principiante6-5',
+            translation:"Ella es mi hermana.",
+            type:'choice',
+            prompt:"She ___ my sister.",
+            options:["is","are","am"],
+            correct:0,
+            explain:"Usamos “is” con “he/she/it” (una sola persona o cosa).",
+              examples:[
+              {en:"He is my friend.", es:"Él es mi amigo."},
+              {en:"It is a cat.", es:"Es un gato."}
+            ]},
+          { id:'g-principiante6-6',
+            translation:"Ellos están felices.",
+            type:'fill',
+            sentence:["They","___","happy","."],
+            blankIndex:1,
+            bank:["are","is","am"],
+            correct:"are",
+            explain:"Usamos “are” con “they/we/you” (más de una persona).",
+              examples:[
+              {en:"We are happy.", es:"Estamos felices."},
+              {en:"You are kind.", es:"Tú eres amable."}
+            ]},
+          { id:'g-principiante6-7',
+            translation:"Yo soy estudiante.",
+            type:'choice',
+            prompt:"I ___ a student.",
+            options:["am","is","are"],
+            correct:0,
+            explain:"Con “I” siempre usamos “am”.",
+              examples:[
+              {en:"I am a teacher.", es:"Soy profesor."},
+              {en:"I am happy.", es:"Estoy feliz."}
+            ]},
+          { id:'g-principiante6-8',
+            translation:"Ella es mi mamá.",
+            type:'error',
+            wrong:"She are my mom.",
+            wrongWord:"are",
+            right:"She is my mom.",
+            rightWord:"is",
+            explain:"Con “she” usamos “is”, no “are”.",
+              examples:[
+              {en:"She is my mom.", es:"Ella es mi mamá."},
+              {en:"He is my dad.", es:"Él es mi papá."}
+            ]}
+        ]
+      },
+      {
+        topic: "His / Her (posesivos simples)",
+        items: [
+          { id:'g-principiante6-9',
+            translation:"(Hablando de un niño) Ese es su libro (de él).",
+            type:'choice',
+            prompt:"(Talking about a boy) That is ___ book.",
+            options:["his","her","its"],
+            correct:0,
+            explain:"“His” se usa para cosas de un hombre o niño.",
+              examples:[
+              {en:"That is his book.", es:"Ese es su libro (de él)."},
+              {en:"His name is Tom.", es:"Su nombre es Tom."}
+            ]},
+          { id:'g-principiante6-10',
+            translation:"(Hablando de una niña) Esa es su bolsa (de ella).",
+            type:'choice',
+            prompt:"(Talking about a girl) That is ___ bag.",
+            options:["her","his","their"],
+            correct:0,
+            explain:"“Her” se usa para cosas de una mujer o niña.",
+              examples:[
+              {en:"That is her bag.", es:"Esa es su bolsa (de ella)."},
+              {en:"Her name is Ana.", es:"Su nombre es Ana."}
+            ]}
+        ]
+      }
+    ]
   ],
   facil: [
     [
@@ -1192,7 +1322,134 @@ const GRAMMAR_BANK = {
    }
   ]
  }
-]
+],
+    [
+      {
+        topic: "\"Your\" vs \"You're\"",
+        items: [
+          { id:'g-facil10-1',
+            translation:"Tú eres mi mejor amigo.",
+            type:'choice',
+            prompt:"___ my best friend.",
+            options:["You're","Your","Yours"],
+            correct:0,
+            explain:"“You’re” es la forma corta de “you are”.",
+              examples:[
+              {en:"You're my best friend.", es:"Tú eres mi mejor amigo."},
+              {en:"You're very smart.", es:"Eres muy inteligente."}
+            ]},
+          { id:'g-facil10-2',
+            translation:"¿Es este tu carro?",
+            type:'fill',
+            sentence:["Is","this","___","car","?"],
+            blankIndex:2,
+            bank:["your","you're","yours"],
+            correct:"your",
+            explain:"“Your” muestra posesión (de ti).",
+              examples:[
+              {en:"Is this your car?", es:"¿Es este tu carro?"},
+              {en:"I like your shoes.", es:"Me gustan tus zapatos."}
+            ]},
+          { id:'g-facil10-3',
+            translation:"Te va a encantar esta película.",
+            type:'choice',
+            prompt:"___ going to love this movie.",
+            options:["You're","Your"],
+            correct:0,
+            explain:"Antes de un verbo con “-ing” usamos “you’re” (you are).",
+              examples:[
+              {en:"You're going to love it.", es:"Te va a encantar."},
+              {en:"You're doing great.", es:"Lo estás haciendo genial."}
+            ]},
+          { id:'g-facil10-4',
+            translation:"Llegas tarde otra vez.",
+            type:'error',
+            wrong:"Your late again.",
+            wrongWord:"Your",
+            right:"You're late again.",
+            rightWord:"You're",
+            explain:"“You’re” = “you are”. Aquí se necesita el verbo “are”, no el posesivo “your”.",
+              examples:[
+              {en:"You're late again.", es:"Llegas tarde otra vez."},
+              {en:"You're right.", es:"Tienes razón."}
+            ]}
+        ]
+      },
+      {
+        topic: "\"To\" vs \"Too\" vs \"Two\"",
+        items: [
+          { id:'g-facil10-5',
+            translation:"Voy a la tienda.",
+            type:'choice',
+            prompt:"I am going ___ the store.",
+            options:["to","too","two"],
+            correct:0,
+            explain:"“To” se usa para indicar dirección o destino.",
+              examples:[
+              {en:"I am going to the store.", es:"Voy a la tienda."},
+              {en:"She went to school.", es:"Ella fue a la escuela."}
+            ]},
+          { id:'g-facil10-6',
+            translation:"Esta sopa está demasiado caliente para comer.",
+            type:'choice',
+            prompt:"This soup is ___ hot to eat.",
+            options:["too","to","two"],
+            correct:0,
+            explain:"“Too” significa “demasiado”.",
+              examples:[
+              {en:"This soup is too hot.", es:"Esta sopa está demasiado caliente."},
+              {en:"It's too late to call.", es:"Es demasiado tarde para llamar."}
+            ]},
+          { id:'g-facil10-7',
+            translation:"Tengo dos hermanas.",
+            type:'choice',
+            prompt:"I have ___ sisters.",
+            options:["two","to","too"],
+            correct:0,
+            explain:"“Two” es el número 2.",
+              examples:[
+              {en:"I have two sisters.", es:"Tengo dos hermanas."},
+              {en:"She bought two shirts.", es:"Ella compró dos camisas."}
+            ]},
+          { id:'g-facil10-8',
+            translation:"Yo también quiero ir.",
+            type:'fill',
+            sentence:["I","want","to","go","___","."],
+            blankIndex:4,
+            bank:["too","to","two"],
+            correct:"too",
+            explain:"“Too” al final de una frase significa “también”.",
+              examples:[
+              {en:"I want to go too.", es:"Yo también quiero ir."},
+              {en:"She likes coffee too.", es:"A ella también le gusta el café."}
+            ]},
+          { id:'g-facil10-9',
+            translation:"Ella va a la fiesta.",
+            type:'error',
+            wrong:"She is going too the party.",
+            wrongWord:"too",
+            right:"She is going to the party.",
+            rightWord:"to",
+            explain:"Antes de un lugar o destino, se usa “to”, no “too”.",
+              examples:[
+              {en:"She is going to the party.", es:"Ella va a la fiesta."},
+              {en:"He is going to work.", es:"Él va al trabajo."}
+            ]},
+          { id:'g-facil10-10',
+            translation:"Esta bolsa está demasiado pesada.",
+            type:'error',
+            wrong:"This bag is to heavy.",
+            wrongWord:"to",
+            right:"This bag is too heavy.",
+            rightWord:"too",
+            explain:"Antes de un adjetivo con el sentido de “demasiado”, se usa “too”, no “to”.",
+              examples:[
+              {en:"This bag is too heavy.", es:"Esta bolsa está demasiado pesada."},
+              {en:"He is too tired to drive.", es:"Él está demasiado cansado para manejar."}
+            ]}
+        ]
+      }
+    ]
   ],
   medio: [
     [
@@ -1883,7 +2140,138 @@ const GRAMMAR_BANK = {
    }
   ]
  }
-]
+],
+    [
+      {
+        topic: "\"Say\" vs \"Tell\"",
+        items: [
+          { id:'g-medio10-1',
+            translation:"Por favor dime la verdad.",
+            type:'choice',
+            prompt:"Please ___ me the truth.",
+            options:["tell","say"],
+            correct:0,
+            explain:"“Tell” va seguido de la persona directamente (tell me).",
+              examples:[
+              {en:"Please tell me the truth.", es:"Por favor dime la verdad."},
+              {en:"He told me a secret.", es:"Él me contó un secreto."}
+            ]},
+          { id:'g-medio10-2',
+            translation:"Ella no dijo nada durante la reunión.",
+            type:'choice',
+            prompt:"She didn't ___ anything during the meeting.",
+            options:["say","tell"],
+            correct:0,
+            explain:"“Say” no necesita una persona después (say something).",
+              examples:[
+              {en:"She didn't say anything.", es:"Ella no dijo nada."},
+              {en:"He said hello.", es:"Él dijo hola."}
+            ]},
+          { id:'g-medio10-3',
+            translation:"¿Puedes contarme una historia?",
+            type:'fill',
+            sentence:["Can","you","___","me","a","story","?"],
+            blankIndex:2,
+            bank:["tell","say"],
+            correct:"tell",
+            explain:"“Tell” se usa con una persona como objeto directo.",
+              examples:[
+              {en:"Can you tell me a story?", es:"¿Puedes contarme una historia?"},
+              {en:"She told us the news.", es:"Ella nos contó la noticia."}
+            ]},
+          { id:'g-medio10-4',
+            translation:"Él me dijo que estaba ocupado.",
+            type:'error',
+            wrong:"He said me he was busy.",
+            wrongWord:"said",
+            right:"He told me he was busy.",
+            rightWord:"told",
+            explain:"Antes de una persona (me), se usa “tell/told”, no “say/said”.",
+              examples:[
+              {en:"He told me he was busy.", es:"Él me dijo que estaba ocupado."},
+              {en:"She told him the truth.", es:"Ella le dijo la verdad."}
+            ]}
+        ]
+      },
+      {
+        topic: "\"Fewer\" vs \"Less\"",
+        items: [
+          { id:'g-medio10-5',
+            translation:"Tengo menos libros que tú.",
+            type:'choice',
+            prompt:"I have ___ books than you.",
+            options:["fewer","less"],
+            correct:0,
+            explain:"“Fewer” se usa con cosas contables (books).",
+              examples:[
+              {en:"I have fewer books than you.", es:"Tengo menos libros que tú."},
+              {en:"There are fewer students this year.", es:"Hay menos estudiantes este año."}
+            ]},
+          { id:'g-medio10-6',
+            translation:"Deberíamos comer menos azúcar.",
+            type:'choice',
+            prompt:"We should eat ___ sugar.",
+            options:["less","fewer"],
+            correct:0,
+            explain:"“Less” se usa con cosas incontables (sugar).",
+              examples:[
+              {en:"We should eat less sugar.", es:"Deberíamos comer menos azúcar."},
+              {en:"I have less time now.", es:"Tengo menos tiempo ahora."}
+            ]},
+          { id:'g-medio10-7',
+            translation:"Hay menos personas que el año pasado.",
+            type:'error',
+            wrong:"There are less people than last year.",
+            wrongWord:"less",
+            right:"There are fewer people than last year.",
+            rightWord:"fewer",
+            explain:"“People” es contable, por eso se usa “fewer”, no “less”.",
+              examples:[
+              {en:"There are fewer people this year.", es:"Hay menos personas este año."},
+              {en:"She has fewer problems now.", es:"Ella tiene menos problemas ahora."}
+            ]}
+        ]
+      },
+      {
+        topic: "\"Advice\" vs \"Advise\"",
+        items: [
+          { id:'g-medio10-8',
+            translation:"¿Puedes darme un consejo?",
+            type:'choice',
+            prompt:"Can you give me some ___?",
+            options:["advice","advise"],
+            correct:0,
+            explain:"“Advice” es un sustantivo (el consejo).",
+              examples:[
+              {en:"Can you give me some advice?", es:"¿Puedes darme un consejo?"},
+              {en:"Her advice was very helpful.", es:"Su consejo fue muy útil."}
+            ]},
+          { id:'g-medio10-9',
+            translation:"Te aconsejaría ver a un doctor.",
+            type:'choice',
+            prompt:"I would ___ you to see a doctor.",
+            options:["advise","advice"],
+            correct:0,
+            explain:"“Advise” es un verbo (aconsejar).",
+              examples:[
+              {en:"I would advise you to rest.", es:"Te aconsejaría descansar."},
+              {en:"The lawyer advised him carefully.", es:"El abogado lo aconsejó con cuidado."}
+            ]},
+          { id:'g-medio10-10',
+            translation:"Ella me dio un buen consejo.",
+            type:'error',
+            wrong:"She gave me a good advise.",
+            wrongWord:"advise",
+            right:"She gave me good advice.",
+            rightWord:"advice",
+            explain:"Después de “gave me”, se necesita el sustantivo “advice”, no el verbo “advise”.",
+              examples:[
+              {en:"She gave me good advice.", es:"Ella me dio un buen consejo."},
+              {en:"He always gives useful advice.", es:"Él siempre da consejos útiles."}
+            ]}
+        ]
+      }
+    ]
   ],
   avanzado: [
     [
@@ -2571,7 +2959,138 @@ const GRAMMAR_BANK = {
    }
   ]
  }
-]
+],
+    [
+      {
+        topic: "\"Lose\" vs \"Loose\"",
+        items: [
+          { id:'g-avanzado10-1',
+            translation:"Por favor no pierdas tu pasaporte otra vez.",
+            type:'choice',
+            prompt:"Please don't ___ your passport again.",
+            options:["lose","loose"],
+            correct:0,
+            explain:"“Lose” es un verbo: perder algo.",
+              examples:[
+              {en:"Don't lose your passport.", es:"No pierdas tu pasaporte."},
+              {en:"He hates to lose.", es:"Él odia perder."}
+            ]},
+          { id:'g-avanzado10-2',
+            translation:"Mis zapatos se sienten sueltos hoy.",
+            type:'choice',
+            prompt:"These pants are too ___ for me.",
+            options:["loose","lose"],
+            correct:0,
+            explain:"“Loose” es un adjetivo: suelto, flojo.",
+              examples:[
+              {en:"My shoes feel loose today.", es:"Mis zapatos se sienten sueltos hoy."},
+              {en:"The screw is loose.", es:"El tornillo está flojo."}
+            ]},
+          { id:'g-avanzado10-3',
+            translation:"No quiero perder el juego.",
+            type:'fill',
+            sentence:["I","don't","want","to","___","the","game","."],
+            blankIndex:4,
+            bank:["lose","loose"],
+            correct:"lose",
+            explain:"“Lose” es el verbo perder.",
+              examples:[
+              {en:"I don't want to lose the game.", es:"No quiero perder el juego."},
+              {en:"We can't afford to lose this client.", es:"No podemos darnos el lujo de perder a este cliente."}
+            ]},
+          { id:'g-avanzado10-4',
+            translation:"Siempre pierdo mis llaves.",
+            type:'error',
+            wrong:"I always loose my keys.",
+            wrongWord:"loose",
+            right:"I always lose my keys.",
+            rightWord:"lose",
+            explain:"Aquí se necesita el verbo “lose” (perder), no el adjetivo “loose”.",
+              examples:[
+              {en:"I always lose my keys.", es:"Siempre pierdo mis llaves."},
+              {en:"She never loses her temper.", es:"Ella nunca pierde la calma."}
+            ]}
+        ]
+      },
+      {
+        topic: "\"Beside\" vs \"Besides\"",
+        items: [
+          { id:'g-avanzado10-5',
+            translation:"Ella se sentó junto a mí durante el vuelo.",
+            type:'choice',
+            prompt:"She sat ___ me during the flight.",
+            options:["beside","besides"],
+            correct:0,
+            explain:"“Beside” significa “al lado de”.",
+              examples:[
+              {en:"She sat beside me.", es:"Ella se sentó a mi lado."},
+              {en:"The dog sleeps beside the bed.", es:"El perro duerme al lado de la cama."}
+            ]},
+          { id:'g-avanzado10-6',
+            translation:"Además del costo, el proyecto también genera preocupaciones de seguridad.",
+            type:'choice',
+            prompt:"___ the cost, the project also raises safety concerns.",
+            options:["Besides","Beside"],
+            correct:0,
+            explain:"“Besides” significa “además de”.",
+              examples:[
+              {en:"Besides the cost, timing is an issue.", es:"Además del costo, el tiempo es un problema."},
+              {en:"Besides English, she speaks French.", es:"Además del inglés, ella habla francés."}
+            ]},
+          { id:'g-avanzado10-7',
+            translation:"Además de ser caro, el hotel también estaba lejos.",
+            type:'error',
+            wrong:"Beside being expensive, the hotel was also far away.",
+            wrongWord:"Beside",
+            right:"Besides being expensive, the hotel was also far away.",
+            rightWord:"Besides",
+            explain:"Para agregar una idea (además de), se usa “besides”, no “beside”.",
+              examples:[
+              {en:"Besides being expensive, it was far away.", es:"Además de ser caro, estaba lejos."},
+              {en:"Besides working, she studies at night.", es:"Además de trabajar, ella estudia de noche."}
+            ]}
+        ]
+      },
+      {
+        topic: "\"Lay\" vs \"Lie\"",
+        items: [
+          { id:'g-avanzado10-8',
+            translation:"Necesito recostarme un rato.",
+            type:'choice',
+            prompt:"I need to ___ down for a while.",
+            options:["lie","lay"],
+            correct:0,
+            explain:"“Lie” (lie/lay/lain) significa recostarse uno mismo.",
+              examples:[
+              {en:"I need to lie down.", es:"Necesito recostarme."},
+              {en:"He lay down and rested.", es:"Él se recostó y descansó."}
+            ]},
+          { id:'g-avanzado10-9',
+            translation:"Por favor pon los papeles en el escritorio.",
+            type:'choice',
+            prompt:"Please ___ the papers on the desk.",
+            options:["lay","lie"],
+            correct:0,
+            explain:"“Lay” (lay/laid/laid) significa poner algo en un lugar; necesita un objeto.",
+              examples:[
+              {en:"Please lay the papers there.", es:"Por favor pon los papeles ahí."},
+              {en:"She laid the baby in the crib.", es:"Ella acostó al bebé en la cuna."}
+            ]},
+          { id:'g-avanzado10-10',
+            translation:"Voy a recostarme para una siesta.",
+            type:'error',
+            wrong:"I am going to lay down for a nap.",
+            wrongWord:"lay",
+            right:"I am going to lie down for a nap.",
+            rightWord:"lie",
+            explain:"Para recostarse uno mismo (sin objeto), se usa “lie”, no “lay”.",
+              examples:[
+              {en:"I'm going to lie down.", es:"Voy a recostarme."},
+              {en:"He lies on the couch every afternoon.", es:"Él se recuesta en el sofá cada tarde."}
+            ]}
+        ]
+      }
+    ]
   ]
 };
 
@@ -2864,7 +3383,39 @@ const VOCAB_BANK = {
    "explain": "“Hot” es caliente."
   }
  }
-]
+],
+    [
+      { id:'v-principiante6-1', word:'Egg', translation:'Huevo · lo que pone una gallina',
+        examples:[{en:"I eat an egg for breakfast.", es:"Como un huevo en el desayuno."},{en:"The egg is white.", es:"El huevo es blanco."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que pone una gallina\"?", options:["egg","milk","bread"], correct:0, explain:"“Egg” es huevo." } },
+      { id:'v-principiante6-2', word:'Shoe', translation:'Zapato · lo que usas en los pies',
+        examples:[{en:"I need new shoes.", es:"Necesito zapatos nuevos."},{en:"Her shoe is red.", es:"Su zapato es rojo."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que usas en los pies\"?", options:["shoe","shirt","hat"], correct:0, explain:"“Shoe” es zapato." } },
+      { id:'v-principiante6-3', word:'Shirt', translation:'Camisa · ropa para el torso',
+        examples:[{en:"He is wearing a blue shirt.", es:"Él lleva una camisa azul."},{en:"My shirt is clean.", es:"Mi camisa está limpia."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"ropa para el torso\"?", options:["shirt","shoe","pants"], correct:0, explain:"“Shirt” es camisa." } },
+      { id:'v-principiante6-4', word:'Rain', translation:'Lluvia · agua que cae del cielo',
+        examples:[{en:"I hear the rain outside.", es:"Escucho la lluvia afuera."},{en:"It's going to rain today.", es:"Va a llover hoy."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"agua que cae del cielo\"?", options:["rain","snow","wind"], correct:0, explain:"“Rain” es lluvia." } },
+      { id:'v-principiante6-5', word:'Door', translation:'Puerta · por donde entras a un lugar',
+        examples:[{en:"Close the door, please.", es:"Cierra la puerta, por favor."},{en:"The door is open.", es:"La puerta está abierta."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"por donde entras a un lugar\"?", options:["door","window","wall"], correct:0, explain:"“Door” es puerta." } },
+      { id:'v-principiante6-6', word:'Window', translation:'Ventana · por donde entra la luz',
+        examples:[{en:"Open the window.", es:"Abre la ventana."},{en:"The window is big.", es:"La ventana es grande."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"por donde entra la luz\"?", options:["window","door","roof"], correct:0, explain:"“Window” es ventana." } },
+      { id:'v-principiante6-7', word:'Apple', translation:'Manzana · fruta roja o verde',
+        examples:[{en:"She eats an apple after lunch.", es:"Ella come una manzana después del almuerzo."},{en:"The apple is sweet.", es:"La manzana es dulce."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"fruta roja o verde\"?", options:["apple","orange","banana"], correct:0, explain:"“Apple” es manzana." } },
+      { id:'v-principiante6-8', word:'Orange', translation:'Naranja · fruta cítrica',
+        examples:[{en:"I like orange juice.", es:"Me gusta el jugo de naranja."},{en:"The orange is on the table.", es:"La naranja está en la mesa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"fruta cítrica\"?", options:["orange","apple","lemon"], correct:0, explain:"“Orange” es naranja." } },
+      { id:'v-principiante6-9', word:'Banana', translation:'Plátano · fruta amarilla',
+        examples:[{en:"The monkey eats a banana.", es:"El mono come un plátano."},{en:"I want a banana.", es:"Quiero un plátano."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"fruta amarilla\"?", options:["banana","apple","grape"], correct:0, explain:"“Banana” es plátano." } },
+      { id:'v-principiante6-10', word:'Fish', translation:'Pescado o pez · animal que vive en el agua',
+        examples:[{en:"The fish is in the water.", es:"El pez está en el agua."},{en:"I eat fish on Fridays.", es:"Como pescado los viernes."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"animal que vive en el agua\"?", options:["fish","bird","cat"], correct:0, explain:"“Fish” es pescado o pez." } }
+    ]
   ],
   facil: [
     [
@@ -3253,7 +3804,39 @@ const VOCAB_BANK = {
    "explain": "“Explain” es explicar."
   }
  }
-]
+],
+    [
+      { id:'v-facil10-1', word:'Weather', translation:'Clima · cómo está el día (sol, lluvia, frío)',
+        examples:[{en:"The weather changed suddenly.", es:"El clima cambió de repente."},{en:"What's the weather like?", es:"¿Cómo está el clima?"}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cómo está el día\"?", options:["weather","season","sky"], correct:0, explain:"“Weather” es el clima." } },
+      { id:'v-facil10-2', word:'Bedroom', translation:'Habitación · cuarto donde duermes',
+        examples:[{en:"My bedroom is upstairs.", es:"Mi habitación está arriba."},{en:"She cleaned her bedroom.", es:"Ella limpió su habitación."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuarto donde duermes\"?", options:["bedroom","kitchen","bathroom"], correct:0, explain:"“Bedroom” es habitación/dormitorio." } },
+      { id:'v-facil10-3', word:'Restaurant', translation:'Restaurante · lugar donde comes fuera de casa',
+        examples:[{en:"We ate at a nice restaurant.", es:"Comimos en un restaurante agradable."},{en:"The restaurant is full.", es:"El restaurante está lleno."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lugar donde comes fuera de casa\"?", options:["restaurant","hotel","store"], correct:0, explain:"“Restaurant” es restaurante." } },
+      { id:'v-facil10-4', word:'Vacation', translation:'Vacaciones · tiempo libre para descansar o viajar',
+        examples:[{en:"We are on vacation.", es:"Estamos de vacaciones."},{en:"I need a vacation.", es:"Necesito unas vacaciones."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"tiempo libre para descansar o viajar\"?", options:["vacation","weekend","holiday season"], correct:0, explain:"“Vacation” son vacaciones." } },
+      { id:'v-facil10-5', word:'Supermarket', translation:'Supermercado · tienda grande de comida',
+        examples:[{en:"I buy food at the supermarket.", es:"Compro comida en el supermercado."},{en:"The supermarket is close to my house.", es:"El supermercado está cerca de mi casa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"tienda grande de comida\"?", options:["supermarket","restaurant","pharmacy"], correct:0, explain:"“Supermarket” es supermercado." } },
+      { id:'v-facil10-6', word:'Medicine', translation:'Medicina · lo que tomas cuando estás enfermo',
+        examples:[{en:"Take this medicine twice a day.", es:"Toma esta medicina dos veces al día."},{en:"The medicine helped my headache.", es:"La medicina ayudó con mi dolor de cabeza."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que tomas cuando estás enfermo\"?", options:["medicine","food","water"], correct:0, explain:"“Medicine” es medicina." } },
+      { id:'v-facil10-7', word:'Passport', translation:'Pasaporte · documento para viajar a otro país',
+        examples:[{en:"Don't forget your passport.", es:"No olvides tu pasaporte."},{en:"My passport is in my bag.", es:"Mi pasaporte está en mi bolsa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"documento para viajar a otro país\"?", options:["passport","ticket","suitcase"], correct:0, explain:"“Passport” es pasaporte." } },
+      { id:'v-facil10-8', word:'Schedule', translation:'Horario · plan de las cosas que vas a hacer',
+        examples:[{en:"What's your schedule today?", es:"¿Cuál es tu horario hoy?"},{en:"My schedule is busy this week.", es:"Mi horario está ocupado esta semana."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"plan de las cosas que vas a hacer\"?", options:["schedule","calendar","clock"], correct:0, explain:"“Schedule” es horario." } },
+      { id:'v-facil10-9', word:'Interview', translation:'Entrevista · conversación para conseguir trabajo',
+        examples:[{en:"I have a job interview tomorrow.", es:"Tengo una entrevista de trabajo mañana."},{en:"The interview went well.", es:"La entrevista salió bien."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"conversación para conseguir trabajo\"?", options:["interview","meeting","conversation"], correct:0, explain:"“Interview” es entrevista." } },
+      { id:'v-facil10-10', word:'Furniture', translation:'Muebles · mesas, sillas, camas, etc.',
+        examples:[{en:"We bought new furniture.", es:"Compramos muebles nuevos."},{en:"The furniture is very old.", es:"Los muebles son muy viejos."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"mesas, sillas, camas, etc.\"?", options:["furniture","furniture store","house"], correct:0, explain:"“Furniture” son los muebles." } }
+    ]
   ],
   medio: [
     [
@@ -3642,7 +4225,39 @@ const VOCAB_BANK = {
    "explain": "“Compliment” es un cumplido o elogio."
   }
  }
-]
+],
+    [
+      { id:'v-medio10-1', word:'Budget', translation:'Presupuesto · plan de cuánto dinero puedes gastar',
+        examples:[{en:"We need to stick to the budget.", es:"Necesitamos apegarnos al presupuesto."},{en:"The project is over budget.", es:"El proyecto se pasó del presupuesto."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"plan de cuánto dinero puedes gastar\"?", options:["budget","salary","invoice"], correct:0, explain:"“Budget” es presupuesto." } },
+      { id:'v-medio10-2', word:'Opportunity', translation:'Oportunidad · momento bueno para hacer algo',
+        examples:[{en:"This job is a great opportunity.", es:"Este trabajo es una gran oportunidad."},{en:"Don't miss this opportunity.", es:"No pierdas esta oportunidad."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"momento bueno para hacer algo\"?", options:["opportunity","problem","decision"], correct:0, explain:"“Opportunity” es oportunidad." } },
+      { id:'v-medio10-3', word:'Achievement', translation:'Logro · algo que lograste con esfuerzo',
+        examples:[{en:"Graduating was a big achievement.", es:"Graduarme fue un gran logro."},{en:"She is proud of her achievements.", es:"Ella está orgullosa de sus logros."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"algo que lograste con esfuerzo\"?", options:["achievement","attempt","mistake"], correct:0, explain:"“Achievement” es logro." } },
+      { id:'v-medio10-4', word:'Routine', translation:'Rutina · cosas que haces siempre de la misma forma',
+        examples:[{en:"I have a morning routine.", es:"Tengo una rutina matutina."},{en:"Exercise is part of my routine.", es:"Hacer ejercicio es parte de mi rutina."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cosas que haces siempre de la misma forma\"?", options:["routine","schedule change","habit change"], correct:0, explain:"“Routine” es rutina." } },
+      { id:'v-medio10-5', word:'Confidence', translation:'Confianza · creer en ti mismo',
+        examples:[{en:"She spoke with confidence.", es:"Ella habló con confianza."},{en:"Practice builds confidence.", es:"La práctica genera confianza."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"creer en ti mismo\"?", options:["confidence","fear","doubt"], correct:0, explain:"“Confidence” es confianza (en uno mismo)." } },
+      { id:'v-medio10-6', word:'Patience', translation:'Paciencia · esperar sin molestarte',
+        examples:[{en:"Teaching requires patience.", es:"Enseñar requiere paciencia."},{en:"He lost his patience.", es:"Él perdió la paciencia."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"esperar sin molestarte\"?", options:["patience","anger","anxiety"], correct:0, explain:"“Patience” es paciencia." } },
+      { id:'v-medio10-7', word:'Improvement', translation:'Mejora · cuando algo se pone mejor',
+        examples:[{en:"Your English shows real improvement.", es:"Tu inglés muestra una mejora real."},{en:"We need improvement in this area.", es:"Necesitamos mejora en esta área."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuando algo se pone mejor\"?", options:["improvement","decline","result"], correct:0, explain:"“Improvement” es mejora." } },
+      { id:'v-medio10-8', word:'Flexibility', translation:'Flexibilidad · poder adaptarse a cambios',
+        examples:[{en:"This job offers a lot of flexibility.", es:"Este trabajo ofrece mucha flexibilidad."},{en:"We need more flexibility in the schedule.", es:"Necesitamos más flexibilidad en el horario."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"poder adaptarse a cambios\"?", options:["flexibility","rigidity","stability"], correct:0, explain:"“Flexibility” es flexibilidad." } },
+      { id:'v-medio10-9', word:'Motivation', translation:'Motivación · ganas de hacer algo',
+        examples:[{en:"I lost my motivation to study.", es:"Perdí la motivación para estudiar."},{en:"Money is not his only motivation.", es:"El dinero no es su única motivación."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"ganas de hacer algo\"?", options:["motivation","laziness","tiredness"], correct:0, explain:"“Motivation” es motivación." } },
+      { id:'v-medio10-10', word:'Responsibility', translation:'Responsabilidad · algo que debes cuidar o hacer',
+        examples:[{en:"This is a big responsibility.", es:"Esta es una gran responsabilidad."},{en:"She takes responsibility for her actions.", es:"Ella asume la responsabilidad de sus actos."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"algo que debes cuidar o hacer\"?", options:["responsibility","excuse","complaint"], correct:0, explain:"“Responsibility” es responsabilidad." } }
+    ]
   ],
   avanzado: [
     [
@@ -4031,7 +4646,39 @@ const VOCAB_BANK = {
    "explain": "“Illicit” significa ilícito, ilegal."
   }
  }
-]
+],
+    [
+      { id:'v-avanzado10-1', word:'Thrive', translation:'Prosperar/florecer · crecer y tener éxito',
+        examples:[{en:"The company continues to thrive.", es:"La empresa sigue prosperando."},{en:"Some plants thrive in the shade.", es:"Algunas plantas prosperan en la sombra."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"crecer y tener éxito\"?", options:["thrive","struggle","fail"], correct:0, explain:"“Thrive” es prosperar o crecer con éxito." } },
+      { id:'v-avanzado10-2', word:'Assertive', translation:'Asertivo · defender tu opinión con seguridad y respeto',
+        examples:[{en:"You need to be more assertive in meetings.", es:"Necesitas ser más asertivo en las reuniones."},{en:"She gave an assertive response.", es:"Ella dio una respuesta asertiva."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"defender tu opinión con seguridad y respeto\"?", options:["assertive","shy","aggressive"], correct:0, explain:"“Assertive” es asertivo, con seguridad y respeto." } },
+      { id:'v-avanzado10-3', word:'Relentless', translation:'Implacable/incansable · que no se detiene',
+        examples:[{en:"He is relentless in pursuing his goals.", es:"Él es incansable persiguiendo sus metas."},{en:"The rain was relentless all week.", es:"La lluvia fue implacable toda la semana."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"que no se detiene\"?", options:["relentless","occasional","gentle"], correct:0, explain:"“Relentless” es implacable, incansable." } },
+      { id:'v-avanzado10-4', word:'Candor', translation:'Franqueza · decir la verdad de forma directa',
+        examples:[{en:"I appreciate your candor.", es:"Aprecio tu franqueza."},{en:"She spoke with surprising candor.", es:"Ella habló con una franqueza sorprendente."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"decir la verdad de forma directa\"?", options:["candor","deception","silence"], correct:0, explain:"“Candor” es franqueza, sinceridad directa." } },
+      { id:'v-avanzado10-5', word:'Tenacious', translation:'Tenaz · que no se rinde fácilmente',
+        examples:[{en:"She is a tenacious negotiator.", es:"Ella es una negociadora tenaz."},{en:"His tenacious attitude paid off.", es:"Su actitud tenaz dio resultado."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"que no se rinde fácilmente\"?", options:["tenacious","careless","indifferent"], correct:0, explain:"“Tenacious” es tenaz, persistente." } },
+      { id:'v-avanzado10-6', word:'Volatile', translation:'Volátil · que cambia rápido e impredeciblemente',
+        examples:[{en:"The stock market is volatile right now.", es:"El mercado de valores está volátil ahora."},{en:"His mood can be volatile.", es:"Su estado de ánimo puede ser volátil."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"que cambia rápido e impredeciblemente\"?", options:["volatile","stable","predictable"], correct:0, explain:"“Volatile” es volátil, inestable o cambiante." } },
+      { id:'v-avanzado10-7', word:'Resourceful', translation:'Ingenioso/recursivo · que encuentra soluciones con lo que tiene',
+        examples:[{en:"She is very resourceful when problems arise.", es:"Ella es muy ingeniosa cuando surgen problemas."},{en:"Being resourceful helped him survive.", es:"Ser ingenioso lo ayudó a sobrevivir."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"que encuentra soluciones con lo que tiene\"?", options:["resourceful","helpless","wasteful"], correct:0, explain:"“Resourceful” es ingenioso, capaz de resolver con lo que tiene." } },
+      { id:'v-avanzado10-8', word:'Indispensable', translation:'Indispensable · tan necesario que no se puede prescindir de ello',
+        examples:[{en:"Her experience is indispensable to the team.", es:"Su experiencia es indispensable para el equipo."},{en:"Water is indispensable for life.", es:"El agua es indispensable para la vida."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"tan necesario que no se puede prescindir de ello\"?", options:["indispensable","optional","useless"], correct:0, explain:"“Indispensable” es algo absolutamente necesario." } },
+      { id:'v-avanzado10-9', word:'Diligent', translation:'Diligente · que trabaja con cuidado y esfuerzo constante',
+        examples:[{en:"He is a diligent student.", es:"Él es un estudiante diligente."},{en:"Her diligent work paid off.", es:"Su trabajo diligente dio frutos."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"que trabaja con cuidado y esfuerzo constante\"?", options:["diligent","lazy","careless"], correct:0, explain:"“Diligent” es diligente, cuidadoso y constante." } },
+      { id:'v-avanzado10-10', word:'Adaptability', translation:'Adaptabilidad · capacidad de ajustarse a cambios',
+        examples:[{en:"Adaptability is key in a new job.", es:"La adaptabilidad es clave en un trabajo nuevo."},{en:"His adaptability impressed the team.", es:"Su adaptabilidad impresionó al equipo."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"capacidad de ajustarse a cambios\"?", options:["adaptability","rigidity","resistance"], correct:0, explain:"“Adaptability” es la capacidad de adaptarse." } }
+    ]
   ]
 };
 
@@ -4166,7 +4813,21 @@ const LISTENING_BANK = {
   "correct": 0,
   "explain": "“Cold” significa frío."
  }
-]
+],
+    [
+      { id:'l-principiante9-1', audioFile:'audio/a0/a0listening-024.mp3',
+        transcript:"The wall is white.", translation:"La pared es blanca.",
+        question:"What color is the wall?", options:["White","Black","Brown"], correct:0,
+        explain:"“White” significa blanco." },
+      { id:'l-principiante9-2', audioFile:'audio/a0/a0listening-025.mp3',
+        transcript:"He has a yellow shirt.", translation:"Él tiene una camisa amarilla.",
+        question:"What color is his shirt?", options:["Yellow","Blue","Black"], correct:0,
+        explain:"“Yellow” significa amarillo." },
+      { id:'l-principiante9-3', audioFile:'audio/a0/a0listening-026.mp3',
+        transcript:"We have six windows.", translation:"Tenemos seis ventanas.",
+        question:"How many windows do they have?", options:["Six","Five","Seven"], correct:0,
+        explain:"“Six” es el número 6." }
+    ]
   ],
   facil: [
     [
@@ -4377,7 +5038,21 @@ const LISTENING_BANK = {
   "correct": 0,
   "explain": "“Except” significa que Maria fue la única que no vino."
  }
-]
+],
+    [
+      { id:'l-facil14-1', audioFile:'audio/a1/a1listening-043.mp3',
+        transcript:"I usually walk to the office.", translation:"Normalmente camino a la oficina.",
+        question:"How does the speaker usually get to the office?", options:["On foot","By bus","By car"], correct:0,
+        explain:"“Walk” significa caminar." },
+      { id:'l-facil14-2', audioFile:'audio/a1/a1listening-044.mp3',
+        transcript:"She forgot her umbrella at home.", translation:"Ella olvidó su paraguas en casa.",
+        question:"What did she forget?", options:["Her umbrella","Her phone","Her keys"], correct:0,
+        explain:"“Umbrella” significa paraguas." },
+      { id:'l-facil14-3', audioFile:'audio/a1/a1listening-045.mp3',
+        transcript:"The meeting starts at nine in the morning.", translation:"La reunión empieza a las nueve de la mañana.",
+        question:"What time does the meeting start?", options:["Nine in the morning","Nine at night","Ten in the morning"], correct:0,
+        explain:"“Nine in the morning” es las nueve de la mañana." }
+    ]
   ],
   medio: [
     [
@@ -4538,7 +5213,21 @@ const LISTENING_BANK = {
   "correct": 0,
   "explain": "“Compliment” significa un cumplido o elogio."
  }
-]
+],
+    [
+      { id:'l-medio11-1', audioFile:'audio/b1/b1listening-032.mp3',
+        transcript:"Although he was tired, he finished the report.", translation:"Aunque estaba cansado, terminó el informe.",
+        question:"What did he do despite being tired?", options:["He finished the report","He went to sleep","He canceled the meeting"], correct:0,
+        explain:"“Although” introduce un contraste." },
+      { id:'l-medio11-2', audioFile:'audio/b1/b1listening-033.mp3',
+        transcript:"The company decided to postpone the launch until next month.", translation:"La empresa decidió posponer el lanzamiento hasta el próximo mes.",
+        question:"What did the company decide to do?", options:["Postpone the launch","Cancel the launch","Speed up the launch"], correct:0,
+        explain:"“Postpone” significa posponer." },
+      { id:'l-medio11-3', audioFile:'audio/b1/b1listening-034.mp3',
+        transcript:"If I had known about the traffic, I would have left earlier.", translation:"Si hubiera sabido sobre el tráfico, habría salido más temprano.",
+        question:"What does the speaker regret?", options:["Not leaving earlier","Not taking the bus","Not calling ahead"], correct:0,
+        explain:"Esta es una oración condicional sobre algo que no pasó." }
+    ]
   ],
   avanzado: [
     [
@@ -4699,7 +5388,21 @@ const LISTENING_BANK = {
   "correct": 0,
   "explain": "“Illicit” significa ilegal, no permitido."
  }
-]
+],
+    [
+      { id:'l-avanzado11-1', audioFile:'audio/c1/c1listening-032.mp3',
+        transcript:"The negotiations were far more complex than anyone had anticipated.", translation:"Las negociaciones fueron mucho más complejas de lo que nadie había anticipado.",
+        question:"How were the negotiations, compared to expectations?", options:["More complex than expected","Simpler than expected","Exactly as expected"], correct:0,
+        explain:"“Far more complex than anticipated” significa mucho más complejas de lo esperado." },
+      { id:'l-avanzado11-2', audioFile:'audio/c1/c1listening-033.mp3',
+        transcript:"Despite the setbacks, the team remained remarkably resilient.", translation:"A pesar de los contratiempos, el equipo se mantuvo notablemente resiliente.",
+        question:"How did the team react to the setbacks?", options:["They stayed resilient","They gave up","They got angry"], correct:0,
+        explain:"“Resilient” significa resiliente, que se recupera bien." },
+      { id:'l-avanzado11-3', audioFile:'audio/c1/c1listening-034.mp3',
+        transcript:"She tends to downplay her achievements, even when they are significant.", translation:"Ella tiende a minimizar sus logros, incluso cuando son importantes.",
+        question:"What does she do with her achievements?", options:["She downplays them","She exaggerates them","She ignores them completely"], correct:0,
+        explain:"“Downplay” significa minimizar o quitarle importancia." }
+    ]
   ]
 };
 
@@ -4762,7 +5465,12 @@ const SPEAKING_BANK = {
   "translation": "Quiero comprar un libro.",
   "audioFile": "audio/a0/a0speaking-019.mp3"
  }
-]
+],
+    [
+      { id:'s-principiante8-1', sentence:"I have a green backpack.", translation:"Tengo una mochila verde.", audioFile:'audio/a0/a0speaking-020.mp3' },
+      { id:'s-principiante8-2', sentence:"My brother is tall.", translation:"Mi hermano es alto.", audioFile:'audio/a0/a0speaking-021.mp3' },
+      { id:'s-principiante8-3', sentence:"We eat breakfast at seven.", translation:"Desayunamos a las siete.", audioFile:'audio/a0/a0speaking-022.mp3' }
+    ]
   ],
   facil: [
     [
@@ -4822,7 +5530,12 @@ const SPEAKING_BANK = {
   "translation": "Sugiero que descanses un poco.",
   "audioFile": "audio/a1/a1speaking-024.mp3"
  }
-]
+],
+    [
+      { id:'s-facil10-1', sentence:"I need to buy groceries after work.", translation:"Necesito comprar víveres después del trabajo.", audioFile:'audio/a1/a1speaking-025.mp3' },
+      { id:'s-facil10-2', sentence:"Can you turn off the lights, please?", translation:"¿Puedes apagar las luces, por favor?", audioFile:'audio/a1/a1speaking-026.mp3' },
+      { id:'s-facil10-3', sentence:"The bus was late this morning.", translation:"El bus llegó tarde esta mañana.", audioFile:'audio/a1/a1speaking-027.mp3' }
+    ]
   ],
   medio: [
     [
@@ -4881,7 +5594,11 @@ const SPEAKING_BANK = {
   "translation": "Estos colores se complementan.",
   "audioFile": "audio/b1/b1speaking-023.mp3"
  }
-]
+],
+    [
+      { id:'s-medio10-1', sentence:"I've been trying to improve my pronunciation lately.", translation:"He estado tratando de mejorar mi pronunciación últimamente.", audioFile:'audio/b1/b1speaking-024.mp3' },
+      { id:'s-medio10-2', sentence:"We should have booked the tickets earlier.", translation:"Deberíamos haber reservado los boletos antes.", audioFile:'audio/b1/b1speaking-025.mp3' }
+    ]
   ],
   avanzado: [
     [
@@ -4940,7 +5657,11 @@ const SPEAKING_BANK = {
   "translation": "La pregunta provocó una fuerte reacción.",
   "audioFile": "audio/c1/c1speaking-023.mp3"
  }
-]
+],
+    [
+      { id:'s-avanzado9-1', sentence:"The proposal was rejected due to budget constraints.", translation:"La propuesta fue rechazada debido a restricciones de presupuesto.", audioFile:'audio/c1/c1speaking-024.mp3' },
+      { id:'s-avanzado9-2', sentence:"He's known for being remarkably meticulous about details.", translation:"Es conocido por ser notablemente meticuloso con los detalles.", audioFile:'audio/c1/c1speaking-025.mp3' }
+    ]
   ]
 };
 
@@ -5074,7 +5795,41 @@ const WRITING_BANK = {
    "¿La frase tiene sentido?"
   ]
  }
-]
+],
+    [
+      { id:'w-principiante6-1', prompt:"Escribe qué color te gusta (usa “I like the color ___”).", target:"i like the color [color]",
+        checkPattern:"i like the color (red|blue|green|yellow|black|white|brown|purple|orange|pink)", hint:"Estructura esperada: “I like the color ___.”",
+        example:{en:"I like the color blue.", es:"Me gusta el color azul."},
+        checklist:["¿Empezaste con “I like the color”?","¿El color está en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-principiante6-2', prompt:"Escribe qué día es hoy (usa “Today is ___”).", target:"today is [day]",
+        checkPattern:"today is (monday|tuesday|wednesday|thursday|friday|saturday|sunday)", hint:"Estructura esperada: “Today is ___.”",
+        example:{en:"Today is Friday.", es:"Hoy es viernes."},
+        checklist:["¿Empezaste con “Today is”?","¿Escribiste un día de la semana en inglés?","¿Está bien escrito el día?"] },
+      { id:'w-principiante6-3', prompt:"Di dónde vives (usa “I live in ___”).", target:"i live in [place]",
+        checkPattern:"i live in [a-z]+", hint:"Estructura esperada: “I live in ___.”",
+        example:{en:"I live in Bogota.", es:"Vivo en Bogotá."},
+        checklist:["¿Empezaste con “I live in”?","¿Escribiste el nombre de un lugar?","¿La frase tiene sentido?"] },
+      { id:'w-principiante6-4', prompt:"Describe el clima de hoy (usa “It is ___ today”).", target:"it is [adj] today",
+        checkPattern:"it is (sunny|rainy|cold|hot|windy|cloudy) today", hint:"Estructura esperada: “It is ___ today.”",
+        example:{en:"It is windy today.", es:"Hoy está ventoso."},
+        checklist:["¿Empezaste con “It is”?","¿Usaste una palabra de clima en inglés?","¿Terminaste con “today”?"] },
+      { id:'w-principiante6-5', prompt:"Escribe qué hora es aproximadamente (usa “It is ___ o'clock”).", target:"it is [number] o'clock",
+        checkPattern:"it is (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) o'clock", hint:"Estructura esperada: “It is ___ o'clock.”",
+        example:{en:"It is seven o'clock.", es:"Son las siete."},
+        checklist:["¿Empezaste con “It is”?","¿Usaste un número en inglés?","¿Terminaste con “o'clock”?"] },
+      { id:'w-principiante6-6', prompt:"Di qué comida te gusta (usa “I like ___”).", target:"i like [food]",
+        checkPattern:"i like [a-z]+", hint:"Estructura esperada: “I like ___.”",
+        example:{en:"I like pizza.", es:"Me gusta la pizza."},
+        checklist:["¿Empezaste con “I like”?","¿Escribiste una comida en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-principiante6-7', prompt:"Escribe tu edad (usa “I am ___ years old”).", target:"i am [number] years old",
+        checkPattern:"i am [a-z0-9]+ years old", hint:"Estructura esperada: “I am ___ years old.”",
+        example:{en:"I am twenty years old.", es:"Tengo veinte años."},
+        checklist:["¿Empezaste con “I am”?","¿Escribiste un número en inglés?","¿Terminaste con “years old”?"] },
+      { id:'w-principiante6-8', prompt:"Describe cómo te sientes hoy (usa “I feel ___”).", target:"i feel [adj]",
+        checkPattern:"i feel (happy|sad|tired|excited|hungry|thirsty|sleepy|nervous)", hint:"Estructura esperada: “I feel ___.”",
+        example:{en:"I feel excited.", es:"Me siento emocionado."},
+        checklist:["¿Empezaste con “I feel”?","¿Usaste una palabra de sentimiento en inglés?","¿La frase tiene sentido?"] }
+    ]
   ],
   facil: [
     [
@@ -5271,7 +6026,41 @@ const WRITING_BANK = {
    "¿La frase tiene sentido?"
   ]
  }
-]
+],
+    [
+      { id:'w-facil10-1', prompt:"Escribe sobre tu rutina matutina (usa “Every morning I ___”).", target:"every morning i [verb]",
+        checkPattern:"every morning i [a-z]+", hint:"Estructura esperada: “Every morning I ___.”",
+        example:{en:"Every morning I drink coffee.", es:"Cada mañana tomo café."},
+        checklist:["¿Empezaste con “Every morning I”?","¿Usaste un verbo en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-2', prompt:"Escribe un plan para el fin de semana (usa “This weekend I am going to ___”).", target:"this weekend i am going to [verb]",
+        checkPattern:"this weekend i am going to [a-z]+", hint:"Estructura esperada: “This weekend I am going to ___.”",
+        example:{en:"This weekend I am going to rest.", es:"Este fin de semana voy a descansar."},
+        checklist:["¿Empezaste con “This weekend I am going to”?","¿Usaste un verbo en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-3', prompt:"Compara dos cosas usando “more...than” (usa “___ is more ___ than ___”).", target:"[x] is more [adj] than [y]",
+        checkPattern:"[a-z]+ is more [a-z]+ than [a-z]+", hint:"Estructura esperada: “___ is more ___ than ___.”",
+        example:{en:"This book is more interesting than that movie.", es:"Este libro es más interesante que esa película."},
+        checklist:["¿Usaste “is more ___ than”?","¿Comparaste dos cosas diferentes?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-4', prompt:"Escribe sobre algo que hiciste ayer (usa “Yesterday I ___”).", target:"yesterday i [verb in past]",
+        checkPattern:"yesterday i [a-z]+", hint:"Estructura esperada: “Yesterday I ___.” (usa el verbo en pasado)",
+        example:{en:"Yesterday I visited my grandmother.", es:"Ayer visité a mi abuela."},
+        checklist:["¿Empezaste con “Yesterday I”?","¿Usaste el verbo en pasado?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-5', prompt:"Da una recomendación usando “should” (usa “You should ___”).", target:"you should [verb]",
+        checkPattern:"you should [a-z]+", hint:"Estructura esperada: “You should ___.”",
+        example:{en:"You should get more sleep.", es:"Deberías dormir más."},
+        checklist:["¿Empezaste con “You should”?","¿Usaste un verbo en inglés?","¿La frase da un consejo?"] },
+      { id:'w-facil10-6', prompt:"Escribe sobre tus planes futuros (usa “In the future, I want to ___”).", target:"in the future i want to [verb]",
+        checkPattern:"in the future,? i want to [a-z]+", hint:"Estructura esperada: “In the future, I want to ___.”",
+        example:{en:"In the future, I want to travel more.", es:"En el futuro, quiero viajar más."},
+        checklist:["¿Empezaste con “In the future”?","¿Usaste “I want to” más un verbo?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-7', prompt:"Describe tu trabajo o estudio (usa “I work as a ___” o “I study ___”).", target:"i work as a [job] / i study [subject]",
+        checkPattern:"i (work as a|study) [a-z]+", hint:"Estructura esperada: “I work as a ___.” o “I study ___.”",
+        example:{en:"I work as a teacher.", es:"Trabajo como profesor."},
+        checklist:["¿Usaste “I work as a” o “I study”?","¿Escribiste el trabajo o materia en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil10-8', prompt:"Pide algo cortésmente en un restaurante (usa “Could I have ___, please?”).", target:"could i have [food], please?",
+        checkPattern:"could i have [a-z ]+,? please", hint:"Estructura esperada: “Could I have ___, please?”",
+        example:{en:"Could I have the menu, please?", es:"¿Podría darme el menú, por favor?"},
+        checklist:["¿Empezaste con “Could I have”?","¿Terminaste con “please”?","¿La frase suena cortés?"] }
+    ]
   ],
   medio: [
     [
@@ -5468,7 +6257,37 @@ const WRITING_BANK = {
    "¿La frase tiene sentido?"
   ]
  }
-]
+],
+    [
+      { id:'w-medio10-1', prompt:"Da tu opinión sobre un tema usando “In my opinion, ___”.", target:"in my opinion, [sentence]",
+        checkPattern:"in my opinion,? [a-z]+", hint:"Estructura esperada: “In my opinion, ___.”",
+        example:{en:"In my opinion, remote work is more productive.", es:"En mi opinión, el trabajo remoto es más productivo."},
+        checklist:["¿Empezaste con “In my opinion”?","¿Diste una opinión clara?","¿La frase tiene sentido?"] },
+      { id:'w-medio10-2', prompt:"Escribe una condición usando “If...then” (usa “If I had more time, I would ___”).", target:"if i had more time, i would [verb]",
+        checkPattern:"if i had more time,? i would [a-z]+", hint:"Estructura esperada: “If I had more time, I would ___.”",
+        example:{en:"If I had more time, I would learn to paint.", es:"Si tuviera más tiempo, aprendería a pintar."},
+        checklist:["¿Usaste “If I had more time, I would”?","¿Completaste con un verbo?","¿La frase tiene sentido?"] },
+      { id:'w-medio10-3', prompt:"Describe un logro usando el presente perfecto (usa “I have ___”).", target:"i have [past participle]",
+        checkPattern:"i have [a-z]+", hint:"Estructura esperada: “I have ___.” (usa participio pasado)",
+        example:{en:"I have finished my project.", es:"He terminado mi proyecto."},
+        checklist:["¿Empezaste con “I have”?","¿Usaste el participio pasado del verbo?","¿La frase tiene sentido?"] },
+      { id:'w-medio10-4', prompt:"Explica una razón usando “because” (usa “I decided to ___ because ___”).", target:"i decided to [verb] because [reason]",
+        checkPattern:"i decided to [a-z ]+ because [a-z ]+", hint:"Estructura esperada: “I decided to ___ because ___.”",
+        example:{en:"I decided to study English because I want a better job.", es:"Decidí estudiar inglés porque quiero un mejor trabajo."},
+        checklist:["¿Usaste “I decided to ___ because ___”?","¿Diste una razón clara?","¿La frase tiene sentido?"] },
+      { id:'w-medio10-5', prompt:"Escribe sobre un cambio usando “used to” (usa “I used to ___, but now I ___”).", target:"i used to [verb], but now i [verb]",
+        checkPattern:"i used to [a-z ]+,? but now i [a-z ]+", hint:"Estructura esperada: “I used to ___, but now I ___.”",
+        example:{en:"I used to live in Medellin, but now I live in Bogota.", es:"Antes vivía en Medellín, pero ahora vivo en Bogotá."},
+        checklist:["¿Usaste “I used to” para el pasado?","¿Usaste “but now I” para el presente?","¿La frase tiene sentido?"] },
+      { id:'w-medio10-6', prompt:"Da un consejo formal usando “should” en negativo (usa “You shouldn't ___”).", target:"you shouldn't [verb]",
+        checkPattern:"you shouldn'?t [a-z]+", hint:"Estructura esperada: “You shouldn't ___.”",
+        example:{en:"You shouldn't skip breakfast.", es:"No deberías saltarte el desayuno."},
+        checklist:["¿Empezaste con “You shouldn't”?","¿Usaste un verbo en inglés?","¿La frase da un consejo?"] },
+      { id:'w-medio10-7', prompt:"Escribe sobre una meta usando “by the end of” (usa “By the end of the year, I will ___”).", target:"by the end of the year, i will [verb]",
+        checkPattern:"by the end of the year,? i will [a-z]+", hint:"Estructura esperada: “By the end of the year, I will ___.”",
+        example:{en:"By the end of the year, I will speak English fluently.", es:"Para fin de año, hablaré inglés con fluidez."},
+        checklist:["¿Usaste “By the end of the year, I will”?","¿Completaste con un verbo?","¿La frase tiene sentido?"] }
+    ]
   ],
   avanzado: [
     [
@@ -5665,7 +6484,37 @@ const WRITING_BANK = {
    "¿La frase tiene sentido?"
   ]
  }
-]
+],
+    [
+      { id:'w-avanzado10-1', prompt:"Escribe una oración con una cláusula condicional mixta (usa “If I had studied medicine, I would ___ now”).", target:"if i had studied medicine, i would [verb] now",
+        checkPattern:"if i had studied medicine,? i would [a-z ]+ now", hint:"Estructura esperada: “If I had studied medicine, I would ___ now.”",
+        example:{en:"If I had studied medicine, I would work at a hospital now.", es:"Si hubiera estudiado medicina, trabajaría en un hospital ahora."},
+        checklist:["¿Usaste la estructura del condicional mixto?","¿Completaste con un verbo lógico?","¿La frase tiene sentido?"] },
+      { id:'w-avanzado10-2', prompt:"Expresa un contraste usando “although” (usa “Although ___, I ___”).", target:"although [clause], i [clause]",
+        checkPattern:"although [a-z ,]+ i [a-z]+", hint:"Estructura esperada: “Although ___, I ___.”",
+        example:{en:"Although it was raining, I went for a run.", es:"Aunque estaba lloviendo, salí a correr."},
+        checklist:["¿Empezaste con “Although”?","¿Hay un contraste claro?","¿La frase tiene sentido?"] },
+      { id:'w-avanzado10-3', prompt:"Usa voz pasiva para describir algo (usa “The ___ was ___ by ___”).", target:"the [thing] was [past participle] by [agent]",
+        checkPattern:"the [a-z]+ was [a-z]+ by [a-z]+", hint:"Estructura esperada: “The ___ was ___ by ___.” (voz pasiva)",
+        example:{en:"The bridge was designed by a famous engineer.", es:"El puente fue diseñado por un ingeniero famoso."},
+        checklist:["¿Usaste la estructura de voz pasiva “was + participio + by”?","¿Tiene sentido la oración?","¿Está en pasado?"] },
+      { id:'w-avanzado10-4', prompt:"Da una opinión matizada usando “not necessarily” (usa “That is not necessarily true because ___”).", target:"that is not necessarily true because [reason]",
+        checkPattern:"that is not necessarily true because [a-z]+", hint:"Estructura esperada: “That is not necessarily true because ___.”",
+        example:{en:"That is not necessarily true because everyone learns differently.", es:"Eso no es necesariamente cierto porque cada quien aprende diferente."},
+        checklist:["¿Usaste “That is not necessarily true because”?","¿Diste una razón coherente?","¿La frase suena natural?"] },
+      { id:'w-avanzado10-5', prompt:"Escribe una oración usando “despite” + sustantivo (usa “Despite ___, ___”).", target:"despite [noun], [clause]",
+        checkPattern:"despite [a-z ]+, [a-z]+", hint:"Estructura esperada: “Despite ___, ___.”",
+        example:{en:"Despite the challenges, the team succeeded.", es:"A pesar de los desafíos, el equipo tuvo éxito."},
+        checklist:["¿Empezaste con “Despite”?","¿Usaste un sustantivo después de “despite”?","¿La segunda parte tiene sentido?"] },
+      { id:'w-avanzado10-6', prompt:"Haz una suposición usando “must have” (usa “She must have ___”).", target:"she must have [past participle]",
+        checkPattern:"(she|he) must have [a-z]+", hint:"Estructura esperada: “She must have ___.” (suposición sobre el pasado)",
+        example:{en:"She must have forgotten the meeting.", es:"Ella debe haber olvidado la reunión."},
+        checklist:["¿Usaste “must have” más participio?","¿Es una suposición lógica sobre el pasado?","¿La frase tiene sentido?"] },
+      { id:'w-avanzado10-7', prompt:"Escribe una recomendación formal usando “It would be advisable to” (usa “It would be advisable to ___”).", target:"it would be advisable to [verb]",
+        checkPattern:"it would be advisable to [a-z]+", hint:"Estructura esperada: “It would be advisable to ___.”",
+        example:{en:"It would be advisable to review the contract first.", es:"Sería recomendable revisar el contrato primero."},
+        checklist:["¿Usaste “It would be advisable to”?","¿Completaste con un verbo?","¿Suena formal?"] }
+    ]
   ]
 };
 
