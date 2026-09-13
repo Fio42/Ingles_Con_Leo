@@ -191,6 +191,15 @@ section{padding:52px 0;}
 .lvl-medio{--tone:var(--amber);--tone-tint:var(--amber-tint);}
 .lvl-avanzado{--tone:var(--coral);--tone-tint:var(--coral-tint);}
 
+/* ---------- Session length selector (corta/media/larga) ---------- */
+.lengths{display:flex;gap:10px;flex-wrap:wrap;}
+.length-card{display:inline-flex;align-items:baseline;gap:6px;padding:10px 18px;border-radius:999px;border:2px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;transition:border-color .15s ease, background .15s ease;}
+.length-card:hover{border-color:var(--blue);}
+.length-card[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-tint);}
+.length-name{font-weight:700;font-size:0.9rem;color:var(--ink);}
+.length-sub{font-size:0.82rem;color:var(--ink-faint);}
+.length-card[aria-pressed="true"] .length-name,.length-card[aria-pressed="true"] .length-sub{color:var(--blue-deep);}
+
 /* ---------- Practice card ---------- */
 .practice-shell{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
 .practice-tabs{display:flex;gap:6px;padding:14px 14px 0;overflow-x:auto;scrollbar-width:none;}
