@@ -814,8 +814,6 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media(min-width:900px){.hero-v2-grid{grid-template-columns:1fr 1fr;gap:48px;}}
 
 .hero-v2-copy h1{font-size:clamp(2.3rem,5.2vw,3.6rem);line-height:1.1;font-weight:800;}
-.hero-v2-brand{display:block;margin-bottom:8px;color:var(--blue);font-size:0.42em;line-height:1;font-weight:700;letter-spacing:0.02em;}
-.hero-v2-dot{color:var(--blue);}
 .hero-v2-sub{margin-top:18px;font-size:1.18rem;color:var(--ink-soft);max-width:50ch;}
 .hero-v2-actions{display:flex;flex-wrap:wrap;align-items:center;gap:22px;margin-top:30px;}
 .hero-cta-main{padding:19px 34px;font-size:1.18rem;box-shadow:0 10px 26px rgba(53,84,240,0.32);}
@@ -827,6 +825,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .hero-v2-member-link:hover{color:var(--violet-deep);}
 .hero-v2-member-link strong{color:var(--violet-deep);font-weight:700;}
 .hero-v2-member-icon{width:20px;height:20px;color:var(--violet);flex-shrink:0;}
+.hero-v2-member-group{display:flex;flex-direction:column;gap:4px;}
+.hero-v2-member-note{font-size:0.82rem;color:var(--ink-faint);padding-left:4px;}
 
 .hero-v2-benefits{display:flex;flex-wrap:wrap;gap:20px 30px;margin-top:34px;}
 .hero-v2-benefit{display:flex;align-items:center;gap:10px;font-weight:600;font-size:0.92rem;color:var(--ink-soft);}
@@ -898,6 +898,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .hero-cta-main{width:100%;text-align:center;}
   .hero-v2-cta-note{text-align:center;padding-left:0;}
   .hero-v2-member-link{justify-content:center;}
+  .hero-v2-member-note{text-align:center;padding-left:0;}
 }
 
 /* ---------- Cómo funciona (con mini-demos, cards clickeables) ---------- */
