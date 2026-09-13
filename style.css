@@ -817,10 +817,24 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .hero-v2-brand{display:block;margin-bottom:8px;color:var(--blue);font-size:0.42em;line-height:1;font-weight:700;letter-spacing:0.02em;}
 .hero-v2-dot{color:var(--blue);}
 .hero-v2-sub{margin-top:18px;font-size:1.18rem;color:var(--ink-soft);max-width:50ch;}
-.hero-v2-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:30px;}
+.hero-v2-actions{display:flex;flex-wrap:wrap;align-items:center;gap:22px;margin-top:30px;}
 .hero-cta-main{padding:19px 34px;font-size:1.18rem;box-shadow:0 10px 26px rgba(53,84,240,0.32);}
 .hero-cta-main:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(53,84,240,0.4);}
 .hero-cta-main:active{transform:translateY(0) scale(0.97);}
+.hero-v2-cta-group{display:flex;flex-direction:column;gap:8px;}
+.hero-v2-cta-note{font-size:0.85rem;color:var(--ink-faint);font-weight:600;padding-left:4px;}
+.hero-v2-member-link{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink-soft);font-size:0.94rem;text-decoration:none;transition:color .15s ease;}
+.hero-v2-member-link:hover{color:var(--violet-deep);}
+.hero-v2-member-link strong{color:var(--violet-deep);font-weight:700;}
+.hero-v2-member-icon{width:20px;height:20px;color:var(--violet);flex-shrink:0;}
+
+.hero-v2-benefits{display:flex;flex-wrap:wrap;gap:20px 30px;margin-top:34px;}
+.hero-v2-benefit{display:flex;align-items:center;gap:10px;font-weight:600;font-size:0.92rem;color:var(--ink-soft);}
+.hero-v2-benefit-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hero-v2-benefit-icon svg{width:18px;height:18px;}
+.hero-v2-benefit-icon.tint-a{background:var(--paper-dim);color:var(--ink-soft);}
+.hero-v2-benefit-icon.tint-b{background:var(--green-tint);color:var(--green);}
+.hero-v2-benefit-icon.tint-c{background:var(--amber-tint);color:var(--amber);}
 
 .hero-v2-media{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .hero-v2-character-wrap{position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:380px;width:100%;}
@@ -880,9 +894,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 @media(max-width:520px){
   /* En mobile, "Practicar gratis" debe dominar el ancho disponible */
-  .hero-v2-actions{flex-direction:column;align-items:stretch;}
+  .hero-v2-actions{flex-direction:column;align-items:stretch;gap:16px;}
   .hero-cta-main{width:100%;text-align:center;}
-  .hero-v2-actions .btn-ghost{width:100%;text-align:center;}
+  .hero-v2-cta-note{text-align:center;padding-left:0;}
+  .hero-v2-member-link{justify-content:center;}
 }
 
 /* ---------- Cómo funciona (con mini-demos, cards clickeables) ---------- */
