@@ -332,6 +332,21 @@ section{padding:52px 0;}
 .article-body .inline-link{color:var(--blue);font-weight:600;text-decoration:none;}
 .article-body .inline-link:hover{text-decoration:underline;}
 
+.article-toc{margin:22px 0 8px;background:var(--paper-dim);border-radius:var(--radius-lg);padding:20px 22px;}
+.article-toc-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:10px;color:var(--ink);}
+.article-toc ol{margin:0;padding-left:20px;color:var(--ink-soft);font-size:0.95rem;line-height:1.9;}
+.article-toc a{color:var(--blue);font-weight:600;text-decoration:none;}
+.article-toc a:hover{text-decoration:underline;}
+
+.phrase-list{display:flex;flex-direction:column;gap:10px;margin:18px 0 22px;}
+.phrase-item{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;}
+.phrase-item-text{display:flex;flex-direction:column;gap:2px;}
+.phrase-en{font-weight:700;color:var(--ink);}
+.phrase-es{color:var(--ink-soft);font-size:0.92rem;}
+.phrase-play-btn{flex-shrink:0;width:38px;height:38px;border-radius:50%;border:2px solid var(--blue);background:var(--blue-tint);color:var(--blue);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s ease,color .15s ease;}
+.phrase-play-btn:hover{background:var(--blue);color:#fff;}
+.phrase-play-btn:disabled{opacity:.6;cursor:default;}
+
 /* ---------- access gate ---------- */
 .gate-shell{max-width:420px;margin:60px auto;padding:0 20px;}
 .gate-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:32px 26px;text-align:center;box-shadow:var(--shadow);}
