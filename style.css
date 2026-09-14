@@ -19,6 +19,9 @@
   --teal:#0D9488;
   --teal-deep:#0F766E;
   --teal-tint:#E6F7F5;
+  --gold:#B8860B;
+  --gold-deep:#8A650A;
+  --gold-tint:#FBF1DA;
   --line:#E7E2D6;
   --radius-lg:28px;
   --radius-md:18px;
@@ -533,6 +536,11 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-card-link.featured-ielts:hover{border-color:var(--teal-deep);}
 .skill-card-link.featured-ielts .card-badge{background:var(--teal);}
 .skill-card-link.featured-ielts .go{color:var(--teal-deep);}
+.skill-icon-wrap.tint-cambridge{background:var(--gold-tint);color:var(--gold-deep);}
+.skill-card-link.featured-cambridge{border-color:var(--gold);background:linear-gradient(180deg, var(--gold-tint) 0%, #fff 60%);}
+.skill-card-link.featured-cambridge:hover{border-color:var(--gold-deep);}
+.skill-card-link.featured-cambridge .card-badge{background:var(--gold);}
+.skill-card-link.featured-cambridge .go{color:var(--gold-deep);}
 .skill-card-link.featured-clases{border-color:var(--blue);background:linear-gradient(180deg, var(--blue-tint) 0%, #fff 60%);}
 .skill-card-link.featured-clases:hover{border-color:var(--blue-deep);}
 .skill-card-link.featured-clases .card-badge{background:var(--blue);}
