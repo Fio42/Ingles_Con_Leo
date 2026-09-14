@@ -1073,18 +1073,22 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    ============================================================ */
 .clases-category{margin-bottom:34px;}
 .clases-category-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 14px;}
-.clases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-.clase-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);padding:20px;cursor:pointer;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;display:flex;flex-direction:column;gap:8px;}
+.clases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;align-items:stretch;}
+.clase-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);padding:20px;cursor:pointer;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;display:flex;flex-direction:column;gap:10px;height:100%;}
 .clase-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow);}
 .clase-card.soon{cursor:default;opacity:0.6;}
 .clase-card.soon:hover{transform:none;box-shadow:none;border-color:var(--line);}
 .clase-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .clase-card-title{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;color:var(--ink);}
-.clase-soon-tag{font-size:0.72rem;font-weight:700;color:var(--ink-faint);background:var(--paper-dim);border-radius:999px;padding:4px 10px;}
-.clase-progress-tag{font-size:0.72rem;font-weight:700;color:#fff;background:var(--blue);border-radius:999px;padding:4px 10px;flex:0 0 auto;}
 .clase-card.in-progress{border-color:var(--blue);}
-.clase-card-desc{font-size:0.88rem;color:var(--ink-soft);margin:0;}
-.clase-card-meta{font-size:0.8rem;font-weight:600;color:var(--blue);margin-top:4px;}
+.clase-card-desc{font-size:0.88rem;color:var(--ink-soft);margin:0;flex:1;}
+.clase-card-progress-track{height:5px;border-radius:999px;background:var(--paper-dim);overflow:hidden;}
+.clase-card-progress-fill{height:100%;border-radius:999px;background:var(--blue);transition:width .2s ease;}
+.clase-card.soon .clase-card-progress-track{visibility:hidden;}
+.clase-card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.clase-card-meta{font-size:0.8rem;font-weight:600;color:var(--ink-faint);}
+.clase-card.in-progress .clase-card-meta{color:var(--blue);}
+.clase-card-cta{font-size:0.85rem;font-weight:700;color:var(--blue);flex:0 0 auto;}
 
 .clase-shell{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
 .clase-stepper{display:flex;align-items:center;gap:14px;padding:16px 22px;border-bottom:2px solid var(--line);flex-wrap:wrap;}

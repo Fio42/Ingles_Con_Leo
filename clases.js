@@ -85,6 +85,13 @@ function renderClassList(container){
     if(!byCategory[c.category]) byCategory[c.category] = [];
     byCategory[c.category].push(c);
   });
+  /* Todas las tarjetas comparten exactamente el mismo esqueleto (título,
+     descripción, barra de progreso fina, pie con meta + acción a la
+     derecha) sin importar si la clase está sin empezar, a medias o
+     disponible próximamente. Antes, algunas tarjetas tenían una etiqueta
+     "Continuar" arriba y otras no, lo que hacía que la grilla se viera
+     dispareja; ahora el único elemento que cambia entre tarjetas es el
+     contenido de esas dos zonas fijas, así que todas quedan alineadas. */
   container.innerHTML = Object.keys(byCategory).map(cat=>`
     <div class="clases-category">
       <h3 class="clases-category-title">${cat}</h3>
@@ -92,14 +99,23 @@ function renderClassList(container){
         ${byCategory[cat].map(c=>{
           const prog = c.available ? inProgressMap[c.id] : null;
           const isInProgress = !!prog;
+          const totalSteps = 8;
+          const pct = isInProgress ? Math.round(((prog.stepIndex) / totalSteps) * 100) : 0;
+          const metaText = !c.available ? 'Próximamente'
+            : isInProgress ? `Paso ${prog.stepIndex + 1} de ${totalSteps}`
+            : `${c.minutes} min · ${totalSteps} pasos`;
+          const ctaText = !c.available ? '' : isInProgress ? 'Continuar →' : 'Empezar →';
           return `
           <div class="clase-card ${c.available ? '' : 'soon'} ${isInProgress ? 'in-progress' : ''}" data-id="${c.id}">
             <div class="clase-card-top">
               <span class="clase-card-title">${c.title}</span>
-              ${isInProgress ? '<span class="clase-progress-tag">Continuar</span>' : (c.available ? '' : '<span class="clase-soon-tag">Próximamente</span>')}
             </div>
             <p class="clase-card-desc">${c.available ? c.desc : 'Estamos preparando esta clase.'}</p>
-            ${c.available ? `<div class="clase-card-meta">${isInProgress ? 'Vas en el paso ' + (prog.stepIndex + 1) + ' de 8' : c.minutes + ' min · 8 pasos'}</div>` : ''}
+            <div class="clase-card-progress-track"><div class="clase-card-progress-fill" style="width:${pct}%;"></div></div>
+            <div class="clase-card-foot">
+              <span class="clase-card-meta">${metaText}</span>
+              ${ctaText ? `<span class="clase-card-cta">${ctaText}</span>` : ''}
+            </div>
           </div>`;
         }).join('')}
       </div>
