@@ -323,7 +323,8 @@ section{padding:52px 0;}
 .practice-members-eyebrow{display:inline-flex;align-items:center;margin-bottom:14px;background:var(--blue-tint);color:var(--blue-deep);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;}
 .practice-members-cta h3{max-width:20ch;font-size:clamp(1.6rem,3.4vw,2.35rem);}
 .practice-members-cta p{max-width:60ch;margin-top:12px;color:var(--ink-soft);font-size:1.02rem;line-height:1.55;}
-.practice-members-cta .practice-members-price{margin-top:10px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;}
+.practice-members-cta .practice-members-price{margin-top:6px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;}
+.practice-members-cta .practice-members-offer{margin-top:10px;color:var(--coral);font-weight:700;font-size:0.85rem;}
 .practice-members-cta .btn{margin-top:22px;}
 .practice-members-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
 .practice-members-benefit{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #d9e1ff;border-radius:var(--radius-md);background:rgba(255,255,255,0.72);}
