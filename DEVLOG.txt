@@ -519,3 +519,13 @@ DEVLOG — Inglés con Leo
 - Se agregaron las 3 tarjetas correspondientes en articulos.html (categoría "vida real", visibles con el filtro correspondiente) y las 3 URLs nuevas al sitemap.xml.
 - Verificación: balance de etiquetas (div/a/article/details/h2/h3) en los 5 HTML tocados, JSON-LD de cada artículo validado con un parser real (json.loads), sitemap.xml validado como XML válido (21 URLs), y se confirmó con Node que el ejercicio de práctica reutilizado (GRAMMAR_BANK.medio[3][1].items[0]) existe de verdad en data.js. Los 6 archivos se guardaron en la computadora de Leo y se releyeron de vuelta comparando checksum (md5) contra lo enviado, confirmando que el guardado fue real.
 - Nota para Leo: no se generó audio/video para estos artículos (son de lectura + práctica de gramática, como el artículo general de entrevista, que tampoco tiene audio propio). El bloque de video queda con el placeholder "Video de YouTube próximamente", igual que en el original, por si quieres grabar algo después.
+
+2026-09-14 (7) — Corregido: los 3 artículos de entrevista por profesión tenían el mismo ejercicio
+- Leo notó que "Ahora practícalo" mostraba el mismo ejercicio (modales de obligación) en los 3 artículos nuevos.
+- Arreglo: cada artículo ahora usa un ejercicio distinto de GRAMMAR_BANK, elegido para que combine temáticamente con el tema del artículo:
+  - Programador: medio[1][0] - Present Perfect vs Past Simple (para hablar de experiencia/proyectos pasados).
+  - Servicio al cliente: medio[5][1] - Phrasal verbs comunes (look for / give up / find out).
+  - Ventas: medio[1][1] - Since / For (para hablar de "he trabajado en ventas por tres años").
+  - La guía general (articulo-entrevista-trabajo-ingles.html) mantiene la suya (medio[3][1], modales de obligación) sin cambios, así que ahora las 4 guías de entrevista tienen 4 ejercicios distintos, ninguno repetido.
+- Se verificó con Node que los 3 items nuevos existen de verdad en data.js antes de guardar.
+- Aviso: otra vez el primer guardado en la computadora de Leo no se reflejó al releerlo (mismo patrón de sincronización que ya se había visto hoy); se reintentó y se confirmó por checksum que el segundo guardado sí quedó.
