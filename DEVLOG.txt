@@ -581,3 +581,11 @@ DEVLOG — Inglés con Leo
 - Cambios en toefl-teaser.js: ahora son 5 preguntas fijas con variedad real (3 de Reading: completeWords, dailyLife, academic; 2 de Listening con audio: chooseResponse y conversation con 2 voces), en vez de solo 2. El texto del gancho final cambió "Esto fue solo una probadita" por "Esto fue solo un adelanto".
 - practica.html: el título de la sección cambió de "Una probadita de la preparación para exámenes" a "Conoce la preparación para el TOEFL", y el texto menciona "estas 5 preguntas de muestra".
 - Verificación: node --check, y la misma prueba automatizada de antes pero extendida para las 5 preguntas, confirmando que cada una se contesta y avanza bien, que el audio de las 2 preguntas de listening se reproduce y se corta correctamente al avanzar, que aparece el gancho final con el link a miembros.html, y que ya no aparece la palabra "probadita" en ningún texto.
+
+2026-09-14 (14) — Quitar la palabra "Membresía" de los badges/títulos
+- Leo pidió (con captura) quitar la palabra "Membresía" de los títulos donde apareciera; no le gustó cómo se veía/sonaba.
+- Se encontraron solo 2 lugares en todo el sitio donde aparecía como badge/título (se revisó también index.html, articulos.html, toefl.html, clases.html sin encontrar más apariciones):
+  - practica.html: el badge "MEMBRESÍA · $2 USD/MES" arriba de la tarjeta de membresía (la que rediseñamos antes) ahora dice solo "$2 USD/MES".
+  - miembros.html: el badge "Membresía" arriba del formulario de acceso ahora dice "Miembros", igual que el badge que ya se usa en el resto de páginas de Miembros (toefl.html, ielts.html, cambridge.html, etc.).
+- No se tocó el resto del texto de esas secciones (el botón sigue diciendo "Hazte miembro por $2 USD/mes", el precio sigue visible, nada de la funcionalidad de pago cambió).
+- Verificación: balance de etiquetas en ambos archivos, y búsqueda de la palabra "Membresía"/"MEMBRESÍA" en todo el sitio para confirmar que no quedó en ningún otro título.
