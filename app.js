@@ -557,27 +557,36 @@ function computeWeeklyStats(){
   return { exercises, accuracy, days, minutes, hasData: week.length >= MIN_SESSIONS_FOR_STATS };
 }
 
-function computeStreak(){
+/* Fechas (YYYY-MM-DD) que forman parte de la racha ACTIVA actual, del día
+   más reciente hacia atrás, deteniéndose apenas hay un hueco (un día sin
+   práctica). Si la racha se corta, los días de antes del corte no se
+   incluyen: por diseño, si se pierde la racha, se pierde - no debe seguir
+   contando ni mostrándose como parte de la racha actual. */
+function computeActiveStreakDates(){
   const p = loadProgress();
   const dates = Array.from(new Set(p.sessions.map(s=>s.date))).sort().reverse();
-  if(!dates.length) return 0;
-  let streak = 0;
+  const streakDates = [];
+  if(!dates.length) return streakDates;
   let cursor = new Date();
   for(let i=0;i<dates.length;i++){
     const cursorStr = localDateStr(cursor);
     if(dates[i] === cursorStr){
-      streak++;
+      streakDates.push(dates[i]);
       cursor.setDate(cursor.getDate()-1);
     } else if(i===0 && dates[0] !== cursorStr){
       const yest = new Date(); yest.setDate(yest.getDate()-1);
       if(dates[0] === localDateStr(yest)){
-        streak = 1;
+        streakDates.push(dates[0]);
         cursor = yest;
         cursor.setDate(cursor.getDate()-1);
       } else break;
     } else break;
   }
-  return streak;
+  return streakDates;
+}
+
+function computeStreak(){
+  return computeActiveStreakDates().length;
 }
 
 const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listening:'Listening', writing:'Writing', speaking:'Speaking', mixto:'Mixto' };
@@ -2739,9 +2748,15 @@ function renderRecentActivityV2(container){
 
 function renderStreakCard(container){
   if(!container) return;
-  const streak = computeStreak();
+  const streakDates = new Set(computeActiveStreakDates());
+  const streak = streakDates.size;
+  /* Los puntos solo marcan días que son parte de la racha ACTIVA (sin
+     huecos hasta hoy), no simple asistencia de la semana: si la racha se
+     cortó, los días de antes del corte se ven vacíos aunque sí hayas
+     practicado ese día. */
   const days = computeWeeklyBarData();
-  const practicedCount = days.filter(d=>d.count>0).length;
+  days.forEach(d => { d.inStreak = streakDates.has(d.date); });
+  const practicedCount = days.filter(d=>d.inStreak).length;
   container.innerHTML = `
     <div class="streak-flame">
       <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
@@ -2751,7 +2766,7 @@ function renderStreakCard(container){
     <div class="streak-dots">
       ${days.map(d=>`
         <div class="streak-dot">
-          <div class="streak-dot-mark ${d.count>0 ? 'done' : ''} ${d.isToday ? 'today-mark' : ''}"></div>
+          <div class="streak-dot-mark ${d.inStreak ? 'done' : ''} ${d.isToday ? 'today-mark' : ''}"></div>
           <span class="streak-dot-label">${d.label.slice(0,1)}</span>
         </div>`).join('')}
     </div>
