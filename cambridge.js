@@ -60,6 +60,7 @@ function renderCambridgeSessionShell(container, headerHtml){
   if(back){
     back.addEventListener('click', function(e){
       e.preventDefault();
+      stopActiveAudioFile();
       if(typeof container._cambridgeOnExit === 'function') container._cambridgeOnExit();
     });
   }
@@ -180,6 +181,7 @@ const CAMBRIDGE_READING_KIND_LABEL = {
 
 function runCambridgeReadingSession({ container, onExit }){
   container._cambridgeOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildCambridgeReadingPool();
   const total = pool.length;
   const saved = loadInflightSession('cambridge-reading', 'cambridge');
@@ -296,6 +298,7 @@ function renderCambridgeListenTranscriptBlock(item){
 
 function runCambridgeListeningSession({ container, onExit }){
   container._cambridgeOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildCambridgeListeningPool();
   const total = pool.length;
   const saved = loadInflightSession('cambridge-listening', 'cambridge');
@@ -402,6 +405,7 @@ const CAMBRIDGE_WRITING_KIND_LABEL = {
 
 function runCambridgeWritingSession({ container, onExit }){
   container._cambridgeOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildCambridgeWritingPool();
   const total = pool.length;
   const saved = loadInflightSession('cambridge-writing', 'cambridge');
@@ -508,6 +512,7 @@ function wireCambridgeSpeakingAudio(card, item, canRecord){
 
 function runCambridgeSpeakingSession({ container, onExit }){
   container._cambridgeOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildCambridgeSpeakingPool();
   const total = pool.length;
   const saved = loadInflightSession('cambridge-speaking', 'cambridge');

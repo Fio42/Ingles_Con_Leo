@@ -59,6 +59,7 @@ function renderIeltsSessionShell(container, headerHtml){
   if(back){
     back.addEventListener('click', function(e){
       e.preventDefault();
+      stopActiveAudioFile();
       if(typeof container._ieltsOnExit === 'function') container._ieltsOnExit();
     });
   }
@@ -112,6 +113,7 @@ const IELTS_READING_KIND_LABEL = {
 
 function runIeltsReadingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildIeltsReadingPool();
   const total = pool.length;
   const saved = loadInflightSession('ielts-reading', 'ielts');
@@ -258,6 +260,7 @@ const IELTS_LISTENING_KIND_LABEL = {
 
 function runIeltsListeningSession({ container, onExit }){
   container._ieltsOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildIeltsListeningPool();
   const total = pool.length;
   const saved = loadInflightSession('ielts-listening', 'ielts');
@@ -387,6 +390,7 @@ function buildIeltsSpeakingPool(){
 
 function runIeltsSpeakingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildIeltsSpeakingPool();
   const total = pool.length;
   const saved = loadInflightSession('ielts-speaking', 'ielts');
@@ -542,6 +546,7 @@ function buildIeltsWritingPool(){
 
 function runIeltsWritingSession({ container, onExit }){
   container._ieltsOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildIeltsWritingPool();
   const total = pool.length;
   const saved = loadInflightSession('ielts-writing', 'ielts');

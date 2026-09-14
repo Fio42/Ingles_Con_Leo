@@ -59,6 +59,7 @@ function renderToeflSessionShell(container, headerHtml){
   if(back){
     back.addEventListener('click', function(e){
       e.preventDefault();
+      stopActiveAudioFile();
       if(typeof container._toeflOnExit === 'function') container._toeflOnExit();
     });
   }
@@ -98,6 +99,7 @@ const TOEFL_READING_KIND_LABEL = { completeWords:'Complete the Words', dailyLife
 
 function runToeflReadingSession({ container, onExit }){
   container._toeflOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildToeflReadingPool();
   const total = pool.length;
   const saved = loadInflightSession('toefl-reading', 'toefl');
@@ -176,6 +178,7 @@ const TOEFL_LISTENING_KIND_LABEL = { chooseResponse:'Listen and Choose a Respons
 
 function runToeflListeningSession({ container, onExit }){
   container._toeflOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildToeflListeningPool();
   const total = pool.length;
   const saved = loadInflightSession('toefl-listening', 'toefl');
@@ -253,6 +256,7 @@ function buildToeflSpeakingPool(){
 
 function runToeflSpeakingSession({ container, onExit }){
   container._toeflOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildToeflSpeakingPool();
   const total = pool.length;
   const saved = loadInflightSession('toefl-speaking', 'toefl');
@@ -379,6 +383,7 @@ function buildToeflWritingPool(){
 
 function runToeflWritingSession({ container, onExit }){
   container._toeflOnExit = onExit;
+  stopActiveAudioFile();
   const pool = buildToeflWritingPool();
   const total = pool.length;
   const saved = loadInflightSession('toefl-writing', 'toefl');

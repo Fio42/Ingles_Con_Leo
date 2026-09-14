@@ -931,7 +931,7 @@ function showNextButton(container, label, cb){
   const row = container.querySelector('#nextRow');
   if(!row) return;
   row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">${label}</button>`;
-  row.querySelector('.next-btn').addEventListener('click', cb);
+  row.querySelector('.next-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); cb(); });
 }
 // Igual que showNextButton, pero si la respuesta fue incorrecta (isCorrect
 // === false) deja ADEMÁS un botón "Volver a intentar" que vuelve a mostrar
@@ -947,11 +947,11 @@ function showRetryOrNextButtons(container, isCorrect, onRetry, onNext, nextLabel
     row.innerHTML = `
       <button class="btn btn-ghost btn-sm retry-btn">↺ Volver a intentar</button>
       <button class="btn btn-primary btn-sm next-btn">${label}</button>`;
-    row.querySelector('.retry-btn').addEventListener('click', onRetry);
-    row.querySelector('.next-btn').addEventListener('click', onNext);
+    row.querySelector('.retry-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); onRetry(); });
+    row.querySelector('.next-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); onNext(); });
   } else {
     row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">${label}</button>`;
-    row.querySelector('.next-btn').addEventListener('click', onNext);
+    row.querySelector('.next-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); onNext(); });
   }
 }
 
@@ -1038,6 +1038,7 @@ function playAudioFile(path, container, trigger){
    Una sesión = todos los ítems del nivel (mezcla de sus 2 temas).
    ============================================================ */
 function runGrammarSession({ container, level, onExit }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('gramatica', level);
   let pool, topics, usedVariantIdxs;
   if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
@@ -1233,6 +1234,7 @@ function renderGrammarItemInto(container, item, onAnswered){
    SESIÓN DE VOCABULARIO
    ============================================================ */
 function runVocabSession({ container, level, onExit }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('vocabulario', level);
   let pool, usedVariantIdxs;
   if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
@@ -1309,6 +1311,7 @@ function runVocabSession({ container, level, onExit }){
    no existe todavía, se avisa sin romper el ejercicio.
    ============================================================ */
 function runListeningSession({ container, level, onExit }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('listening', level);
   let pool, usedVariantIdxs;
   if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
@@ -1396,6 +1399,7 @@ function runListeningSession({ container, level, onExit }){
    Ofrecemos ejemplo + checklist de autorrevisión, honesto.
    ============================================================ */
 function runWritingSession({ container, level, onExit }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('writing', level);
   let pool, usedVariantIdxs;
   if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
@@ -1520,6 +1524,7 @@ function runWritingSession({ container, level, onExit }){
    Solo comparar: pronunciación original vs. tu grabación.
    ============================================================ */
 function runSpeakingSession({ container, level, onExit }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('speaking', level);
   let pool, usedVariantIdxs;
   if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
@@ -1921,6 +1926,7 @@ function renderFreeDailyLimitReachedBlock(){
 }
 
 function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = !isFree ? loadInflightSession('mixto', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : pickMixItems(level, isFree);
@@ -2090,6 +2096,7 @@ function renderMistakesBanner(sectionEl, textEl, chipsEl){
 }
 
 function runMistakesSessionCore({ container }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('errores', 'todos');
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : buildMistakePool();
@@ -3083,6 +3090,7 @@ function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
 
 /* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
 function runFreeGrammarSession({ container, level, onOtherSkill }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]);
   const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
@@ -3132,6 +3140,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
 
 /* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
 function runFreeVocabSession({ container, level, onOtherSkill }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
   const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
@@ -3202,6 +3211,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
 
 /* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
 function runFreeListeningSession({ container, level, onOtherSkill }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
   const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
@@ -3295,6 +3305,7 @@ function checkWritingAnswer(text, item){
   }
 }
 function runFreeWritingSession({ container, level, onOtherSkill }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.writing[level]);
   const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
@@ -3397,6 +3408,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 /* ---------- Speaking gratis: las 3 frases/audio existentes del nivel.
    Mismo sistema de grabación que Miembros, sin puntuación inventada. ---------- */
 function runFreeSpeakingSession({ container, level, onOtherSkill }){
+  stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.speaking[level]);
   const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
