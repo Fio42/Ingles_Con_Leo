@@ -266,7 +266,10 @@
       headEl: document.getElementById('skillHead'),
       bodyEl: document.getElementById('skillBody')
     });
-    initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: true });
+    initDailyChallenge(document.getElementById('dailyChallengeBody'), {
+      isFree: true,
+      card: document.getElementById('dailyChallengeCard')
+    });
     initOnboarding();
   })();
 </script>

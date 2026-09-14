@@ -2317,15 +2317,53 @@ function runDailyChallengeSession({ container, isFree, level }){
 // miembros.html): decide solo si mostrar la intro, el aviso de "ya
 // lo hiciste hoy" (solo gratis) o retomar un reto a medias (solo
 // Miembros), y arranca la sesión cuando corresponda.
-function initDailyChallenge(container, { isFree }){
+function setDailyChallengeCardAction(card, onStart){
+  if(!card) return;
+  card._dailyChallengeOnStart = onStart || null;
+  card.classList.toggle('daily-card--clickable', !!onStart);
+
+  if(onStart){
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', 'Empezar reto diario');
+  } else {
+    card.removeAttribute('role');
+    card.removeAttribute('tabindex');
+    card.removeAttribute('aria-label');
+  }
+
+  if(card._dailyChallengeCardWired) return;
+  card._dailyChallengeCardWired = true;
+  const startFromCard = (event)=>{
+    // Los controles dentro de la tarjeta mantienen su comportamiento
+    // propio y evitan disparar el inicio dos veces.
+    if(event.target.closest('button, a, input, select, textarea, label')) return;
+    if(card._dailyChallengeOnStart) card._dailyChallengeOnStart();
+  };
+  card.addEventListener('click', startFromCard);
+  card.addEventListener('keydown', (event)=>{
+    if(event.key !== 'Enter' && event.key !== ' ') return;
+    if(event.target !== card || !card._dailyChallengeOnStart) return;
+    event.preventDefault();
+    card._dailyChallengeOnStart();
+  });
+}
+
+function initDailyChallenge(container, { isFree, card }){
   if(!container) return;
   if(isFree){
     const status = getDailyChallengeFreeStatus();
     if(status && status.done){
+      setDailyChallengeCardAction(card, null);
       renderDailyChallengeIntro(container, { isFree:true, doneState: status });
       return;
     }
-    renderDailyChallengeIntro(container, { isFree:true, doneState:null, onStart: ()=> runDailyChallengeSession({ container, isFree:true }) });
+    const startChallenge = ()=>{
+      setDailyChallengeCardAction(card, null);
+      runDailyChallengeSession({ container, isFree:true });
+    };
+    setDailyChallengeCardAction(card, startChallenge);
+    renderDailyChallengeIntro(container, { isFree:true, doneState:null, onStart: startChallenge });
     return;
   }
   const level = getUserLevel();

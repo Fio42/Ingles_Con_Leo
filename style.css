@@ -1197,6 +1197,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .quick-actions-item{padding:16px 20px;display:flex;flex-direction:column;gap:8px;}
 .quick-actions-item.daily-card{border:none;border-radius:0;padding:16px 20px;transition:none;gap:5px;}
 .quick-actions-item.daily-card:hover{transform:none;box-shadow:none;}
+.quick-actions-item.daily-card.daily-card--clickable{cursor:pointer;}
+.quick-actions-item.daily-card.daily-card--clickable:focus-visible{outline:3px solid rgba(245,165,36,0.5);outline-offset:-3px;}
 .quick-actions-item.daily-card .daily-card-top{gap:8px;}
 .quick-actions-item.daily-card .daily-card-top .stat-card-icon{width:30px;height:30px;}
 .quick-actions-item.daily-card .daily-card-top .stat-card-icon svg{width:15px;height:15px;}
