@@ -2238,7 +2238,7 @@ function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, o
     return;
   }
   container.innerHTML = `
-    <p class="daily-sub">5 ejercicios mezclados: gramática, vocabulario, listening y writing.</p>
+    <p class="daily-sub">Gramática, vocabulario, listening y writing.</p>
     <button type="button" class="daily-btn" id="dailyStartBtn">Empezar reto diario →</button>`;
   const btn = container.querySelector('#dailyStartBtn');
   if(btn) btn.addEventListener('click', onStart);
