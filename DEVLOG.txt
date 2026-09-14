@@ -575,3 +575,9 @@ DEVLOG — Inglés con Leo
   - practica.html: se agregó la sección "Una probadita de la preparación para exámenes" entre la práctica gratis normal (Gramática/Vocabulario/etc.) y la tarjeta de membresía, y se cargan toefl-data.js y toefl-teaser.js.
 - Reutiliza el mismo sistema de audio de siempre (playAudioFile), así que ya incluye el arreglo de la entrada anterior (el audio se corta solo al avanzar).
 - Verificación: node --check en toefl-teaser.js, balance de etiquetas en practica.html, y una prueba real con Node + jsdom que carga la página como la cargaría un navegador, responde las 2 preguntas de muestra, reproduce el audio, confirma que se corta al avanzar, y que al final aparece el gancho con el link a miembros.html.
+
+2026-09-14 (13) — Ajuste a la muestra de TOEFL: 5 preguntas y sin la palabra "probadita"
+- Leo pidió quitar la palabra "probadita" (no le gustó) y mostrar 5 preguntas en vez de 2.
+- Cambios en toefl-teaser.js: ahora son 5 preguntas fijas con variedad real (3 de Reading: completeWords, dailyLife, academic; 2 de Listening con audio: chooseResponse y conversation con 2 voces), en vez de solo 2. El texto del gancho final cambió "Esto fue solo una probadita" por "Esto fue solo un adelanto".
+- practica.html: el título de la sección cambió de "Una probadita de la preparación para exámenes" a "Conoce la preparación para el TOEFL", y el texto menciona "estas 5 preguntas de muestra".
+- Verificación: node --check, y la misma prueba automatizada de antes pero extendida para las 5 preguntas, confirmando que cada una se contesta y avanza bien, que el audio de las 2 preguntas de listening se reproduce y se corta correctamente al avanzar, que aparece el gancho final con el link a miembros.html, y que ya no aparece la palabra "probadita" en ningún texto.
