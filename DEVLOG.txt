@@ -471,3 +471,10 @@ DEVLOG — Inglés con Leo
 - Incluye una práctica gratuita e interactiva de Reading creada para el sitio. Después de responder, aparece un CTA directo a Miembros para continuar practicando Reading, Listening, Writing y Speaking con progreso guardado.
 - Se agregó la tarjeta correspondiente a `articulos.html` y la URL al `sitemap.xml` para que los buscadores puedan descubrirla.
 - Verificación: vista previa local de la página, ejercicio correcto, CTA visible después de responder y cero errores de consola.
+
+2026-09-14 — Corregido: los puntos de racha ("L M M J V S D") se reiniciaban cada lunes
+- Leo reportó que el número de racha decía "3 días" pero solo se veía marcado el punto del lunes, como si la racha reiniciara cada semana.
+- Se confirmó que el número de racha (computeStreak) siempre estuvo bien calculado: cuenta días consecutivos reales, sin importar el día de la semana. El problema era solo visual, en computeWeeklyBarData (usada por los puntos de racha, la gráfica "Tu progreso esta semana" y el contador "X de 7 días esta semana"): armaba una semana fija de lunes a domingo, así que una racha que cruzaba de una semana calendario a otra (ej. empezó sábado, siguió domingo y lunes) se veía "cortada" al llegar el lunes nuevo.
+- Arreglo: computeWeeklyBarData ahora arma los últimos 7 días terminando hoy (ventana móvil), igual que ya hacían computeWeeklyStats y computeWeeklyStatsWithDelta en otras partes del sitio, en vez de anclarse al lunes. Así los puntos, la gráfica y el contador coinciden con lo que dice el número de racha aunque cruce de semana.
+- Archivos: app.js (solo computeWeeklyBarData). Nada más se tocó: renderStreakCard, renderWeeklyBarChart y renderProgressPage siguen llamando la misma función igual que antes, ninguno asume que el primer día sea lunes (solo recorren la lista y usan cada label/count).
+- Verificación: node --check en app.js, y una simulación en Node (hoy = lunes, sesiones guardadas sábado/domingo/lunes) confirmando que ahora los 3 días aparecen marcados y "practicedCount" da 3, en vez de 1.
