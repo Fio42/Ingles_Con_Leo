@@ -317,17 +317,23 @@ section{padding:52px 0;}
 .article-cta{margin-top:36px;background:var(--blue-tint);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:12px;}
 .article-cta h3{font-size:1.2rem;}
 .practice-members-cta{padding:32px;gap:28px;border:1px solid #d9e1ff;}
-.practice-members-eyebrow{display:inline-block;margin-bottom:10px;color:var(--blue);font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;}
-.practice-members-cta h3{max-width:18ch;font-size:clamp(1.8rem,4vw,2.75rem);}
-.practice-members-cta p{max-width:62ch;margin-top:12px;color:var(--ink-soft);font-size:1.04rem;line-height:1.55;}
+.practice-members-eyebrow{display:inline-flex;align-items:center;margin-bottom:14px;background:var(--blue-tint);color:var(--blue-deep);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:5px 12px;border-radius:999px;}
+.practice-members-cta h3{max-width:20ch;font-size:clamp(1.6rem,3.4vw,2.35rem);}
+.practice-members-cta p{max-width:60ch;margin-top:12px;color:var(--ink-soft);font-size:1.02rem;line-height:1.55;}
 .practice-members-cta .practice-members-price{margin-top:10px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;}
 .practice-members-cta .btn{margin-top:22px;}
-.practice-members-features{display:grid;gap:10px;margin:0;padding:18px;list-style:none;border:1px solid #d9e1ff;border-radius:var(--radius-md);background:rgba(255,255,255,0.72);}
-.practice-members-features li{display:flex;align-items:center;gap:9px;color:var(--ink);font-size:0.9rem;font-weight:600;}
-.practice-members-features li::before{content:'';width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:var(--blue);}
-.practice-members-features .practice-members-features-title{margin-bottom:2px;color:var(--ink);font-family:'Baloo 2',sans-serif;font-size:1.2rem;font-weight:700;}
-.practice-members-features .practice-members-features-title::before{display:none;}
-@media(min-width:760px){.practice-members-cta{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,0.85fr);align-items:center;padding:42px 48px;}.practice-members-features{padding:22px;}}
+.practice-members-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.practice-members-benefit{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #d9e1ff;border-radius:var(--radius-md);background:rgba(255,255,255,0.72);}
+.practice-members-benefit-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.practice-members-benefit-icon svg{width:17px;height:17px;}
+.practice-members-benefit-icon.tint-blue{background:var(--blue-tint);color:var(--blue);}
+.practice-members-benefit-icon.tint-amber{background:var(--amber-tint);color:var(--amber);}
+.practice-members-benefit-icon.tint-coral{background:var(--coral-tint);color:var(--coral);}
+.practice-members-benefit-icon.tint-violet{background:var(--violet-tint);color:var(--violet);}
+.practice-members-benefit-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--ink);line-height:1.25;}
+.practice-members-benefit-desc{font-size:0.78rem;color:var(--ink-soft);line-height:1.35;}
+@media(min-width:760px){.practice-members-cta{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,0.95fr);align-items:center;padding:38px 44px;}}
+@media(max-width:380px){.practice-members-benefits{grid-template-columns:1fr;}}
 .article-table-wrap{overflow-x:auto;margin:14px 0 22px;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--radius-md);}
 .article-table{width:100%;border-collapse:collapse;font-size:0.98rem;}
 .article-table th,.article-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
