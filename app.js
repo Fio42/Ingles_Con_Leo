@@ -2774,10 +2774,11 @@ function renderStreakCard(container){
     <div class="streak-goal">${streakGoalMessage(streak, practicedCount)}</div>`;
 }
 
-/* Meta semanal simple (5 días): mensaje corto segun racha y dias practicados
-   esta semana, con los mismos datos que ya calculamos arriba. */
+/* Meta semanal simple (7 días, la semana completa contando sáb/dom):
+   mensaje corto segun racha y dias practicados esta semana, con los mismos
+   datos que ya calculamos arriba (racha activa, no semana calendario). */
 function streakGoalMessage(streak, practicedCount){
-  const WEEKLY_GOAL = 5;
+  const WEEKLY_GOAL = 7;
   if(practicedCount >= WEEKLY_GOAL) return '¡Meta semanal cumplida!';
   if(streak === 0) return 'Empieza hoy y arranca tu racha.';
   const left = WEEKLY_GOAL - practicedCount;
