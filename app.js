@@ -2532,23 +2532,24 @@ function computeTotalStats(){
 }
 
 /* Cuenta de ejercicios por día de ESTA semana (lunes a domingo). */
+/* Últimos 7 días terminando hoy (no la semana calendario Lun-Dom), para que
+   coincida con computeStreak() y con computeWeeklyStats(): una racha que
+   empezó, por ejemplo, un sábado debe verse completa aquí aunque cruce a una
+   semana calendario nueva el lunes siguiente. */
 function computeWeeklyBarData(){
   const p = loadProgress();
   const now = new Date();
-  const jsDay = now.getDay(); // 0=domingo..6=sabado
-  const mondayOffset = jsDay === 0 ? 6 : jsDay - 1;
-  const monday = new Date(now);
-  monday.setHours(0,0,0,0);
-  monday.setDate(monday.getDate() - mondayOffset);
-
   const labels = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const todayStr = localDateStr(now);
   const days = [];
-  for(let i=0;i<7;i++){
-    const d = new Date(monday);
-    d.setDate(monday.getDate()+i);
+  for(let i=6;i>=0;i--){
+    const d = new Date(now);
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() - i);
     const dateStr = localDateStr(d);
-    days.push({ label: labels[i], date: dateStr, isToday: dateStr === todayStr, count: 0 });
+    const jsDay = d.getDay(); // 0=domingo..6=sabado
+    const labelIdx = jsDay === 0 ? 6 : jsDay - 1;
+    days.push({ label: labels[labelIdx], date: dateStr, isToday: dateStr === todayStr, count: 0 });
   }
   const byDate = {};
   days.forEach(d=> byDate[d.date] = d);
