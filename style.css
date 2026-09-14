@@ -1188,6 +1188,23 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .daily-card{padding:18px 18px;}
 }
 
+/* Tarjeta llamativa en practica.html que invita a "Aprende inglés" (articulos.html) */
+.learn-promo-card{background:linear-gradient(135deg,var(--blue-tint),#fff);border:2px solid var(--blue);border-radius:var(--radius-lg);padding:18px 22px;display:flex;align-items:center;gap:18px;transition:transform .2s ease, box-shadow .2s ease;text-decoration:none;}
+.learn-promo-card:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(53,84,240,0.15);}
+.learn-promo-icon{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 6px rgba(27,35,51,0.08);}
+.learn-promo-icon svg{width:24px;height:24px;color:var(--blue);}
+.learn-promo-body{flex:1;min-width:0;}
+.learn-promo-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
+.learn-promo-body h3{font-family:'Baloo 2';margin:2px 0 2px;font-size:1.08rem;color:var(--ink);}
+.learn-promo-body p{margin:0;color:var(--ink-soft);font-size:0.92rem;}
+.learn-promo-btn{flex-shrink:0;background:var(--blue);color:#fff;font-weight:700;font-size:0.86rem;padding:10px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.learn-promo-btn:hover{background:var(--blue-deep);}
+@media (max-width:640px){
+  .learn-promo-card{flex-wrap:wrap;padding:16px 18px;}
+  .learn-promo-body{flex-basis:100%;order:1;}
+  .learn-promo-btn{order:2;margin-left:64px;}
+}
+
 /* "Prepárate para el TOEFL" (panel de Miembros): mismo formato de
    banner promocional que .clases-banner (fondo con degradado, texto
    blanco, boton grande), pero en violeta para distinguirse de
