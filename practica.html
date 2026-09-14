@@ -157,6 +157,12 @@
         <div class="skill-section-body" id="skillBody"></div>
       </div>
 
+      <div class="section-head" style="margin-top:36px;">
+        <h2>Una probadita de la preparación para exámenes</h2>
+        <p>Así es un ejercicio real de nuestra preparación para el TOEFL. Contesta estas 2 preguntas de muestra.</p>
+      </div>
+      <div class="session-shell" id="toeflTeaserArea" style="margin-top:16px;"></div>
+
       <div class="article-cta practice-members-cta" style="margin-top:28px;">
         <div class="practice-members-copy">
           <span class="practice-members-eyebrow">Membresía · $2 USD/mes</span>
@@ -250,6 +256,8 @@
 <script src="data.js?v=20260910"></script>
 <script src="app.js?v=20260910"></script>
 <script src="backend.js"></script>
+<script src="toefl-data.js?v=20260914"></script>
+<script src="toefl-teaser.js?v=20260914"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
   // Esta página es la práctica de muestra SIN guardar progreso, pensada
@@ -294,6 +302,7 @@
       isFree: true,
       card: document.getElementById('dailyChallengeCard')
     });
+    if(typeof renderToeflTeaser === 'function') renderToeflTeaser(document.getElementById('toeflTeaserArea'));
     initOnboarding();
   })();
 </script>
