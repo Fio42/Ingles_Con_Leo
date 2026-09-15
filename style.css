@@ -1042,6 +1042,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .pricing-price{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:20px;}
 .pricing-amount{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:3rem;color:var(--blue);line-height:1;}
 .pricing-period{color:var(--ink-soft);font-weight:600;font-size:0.95rem;}
+.pricing-limited{display:inline-flex;align-items:center;gap:6px;margin:-8px 0 18px;border-radius:999px;background:var(--amber-tint);color:#8A5A00;padding:6px 12px;font-size:0.78rem;font-weight:700;}
 .pricing-features{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:11px;text-align:left;max-width:340px;margin-left:auto;margin-right:auto;}
 .pricing-features li{color:var(--ink-soft);font-size:0.95rem;font-weight:500;display:flex;align-items:flex-start;gap:8px;}
 .pricing-features li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0;}
