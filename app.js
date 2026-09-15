@@ -256,15 +256,19 @@ async function initMemberHeader(){
   const subBtn = document.getElementById('navManageSubBtn');
   if(subBtn){
     subBtn.addEventListener('click', ()=>{
-      // Ahora hay dos formas de pago posibles (Mercado Pago o
-      // Stripe), así que el mensaje depende de con cuál pagó esta
-      // persona. Lo sabemos por qué columna quedó llena en su fila
-      // de profiles (mp_preapproval_id la pone create-checkout/
-      // mp-webhook, stripe_customer_id la pone stripe-webhook).
+      // Ahora hay tres formas de pago posibles (Mercado Pago,
+      // Stripe o PayPal), así que el mensaje depende de con cuál
+      // pagó esta persona. Lo sabemos por qué columna quedó llena
+      // en su fila de profiles (mp_preapproval_id la pone
+      // create-checkout/mp-webhook, stripe_customer_id la pone
+      // stripe-webhook, paypal_subscription_id la pone
+      // paypal-webhook).
       if(memberProfile && memberProfile.stripe_customer_id){
         window.alert('Tu membresía es de $2 USD / mes vía tarjeta internacional (Stripe).\n\nPara cambiar tu método de pago o cancelarla, escríbenos a hola@inglesconleo.com y con gusto te ayudamos.');
       } else if(memberProfile && memberProfile.mp_preapproval_id){
         window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN) vía Mercado Pago.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
+      } else if(memberProfile && memberProfile.paypal_subscription_id){
+        window.alert('Tu membresía es de $2 USD / mes vía PayPal.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de PayPal → Configuración → Pagos → Pagos automáticos.');
       } else {
         window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN).\n\nPara cambiar tu método de pago o cancelarla, escríbenos a hola@inglesconleo.com y con gusto te ayudamos.');
       }
@@ -1397,7 +1401,46 @@ function runListeningSession({ container, level, onExit }){
 /* ============================================================
    SESIÓN DE WRITING — sin corrección automática "inteligente".
    Ofrecemos ejemplo + checklist de autorrevisión, honesto.
+
+   evaluateWritingAnswer() es la única lógica de validación para los
+   3 lugares donde se revisan frases de Writing (sesión de miembros,
+   sesión mixta, y práctica gratis). Sigue siendo una comprobación de
+   patrón, no IA: primero confirma que aparece la estructura objetivo
+   (item.checkPattern), y además revisa un error muy común que ese
+   patrón por sí solo no detecta: usar el verbo mal formado justo
+   después de un modal (can, should, must, will, going to, have to,
+   used to...), por ejemplo "I can eats" en vez de "I can eat". No
+   evalúa si la frase "tiene sentido" ni corrige nada más allá de eso.
    ============================================================ */
+const MODAL_BASE_FORM_RE = /\b(can'?t|cannot|can|could|should|shouldn'?t|must|mustn'?t|might|will|won'?t|would|wouldn'?t|has to|have to|had to|going to|used to)\s+([a-z]+)\b/i;
+
+function findModalVerbFormError(text){
+  const m = MODAL_BASE_FORM_RE.exec(text);
+  if(!m) return null;
+  const modal = m[1];
+  const verb = m[2];
+  const isGerund = /ing$/.test(verb);
+  const isPast = /ed$/.test(verb) && !/eed$/.test(verb);
+  // "eats"/"goes" (tercera persona) sí es un error aquí; "miss"/"pass"
+  // (verbos base que terminan en doble "s") no lo es.
+  const isThirdPerson = /[^s]s$/.test(verb);
+  if(isGerund || isPast || isThirdPerson){
+    return `Después de "${modal}", el verbo va en su forma base (ejemplo: play, no ${verb}).`;
+  }
+  return null;
+}
+
+function evaluateWritingAnswer(text, item){
+  const clean = (text || '').trim().toLowerCase();
+  if(clean.length < 3) return { isOk:false, hint:item.hint };
+  let patternOk = false;
+  try{ patternOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ patternOk = false; }
+  if(!patternOk) return { isOk:false, hint:item.hint };
+  const modalHint = findModalVerbFormError(clean);
+  if(modalHint) return { isOk:false, hint:modalHint };
+  return { isOk:true, hint:null };
+}
+
 function runWritingSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('writing', level);
@@ -1417,14 +1460,7 @@ function runWritingSession({ container, level, onExit }){
   // (¿aparece la estructura objetivo en el texto?). No mide "buen inglés"
   // en general, solo si la estructura pedida está presente.
   function checkWriting(text, item){
-    const clean = (text || '').trim().toLowerCase();
-    if(clean.length < 3) return false;
-    try{
-      const re = new RegExp(item.checkPattern, 'i');
-      return re.test(clean);
-    }catch(e){
-      return false;
-    }
+    return evaluateWritingAnswer(text, item).isOk;
   }
 
   function renderItem(){
@@ -1454,14 +1490,15 @@ function runWritingSession({ container, level, onExit }){
 
     function doReview(){
       const text = input.value;
-      const isOk = checkWriting(text, item);
+      const evalResult = evaluateWritingAnswer(text, item);
+      const isOk = evalResult.isOk;
       reviewed = true;
       fb.classList.add('show');
       fb.classList.toggle('ok', isOk);
       fb.classList.toggle('bad', !isOk);
       if(isOk){
         fb.innerHTML = `
-          <div class="fb-head">${OK_ICON}<span>Bien encaminado ✓</span></div>
+          <div class="fb-head">${OK_ICON}<span>Estructura correcta</span></div>
           <p class="fb-explain">Tu frase incluye la estructura que buscábamos.</p>
           <div class="examples-block">
             <div class="examples-label">Ejemplo</div>
@@ -1470,8 +1507,8 @@ function runWritingSession({ container, level, onExit }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       } else {
         fb.innerHTML = `
-          <div class="fb-head">${BAD_ICON}<span>Revisa esto</span></div>
-          <p class="fb-explain">${item.hint}</p>
+          <div class="fb-head">${BAD_ICON}<span>Revisa la estructura</span></div>
+          <p class="fb-explain">${evalResult.hint || item.hint}</p>
           <div class="examples-block">
             <div class="examples-label">Ejemplo</div>
             <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
@@ -1785,17 +1822,14 @@ function renderMixItemInto(card, entry, onAnswered){
     const input = card.querySelector('#writingInput');
     const fb = card.querySelector('#fb');
     card.querySelector('#reviewBtn').addEventListener('click', ()=>{
-      const clean = (input.value || '').trim().toLowerCase();
-      let isOk = false;
-      if(clean.length >= 3){
-        try{ isOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ isOk = false; }
-      }
+      const evalResult = evaluateWritingAnswer(input.value, item);
+      const isOk = evalResult.isOk;
       fb.classList.add('show');
       fb.classList.toggle('ok', isOk);
       fb.classList.toggle('bad', !isOk);
       fb.innerHTML = `
-        <div class="fb-head">${isOk ? OK_ICON : BAD_ICON}<span>${isOk ? 'Bien encaminado ✓' : 'Revisa esto'}</span></div>
-        <p class="fb-explain">${isOk ? 'Tu frase incluye la estructura que buscábamos.' : item.hint}</p>
+        <div class="fb-head">${isOk ? OK_ICON : BAD_ICON}<span>${isOk ? 'Estructura correcta' : 'Revisa la estructura'}</span></div>
+        <p class="fb-explain">${isOk ? 'Tu frase incluye la estructura que buscábamos.' : (evalResult.hint || item.hint)}</p>
         <div class="examples-block">
           <div class="examples-label">Ejemplo</div>
           <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
@@ -3295,14 +3329,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
 /* ---------- Writing gratis: 4 ejercicios guiados por nivel.
    Misma validación honesta por patrón que Miembros (no es IA). ---------- */
 function checkWritingAnswer(text, item){
-  const clean = (text || '').trim().toLowerCase();
-  if(clean.length < 3) return false;
-  try{
-    const re = new RegExp(item.checkPattern, 'i');
-    return re.test(clean);
-  }catch(e){
-    return false;
-  }
+  return evaluateWritingAnswer(text, item).isOk;
 }
 function runFreeWritingSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
@@ -3341,13 +3368,14 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 
     function doReview(){
       const text = input.value;
-      const isOk = checkWritingAnswer(text, item);
+      const evalResult = evaluateWritingAnswer(text, item);
+      const isOk = evalResult.isOk;
       fb.classList.add('show');
       fb.classList.toggle('ok', isOk);
       fb.classList.toggle('bad', !isOk);
       if(isOk){
         fb.innerHTML = `
-          <div class="fb-head">${OK_ICON}<span>Bien encaminado ✓</span></div>
+          <div class="fb-head">${OK_ICON}<span>Estructura correcta</span></div>
           <p class="fb-explain">Tu frase incluye la estructura que buscábamos.</p>
           <div class="examples-block">
             <div class="examples-label">Ejemplo</div>
@@ -3356,8 +3384,8 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       } else {
         fb.innerHTML = `
-          <div class="fb-head">${BAD_ICON}<span>Revisa esto</span></div>
-          <p class="fb-explain">${item.hint}</p>
+          <div class="fb-head">${BAD_ICON}<span>Revisa la estructura</span></div>
+          <p class="fb-explain">${evalResult.hint || item.hint}</p>
           <div class="examples-block">
             <div class="examples-label">Ejemplo</div>
             <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
