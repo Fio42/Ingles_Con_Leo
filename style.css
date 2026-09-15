@@ -374,6 +374,11 @@ section{padding:52px 0;}
 .gate-card p{color:var(--ink-soft);font-size:0.98rem;margin-bottom:22px;}
 .gate-input{width:100%;padding:14px 16px;border-radius:var(--radius-sm);border:2px solid var(--line);font-size:1rem;text-align:left;font-weight:600;margin-bottom:12px;}
 .gate-input:focus{border-color:var(--blue);}
+.password-field-wrap{position:relative;margin-bottom:12px;}
+.password-field-wrap .gate-input{margin-bottom:0;padding-right:46px;}
+.password-toggle-btn{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:34px;height:34px;padding:0;border:none;border-radius:50%;background:none;color:var(--ink-faint);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s ease, color .15s ease;}
+.password-toggle-btn:hover{background:var(--paper-dim);color:var(--ink-soft);}
+.password-toggle-btn svg{width:19px;height:19px;}
 .gate-error{color:var(--coral);font-size:0.9rem;font-weight:600;margin-bottom:12px;display:none;}
 .gate-error.show{display:block;}
 .gate-hint{color:var(--ink-faint);font-size:0.85rem;margin-top:18px;}

@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260915d">
+<link rel="stylesheet" href="style.css?v=20260915e">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -119,7 +119,12 @@
       </svg>
       <div id="loginStep1">
         <input type="email" class="gate-input" id="emailInput" placeholder="tu@correo.com" autocomplete="email" inputmode="email">
-        <input type="password" class="gate-input" id="passwordInput" placeholder="Contraseña" autocomplete="current-password" style="margin-top:10px;">
+        <div class="password-field-wrap" style="margin-top:10px;">
+          <input type="password" class="gate-input" id="passwordInput" placeholder="Contraseña" autocomplete="current-password">
+          <button type="button" class="password-toggle-btn" id="passwordToggleBtn" aria-label="Mostrar contraseña" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        </div>
         <button class="btn btn-primary btn-block" id="authBtn" style="margin-top:10px;">Entrar</button>
         <p class="gate-hint" style="margin-top:10px;"><a href="#" id="toggleModeLink" style="color:var(--blue);font-weight:600;">¿Primera vez? Crea tu cuenta</a></p>
         <p class="gate-hint" id="forgotWrap" style="margin-top:2px;"><a href="#" id="forgotPasswordLink" style="color:var(--ink-soft);">¿Olvidaste tu contraseña?</a></p>
@@ -133,7 +138,12 @@
       </div>
       <div id="loginRecovery" style="display:none;text-align:center;">
         <p style="margin:0 0 10px;font-weight:700;">Elige tu nueva contraseña</p>
-        <input type="password" class="gate-input" id="newPasswordInput" placeholder="Nueva contraseña" autocomplete="new-password">
+        <div class="password-field-wrap">
+          <input type="password" class="gate-input" id="newPasswordInput" placeholder="Nueva contraseña" autocomplete="new-password">
+          <button type="button" class="password-toggle-btn" id="newPasswordToggleBtn" aria-label="Mostrar contraseña" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        </div>
         <button class="btn btn-primary btn-block" id="setNewPasswordBtn" style="margin-top:10px;">Guardar contraseña</button>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
@@ -443,6 +453,22 @@
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   let hasSession = false;
+
+  // Botón de "ojo" para mostrar/ocultar la contraseña mientras se escribe.
+  const EYE_OPEN_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>';
+  const EYE_CLOSED_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.6 5.2A10.9 10.9 0 0112 5c6.5 0 10 7 10 7a15.6 15.6 0 01-3.2 4.1M6.6 6.6C4 8.3 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.9-.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.9 10a3 3 0 004.1 4.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function wirePasswordToggle(inputEl, btnEl){
+    if(!inputEl || !btnEl) return;
+    btnEl.addEventListener('click', function(){
+      const showing = inputEl.type === 'text';
+      inputEl.type = showing ? 'password' : 'text';
+      btnEl.innerHTML = showing ? EYE_OPEN_SVG : EYE_CLOSED_SVG;
+      btnEl.setAttribute('aria-pressed', showing ? 'false' : 'true');
+      btnEl.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    });
+  }
+  wirePasswordToggle(passwordInput, document.getElementById('passwordToggleBtn'));
+  wirePasswordToggle(newPasswordInput, document.getElementById('newPasswordToggleBtn'));
 
   function showLoginStep(step){
     loginStep1.style.display = step === 1 ? 'block' : 'none';
