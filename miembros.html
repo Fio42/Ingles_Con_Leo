@@ -149,6 +149,17 @@
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, oferta por tiempo limitado):</p>
 
+        <div id="paypalConfirming" style="display:none;">
+          <p style="margin:0 0 10px;font-weight:700;">Estamos confirmando tu pago... ⏳</p>
+          <p class="gate-hint" style="margin:0 0 14px;">Ya volviste de PayPal. Esto puede tardar unos segundos, no cierres ni recargues la página.</p>
+        </div>
+
+        <div id="paypalDelayed" style="display:none;">
+          <p style="margin:0 0 10px;font-weight:700;">Tu pago sigue en proceso</p>
+          <p class="gate-hint" style="margin:0 0 14px;">A veces tarda un par de minutos en confirmarse. Puedes intentar revisar de nuevo, o escribirnos si después de un rato sigue igual.</p>
+          <button class="btn btn-primary btn-block" id="paypalRecheckBtn">Revisar de nuevo</button>
+        </div>
+
         <div id="payChooser">
           <button class="btn btn-primary btn-block" id="payBtnMP">Pagar con Mercado Pago</button>
           <button class="btn btn-primary btn-block" id="payStripeBtn" style="margin-top:10px;">Pagar con tarjeta internacional (Stripe)</button>
@@ -448,6 +459,9 @@
   const payPaypalError = document.getElementById('payPaypalError');
   const payBtnMP = document.getElementById('payBtnMP');
   const payChooser = document.getElementById('payChooser');
+  const paypalConfirming = document.getElementById('paypalConfirming');
+  const paypalDelayed = document.getElementById('paypalDelayed');
+  const paypalRecheckBtn = document.getElementById('paypalRecheckBtn');
   const mpEmailStep = document.getElementById('mpEmailStep');
   const backToPayChooser = document.getElementById('backToPayChooser');
   let lastEmailSent = '';
@@ -486,6 +500,44 @@
     mpEmailStep.style.display = 'none';
     payError.classList.remove('show');
     mpEmailError.classList.remove('show');
+    if(paypalConfirming) paypalConfirming.style.display = 'none';
+    if(paypalDelayed) paypalDelayed.style.display = 'none';
+  }
+
+  // Después de pagar con PayPal, PayPal redirige aquí con
+  // ?paypal=success. En ese momento la membresía casi nunca está
+  // activa todavía (el webhook que la activa llega unos segundos
+  // después), así que en vez de mostrar el botón de pago otra vez
+  // (que confundía: "¿ya pagué o no?"), mostramos un mensaje de
+  // "confirmando tu pago" y revisamos varias veces si ya se activó.
+  const cameFromPaypalSuccess = /(^|[?&])paypal=success(&|$)/.test(window.location.search);
+  let paypalPollTimer = null;
+  async function pollForPaypalMembership(attempt){
+    attempt = attempt || 0;
+    try{
+      const profile = await LeoBackend.getMemberProfile();
+      if(profile && profile.is_member){
+        await LeoBackend.syncProgressFromCloud();
+        unlock();
+        return;
+      }
+    }catch(e){ /* seguimos intentando */ }
+    if(attempt >= 9){
+      payChooser.style.display = 'none';
+      paypalConfirming.style.display = 'none';
+      paypalDelayed.style.display = 'block';
+      return;
+    }
+    paypalPollTimer = setTimeout(()=>pollForPaypalMembership(attempt + 1), 3000);
+  }
+  function startPaypalConfirming(){
+    payChooser.style.display = 'none';
+    paypalDelayed.style.display = 'none';
+    paypalConfirming.style.display = 'block';
+    pollForPaypalMembership(0);
+  }
+  if(paypalRecheckBtn){
+    paypalRecheckBtn.addEventListener('click', startPaypalConfirming);
   }
 
   function updateAuthModeUI(){
@@ -811,6 +863,7 @@
         } else {
           showGate();
           showLoginStep(3);
+          if(cameFromPaypalSuccess) startPaypalConfirming();
         }
       } else {
         showGate();
