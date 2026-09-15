@@ -2907,7 +2907,7 @@ function renderProgressStatCards(container, stats, streak, level, practicedCount
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
       </div>
       <div>
-        <div class="stat-card-label">Precisión (7 días)</div>
+        <div class="stat-card-label">Aciertos (7 días)</div>
         <div class="stat-card-value">${accText}</div>
         ${statDeltaHtml(stats.accDelta, '%')}
       </div>
@@ -2929,7 +2929,7 @@ function renderProgressStatCards(container, stats, streak, level, practicedCount
       <div>
         <div class="stat-card-label">Nivel actual</div>
         <div class="stat-card-value">${LEVEL_META[level].label}</div>
-        <button type="button" class="stat-card-link" id="statChangeLevelBtn">Cambiar nivel →</button>
+        <button type="button" class="stat-card-link" id="statChangeLevelBtn">Ajustar nivel →</button>
       </div>
     </div>`;
   const changeLevelBtn = document.getElementById('statChangeLevelBtn');
@@ -2940,37 +2940,41 @@ function renderProgressStatCards(container, stats, streak, level, practicedCount
   }
 }
 
+/* Habilidades reales que se muestran en "Tu avance por habilidad".
+   "Mixto" no se incluye aquí a propósito: es una mezcla de las otras
+   5, no una habilidad aparte (ver nota en renderProgressPage/DEVLOG). */
+const PROGRESS_SKILLS_DISPLAY = ['gramatica','vocabulario','listening','writing','speaking'];
+
 function renderSkillsPanel(container, p){
   if(!container) return;
-  container.innerHTML = Object.keys(SKILL_LABELS).map(skill=>{
+  container.innerHTML = PROGRESS_SKILLS_DISPLAY.map(skill=>{
     const pct = computeSkillCoverage(p, skill);
-    const attempted = attemptedItemIdsFor(p, skill).size;
     const color = SKILL_COLORS[skill];
-    const fb = skillFeedback(pct, attempted);
     return `
       <a href="${SKILL_PAGE[skill]}" class="skill-row-link">
         <span class="skill-row-label">${SKILL_LABELS[skill]}</span>
         <span class="skill-row-track"><span class="skill-row-fill" style="width:${pct}%;background:${color};"></span></span>
         <span class="skill-row-pct">${pct}%</span>
-        <span class="skill-row-chip chip-${fb.tone}">${fb.text}</span>
-        <svg class="skill-row-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="skill-row-practice">Practicar →</span>
       </a>`;
   }).join('');
 }
 
-/* Consejo específico según los datos reales del usuario, no un genérico
-   repetido siempre igual. */
+/* Consejo específico según los datos reales del usuario (no una frase
+   motivacional obvia tipo "practica todos los días"). Cada rama usa
+   uno de estos 5 consejos concretos sobre cómo aprender mejor,
+   eligiendo el que mejor encaja según la situación real del usuario. */
 function pickProgressTip(p, streak){
-  const skills = Object.keys(SKILL_LABELS);
+  const skills = PROGRESS_SKILLS_DISPLAY;
   const started = skills.filter(sk => attemptedItemIdsFor(p, sk).size > 0);
   const untried = skills.filter(sk => attemptedItemIdsFor(p, sk).size === 0);
 
   if(streak === 0){
-    return { skill: null, text: 'Una sesión corta hoy vale más que una larga dentro de unos días: las sesiones cortas y seguidas ayudan más a fijar lo que aprendes.' };
+    return { skill: null, text: 'Intenta recordar la respuesta antes de verla: ese esfuerzo mejora la retención.' };
   }
   if(untried.length && started.length){
     const next = untried[0];
-    return { skill: next, text: `Todavía no has probado ${SKILL_LABELS[next]}. Practicar varias habilidades te da una base más completa que enfocarte solo en una.` };
+    return { skill: next, text: `Alternar habilidades ayuda a recordar mejor que practicar siempre lo mismo. Todavía no has probado ${SKILL_LABELS[next]}.` };
   }
   if(started.length){
     let lowest = null;
@@ -2979,13 +2983,13 @@ function pickProgressTip(p, streak){
       if(!lowest || cov < lowest.cov) lowest = { sk, cov };
     });
     if(lowest && lowest.cov < 100){
-      return { skill: lowest.sk, text: `${SKILL_LABELS[lowest.sk]} es donde tienes más margen ahora mismo. Unos minutos hoy suman más de lo que parece.` };
+      return { skill: lowest.sk, text: `${SKILL_LABELS[lowest.sk]} es donde tienes más margen ahora mismo. Practica frases completas, no solo palabras aisladas, para recordarlas en contexto.` };
     }
   }
   if(streak >= 3){
-    return { skill: null, text: `Llevas ${streak} días seguidos. Volver a repasar algo que ya practicaste, después de un par de días, es lo que más ayuda a que se quede en la memoria.` };
+    return { skill: null, text: `Llevas ${streak} días seguidos. Vuelve a tus errores frecuentes hasta poder responder sin pensarlo demasiado.` };
   }
-  return { skill: null, text: 'Repasar el material después de un par de días ayuda a que se quede en la memoria a largo plazo.' };
+  return { skill: null, text: 'Repasar un error días después ayuda más que repetirlo muchas veces seguidas.' };
 }
 
 function renderProgressTipCard(container, p, streak){
@@ -3043,8 +3047,8 @@ function renderProgressPage(root){
     <div class="stat-cards" id="progressStatCards"></div>
 
     <div class="section-head" style="margin-top:44px;">
-      <h2 style="font-size:1.5rem;">Tus habilidades</h2>
-      <p>Cobertura del contenido disponible en cada habilidad.</p>
+      <h2 style="font-size:1.5rem;">Tu avance por habilidad</h2>
+      <p>Mira qué tanto has practicado en cada área.</p>
     </div>
     <div class="skills-panel" id="skillsPanel"></div>
 

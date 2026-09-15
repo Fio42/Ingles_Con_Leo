@@ -714,26 +714,28 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .stat-card-link:hover{text-decoration:underline;}
 
 .skills-panel{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:6px 22px;display:flex;flex-direction:column;}
-.skill-row-link{display:grid;grid-template-columns:150px 1fr auto auto auto;align-items:center;gap:16px;padding:18px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background .15s ease;border-radius:var(--radius-sm);}
+.skill-row-link{display:grid;grid-template-columns:150px 1fr auto auto;align-items:center;gap:16px;padding:18px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;transition:background .15s ease;border-radius:var(--radius-sm);}
 .skill-row-link:last-child{border-bottom:none;}
 .skill-row-link:hover{background:var(--paper-dim);}
 .skill-row-label{font-weight:700;font-size:0.98rem;}
 .skill-row-track{height:11px;border-radius:99px;background:var(--paper-dim);overflow:hidden;min-width:80px;}
 .skill-row-fill{display:block;height:100%;border-radius:99px;}
 .skill-row-pct{font-weight:700;font-size:0.88rem;color:var(--ink-soft);width:40px;text-align:right;}
+/* .skill-row-chip / .chip-* ya no se usan (se quitaron los mensajes
+   motivacionales repetidos de "Tu avance por habilidad"), se dejan
+   definidos por si se reutilizan después; no afecta nada dejarlos. */
 .skill-row-chip{font-size:0.78rem;font-weight:700;padding:7px 12px;border-radius:999px;white-space:nowrap;}
 .skill-row-chip.chip-good{background:var(--green-tint);color:var(--green);}
 .skill-row-chip.chip-mid{background:var(--blue-tint);color:var(--blue-deep);}
 .skill-row-chip.chip-low{background:var(--coral-tint);color:var(--coral);}
 .skill-row-chip.chip-neutral{background:var(--paper-dim);color:var(--ink-faint);}
-.skill-row-chevron{width:16px;height:16px;color:var(--ink-faint);flex-shrink:0;}
+.skill-row-practice{font-weight:700;font-size:0.86rem;color:var(--blue);white-space:nowrap;}
 @media(max-width:760px){
-  .skill-row-link{grid-template-columns:1fr auto;grid-template-areas:"label chevron" "track track" "chip chip";row-gap:8px;padding:16px 4px;}
+  .skill-row-link{grid-template-columns:1fr auto;grid-template-areas:"label practice" "track track";row-gap:8px;padding:16px 4px;}
   .skill-row-label{grid-area:label;}
   .skill-row-track{grid-area:track;}
   .skill-row-pct{display:none;}
-  .skill-row-chip{grid-area:chip;justify-self:start;}
-  .skill-row-chevron{grid-area:chevron;}
+  .skill-row-practice{grid-area:practice;justify-self:end;}
 }
 
 .tip-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 26px;display:flex;flex-direction:column;justify-content:center;gap:12px;height:100%;box-sizing:border-box;}
