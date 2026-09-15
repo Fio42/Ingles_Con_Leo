@@ -142,8 +142,10 @@
         <div id="payChooser">
           <button class="btn btn-primary btn-block" id="payBtnMP">Pagar con Mercado Pago</button>
           <button class="btn btn-primary btn-block" id="payStripeBtn" style="margin-top:10px;">Pagar con tarjeta internacional (Stripe)</button>
+          <button class="btn btn-primary btn-block" id="payPaypalBtn" style="margin-top:10px;">Pagar con PayPal</button>
           <div class="gate-error" id="payStripeError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
-          <p class="gate-hint" style="margin-top:10px;">🔒 Pago seguro procesado por Stripe o Mercado Pago.</p>
+          <div class="gate-error" id="payPaypalError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+          <p class="gate-hint" style="margin-top:10px;">🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
         </div>
 
         <div id="mpEmailStep" style="display:none;">
@@ -425,6 +427,8 @@
   const mpEmailError = document.getElementById('mpEmailError');
   const payStripeBtn = document.getElementById('payStripeBtn');
   const payStripeError = document.getElementById('payStripeError');
+  const payPaypalBtn = document.getElementById('payPaypalBtn');
+  const payPaypalError = document.getElementById('payPaypalError');
   const payBtnMP = document.getElementById('payBtnMP');
   const payChooser = document.getElementById('payChooser');
   const mpEmailStep = document.getElementById('mpEmailStep');
@@ -555,6 +559,25 @@
     btn.textContent = originalText;
     payStripeError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
     payStripeError.classList.add('show');
+  }
+
+  // Igual que goToStripeCheckout, pero para PayPal: tampoco pide un
+  // correo aparte (PayPal ya pide correo/cuenta dentro de su propia
+  // pantalla de pago).
+  async function goToPaypalCheckout(btn){
+    payPaypalError.classList.remove('show');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Generando link de pago...';
+    const res = await LeoBackend.startPaypalCheckout();
+    if(res.ok){
+      window.location.href = res.url;
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = originalText;
+    payPaypalError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
+    payPaypalError.classList.add('show');
   }
 
   function translateAuthError(msg){
@@ -704,6 +727,10 @@
 
   if(payStripeBtn){
     payStripeBtn.addEventListener('click', ()=>{ goToStripeCheckout(payStripeBtn); });
+  }
+
+  if(payPaypalBtn){
+    payPaypalBtn.addEventListener('click', ()=>{ goToPaypalCheckout(payPaypalBtn); });
   }
 
   if(payBtnMP){

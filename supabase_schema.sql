@@ -27,6 +27,12 @@ create table if not exists public.profiles (
 alter table public.profiles add column if not exists stripe_customer_id text;
 create unique index if not exists profiles_stripe_customer_id_idx on public.profiles(stripe_customer_id) where stripe_customer_id is not null;
 
+-- Lo mismo pero para PayPal: la usa el webhook de PayPal para
+-- identificar de quién es una suscripción cuando se cancela o
+-- se suspende (esos avisos ya no traen el id de usuario).
+alter table public.profiles add column if not exists paypal_subscription_id text;
+create unique index if not exists profiles_paypal_subscription_id_idx on public.profiles(paypal_subscription_id) where paypal_subscription_id is not null;
+
 -- Sesiones de práctica de cada miembro (una fila por sesión
 -- terminada: gramática, vocabulario, listening, writing, speaking,
 -- mixto). Esto es lo que permite que el progreso se vea igual en

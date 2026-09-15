@@ -333,10 +333,37 @@ const LeoBackend = (function(){
     return false;
   }
 
+  /* Pide un link de pago de PayPal para el usuario logueado,
+     ligado a su id. Es el equivalente de startCheckout()/
+     startStripeCheckout() pero para PayPal. Devuelve
+     { ok:true, url } o { ok:false, error }. Depende de que la
+     función de Supabase "paypal-checkout" esté desplegada (ver
+     supabase_functions/paypal-checkout.ts). */
+  async function startPaypalCheckout(){
+    if(!isConfigured()) return { ok:false, error:'not_configured' };
+    const session = await getSession();
+    if(!session) return { ok:false, error:'no_session' };
+    try{
+      const res = await fetch(SUPABASE_URL + '/functions/v1/paypal-checkout', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + session.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
+      return { ok:true, url: data.init_point };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout
+    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout
   };
 })();
 
