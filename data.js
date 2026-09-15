@@ -8929,3 +8929,1813 @@ LISTENING_BANK.avanzado.push([
     explain: "\"Discreet\" significa discreta, prudente, cuidadosa al no revelar información."
   }
 ]);
+
+// ============================================================
+// BLOQUE NUEVO (2026-09-15): 100 ejercicios adicionales solo para
+// miembros (no aparecen en la practica gratis), balanceados entre
+// gramatica/vocabulario/listening/writing/speaking x 4 niveles.
+// ============================================================
+GRAMMAR_BANK.principiante.push(
+[
+  {
+    "topic": "Verbo \"have\" (tengo / tienes / tiene)",
+    "items": [
+      {
+        "id": "g-principiante-m100-1",
+        "translation": "Tengo un perro.",
+        "type": "choice",
+        "prompt": "I ___ a dog.",
+        "options": [
+          "have",
+          "has",
+          "having"
+        ],
+        "correct": 0,
+        "explain": "Con \"I\" siempre usamos \"have\", nunca \"has\".",
+        "examples": [
+          {
+            "en": "I have a dog.",
+            "es": "Tengo un perro."
+          },
+          {
+            "en": "We have two cats.",
+            "es": "Tenemos dos gatos."
+          }
+        ]
+      },
+      {
+        "id": "g-principiante-m100-2",
+        "translation": "Ella tiene un hermano.",
+        "type": "fill",
+        "sentence": [
+          "She",
+          "___",
+          "a",
+          "brother",
+          "."
+        ],
+        "blankIndex": 1,
+        "bank": [
+          "has",
+          "have",
+          "having"
+        ],
+        "correct": "has",
+        "explain": "Con \"she/he/it\" usamos \"has\", no \"have\".",
+        "examples": [
+          {
+            "en": "He has a sister.",
+            "es": "Él tiene una hermana."
+          },
+          {
+            "en": "She has a car.",
+            "es": "Ella tiene un carro."
+          }
+        ]
+      },
+      {
+        "id": "g-principiante-m100-3",
+        "translation": "¿Cuál es la forma correcta para \"they\"?",
+        "type": "choice",
+        "prompt": "They ___ a big house.",
+        "options": [
+          "has",
+          "have",
+          "is"
+        ],
+        "correct": 1,
+        "explain": "Con \"they\" (igual que con I/you/we) usamos \"have\".",
+        "examples": [
+          {
+            "en": "They have a big house.",
+            "es": "Ellos tienen una casa grande."
+          },
+          {
+            "en": "We have a small car.",
+            "es": "Tenemos un carro pequeño."
+          }
+        ]
+      },
+      {
+        "id": "g-principiante-m100-4",
+        "translation": "Mi mamá tiene un carro nuevo.",
+        "type": "error",
+        "wrong": "My mother have a new car.",
+        "wrongWord": "have",
+        "right": "My mother has a new car.",
+        "rightWord": "has",
+        "explain": "\"Mother\" es \"she\", así que necesita \"has\", no \"have\".",
+        "examples": [
+          {
+            "en": "My mother has a new car.",
+            "es": "Mi mamá tiene un carro nuevo."
+          },
+          {
+            "en": "My father has a bike.",
+            "es": "Mi papá tiene una bicicleta."
+          }
+        ]
+      },
+      {
+        "id": "g-principiante-m100-5",
+        "translation": "¿Cuál es la forma correcta para \"it\"?",
+        "type": "choice",
+        "prompt": "The dog ___ a red collar.",
+        "options": [
+          "have",
+          "has",
+          "having"
+        ],
+        "correct": 1,
+        "explain": "Con \"it\" (o cualquier cosa/animal en singular) usamos \"has\", no \"have\".",
+        "examples": [
+          {
+            "en": "The dog has a red collar.",
+            "es": "El perro tiene un collar rojo."
+          },
+          {
+            "en": "The house has a garden.",
+            "es": "La casa tiene un jardín."
+          }
+        ]
+      }
+    ]
+  }
+]
+);
+
+GRAMMAR_BANK.facil.push(
+[
+  {
+    "topic": "Pasado simple con verbos irregulares",
+    "items": [
+      {
+        "id": "g-facil-m100-1",
+        "translation": "Ayer fui al parque.",
+        "type": "choice",
+        "prompt": "Yesterday I ___ to the park.",
+        "options": [
+          "go",
+          "went",
+          "goed"
+        ],
+        "correct": 1,
+        "explain": "\"Went\" es el pasado irregular de \"go\".",
+        "examples": [
+          {
+            "en": "Yesterday I went to the park.",
+            "es": "Ayer fui al parque."
+          },
+          {
+            "en": "She went to school.",
+            "es": "Ella fue a la escuela."
+          }
+        ]
+      },
+      {
+        "id": "g-facil-m100-2",
+        "translation": "Comí una manzana esta mañana.",
+        "type": "fill",
+        "sentence": [
+          "I",
+          "___",
+          "an",
+          "apple",
+          "this",
+          "morning",
+          "."
+        ],
+        "blankIndex": 1,
+        "bank": [
+          "ate",
+          "eat",
+          "eated"
+        ],
+        "correct": "ate",
+        "explain": "\"Ate\" es el pasado irregular de \"eat\".",
+        "examples": [
+          {
+            "en": "I ate an apple this morning.",
+            "es": "Comí una manzana esta mañana."
+          },
+          {
+            "en": "We ate pizza last night.",
+            "es": "Comimos pizza anoche."
+          }
+        ]
+      },
+      {
+        "id": "g-facil-m100-3",
+        "translation": "¿Qué viste en la tienda?",
+        "type": "choice",
+        "prompt": "What did you ___ at the store?",
+        "options": [
+          "saw",
+          "see",
+          "seen"
+        ],
+        "correct": 1,
+        "explain": "Después de \"did\", el verbo va en forma base: \"see\", no \"saw\".",
+        "examples": [
+          {
+            "en": "What did you see at the store?",
+            "es": "¿Qué viste en la tienda?"
+          },
+          {
+            "en": "I saw my friend yesterday.",
+            "es": "Vi a mi amigo ayer."
+          }
+        ]
+      },
+      {
+        "id": "g-facil-m100-4",
+        "translation": "Ella escribió una carta.",
+        "type": "error",
+        "wrong": "She writed a letter.",
+        "wrongWord": "writed",
+        "right": "She wrote a letter.",
+        "rightWord": "wrote",
+        "explain": "\"Write\" es irregular: el pasado es \"wrote\", no \"writed\".",
+        "examples": [
+          {
+            "en": "She wrote a letter.",
+            "es": "Ella escribió una carta."
+          },
+          {
+            "en": "He wrote his name.",
+            "es": "Él escribió su nombre."
+          }
+        ]
+      },
+      {
+        "id": "g-facil-m100-5",
+        "translation": "Ellos tuvieron una gran fiesta.",
+        "type": "fill",
+        "sentence": [
+          "They",
+          "___",
+          "a",
+          "great",
+          "party",
+          "."
+        ],
+        "blankIndex": 1,
+        "bank": [
+          "had",
+          "have",
+          "haved"
+        ],
+        "correct": "had",
+        "explain": "\"Had\" es el pasado irregular de \"have\".",
+        "examples": [
+          {
+            "en": "They had a great party.",
+            "es": "Ellos tuvieron una gran fiesta."
+          },
+          {
+            "en": "We had a good time.",
+            "es": "Lo pasamos bien."
+          }
+        ]
+      }
+    ]
+  }
+]
+);
+
+GRAMMAR_BANK.medio.push(
+[
+  {
+    "topic": "Question tags (¿verdad? / ¿no es así?)",
+    "items": [
+      {
+        "id": "g-medio-m100-1",
+        "type": "choice",
+        "prompt": "You like coffee, ___?",
+        "options": [
+          "don't you",
+          "doesn't you",
+          "isn't you"
+        ],
+        "correct": 0,
+        "explain": "Frase afirmativa con \"like\" (presente simple) pide un question tag negativo con \"don't\".",
+        "examples": [
+          {
+            "en": "You like coffee, don't you?",
+            "es": "Te gusta el café, ¿verdad?"
+          },
+          {
+            "en": "They live here, don't they?",
+            "es": "Ellos viven aquí, ¿verdad?"
+          }
+        ]
+      },
+      {
+        "id": "g-medio-m100-2",
+        "type": "fill",
+        "sentence": [
+          "She",
+          "is",
+          "tired,",
+          "___",
+          "she",
+          "?"
+        ],
+        "blankIndex": 3,
+        "bank": [
+          "isn't",
+          "doesn't",
+          "don't"
+        ],
+        "correct": "isn't",
+        "explain": "Con \"is\" en la frase, el tag usa \"isn't\".",
+        "examples": [
+          {
+            "en": "She is tired, isn't she?",
+            "es": "Ella está cansada, ¿verdad?"
+          },
+          {
+            "en": "He is busy, isn't he?",
+            "es": "Él está ocupado, ¿verdad?"
+          }
+        ]
+      },
+      {
+        "id": "g-medio-m100-3",
+        "type": "choice",
+        "prompt": "You haven't finished yet, ___?",
+        "options": [
+          "have you",
+          "haven't you",
+          "did you"
+        ],
+        "correct": 0,
+        "explain": "Frase negativa (\"haven't\") pide un question tag afirmativo: \"have you\".",
+        "examples": [
+          {
+            "en": "You haven't finished yet, have you?",
+            "es": "No has terminado todavía, ¿verdad?"
+          },
+          {
+            "en": "They haven't left, have they?",
+            "es": "No se han ido, ¿verdad?"
+          }
+        ]
+      },
+      {
+        "id": "g-medio-m100-4",
+        "type": "error",
+        "wrong": "He can swim, can't he.",
+        "wrongWord": "he.",
+        "right": "He can swim, can't he?",
+        "rightWord": "he?",
+        "explain": "Un question tag siempre termina con signo de interrogación.",
+        "examples": [
+          {
+            "en": "He can swim, can't he?",
+            "es": "Él sabe nadar, ¿verdad?"
+          },
+          {
+            "en": "She can drive, can't she?",
+            "es": "Ella sabe manejar, ¿verdad?"
+          }
+        ]
+      },
+      {
+        "id": "g-medio-m100-5",
+        "type": "choice",
+        "prompt": "They don't live here, ___?",
+        "options": [
+          "do they",
+          "don't they",
+          "are they"
+        ],
+        "correct": 0,
+        "explain": "Frase negativa (\"don't live\") pide un question tag afirmativo: \"do they\".",
+        "examples": [
+          {
+            "en": "They don't live here, do they?",
+            "es": "Ellos no viven aquí, ¿verdad?"
+          },
+          {
+            "en": "You don't smoke, do you?",
+            "es": "Tú no fumas, ¿verdad?"
+          }
+        ]
+      }
+    ]
+  }
+]
+);
+
+GRAMMAR_BANK.avanzado.push(
+[
+  {
+    "topic": "Voz pasiva con modales (should be / must have been)",
+    "items": [
+      {
+        "id": "g-avanzado-m100-1",
+        "type": "choice",
+        "prompt": "The report ___ finished by Friday.",
+        "options": [
+          "should be",
+          "should is",
+          "should being"
+        ],
+        "correct": 0,
+        "explain": "Modal + voz pasiva: \"should be\" + participio.",
+        "examples": [
+          {
+            "en": "The report should be finished by Friday.",
+            "es": "El informe debería estar terminado para el viernes."
+          },
+          {
+            "en": "The decision must be made today.",
+            "es": "La decisión debe tomarse hoy."
+          }
+        ]
+      },
+      {
+        "id": "g-avanzado-m100-2",
+        "type": "fill",
+        "sentence": [
+          "The",
+          "documents",
+          "must",
+          "have",
+          "been",
+          "___",
+          "already",
+          "."
+        ],
+        "blankIndex": 5,
+        "bank": [
+          "sent",
+          "send",
+          "sending"
+        ],
+        "correct": "sent",
+        "explain": "\"Must have been\" + participio expresa una suposición sobre algo pasado.",
+        "examples": [
+          {
+            "en": "The documents must have been sent already.",
+            "es": "Los documentos deben haber sido enviados ya."
+          },
+          {
+            "en": "The email must have been deleted by mistake.",
+            "es": "El correo debe haber sido borrado por error."
+          }
+        ]
+      },
+      {
+        "id": "g-avanzado-m100-3",
+        "type": "choice",
+        "prompt": "This issue ___ addressed immediately.",
+        "options": [
+          "should be",
+          "should being",
+          "should"
+        ],
+        "correct": 0,
+        "explain": "\"Should be\" + participio es la forma pasiva con modal para una recomendación fuerte.",
+        "examples": [
+          {
+            "en": "This issue should be addressed immediately.",
+            "es": "Este problema debería abordarse de inmediato."
+          },
+          {
+            "en": "The policy should be reviewed annually.",
+            "es": "La política debería revisarse anualmente."
+          }
+        ]
+      },
+      {
+        "id": "g-avanzado-m100-4",
+        "type": "error",
+        "wrong": "The project must be finish by June.",
+        "wrongWord": "finish",
+        "right": "The project must be finished by June.",
+        "rightWord": "finished",
+        "explain": "Después de \"must be\" (voz pasiva con modal), el verbo va en participio: \"finished\", no \"finish\".",
+        "examples": [
+          {
+            "en": "The project must be finished by June.",
+            "es": "El proyecto debe estar terminado para junio."
+          },
+          {
+            "en": "The contract must be signed by both parties.",
+            "es": "El contrato debe ser firmado por ambas partes."
+          }
+        ]
+      },
+      {
+        "id": "g-avanzado-m100-5",
+        "type": "fill",
+        "sentence": [
+          "The",
+          "results",
+          "might",
+          "have",
+          "been",
+          "___",
+          "by",
+          "the",
+          "weather",
+          "."
+        ],
+        "blankIndex": 5,
+        "bank": [
+          "affected",
+          "affect",
+          "affecting"
+        ],
+        "correct": "affected",
+        "explain": "\"Might have been\" + participio expresa una posibilidad sobre algo pasado.",
+        "examples": [
+          {
+            "en": "The results might have been affected by the weather.",
+            "es": "Los resultados podrían haber sido afectados por el clima."
+          },
+          {
+            "en": "The delay might have been caused by traffic.",
+            "es": "El retraso podría haber sido causado por el tráfico."
+          }
+        ]
+      }
+    ]
+  }
+]
+);
+
+VOCAB_BANK.principiante.push(
+[
+  {
+    "id": "v-principiante-m100-1",
+    "word": "Spoon",
+    "translation": "Cuchara · para comer sopa o cereal",
+    "examples": [
+      {
+        "en": "I need a spoon.",
+        "es": "Necesito una cuchara."
+      },
+      {
+        "en": "The spoon is clean.",
+        "es": "La cuchara está limpia."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"para comer sopa o cereal\"?",
+      "options": [
+        "spoon",
+        "fork",
+        "plate"
+      ],
+      "correct": 0,
+      "explain": "\"Spoon\" es cuchara."
+    }
+  },
+  {
+    "id": "v-principiante-m100-2",
+    "word": "Fork",
+    "translation": "Tenedor · para comer comida sólida",
+    "examples": [
+      {
+        "en": "Use a fork, please.",
+        "es": "Usa un tenedor, por favor."
+      },
+      {
+        "en": "The fork is on the table.",
+        "es": "El tenedor está en la mesa."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"para comer comida sólida\"?",
+      "options": [
+        "fork",
+        "spoon",
+        "knife"
+      ],
+      "correct": 0,
+      "explain": "\"Fork\" es tenedor."
+    }
+  },
+  {
+    "id": "v-principiante-m100-3",
+    "word": "Cup",
+    "translation": "Taza · para tomar café o té",
+    "examples": [
+      {
+        "en": "I have a cup of tea.",
+        "es": "Tengo una taza de té."
+      },
+      {
+        "en": "The cup is red.",
+        "es": "La taza es roja."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"para tomar café o té\"?",
+      "options": [
+        "cup",
+        "glass",
+        "bottle"
+      ],
+      "correct": 0,
+      "explain": "\"Cup\" es taza."
+    }
+  },
+  {
+    "id": "v-principiante-m100-4",
+    "word": "Bed",
+    "translation": "Cama · donde duermes",
+    "examples": [
+      {
+        "en": "My bed is soft.",
+        "es": "Mi cama es suave."
+      },
+      {
+        "en": "The bed is big.",
+        "es": "La cama es grande."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"donde duermes\"?",
+      "options": [
+        "bed",
+        "chair",
+        "table"
+      ],
+      "correct": 0,
+      "explain": "\"Bed\" es cama."
+    }
+  },
+  {
+    "id": "v-principiante-m100-5",
+    "word": "Green",
+    "translation": "Verde · color de las hojas",
+    "examples": [
+      {
+        "en": "The leaf is green.",
+        "es": "La hoja es verde."
+      },
+      {
+        "en": "I like the green shirt.",
+        "es": "Me gusta la camisa verde."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"color de las hojas\"?",
+      "options": [
+        "green",
+        "yellow",
+        "brown"
+      ],
+      "correct": 0,
+      "explain": "\"Green\" es verde."
+    }
+  }
+]
+);
+
+VOCAB_BANK.facil.push(
+[
+  {
+    "id": "v-facil-m100-1",
+    "word": "Yellow",
+    "translation": "Amarillo · color del sol o de un plátano",
+    "examples": [
+      {
+        "en": "The banana is yellow.",
+        "es": "El plátano es amarillo."
+      },
+      {
+        "en": "I like the yellow car.",
+        "es": "Me gusta el carro amarillo."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"color del sol o de un plátano\"?",
+      "options": [
+        "yellow",
+        "green",
+        "blue"
+      ],
+      "correct": 0,
+      "explain": "\"Yellow\" es amarillo."
+    }
+  },
+  {
+    "id": "v-facil-m100-2",
+    "word": "Black",
+    "translation": "Negro · color de la noche",
+    "examples": [
+      {
+        "en": "My shoes are black.",
+        "es": "Mis zapatos son negros."
+      },
+      {
+        "en": "The cat is black.",
+        "es": "El gato es negro."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"color de la noche\"?",
+      "options": [
+        "black",
+        "white",
+        "gray"
+      ],
+      "correct": 0,
+      "explain": "\"Black\" es negro."
+    }
+  },
+  {
+    "id": "v-facil-m100-3",
+    "word": "Week",
+    "translation": "Semana · siete días",
+    "examples": [
+      {
+        "en": "I work five days a week.",
+        "es": "Trabajo cinco días a la semana."
+      },
+      {
+        "en": "See you next week.",
+        "es": "Nos vemos la próxima semana."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"siete días\"?",
+      "options": [
+        "week",
+        "month",
+        "year"
+      ],
+      "correct": 0,
+      "explain": "\"Week\" es semana."
+    }
+  },
+  {
+    "id": "v-facil-m100-4",
+    "word": "Month",
+    "translation": "Mes · como enero o febrero",
+    "examples": [
+      {
+        "en": "This month is busy.",
+        "es": "Este mes está ocupado."
+      },
+      {
+        "en": "I saw her last month.",
+        "es": "La vi el mes pasado."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"como enero o febrero\"?",
+      "options": [
+        "month",
+        "week",
+        "day"
+      ],
+      "correct": 0,
+      "explain": "\"Month\" es mes."
+    }
+  },
+  {
+    "id": "v-facil-m100-5",
+    "word": "Job",
+    "translation": "Trabajo/empleo · lo que haces para ganar dinero",
+    "examples": [
+      {
+        "en": "She has a new job.",
+        "es": "Ella tiene un nuevo trabajo."
+      },
+      {
+        "en": "He likes his job.",
+        "es": "A él le gusta su trabajo."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"lo que haces para ganar dinero\"?",
+      "options": [
+        "job",
+        "school",
+        "hobby"
+      ],
+      "correct": 0,
+      "explain": "\"Job\" es trabajo/empleo."
+    }
+  }
+]
+);
+
+VOCAB_BANK.medio.push(
+[
+  {
+    "id": "v-medio-m100-1",
+    "word": "Decision",
+    "translation": "Decisión · elegir entre opciones",
+    "examples": [
+      {
+        "en": "I need to make a decision.",
+        "es": "Necesito tomar una decisión."
+      },
+      {
+        "en": "It was a hard decision.",
+        "es": "Fue una decisión difícil."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"elegir entre opciones\"?",
+      "options": [
+        "decision",
+        "opinion",
+        "question"
+      ],
+      "correct": 0,
+      "explain": "\"Decision\" es decisión."
+    }
+  },
+  {
+    "id": "v-medio-m100-2",
+    "word": "Environment",
+    "translation": "Medio ambiente · la naturaleza que nos rodea",
+    "examples": [
+      {
+        "en": "We should protect the environment.",
+        "es": "Deberíamos proteger el medio ambiente."
+      },
+      {
+        "en": "Pollution harms the environment.",
+        "es": "La contaminación daña el medio ambiente."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"la naturaleza que nos rodea\"?",
+      "options": [
+        "environment",
+        "weather",
+        "planet"
+      ],
+      "correct": 0,
+      "explain": "\"Environment\" es medio ambiente."
+    }
+  },
+  {
+    "id": "v-medio-m100-3",
+    "word": "Community",
+    "translation": "Comunidad · grupo de personas que viven en el mismo lugar",
+    "examples": [
+      {
+        "en": "She volunteers in her community.",
+        "es": "Ella hace voluntariado en su comunidad."
+      },
+      {
+        "en": "The community organized an event.",
+        "es": "La comunidad organizó un evento."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa esto: \"grupo de personas que viven en el mismo lugar\"?",
+      "options": [
+        "community",
+        "family",
+        "company"
+      ],
+      "correct": 0,
+      "explain": "\"Community\" es comunidad."
+    }
+  },
+  {
+    "id": "v-medio-m100-4",
+    "word": "Increase",
+    "translation": "Aumentar / aumento",
+    "examples": [
+      {
+        "en": "Prices will increase next month.",
+        "es": "Los precios aumentarán el próximo mes."
+      },
+      {
+        "en": "There was an increase in sales.",
+        "es": "Hubo un aumento en las ventas."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"aumentar\"?",
+      "options": [
+        "increase",
+        "decrease",
+        "stay"
+      ],
+      "correct": 0,
+      "explain": "\"Increase\" es aumentar."
+    }
+  },
+  {
+    "id": "v-medio-m100-5",
+    "word": "Reduce",
+    "translation": "Reducir / disminuir",
+    "examples": [
+      {
+        "en": "We need to reduce costs.",
+        "es": "Necesitamos reducir los costos."
+      },
+      {
+        "en": "He wants to reduce his stress.",
+        "es": "Él quiere reducir su estrés."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"reducir\"?",
+      "options": [
+        "reduce",
+        "increase",
+        "improve"
+      ],
+      "correct": 0,
+      "explain": "\"Reduce\" es reducir."
+    }
+  }
+]
+);
+
+VOCAB_BANK.avanzado.push(
+[
+  {
+    "id": "v-avanzado-m100-1",
+    "word": "Mitigate",
+    "translation": "Mitigar / atenuar un problema",
+    "examples": [
+      {
+        "en": "They took steps to mitigate the damage.",
+        "es": "Tomaron medidas para mitigar el daño."
+      },
+      {
+        "en": "The plan aims to mitigate risks.",
+        "es": "El plan busca mitigar los riesgos."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"atenuar un problema\"?",
+      "options": [
+        "mitigate",
+        "aggravate",
+        "ignore"
+      ],
+      "correct": 0,
+      "explain": "\"Mitigate\" es mitigar/atenuar."
+    }
+  },
+  {
+    "id": "v-avanzado-m100-2",
+    "word": "Juxtapose",
+    "translation": "Yuxtaponer · poner dos cosas una junto a otra para compararlas",
+    "examples": [
+      {
+        "en": "The exhibit juxtaposes old and new art.",
+        "es": "La exposición yuxtapone arte antiguo y nuevo."
+      },
+      {
+        "en": "The film juxtaposes two very different lives.",
+        "es": "La película yuxtapone dos vidas muy diferentes."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"poner dos cosas juntas para compararlas\"?",
+      "options": [
+        "juxtapose",
+        "separate",
+        "combine"
+      ],
+      "correct": 0,
+      "explain": "\"Juxtapose\" es yuxtaponer."
+    }
+  },
+  {
+    "id": "v-avanzado-m100-3",
+    "word": "Conundrum",
+    "translation": "Dilema / acertijo difícil de resolver",
+    "examples": [
+      {
+        "en": "We face a real conundrum.",
+        "es": "Enfrentamos un verdadero dilema."
+      },
+      {
+        "en": "It's a conundrum with no easy answer.",
+        "es": "Es un dilema sin respuesta fácil."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"dilema difícil de resolver\"?",
+      "options": [
+        "conundrum",
+        "solution",
+        "routine"
+      ],
+      "correct": 0,
+      "explain": "\"Conundrum\" es dilema/acertijo."
+    }
+  },
+  {
+    "id": "v-avanzado-m100-4",
+    "word": "Tantamount",
+    "translation": "Equivalente a algo (generalmente algo negativo)",
+    "examples": [
+      {
+        "en": "Silence was tantamount to agreement.",
+        "es": "El silencio equivalía a un acuerdo."
+      },
+      {
+        "en": "That decision is tantamount to giving up.",
+        "es": "Esa decisión equivale a rendirse."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"equivalente a algo\"?",
+      "options": [
+        "tantamount",
+        "different",
+        "opposite"
+      ],
+      "correct": 0,
+      "explain": "\"Tantamount (to)\" es equivalente a."
+    }
+  },
+  {
+    "id": "v-avanzado-m100-5",
+    "word": "Unequivocal",
+    "translation": "Inequívoco / muy claro, sin lugar a dudas",
+    "examples": [
+      {
+        "en": "She gave an unequivocal answer.",
+        "es": "Ella dio una respuesta inequívoca."
+      },
+      {
+        "en": "The results are unequivocal.",
+        "es": "Los resultados son inequívocos."
+      }
+    ],
+    "quiz": {
+      "prompt": "¿Qué palabra significa \"muy claro, sin dudas\"?",
+      "options": [
+        "unequivocal",
+        "ambiguous",
+        "uncertain"
+      ],
+      "correct": 0,
+      "explain": "\"Unequivocal\" es inequívoco."
+    }
+  }
+]
+);
+
+LISTENING_BANK.principiante.push(
+[
+  {
+    "id": "l-principiante-m100-1",
+    "audioFile": "audio/miembros100/l-principiante-m100-1.mp3",
+    "transcript": "The spoon is next to the plate.",
+    "translation": "La cuchara está junto al plato.",
+    "question": "Where is the spoon?",
+    "options": [
+      "Next to the plate",
+      "In the cup",
+      "On the chair"
+    ],
+    "correct": 0,
+    "explain": "\"Next to\" significa junto a / al lado de."
+  },
+  {
+    "id": "l-principiante-m100-2",
+    "audioFile": "audio/miembros100/l-principiante-m100-2.mp3",
+    "transcript": "My bed is very soft.",
+    "translation": "Mi cama es muy suave.",
+    "question": "What is soft?",
+    "options": [
+      "The bed",
+      "The chair",
+      "The table"
+    ],
+    "correct": 0,
+    "explain": "\"Soft\" significa suave."
+  },
+  {
+    "id": "l-principiante-m100-3",
+    "audioFile": "audio/miembros100/l-principiante-m100-3.mp3",
+    "transcript": "The cup is empty.",
+    "translation": "La taza está vacía.",
+    "question": "What is empty?",
+    "options": [
+      "The cup",
+      "The bottle",
+      "The glass"
+    ],
+    "correct": 0,
+    "explain": "\"Empty\" significa vacío."
+  },
+  {
+    "id": "l-principiante-m100-4",
+    "audioFile": "audio/miembros100/l-principiante-m100-4.mp3",
+    "transcript": "I go to school every morning.",
+    "translation": "Voy a la escuela todas las mañanas.",
+    "question": "When does the speaker go to school?",
+    "options": [
+      "Every morning",
+      "Every night",
+      "On Sundays"
+    ],
+    "correct": 0,
+    "explain": "\"Every morning\" significa todas las mañanas."
+  },
+  {
+    "id": "l-principiante-m100-5",
+    "audioFile": "audio/miembros100/l-principiante-m100-5.mp3",
+    "transcript": "The bird is green today.",
+    "translation": "El pájaro está verde hoy.",
+    "question": "What color is the bird?",
+    "options": [
+      "Green",
+      "Yellow",
+      "Black"
+    ],
+    "correct": 0,
+    "explain": "\"Green\" significa verde."
+  }
+]
+);
+
+LISTENING_BANK.facil.push(
+[
+  {
+    "id": "l-facil-m100-1",
+    "audioFile": "audio/miembros100/l-facil-m100-1.mp3",
+    "transcript": "Yesterday I went to the market.",
+    "translation": "Ayer fui al mercado.",
+    "question": "Where did the speaker go yesterday?",
+    "options": [
+      "The market",
+      "The park",
+      "The beach"
+    ],
+    "correct": 0,
+    "explain": "\"Went\" es el pasado de \"go\"."
+  },
+  {
+    "id": "l-facil-m100-2",
+    "audioFile": "audio/miembros100/l-facil-m100-2.mp3",
+    "transcript": "She started a new job this month.",
+    "translation": "Ella empezó un nuevo trabajo este mes.",
+    "question": "What did she start?",
+    "options": [
+      "A new job",
+      "A new school",
+      "A new house"
+    ],
+    "correct": 0,
+    "explain": "\"Job\" significa trabajo/empleo."
+  },
+  {
+    "id": "l-facil-m100-3",
+    "audioFile": "audio/miembros100/l-facil-m100-3.mp3",
+    "transcript": "We meet every week on Fridays.",
+    "translation": "Nos reunimos cada semana los viernes.",
+    "question": "How often do they meet?",
+    "options": [
+      "Every week",
+      "Every month",
+      "Every year"
+    ],
+    "correct": 0,
+    "explain": "\"Every week\" significa cada semana."
+  },
+  {
+    "id": "l-facil-m100-4",
+    "audioFile": "audio/miembros100/l-facil-m100-4.mp3",
+    "transcript": "His shirt is black and yellow.",
+    "translation": "Su camisa es negra y amarilla.",
+    "question": "What colors is the shirt?",
+    "options": [
+      "Black and yellow",
+      "Red and blue",
+      "Green and white"
+    ],
+    "correct": 0,
+    "explain": "\"Black\" es negro y \"yellow\" es amarillo."
+  },
+  {
+    "id": "l-facil-m100-5",
+    "audioFile": "audio/miembros100/l-facil-m100-5.mp3",
+    "transcript": "I saw a movie last night.",
+    "translation": "Vi una película anoche.",
+    "question": "What did the speaker do last night?",
+    "options": [
+      "Saw a movie",
+      "Read a book",
+      "Cooked dinner"
+    ],
+    "correct": 0,
+    "explain": "\"Saw\" es el pasado de \"see\"."
+  }
+]
+);
+
+LISTENING_BANK.medio.push(
+[
+  {
+    "id": "l-medio-m100-1",
+    "audioFile": "audio/miembros100/l-medio-m100-1.mp3",
+    "transcript": "You like coffee, don't you?",
+    "translation": "Te gusta el café, ¿verdad?",
+    "question": "What is the speaker checking?",
+    "options": [
+      "That the listener likes coffee",
+      "That the listener likes tea",
+      "That the listener is tired"
+    ],
+    "correct": 0,
+    "explain": "Un question tag confirma algo que el hablante ya cree cierto."
+  },
+  {
+    "id": "l-medio-m100-2",
+    "audioFile": "audio/miembros100/l-medio-m100-2.mp3",
+    "transcript": "By next year, she will have finished her degree.",
+    "translation": "Para el próximo año, ella habrá terminado su carrera.",
+    "question": "What will be true by next year?",
+    "options": [
+      "She will have finished her degree",
+      "She will start her degree",
+      "She dropped out"
+    ],
+    "correct": 0,
+    "explain": "\"Will have finished\" es futuro perfecto: algo que estará terminado en un punto futuro."
+  },
+  {
+    "id": "l-medio-m100-3",
+    "audioFile": "audio/miembros100/l-medio-m100-3.mp3",
+    "transcript": "It was so loud that we couldn't hear each other.",
+    "translation": "Estaba tan ruidoso que no podíamos escucharnos.",
+    "question": "Why couldn't they hear each other?",
+    "options": [
+      "It was too loud",
+      "They were far apart",
+      "The phone was broken"
+    ],
+    "correct": 0,
+    "explain": "\"So loud that\" muestra la causa y el resultado."
+  },
+  {
+    "id": "l-medio-m100-4",
+    "audioFile": "audio/miembros100/l-medio-m100-4.mp3",
+    "transcript": "He is old enough to drive now.",
+    "translation": "Él ya tiene edad suficiente para manejar.",
+    "question": "What can he do now?",
+    "options": [
+      "Drive",
+      "Vote",
+      "Work"
+    ],
+    "correct": 0,
+    "explain": "\"Old enough to\" indica que ya cumple la edad necesaria."
+  },
+  {
+    "id": "l-medio-m100-5",
+    "audioFile": "audio/miembros100/l-medio-m100-5.mp3",
+    "transcript": "I fixed the computer myself.",
+    "translation": "Arreglé la computadora yo mismo.",
+    "question": "Who fixed the computer?",
+    "options": [
+      "The speaker",
+      "A technician",
+      "His brother"
+    ],
+    "correct": 0,
+    "explain": "\"Myself\" enfatiza que el hablante lo hizo sin ayuda."
+  }
+]
+);
+
+LISTENING_BANK.avanzado.push(
+[
+  {
+    "id": "l-avanzado-m100-1",
+    "audioFile": "audio/miembros100/l-avanzado-m100-1.mp3",
+    "transcript": "The proposal should be reviewed before Friday.",
+    "translation": "La propuesta debería ser revisada antes del viernes.",
+    "question": "What needs to happen before Friday?",
+    "options": [
+      "The proposal should be reviewed",
+      "The proposal was rejected",
+      "The meeting was cancelled"
+    ],
+    "correct": 0,
+    "explain": "\"Should be reviewed\" es voz pasiva con modal."
+  },
+  {
+    "id": "l-avanzado-m100-2",
+    "audioFile": "audio/miembros100/l-avanzado-m100-2.mp3",
+    "transcript": "Little did they know the flight would be delayed.",
+    "translation": "Poco sabían que el vuelo se retrasaría.",
+    "question": "What is implied?",
+    "options": [
+      "They did not expect the delay",
+      "They expected the delay",
+      "The flight was on time"
+    ],
+    "correct": 0,
+    "explain": "\"Little did they know\" es una inversión que enfatiza que no lo sabían."
+  },
+  {
+    "id": "l-avanzado-m100-3",
+    "audioFile": "audio/miembros100/l-avanzado-m100-3.mp3",
+    "transcript": "It goes without saying that safety comes first.",
+    "translation": "Ni qué decir que la seguridad es lo primero.",
+    "question": "What does the phrase suggest?",
+    "options": [
+      "That the point is obvious",
+      "That there is doubt about it",
+      "That safety is not important"
+    ],
+    "correct": 0,
+    "explain": "\"It goes without saying\" introduce algo que se considera obvio."
+  },
+  {
+    "id": "l-avanzado-m100-4",
+    "audioFile": "audio/miembros100/l-avanzado-m100-4.mp3",
+    "transcript": "Not until the results arrived did she relax.",
+    "translation": "No fue sino hasta que llegaron los resultados que ella se relajó.",
+    "question": "When did she relax?",
+    "options": [
+      "After the results arrived",
+      "Before the results arrived",
+      "She never relaxed"
+    ],
+    "correct": 0,
+    "explain": "\"Not until... did\" es una inversión enfática."
+  },
+  {
+    "id": "l-avanzado-m100-5",
+    "audioFile": "audio/miembros100/l-avanzado-m100-5.mp3",
+    "transcript": "The project succeeded, albeit with some delays.",
+    "translation": "El proyecto tuvo éxito, aunque con algunos retrasos.",
+    "question": "Did the project succeed?",
+    "options": [
+      "Yes, despite some delays",
+      "No, it failed",
+      "It's unclear"
+    ],
+    "correct": 0,
+    "explain": "\"Albeit\" significa \"aunque\", introduce una excepción menor."
+  }
+]
+);
+
+WRITING_BANK.principiante.push(
+[
+  {
+    "id": "w-principiante-m100-1",
+    "prompt": "Escribe una frase negativa usando \"I don't have\".",
+    "target": "...",
+    "checkPattern": "i (don't|do not) have (a|an) [a-z]+",
+    "hint": "Estructura esperada: “I don't have a ___.”",
+    "example": {
+      "en": "I don't have a car.",
+      "es": "No tengo un carro."
+    },
+    "checklist": [
+      "¿Usaste \"don't have\"?",
+      "¿Pusiste \"a\" o \"an\" antes de la cosa?"
+    ]
+  },
+  {
+    "id": "w-principiante-m100-2",
+    "prompt": "Escribe una frase diciendo la edad de otra persona (she/he).",
+    "target": "...",
+    "checkPattern": "(she|he) is [a-z0-9]+ years old",
+    "hint": "Estructura esperada: “She/He is ___ years old.”",
+    "example": {
+      "en": "He is ten years old.",
+      "es": "Él tiene diez años."
+    },
+    "checklist": [
+      "¿Usaste \"she is\" o \"he is\"?",
+      "¿Terminaste con \"years old\"?"
+    ]
+  },
+  {
+    "id": "w-principiante-m100-3",
+    "prompt": "Escribe una frase diciendo de dónde eres.",
+    "target": "...",
+    "checkPattern": "i am from [a-z]+",
+    "hint": "Estructura esperada: “I am from ___.”",
+    "example": {
+      "en": "I am from Mexico.",
+      "es": "Soy de México."
+    },
+    "checklist": [
+      "¿Usaste \"I am from\"?",
+      "¿Pusiste el nombre de un lugar?"
+    ]
+  },
+  {
+    "id": "w-principiante-m100-4",
+    "prompt": "Escribe una frase diciendo qué le gusta a otra persona (he/she).",
+    "target": "...",
+    "checkPattern": "(he|she) likes [a-z]+",
+    "hint": "Estructura esperada: “He/She likes ___.”",
+    "example": {
+      "en": "She likes chocolate.",
+      "es": "A ella le gusta el chocolate."
+    },
+    "checklist": [
+      "¿Usaste \"likes\" (con -s) y no \"like\"?"
+    ]
+  },
+  {
+    "id": "w-principiante-m100-5",
+    "prompt": "Escribe una frase diciendo a dónde vas todos los días.",
+    "target": "...",
+    "checkPattern": "i go to [a-z]+ every day",
+    "hint": "Estructura esperada: “I go to ___ every day.”",
+    "example": {
+      "en": "I go to work every day.",
+      "es": "Voy al trabajo todos los días."
+    },
+    "checklist": [
+      "¿Usaste \"I go to\"?",
+      "¿Terminaste con \"every day\"?"
+    ]
+  }
+]
+);
+
+WRITING_BANK.facil.push(
+[
+  {
+    "id": "w-facil-m100-1",
+    "prompt": "Escribe una frase con un verbo irregular en pasado (went, ate, saw...).",
+    "target": "...",
+    "checkPattern": "\\b(went|ate|saw|did|had|made|took|got|read|wrote)\\b",
+    "hint": "Usa uno de estos verbos irregulares en pasado: went, ate, saw, did, had, made, took, got.",
+    "example": {
+      "en": "Yesterday I went to the beach.",
+      "es": "Ayer fui a la playa."
+    },
+    "checklist": [
+      "¿Usaste un verbo irregular en pasado?",
+      "¿La frase habla de algo que ya pasó?"
+    ]
+  },
+  {
+    "id": "w-facil-m100-2",
+    "prompt": "Escribe una petición educada usando \"Please\".",
+    "target": "...",
+    "checkPattern": "^please [a-z]+",
+    "hint": "Estructura esperada: “Please + verbo.” (al inicio de la frase)",
+    "example": {
+      "en": "Please open the door.",
+      "es": "Por favor, abre la puerta."
+    },
+    "checklist": [
+      "¿Empezaste la frase con \"Please\"?"
+    ]
+  },
+  {
+    "id": "w-facil-m100-3",
+    "prompt": "Escribe una frase usando \"I want to\" + verbo.",
+    "target": "...",
+    "checkPattern": "i want to [a-z]+",
+    "hint": "Estructura esperada: “I want to ___.”",
+    "example": {
+      "en": "I want to learn Spanish... I mean, English!",
+      "es": "¡Quiero aprender inglés!"
+    },
+    "checklist": [
+      "¿Usaste \"I want to\" + verbo base?"
+    ]
+  },
+  {
+    "id": "w-facil-m100-4",
+    "prompt": "Escribe una pregunta usando \"How much\" o \"How many\".",
+    "target": "...",
+    "checkPattern": "^how (much|many) [a-z]+",
+    "hint": "Estructura esperada: “How much/many ___...?”",
+    "example": {
+      "en": "How many books do you have?",
+      "es": "¿Cuántos libros tienes?"
+    },
+    "checklist": [
+      "¿Usaste \"How much\" (para cosas que no se cuentan) o \"How many\" (para cosas que sí se cuentan)?",
+      "¿Termina con signo de pregunta?"
+    ]
+  },
+  {
+    "id": "w-facil-m100-5",
+    "prompt": "Escribe una frase usando un pronombre de objeto (me, him, her, us, them).",
+    "target": "...",
+    "checkPattern": "\\b(me|him|her|us|them)\\b",
+    "hint": "Usa uno de estos pronombres: me, him, her, us, them.",
+    "example": {
+      "en": "Give it to me, please.",
+      "es": "Dámelo, por favor."
+    },
+    "checklist": [
+      "¿Usaste un pronombre de objeto (me/him/her/us/them)?"
+    ]
+  }
+]
+);
+
+WRITING_BANK.medio.push(
+[
+  {
+    "id": "w-medio-m100-1",
+    "prompt": "Escribe una frase afirmativa y agrégale un question tag.",
+    "target": "...",
+    "checkPattern": "\\b(don't you|doesn't he|doesn't she|didn't you|aren't you|isn't it|won't you|can't you)\\b\\?",
+    "hint": "Estructura esperada: frase afirmativa + question tag negativo, ej. “..., don't you?”",
+    "example": {
+      "en": "You like pizza, don't you?",
+      "es": "Te gusta la pizza, ¿verdad?"
+    },
+    "checklist": [
+      "¿La primera parte es afirmativa?",
+      "¿El question tag es negativo?",
+      "¿Termina con signo de pregunta?"
+    ]
+  },
+  {
+    "id": "w-medio-m100-2",
+    "prompt": "Escribe una frase con futuro perfecto (will have + participio).",
+    "target": "...",
+    "checkPattern": "will have [a-z]+ed\\b|will have (been|done|gone|seen|written|finished|eaten|taken|made|left)",
+    "hint": "Estructura esperada: “... will have + participio ... (by/before ___).”",
+    "example": {
+      "en": "By next year, I will have finished my degree.",
+      "es": "Para el próximo año, habré terminado mi carrera."
+    },
+    "checklist": [
+      "¿Usaste \"will have\" + participio?",
+      "¿Mencionas un momento futuro (by/before ___)?"
+    ]
+  },
+  {
+    "id": "w-medio-m100-3",
+    "prompt": "Escribe una frase con “so ___ that” (causa y resultado).",
+    "target": "...",
+    "checkPattern": "so [a-z]+ that",
+    "hint": "Estructura esperada: “... so + adjetivo + that + resultado.”",
+    "example": {
+      "en": "It was so cold that we stayed inside.",
+      "es": "Hacía tanto frío que nos quedamos adentro."
+    },
+    "checklist": [
+      "¿Usaste \"so\" + adjetivo + \"that\"?",
+      "¿La segunda parte muestra el resultado?"
+    ]
+  },
+  {
+    "id": "w-medio-m100-4",
+    "prompt": "Escribe una frase con “___ enough to ___”.",
+    "target": "...",
+    "checkPattern": "[a-z]+ enough to [a-z]+",
+    "hint": "Estructura esperada: “___ + adjetivo + enough to + verbo.”",
+    "example": {
+      "en": "She is old enough to travel alone.",
+      "es": "Ella tiene edad suficiente para viajar sola."
+    },
+    "checklist": [
+      "¿Usaste \"enough to\" después de un adjetivo?"
+    ]
+  },
+  {
+    "id": "w-medio-m100-5",
+    "prompt": "Escribe una frase usando un pronombre reflexivo (myself, yourself, himself...).",
+    "target": "...",
+    "checkPattern": "\\b(myself|yourself|himself|herself|ourselves|themselves)\\b",
+    "hint": "Usa un pronombre reflexivo: myself, yourself, himself, herself, ourselves, themselves.",
+    "example": {
+      "en": "I fixed it myself.",
+      "es": "Lo arreglé yo mismo."
+    },
+    "checklist": [
+      "¿Usaste un pronombre reflexivo?"
+    ]
+  }
+]
+);
+
+WRITING_BANK.avanzado.push(
+[
+  {
+    "id": "w-avanzado-m100-1",
+    "prompt": "Escribe una frase en voz pasiva usando un modal (should/must/might be + participio).",
+    "target": "...",
+    "checkPattern": "(should|must|might|could|can) be [a-z]+ed\\b|(should|must|might|could|can) be (done|made|written|seen|taken|given|built|sent|finished)",
+    "hint": "Estructura esperada: “___ + modal + be + participio.”",
+    "example": {
+      "en": "The report should be finished by Friday.",
+      "es": "El informe debería estar terminado para el viernes."
+    },
+    "checklist": [
+      "¿Usaste un modal (should/must/might/could/can) + be + participio?"
+    ]
+  },
+  {
+    "id": "w-avanzado-m100-2",
+    "prompt": "Escribe una frase empezando con “Little did” (inversión enfática).",
+    "target": "...",
+    "checkPattern": "^little did",
+    "hint": "Estructura esperada: “Little did + sujeto + verbo base ..., que...”",
+    "example": {
+      "en": "Little did he know the meeting would be cancelled.",
+      "es": "Poco sabía él que la reunión sería cancelada."
+    },
+    "checklist": [
+      "¿Empezaste la frase con \"Little did\"?",
+      "¿Invertiste el orden como en una pregunta?"
+    ]
+  },
+  {
+    "id": "w-avanzado-m100-3",
+    "prompt": "Escribe una frase usando “It goes without saying that”.",
+    "target": "...",
+    "checkPattern": "it goes without saying that",
+    "hint": "Estructura esperada: “It goes without saying that + idea obvia.”",
+    "example": {
+      "en": "It goes without saying that quality comes first.",
+      "es": "Ni qué decir que la calidad es lo primero."
+    },
+    "checklist": [
+      "¿Usaste la frase completa \"It goes without saying that\"?"
+    ]
+  },
+  {
+    "id": "w-avanzado-m100-4",
+    "prompt": "Escribe una frase empezando con “Not until” (inversión enfática).",
+    "target": "...",
+    "checkPattern": "^not until",
+    "hint": "Estructura esperada: “Not until + evento + did + sujeto + verbo base.”",
+    "example": {
+      "en": "Not until the deadline passed did they respond.",
+      "es": "No fue sino hasta que pasó la fecha límite que respondieron."
+    },
+    "checklist": [
+      "¿Empezaste la frase con \"Not until\"?",
+      "¿Usaste \"did\" + verbo base después?"
+    ]
+  },
+  {
+    "id": "w-avanzado-m100-5",
+    "prompt": "Escribe una frase usando “albeit” (aunque, formal).",
+    "target": "...",
+    "checkPattern": "\\balbeit\\b",
+    "hint": "Usa \"albeit\" para introducir una excepción menor, ej. “..., albeit with ___.”",
+    "example": {
+      "en": "The project succeeded, albeit with some setbacks.",
+      "es": "El proyecto tuvo éxito, aunque con algunos contratiempos."
+    },
+    "checklist": [
+      "¿Usaste la palabra \"albeit\"?"
+    ]
+  }
+]
+);
+
+SPEAKING_BANK.principiante.push(
+[
+  {
+    "id": "s-principiante-m100-1",
+    "sentence": "I have a green bike.",
+    "translation": "Tengo una bicicleta verde.",
+    "audioFile": "audio/miembros100/s-principiante-m100-1.mp3"
+  },
+  {
+    "id": "s-principiante-m100-2",
+    "sentence": "The spoon is on the table.",
+    "translation": "La cuchara está en la mesa.",
+    "audioFile": "audio/miembros100/s-principiante-m100-2.mp3"
+  },
+  {
+    "id": "s-principiante-m100-3",
+    "sentence": "My bed is soft.",
+    "translation": "Mi cama es suave.",
+    "audioFile": "audio/miembros100/s-principiante-m100-3.mp3"
+  },
+  {
+    "id": "s-principiante-m100-4",
+    "sentence": "This is my cup.",
+    "translation": "Esta es mi taza.",
+    "audioFile": "audio/miembros100/s-principiante-m100-4.mp3"
+  },
+  {
+    "id": "s-principiante-m100-5",
+    "sentence": "I go to school every day.",
+    "translation": "Voy a la escuela todos los días.",
+    "audioFile": "audio/miembros100/s-principiante-m100-5.mp3"
+  }
+]
+);
+
+SPEAKING_BANK.facil.push(
+[
+  {
+    "id": "s-facil-m100-1",
+    "sentence": "Yesterday I went to the park.",
+    "translation": "Ayer fui al parque.",
+    "audioFile": "audio/miembros100/s-facil-m100-1.mp3"
+  },
+  {
+    "id": "s-facil-m100-2",
+    "sentence": "She started a new job.",
+    "translation": "Ella empezó un nuevo trabajo.",
+    "audioFile": "audio/miembros100/s-facil-m100-2.mp3"
+  },
+  {
+    "id": "s-facil-m100-3",
+    "sentence": "This month is very busy.",
+    "translation": "Este mes está muy ocupado.",
+    "audioFile": "audio/miembros100/s-facil-m100-3.mp3"
+  },
+  {
+    "id": "s-facil-m100-4",
+    "sentence": "The shirt is black and yellow.",
+    "translation": "La camisa es negra y amarilla.",
+    "audioFile": "audio/miembros100/s-facil-m100-4.mp3"
+  },
+  {
+    "id": "s-facil-m100-5",
+    "sentence": "We meet every week.",
+    "translation": "Nos reunimos cada semana.",
+    "audioFile": "audio/miembros100/s-facil-m100-5.mp3"
+  }
+]
+);
+
+SPEAKING_BANK.medio.push(
+[
+  {
+    "id": "s-medio-m100-1",
+    "sentence": "You like pizza, don't you?",
+    "translation": "Te gusta la pizza, ¿verdad?",
+    "audioFile": "audio/miembros100/s-medio-m100-1.mp3"
+  },
+  {
+    "id": "s-medio-m100-2",
+    "sentence": "By next year, I will have finished my degree.",
+    "translation": "Para el próximo año, habré terminado mi carrera.",
+    "audioFile": "audio/miembros100/s-medio-m100-2.mp3"
+  },
+  {
+    "id": "s-medio-m100-3",
+    "sentence": "It was so loud that we couldn't talk.",
+    "translation": "Estaba tan ruidoso que no podíamos hablar.",
+    "audioFile": "audio/miembros100/s-medio-m100-3.mp3"
+  },
+  {
+    "id": "s-medio-m100-4",
+    "sentence": "She is old enough to travel alone.",
+    "translation": "Ella tiene edad suficiente para viajar sola.",
+    "audioFile": "audio/miembros100/s-medio-m100-4.mp3"
+  },
+  {
+    "id": "s-medio-m100-5",
+    "sentence": "I fixed it myself.",
+    "translation": "Lo arreglé yo mismo.",
+    "audioFile": "audio/miembros100/s-medio-m100-5.mp3"
+  }
+]
+);
+
+SPEAKING_BANK.avanzado.push(
+[
+  {
+    "id": "s-avanzado-m100-1",
+    "sentence": "The proposal should be reviewed by the board.",
+    "translation": "La propuesta debería ser revisada por la junta.",
+    "audioFile": "audio/miembros100/s-avanzado-m100-1.mp3"
+  },
+  {
+    "id": "s-avanzado-m100-2",
+    "sentence": "Little did we know the meeting would be cancelled.",
+    "translation": "Poco sabíamos que la reunión sería cancelada.",
+    "audioFile": "audio/miembros100/s-avanzado-m100-2.mp3"
+  },
+  {
+    "id": "s-avanzado-m100-3",
+    "sentence": "It goes without saying that quality comes first.",
+    "translation": "Ni qué decir que la calidad es lo primero.",
+    "audioFile": "audio/miembros100/s-avanzado-m100-3.mp3"
+  },
+  {
+    "id": "s-avanzado-m100-4",
+    "sentence": "Not until the deadline passed did they respond.",
+    "translation": "No fue sino hasta que pasó la fecha límite que respondieron.",
+    "audioFile": "audio/miembros100/s-avanzado-m100-4.mp3"
+  },
+  {
+    "id": "s-avanzado-m100-5",
+    "sentence": "The project succeeded, albeit with some setbacks.",
+    "translation": "El proyecto tuvo éxito, aunque con algunos contratiempos.",
+    "audioFile": "audio/miembros100/s-avanzado-m100-5.mp3"
+  }
+]
+);
+

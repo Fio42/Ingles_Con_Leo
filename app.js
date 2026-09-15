@@ -638,11 +638,11 @@ function saveLastVariantMap(map){
    no por posicion relativa, para que agregar mas contenido despues (para
    todos o solo miembros) nunca desordene cual variante sigue bloqueada. */
 const MEMBERS_ONLY_VARIANT_INDEX = {
-  gramatica:   { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
-  vocabulario: { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
-  listening:   { principiante:[5,7,8], facil:[10,12,13], medio:[7,9,10], avanzado:[7,9,10] },
-  writing:     { principiante:[2,4,5], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] },
-  speaking:    { principiante:[5,7], facil:[6,8], medio:[6,8], avanzado:[6,8] }
+  gramatica:   { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
+  vocabulario: { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
+  listening:   { principiante:[5,7,8,9], facil:[10,12,13,14], medio:[7,9,10,11], avanzado:[7,9,10,11] },
+  writing:     { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
+  speaking:    { principiante:[5,7,8], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] }
 };
 function pickVariantIndex(skill, level, variantCount, excludeIndex){
   if(!variantCount || variantCount <= 1) return 0;
