@@ -527,6 +527,7 @@ function bankSizeFor(skill){
   }
   if(skill === 'vocabulario') return LEVELS.reduce((sum,l)=> sum + VOCAB_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'listening') return LEVELS.reduce((sum,l)=> sum + LISTENING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
+  if(skill === 'lectura') return LEVELS.reduce((sum,l)=> sum + READING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'writing') return LEVELS.reduce((sum,l)=> sum + WRITING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'speaking') return LEVELS.reduce((sum,l)=> sum + SPEAKING_BANK[l].reduce((vs,variant)=> vs + variant.length, 0), 0);
   if(skill === 'mixto') return LEVELS.length * MIX_NOMINAL_SIZE;
@@ -593,9 +594,9 @@ function computeStreak(){
   return computeActiveStreakDates().length;
 }
 
-const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listening:'Listening', writing:'Writing', speaking:'Speaking', mixto:'Mixto' };
-const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3554F0', writing:'#F5A524', speaking:'#8B5CF6', mixto:'#0EA5A0' };
-const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', writing:'writing.html', speaking:'speaking.html', mixto:'mixto.html' };
+const SKILL_LABELS = { gramatica:'Gramática', vocabulario:'Vocabulario', listening:'Listening', lectura:'Lectura', writing:'Writing', speaking:'Speaking', mixto:'Mixto' };
+const SKILL_COLORS = { gramatica:'#EF5A45', vocabulario:'#1FA463', listening:'#3554F0', lectura:'#0D9488', writing:'#F5A524', speaking:'#8B5CF6', mixto:'#0EA5A0' };
+const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html', listening:'listening.html', lectura:'lectura.html', writing:'writing.html', speaking:'speaking.html', mixto:'mixto.html' };
 
 // "Clases interactivas" es una actividad aparte de las 5 habilidades de
 // arriba (no debe sumarse a sus anillos/porcentajes de cobertura, ver
@@ -617,6 +618,7 @@ function bankSizeForLevel(skill, level){
   if(skill === 'gramatica') return GRAMMAR_BANK[level].reduce((vs,variant)=> vs + variant.reduce((s,t)=> s+t.items.length, 0), 0);
   if(skill === 'vocabulario') return VOCAB_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'listening') return LISTENING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
+  if(skill === 'lectura') return READING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'writing') return WRITING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'speaking') return SPEAKING_BANK[level].reduce((vs,variant)=> vs + variant.length, 0);
   if(skill === 'mixto') return MIX_NOMINAL_SIZE;
@@ -1394,6 +1396,93 @@ function runListeningSession({ container, level, onExit }){
       topics: ['Comprensión auditiva'], currentHref:'listening.html'
     });
     wireSummaryButtons(container, ()=>runListeningSession({ container, level, onExit }));
+  }
+  renderItem();
+}
+
+/* ============================================================
+   SESIÓN DE LECTURA — comprensión de lectura general (no examen).
+   Mismo motor que Listening (buildSessionPool/rebuildPoolFromVariantIdxs,
+   resumible con inflight session), pero mostrando el pasaje de texto
+   en vez de un botón de audio. Cada ítem trae su propio passage +
+   translation aunque varios ítems seguidos compartan el mismo texto
+   (misma idea que IELTS Reading en ielts.js).
+   ============================================================ */
+function runReadingSession({ container, level, onExit }){
+  stopActiveAudioFile();
+  const saved = loadInflightSession('lectura', level);
+  let pool, usedVariantIdxs;
+  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+    usedVariantIdxs = saved.variantIdxs;
+    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'lectura', bankLevel:READING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
+  } else {
+    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'lectura', level, bankLevel:READING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
+  }
+  const total = pool.length;
+  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
+  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
+  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+
+  function renderItem(){
+    const item = pool[idx];
+    saveInflightSession('lectura', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Lectura', level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+
+    card.innerHTML = `
+      <div class="practice-instruction">Lee</div>
+      <div class="reading-passage"><h4>${item.title}</h4><p>${item.passage}</p></div>
+      <div class="practice-prompt" style="font-size:1.05rem;margin-top:16px;">${item.question}</div>
+      <div class="option-list" id="optList"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="next-row" id="nextRow"></div>`;
+    const list = card.querySelector('#optList');
+    const { options: shuffledReadOptions, correct: shuffledReadCorrect } = shuffleOptions(item.options, item.correct);
+    shuffledReadOptions.forEach((opt,i)=>{
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.innerHTML = `<span class="dot"></span><span>${opt}</span>`;
+      b.addEventListener('click', ()=>{
+        const isCorrect = i === shuffledReadCorrect;
+        [...list.children].forEach((el,j)=>{
+          el.disabled = true;
+          if(j === shuffledReadCorrect) el.classList.add('correct');
+          if(j === i && !isCorrect) el.classList.add('incorrect');
+        });
+        const fb = card.querySelector('#fb');
+        fb.classList.add('show');
+        fb.classList.toggle('ok', isCorrect);
+        fb.classList.toggle('bad', !isCorrect);
+        fb.innerHTML = `
+          <div class="fb-head">${isCorrect ? OK_ICON : BAD_ICON}<span>${isCorrect ? 'Correcto' : 'Casi.'}</span></div>
+          <p class="fb-explain">${item.explain}</p>
+          <div class="examples-block">
+            <div class="examples-label">Traducción</div>
+            <div class="example-pair"><div class="example-en">${item.passage}</div><div class="example-es">${item.translation}</div></div>
+          </div>`;
+        results.push({ itemId:item.id, isCorrect });
+        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+          idx++;
+          if(idx < total) renderItem(); else finish();
+        }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
+      });
+      list.appendChild(b);
+    });
+  }
+  function finish(){
+    const correct = results.filter(r=>r.isCorrect).length;
+    clearInflightSession('lectura', level);
+    recordSession({ skill:'lectura', level, topics:['Comprensión de lectura'], results, startedAt });
+    container.innerHTML = renderSessionSummary({
+      title:'¡Listo!', score:`${correct} / ${total} correctas`,
+      topics: ['Comprensión de lectura'], currentHref:'lectura.html'
+    });
+    wireSummaryButtons(container, ()=>runReadingSession({ container, level, onExit }));
   }
   renderItem();
 }

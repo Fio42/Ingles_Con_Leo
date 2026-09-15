@@ -518,6 +518,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-icon-wrap.tint-gramatica{background:var(--coral-tint);color:var(--coral);}
 .skill-icon-wrap.tint-vocabulario{background:var(--green-tint);color:var(--green);}
 .skill-icon-wrap.tint-listening{background:var(--blue-tint);color:var(--blue);}
+.skill-icon-wrap.tint-lectura{background:var(--teal-tint);color:var(--teal);}
 .skill-icon-wrap.tint-writing{background:var(--amber-tint);color:var(--amber);}
 .skill-icon-wrap.tint-speaking{background:var(--violet-tint);color:var(--violet);}
 .skill-icon-wrap.tint-mixto{background:var(--paper-dim);color:var(--ink-soft);}
