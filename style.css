@@ -553,8 +553,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .dash-greeting{font-size:2.05rem;}
 .dash-sub{font-size:1.02rem;margin-bottom:30px;}
 
-.stat-cards{display:grid;gap:16px;grid-template-columns:repeat(2,1fr);margin:26px 0 32px;}
-@media(min-width:760px){.stat-cards{grid-template-columns:repeat(4,1fr);}}
+.stat-cards{display:grid;gap:16px;grid-template-columns:repeat(1,1fr);margin:26px 0 32px;}
+@media(min-width:600px){.stat-cards{grid-template-columns:repeat(3,1fr);}}
 .stat-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:22px 22px;display:flex;align-items:center;gap:16px;}
 .stat-card-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .stat-card-icon svg{width:26px;height:26px;}
@@ -612,13 +612,17 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 .stat-icon-member svg{animation:statStarPop .6s ease-out both;}
 
-/* "Racha": la única animación continua del panel — muy sutil,
-   ciclo lento (~2.8s), sin rebotes. */
+/* "Racha": animación continua tipo llama, con varios puntos en vez
+   de un solo vaivén, para que se vea como un flickeo real de fuego
+   y no un simple respiro. Sigue siendo sutil (nunca es brusca). */
 @keyframes statFlameFloat{
-  0%,100%{transform:scale(1) rotate(0deg);}
-  50%{transform:scale(1.09) rotate(3deg);}
+  0%,100%{transform:scale(1,1) rotate(0deg);}
+  20%{transform:scale(1.05,0.95) rotate(-2deg);}
+  40%{transform:scale(0.97,1.07) rotate(2deg);}
+  60%{transform:scale(1.08,0.94) rotate(-1deg);}
+  80%{transform:scale(0.98,1.04) rotate(1deg);}
 }
-.stat-icon-streak svg{transform-origin:50% 90%;animation:statFlameFloat 2.8s ease-in-out infinite;}
+.stat-icon-streak svg,.streak-flame svg{transform-origin:50% 95%;animation:statFlameFloat 2.2s ease-in-out infinite;}
 
 /* "Nivel actual": las 3 barras suben una detrás de otra, solo al
    cargar la página. Origen de escala fijo en la base de cada barra
@@ -629,9 +633,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .stat-icon-level .stat-bar-2{transform-origin:11px 20px;animation-delay:.12s;}
 .stat-icon-level .stat-bar-3{transform-origin:18px 20px;animation-delay:.24s;}
 
-/* "Ejercicios completados": el check hace un pequeño pop una sola
-   vez al cargar, y debajo se agrega una barra fina con el mismo
-   porcentaje real ya calculado (X de Y). */
+/* "Meta semanal" (antes "Ejercicios completados", misma clase de ícono
+   reutilizada): el ícono hace un pequeño pop una sola vez al cargar, y
+   debajo se agrega una barra fina con el porcentaje real ya calculado
+   (X de 7 días). */
 @keyframes statCheckPop{
   0%{transform:scale(.85);opacity:0;}
   60%{transform:scale(1.08);opacity:1;}

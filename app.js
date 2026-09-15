@@ -2637,21 +2637,16 @@ function renderStatCards(container){
   if(!container) return;
   const streak = computeStreak();
   const level = getUserLevel();
-  const totals = computeTotalStats();
-  const totalPct = totals.total ? Math.round((totals.attempted / totals.total) * 100) : 0;
+  const streakDates = new Set(computeActiveStreakDates());
+  const weekDays = computeWeeklyBarData();
+  weekDays.forEach(d => { d.inStreak = streakDates.has(d.date); });
+  const practicedCount = weekDays.filter(d=>d.inStreak).length;
+  const WEEKLY_GOAL_DAYS = 7;
+  const weeklyPct = Math.round((practicedCount / WEEKLY_GOAL_DAYS) * 100);
   container.innerHTML = `
     <div class="stat-card">
-      <div class="stat-card-icon stat-icon-member" style="background:var(--green-tint);color:var(--green);">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.2L21 9l-5 4.4L17.4 20 12 16.6 6.6 20 8 13.4 3 9l6.4-.8L12 2z" fill="currentColor"/></svg>
-      </div>
-      <div>
-        <div class="stat-card-label">Miembro activo</div>
-        <div class="stat-card-value">¡Gracias por ser parte!</div>
-      </div>
-    </div>
-    <div class="stat-card">
       <div class="stat-card-icon stat-icon-streak" style="background:var(--coral-tint);color:var(--coral);">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+        <svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.545 3.75 3.75 0 0 1 3.255 3.717Z" fill="currentColor"/></svg>
       </div>
       <div>
         <div class="stat-card-label">Racha</div>
@@ -2672,13 +2667,13 @@ function renderStatCards(container){
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-card-icon stat-icon-exercises" style="background:var(--violet-tint);color:var(--violet);">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+      <div class="stat-card-icon stat-icon-exercises" style="background:var(--green-tint);color:var(--green);">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M3.5 9.5h17" stroke="currentColor" stroke-width="2"/><path d="M8 3v3M16 3v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
       <div>
-        <div class="stat-card-label">Ejercicios completados</div>
-        <div class="stat-card-value">${totals.attempted} <span style="color:var(--ink-faint);font-weight:600;font-size:0.8rem;">de ${totals.total}</span></div>
-        <div class="stat-mini-bar"><div class="stat-mini-bar-fill" data-final-width="${totalPct}" style="width:0%;"></div></div>
+        <div class="stat-card-label">Meta semanal</div>
+        <div class="stat-card-value">${practicedCount} <span style="color:var(--ink-faint);font-weight:600;font-size:0.8rem;">de ${WEEKLY_GOAL_DAYS} días</span></div>
+        <div class="stat-mini-bar"><div class="stat-mini-bar-fill" data-final-width="${weeklyPct}" style="width:0%;background:var(--green);"></div></div>
       </div>
     </div>`;
   requestAnimationFrame(()=>{
@@ -2800,7 +2795,7 @@ function renderStreakCard(container){
   const practicedCount = days.filter(d=>d.inStreak).length;
   container.innerHTML = `
     <div class="streak-flame">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.545 3.75 3.75 0 0 1 3.255 3.717Z" fill="currentColor"/></svg>
     </div>
     <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
     <div class="streak-caption">de racha seguida</div>
