@@ -151,7 +151,7 @@
 
         <div id="paypalConfirming" style="display:none;">
           <p style="margin:0 0 10px;font-weight:700;">Estamos confirmando tu pago... ⏳</p>
-          <p class="gate-hint" style="margin:0 0 14px;">Ya volviste de PayPal. Esto puede tardar unos segundos, no cierres ni recargues la página.</p>
+          <p class="gate-hint" style="margin:0 0 14px;">Ya volviste de completar tu pago. Esto puede tardar unos segundos, no cierres ni recargues la página.</p>
         </div>
 
         <div id="paypalDelayed" style="display:none;">
@@ -504,15 +504,19 @@
     if(paypalDelayed) paypalDelayed.style.display = 'none';
   }
 
-  // Después de pagar con PayPal, PayPal redirige aquí con
-  // ?paypal=success. En ese momento la membresía casi nunca está
-  // activa todavía (el webhook que la activa llega unos segundos
+  // Después de pagar (con PayPal, Stripe o Mercado Pago), el
+  // procesador redirige aquí con ?paypal=success / ?stripe=success /
+  // ?mp=success. En ese momento la membresía casi nunca está activa
+  // todavía (el webhook que la activa suele llegar unos segundos
   // después), así que en vez de mostrar el botón de pago otra vez
   // (que confundía: "¿ya pagué o no?"), mostramos un mensaje de
   // "confirmando tu pago" y revisamos varias veces si ya se activó.
-  const cameFromPaypalSuccess = /(^|[?&])paypal=success(&|$)/.test(window.location.search);
-  let paypalPollTimer = null;
-  async function pollForPaypalMembership(attempt){
+  // Si ya está activa de inmediato (afterAuthSuccess/initGate lo
+  // detectan antes de llegar aquí), este mensaje ni siquiera llega a
+  // mostrarse: solo aparece cuando el acceso NO es inmediato.
+  const cameFromCheckoutReturn = /(^|[?&])(paypal|stripe|mp)=success(&|$)/.test(window.location.search);
+  let checkoutPollTimer = null;
+  async function pollForMembershipAfterCheckout(attempt){
     attempt = attempt || 0;
     try{
       const profile = await LeoBackend.getMemberProfile();
@@ -528,16 +532,16 @@
       paypalDelayed.style.display = 'block';
       return;
     }
-    paypalPollTimer = setTimeout(()=>pollForPaypalMembership(attempt + 1), 3000);
+    checkoutPollTimer = setTimeout(()=>pollForMembershipAfterCheckout(attempt + 1), 3000);
   }
-  function startPaypalConfirming(){
+  function startCheckoutConfirming(){
     payChooser.style.display = 'none';
     paypalDelayed.style.display = 'none';
     paypalConfirming.style.display = 'block';
-    pollForPaypalMembership(0);
+    pollForMembershipAfterCheckout(0);
   }
   if(paypalRecheckBtn){
-    paypalRecheckBtn.addEventListener('click', startPaypalConfirming);
+    paypalRecheckBtn.addEventListener('click', startCheckoutConfirming);
   }
 
   function updateAuthModeUI(){
@@ -863,7 +867,7 @@
         } else {
           showGate();
           showLoginStep(3);
-          if(cameFromPaypalSuccess) startPaypalConfirming();
+          if(cameFromCheckoutReturn) startCheckoutConfirming();
         }
       } else {
         showGate();
