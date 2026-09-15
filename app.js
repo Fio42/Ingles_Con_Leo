@@ -869,6 +869,40 @@ function renderLevelSelector(container, selected, onChange){
   });
 }
 
+/* Envuelve renderLevelSelector para las 7 páginas con sesión por nivel
+   (Gramática, Vocabulario, Listening, Lectura, Writing, Speaking, Mixto):
+   si hay ejercicios respondidos sin terminar en la dificultad actual,
+   avisa antes de cambiar de dificultad (esa sesión queda guardada, pero
+   cambiar ahora empieza una sesión nueva en la otra dificultad). Si no
+   hay nada respondido todavía, cambia directo sin preguntar. No toca
+   renderLevelSelector en sí, que también usan openLevelSwitcher y la
+   práctica gratis con otra lógica (ahí no aplica esta advertencia). */
+function wireLevelSelector(container, skill, onApply){
+  function render(){
+    renderLevelSelector(container, getUserLevel(), (newLevel)=>{
+      const level = getUserLevel();
+      if(newLevel === level) return;
+      const saved = loadInflightSession(skill, level);
+      const inProgress = !!(saved && saved.idx > 0 && saved.idx < saved.total);
+      function apply(){
+        setUserLevel(newLevel);
+        render();
+        onApply(newLevel);
+      }
+      if(!inProgress){ apply(); return; }
+      render(); // revierte la tarjeta que renderLevelSelector ya marcó, por si se cancela
+      showConfirmOverlay({
+        title: 'Cambiar de dificultad',
+        message: `Tienes una sesión de ${SKILL_LABELS[skill] || 'esta habilidad'} a medias en ${LEVEL_META[level].label}. Ese progreso queda guardado y puedes volver a él después, pero si cambias a ${LEVEL_META[newLevel].label} ahora vas a empezar una sesión nueva en esa dificultad. ¿Quieres cambiar?`,
+        confirmLabel: `Sí, cambiar a ${LEVEL_META[newLevel].label}`,
+        cancelLabel: 'Seguir con esta sesión',
+        onConfirm: apply
+      });
+    });
+  }
+  render();
+}
+
 /* ---------- UI: feedback con explicación + ejemplos ---------- */
 const OK_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#1FA463"/><path d="M6 10l3 3 5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BAD_ICON = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#EF5A45"/><path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
