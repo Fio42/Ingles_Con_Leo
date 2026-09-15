@@ -681,6 +681,11 @@ function getSessionLength(){
 function setSessionLength(len){
   try{ if(SESSION_LENGTHS[len]) localStorage.setItem(SESSION_LENGTH_KEY, len); }catch(e){}
 }
+/* Componente "tonto": solo dibuja las 3 tarjetas de duración y avisa con
+   onChange(len) cuando se elige una distinta a la actual. NO guarda nada
+   ni actualiza aria-pressed por sí solo — eso lo maneja quien lo llama
+   (ver wireSessionLengthSelector), porque cambiar la duración a veces
+   necesita confirmar antes con el usuario (ver esa función). */
 function renderSessionLengthSelector(container, selected, onChange){
   if(!container) return;
   container.innerHTML = Object.keys(SESSION_LENGTHS).map(key => `
@@ -691,11 +696,69 @@ function renderSessionLengthSelector(container, selected, onChange){
   container.querySelectorAll('.length-card').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const len = btn.dataset.length;
-      container.querySelectorAll('.length-card').forEach(b=>b.setAttribute('aria-pressed', b===btn ? 'true':'false'));
-      setSessionLength(len);
+      if(len === selected) return; // ya esta seleccionada, no hay nada que hacer
       onChange(len);
     });
   });
+}
+
+/* Envuelve renderSessionLengthSelector para las 6 páginas de habilidad con
+   niveles + duración (Gramática, Vocabulario, Listening, Lectura, Writing,
+   Speaking). Antes de este arreglo, cambiar la duración mientras había una
+   sesión a medias no hacía nada visible: runXSession siempre prioriza
+   resumir la sesión guardada (con su cantidad de ejercicios original), así
+   que la nueva duración elegida se ignoraba en silencio hasta la próxima
+   sesión. Ahora: si no hay ejercicios respondidos que perder, se aplica
+   directo; si sí los hay, se avisa antes de reiniciar esa sesión (el
+   progreso general del usuario no se toca, solo esta sesión a medias). */
+function wireSessionLengthSelector(container, skill, onApply){
+  function render(){
+    renderSessionLengthSelector(container, getSessionLength(), (newLen)=>{
+      const level = getUserLevel();
+      const saved = loadInflightSession(skill, level);
+      const inProgress = !!(saved && saved.idx > 0 && saved.idx < saved.total);
+      function apply(){
+        setSessionLength(newLen);
+        clearInflightSession(skill, level);
+        render();
+        onApply(newLen);
+      }
+      if(!inProgress){ apply(); return; }
+      showConfirmOverlay({
+        title: 'Cambiar la duración',
+        message: `Tienes una sesión de ${SKILL_LABELS[skill] || 'esta habilidad'} a medias. Si cambias la duración, esta sesión se reinicia (tu progreso general no se pierde, solo tendrías que volver a responder estos ejercicios).`,
+        confirmLabel: 'Sí, cambiar duración',
+        cancelLabel: 'Seguir con esta sesión',
+        onConfirm: apply
+      });
+    });
+  }
+  render();
+}
+
+/* Overlay de confirmación genérico, mismo estilo visual que el onboarding
+   y "Cambiar tu nivel" (.onb-overlay/.onb-card). Uso: showConfirmOverlay({
+   title, message, confirmLabel, cancelLabel, onConfirm, onCancel }).
+   onCancel se llama tanto al pulsar "cancelar" como al cerrar haciendo
+   clic fuera de la tarjeta. */
+function showConfirmOverlay({ title, message, confirmLabel, cancelLabel, onConfirm, onCancel }){
+  const overlay = document.createElement('div');
+  overlay.className = 'onb-overlay';
+  overlay.innerHTML = `
+    <div class="onb-card">
+      <h2>${title || '¿Estás seguro?'}</h2>
+      <p>${message || ''}</p>
+      <button type="button" class="btn btn-primary btn-block" id="confirmOverlayYes" style="margin-bottom:10px;">${confirmLabel || 'Sí, continuar'}</button>
+      <button type="button" class="btn btn-ghost btn-block" id="confirmOverlayNo">${cancelLabel || 'Cancelar'}</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  function close(cb){
+    overlay.remove();
+    if(typeof cb === 'function') cb();
+  }
+  overlay.querySelector('#confirmOverlayYes').addEventListener('click', ()=> close(onConfirm));
+  overlay.querySelector('#confirmOverlayNo').addEventListener('click', ()=> close(onCancel));
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) close(onCancel); });
 }
 
 /* ---------- Armado de sesión combinando variantes ----------
