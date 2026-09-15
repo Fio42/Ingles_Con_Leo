@@ -6358,7 +6358,7 @@ const WRITING_BANK = {
         example:{en:"It is believed that the policy will reduce costs.", es:"Se cree que la política reducirá los costos."},
         checklist:["¿Usaste la estructura “It is/was + participio + that”?","¿Evitaste decir quién lo cree o afirma?","¿Suena a un registro académico o formal?"] },
       { id:'w-avz4-4', prompt:"Escribe una frase usando “not only… but also”.", target:"not only...but also",
-        checkPattern:"not only.*but also", hint:"Estructura esperada: “Not only ___, but also ___.”",
+        checkPattern:"not only.*but( [a-z]+)? also", hint:"Estructura esperada: “Not only ___, but also ___.” (también vale “but she/he/it also…”)",
         example:{en:"Not only did she finish the project, but she also improved it.", es:"No solo terminó el proyecto, sino que también lo mejoró."},
         checklist:["¿Usaste “not only” y “but also”?","¿Si empiezas la frase con “Not only”, invertiste el orden verbo–sujeto?","¿La frase tiene sentido?"] }
     ],
