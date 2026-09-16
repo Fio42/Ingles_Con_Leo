@@ -1498,3 +1498,42 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .ielts-chart-table{width:100%;border-collapse:collapse;font-size:0.88rem;}
 .ielts-chart-table th, .ielts-chart-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
 .ielts-chart-table th{color:var(--ink-faint);font-weight:700;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.03em;}
+
+/* ---------- Área de miembros para cuentas sin membresía todavía ----------
+   Usado en miembros.html: pantalla de bienvenida tras crear cuenta
+   (.welcome-*), banner discreto de upgrade (.upgrade-banner) y la
+   vista de "candados" del área de miembros (.locked-*). Mismo
+   lenguaje visual que .pricing-card/.mistakes-card/.stat-card, solo
+   variantes nuevas, no se tocó ninguna clase existente. */
+.welcome-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 22px;text-align:left;}
+.welcome-benefit{display:flex;align-items:flex-start;gap:10px;background:var(--blue-tint);border-radius:var(--radius-sm);padding:12px 14px;}
+.welcome-benefit-icon{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
+.welcome-benefit-icon svg{width:16px;height:16px;}
+.welcome-benefit-text{font-size:0.86rem;font-weight:600;color:var(--ink);line-height:1.3;}
+@media (max-width:520px){
+  .welcome-benefits{grid-template-columns:1fr;}
+}
+
+.upgrade-banner{background:#fff;border:2px solid #d9e1ff;border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);max-width:640px;}
+.upgrade-banner h3{font-family:'Baloo 2';margin:0;font-size:1.1rem;color:var(--ink);}
+.upgrade-banner p{margin:0;color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
+.upgrade-banner .btn{align-self:flex-start;}
+.upgrade-banner-note{font-size:0.78rem;color:var(--ink-faint);}
+
+.locked-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0;}
+.locked-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 20px 18px;display:flex;flex-direction:column;gap:8px;opacity:0.92;}
+.locked-card-top{display:flex;align-items:center;justify-content:flex-end;}
+.locked-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--paper-dim);color:var(--ink-faint);flex-shrink:0;}
+.locked-badge svg{width:13px;height:13px;}
+.locked-card h3{font-family:'Baloo 2';margin:0;font-size:1.02rem;color:var(--ink);}
+.locked-card p{margin:0;color:var(--ink-soft);font-size:0.86rem;line-height:1.45;}
+@media (max-width:900px){
+  .locked-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:560px){
+  .locked-grid{grid-template-columns:1fr;}
+}
+.member-preview-head{max-width:640px;margin:0 auto 18px;}
+.member-preview-head h1{margin:10px 0 4px;font-size:1.5rem;}
+.member-preview-head p{color:var(--ink-soft);margin:0;}
+.member-preview-wrap{max-width:900px;margin:0 auto;padding:0 16px;}

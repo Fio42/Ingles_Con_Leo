@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260915e">
+<link rel="stylesheet" href="style.css?v=20260916a">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -146,6 +146,38 @@
         </div>
         <button class="btn btn-primary btn-block" id="setNewPasswordBtn" style="margin-top:10px;">Guardar contraseña</button>
       </div>
+      <div id="loginWelcome" style="display:none;text-align:center;">
+        <p style="margin:0 0 4px;font-weight:800;font-size:1.15rem;color:var(--ink);">¡Tu cuenta está lista! 🎉</p>
+        <p class="gate-hint" style="margin:0 0 4px;">Desbloquea todas las herramientas de Inglés con Leo por $2 USD al mes.</p>
+        <div class="welcome-benefits">
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Práctica ilimitada</span>
+          </div>
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Repasa tus errores</span>
+          </div>
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Estadísticas y progreso</span>
+          </div>
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Clases interactivas</span>
+          </div>
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Preparación para exámenes</span>
+          </div>
+          <div class="welcome-benefit">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Todo el contenido para miembros</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="welcomeActivateBtn">Activar membresía — $2 USD/mes</button>
+        <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
+      </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, oferta por tiempo limitado):</p>
 
@@ -207,6 +239,76 @@
       </ul>
       <button type="button" class="btn btn-primary btn-block" id="pricingCtaBtn">Accede por $2 USD/mes <span aria-hidden="true">→</span></button>
       <p class="pricing-cancel-note">Cancela cuando quieras. 🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
+    </div>
+  </div>
+
+  <!-- ÁREA DE MIEMBROS PARA CUENTAS SIN MEMBRESÍA (is_member=false) -->
+  <div id="memberPreview" style="display:none;">
+    <div class="member-preview-wrap">
+      <div class="member-preview-head" style="text-align:center;">
+        <span class="badge badge-members">Miembros</span>
+        <h1>Tu área de miembros</h1>
+        <p>Así se ve todo lo que tienes disponible en cuanto actives tu membresía.</p>
+      </div>
+
+      <div class="upgrade-banner" style="margin:0 auto 6px;">
+        <h3>Tu cuenta ya está lista.</h3>
+        <p>Activa tu membresía por $2 USD al mes y desbloquea todas las herramientas para seguir mejorando tu inglés.</p>
+        <button type="button" class="btn btn-primary" id="previewActivateBtn">Activar membresía</button>
+        <p class="upgrade-banner-note">Stripe · PayPal · Mercado Pago · Cancela cuando quieras</p>
+      </div>
+
+      <div class="locked-grid">
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Práctica ilimitada</h3>
+          <p>Gramática, vocabulario, listening, speaking y writing sin límite diario.</p>
+        </div>
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Mi progreso</h3>
+          <p>Consulta tus estadísticas, actividad y evolución.</p>
+        </div>
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Mis errores</h3>
+          <p>Guarda tus errores y vuelve a practicarlos.</p>
+        </div>
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Clases interactivas</h3>
+          <p>Avanza paso a paso con clases guiadas.</p>
+        </div>
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Preparación TOEFL / IELTS</h3>
+          <p>Practica ejercicios enfocados en exámenes oficiales.</p>
+        </div>
+        <div class="locked-card">
+          <div class="locked-card-top">
+            <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
+          </div>
+          <h3>Todo el contenido para miembros</h3>
+          <p>Sin restricciones. Cancela cuando quieras.</p>
+        </div>
+      </div>
+
+      <p style="text-align:center;">
+        <a href="practica.html" style="color:var(--blue);font-weight:600;">Mientras tanto, sigue practicando gratis →</a>
+      </p>
+      <p style="text-align:center;margin-top:18px;">
+        <a href="#" id="previewLogoutBtn" style="color:var(--ink-faint);font-size:0.85rem;">Cerrar sesión</a>
+      </p>
     </div>
   </div>
 
@@ -423,18 +525,32 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260915c"></script>
+<script src="app.js?v=20260916a"></script>
 <script src="backend.js"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
   const gate = document.getElementById('gate');
   const gateLoading = document.getElementById('gateLoading');
   const memberContent = document.getElementById('memberContent');
+  const memberPreview = document.getElementById('memberPreview');
   function hideLoading(){ gateLoading.style.display = 'none'; }
-  function showGate(){ hideLoading(); gate.style.display = 'block'; }
+  function showGate(){ hideLoading(); if(memberPreview) memberPreview.style.display = 'none'; gate.style.display = 'block'; }
+  // "Área de miembros" con candados: para cuentas con is_member=false
+  // que NO acaban de crear su cuenta (o que ya vieron la bienvenida y
+  // eligieron "Ahora no"). No bloquea nada, solo invita a pagar.
+  function showMemberPreview(){
+    hideLoading();
+    gate.style.display = 'none';
+    memberContent.style.display = 'none';
+    if(memberPreview){
+      memberPreview.style.display = 'block';
+      if(typeof initMemberHeader === 'function') initMemberHeader();
+    }
+  }
   const loginStep1 = document.getElementById('loginStep1');
   const loginStep2 = document.getElementById('loginStep2');
   const loginRecovery = document.getElementById('loginRecovery');
+  const loginWelcome = document.getElementById('loginWelcome');
   const loginPending = document.getElementById('loginPending');
   const emailInput = document.getElementById('emailInput');
   const passwordInput = document.getElementById('passwordInput');
@@ -489,6 +605,7 @@
     loginStep2.style.display = step === 2 ? 'block' : 'none';
     loginPending.style.display = step === 3 ? 'block' : 'none';
     loginRecovery.style.display = step === 4 ? 'block' : 'none';
+    if(loginWelcome) loginWelcome.style.display = step === 5 ? 'block' : 'none';
     if(step === 3) resetPayChooser();
   }
 
@@ -585,15 +702,17 @@
     if(typeof initMemberHeader === 'function') initMemberHeader();
   }
 
-  async function afterAuthSuccess(){
+  async function afterAuthSuccess(fromSignup){
     hasSession = true;
     const profile = await LeoBackend.getMemberProfile();
     if(profile && profile.is_member){
       await LeoBackend.syncProgressFromCloud();
       unlock();
-    } else {
+    } else if(fromSignup){
       showGate();
-      showLoginStep(3);
+      showLoginStep(5);
+    } else {
+      showMemberPreview();
     }
   }
 
@@ -696,13 +815,14 @@
     authBtn.disabled = true;
     const defaultLabel = authMode === 'signup' ? 'Crear cuenta' : 'Entrar';
     authBtn.textContent = authMode === 'signup' ? 'Creando cuenta...' : 'Entrando...';
-    const res = authMode === 'signup'
+    const wasSignup = authMode === 'signup';
+    const res = wasSignup
       ? await LeoBackend.signUp(email, password)
       : await LeoBackend.signInWithPassword(email, password);
     authBtn.disabled = false;
     authBtn.textContent = defaultLabel;
     if(res.ok){
-      await afterAuthSuccess();
+      await afterAuthSuccess(wasSignup);
     } else {
       loginError.textContent = translateAuthError(res.error);
       loginError.classList.add('show');
@@ -783,7 +903,7 @@
       setNewPasswordBtn.disabled = false;
       setNewPasswordBtn.textContent = 'Guardar contraseña';
       if(res.ok){
-        await afterAuthSuccess();
+        await afterAuthSuccess(false);
       } else {
         loginError.textContent = translateAuthError(res.error);
         loginError.classList.add('show');
@@ -793,6 +913,28 @@
 
   if(logoutBtn){
     logoutBtn.addEventListener('click', async ()=>{
+      await LeoBackend.signOut();
+      window.location.reload();
+    });
+  }
+
+  const welcomeActivateBtn = document.getElementById('welcomeActivateBtn');
+  const welcomeSkipBtn = document.getElementById('welcomeSkipBtn');
+  const previewActivateBtn = document.getElementById('previewActivateBtn');
+  const previewLogoutBtn = document.getElementById('previewLogoutBtn');
+
+  if(welcomeActivateBtn){
+    welcomeActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
+  }
+  if(welcomeSkipBtn){
+    welcomeSkipBtn.addEventListener('click', (e)=>{ e.preventDefault(); showMemberPreview(); });
+  }
+  if(previewActivateBtn){
+    previewActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
+  }
+  if(previewLogoutBtn){
+    previewLogoutBtn.addEventListener('click', async (e)=>{
+      e.preventDefault();
       await LeoBackend.signOut();
       window.location.reload();
     });
@@ -864,10 +1006,12 @@
         if(profile.is_member){
           await LeoBackend.syncProgressFromCloud();
           unlock();
-        } else {
+        } else if(cameFromCheckoutReturn){
           showGate();
           showLoginStep(3);
-          if(cameFromCheckoutReturn) startCheckoutConfirming();
+          startCheckoutConfirming();
+        } else {
+          showMemberPreview();
         }
       } else {
         showGate();

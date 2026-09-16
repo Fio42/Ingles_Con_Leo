@@ -97,3 +97,77 @@ create trigger on_auth_user_created
 -- Listo. Para activar a un miembro manualmente:
 -- Table Editor -> profiles -> busca su email -> is_member = true
 -- (y opcionalmente member_since = la fecha de hoy).
+
+-- ============================================================
+-- Actualización 2026-09-16 — conversión de cuentas que no pagan
+-- (emails automáticos "recuerda activar tu membresía" + analítica).
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+-- Es seguro correrlo aunque ya hayas corrido el resto de este
+-- archivo antes: no borra, no renombra y no toca ninguna fila que
+-- ya exista. Antes de correrlo, lee la nota de la Service Role Key
+-- más abajo (hay que reemplazar un valor a mano).
+-- ============================================================
+
+-- 3 columnas nuevas en profiles, las 3 opcionales (empiezan en NULL,
+-- que quiere decir "todavía no pasó"). No se toca ninguna columna
+-- existente.
+alter table public.profiles add column if not exists checkout_started_at timestamptz;
+alter table public.profiles add column if not exists upgrade_email_1_sent_at timestamptz;
+alter table public.profiles add column if not exists upgrade_email_2_sent_at timestamptz;
+
+-- Prende las 2 extensiones de Postgres que necesita el Cron de
+-- Supabase: pg_cron para programar, pg_net para que ese programa
+-- pueda llamar a la Edge Function por HTTP. Están disponibles en
+-- el plan gratis de Supabase, no hace falta pagar nada nuevo.
+create extension if not exists pg_cron with schema extensions;
+create extension if not exists pg_net with schema extensions;
+
+-- Programa que la función de Supabase "upgrade-nudge-emails" (ver
+-- supabase_functions/upgrade-nudge-emails.ts) corra sola cada 30
+-- minutos. Ella decide cada vez, revisando profiles, a quién le
+-- toca el correo 1, a quién el correo 2, y a quién no le toca nada
+-- (ya es miembro, ya se le mandó, o todavía no le toca por tiempo).
+--
+-- *** ANTES DE CORRER ESTO ***: reemplaza TU_SERVICE_ROLE_KEY_AQUI
+-- por tu Service Role Key real (Supabase -> Project Settings -> API
+-- -> "service_role", el secreto largo, no el "anon public"). Es
+-- secreta: no la pegues en ningún archivo de este repositorio,
+-- solo aquí, directo en el SQL Editor, al momento de correrlo.
+select cron.schedule(
+  'inglesconleo-upgrade-nudge-emails',
+  '*/30 * * * *',
+  $$
+  select net.http_post(
+    url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/upgrade-nudge-emails',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer TU_SERVICE_ROLE_KEY_AQUI',
+      'Content-Type', 'application/json'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+
+-- Para revisar que el Cron quedó programado:
+--   select jobid, schedule, jobname, active from cron.job;
+-- Para pausarlo o borrarlo más adelante si hiciera falta:
+--   select cron.unschedule('inglesconleo-upgrade-nudge-emails');
+
+-- ------------------------------------------------------------
+-- Consulta de analítica (SOLO LECTURA, no cambia nada). Pégala
+-- en el SQL Editor cuando quieras ver: cuentas creadas, cuentas
+-- sin pagar, cuántas iniciaron checkout, cuántas pagaron, y la
+-- conversión aproximada. Puedes correrla las veces que quieras.
+-- ------------------------------------------------------------
+-- select
+--   count(*) as cuentas_creadas,
+--   count(*) filter (where is_member) as cuentas_pagando,
+--   count(*) filter (where not is_member) as cuentas_sin_pagar,
+--   count(*) filter (where checkout_started_at is not null) as iniciaron_checkout,
+--   round(
+--     100.0 * count(*) filter (where is_member) / nullif(count(*), 0), 1
+--   ) as conversion_pct_de_cuentas_creadas,
+--   round(
+--     100.0 * count(*) filter (where is_member) / nullif(count(*) filter (where checkout_started_at is not null), 0), 1
+--   ) as conversion_pct_de_los_que_iniciaron_checkout
+-- from public.profiles;

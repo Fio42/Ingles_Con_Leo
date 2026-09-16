@@ -22,6 +22,10 @@
 //                         quieras cobrar de verdad.
 //   SUPABASE_URL          (ya viene puesta sola en Supabase)
 //   SUPABASE_ANON_KEY     (ya viene puesta sola en Supabase)
+//   SUPABASE_SERVICE_ROLE_KEY  la "service_role" key (Project Settings -> API).
+//                              Se usa SOLO para registrar checkout_started_at
+//                              (analitica). Si ya la usas en los webhooks de
+//                              pago, es la misma, no hay que crear una nueva.
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -32,6 +36,13 @@ const PAYPAL_PLAN_ID = Deno.env.get('PAYPAL_PLAN_ID')!
 const PAYPAL_MODE = (Deno.env.get('PAYPAL_MODE') || 'live').trim().toLowerCase()
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+// OJO: a proposito SIN el "!" al final (a diferencia de las otras
+// constantes de este archivo). Si todavia no pegaste este secreto en
+// Supabase, esto NO debe tumbar el checkout real: mas abajo se revisa
+// que no este vacio antes de usarlo, y si esta vacio simplemente se
+// salta el registro de checkout_started_at (analitica), sin afectar
+// el pago.
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
 const PAYPAL_API_BASE = PAYPAL_MODE === 'sandbox'
   ? 'https://api-m.sandbox.paypal.com'
@@ -65,6 +76,23 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'invalid_session' }, 401)
     }
     const user = userData.user
+
+    // Registra que este usuario llegó hasta el proceso de pago (aunque
+    // no lo termine). Es solo para analítica (ver punto 9 del pedido de
+    // Leo): no afecta el pago ni is_member, así que si esto falla por lo
+    // que sea, seguimos con el checkout normal de todas formas.
+    if (SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        await supabaseAdmin
+          .from('profiles')
+          .update({ checkout_started_at: new Date().toISOString() })
+          .eq('id', user.id)
+          .is('checkout_started_at', null)
+      } catch (e) {
+        console.error('No se pudo registrar checkout_started_at:', e)
+      }
+    }
 
     const accessToken = await getPaypalAccessToken()
     if (!accessToken) {

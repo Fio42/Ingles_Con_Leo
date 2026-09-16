@@ -2135,12 +2135,12 @@ function freeDailyLimitReached(){
 function renderFreeDailyLimitReachedBlock(){
   return `
     <div class="session-summary">
-      <h2>Hiciste tus 50 ejercicios gratis de hoy</h2>
-      <p class="summary-score">Vuelve mañana para seguir practicando gratis, o hazte miembro y practica sin límite desde ahora.</p>
+      <h2>¡Ya completaste tus ejercicios gratis de hoy!</h2>
+      <p class="summary-score">Vuelve mañana para seguir practicando gratis, o hazte miembro y practica sin límites desde ahora.</p>
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres seguir ahora mismo?</p>
-        <p class="summary-unlock-copy">Como miembro no tienes límite diario, guardas tu progreso, repasas tus errores y accedes a todo el contenido.</p>
-        <a href="miembros.html" class="btn btn-primary btn-block">Hazte miembro por $2 USD/mes</a>
+        <p class="summary-unlock-copy">Con la membresía puedes seguir practicando sin límites, y además desbloquear tus errores, tu progreso, las clases y la preparación para exámenes. $2 USD al mes.</p>
+        <a href="miembros.html" class="btn btn-primary btn-block">Seguir practicando sin límites</a>
       </div>
     </div>`;
 }
