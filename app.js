@@ -713,10 +713,25 @@ function renderSessionLengthSelector(container, selected, onChange){
    progreso general del usuario no se toca, solo esta sesión a medias). */
 function wireSessionLengthSelector(container, skill, onApply){
   function render(){
-    renderSessionLengthSelector(container, getSessionLength(), (newLen)=>{
-      const level = getUserLevel();
-      const saved = loadInflightSession(skill, level);
-      const inProgress = !!(saved && saved.idx > 0 && saved.idx < saved.total);
+    const level = getUserLevel();
+    const saved = loadInflightSession(skill, level);
+    // Si ya hay una sesion de ESTA habilidad a medias (por ejemplo la
+    // dejaste en "Larga" y luego cambiaste la preferencia general a
+    // "Corta" desde otra pagina), la tarjeta marcada aqui debe mostrar
+    // la duracion de la sesion que en realidad se va a retomar, no la
+    // preferencia general, que ya no aplica hasta que termines o
+    // reinicies esta sesion. Evita el caso donde se veia "Corta"
+    // seleccionada pero la sesion en curso tenia 15 preguntas (ver
+    // DEVLOG). Si no hay sesion a medias, se muestra la preferencia
+    // general normal.
+    const resumableSession = (saved && saved.idx < saved.total) ? saved : null;
+    let displayedSelected = getSessionLength();
+    if(resumableSession){
+      const matchingKey = Object.keys(SESSION_LENGTHS).find(k => SESSION_LENGTHS[k].items === resumableSession.total);
+      if(matchingKey) displayedSelected = matchingKey;
+    }
+    renderSessionLengthSelector(container, displayedSelected, (newLen)=>{
+      const inProgress = !!(resumableSession && resumableSession.idx > 0);
       function apply(){
         setSessionLength(newLen);
         clearInflightSession(skill, level);
@@ -1143,17 +1158,24 @@ function playAudioFile(path, container, trigger){
 function runGrammarSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('gramatica', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, topics, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool, topics } = rebuildPoolFromVariantIdxs({ skill:'gramatica', bankLevel:GRAMMAR_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs, topics } = buildSessionPool({ skill:'gramatica', level, bankLevel:GRAMMAR_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
@@ -1339,17 +1361,24 @@ function renderGrammarItemInto(container, item, onAnswered){
 function runVocabSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('vocabulario', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool } = rebuildPoolFromVariantIdxs({ skill:'vocabulario', bankLevel:VOCAB_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'vocabulario', level, bankLevel:VOCAB_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
@@ -1416,17 +1445,24 @@ function runVocabSession({ container, level, onExit }){
 function runListeningSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('listening', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool } = rebuildPoolFromVariantIdxs({ skill:'listening', bankLevel:LISTENING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'listening', level, bankLevel:LISTENING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
@@ -1508,17 +1544,24 @@ function runListeningSession({ container, level, onExit }){
 function runReadingSession({ container, level, onExit }){
   stopActiveAudioFile();
   const saved = loadInflightSession('lectura', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool } = rebuildPoolFromVariantIdxs({ skill:'lectura', bankLevel:READING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'lectura', level, bankLevel:READING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
@@ -1630,17 +1673,24 @@ function evaluateWritingAnswer(text, item){
 function runWritingSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('writing', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool } = rebuildPoolFromVariantIdxs({ skill:'writing', bankLevel:WRITING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'writing', level, bankLevel:WRITING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   // Validación estructural honesta: no es IA, es una comprobación de patrón
   // (¿aparece la estructura objetivo en el texto?). No mide "buen inglés"
@@ -1749,17 +1799,24 @@ function runWritingSession({ container, level, onExit }){
 function runSpeakingSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('speaking', level);
+  // Siempre se retoma la sesion guardada si tiene ejercicios sin terminar,
+  // sin importar si la duracion (corta/media/larga) cambio despues desde
+  // otra pagina: el progreso de Leo nunca se descarta solo. El selector
+  // de duracion (wireSessionLengthSelector) es quien se encarga de MOSTRAR
+  // la duracion real de esta sesion en curso, para que no se vea una
+  // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
+  const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   let pool, usedVariantIdxs;
-  if(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total){
+  if(canResume){
     usedVariantIdxs = saved.variantIdxs;
     ({ pool } = rebuildPoolFromVariantIdxs({ skill:'speaking', bankLevel:SPEAKING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
   } else {
     ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'speaking', level, bankLevel:SPEAKING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
   }
   const total = pool.length;
-  const startedAt = (saved && saved.idx < total) ? saved.startedAt : Date.now();
-  const results = (saved && saved.idx < total) ? saved.results.slice() : [];
-  let idx = (saved && saved.idx < total) ? saved.idx : 0;
+  const startedAt = canResume ? saved.startedAt : Date.now();
+  const results = canResume ? saved.results.slice() : [];
+  let idx = canResume ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
