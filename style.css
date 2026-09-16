@@ -1522,7 +1522,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .locked-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0;}
 .locked-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 20px 18px;display:flex;flex-direction:column;gap:8px;opacity:0.92;}
-.locked-card-top{display:flex;align-items:center;justify-content:flex-end;}
+.locked-card-top{display:flex;align-items:center;justify-content:space-between;}
+.locked-card-top .stat-card-icon{width:44px;height:44px;}
+.locked-card-top .stat-card-icon svg{width:20px;height:20px;}
 .locked-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--paper-dim);color:var(--ink-faint);flex-shrink:0;}
 .locked-badge svg{width:13px;height:13px;}
 .locked-card h3{font-family:'Baloo 2';margin:0;font-size:1.02rem;color:var(--ink);}
