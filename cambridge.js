@@ -37,12 +37,66 @@ const CAMBRIDGE_SECTIONS = [
   }
 ];
 
-function cambridgeSessionHeaderHtml(label, current, total){
+// Niveles de Cambridge English disponibles en esta página. Cada uno
+// reutiliza el mismo motor (este archivo); solo cambia el contenido
+// (cambridge-data.js para B2, cambridge-c1-data.js para C1) y algunas
+// etiquetas. inflightLevel es el segundo argumento que se le pasa a
+// loadInflightSession/saveInflightSession/clearInflightSession: para
+// 'b2' se mantiene el valor histórico 'cambridge' (para no romper
+// sesiones en curso de quienes ya estaban practicando B2 First antes
+// de que existiera C1 Advanced).
+const CAMBRIDGE_LEVELS = {
+  b2: {
+    key: 'b2', examLabel: 'B2 First', inflightLevel: 'cambridge', recordLevel: 'cambridge',
+    intro: 'Practica los 4 tipos de tarea reales del examen B2 First / FCE, el certificado de Cambridge English más solicitado en trabajos, universidades y trámites. Si dominas estos tipos de tarea, el formato del examen real no te tomará por sorpresa.',
+    scoreNote: 'Formato vigente en 2026 según cambridgeenglish.org. El puntaje mínimo para aprobar es 160 en la Cambridge English Scale.',
+    data: function(){ return { READING: CAMBRIDGE_READING, LISTENING: CAMBRIDGE_LISTENING, WRITING: CAMBRIDGE_WRITING, SPEAKING: CAMBRIDGE_SPEAKING }; }
+  },
+  c1: {
+    key: 'c1', examLabel: 'C1 Advanced', inflightLevel: 'cambridge-c1', recordLevel: 'cambridge-c1',
+    intro: 'Practica los 4 tipos de tarea reales del examen C1 Advanced (CAE), un nivel arriba de B2 First, con vocabulario y gramática más avanzados. Ideal si ya dominas B2 First y quieres subir de nivel o necesitas el certificado C1.',
+    scoreNote: 'Formato vigente en 2026 según cambridgeenglish.org. El puntaje mínimo para aprobar es 180 en la Cambridge English Scale.',
+    data: function(){ return { READING: CAMBRIDGE_C1_READING, LISTENING: CAMBRIDGE_C1_LISTENING, WRITING: CAMBRIDGE_C1_WRITING, SPEAKING: CAMBRIDGE_C1_SPEAKING }; }
+  }
+};
+function cambridgeLevelCfg(level){ return CAMBRIDGE_LEVELS[level] || CAMBRIDGE_LEVELS.b2; }
+
+CAMBRIDGE_LEVELS.b2.writingOrder = ['essay','article','email','review'];
+CAMBRIDGE_LEVELS.b2.writingKindLabel = {
+  essay: 'Parte 1 · Essay (obligatorio)',
+  article: 'Parte 2 · Article',
+  email: 'Parte 2 · Email',
+  review: 'Parte 2 · Review'
+};
+CAMBRIDGE_LEVELS.c1.writingOrder = ['essay','report','review','proposal'];
+CAMBRIDGE_LEVELS.c1.writingKindLabel = {
+  essay: 'Parte 1 · Essay (obligatorio)',
+  report: 'Parte 2 · Report',
+  review: 'Parte 2 · Review',
+  proposal: 'Parte 2 · Proposal'
+};
+const CAMBRIDGE_READING_ORDER = ['multipleChoiceCloze','openCloze','wordFormation','keyWordTransformation','readingComprehension','multipleMatching'];
+const CAMBRIDGE_LISTENING_ORDER = ['shortExtract','sentenceCompletion','multipleMatching','longInterview'];
+const CAMBRIDGE_SPEAKING_ORDER = ['interview','longTurn','collaborativeTask','furtherDiscussion'];
+
+// Nivel de Cambridge seleccionado actualmente (persiste entre visitas).
+function getCambridgeLevel(){
+  try{
+    const v = localStorage.getItem('leo_cambridge_level');
+    return (v === 'c1') ? 'c1' : 'b2';
+  }catch(e){ return 'b2'; }
+}
+function setCambridgeLevel(level){
+  try{ localStorage.setItem('leo_cambridge_level', level === 'c1' ? 'c1' : 'b2'); }catch(e){}
+}
+
+function cambridgeSessionHeaderHtml(level, label, current, total){
   const pct = Math.round((current/total)*100);
+  const examLabel = cambridgeLevelCfg(level).examLabel;
   return `
     <a href="#" id="cambridgeBackLink" class="toefl-back-link">← Volver a Cambridge English</a>
     <div class="session-head">
-      <span class="practice-level-tag">B2 First · ${label}</span>
+      <span class="practice-level-tag">${examLabel} · ${label}</span>
       <span class="session-count">Pregunta ${current} de ${total}</span>
     </div>
     <div class="session-progress"><div class="session-progress-fill" style="width:${pct}%;"></div></div>`;
@@ -75,11 +129,17 @@ function renderCambridgeBackLink(container, onExit){
 }
 
 function renderCambridgeLanding(container, onSelect){
+  const level = getCambridgeLevel();
+  const cfg = cambridgeLevelCfg(level);
   container.innerHTML = `
     <div class="toefl-landing-intro">
-      <h2>Prepárate para el Cambridge English (B2 First)</h2>
-      <p>Practica los 4 tipos de tarea reales del examen B2 First / FCE, el certificado de Cambridge English más solicitado en trabajos, universidades y trámites. Si dominas estos tipos de tarea, el formato del examen real no te tomará por sorpresa.</p>
-      <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:8px;">Formato vigente en 2026 según cambridgeenglish.org. El puntaje mínimo para aprobar es 160 en la Cambridge English Scale.</p>
+      <h2>Prepárate para el Cambridge English (${cfg.examLabel})</h2>
+      <div class="lengths" id="cambridgeLevelTabs" style="margin:14px 0 18px;">
+        <button type="button" class="length-card" data-cambridge-level="b2" aria-pressed="${level === 'b2'}">B2 First</button>
+        <button type="button" class="length-card" data-cambridge-level="c1" aria-pressed="${level === 'c1'}">C1 Advanced</button>
+      </div>
+      <p>${cfg.intro}</p>
+      <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:8px;">${cfg.scoreNote}</p>
     </div>
     <div class="toefl-landing-grid">
       ${CAMBRIDGE_SECTIONS.map(s => `
@@ -91,6 +151,13 @@ function renderCambridgeLanding(container, onSelect){
           <button type="button" class="btn btn-primary btn-sm" data-cambridge-section="${s.key}">Empezar →</button>
         </div>`).join('')}
     </div>`;
+  container.querySelectorAll('[data-cambridge-level]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.cambridgeLevel === level) return;
+      setCambridgeLevel(btn.dataset.cambridgeLevel);
+      renderCambridgeLanding(container, onSelect);
+    });
+  });
   container.querySelectorAll('[data-cambridge-section]').forEach(btn=>{
     btn.addEventListener('click', ()=> onSelect(btn.dataset.cambridgeSection));
   });
@@ -160,14 +227,10 @@ function wireCambridgeWordBank(card, sentenceParts, bank, correct, onDone){
 }
 
 /* ---------- READING & USE OF ENGLISH ---------- */
-function buildCambridgeReadingPool(){
+function buildCambridgeReadingPool(level){
+  const READING = cambridgeLevelCfg(level).data().READING;
   const pool = [];
-  CAMBRIDGE_READING.multipleChoiceCloze.forEach(it => pool.push(Object.assign({ kind:'multipleChoiceCloze' }, it)));
-  CAMBRIDGE_READING.openCloze.forEach(it => pool.push(Object.assign({ kind:'openCloze' }, it)));
-  CAMBRIDGE_READING.wordFormation.forEach(it => pool.push(Object.assign({ kind:'wordFormation' }, it)));
-  CAMBRIDGE_READING.keyWordTransformation.forEach(it => pool.push(Object.assign({ kind:'keyWordTransformation' }, it)));
-  CAMBRIDGE_READING.readingComprehension.forEach(it => pool.push(Object.assign({ kind:'readingComprehension' }, it)));
-  CAMBRIDGE_READING.multipleMatching.forEach(it => pool.push(Object.assign({ kind:'multipleMatching' }, it)));
+  CAMBRIDGE_READING_ORDER.forEach(kind => READING[kind].forEach(it => pool.push(Object.assign({ kind }, it))));
   return pool;
 }
 const CAMBRIDGE_READING_KIND_LABEL = {
@@ -179,12 +242,14 @@ const CAMBRIDGE_READING_KIND_LABEL = {
   multipleMatching: 'Parte 7 · Multiple matching'
 };
 
-function runCambridgeReadingSession({ container, onExit }){
+function runCambridgeReadingSession({ container, onExit, level }){
+  level = level || 'b2';
+  const cfg = cambridgeLevelCfg(level);
   container._cambridgeOnExit = onExit;
   stopActiveAudioFile();
-  const pool = buildCambridgeReadingPool();
+  const pool = buildCambridgeReadingPool(level);
   const total = pool.length;
-  const saved = loadInflightSession('cambridge-reading', 'cambridge');
+  const saved = loadInflightSession('cambridge-reading', cfg.inflightLevel);
   const resumable = saved && saved.idx < total;
   const startedAt = resumable ? saved.startedAt : Date.now();
   const results = resumable ? saved.results.slice() : [];
@@ -192,8 +257,8 @@ function runCambridgeReadingSession({ container, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('cambridge-reading', 'cambridge', { total, idx, results, startedAt });
-    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml('Reading & Use of English', idx+1, total));
+    saveInflightSession('cambridge-reading', cfg.inflightLevel, { total, idx, results, startedAt });
+    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml(level, 'Reading & Use of English', idx+1, total));
 
     if(item.kind === 'multipleChoiceCloze'){
       card.innerHTML = `
@@ -263,22 +328,20 @@ function runCambridgeReadingSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
-    clearInflightSession('cambridge-reading', 'cambridge');
-    recordSession({ skill:'cambridge-reading', level:'cambridge', topics:['Cambridge Reading & Use of English'], results, startedAt });
-    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['Cambridge Reading & Use of English'] });
-    wireSummaryButtons(container, ()=>runCambridgeReadingSession({ container, onExit }));
+    clearInflightSession('cambridge-reading', cfg.inflightLevel);
+    recordSession({ skill:'cambridge-reading', level:cfg.recordLevel, topics:[level === 'c1' ? 'Cambridge C1 Advanced Reading & Use of English' : 'Cambridge Reading & Use of English'], results, startedAt });
+    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:[level === 'c1' ? 'Cambridge C1 Advanced Reading & Use of English' : 'Cambridge Reading & Use of English'] });
+    wireSummaryButtons(container, ()=>runCambridgeReadingSession({ container, onExit, level }));
     renderCambridgeBackLink(container, onExit);
   }
   renderItem();
 }
 
 /* ---------- LISTENING ---------- */
-function buildCambridgeListeningPool(){
+function buildCambridgeListeningPool(level){
+  const LISTENING = cambridgeLevelCfg(level).data().LISTENING;
   const pool = [];
-  CAMBRIDGE_LISTENING.shortExtract.forEach(it => pool.push(Object.assign({ kind:'shortExtract' }, it)));
-  CAMBRIDGE_LISTENING.sentenceCompletion.forEach(it => pool.push(Object.assign({ kind:'sentenceCompletion' }, it)));
-  CAMBRIDGE_LISTENING.multipleMatching.forEach(it => pool.push(Object.assign({ kind:'multipleMatching' }, it)));
-  CAMBRIDGE_LISTENING.longInterview.forEach(it => pool.push(Object.assign({ kind:'longInterview' }, it)));
+  CAMBRIDGE_LISTENING_ORDER.forEach(kind => LISTENING[kind].forEach(it => pool.push(Object.assign({ kind }, it))));
   return pool;
 }
 const CAMBRIDGE_LISTENING_KIND_LABEL = {
@@ -296,12 +359,14 @@ function renderCambridgeListenTranscriptBlock(item){
     </div>`;
 }
 
-function runCambridgeListeningSession({ container, onExit }){
+function runCambridgeListeningSession({ container, onExit, level }){
+  level = level || 'b2';
+  const cfg = cambridgeLevelCfg(level);
   container._cambridgeOnExit = onExit;
   stopActiveAudioFile();
-  const pool = buildCambridgeListeningPool();
+  const pool = buildCambridgeListeningPool(level);
   const total = pool.length;
-  const saved = loadInflightSession('cambridge-listening', 'cambridge');
+  const saved = loadInflightSession('cambridge-listening', cfg.inflightLevel);
   const resumable = saved && saved.idx < total;
   const startedAt = resumable ? saved.startedAt : Date.now();
   const results = resumable ? saved.results.slice() : [];
@@ -309,8 +374,8 @@ function runCambridgeListeningSession({ container, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('cambridge-listening', 'cambridge', { total, idx, results, startedAt });
-    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml('Listening', idx+1, total));
+    saveInflightSession('cambridge-listening', cfg.inflightLevel, { total, idx, results, startedAt });
+    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml(level, 'Listening', idx+1, total));
 
     if(item.kind === 'sentenceCompletion'){
       card.innerHTML = `
@@ -378,22 +443,21 @@ function runCambridgeListeningSession({ container, onExit }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
-    clearInflightSession('cambridge-listening', 'cambridge');
-    recordSession({ skill:'cambridge-listening', level:'cambridge', topics:['Cambridge Listening'], results, startedAt });
-    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:['Cambridge Listening'] });
-    wireSummaryButtons(container, ()=>runCambridgeListeningSession({ container, onExit }));
+    clearInflightSession('cambridge-listening', cfg.inflightLevel);
+    recordSession({ skill:'cambridge-listening', level:cfg.recordLevel, topics:[level === 'c1' ? 'Cambridge C1 Advanced Listening' : 'Cambridge Listening'], results, startedAt });
+    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`${correct} / ${total} correctas`, topics:[level === 'c1' ? 'Cambridge C1 Advanced Listening' : 'Cambridge Listening'] });
+    wireSummaryButtons(container, ()=>runCambridgeListeningSession({ container, onExit, level }));
     renderCambridgeBackLink(container, onExit);
   }
   renderItem();
 }
 
 /* ---------- WRITING ---------- */
-function buildCambridgeWritingPool(){
+function buildCambridgeWritingPool(level){
+  const cfg = cambridgeLevelCfg(level);
+  const WRITING = cfg.data().WRITING;
   const pool = [];
-  CAMBRIDGE_WRITING.essay.forEach(it => pool.push(Object.assign({ kind:'essay' }, it)));
-  CAMBRIDGE_WRITING.article.forEach(it => pool.push(Object.assign({ kind:'article' }, it)));
-  CAMBRIDGE_WRITING.email.forEach(it => pool.push(Object.assign({ kind:'email' }, it)));
-  CAMBRIDGE_WRITING.review.forEach(it => pool.push(Object.assign({ kind:'review' }, it)));
+  cfg.writingOrder.forEach(kind => WRITING[kind].forEach(it => pool.push(Object.assign({ kind }, it))));
   return pool;
 }
 const CAMBRIDGE_WRITING_KIND_LABEL = {
@@ -403,12 +467,14 @@ const CAMBRIDGE_WRITING_KIND_LABEL = {
   review: 'Parte 2 · Review'
 };
 
-function runCambridgeWritingSession({ container, onExit }){
+function runCambridgeWritingSession({ container, onExit, level }){
+  level = level || 'b2';
+  const cfg = cambridgeLevelCfg(level);
   container._cambridgeOnExit = onExit;
   stopActiveAudioFile();
-  const pool = buildCambridgeWritingPool();
+  const pool = buildCambridgeWritingPool(level);
   const total = pool.length;
-  const saved = loadInflightSession('cambridge-writing', 'cambridge');
+  const saved = loadInflightSession('cambridge-writing', cfg.inflightLevel);
   const resumable = saved && saved.idx < total;
   const startedAt = resumable ? saved.startedAt : Date.now();
   const results = resumable ? saved.results.slice() : [];
@@ -425,10 +491,10 @@ function runCambridgeWritingSession({ container, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('cambridge-writing', 'cambridge', { total, idx, results, startedAt });
-    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml('Writing', idx+1, total));
+    saveInflightSession('cambridge-writing', cfg.inflightLevel, { total, idx, results, startedAt });
+    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml(level, 'Writing', idx+1, total));
     card.innerHTML = `
-      <div class="practice-instruction">${CAMBRIDGE_WRITING_KIND_LABEL[item.kind]}</div>
+      <div class="practice-instruction">${cfg.writingKindLabel[item.kind]}</div>
       <div class="practice-prompt">${item.prompt}</div>
       <textarea id="writingInput" rows="7" class="writing-area" placeholder="Escribe tu texto en inglés aquí (140-190 palabras)..."></textarea>
       <div class="next-row" style="justify-content:flex-start;">
@@ -444,22 +510,20 @@ function runCambridgeWritingSession({ container, onExit }){
     });
   }
   function finish(){
-    clearInflightSession('cambridge-writing', 'cambridge');
-    recordSession({ skill:'cambridge-writing', level:'cambridge', topics:['Cambridge Writing'], results, startedAt });
-    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Completaste ${total} ejercicios de escritura`, topics:['Cambridge Writing'] });
-    wireSummaryButtons(container, ()=>runCambridgeWritingSession({ container, onExit }));
+    clearInflightSession('cambridge-writing', cfg.inflightLevel);
+    recordSession({ skill:'cambridge-writing', level:cfg.recordLevel, topics:[level === 'c1' ? 'Cambridge C1 Advanced Writing' : 'Cambridge Writing'], results, startedAt });
+    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Completaste ${total} ejercicios de escritura`, topics:[level === 'c1' ? 'Cambridge C1 Advanced Writing' : 'Cambridge Writing'] });
+    wireSummaryButtons(container, ()=>runCambridgeWritingSession({ container, onExit, level }));
     renderCambridgeBackLink(container, onExit);
   }
   renderItem();
 }
 
 /* ---------- SPEAKING ---------- */
-function buildCambridgeSpeakingPool(){
+function buildCambridgeSpeakingPool(level){
+  const SPEAKING = cambridgeLevelCfg(level).data().SPEAKING;
   const pool = [];
-  CAMBRIDGE_SPEAKING.interview.forEach(it => pool.push(Object.assign({ kind:'interview' }, it)));
-  CAMBRIDGE_SPEAKING.longTurn.forEach(it => pool.push(Object.assign({ kind:'longTurn' }, it)));
-  CAMBRIDGE_SPEAKING.collaborativeTask.forEach(it => pool.push(Object.assign({ kind:'collaborativeTask' }, it)));
-  CAMBRIDGE_SPEAKING.furtherDiscussion.forEach(it => pool.push(Object.assign({ kind:'furtherDiscussion' }, it)));
+  CAMBRIDGE_SPEAKING_ORDER.forEach(kind => SPEAKING[kind].forEach(it => pool.push(Object.assign({ kind }, it))));
   return pool;
 }
 
@@ -510,12 +574,14 @@ function wireCambridgeSpeakingAudio(card, item, canRecord){
   }
 }
 
-function runCambridgeSpeakingSession({ container, onExit }){
+function runCambridgeSpeakingSession({ container, onExit, level }){
+  level = level || 'b2';
+  const cfg = cambridgeLevelCfg(level);
   container._cambridgeOnExit = onExit;
   stopActiveAudioFile();
-  const pool = buildCambridgeSpeakingPool();
+  const pool = buildCambridgeSpeakingPool(level);
   const total = pool.length;
-  const saved = loadInflightSession('cambridge-speaking', 'cambridge');
+  const saved = loadInflightSession('cambridge-speaking', cfg.inflightLevel);
   const resumable = saved && saved.idx < total;
   const startedAt = resumable ? saved.startedAt : Date.now();
   const results = resumable ? saved.results.slice() : [];
@@ -523,8 +589,8 @@ function runCambridgeSpeakingSession({ container, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('cambridge-speaking', 'cambridge', { total, idx, results, startedAt });
-    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml('Speaking', idx+1, total));
+    saveInflightSession('cambridge-speaking', cfg.inflightLevel, { total, idx, results, startedAt });
+    const card = renderCambridgeSessionShell(container, cambridgeSessionHeaderHtml(level, 'Speaking', idx+1, total));
     const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
     const recordBlock = canRecord
       ? `<button class="btn btn-primary btn-sm" id="recordBtn">${MIC_ICON} Grabar mi respuesta</button><span class="recording-indicator" id="recIndicator" hidden>● Grabando...</span>`
@@ -608,18 +674,19 @@ function runCambridgeSpeakingSession({ container, onExit }){
     });
   }
   function finish(){
-    clearInflightSession('cambridge-speaking', 'cambridge');
-    recordSession({ skill:'cambridge-speaking', level:'cambridge', topics:['Cambridge Speaking'], results, startedAt });
-    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Practicaste ${total} respuestas en voz alta`, topics:['Cambridge Speaking'] });
-    wireSummaryButtons(container, ()=>runCambridgeSpeakingSession({ container, onExit }));
+    clearInflightSession('cambridge-speaking', cfg.inflightLevel);
+    recordSession({ skill:'cambridge-speaking', level:cfg.recordLevel, topics:[level === 'c1' ? 'Cambridge C1 Advanced Speaking' : 'Cambridge Speaking'], results, startedAt });
+    container.innerHTML = renderSessionSummary({ title:'¡Sección completada!', score:`Practicaste ${total} respuestas en voz alta`, topics:[level === 'c1' ? 'Cambridge C1 Advanced Speaking' : 'Cambridge Speaking'] });
+    wireSummaryButtons(container, ()=>runCambridgeSpeakingSession({ container, onExit, level }));
     renderCambridgeBackLink(container, onExit);
   }
   renderItem();
 }
 
-function startCambridgeSection(key, container, onExit){
-  if(key === 'reading') runCambridgeReadingSession({ container, onExit });
-  else if(key === 'listening') runCambridgeListeningSession({ container, onExit });
-  else if(key === 'writing') runCambridgeWritingSession({ container, onExit });
-  else if(key === 'speaking') runCambridgeSpeakingSession({ container, onExit });
+function startCambridgeSection(key, container, onExit, level){
+  level = level || getCambridgeLevel();
+  if(key === 'reading') runCambridgeReadingSession({ container, onExit, level });
+  else if(key === 'listening') runCambridgeListeningSession({ container, onExit, level });
+  else if(key === 'writing') runCambridgeWritingSession({ container, onExit, level });
+  else if(key === 'speaking') runCambridgeSpeakingSession({ container, onExit, level });
 }

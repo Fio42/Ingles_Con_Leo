@@ -97,7 +97,7 @@ function renderToeflTeaser(container){
     container.innerHTML = `
       <span class="practice-level-tag">Preparación TOEFL</span>
       <h3 style="margin-top:4px;">¿Te gustaría practicarlo a fondo?</h3>
-      <p style="color:var(--ink-soft);">Esto fue solo un adelanto. Como miembro tienes práctica completa de Reading, Listening, Speaking y Writing con el formato real del TOEFL, además de preparación para IELTS y Cambridge English (B2 First).</p>
+      <p style="color:var(--ink-soft);">Esto fue solo un adelanto. Como miembro tienes práctica completa de Reading, Listening, Speaking y Writing con el formato real del TOEFL, además de preparación para IELTS y Cambridge English (B2 First y C1 Advanced).</p>
       <a href="miembros.html" class="btn btn-primary" style="width:fit-content;margin-top:6px;">Hazte miembro por $2 USD/mes <span aria-hidden="true">→</span></a>
       <p class="practice-members-price" style="margin-top:6px;">Cancela cuando quieras</p>`;
   }

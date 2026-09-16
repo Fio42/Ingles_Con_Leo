@@ -9,8 +9,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#030b1a">
-<title>Preparación para el Cambridge English (B2 First) - Miembros - Inglés con Leo</title>
-<meta name="description" content="Practica Reading & Use of English, Listening, Writing y Speaking con ejercicios enfocados en el formato del examen Cambridge English B2 First (FCE).">
+<title>Preparación para el Cambridge English (B2 First y C1 Advanced) - Miembros - Inglés con Leo</title>
+<meta name="description" content="Practica Reading & Use of English, Listening, Writing y Speaking con ejercicios enfocados en el formato de los exámenes Cambridge English B2 First (FCE) y C1 Advanced (CAE).">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,8 +92,8 @@
   <section class="page-hero" style="padding-bottom:8px;">
     <div class="wrap wrap-dash">
       <span class="badge badge-members">Miembros</span>
-      <h1 style="margin-top:10px;">Preparación para el Cambridge English (B2 First)</h1>
-      <p style="color:var(--ink-soft);max-width:560px;">Practica Reading & Use of English, Listening, Writing y Speaking con ejercicios enfocados en el formato actual del examen B2 First (FCE), el certificado de Cambridge English más solicitado.</p>
+      <h1 style="margin-top:10px;">Preparación para el Cambridge English</h1>
+      <p style="color:var(--ink-soft);max-width:560px;">Practica Reading & Use of English, Listening, Writing y Speaking con ejercicios enfocados en el formato actual de B2 First (FCE) y C1 Advanced (CAE). Elige tu nivel abajo.</p>
       <a href="miembros.html" style="display:inline-block;margin-top:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;">← Volver a tu panel</a>
     </div>
   </section>
@@ -157,7 +157,8 @@
 <script src="app.js?v=20260916a"></script>
 <script src="backend.js"></script>
 <script src="cambridge-data.js?v=20260915"></script>
-<script src="cambridge.js?v=20260914"></script>
+<script src="cambridge-c1-data.js?v=20260916"></script>
+<script src="cambridge.js?v=20260916"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
   guardMemberPage(function(){
@@ -170,7 +171,7 @@
       renderCambridgeLanding(landingArea, function(key){
         landingArea.hidden = true;
         sessionArea.hidden = false;
-        startCambridgeSection(key, sessionArea, showLanding);
+        startCambridgeSection(key, sessionArea, showLanding, getCambridgeLevel());
       });
     }
     showLanding();

@@ -668,3 +668,51 @@ DEVLOG — Inglés con Leo
 - Verificacion: node --check en data.js; balance de llaves/parentesis/corchetes; cada id nuevo aparece el numero correcto de veces; sin oraciones identicas entre el dialogo de "Escucha" y el audio de "Habla" en ninguna de las 9 clases (revisado con un script, no solo a ojo); cero rayas largas (—) en el texto nuevo; los 63 audios que pide el script nuevo existen todos en el CSV, y los que data.js referencia tambien existen todos en el CSV (sin huerfanos en ningun sentido).
 - No se toco: las 18 clases anteriores, el resto de data.js, ni ningun guard de miembros.
 - Pendiente de Leo: correr "python generar_clases_nuevas_2.py" en la carpeta tools para generar los 63 audios nuevos, escuchar algunos, y subir todo con git. Instrucciones exactas en el chat.
+
+2026-09-16 - Cambridge English C1 Advanced (nueva seccion completa)
+---------------------------------------------------------------------
+Se agrego el examen Cambridge English C1 Advanced (CAE) como segundo
+nivel dentro de la pagina de Cambridge English, al lado de B2 First
+que ya existia. Mismo alcance y profundidad que B2 First: 66
+ejercicios reales repartidos en Reading & Use of English (24),
+Listening (16), Writing (12) y Speaking (14).
+
+Contenido nuevo (cambridge-c1-data.js, archivo separado de
+cambridge-data.js para no arriesgar el contenido de B2 que ya
+funcionaba):
+  - Reading: multiple-choice cloze, open cloze, word formation, key
+    word transformation, reading comprehension y multiple matching,
+    todo con vocabulario y gramatica de nivel C1 (colocaciones menos
+    comunes, inversion, oraciones hendidas, condicionales mixtos).
+  - Listening: short extracts y long interview con DOS voces
+    (Ava/Andrew Multilingual), sentence completion y multiple
+    matching con una sola voz (Ava). 24 audios nuevos en total.
+  - Writing: essay (obligatorio) + report, review y proposal, los
+    tipos reales de la Parte 2 de C1 Advanced (distintos a los de B2:
+    article/email/review).
+  - Speaking: interview, long turn (comparando 3 fotos en vez de 2,
+    como en el examen real), collaborative task en dos fases, y
+    further discussion. Preguntas de interview y further discussion
+    con audio (una sola voz).
+
+Motor (cambridge.js): en vez de duplicar todo el archivo, se
+parametrizo por "nivel" (b2/c1) con un objeto CAMBRIDGE_LEVELS que
+guarda el contenido, las etiquetas y, muy importante, la clave de
+localStorage que usa cada nivel para guardar sesiones en curso
+(inflightLevel). B2 First sigue usando exactamente la misma clave que
+usaba antes ('cambridge'), para que nadie pierda una sesion que ya
+tenia empezada. C1 Advanced usa una clave nueva y separada
+('cambridge-c1'), asi que las sesiones de un nivel nunca chocan con
+las del otro. La pagina ahora muestra pestanas "B2 First" / "C1
+Advanced" arriba de las 4 tarjetas de seccion (Reading, Listening,
+Writing, Speaking), y recuerda el ultimo nivel elegido.
+
+Se actualizo el texto de la tarjeta de Cambridge en el panel de
+miembros (miembros.html) y el texto del teaser de examenes
+(toefl-teaser.js) para mencionar ambos niveles.
+
+Los 24 audios nuevos se agregaron a tools/lista_audios.csv y hay un
+script nuevo, tools/generar_cambridge_c1_audios.py, en la carpeta
+tools para generar SOLO esos 24 audios, sin tocar los mas de 380 que
+ya existen en el resto de la plataforma. Instrucciones exactas en el
+chat.
