@@ -659,3 +659,12 @@ DEVLOG — Inglés con Leo
 - Verificación: node --check en app.js; balance de llaves/paréntesis/corchetes.
 - No se tocó: toefl.js/ielts.js (tienen su propio sistema de progreso, sin duración variable, no aplica este bug), ni ninguna otra lógica de las 6 habilidades.
 - Pendiente de Leo: subir con git (instrucciones en el chat). No requiere ningún cambio en Supabase ni en audios.
+
+2026-09-16 (4) — 9 Clases interactivas mas (las que faltaban de la lista original + Trabajo)
+- Se agregaron las 9 clases que faltaban: Una emergencia, Transporte publico, Supermercado, Devolver o cambiar un producto (categoria "Vida diaria" y "Viajes" segun el tema), y las 5 de Trabajo que Leo pidio ampliar: Escribir y responder emails, Dar una presentacion, Hablar con un cliente, Explicar un problema en el trabajo, Pedir mas tiempo / negociar una fecha limite.
+- "Una emergencia" se agrego a la categoria "Situaciones importantes" (junto con Medico y Atencion al cliente), como se habia planeado.
+- Mismos 8 pasos completos que el resto de las clases (Situacion, Frases clave, Escucha, Elige, Construye, Habla, Reto final, Resumen). Se aprovecha automaticamente la correccion del dia de hoy que baraja el orden de las respuestas en "Elige" y "Escucha", asi que estas 9 clases nuevas ya nacen con eso corregido, no hizo falta nada especial.
+- Se agregaron 63 filas nuevas a tools/lista_audios.csv (5 frases + 1 dialogo + 1 audio de "habla" por clase), con las mismas voces naturales de dos personas (Ava/Andrew) para los dialogos. Se creo tools/generar_clases_nuevas_2.py para generar SOLO estos 63 audios nuevos con un comando, sin tocar los mas de 350 que ya existen (incluidas las 6 clases de la tanda anterior).
+- Verificacion: node --check en data.js; balance de llaves/parentesis/corchetes; cada id nuevo aparece el numero correcto de veces; sin oraciones identicas entre el dialogo de "Escucha" y el audio de "Habla" en ninguna de las 9 clases (revisado con un script, no solo a ojo); cero rayas largas (—) en el texto nuevo; los 63 audios que pide el script nuevo existen todos en el CSV, y los que data.js referencia tambien existen todos en el CSV (sin huerfanos en ningun sentido).
+- No se toco: las 18 clases anteriores, el resto de data.js, ni ningun guard de miembros.
+- Pendiente de Leo: correr "python generar_clases_nuevas_2.py" en la carpeta tools para generar los 63 audios nuevos, escuchar algunos, y subir todo con git. Instrucciones exactas en el chat.

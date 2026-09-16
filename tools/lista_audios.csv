@@ -352,3 +352,84 @@ audio/clases/atencion-cliente-listening.mp3,"— Thank you for calling. How can 
 — Hi, I have a problem with my order. It arrived damaged.
 — I'm sorry to hear that. Can you confirm your order number?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
 audio/clases/atencion-cliente-speaking.mp3,Could I get a refund or a replacement?,en-US-AvaMultilingualNeural
+audio/clases/frases/emergency-1.mp3,"Call 911, please!",en-US-AvaMultilingualNeural
+audio/clases/frases/emergency-2.mp3,Someone is hurt.,en-US-AvaMultilingualNeural
+audio/clases/frases/emergency-3.mp3,We need an ambulance.,en-US-AvaMultilingualNeural
+audio/clases/frases/emergency-4.mp3,He's not breathing well.,en-US-AvaMultilingualNeural
+audio/clases/frases/emergency-5.mp3,"We're on Main Street, near the park.",en-US-AvaMultilingualNeural
+audio/clases/emergencia-listening.mp3,"— 911, what's your emergency?
+— Someone just fell and hurt their leg badly. We need an ambulance.
+— Okay, stay calm. What's your exact location?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/emergencia-speaking.mp3,"We're on Main Street, near the park.",en-US-AvaMultilingualNeural
+audio/clases/frases/public-transport-1.mp3,How much is a ticket?,en-US-AvaMultilingualNeural
+audio/clases/frases/public-transport-2.mp3,Which line goes downtown?,en-US-AvaMultilingualNeural
+audio/clases/frases/public-transport-3.mp3,Do I need to transfer?,en-US-AvaMultilingualNeural
+audio/clases/frases/public-transport-4.mp3,Which stop should I get off at?,en-US-AvaMultilingualNeural
+audio/clases/frases/public-transport-5.mp3,Is this seat taken?,en-US-AvaMultilingualNeural
+audio/clases/transporte-listening.mp3,"— Can I help you?
+— Yes, which line goes downtown?
+— Take the blue line, and get off at the third stop.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/transporte-speaking.mp3,Which stop should I get off at?,en-US-AvaMultilingualNeural
+audio/clases/frases/supermarket-1.mp3,"Excuse me, where can I find the milk?",en-US-AvaMultilingualNeural
+audio/clases/frases/supermarket-2.mp3,Do you have this in a smaller size?,en-US-AvaMultilingualNeural
+audio/clases/frases/supermarket-3.mp3,Is this on sale?,en-US-AvaMultilingualNeural
+audio/clases/frases/supermarket-4.mp3,Paper or plastic bags?,en-US-AvaMultilingualNeural
+audio/clases/frases/supermarket-5.mp3,Do you take credit cards?,en-US-AvaMultilingualNeural
+audio/clases/supermercado-listening.mp3,"— Excuse me, where can I find the milk?
+— It's in aisle five, next to the eggs.
+— Great, thank you! Is it on sale this week?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/supermercado-speaking.mp3,Do you have this in a smaller size?,en-US-AvaMultilingualNeural
+audio/clases/frases/return-product-1.mp3,"I'd like to return this, please.",en-US-AvaMultilingualNeural
+audio/clases/frases/return-product-2.mp3,It doesn't fit right.,en-US-AvaMultilingualNeural
+audio/clases/frases/return-product-3.mp3,Do you have this in a different size?,en-US-AvaMultilingualNeural
+audio/clases/frases/return-product-4.mp3,I have the receipt.,en-US-AvaMultilingualNeural
+audio/clases/frases/return-product-5.mp3,Can I get a refund instead?,en-US-AvaMultilingualNeural
+audio/clases/devolucion-listening.mp3,"— Hi, I'd like to return this shirt, please.
+— Sure, what's the problem with it?
+— It doesn't fit right, it's too small.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/devolucion-speaking.mp3,Do you have this in a different size?,en-US-AvaMultilingualNeural
+audio/clases/frases/work-emails-1.mp3,I hope this email finds you well.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-emails-2.mp3,I'm writing to follow up on...,en-US-AvaMultilingualNeural
+audio/clases/frases/work-emails-3.mp3,Please let me know if you have any questions.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-emails-4.mp3,I'll get back to you by Friday.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-emails-5.mp3,Thank you for your patience.,en-US-AvaMultilingualNeural
+audio/clases/emails-listening.mp3,"— Hi, I'm writing to follow up on the project status.
+— Thanks for checking in, everything is on track.
+— Great, when can I expect the final report?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/emails-speaking.mp3,Please let me know if you have any questions.,en-US-AvaMultilingualNeural
+audio/clases/frases/presentation-1.mp3,Thank you all for being here today.,en-US-AvaMultilingualNeural
+audio/clases/frases/presentation-2.mp3,Let's take a look at the numbers.,en-US-AvaMultilingualNeural
+audio/clases/frases/presentation-3.mp3,As you can see on this slide...,en-US-AvaMultilingualNeural
+audio/clases/frases/presentation-4.mp3,Does anyone have any questions?,en-US-AvaMultilingualNeural
+audio/clases/frases/presentation-5.mp3,That's a great question.,en-US-AvaMultilingualNeural
+audio/clases/presentacion-listening.mp3,"— Thank you all for being here. Let's look at the quarterly results.
+— Can you go back to the previous slide?
+— Sure, no problem. Here it is.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/presentacion-speaking.mp3,As you can see on this slide...,en-US-AvaMultilingualNeural
+audio/clases/frases/client-meeting-1.mp3,Thanks for meeting with us today.,en-US-AvaMultilingualNeural
+audio/clases/frases/client-meeting-2.mp3,What are you looking for exactly?,en-US-AvaMultilingualNeural
+audio/clases/frases/client-meeting-3.mp3,We can definitely help with that.,en-US-AvaMultilingualNeural
+audio/clases/frases/client-meeting-4.mp3,Let me walk you through our process.,en-US-AvaMultilingualNeural
+audio/clases/frases/client-meeting-5.mp3,Do we have a deal?,en-US-AvaMultilingualNeural
+audio/clases/cliente-listening.mp3,"— Thanks for meeting with us today. What are you looking for exactly?
+— We need a faster way to manage our inventory.
+— We can definitely help with that.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/cliente-speaking.mp3,Let me walk you through our process.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-problem-1.mp3,We ran into a problem.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-problem-2.mp3,It's going to take longer than expected.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-problem-3.mp3,I think we can fix it by tomorrow.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-problem-4.mp3,I wanted to let you know right away.,en-US-AvaMultilingualNeural
+audio/clases/frases/work-problem-5.mp3,Here's what happened.,en-US-AvaMultilingualNeural
+audio/clases/problema-listening.mp3,"— Hi, I wanted to let you know we ran into a problem.
+— Okay, what happened?
+— The server crashed, so the launch is delayed by a day.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/problema-speaking.mp3,It's going to take longer than expected.,en-US-AvaMultilingualNeural
+audio/clases/frases/negotiate-deadline-1.mp3,Could I get a few extra days?,en-US-AvaMultilingualNeural
+audio/clases/frases/negotiate-deadline-2.mp3,I want to make sure it's done right.,en-US-AvaMultilingualNeural
+audio/clases/frases/negotiate-deadline-3.mp3,Would Friday work instead?,en-US-AvaMultilingualNeural
+audio/clases/frases/negotiate-deadline-4.mp3,I appreciate your flexibility.,en-US-AvaMultilingualNeural
+audio/clases/frases/negotiate-deadline-5.mp3,"I'm almost done, just need more time.",en-US-AvaMultilingualNeural
+audio/clases/fecha-limite-listening.mp3,"— Could I get a few extra days on the report?
+— That depends, why do you need more time?
+— I want to make sure the numbers are completely accurate.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/fecha-limite-speaking.mp3,I appreciate your flexibility.,en-US-AvaMultilingualNeural

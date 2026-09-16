@@ -6945,7 +6945,16 @@ const CLASS_CATALOG = [
   { id:"taxi-uber", title:"Taxi / Uber", category:"Viajes", desc:"Aprende a confirmar tu destino, explicar dónde estás y pedir ayuda con tu equipaje en un viaje.", minutes:5, available:true },
   { id:"doctor", title:"En el médico", category:"Situaciones importantes", desc:"Aprende a describir tus síntomas, desde cuándo los tienes y qué tan fuertes son en una consulta médica.", minutes:6, available:true },
   { id:"small-talk", title:"Small talk", category:"Vida diaria", desc:"Aprende a platicar de forma casual sobre el clima, el fin de semana y el trabajo sin quedarte en blanco.", minutes:5, available:true },
-  { id:"customer-service", title:"Atención al cliente", category:"Situaciones importantes", desc:"Aprende a explicar un problema, pedir una solución y confirmar información con atención al cliente.", minutes:6, available:true }
+  { id:"customer-service", title:"Atención al cliente", category:"Situaciones importantes", desc:"Aprende a explicar un problema, pedir una solución y confirmar información con atención al cliente.", minutes:6, available:true },
+  { id:"emergency", title:"Una emergencia", category:"Situaciones importantes", desc:"Aprende a pedir ayuda, llamar al 911 y explicar qué pasó y dónde estás.", minutes:6, available:true },
+  { id:"public-transport", title:"Transporte público", category:"Viajes", desc:"Aprende a comprar un boleto, preguntar qué línea tomar y en qué parada bajarte.", minutes:6, available:true },
+  { id:"supermarket", title:"Supermercado", category:"Vida diaria", desc:"Aprende a encontrar productos, preguntar precios y ofertas, y pagar en caja.", minutes:5, available:true },
+  { id:"return-product", title:"Devolver o cambiar un producto", category:"Vida diaria", desc:"Aprende a explicar el problema, mostrar el recibo y pedir un cambio o reembolso.", minutes:5, available:true },
+  { id:"work-emails", title:"Escribir y responder emails", category:"Trabajo", desc:"Aprende frases clave para escribir y responder correos de trabajo con claridad.", minutes:6, available:true },
+  { id:"presentation", title:"Dar una presentación", category:"Trabajo", desc:"Aprende a introducir una presentación, mostrar resultados y manejar preguntas.", minutes:7, available:true },
+  { id:"client-meeting", title:"Hablar con un cliente", category:"Trabajo", desc:"Aprende a entender lo que necesita un cliente y explicarle cómo puedes ayudarlo.", minutes:6, available:true },
+  { id:"work-problem", title:"Explicar un problema en el trabajo", category:"Trabajo", desc:"Aprende a explicarle un problema a tu jefe con claridad y proponer un plan.", minutes:6, available:true },
+  { id:"negotiate-deadline", title:"Pedir más tiempo / negociar una fecha límite", category:"Trabajo", desc:"Aprende a pedir una extensión y negociar una nueva fecha límite sin que suene a excusa.", minutes:6, available:true }
 ];
 
 const CLASSES_BANK = {
@@ -8578,6 +8587,923 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:["I have a problem with my order.", "It arrived damaged.", "Could I get a refund or a replacement?", "Can you confirm my order number?"],
       tip:"Hoy practicaste cómo explicar un problema, pedir una solución y confirmar información con atención al cliente en inglés."
+    }
+  },
+  emergency: {
+    id:"emergency",
+    title:"Una emergencia",
+    situation:{
+      en:"You're walking home when you see someone fall and hurt themselves badly. You need to call for help and explain what happened and where you are.",
+      es:"Vas caminando a tu casa cuando ves que alguien se cae y se lastima feo. Necesitas pedir ayuda y explicar qué pasó y dónde estás."
+    },
+    phrases:[
+      { en:"Call 911, please!", es:"¡Llame al 911, por favor!" },
+      { en:"Someone is hurt.", es:"Alguien está lastimado." },
+      { en:"We need an ambulance.", es:"Necesitamos una ambulancia." },
+      { en:"He's not breathing well.", es:"No está respirando bien." },
+      { en:"We're on Main Street, near the park.", es:"Estamos en la calle Main, cerca del parque." }
+    ],
+    listening:{
+      audio:"audio/clases/emergencia-listening.mp3",
+      dialogue:[
+        { speaker:"Operador", en:"911, what's your emergency?" },
+        { speaker:"Tú", en:"Someone just fell and hurt their leg badly. We need an ambulance." },
+        { speaker:"Operador", en:"Okay, stay calm. What's your exact location?" }
+      ],
+      question:{
+        text:"¿Qué necesita la persona que llama?",
+        options:["Una ambulancia","Un taxi","Información del clima"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Operador", en:"Is the person conscious and breathing?" },
+      options:[
+        { en:"Yes, but breathing is hard for them.", correct:true, feedback:"¡Bien! Respondes justo lo que preguntaron: si está consciente y cómo respira." },
+        { en:"We're on Main Street.", correct:false, feedback:"Esa es la ubicación, pero te preguntaron por su estado, no por dónde están." },
+        { en:"I have a headache today.", correct:false, feedback:"Te preguntaron por la otra persona, no por ti." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Cuál es su emergencia?",
+      words:["your","is","emergency?","What"],
+      correctOrder:["What","is","your","emergency?"]
+    },
+    speaking:{
+      audio:"audio/clases/emergencia-speaking.mp3",
+      prompt:"We're on Main Street, near the park.",
+      es:'Practica diciendo: "Estamos en la calle Main, cerca del parque."'
+    },
+    miniChallenge:{
+      start:"call",
+      nodes:{
+        call:{
+          en:"The operator answers: \"911, what's your emergency?\"",
+          es:'El operador contesta: "911, ¿cuál es su emergencia?"',
+          options:[
+            { en:"Someone fell and is badly hurt. We need help.", next:"location", correct:true },
+            { en:"I'd like to check this bag.", next:"call-fail", correct:false }
+          ]
+        },
+        "call-fail":{
+          en:"The operator asks again: \"Sorry, can you tell me what happened?\"",
+          es:'El operador pregunta de nuevo: "Perdón, ¿me puede decir qué pasó?"',
+          options:[
+            { en:"Sorry, someone fell and is badly hurt.", next:"location", correct:true }
+          ]
+        },
+        location:{
+          en:"The operator asks: \"What's your exact location?\"",
+          es:'El operador pregunta: "¿Cuál es su ubicación exacta?"',
+          options:[
+            { en:"We're on Main Street, near the park.", next:"wait", correct:true },
+            { en:"It leaves at five.", next:"location-fail", correct:false }
+          ]
+        },
+        "location-fail":{
+          en:"The operator clarifies: \"I need your address, not a schedule.\"",
+          es:'El operador aclara: "Necesito su dirección, no un horario."',
+          options:[
+            { en:"Sorry, we're on Main Street, near the park.", next:"wait", correct:true }
+          ]
+        },
+        wait:{
+          en:"The operator says: \"Help is on the way. Can you stay on the line?\"",
+          es:'El operador dice: "La ayuda va en camino. ¿Puede quedarse en la línea?"',
+          options:[
+            { en:"Yes, I'll stay right here.", next:"end", correct:true },
+            { en:"I have a reservation for two.", next:"wait-fail", correct:false }
+          ]
+        },
+        "wait-fail":{
+          en:"The operator repeats: \"I just need you to stay on the phone with me.\"",
+          es:'El operador repite: "Solo necesito que se quede al teléfono conmigo."',
+          options:[
+            { en:"Sorry, yes, I'll stay on the line.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"The ambulance arrives a few minutes later. You did great staying calm.", es:"La ambulancia llega unos minutos después. Hiciste muy bien en mantener la calma.", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Call 911, please!", "Someone is hurt.", "He's not breathing well.", "We're on Main Street, near the park."],
+      tip:"Hoy practicaste cómo pedir ayuda en una emergencia: llamar al 911, explicar qué pasó y decir dónde estás."
+    }
+  },
+
+  "public-transport": {
+    id:"public-transport",
+    title:"Transporte público",
+    situation:{
+      en:"You need to get across the city and decide to take the subway. You need to buy a ticket, ask which line to take, and figure out where to get off.",
+      es:"Necesitas cruzar la ciudad y decides tomar el metro. Necesitas comprar un boleto, preguntar qué línea tomar y saber dónde bajarte."
+    },
+    phrases:[
+      { en:"How much is a ticket?", es:"¿Cuánto cuesta un boleto?" },
+      { en:"Which line goes downtown?", es:"¿Qué línea va al centro?" },
+      { en:"Do I need to transfer?", es:"¿Necesito hacer transbordo?" },
+      { en:"Which stop should I get off at?", es:"¿En qué parada me bajo?" },
+      { en:"Is this seat taken?", es:"¿Está ocupado este asiento?" }
+    ],
+    listening:{
+      audio:"audio/clases/transporte-listening.mp3",
+      dialogue:[
+        { speaker:"Empleado", en:"Can I help you?" },
+        { speaker:"Tú", en:"Yes, which line goes downtown?" },
+        { speaker:"Empleado", en:"Take the blue line, and get off at the third stop." }
+      ],
+      question:{
+        text:"¿Qué línea debe tomar?",
+        options:["La línea azul","La línea roja","La línea verde"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Empleado", en:"Do you need a one-way ticket or a round trip?" },
+      options:[
+        { en:"One-way, please.", correct:true, feedback:"¡Bien! Respondes directo a la opción que te preguntaron." },
+        { en:"Take the blue line.", correct:false, feedback:"Eso es una indicación de ruta, no una respuesta sobre el tipo de boleto." },
+        { en:"I'm allergic to penicillin.", correct:false, feedback:"Esa respuesta no tiene nada que ver con comprar un boleto." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Necesito hacer transbordo?",
+      words:["transfer?","need","I","to","Do"],
+      correctOrder:["Do","I","need","to","transfer?"]
+    },
+    speaking:{
+      audio:"audio/clases/transporte-speaking.mp3",
+      prompt:"Which stop should I get off at?",
+      es:'Practica diciendo: "¿En qué parada me bajo?"'
+    },
+    miniChallenge:{
+      start:"buy",
+      nodes:{
+        buy:{
+          en:"You approach the ticket window: \"Can I help you?\"",
+          es:'Te acercas a la ventanilla: "¿Le puedo ayudar?"',
+          options:[
+            { en:"Yes, I'd like a ticket downtown, please.", next:"line", correct:true },
+            { en:"I have a headache today.", next:"buy-fail", correct:false }
+          ]
+        },
+        "buy-fail":{
+          en:"The employee asks: \"Sorry, what do you need exactly?\"",
+          es:'El empleado pregunta: "Perdón, ¿qué necesita exactamente?"',
+          options:[
+            { en:"Sorry, a ticket downtown, please.", next:"line", correct:true }
+          ]
+        },
+        line:{
+          en:"The employee says: \"Take the blue line from platform two.\"",
+          es:'El empleado dice: "Tome la línea azul desde el andén dos."',
+          options:[
+            { en:"Great, thank you! Which stop do I get off at?", next:"transfer", correct:true },
+            { en:"The soup of the day, please.", next:"line-fail", correct:false }
+          ]
+        },
+        "line-fail":{
+          en:"The employee looks confused: \"Sorry, this isn't a restaurant.\"",
+          es:'El empleado se ve confundido: "Perdón, esto no es un restaurante."',
+          options:[
+            { en:"Sorry! I meant, which stop do I get off at?", next:"transfer", correct:true }
+          ]
+        },
+        transfer:{
+          en:"The employee explains: \"Get off at the third stop, no transfer needed.\"",
+          es:'El empleado explica: "Bájese en la tercera parada, no necesita transbordo."',
+          options:[
+            { en:"Perfect, that's easy. Thanks!", next:"end", correct:true },
+            { en:"Two nights, please.", next:"transfer-fail", correct:false }
+          ]
+        },
+        "transfer-fail":{
+          en:"The employee pauses: \"Sorry, this isn't a hotel either.\"",
+          es:'El empleado hace una pausa: "Perdón, esto tampoco es un hotel."',
+          options:[
+            { en:"Ha, sorry! Thanks for the help.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You find the blue line and get off right where you needed. ¡Perfecto!", es:"Encuentras la línea azul y te bajas justo donde necesitabas. ¡Perfecto!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["How much is a ticket?", "Which line goes downtown?", "Do I need to transfer?", "Which stop should I get off at?"],
+      tip:"Hoy practicaste cómo comprar un boleto, preguntar qué línea tomar y en qué parada bajarte en el transporte público."
+    }
+  },
+
+  supermarket: {
+    id:"supermarket",
+    title:"Supermercado",
+    situation:{
+      en:"You're at the supermarket looking for a few specific items, and you need to ask where to find them and pay at checkout.",
+      es:"Estás en el supermercado buscando algunos productos específicos, y necesitas preguntar dónde encontrarlos y pagar en caja."
+    },
+    phrases:[
+      { en:"Excuse me, where can I find the milk?", es:"Disculpe, ¿dónde puedo encontrar la leche?" },
+      { en:"Do you have this in a smaller size?", es:"¿Tiene esto en un tamaño más chico?" },
+      { en:"Is this on sale?", es:"¿Esto está en oferta?" },
+      { en:"Paper or plastic bags?", es:"¿Bolsa de papel o de plástico?" },
+      { en:"Do you take credit cards?", es:"¿Aceptan tarjeta de crédito?" }
+    ],
+    listening:{
+      audio:"audio/clases/supermercado-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Excuse me, where can I find the milk?" },
+        { speaker:"Empleada", en:"It's in aisle five, next to the eggs." },
+        { speaker:"Tú", en:"Great, thank you! Is it on sale this week?" }
+      ],
+      question:{
+        text:"¿En qué pasillo está la leche?",
+        options:["Pasillo 5","Pasillo 2","Pasillo 9"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Cajera", en:"Would you like paper or plastic bags?" },
+      options:[
+        { en:"Paper, please.", correct:true, feedback:"¡Bien! Respondes directo con el tipo de bolsa." },
+        { en:"It's in aisle five.", correct:false, feedback:"Esa es la respuesta a dónde está algo, no al tipo de bolsa." },
+        { en:"Yes, I have a reservation.", correct:false, feedback:"Te preguntaron por bolsas, no por una reservación." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Aceptan tarjeta de crédito?",
+      words:["cards?","you","credit","take","Do"],
+      correctOrder:["Do","you","take","credit","cards?"]
+    },
+    speaking:{
+      audio:"audio/clases/supermercado-speaking.mp3",
+      prompt:"Do you have this in a smaller size?",
+      es:'Practica diciendo: "¿Tiene esto en un tamaño más chico?"'
+    },
+    miniChallenge:{
+      start:"find",
+      nodes:{
+        find:{
+          en:"An employee walks by: \"Hi, can I help you find something?\"",
+          es:'Un empleado pasa cerca: "Hola, ¿le puedo ayudar a encontrar algo?"',
+          options:[
+            { en:"Yes, where can I find the bread?", next:"aisle", correct:true },
+            { en:"I have a headache today.", next:"find-fail", correct:false }
+          ]
+        },
+        "find-fail":{
+          en:"The employee asks: \"Sorry, are you looking for a product or something else?\"",
+          es:'El empleado pregunta: "Perdón, ¿busca un producto o algo más?"',
+          options:[
+            { en:"Sorry, I'm looking for the bread.", next:"aisle", correct:true }
+          ]
+        },
+        aisle:{
+          en:"The employee says: \"It's in aisle three, on the left.\"",
+          es:'El empleado dice: "Está en el pasillo tres, a la izquierda."',
+          options:[
+            { en:"Thank you! Is it on sale this week?", next:"checkout", correct:true },
+            { en:"Two nights, please.", next:"aisle-fail", correct:false }
+          ]
+        },
+        "aisle-fail":{
+          en:"The employee pauses: \"Sorry, this isn't a hotel.\"",
+          es:'El empleado hace una pausa: "Perdón, esto no es un hotel."',
+          options:[
+            { en:"Ha, sorry! Is the bread on sale?", next:"checkout", correct:true }
+          ]
+        },
+        checkout:{
+          en:"At checkout, the cashier asks: \"Paper or plastic bags?\"",
+          es:'En caja, la cajera pregunta: "¿Bolsa de papel o de plástico?"',
+          options:[
+            { en:"Paper, please.", next:"end", correct:true },
+            { en:"The flight is at five forty.", next:"checkout-fail", correct:false }
+          ]
+        },
+        "checkout-fail":{
+          en:"The cashier looks confused: \"Sorry, what flight?\"",
+          es:'La cajera se ve confundida: "Perdón, ¿qué vuelo?"',
+          options:[
+            { en:"Sorry, never mind. Paper bags, please.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You pay and head out with everything you needed. ¡Buenas compras!", es:"Pagas y sales con todo lo que necesitabas. ¡Buenas compras!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Excuse me, where can I find the milk?", "Is this on sale?", "Paper or plastic bags?", "Do you take credit cards?"],
+      tip:"Hoy practicaste cómo preguntar dónde encontrar productos, si algo está en oferta y cómo pagar en el supermercado."
+    }
+  },
+
+  "return-product": {
+    id:"return-product",
+    title:"Devolver o cambiar un producto",
+    situation:{
+      en:"You bought a shirt last week but it doesn't fit right, so you go back to the store to return it or exchange it for a different size.",
+      es:"Compraste una camisa la semana pasada pero no te queda bien, así que regresas a la tienda para devolverla o cambiarla por otra talla."
+    },
+    phrases:[
+      { en:"I'd like to return this, please.", es:"Quisiera devolver esto, por favor." },
+      { en:"It doesn't fit right.", es:"No me queda bien." },
+      { en:"Do you have this in a different size?", es:"¿Tiene esto en otra talla?" },
+      { en:"I have the receipt.", es:"Tengo el recibo." },
+      { en:"Can I get a refund instead?", es:"¿Me pueden dar un reembolso en su lugar?" }
+    ],
+    listening:{
+      audio:"audio/clases/devolucion-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Hi, I'd like to return this shirt, please." },
+        { speaker:"Empleado", en:"Sure, what's the problem with it?" },
+        { speaker:"Tú", en:"It doesn't fit right, it's too small." }
+      ],
+      question:{
+        text:"¿Cuál es el problema con la camisa?",
+        options:["No le queda bien","Está rota","Es del color equivocado"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Empleado", en:"Do you have the receipt with you?" },
+      options:[
+        { en:"Yes, here it is.", correct:true, feedback:"¡Bien! Respondes directo a la pregunta sobre el recibo." },
+        { en:"It's too small.", correct:false, feedback:"Eso explica el problema, pero te preguntaron por el recibo." },
+        { en:"I'll have the grilled chicken.", correct:false, feedback:"Esa respuesta no tiene nada que ver con devolver un producto." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Me pueden dar un reembolso?",
+      words:["a","refund?","get","I","Can"],
+      correctOrder:["Can","I","get","a","refund?"]
+    },
+    speaking:{
+      audio:"audio/clases/devolucion-speaking.mp3",
+      prompt:"Do you have this in a different size?",
+      es:'Practica diciendo: "¿Tiene esto en otra talla?"'
+    },
+    miniChallenge:{
+      start:"explain",
+      nodes:{
+        explain:{
+          en:"The employee asks: \"Hi, how can I help you?\"",
+          es:'El empleado pregunta: "Hola, ¿cómo le puedo ayudar?"',
+          options:[
+            { en:"I'd like to return this shirt, it doesn't fit.", next:"receipt", correct:true },
+            { en:"I have a headache today.", next:"explain-fail", correct:false }
+          ]
+        },
+        "explain-fail":{
+          en:"The employee asks: \"Sorry, are you looking to buy or return something?\"",
+          es:'El empleado pregunta: "Perdón, ¿busca comprar o devolver algo?"',
+          options:[
+            { en:"Sorry, I'd like to return this shirt.", next:"receipt", correct:true }
+          ]
+        },
+        receipt:{
+          en:"The employee asks: \"Do you have the receipt?\"",
+          es:'El empleado pregunta: "¿Tiene el recibo?"',
+          options:[
+            { en:"Yes, here it is.", next:"choice", correct:true },
+            { en:"The flight is at five forty.", next:"receipt-fail", correct:false }
+          ]
+        },
+        "receipt-fail":{
+          en:"The employee clarifies: \"I just need to see your receipt.\"",
+          es:'El empleado aclara: "Solo necesito ver su recibo."',
+          options:[
+            { en:"Sorry, yes, here it is.", next:"choice", correct:true }
+          ]
+        },
+        choice:{
+          en:"The employee asks: \"Would you like a different size, or a refund?\"",
+          es:'El empleado pregunta: "¿Quiere una talla diferente, o un reembolso?"',
+          options:[
+            { en:"A different size, please, one size up.", next:"end", correct:true },
+            { en:"Two nights, please.", next:"choice-fail", correct:false }
+          ]
+        },
+        "choice-fail":{
+          en:"The employee pauses: \"Sorry, this isn't a hotel.\"",
+          es:'El empleado hace una pausa: "Perdón, esto no es un hotel."',
+          options:[
+            { en:"Ha, sorry! A different size, please.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"The employee exchanges it for the right size. ¡Problema resuelto!", es:"El empleado te lo cambia por la talla correcta. ¡Problema resuelto!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["I'd like to return this, please.", "It doesn't fit right.", "I have the receipt.", "Can I get a refund instead?"],
+      tip:"Hoy practicaste cómo devolver o cambiar un producto en una tienda: explicar el problema, mostrar el recibo y elegir entre cambio o reembolso."
+    }
+  },
+
+  "work-emails": {
+    id:"work-emails",
+    title:"Escribir y responder emails",
+    situation:{
+      en:"You just received an email from a colleague asking about the status of a project, and you need to write a clear, professional reply.",
+      es:"Acabas de recibir un correo de un compañero preguntando por el estado de un proyecto, y necesitas escribir una respuesta clara y profesional."
+    },
+    phrases:[
+      { en:"I hope this email finds you well.", es:"Espero que este correo te encuentre bien." },
+      { en:"I'm writing to follow up on...", es:"Te escribo para dar seguimiento a..." },
+      { en:"Please let me know if you have any questions.", es:"Avísame si tienes alguna pregunta." },
+      { en:"I'll get back to you by Friday.", es:"Te responderé antes del viernes." },
+      { en:"Thank you for your patience.", es:"Gracias por tu paciencia." }
+    ],
+    listening:{
+      audio:"audio/clases/emails-listening.mp3",
+      dialogue:[
+        { speaker:"Colega", en:"Hi, I'm writing to follow up on the project status." },
+        { speaker:"Tú", en:"Thanks for checking in, everything is on track." },
+        { speaker:"Colega", en:"Great, when can I expect the final report?" }
+      ],
+      question:{
+        text:"¿Por qué escribe el colega?",
+        options:["Para dar seguimiento al proyecto","Para pedir un día libre","Para invitar a una fiesta"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Colega", en:"Could you send me an update by the end of the day?" },
+      options:[
+        { en:"Sure, I'll send it by five.", correct:true, feedback:"¡Bien! Confirmas la hora exacta que te pidieron." },
+        { en:"I have a headache today.", correct:false, feedback:"Esa respuesta no tiene nada que ver con enviar la actualización." },
+        { en:"Two nights, please.", correct:false, feedback:"Esa respuesta no tiene sentido en un correo de trabajo." }
+      ]
+    },
+    buildSentence:{
+      es:"Gracias por tu paciencia.",
+      words:["your","for","patience.","Thank","you"],
+      correctOrder:["Thank","you","for","your","patience."]
+    },
+    speaking:{
+      audio:"audio/clases/emails-speaking.mp3",
+      prompt:"Please let me know if you have any questions.",
+      es:'Practica diciendo: "Avísame si tienes alguna pregunta."'
+    },
+    miniChallenge:{
+      start:"read",
+      nodes:{
+        read:{
+          en:"You open an email: \"Hi, could you send me the report by tomorrow?\"",
+          es:'Abres un correo: "Hola, ¿me podrías mandar el reporte para mañana?"',
+          options:[
+            { en:"Sure, I'll have it ready by tomorrow morning.", next:"question", correct:true },
+            { en:"I have a headache today.", next:"read-fail", correct:false }
+          ]
+        },
+        "read-fail":{
+          en:"They reply: \"Sorry, is everything okay? I just need the report.\"",
+          es:'Responden: "Perdón, ¿todo bien? Solo necesito el reporte."',
+          options:[
+            { en:"Sorry, yes! I'll have the report ready by tomorrow.", next:"question", correct:true }
+          ]
+        },
+        question:{
+          en:"They ask: \"Do you need anything from me to finish it?\"",
+          es:'Preguntan: "¿Necesitas algo de mí para terminarlo?"',
+          options:[
+            { en:"Just the sales numbers from last month, please.", next:"confirm", correct:true },
+            { en:"Two nights, please.", next:"question-fail", correct:false }
+          ]
+        },
+        "question-fail":{
+          en:"They pause: \"Sorry, this isn't a hotel booking.\"",
+          es:'Hacen una pausa: "Perdón, esto no es una reservación de hotel."',
+          options:[
+            { en:"Ha, sorry! Just the sales numbers, please.", next:"confirm", correct:true }
+          ]
+        },
+        confirm:{
+          en:"They reply: \"I'll send those over right now. Thanks for the quick turnaround!\"",
+          es:'Responden: "Te los mando ahora mismo. ¡Gracias por la rapidez!"',
+          options:[
+            { en:"You're welcome, happy to help!", next:"end", correct:true },
+            { en:"The flight is at five forty.", next:"confirm-fail", correct:false }
+          ]
+        },
+        "confirm-fail":{
+          en:"They look confused: \"Sorry, what flight?\"",
+          es:'Se ven confundidos: "Perdón, ¿qué vuelo?"',
+          options:[
+            { en:"Never mind, sorry! Happy to help.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You finish the report and send it on time. ¡Buen trabajo!", es:"Terminas el reporte y lo mandas a tiempo. ¡Buen trabajo!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["I hope this email finds you well.", "I'm writing to follow up on...", "Please let me know if you have any questions.", "Thank you for your patience."],
+      tip:"Hoy practicaste frases útiles para escribir y responder correos de trabajo de forma clara y profesional."
+    }
+  },
+
+  presentation: {
+    id:"presentation",
+    title:"Dar una presentación",
+    situation:{
+      en:"You're about to give a presentation to your team about the quarterly results, and you need to introduce the topic and handle questions.",
+      es:"Estás a punto de dar una presentación a tu equipo sobre los resultados del trimestre, y necesitas introducir el tema y manejar preguntas."
+    },
+    phrases:[
+      { en:"Thank you all for being here today.", es:"Gracias a todos por estar aquí hoy." },
+      { en:"Let's take a look at the numbers.", es:"Vamos a ver los números." },
+      { en:"As you can see on this slide...", es:"Como pueden ver en esta diapositiva..." },
+      { en:"Does anyone have any questions?", es:"¿Alguien tiene alguna pregunta?" },
+      { en:"That's a great question.", es:"Esa es una excelente pregunta." }
+    ],
+    listening:{
+      audio:"audio/clases/presentacion-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Thank you all for being here. Let's look at the quarterly results." },
+        { speaker:"Colega", en:"Can you go back to the previous slide?" },
+        { speaker:"Tú", en:"Sure, no problem. Here it is." }
+      ],
+      question:{
+        text:"¿Qué pide el colega?",
+        options:["Regresar a la diapositiva anterior","Cancelar la reunión","Un café"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Colega", en:"What caused the increase in sales this quarter?" },
+      options:[
+        { en:"Mainly our new marketing campaign.", correct:true, feedback:"¡Bien! Respondes directo a la causa que preguntaron." },
+        { en:"I have a headache today.", correct:false, feedback:"Esa respuesta no tiene nada que ver con la pregunta." },
+        { en:"The flight is at five forty.", correct:false, feedback:"Esa respuesta no tiene sentido en esta presentación." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Alguien tiene alguna pregunta?",
+      words:["questions?","have","any","Does","anyone"],
+      correctOrder:["Does","anyone","have","any","questions?"]
+    },
+    speaking:{
+      audio:"audio/clases/presentacion-speaking.mp3",
+      prompt:"As you can see on this slide...",
+      es:'Practica diciendo: "Como pueden ver en esta diapositiva..."'
+    },
+    miniChallenge:{
+      start:"intro",
+      nodes:{
+        intro:{
+          en:"You start: everyone is seated and looking at you. Time to begin.",
+          es:"Empiezas: todos están sentados mirándote. Es hora de comenzar.",
+          options:[
+            { en:"Thank you all for being here today.", next:"question", correct:true },
+            { en:"I have a headache today.", next:"intro-fail", correct:false }
+          ]
+        },
+        "intro-fail":{
+          en:"The room stays quiet, waiting for you to start properly.",
+          es:"La sala se queda en silencio, esperando a que empieces bien.",
+          options:[
+            { en:"Sorry, let me start again. Thank you all for being here.", next:"question", correct:true }
+          ]
+        },
+        question:{
+          en:"Someone raises their hand: \"Can you explain that last chart again?\"",
+          es:'Alguien levanta la mano: "¿Puede explicar otra vez esa última gráfica?"',
+          options:[
+            { en:"Of course, let me go back to it.", next:"tough", correct:true },
+            { en:"Two nights, please.", next:"question-fail", correct:false }
+          ]
+        },
+        "question-fail":{
+          en:"They look confused: \"Sorry, I just asked about the chart.\"",
+          es:'Se ven confundidos: "Perdón, solo pregunté por la gráfica."',
+          options:[
+            { en:"Sorry, of course, let me go back to the chart.", next:"tough", correct:true }
+          ]
+        },
+        tough:{
+          en:"Someone asks a tough question you don't fully know the answer to.",
+          es:"Alguien hace una pregunta difícil que no sabes responder del todo.",
+          options:[
+            { en:"That's a great question, let me follow up with you after.", next:"end", correct:true },
+            { en:"The flight is at five forty.", next:"tough-fail", correct:false }
+          ]
+        },
+        "tough-fail":{
+          en:"They look puzzled: \"Sorry, what does that have to do with my question?\"",
+          es:'Se ven extrañados: "Perdón, ¿eso qué tiene que ver con mi pregunta?"',
+          options:[
+            { en:"Sorry, let me follow up with you after the meeting.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You finish the presentation with confidence. ¡Excelente trabajo!", es:"Terminas la presentación con confianza. ¡Excelente trabajo!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Thank you all for being here today.", "Let's take a look at the numbers.", "Does anyone have any questions?", "That's a great question."],
+      tip:"Hoy practicaste cómo introducir una presentación, manejar preguntas y responder con confianza en el trabajo."
+    }
+  },
+
+  "client-meeting": {
+    id:"client-meeting",
+    title:"Hablar con un cliente",
+    situation:{
+      en:"You're meeting with a client to discuss their needs and explain how your company can help them.",
+      es:"Tienes una reunión con un cliente para hablar de sus necesidades y explicar cómo tu empresa lo puede ayudar."
+    },
+    phrases:[
+      { en:"Thanks for meeting with us today.", es:"Gracias por reunirse con nosotros hoy." },
+      { en:"What are you looking for exactly?", es:"¿Qué está buscando exactamente?" },
+      { en:"We can definitely help with that.", es:"Definitivamente podemos ayudar con eso." },
+      { en:"Let me walk you through our process.", es:"Déjeme explicarle nuestro proceso." },
+      { en:"Do we have a deal?", es:"¿Tenemos un trato?" }
+    ],
+    listening:{
+      audio:"audio/clases/cliente-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Thanks for meeting with us today. What are you looking for exactly?" },
+        { speaker:"Cliente", en:"We need a faster way to manage our inventory." },
+        { speaker:"Tú", en:"We can definitely help with that." }
+      ],
+      question:{
+        text:"¿Qué necesita el cliente?",
+        options:["Una forma más rápida de manejar su inventario","Más empleados","Un préstamo"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Cliente", en:"How long would it take to get started?" },
+      options:[
+        { en:"We could start as early as next week.", correct:true, feedback:"¡Bien! Respondes directo con un tiempo concreto." },
+        { en:"I have a headache today.", correct:false, feedback:"Esa respuesta no tiene nada que ver con la pregunta." },
+        { en:"Two nights, please.", correct:false, feedback:"Esa respuesta no tiene sentido en esta reunión." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Tenemos un trato?",
+      words:["a","we","deal?","Do","have"],
+      correctOrder:["Do","we","have","a","deal?"]
+    },
+    speaking:{
+      audio:"audio/clases/cliente-speaking.mp3",
+      prompt:"Let me walk you through our process.",
+      es:'Practica diciendo: "Déjeme explicarle nuestro proceso."'
+    },
+    miniChallenge:{
+      start:"greet",
+      nodes:{
+        greet:{
+          en:"The client arrives: \"Hi, thanks for having me.\"",
+          es:'El cliente llega: "Hola, gracias por recibirme."',
+          options:[
+            { en:"Of course, thanks for meeting with us. What can we help with?", next:"need", correct:true },
+            { en:"I have a headache today.", next:"greet-fail", correct:false }
+          ]
+        },
+        "greet-fail":{
+          en:"The client looks confused: \"Sorry, are you okay?\"",
+          es:'El cliente se ve confundido: "Perdón, ¿está bien?"',
+          options:[
+            { en:"Ha, yes, sorry! Thanks for coming, what can we help with?", next:"need", correct:true }
+          ]
+        },
+        need:{
+          en:"The client explains: \"We need a faster way to manage our inventory.\"",
+          es:'El cliente explica: "Necesitamos una forma más rápida de manejar nuestro inventario."',
+          options:[
+            { en:"We can definitely help with that.", next:"price", correct:true },
+            { en:"The flight is at five forty.", next:"need-fail", correct:false }
+          ]
+        },
+        "need-fail":{
+          en:"The client looks puzzled: \"Sorry, what does a flight have to do with this?\"",
+          es:'El cliente se ve extrañado: "Perdón, ¿eso qué tiene que ver?"',
+          options:[
+            { en:"Sorry, ignore that. We can definitely help with your inventory.", next:"price", correct:true }
+          ]
+        },
+        price:{
+          en:"The client asks: \"What would this cost us?\"",
+          es:'El cliente pregunta: "¿Cuánto nos costaría esto?"',
+          options:[
+            { en:"Let me walk you through our pricing options.", next:"end", correct:true },
+            { en:"Two nights, please.", next:"price-fail", correct:false }
+          ]
+        },
+        "price-fail":{
+          en:"The client pauses: \"Sorry, this isn't a hotel booking.\"",
+          es:'El cliente hace una pausa: "Perdón, esto no es una reservación de hotel."',
+          options:[
+            { en:"Ha, sorry! Let me walk you through our pricing.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"The client seems convinced and wants to move forward. ¡Buen trabajo!", es:"El cliente parece convencido y quiere seguir adelante. ¡Buen trabajo!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Thanks for meeting with us today.", "What are you looking for exactly?", "We can definitely help with that.", "Let me walk you through our process."],
+      tip:"Hoy practicaste cómo recibir a un cliente, entender qué necesita y explicarle cómo puedes ayudarlo."
+    }
+  },
+
+  "work-problem": {
+    id:"work-problem",
+    title:"Explicar un problema en el trabajo",
+    situation:{
+      en:"Something went wrong with a project you're working on, and you need to explain the problem to your manager clearly, without panicking.",
+      es:"Algo salió mal con un proyecto en el que estás trabajando, y necesitas explicarle el problema a tu jefe con claridad, sin entrar en pánico."
+    },
+    phrases:[
+      { en:"We ran into a problem.", es:"Nos encontramos con un problema." },
+      { en:"It's going to take longer than expected.", es:"Va a tardar más de lo esperado." },
+      { en:"I think we can fix it by tomorrow.", es:"Creo que lo podemos arreglar para mañana." },
+      { en:"I wanted to let you know right away.", es:"Quería avisarte de inmediato." },
+      { en:"Here's what happened.", es:"Esto es lo que pasó." }
+    ],
+    listening:{
+      audio:"audio/clases/problema-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Hi, I wanted to let you know we ran into a problem." },
+        { speaker:"Jefe", en:"Okay, what happened?" },
+        { speaker:"Tú", en:"The server crashed, so the launch is delayed by a day." }
+      ],
+      question:{
+        text:"¿Qué pasó con el lanzamiento?",
+        options:["Se retrasa un día","Se canceló","Salió perfecto"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Jefe", en:"Do you have a plan to fix it?" },
+      options:[
+        { en:"Yes, we should have it fixed by tomorrow.", correct:true, feedback:"¡Bien! Respondes directo con un plan y un tiempo." },
+        { en:"I have a headache today.", correct:false, feedback:"Esa respuesta no tiene nada que ver con la pregunta." },
+        { en:"Two nights, please.", correct:false, feedback:"Esa respuesta no tiene sentido en esta conversación." }
+      ]
+    },
+    buildSentence:{
+      es:"Esto es lo que pasó.",
+      words:["happened.","is","what","Here's"],
+      correctOrder:["Here's","what","happened."]
+    },
+    speaking:{
+      audio:"audio/clases/problema-speaking.mp3",
+      prompt:"It's going to take longer than expected.",
+      es:'Practica diciendo: "Va a tardar más de lo esperado."'
+    },
+    miniChallenge:{
+      start:"report",
+      nodes:{
+        report:{
+          en:"You knock on your manager's door: \"Do you have a minute?\"",
+          es:'Tocas la puerta de tu jefe: "¿Tiene un minuto?"',
+          options:[
+            { en:"Yes, I wanted to let you know about a problem.", next:"explain", correct:true },
+            { en:"I'll have the grilled chicken.", next:"report-fail", correct:false }
+          ]
+        },
+        "report-fail":{
+          en:"They look confused: \"Sorry, this isn't a restaurant.\"",
+          es:'Se ven confundidos: "Perdón, esto no es un restaurante."',
+          options:[
+            { en:"Sorry! I wanted to let you know about a problem.", next:"explain", correct:true }
+          ]
+        },
+        explain:{
+          en:"They ask: \"Okay, what happened?\"",
+          es:'Preguntan: "Bueno, ¿qué pasó?"',
+          options:[
+            { en:"The server crashed and the launch will be delayed.", next:"plan", correct:true },
+            { en:"Two nights, please.", next:"explain-fail", correct:false }
+          ]
+        },
+        "explain-fail":{
+          en:"They pause: \"Sorry, this isn't a hotel booking.\"",
+          es:'Hacen una pausa: "Perdón, esto no es una reservación de hotel."',
+          options:[
+            { en:"Sorry! The server crashed, so the launch is delayed.", next:"plan", correct:true }
+          ]
+        },
+        plan:{
+          en:"They ask: \"Do you have a plan to fix it?\"",
+          es:'Preguntan: "¿Tiene un plan para arreglarlo?"',
+          options:[
+            { en:"Yes, we should have it fixed by tomorrow.", next:"end", correct:true },
+            { en:"The flight is at five forty.", next:"plan-fail", correct:false }
+          ]
+        },
+        "plan-fail":{
+          en:"They look puzzled: \"Sorry, what flight?\"",
+          es:'Se ven extrañados: "Perdón, ¿qué vuelo?"',
+          options:[
+            { en:"Never mind, sorry! Yes, fixed by tomorrow.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"Your manager appreciates you being upfront about it. ¡Bien manejado!", es:"Tu jefe agradece que hayas sido directo al respecto. ¡Bien manejado!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["We ran into a problem.", "It's going to take longer than expected.", "I think we can fix it by tomorrow.", "I wanted to let you know right away."],
+      tip:"Hoy practicaste cómo explicar un problema en el trabajo con claridad, sin entrar en pánico, y proponer un plan."
+    }
+  },
+
+  "negotiate-deadline": {
+    id:"negotiate-deadline",
+    title:"Pedir más tiempo / negociar una fecha límite",
+    situation:{
+      en:"You realize you need more time to finish a project, and you need to ask your manager for an extension without it sounding like an excuse.",
+      es:"Te das cuenta de que necesitas más tiempo para terminar un proyecto, y necesitas pedirle a tu jefe una extensión sin que suene a excusa."
+    },
+    phrases:[
+      { en:"Could I get a few extra days?", es:"¿Me podría dar unos días extra?" },
+      { en:"I want to make sure it's done right.", es:"Quiero asegurarme de que quede bien hecho." },
+      { en:"Would Friday work instead?", es:"¿Funcionaría el viernes en su lugar?" },
+      { en:"I appreciate your flexibility.", es:"Aprecio su flexibilidad." },
+      { en:"I'm almost done, just need more time.", es:"Ya casi termino, solo necesito más tiempo." }
+    ],
+    listening:{
+      audio:"audio/clases/fecha-limite-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Could I get a few extra days on the report?" },
+        { speaker:"Jefe", en:"That depends, why do you need more time?" },
+        { speaker:"Tú", en:"I want to make sure the numbers are completely accurate." }
+      ],
+      question:{
+        text:"¿Por qué pide más tiempo?",
+        options:["Para asegurarse de que los números sean correctos","Porque se fue de vacaciones","Porque perdió el archivo"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Jefe", en:"How many extra days do you need?" },
+      options:[
+        { en:"Just two more days would be great.", correct:true, feedback:"¡Bien! Respondes directo con un número concreto de días." },
+        { en:"I have a headache today.", correct:false, feedback:"Esa respuesta no tiene nada que ver con la pregunta." },
+        { en:"Two nights, please.", correct:false, feedback:"Esa respuesta no tiene sentido en esta conversación." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Funcionaría el viernes en su lugar?",
+      words:["work","Friday","instead?","Would"],
+      correctOrder:["Would","Friday","work","instead?"]
+    },
+    speaking:{
+      audio:"audio/clases/fecha-limite-speaking.mp3",
+      prompt:"I appreciate your flexibility.",
+      es:'Practica diciendo: "Aprecio su flexibilidad."'
+    },
+    miniChallenge:{
+      start:"ask",
+      nodes:{
+        ask:{
+          en:"You approach your manager: \"Do you have a moment?\"",
+          es:'Te acercas a tu jefe: "¿Tiene un momento?"',
+          options:[
+            { en:"Yes, I wanted to ask about the deadline.", next:"why", correct:true },
+            { en:"I'll have the grilled chicken.", next:"ask-fail", correct:false }
+          ]
+        },
+        "ask-fail":{
+          en:"They look confused: \"Sorry, this isn't a restaurant.\"",
+          es:'Se ven confundidos: "Perdón, esto no es un restaurante."',
+          options:[
+            { en:"Sorry! I wanted to ask about the deadline.", next:"why", correct:true }
+          ]
+        },
+        why:{
+          en:"They ask: \"Sure, what's going on?\"",
+          es:'Preguntan: "Claro, ¿qué pasa?"',
+          options:[
+            { en:"I need a couple more days to make sure it's accurate.", next:"offer", correct:true },
+            { en:"Two nights, please.", next:"why-fail", correct:false }
+          ]
+        },
+        "why-fail":{
+          en:"They pause: \"Sorry, this isn't a hotel booking.\"",
+          es:'Hacen una pausa: "Perdón, esto no es una reservación de hotel."',
+          options:[
+            { en:"Sorry! I just need a couple more days.", next:"offer", correct:true }
+          ]
+        },
+        offer:{
+          en:"They consider it: \"Would Friday work instead of Wednesday?\"",
+          es:'Lo piensan: "¿Funcionaría el viernes en vez del miércoles?"',
+          options:[
+            { en:"Yes, Friday works great. Thank you.", next:"end", correct:true },
+            { en:"The flight is at five forty.", next:"offer-fail", correct:false }
+          ]
+        },
+        "offer-fail":{
+          en:"They look puzzled: \"Sorry, what flight?\"",
+          es:'Se ven extrañados: "Perdón, ¿qué vuelo?"',
+          options:[
+            { en:"Never mind, sorry! Yes, Friday works great.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"Your manager agrees to the new deadline. ¡Bien negociado!", es:"Tu jefe acepta la nueva fecha límite. ¡Bien negociado!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Could I get a few extra days?", "I want to make sure it's done right.", "Would Friday work instead?", "I appreciate your flexibility."],
+      tip:"Hoy practicaste cómo pedir más tiempo y negociar una fecha límite en el trabajo sin que suene a excusa."
     }
   }
 };
