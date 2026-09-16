@@ -186,8 +186,10 @@ function renderClassList(container){
             <button type="button" class="clases-carousel-arrow" id="clasesContinueNext" aria-label="Siguiente">›</button>
           </div>` : ''}
         </div>
-        <div class="clases-continue-track" id="clasesContinueTrack">
-          ${inProgressIds.map((id,i)=> clasesCardHtml(classById[id], inProgressMap[id], { badge: i === 0 ? 'Tu clase actual' : 'Reciente' })).join('')}
+        <div class="clases-continue-track-wrap">
+          <div class="clases-continue-track" id="clasesContinueTrack">
+            ${inProgressIds.map((id,i)=> clasesCardHtml(classById[id], inProgressMap[id], { badge: i === 0 ? 'Tu clase actual' : 'Reciente' })).join('')}
+          </div>
         </div>
       </div>`;
     continueArea.querySelectorAll('.clase-card').forEach(card=>{
