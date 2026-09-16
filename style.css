@@ -552,6 +552,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-card-link.featured-clases:hover{border-color:var(--blue-deep);}
 .skill-card-link.featured-clases .card-badge{background:var(--blue);}
 .skill-card-link.featured-clases .go{color:var(--blue-deep);}
+.skill-card-link.featured-juego{border-color:var(--coral);background:linear-gradient(180deg, var(--coral-tint) 0%, #fff 60%);}
+.skill-card-link.featured-juego:hover{border-color:var(--coral);}
+.skill-card-link.featured-juego .card-badge{background:var(--coral);}
+.skill-card-link.featured-juego .go{color:var(--coral);}
 
 /* ---------- Dashboard v3: contenedor mas ancho, jerarquia mas grande ---------- */
 .wrap-dash{max-width:1260px;}
