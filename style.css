@@ -1094,8 +1094,33 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 /* ============================================================
    CLASES INTERACTIVAS
    ============================================================ */
+.clases-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:24px;}
+.clases-search-box{position:relative;flex:0 1 320px;min-width:220px;}
+.clases-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-faint);pointer-events:none;}
+.clases-search-icon svg{width:100%;height:100%;}
+.clases-search-box input{width:100%;border:2px solid var(--line);border-radius:999px;padding:11px 16px 11px 40px;font-size:0.92rem;font-family:inherit;background:#fff;color:var(--ink);transition:border-color .15s ease;}
+.clases-search-box input:focus{outline:none;border-color:var(--blue);}
+.clases-filter-pills{display:flex;gap:8px;flex-wrap:wrap;}
+
+.clases-continue{margin-bottom:34px;}
+.clases-continue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;}
+.clases-continue-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;display:flex;align-items:center;gap:8px;}
+.clases-continue-sub{font-size:0.86rem;color:var(--ink-soft);margin:0;}
+.clases-continue-arrows{display:flex;gap:8px;flex-shrink:0;}
+.clases-carousel-arrow{width:34px;height:34px;border:2px solid var(--line);border-radius:50%;background:#fff;color:var(--blue-deep);font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;}
+.clases-carousel-arrow:hover{border-color:var(--blue);background:var(--blue-tint);}
+.clases-continue-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
+.clases-continue-track::-webkit-scrollbar{display:none;}
+.clases-continue-track .clase-card{flex:0 0 320px;scroll-snap-align:start;}
+
 .clases-category{margin-bottom:34px;}
-.clases-category-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 14px;}
+.clases-category-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;}
+.clases-category-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;}
+.clases-category-desc{font-size:0.86rem;color:var(--ink-soft);margin:0;}
+.clases-ver-todas{background:none;border:none;padding:0;font-weight:700;font-size:0.85rem;color:var(--blue);cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;}
+.clases-ver-todas:hover{text-decoration:underline;}
+.clases-empty-msg{color:var(--ink-soft);font-size:0.92rem;padding:20px 0;}
+.clase-card-badge{flex-shrink:0;font-size:0.68rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);}
 .clases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;align-items:stretch;}
 .clase-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);padding:20px;cursor:pointer;transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;display:flex;flex-direction:column;gap:10px;height:100%;}
 .clase-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow);}
@@ -1164,6 +1189,12 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media (max-width:640px){
   .clase-body{padding:20px 16px 26px;}
   .clases-grid{grid-template-columns:1fr;}
+  .clases-toolbar{flex-direction:column;align-items:stretch;}
+  .clases-search-box{flex:1 1 auto;}
+  .clases-filter-pills{overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;}
+  .clases-filter-pills::-webkit-scrollbar{display:none;}
+  .clases-filter-pills .tab-btn{flex-shrink:0;}
+  .clases-continue-track .clase-card{flex-basis:82vw;}
 }
 
 .clases-banner{background:linear-gradient(135deg, var(--blue-deep), var(--blue));color:#fff;border-radius:var(--radius-lg);padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}

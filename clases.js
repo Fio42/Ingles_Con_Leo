@@ -38,7 +38,8 @@ function saveClaseProgress(state){
     stepIndex: state.stepIndex,
     results: state.results,
     challengePath: state.challengePath,
-    startedAt: state.startedAt
+    startedAt: state.startedAt,
+    updatedAt: Date.now()
   };
   saveAllClaseProgress(all);
 }
@@ -77,6 +78,58 @@ function getClasesInProgress(){
   return result;
 }
 
+// Descripciones cortas para las categorías conocidas (solo cosméticas,
+// debajo del título de cada sección). Si aparece una categoría nueva
+// que no está en este mapa, simplemente no se muestra descripción:
+// nunca es necesario tocar este archivo para que una categoría nueva
+// funcione (ver CLASS_CATALOG en data.js).
+const CLASES_CATEGORY_DESC = {
+  'Situaciones importantes': 'Prepárate para momentos clave en la vida real.',
+  'Viajes': 'Comunícate con confianza durante tus viajes.',
+  'Vida diaria': 'Conversaciones útiles para tu día a día.',
+  'Trabajo': 'Desarrolla tus habilidades profesionales.'
+};
+
+// Quita acentos y pasa a minúsculas para que buscar "medico" encuentre
+// "médico" y viceversa.
+function clasesNormalizeText(str){
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+const CLASES_TOTAL_STEPS = 8;
+
+// Arma el HTML de una sola tarjeta de clase. Se usa tanto en las
+// grillas por categoría como en el carrusel "Continúa donde te
+// quedaste" (ahí, opts.badge le agrega una etiqueta arriba).
+function clasesCardHtml(c, prog, opts){
+  opts = opts || {};
+  const isInProgress = !!prog;
+  const pct = isInProgress ? Math.round(((prog.stepIndex) / CLASES_TOTAL_STEPS) * 100) : 0;
+  const metaText = !c.available ? 'Próximamente'
+    : isInProgress ? `Paso ${prog.stepIndex + 1} de ${CLASES_TOTAL_STEPS}`
+    : `${c.minutes} min · ${CLASES_TOTAL_STEPS} pasos`;
+  const ctaText = !c.available ? '' : isInProgress ? 'Continuar →' : 'Empezar →';
+  return `
+    <div class="clase-card ${c.available ? '' : 'soon'} ${isInProgress ? 'in-progress' : ''}" data-id="${c.id}">
+      <div class="clase-card-top">
+        <span class="clase-card-title">${c.title}</span>
+        ${opts.badge ? `<span class="clase-card-badge">${opts.badge}</span>` : ''}
+      </div>
+      <p class="clase-card-desc">${c.available ? c.desc : 'Estamos preparando esta clase.'}</p>
+      <div class="clase-card-progress-track"><div class="clase-card-progress-fill" style="width:${pct}%;"></div></div>
+      <div class="clase-card-foot">
+        <span class="clase-card-meta">${metaText}</span>
+        ${ctaText ? `<span class="clase-card-cta">${ctaText}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+const CLASES_SEARCH_ICON = '<svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const CLASES_CARDS_PER_ROW = 4;
+
 function renderClassList(container){
   if(!container) return;
   const inProgressMap = getClasesInProgress();
@@ -85,45 +138,133 @@ function renderClassList(container){
     if(!byCategory[c.category]) byCategory[c.category] = [];
     byCategory[c.category].push(c);
   });
-  /* Todas las tarjetas comparten exactamente el mismo esqueleto (título,
-     descripción, barra de progreso fina, pie con meta + acción a la
-     derecha) sin importar si la clase está sin empezar, a medias o
-     disponible próximamente. Antes, algunas tarjetas tenían una etiqueta
-     "Continuar" arriba y otras no, lo que hacía que la grilla se viera
-     dispareja; ahora el único elemento que cambia entre tarjetas es el
-     contenido de esas dos zonas fijas, así que todas quedan alineadas. */
-  container.innerHTML = Object.keys(byCategory).map(cat=>`
-    <div class="clases-category">
-      <h3 class="clases-category-title">${cat}</h3>
-      <div class="clases-grid">
-        ${byCategory[cat].map(c=>{
-          const prog = c.available ? inProgressMap[c.id] : null;
-          const isInProgress = !!prog;
-          const totalSteps = 8;
-          const pct = isInProgress ? Math.round(((prog.stepIndex) / totalSteps) * 100) : 0;
-          const metaText = !c.available ? 'Próximamente'
-            : isInProgress ? `Paso ${prog.stepIndex + 1} de ${totalSteps}`
-            : `${c.minutes} min · ${totalSteps} pasos`;
-          const ctaText = !c.available ? '' : isInProgress ? 'Continuar →' : 'Empezar →';
-          return `
-          <div class="clase-card ${c.available ? '' : 'soon'} ${isInProgress ? 'in-progress' : ''}" data-id="${c.id}">
-            <div class="clase-card-top">
-              <span class="clase-card-title">${c.title}</span>
-            </div>
-            <p class="clase-card-desc">${c.available ? c.desc : 'Estamos preparando esta clase.'}</p>
-            <div class="clase-card-progress-track"><div class="clase-card-progress-fill" style="width:${pct}%;"></div></div>
-            <div class="clase-card-foot">
-              <span class="clase-card-meta">${metaText}</span>
-              ${ctaText ? `<span class="clase-card-cta">${ctaText}</span>` : ''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`).join('');
+  const categories = Object.keys(byCategory);
+  const classById = {};
+  CLASS_CATALOG.forEach(c=>{ classById[c.id] = c; });
 
-  container.querySelectorAll('.clase-card:not(.soon)').forEach(card=>{
-    card.addEventListener('click', ()=> startClass(card.dataset.id, container));
+  // Estado local de este listado (se reinicia cada vez que se entra a
+  // la pantalla de clases, igual que antes de este cambio).
+  const state = { search: '', filter: 'todas' };
+
+  container.innerHTML = `
+    <div class="clases-toolbar">
+      <div class="clases-search-box">
+        <span class="clases-search-icon">${CLASES_SEARCH_ICON}</span>
+        <input type="text" id="clasesSearchInput" placeholder="Buscar clases..." autocomplete="off">
+      </div>
+      <div class="clases-filter-pills" id="clasesFilterPills">
+        <button type="button" class="tab-btn active" data-filter="todas">Todas</button>
+        ${categories.map(cat=>`<button type="button" class="tab-btn" data-filter="${cat}">${cat}</button>`).join('')}
+      </div>
+    </div>
+    <div id="clasesContinueArea"></div>
+    <div id="clasesCategoriesArea"></div>`;
+
+  const continueArea = container.querySelector('#clasesContinueArea');
+  const categoriesArea = container.querySelector('#clasesCategoriesArea');
+  const searchInput = container.querySelector('#clasesSearchInput');
+  const pillsWrap = container.querySelector('#clasesFilterPills');
+
+  function renderContinue(){
+    const inProgressIds = Object.keys(inProgressMap)
+      .filter(id => classById[id] && classById[id].available)
+      .sort((a,b)=> (inProgressMap[b].updatedAt || inProgressMap[b].startedAt || 0) - (inProgressMap[a].updatedAt || inProgressMap[a].startedAt || 0));
+    if(inProgressIds.length === 0){
+      continueArea.innerHTML = '';
+      return;
+    }
+    continueArea.innerHTML = `
+      <div class="clases-continue">
+        <div class="clases-continue-head">
+          <div>
+            <h3 class="clases-continue-title">Continúa donde te quedaste</h3>
+            <p class="clases-continue-sub">Retoma tus clases y sigue practicando.</p>
+          </div>
+          ${inProgressIds.length > 2 ? `
+          <div class="clases-continue-arrows">
+            <button type="button" class="clases-carousel-arrow" id="clasesContinuePrev" aria-label="Anterior">‹</button>
+            <button type="button" class="clases-carousel-arrow" id="clasesContinueNext" aria-label="Siguiente">›</button>
+          </div>` : ''}
+        </div>
+        <div class="clases-continue-track" id="clasesContinueTrack">
+          ${inProgressIds.map((id,i)=> clasesCardHtml(classById[id], inProgressMap[id], { badge: i === 0 ? 'Tu clase actual' : 'Reciente' })).join('')}
+        </div>
+      </div>`;
+    continueArea.querySelectorAll('.clase-card').forEach(card=>{
+      card.addEventListener('click', ()=> startClass(card.dataset.id, container));
+    });
+    const track = continueArea.querySelector('#clasesContinueTrack');
+    const prevBtn = continueArea.querySelector('#clasesContinuePrev');
+    const nextBtn = continueArea.querySelector('#clasesContinueNext');
+    if(prevBtn) prevBtn.addEventListener('click', ()=> track.scrollBy({ left: -340, behavior: 'smooth' }));
+    if(nextBtn) nextBtn.addEventListener('click', ()=> track.scrollBy({ left: 340, behavior: 'smooth' }));
+  }
+
+  function renderCategories(){
+    const q = clasesNormalizeText(state.search);
+    const visibleCats = categories.filter(cat => state.filter === 'todas' || state.filter === cat);
+    let anyResults = false;
+    categoriesArea.innerHTML = visibleCats.map(cat=>{
+      const all = byCategory[cat];
+      const filtered = q ? all.filter(c=> clasesNormalizeText(c.title).includes(q) || clasesNormalizeText(c.desc).includes(q)) : all;
+      if(filtered.length === 0) return '';
+      anyResults = true;
+      const expanded = state.filter === cat || !!q;
+      const shown = expanded ? filtered : filtered.slice(0, CLASES_CARDS_PER_ROW);
+      const hasMore = !expanded && filtered.length > CLASES_CARDS_PER_ROW;
+      return `
+      <div class="clases-category">
+        <div class="clases-category-head">
+          <div>
+            <h3 class="clases-category-title">${cat} (${filtered.length})</h3>
+            ${CLASES_CATEGORY_DESC[cat] ? `<p class="clases-category-desc">${CLASES_CATEGORY_DESC[cat]}</p>` : ''}
+          </div>
+          ${hasMore ? `<button type="button" class="clases-ver-todas" data-category="${cat}">Ver todas →</button>` : ''}
+        </div>
+        <div class="clases-grid">
+          ${shown.map(c=> clasesCardHtml(c, c.available ? inProgressMap[c.id] : null)).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    if(!anyResults){
+      categoriesArea.innerHTML = `<p class="clases-empty-msg">No encontramos ninguna clase con ese nombre. Prueba con otra palabra.</p>`;
+    }
+
+    categoriesArea.querySelectorAll('.clase-card:not(.soon)').forEach(card=>{
+      card.addEventListener('click', ()=> startClass(card.dataset.id, container));
+    });
+    categoriesArea.querySelectorAll('.clases-ver-todas').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.filter = btn.dataset.category;
+        syncPills();
+        renderCategories();
+      });
+    });
+  }
+
+  function syncPills(){
+    pillsWrap.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.filter === state.filter);
+    });
+  }
+
+  pillsWrap.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.filter === state.filter) return;
+      state.filter = btn.dataset.filter;
+      syncPills();
+      renderCategories();
+    });
   });
+
+  searchInput.addEventListener('input', ()=>{
+    state.search = searchInput.value;
+    renderCategories();
+  });
+
+  renderContinue();
+  renderCategories();
 }
 
 function startClass(classId, rootContainer){
