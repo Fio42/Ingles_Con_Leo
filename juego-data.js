@@ -163,5 +163,20 @@ const RUSH_QUESTIONS = [
   { id:'r107', level:10, cefr:'C1', type:'vocab', prompt:"“To concede” significa...", options:["Admitir algo, aunque no quieras","Negar rotundamente","Celebrar un logro"], correct:0, explain:"“Concede” es admitir algo, a veces a regañadientes." },
   { id:'r108', level:10, cefr:'C1', type:'complete', prompt:"Seldom ___ a candidate so well prepared for the role.", options:["have we seen","we have seen","we saw"], correct:0, explain:"“Seldom” al inicio invierte el orden: “have we seen”." },
   { id:'r109', level:10, cefr:'C1', type:'meaning', prompt:"“His remarks were laced with irony” significa que...", options:["Sus comentarios tenían un tono irónico","Sus comentarios eran muy serios","Sus comentarios eran confusos"], correct:0, explain:"“Laced with irony” es que algo está impregnado de ironía." },
-  { id:'r110', level:10, cefr:'C1', type:'complete', prompt:"The proposal, ___ ambitious, received unanimous support.", options:["albeit","despite","although it"], correct:0, explain:"“Albeit” + adjetivo es una forma concisa y formal de decir “aunque ambicioso”." }
+  { id:'r110', level:10, cefr:'C1', type:'complete', prompt:"The proposal, ___ ambitious, received unanimous support.", options:["albeit","despite","although it"], correct:0, explain:"“Albeit” + adjetivo es una forma concisa y formal de decir “aunque ambicioso”." },
+
+  /* ---------- NÚMEROS: precios, teléfonos, direcciones, años (2026-09-16) ---------- */
+  { id:'r111', level:1, cefr:'A1', type:'translate', prompt:"¿Cómo se dice “15” en inglés?", options:["Fifteen","Fifty","Five"], correct:0, explain:"“Fifteen” es 15." },
+  { id:'r112', level:1, cefr:'A1', type:'translate', prompt:"¿Cómo se dice “12” en inglés?", options:["Twelve","Twenty","Two"], correct:0, explain:"“Twelve” es 12." },
+  { id:'r113', level:2, cefr:'A1', type:'vocab', prompt:"¿Cuál es 50?", options:["Fifty","Fifteen","Five hundred"], correct:0, explain:"“Fifty” es 50." },
+  { id:'r114', level:2, cefr:'A1', type:'translate', prompt:"¿Cómo se dice “80” en inglés?", options:["Eighty","Eighteen","Eight"], correct:0, explain:"“Eighty” es 80." },
+  { id:'r115', level:3, cefr:'A2', type:'vocab', prompt:"¿Cuál es 1,300?", options:["One thousand three hundred","One hundred three","Thirteen thousand"], correct:0, explain:"1,300 se dice “one thousand three hundred”." },
+  { id:'r116', level:3, cefr:'A2', type:'vocab', prompt:"¿Cuál es 10,000?", options:["Ten thousand","One thousand hundred","One hundred thousand"], correct:0, explain:"10,000 es “ten thousand”." },
+  { id:'r117', level:3, cefr:'A2', type:'listen-repeat', audio:'audio/numeros/a0-numeros-2.mp3', prompt:"Escucha. ¿Cuánto es?", options:["$5","$50","$15"], correct:0, explain:"El audio dice “It's five dollars.”" },
+  { id:'r118', level:4, cefr:'A2', type:'listen-repeat', audio:'audio/numeros/a1-numeros-1.mp3', prompt:"Escucha. ¿Cuánto es?", options:["$150","$115","$1,500"], correct:0, explain:"El audio dice “It's one hundred fifty dollars.”" },
+  { id:'r119', level:4, cefr:'A2', type:'listen-repeat', audio:'audio/numeros/a1-numeros-2.mp3', prompt:"Escucha. ¿Cuál es el número?", options:["984-555-2100","948-555-2100","984-555-2010"], correct:0, explain:"El audio dice el teléfono número por número." },
+  { id:'r120', level:5, cefr:'B1', type:'listen-repeat', audio:'audio/numeros/b1-numeros-2.mp3', prompt:"Escucha. ¿Cuál es la dirección?", options:["425 Oak Street","245 Oak Street","452 Oak Street"], correct:0, explain:"El audio dice “four two five Oak Street” = 425 Oak Street." },
+  { id:'r121', level:5, cefr:'B1', type:'listen-repeat', audio:'audio/numeros/a1-numeros-3.mp3', prompt:"Escucha. ¿En qué año nació?", options:["1998","1988","1989"], correct:0, explain:"El audio dice “nineteen ninety-eight” = 1998." },
+  { id:'r122', level:6, cefr:'B1', type:'listen-repeat', audio:'audio/numeros/b1-numeros-3.mp3', prompt:"Escucha. ¿Cuánto es?", options:["$1,500","$15,000","$150"], correct:0, explain:"“Fifteen hundred” = 1,500." }
+
 ];

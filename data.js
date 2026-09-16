@@ -13229,4 +13229,177 @@ READING_BANK.avanzado.push(
 );
 
 
+/* ============================================================
+   Bloque "Números" (2026-09-16)
+   Números útiles para la vida real: precios, teléfonos,
+   direcciones, correos, años. Se agregan como nuevas variantes
+   al final de cada banco, siguiendo el mismo patrón que los
+   bloques anteriores (m100/m200): esto NO reemplaza contenido
+   existente, solo agrega una opción más que el sistema de
+   variantes ya mezcla automáticamente con el resto.
+   ============================================================ */
 
+GRAMMAR_BANK.principiante.push([
+  {
+    topic: 'Números parecidos que confunden (13 vs 30, 14 vs 40...)',
+    items: [
+      { id:'g-principiante-numeros-1', translation:"¿Cómo se dice \"13\" en inglés?", type:'choice', prompt:"How do you say \"13\" in English?",
+        options:["Thirteen","Thirty","Three"], correct:0,
+        explain:"“Thirteen” es 13. Ojo: “thirty” es 30, suenan parecido.",
+        examples:[
+          {en:"I have thirteen dollars.", es:"Tengo trece dólares."},
+          {en:"She is thirteen years old.", es:"Ella tiene trece años."}
+        ]},
+      { id:'g-principiante-numeros-2', translation:"Tengo catorce años.", type:'fill', sentence:["I","am","___","years","old","."], blankIndex:2,
+        bank:["fourteen","forty","four"], correct:"fourteen",
+        explain:"“Fourteen” es 14. “Forty” es 40.",
+        examples:[
+          {en:"I am fourteen years old.", es:"Tengo catorce años."},
+          {en:"My brother is forty years old.", es:"Mi hermano tiene cuarenta años."}
+        ]},
+      { id:'g-principiante-numeros-3', translation:"¿Cuál número es \"ninety\"?", type:'choice', prompt:"Which number is \"ninety\"?",
+        options:["90","19","9"], correct:0,
+        explain:"“Ninety” es 90. Ojo: “nineteen” es 19.",
+        examples:[
+          {en:"My grandmother is ninety years old.", es:"Mi abuela tiene noventa años."},
+          {en:"There are ninety students.", es:"Hay noventa estudiantes."}
+        ]},
+      { id:'g-principiante-numeros-4', translation:"Tiene cuarenta años.", type:'error', wrong:"He is fourty years old.", wrongWord:"fourty",
+        right:"He is forty years old.", rightWord:"forty",
+        explain:"Cuarenta se escribe “forty”, no “fourty”.",
+        examples:[
+          {en:"He is forty years old.", es:"Él tiene cuarenta años."},
+          {en:"She turned forty last week.", es:"Ella cumplió cuarenta la semana pasada."}
+        ]}
+    ]
+  }
+]);
+
+VOCAB_BANK.principiante.push([
+  { id:'v-principiante-numeros-1', word:'Twenty', translation:'Veinte · el número 20',
+    examples:[{en:"I am twenty years old.", es:"Tengo veinte años."},{en:"She has twenty dollars.", es:"Ella tiene veinte dólares."}],
+    quiz:{ prompt:"¿Qué palabra es el número 20?", options:["twenty","twelve","two hundred"], correct:0, explain:"“Twenty” es 20." } },
+  { id:'v-principiante-numeros-2', word:'Hundred', translation:'Cien / cientos · 100',
+    examples:[{en:"It's one hundred dollars.", es:"Son cien dólares."},{en:"There are a hundred people here.", es:"Hay cien personas aquí."}],
+    quiz:{ prompt:"¿Qué palabra es \"cien / cientos\"?", options:["hundred","thousand","ten"], correct:0, explain:"“Hundred” es cien." } },
+  { id:'v-principiante-numeros-3', word:'Thousand', translation:'Mil · 1,000',
+    examples:[{en:"It costs one thousand dollars.", es:"Cuesta mil dólares."},{en:"The city has ten thousand people.", es:"La ciudad tiene diez mil personas."}],
+    quiz:{ prompt:"¿Qué palabra es \"mil\"?", options:["thousand","hundred","million"], correct:0, explain:"“Thousand” es mil." } },
+  { id:'v-principiante-numeros-4', word:'Phone number', translation:'Número de teléfono',
+    examples:[{en:"What's your phone number?", es:"¿Cuál es tu número de teléfono?"},{en:"My phone number is on the card.", es:"Mi número de teléfono está en la tarjeta."}],
+    quiz:{ prompt:"¿Qué frase significa \"número de teléfono\"?", options:["phone number","address","email"], correct:0, explain:"“Phone number” es número de teléfono." } },
+  { id:'v-principiante-numeros-5', word:'Address', translation:'Dirección',
+    examples:[{en:"What's your address?", es:"¿Cuál es tu dirección?"},{en:"My address is 125 Main Street.", es:"Mi dirección es 125 Main Street."}],
+    quiz:{ prompt:"¿Qué palabra significa \"dirección\"?", options:["address","email","price"], correct:0, explain:"“Address” es dirección." } },
+  { id:'v-principiante-numeros-6', word:'Email', translation:'Correo electrónico',
+    examples:[{en:"What's your email address?", es:"¿Cuál es tu correo electrónico?"},{en:"Send it to my email.", es:"Envíalo a mi correo."}],
+    quiz:{ prompt:"¿Qué palabra significa \"correo electrónico\"?", options:["email","address","phone number"], correct:0, explain:"“Email” es correo electrónico." } },
+  { id:'v-principiante-numeros-7', word:'Price', translation:'Precio',
+    examples:[{en:"What's the price?", es:"¿Cuál es el precio?"},{en:"The price is very good.", es:"El precio está muy bien."}],
+    quiz:{ prompt:"¿Qué palabra significa \"precio\"?", options:["price","cash","receipt"], correct:0, explain:"“Price” es precio." } },
+  { id:'v-principiante-numeros-8', word:'Free', translation:'Gratis · no cuesta dinero',
+    examples:[{en:"The event is free.", es:"El evento es gratis."},{en:"Is parking free here?", es:"¿El estacionamiento es gratis aquí?"}],
+    quiz:{ prompt:"¿Qué palabra significa \"no cuesta dinero\"?", options:["free","cheap","expensive"], correct:0, explain:"“Free” es gratis (cuesta $0)." } }
+]);
+
+VOCAB_BANK.facil.push([
+  { id:'v-facil-numeros-1', word:'Expensive', translation:'Caro',
+    examples:[{en:"This restaurant is expensive.", es:"Este restaurante es caro."},{en:"That car is too expensive.", es:"Ese carro es muy caro."}],
+    quiz:{ prompt:"¿Qué palabra significa \"caro\"?", options:["expensive","cheap","free"], correct:0, explain:"“Expensive” es caro." } },
+  { id:'v-facil-numeros-2', word:'Cheap', translation:'Barato',
+    examples:[{en:"This store is cheap.", es:"Esta tienda es barata."},{en:"I found a cheap flight.", es:"Encontré un vuelo barato."}],
+    quiz:{ prompt:"¿Qué palabra significa \"barato\"?", options:["cheap","expensive","free"], correct:0, explain:"“Cheap” es barato." } },
+  { id:'v-facil-numeros-3', word:'Discount', translation:'Descuento',
+    examples:[{en:"Is there a discount today?", es:"¿Hay descuento hoy?"},{en:"I got a 20% discount.", es:"Me dieron 20% de descuento."}],
+    quiz:{ prompt:"¿Qué palabra significa \"descuento\"?", options:["discount","total","receipt"], correct:0, explain:"“Discount” es descuento." } },
+  { id:'v-facil-numeros-4', word:'Total', translation:'Total · la suma a pagar',
+    examples:[{en:"What's the total?", es:"¿Cuál es el total?"},{en:"The total is fifty dollars.", es:"El total es cincuenta dólares."}],
+    quiz:{ prompt:"¿Qué palabra significa \"la suma a pagar\"?", options:["total","discount","tax"], correct:0, explain:"“Total” es la suma final a pagar." } },
+  { id:'v-facil-numeros-5', word:'Zip code', translation:'Código postal',
+    examples:[{en:"What's your zip code?", es:"¿Cuál es tu código postal?"},{en:"My zip code is 10001.", es:"Mi código postal es 10001."}],
+    quiz:{ prompt:"¿Qué frase significa \"código postal\"?", options:["zip code","phone number","account number"], correct:0, explain:"“Zip code” es código postal." } },
+  { id:'v-facil-numeros-6', word:'Apartment number', translation:'Número de apartamento',
+    examples:[{en:"What's your apartment number?", es:"¿Cuál es tu número de apartamento?"},{en:"I live in apartment number 4B.", es:"Vivo en el apartamento número 4B."}],
+    quiz:{ prompt:"¿Qué frase significa \"número de apartamento\"?", options:["apartment number","zip code","confirmation code"], correct:0, explain:"“Apartment number” es número de apartamento." } }
+]);
+
+VOCAB_BANK.medio.push([
+  { id:'v-medio-numeros-1', word:'Date of birth', translation:'Fecha de nacimiento',
+    examples:[{en:"What's your date of birth?", es:"¿Cuál es tu fecha de nacimiento?"},{en:"Please write your date of birth here.", es:"Por favor escribe tu fecha de nacimiento aquí."}],
+    quiz:{ prompt:"¿Qué frase significa \"fecha de nacimiento\"?", options:["date of birth","phone number","zip code"], correct:0, explain:"“Date of birth” es fecha de nacimiento." } },
+  { id:'v-medio-numeros-2', word:'Born', translation:'Nacido/a · "I was born in..." = nací en...',
+    examples:[{en:"I was born in 1998.", es:"Nací en 1998."},{en:"Where were you born?", es:"¿Dónde naciste?"}],
+    quiz:{ prompt:"¿Qué palabra usas para decir en qué año naciste?", options:["born","borrowed","grown"], correct:0, explain:"“Born” es nacido/a: “I was born in...”" } },
+  { id:'v-medio-numeros-3', word:'Age', translation:'Edad',
+    examples:[{en:"What's your age?", es:"¿Cuál es tu edad?"},{en:"Age doesn't matter.", es:"La edad no importa."}],
+    quiz:{ prompt:"¿Qué palabra significa \"edad\"?", options:["age","amount","account"], correct:0, explain:"“Age” es edad." } },
+  { id:'v-medio-numeros-4', word:'Amount', translation:'Monto / cantidad de dinero',
+    examples:[{en:"What's the total amount?", es:"¿Cuál es el monto total?"},{en:"Please enter the amount.", es:"Por favor ingresa el monto."}],
+    quiz:{ prompt:"¿Qué palabra significa \"monto / cantidad de dinero\"?", options:["amount","age","address"], correct:0, explain:"“Amount” es la cantidad de dinero." } },
+  { id:'v-medio-numeros-5', word:'Account number', translation:'Número de cuenta',
+    examples:[{en:"What's your account number?", es:"¿Cuál es tu número de cuenta?"},{en:"Write down your account number.", es:"Anota tu número de cuenta."}],
+    quiz:{ prompt:"¿Qué frase significa \"número de cuenta\"?", options:["account number","confirmation code","zip code"], correct:0, explain:"“Account number” es número de cuenta." } },
+  { id:'v-medio-numeros-6', word:'Confirmation code', translation:'Código de confirmación',
+    examples:[{en:"What's the confirmation code?", es:"¿Cuál es el código de confirmación?"},{en:"You'll get a confirmation code by email.", es:"Te llegará un código de confirmación por correo."}],
+    quiz:{ prompt:"¿Qué frase significa \"código de confirmación\"?", options:["confirmation code","account number","receipt"], correct:0, explain:"“Confirmation code” es código de confirmación." } }
+]);
+
+LISTENING_BANK.principiante.push([
+  { id:'l-principiante-numeros-1', audioFile:'audio/numeros/a0-numeros-1.mp3',
+    transcript:"I am fifteen years old.", translation:"Tengo quince años.",
+    question:"How old is the speaker?", options:["Fifteen","Fifty","Five"], correct:0,
+    explain:"“Fifteen” es 15. Ojo: “fifty” es 50." },
+  { id:'l-principiante-numeros-2', audioFile:'audio/numeros/a0-numeros-2.mp3',
+    transcript:"It's five dollars.", translation:"Son cinco dólares.",
+    question:"How much is it?", options:["$5","$50","$15"], correct:0,
+    explain:"“Five dollars” es $5." },
+  { id:'l-principiante-numeros-3', audioFile:'audio/numeros/a0-numeros-3.mp3',
+    transcript:"My address is one two five Main Street.", translation:"Mi dirección es 125 Main Street.",
+    question:"What is the address?", options:["125 Main Street","215 Main Street","152 Main Street"], correct:0,
+    explain:"Los números de dirección muchas veces se dicen uno por uno: “one two five” = 125." }
+]);
+
+LISTENING_BANK.facil.push([
+  { id:'l-facil-numeros-1', audioFile:'audio/numeros/a1-numeros-1.mp3',
+    transcript:"It's one hundred fifty dollars.", translation:"Son ciento cincuenta dólares.",
+    question:"How much is it?", options:["$150","$115","$1,500"], correct:0,
+    explain:"“One hundred fifty” es 150." },
+  { id:'l-facil-numeros-2', audioFile:'audio/numeros/a1-numeros-2.mp3',
+    transcript:"My phone number is nine eight four, five five five, two one zero zero.", translation:"Mi número de teléfono es 984-555-2100.",
+    question:"What is the phone number?", options:["984-555-2100","948-555-2100","984-555-2010"], correct:0,
+    explain:"Los teléfonos se dicen número por número: “nine eight four” = 984." },
+  { id:'l-facil-numeros-3', audioFile:'audio/numeros/a1-numeros-3.mp3',
+    transcript:"I was born in nineteen ninety-eight.", translation:"Nací en 1998.",
+    question:"What year was the speaker born?", options:["1998","1988","1989"], correct:0,
+    explain:"“Nineteen ninety-eight” es 1998 (se dice en dos partes: 19, 98)." }
+]);
+
+LISTENING_BANK.medio.push([
+  { id:'l-medio-numeros-1', audioFile:'audio/numeros/b1-numeros-1.mp3',
+    transcript:"The total is nineteen ninety-nine.", translation:"El total es $19.99.",
+    question:"How much is the total?", options:["$19.99","$1,999","$90.99"], correct:0,
+    explain:"Con precios, “nineteen ninety-nine” normalmente significa $19.99 (diecinueve con noventa y nueve centavos)." },
+  { id:'l-medio-numeros-2', audioFile:'audio/numeros/b1-numeros-2.mp3',
+    transcript:"Please send it to four two five Oak Street, apartment four B.", translation:"Por favor envíalo a 425 Oak Street, apartamento 4B.",
+    question:"What is the address?", options:["425 Oak Street, Apt 4B","245 Oak Street, Apt 4B","425 Oak Street, Apt 14B"], correct:0,
+    explain:"“Four two five” es 425." },
+  { id:'l-medio-numeros-3', audioFile:'audio/numeros/b1-numeros-3.mp3',
+    transcript:"It's fifteen hundred dollars.", translation:"Son $1,500.",
+    question:"How much is it?", options:["$1,500","$15,000","$150"], correct:0,
+    explain:"“Fifteen hundred” es una forma común de decir 1,500 (en vez de “one thousand five hundred”)." }
+]);
+
+LISTENING_BANK.avanzado.push([
+  { id:'l-avanzado-numeros-1', audioFile:'audio/numeros/c1-numeros-1.mp3',
+    transcript:"My email is leo dot martinez at gmail dot com.", translation:"Mi correo es leo.martinez@gmail.com.",
+    question:"What is the email address?", options:["leo.martinez@gmail.com","leomartinez@gmail.com","leo_martinez@gmail.com"], correct:0,
+    explain:"“Dot” es punto (.) y “at” es arroba (@). También existen “underscore” (_) y “dash”/“hyphen” (-)." },
+  { id:'l-avanzado-numeros-2', audioFile:'audio/numeros/c1-numeros-2.mp3',
+    transcript:"The confirmation code is A, B, one, two, three.", translation:"El código de confirmación es AB123.",
+    question:"What is the confirmation code?", options:["AB123","BA123","AB132"], correct:0,
+    explain:"Los códigos se dicen letra por letra y número por número." },
+  { id:'l-avanzado-numeros-3', audioFile:'audio/numeros/c1-numeros-3.mp3',
+    transcript:"It's one thousand three hundred dollars.", translation:"Son $1,300.",
+    question:"How much is it?", options:["$1,300","$13,000","$130"], correct:0,
+    explain:"“One thousand three hundred” es 1,300." }
+]);

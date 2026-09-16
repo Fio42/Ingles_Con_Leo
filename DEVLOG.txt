@@ -820,3 +820,36 @@ de partida con record nuevo, pantalla de limite gratis alcanzado, y
 una pregunta de listening con el audio "faltante" (no se copiaron
 los mp3 al entorno de prueba) mostrando el aviso existente
 "Audio proximamente" sin trabar el juego.
+
+============================================================
+2026-09-16: Numeros para la vida real (gratis y miembros, + English Rush)
+============================================================
+
+Se agregaron 48 ejercicios nuevos sobre numeros utiles para la vida
+real (no solo "50 = fifty"): precios y dinero, telefonos, direcciones,
+correos, anios, y numeros basicos/grandes. 36 van a la practica
+general (gramatica 4, vocabulario 20, listening 12, repartidos en
+principiante/facil/medio/avanzado) y 12 van a English Rush (r111-r122,
+niveles 1-6 del juego), reutilizando 6 de los mismos audios nuevos que
+la practica general en vez de generar audio extra para el juego.
+
+Igual que el bloque de 100 ejercicios anterior, todo se agrego con
+.push(...) al final de data.js (despues de todos los bloques
+existentes) y NO se agrego a MEMBERS_ONLY_VARIANT_INDEX en app.js, asi
+que esta disponible tanto en la practica gratis (practica.html) como
+para miembros, sin tocar la arquitectura de niveles/variantes/bancos
+que ya existia.
+
+Los 12 audios nuevos viven en audio/numeros/ (a0/a1/b1/c1 = nivel) y
+se agregaron a tools/lista_audios.csv. Se generan con:
+python generar_audios.py audio/numeros/
+
+Ids nuevos: g-*-numeros-N, v-*-numeros-N, l-*-numeros-N (data.js) y
+r111-r122 (juego-data.js). Verificado con Node (vm): 0 ids duplicados,
+todas las opciones de vocabulario coinciden con su palabra, los 12
+audioFile/audio referenciados tienen su fila en lista_audios.csv y
+viceversa, ninguna transcripcion nueva se repite con SPEAKING_BANK.
+Probado con Playwright en escritorio y movil, en la practica gratis
+(nivel principiante forzado via Math.random) y en English Rush
+(las 12 preguntas nuevas una por una via un hook de debug), incluido
+el fallback "Audio proximamente" mientras Leo no ha generado los mp3.
