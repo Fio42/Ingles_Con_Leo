@@ -9,29 +9,28 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
 <meta name="theme-color" content="#030b1a">
-<title>Practica inglés gratis - Inglés con Leo</title>
-<meta name="description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel: Fácil A1-A2, Medio B1-B2 y Avanzado C1+.">
-<link rel="canonical" href="https://inglesconleo.com/practica.html">
-<meta property="og:title" content="Practica inglés gratis - Inglés con Leo">
-<meta property="og:description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel.">
+<title>Juego de inglés gratis | Practica inglés jugando - Inglés con Leo</title>
+<meta name="description" content="English Rush: un juego gratis para practicar inglés con retos rápidos de vocabulario, gramática y listening. Empieza fácil y la dificultad sube mientras más avanzas.">
+<link rel="canonical" href="https://inglesconleo.com/juego.html">
+<meta property="og:title" content="Juego de inglés gratis - Inglés con Leo">
+<meta property="og:description" content="English Rush: un juego gratis para practicar inglés con retos rápidos de vocabulario, gramática y listening, con dificultad progresiva.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://inglesconleo.com/practica.html">
+<meta property="og:url" content="https://inglesconleo.com/juego.html">
 <meta property="og:image" content="https://inglesconleo.com/og-logo.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Practica inglés gratis - Inglés con Leo">
-<meta name="twitter:description" content="Prueba gratis ejercicios de Gramática, Vocabulario, Listening, Writing y Speaking, adaptados a tu nivel.">
+<meta name="twitter:title" content="Juego de inglés gratis - Inglés con Leo">
+<meta name="twitter:description" content="English Rush: un juego gratis para practicar inglés con retos rápidos de vocabulario, gramática y listening.">
 <meta name="twitter:image" content="https://inglesconleo.com/og-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260916b">
-<link rel="stylesheet" href="chatbot.css?v=20260914">
+<link rel="stylesheet" href="style.css?v=20260916c">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  "name": "Practica inglés gratis - Inglés con Leo",
-  "url": "https://inglesconleo.com/practica.html",
+  "name": "Juego de inglés gratis - Inglés con Leo",
+  "url": "https://inglesconleo.com/juego.html",
   "isPartOf": { "@type": "WebSite", "name": "Inglés con Leo", "url": "https://inglesconleo.com/" }
 }
 </script>
@@ -55,7 +54,8 @@
     <nav class="nav-links">
       <a href="index.html">Inicio</a>
       <a href="articulos.html">Aprende inglés</a>
-      <a href="practica.html" class="current">Practicar gratis</a>
+      <a href="practica.html">Practicar gratis</a>
+      <a href="juego.html" class="current">Juego</a>
       <a href="miembros.html">Miembros</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -107,112 +107,45 @@
   </div>
 </header>
 
-<main id="practicaMain" style="visibility:hidden;">
-  <section class="page-hero">
-    <div class="wrap">
+<main>
+  <section class="page-hero rush-hero" style="padding-bottom:8px;">
+    <div class="wrap wrap-narrow">
       <span class="badge badge-free">Gratis</span>
-      <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
-      <p class="lead">Elige tu nivel y una habilidad, y haz una mini sesión real de varios ejercicios. Sin registrarte.</p>
+      <h1 style="margin-top:14px;">Juego de inglés gratis</h1>
+      <p class="lead">English Rush: preguntas rápidas de vocabulario, gramática y listening. Empieza fácil y la dificultad sube mientras más avanzas. ¿Hasta dónde puedes llegar?</p>
     </div>
   </section>
 
   <section style="padding-top:8px;">
-    <div class="wrap">
-      <div class="quick-actions-card">
-        <div class="quick-actions-item daily-card" id="dailyChallengeCard">
-          <div class="daily-card-top">
-            <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            </div>
-            <span class="daily-eyebrow">Reto diario</span>
-          </div>
-          <h2>5 ejercicios, un minuto al día</h2>
-          <div id="dailyChallengeBody"></div>
+    <div class="wrap wrap-narrow">
+      <div class="rush-shell" id="rushRoot">
+        <div class="rush-card rush-loading-card">
+          <p>Cargando el juego...</p>
         </div>
-
-        <div class="quick-actions-divider" aria-hidden="true"></div>
-
-        <a href="articulos.html" class="quick-actions-item quick-actions-link">
-          <span class="learn-promo-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5A2.5 2.5 0 016.5 3H12v18H6.5A2.5 2.5 0 014 18.5v-13z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 5.5A2.5 2.5 0 0017.5 3H12v18h5.5a2.5 2.5 0 002.5-2.5v-13z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="learn-promo-body">
-            <span class="learn-promo-eyebrow">Aprende inglés</span>
-            <h3>Sube de nivel con estas guías gratis</h3>
-          </span>
-          <span class="learn-promo-arrow" aria-hidden="true">→</span>
-        </a>
-
-        <div class="quick-actions-divider" aria-hidden="true"></div>
-
-        <a href="juego.html" class="quick-actions-item quick-actions-link">
-          <span class="learn-promo-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
-          </span>
-          <span class="learn-promo-body">
-            <span class="learn-promo-eyebrow">Juego gratis</span>
-            <h3>Practica inglés jugando con English Rush</h3>
-          </span>
-          <span class="learn-promo-arrow" aria-hidden="true">→</span>
-        </a>
       </div>
     </div>
   </section>
 
-  <section style="padding-top:8px;">
-    <div class="wrap">
-      <div class="levels" id="levelSelector"></div>
+  <section style="padding-top:40px;">
+    <div class="wrap wrap-narrow">
+      <h2>Practica inglés jugando</h2>
+      <p>English Rush es un juego gratuito para practicar inglés con retos rápidos de vocabulario, gramática y listening. Empieza con preguntas sencillas y la dificultad aumenta conforme avanzas: las respuestas se parecen más entre sí, aparecen estructuras más avanzadas y el tiempo para responder se reduce poco a poco.</p>
 
-      <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
+      <h2 style="margin-top:28px;">¿Cómo funciona?</h2>
+      <p>Cada pregunta tiene varias opciones: eliges una con el mouse, el dedo o el teclado (1, 2 o 3). Tienes 3 vidas: si te equivocas pierdes una y tu racha de respuestas correctas se reinicia. Responder bien seguido aumenta tu combo y tus puntos. El juego termina cuando pierdes tus 3 vidas.</p>
 
-      <div class="skill-section" style="margin-top:20px;">
-        <div class="skill-section-head" id="skillHead"></div>
-        <div class="skill-section-body" id="skillBody"></div>
-      </div>
+      <h2 style="margin-top:28px;">¿Qué puedes practicar?</h2>
+      <p>El verbo to be, presente y pasado simple, preposiciones, present perfect, phrasal verbs, expresiones naturales, vocabulario en contexto y listening con audio real, entre otros temas. Las primeras preguntas son muy sencillas (ideales si estás empezando) y las últimas usan inglés más avanzado.</p>
 
-      <div class="section-head" style="margin-top:36px;">
-        <h2>Conoce la preparación para el TOEFL</h2>
-        <p>Así es un ejercicio real de nuestra preparación para el TOEFL. Contesta estas 5 preguntas de muestra.</p>
-      </div>
-      <div class="session-shell" id="toeflTeaserArea" style="margin-top:16px;"></div>
+      <h2 style="margin-top:28px;">¿Hasta qué nivel puedes llegar?</h2>
+      <p>Tu partida guarda tu mejor puntuación y el nivel más alto que alcanzaste, para que la próxima vez intentes superar tu propio récord. Como miembro de Inglés con Leo puedes jugar sin límite de partidas al día, además de tener acceso a la práctica completa de todos los niveles.</p>
 
-      <div class="article-cta practice-members-cta" style="margin-top:28px;">
+      <div class="article-cta practice-members-cta" style="margin-top:32px;">
         <div class="practice-members-copy">
-          <h3>Todo lo que necesitas para seguir avanzando</h3>
-          <p>Practica sin límites y convierte tus errores en progreso. Como miembro tienes ejercicios de todos los niveles, repasos personalizados, seguimiento de tu avance y preparación especial.</p>
+          <h3>¿Quieres seguir viendo hasta dónde puedes llegar?</h3>
+          <p>Como miembro tienes partidas ilimitadas, acceso a niveles avanzados, práctica basada en tus errores y estadísticas completas, además de todos los ejercicios y clases interactivas del sitio.</p>
           <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Hazte miembro por $2 USD/mes <span aria-hidden="true">→</span></a>
-          <p class="practice-members-offer">Oferta por tiempo limitado</p>
           <p class="practice-members-price">Cancela cuando quieras</p>
-        </div>
-        <div class="practice-members-benefits" aria-label="Beneficios de ser miembro">
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-blue">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Ejercicios ilimitados</div>
-            <div class="practice-members-benefit-desc">Todos los niveles y habilidades.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-amber">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.7 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Repasa tus errores</div>
-            <div class="practice-members-benefit-desc">Practica justo lo que más se te dificulta.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-coral">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Racha y progreso</div>
-            <div class="practice-members-benefit-desc">Mira cuánto avanzas cada semana.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-violet">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Más formas de practicar</div>
-            <div class="practice-members-benefit-desc">Clases interactivas + preparación TOEFL e IELTS.</div>
-          </div>
         </div>
       </div>
     </div>
@@ -226,6 +159,7 @@
       <a href="index.html">Inicio</a>
       <a href="articulos.html">Aprende inglés</a>
       <a href="practica.html">Practicar</a>
+      <a href="juego.html">Juego</a>
       <a href="miembros.html">Miembros</a>
     </div>
     <div class="foot-social">
@@ -255,9 +189,9 @@
     <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     Aprende inglés
   </button>
-  <button class="mnav-item active" onclick="location.href='practica.html'">
+  <button class="mnav-item active" onclick="location.href='juego.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-    Practicar
+    Juego
   </button>
   <button class="mnav-item" onclick="location.href='miembros.html'">
     <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
@@ -266,21 +200,11 @@
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="data.js?v=20260915"></script>
 <script src="app.js?v=20260916a"></script>
 <script src="backend.js"></script>
-<script src="toefl-data.js?v=20260915"></script>
-<script src="toefl-teaser.js?v=20260914"></script>
-<script src="chatbot.js?v=20260910"></script>
+<script src="juego-data.js?v=20260916"></script>
+<script src="juego.js?v=20260916"></script>
 <script>
-  // Esta página es la práctica de muestra SIN guardar progreso, pensada
-  // para quien todavía no es miembro. Si alguien ya inició sesión como
-  // miembro (por ejemplo, dio clic en un link viejo de "Practicar gratis"
-  // en un artículo, o entró por un buscador), no tiene sentido que la
-  // vea: lo mandamos directo a practica-miembros.html (mismo selector de
-  // nivel y habilidad, pero con progreso guardado de verdad). Por eso el
-  // <main> empieza oculto: así no se alcanza a ver un parpadeo de la
-  // página gratis antes de mandarlo ahí.
   (async function(){
     let isLoggedInMember = false;
     if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
@@ -290,33 +214,21 @@
       }catch(e){}
     }
 
+    // A diferencia de practica.html, aquí NO se redirige a un miembro a
+    // otra página: se queda jugando English Rush igual, solo que sin
+    // límite de partidas por día. Si es miembro, mostramos el header
+    // completo (búsqueda, campana, perfil) igual que en miembros.html,
+    // y ocultamos el botón "Entrar a miembros".
     if(isLoggedInMember){
-      // Por si el redireccionamiento tarda un instante en disparar,
-      // ocultamos el botón "Entrar a miembros" de una vez (evita el
-      // parpadeo que reportaste, donde alcanzaba a verse ese botón
-      // aunque la persona ya tenía su sesión iniciada).
       const cta = document.getElementById('navCta');
       if(cta) cta.style.display = 'none';
-      window.location.replace('practica-miembros.html');
-      return;
+      if(typeof initMemberHeader === 'function') initMemberHeader();
     }
 
-    // No es miembro (o no hay backend configurado): mostrar la página
-    // de práctica gratis normalmente, igual que siempre.
-    const main = document.getElementById('practicaMain');
-    if(main) main.style.visibility = 'visible';
-    initFreePractice({
-      levelsEl: document.getElementById('levelSelector'),
-      tabsEl: document.getElementById('skillTabs'),
-      headEl: document.getElementById('skillHead'),
-      bodyEl: document.getElementById('skillBody')
-    });
-    initDailyChallenge(document.getElementById('dailyChallengeBody'), {
-      isFree: true,
-      card: document.getElementById('dailyChallengeCard')
-    });
-    if(typeof renderToeflTeaser === 'function') renderToeflTeaser(document.getElementById('toeflTeaserArea'));
-    initOnboarding();
+    const root = document.getElementById('rushRoot');
+    const game = initRushGame(root);
+    game.setMember(isLoggedInMember);
+    game.renderStart();
   })();
 </script>
 

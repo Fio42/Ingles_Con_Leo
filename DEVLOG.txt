@@ -767,3 +767,56 @@ duplicada preexistente, "Despite the traffic, we arrived on time."
 que aparece tanto en LISTENING_BANK.medio (l-medio10-2) como en
 SPEAKING_BANK.medio (s-medio7-3). No se toco porque no es parte de
 este trabajo, pero queda como pendiente para revisar.
+
+============================================================
+2026-09-16: English Rush, juego de ingles gratis (juego.html)
+============================================================
+
+Se agrego un juego nuevo en la seccion gratuita: "English Rush"
+(juego.html), preguntas rapidas de vocabulario, gramatica y
+listening con dificultad progresiva (10 niveles internos, del A1
+al C1), 3 vidas, combo, puntos y un cronometro que se acorta poco a
+poco. Vanilla JS, sin frameworks, un solo archivo de motor
+(juego.js) y un solo banco de preguntas (juego-data.js, 110
+preguntas para arrancar).
+
+Arquitectura: juego-data.js solo tiene datos (RUSH_QUESTIONS,
+agrupadas por "level"); juego.js no conoce el contenido de ninguna
+pregunta, solo agrupa por nivel y dibuja lo que corresponda. Para
+agregar mas preguntas solo hace falta agregar objetos nuevos a
+RUSH_QUESTIONS con un id que no se repita.
+
+Reutiliza sin tocar nada del resto del sitio: shuffleOptions(),
+playAudioFile()/stopActiveAudioFile(), PLAY_ICON e
+initMemberHeader() de app.js; LeoBackend.getMemberProfile() de
+backend.js para saber si quien esta jugando ya es miembro (igual
+que hace practica.html), sin crear ningun sistema de autenticacion
+nuevo. Las preguntas de listening reutilizan audios que YA existian
+en el sitio (LISTENING_BANK y la preparacion TOEFL), asi que no
+hizo falta generar ningun mp3 nuevo para esta primera version.
+
+Gratis vs miembros: un objeto RUSH_CONFIG al principio de juego.js
+centraliza los limites (FREE_RUNS_PER_DAY = 1 partida completa
+gratis por dia, por ahora). Un miembro logueado (mismo chequeo que
+practica.html) juega sin limite. El record (mejor puntaje/nivel/
+combo) se guarda en localStorage para cualquier persona, sea
+miembro o no. Nada de esto toca Supabase/Stripe/Mercado Pago/
+PayPal: solo LEE is_member, igual que ya hacia practica.html.
+
+SEO: pagina publica propia (/juego.html), sin login, con su title/
+description/canonical/OG/schema WebPage, mismo patron que las
+demas paginas del sitio. Debajo del juego hay un bloque de texto
+real en HTML (no generado por JS) explicando que es, como funciona
+y que se puede practicar, para que Google entienda el contenido sin
+depender de que se ejecute el juego. Se agrego a sitemap.xml y se
+enlazo desde la grilla de habilidades de index.html y desde la
+tarjeta de accesos rapidos de practica.html (no se toco el header
+compartido de ninguna pagina).
+
+Se probo con Playwright (desktop y mobile 390px): sin overflow
+horizontal, atajos de teclado 1/2/3, doble click bloqueado durante
+la transicion, subida de nivel, perdida de vidas, pantalla de fin
+de partida con record nuevo, pantalla de limite gratis alcanzado, y
+una pregunta de listening con el audio "faltante" (no se copiaron
+los mp3 al entorno de prueba) mostrando el aviso existente
+"Audio proximamente" sin trabar el juego.

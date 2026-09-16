@@ -966,7 +966,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-skills-grid{display:grid;gap:16px;grid-template-columns:1fr;margin-top:32px;}
 @media(min-width:640px){.home-skills-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:960px){.home-skills-grid{grid-template-columns:repeat(3,1fr);}}
-@media(min-width:1220px){.home-skills-grid{grid-template-columns:repeat(5,1fr);}}
+@media(min-width:1220px){.home-skills-grid{grid-template-columns:repeat(3,1fr);}}
 .home-skill-card{
   display:flex;flex-direction:column;gap:8px;
   background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);
@@ -985,6 +985,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-skill-card.tint-listening{background:var(--blue-tint);}
 .home-skill-card.tint-writing{background:var(--amber-tint);}
 .home-skill-card.tint-speaking{background:var(--violet-tint);}
+.home-skill-card.tint-juego{background:var(--teal-tint);}
 
 /* ---------- Más en redes ---------- */
 .home-social{padding:44px 0 56px;}
@@ -1110,8 +1111,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .clases-carousel-arrow{width:34px;height:34px;border:2px solid var(--line);border-radius:50%;background:#fff;color:var(--blue-deep);font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;}
 .clases-carousel-arrow:hover{border-color:var(--blue);background:var(--blue-tint);}
 .clases-continue-track-wrap{position:relative;}
-.clases-continue-track-wrap::after{content:'';position:absolute;top:0;right:0;bottom:2px;width:56px;background:linear-gradient(to right, transparent, var(--paper));pointer-events:none;}
-.clases-continue-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;}
+.clases-continue-track{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:2px;-webkit-mask-image:linear-gradient(to right, #000 calc(100% - 64px), transparent 100%);mask-image:linear-gradient(to right, #000 calc(100% - 64px), transparent 100%);}
 .clases-continue-track::-webkit-scrollbar{display:none;}
 .clases-continue-track .clase-card{flex:0 0 320px;scroll-snap-align:start;}
 
@@ -1197,7 +1197,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .clases-filter-pills::-webkit-scrollbar{display:none;}
   .clases-filter-pills .tab-btn{flex-shrink:0;}
   .clases-continue-track .clase-card{flex-basis:82vw;}
-  .clases-continue-track-wrap::after{width:36px;}
+  .clases-continue-track{-webkit-mask-image:linear-gradient(to right, #000 calc(100% - 40px), transparent 100%);mask-image:linear-gradient(to right, #000 calc(100% - 40px), transparent 100%);}
 }
 
 .clases-banner{background:linear-gradient(135deg, var(--blue-deep), var(--blue));color:#fff;border-radius:var(--radius-lg);padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
@@ -1573,3 +1573,76 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .member-preview-head h1{margin:10px 0 4px;font-size:1.5rem;}
 .member-preview-head p{color:var(--ink-soft);margin:0;}
 .member-preview-wrap{max-width:900px;margin:0 auto;padding:0 16px;}
+
+/* ============================================================
+   ENGLISH RUSH (juego.html)
+   ============================================================ */
+.rush-hero .lead{max-width:56ch;}
+.rush-shell{display:flex;justify-content:center;}
+.rush-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 26px;width:100%;max-width:480px;display:flex;flex-direction:column;box-shadow:0 12px 30px rgba(27,35,51,0.06);}
+.rush-loading-card{align-items:center;color:var(--ink-soft);padding:60px 26px;}
+
+/* ---------- Pantalla de inicio ---------- */
+.rush-start-card{align-items:flex-start;text-align:left;}
+.rush-title{font-family:'Baloo 2';font-weight:800;font-size:1.9rem;color:var(--ink);margin:0;}
+.rush-tagline{color:var(--ink-soft);margin-top:10px;line-height:1.5;}
+.rush-record-chip{margin-top:16px;background:var(--blue-tint);color:var(--blue-deep);font-weight:700;font-size:0.88rem;padding:8px 14px;border-radius:999px;}
+.rush-start-btn{margin-top:22px;width:100%;}
+.rush-controls-hint{margin-top:12px;color:var(--ink-faint);font-size:0.8rem;}
+
+/* ---------- HUD durante la partida ---------- */
+.rush-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.rush-hud-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.rush-level-tag{font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);}
+.rush-points{font-family:'Baloo 2';font-weight:700;color:var(--ink);font-size:1.05rem;}
+.rush-combo{font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--amber-tint);color:#8A5A00;}
+.rush-hud-right{display:flex;gap:4px;}
+.rush-life{font-size:1.2rem;line-height:1;}
+.rush-life-full{color:var(--coral);}
+.rush-life-empty{color:var(--line);}
+
+.rush-level-progress{height:6px;border-radius:99px;background:var(--paper-dim);overflow:hidden;margin-top:14px;}
+.rush-level-progress-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .25s ease;}
+.rush-timer-track{height:4px;border-radius:99px;background:var(--paper-dim);overflow:hidden;margin-top:8px;}
+.rush-timer-fill{height:100%;background:var(--coral);border-radius:99px;width:100%;}
+
+.rush-play-btn{margin-top:20px;align-self:flex-start;}
+.rush-prompt{font-family:'Baloo 2';font-weight:600;font-size:1.25rem;color:var(--ink);margin-top:18px;margin-bottom:18px;line-height:1.35;}
+.rush-option-list{gap:10px;}
+.rush-option{position:relative;}
+.rush-option-key{width:26px;height:26px;border-radius:7px;background:var(--paper-dim);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;border:none;flex-shrink:0;}
+.option.correct .rush-option-key{background:var(--green);color:#fff;}
+.option.incorrect .rush-option-key{background:var(--coral);color:#fff;}
+
+.rush-levelup-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink);color:#fff;font-family:'Baloo 2';font-weight:800;font-size:1.6rem;padding:18px 36px;border-radius:999px;letter-spacing:.02em;box-shadow:0 16px 40px rgba(0,0,0,0.25);animation:rushToast .75s ease forwards;z-index:50;}
+@keyframes rushToast{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.85);}
+  15%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  80%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(.95);}
+}
+
+/* ---------- Fin de partida / límite gratis ---------- */
+.rush-over-card{align-items:center;text-align:center;}
+.rush-newrecord{font-weight:800;color:var(--green);letter-spacing:.03em;font-size:0.88rem;margin-bottom:6px;}
+.rush-over-card h2{font-family:'Baloo 2';font-size:1.3rem;margin:0;}
+.rush-over-score{font-family:'Baloo 2';font-weight:800;font-size:2.4rem;color:var(--ink);margin-top:10px;}
+.rush-over-score span{font-size:1.1rem;color:var(--ink-faint);font-weight:700;}
+.rush-over-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin-top:20px;}
+.rush-over-stats div{background:var(--paper-dim);border-radius:var(--radius-sm);padding:12px 6px;display:flex;flex-direction:column;gap:2px;}
+.rush-over-stats strong{font-family:'Baloo 2';font-size:1.05rem;color:var(--ink);}
+.rush-over-stats span{font-size:0.72rem;color:var(--ink-soft);}
+.rush-over-card .rush-start-btn{margin-top:24px;}
+
+.rush-limit-card{align-items:flex-start;text-align:left;}
+.rush-limit-card h2{font-family:'Baloo 2';font-size:1.3rem;margin:0;}
+.rush-limit-sub{color:var(--ink-soft);margin-top:8px;}
+.rush-limit-list{margin:14px 0 0;padding-left:20px;color:var(--ink);font-size:0.94rem;line-height:1.8;}
+.rush-limit-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;width:100%;}
+.rush-limit-actions .btn{width:100%;}
+
+@media (max-width:480px){
+  .rush-card{padding:22px 18px;}
+  .rush-over-stats{grid-template-columns:repeat(2,1fr);}
+  .rush-title{font-size:1.6rem;}
+}
