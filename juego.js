@@ -28,6 +28,9 @@ const RUSH_CONFIG = {
 
 const RUSH_LIVES_START = 3;
 const RUSH_CORRECT_TO_LEVEL_UP = 5;
+
+const SOUND_ON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const SOUND_OFF_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 const RUSH_MAX_CONFIGURED_LEVEL = 10;
 
 function rushTimeForLevel(level){
@@ -91,6 +94,38 @@ function initRushGame(container){
     if(timerRafHandle){ cancelAnimationFrame(timerRafHandle); timerRafHandle = null; }
   }
 
+  /* ---------- Botón de sonido (apagar/prender música y efectos) ---------- */
+  function renderSoundToggle(){
+    if(typeof RushAudio === 'undefined') return;
+    const card = container.querySelector('.rush-card');
+    if(!card) return;
+    let btn = card.querySelector('.rush-sound-toggle');
+    if(!btn){
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rush-sound-toggle';
+      card.appendChild(btn);
+      btn.addEventListener('click', ()=>{
+        RushAudio.setEnabled(!RushAudio.isEnabled());
+        if(RushAudio.isEnabled()){
+          RushAudio.unlock();
+          RushAudio.playClick();
+          if(s) RushAudio.startMusic();
+        }
+        updateSoundToggle(btn);
+      });
+    }
+    updateSoundToggle(btn);
+  }
+
+  function updateSoundToggle(btn){
+    const on = RushAudio.isEnabled();
+    btn.innerHTML = on ? SOUND_ON_ICON : SOUND_OFF_ICON;
+    btn.setAttribute('aria-label', on ? 'Silenciar sonido' : 'Activar sonido');
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.classList.toggle('is-muted', !on);
+  }
+
   function freeRunsLeftToday(){
     if(isMember && RUSH_CONFIG.MEMBER_UNLIMITED) return Infinity;
     if(RUSH_CONFIG.FREE_RUNS_PER_DAY == null) return Infinity;
@@ -118,6 +153,7 @@ function initRushGame(container){
   function renderStart(){
     clearTimers();
     stopActiveAudioFile();
+    if(typeof RushAudio !== 'undefined') RushAudio.stopMusic();
     const record = rushLoadRecord();
     const runsLeft = freeRunsLeftToday();
     const canPlay = runsLeft > 0;
@@ -145,6 +181,7 @@ function initRushGame(container){
         </div>`;
       const backBtn = container.querySelector('#rushComeBack');
       if(backBtn) backBtn.addEventListener('click', ()=>{ window.location.href = 'index.html'; });
+      renderSoundToggle();
       rushTrack('free_limit_reached', {});
       return;
     }
@@ -157,11 +194,17 @@ function initRushGame(container){
         <button type="button" class="btn btn-primary rush-start-btn" id="rushStartBtn">Jugar <span aria-hidden="true">→</span></button>
         <p class="rush-controls-hint">En computadora puedes responder con 1, 2 o 3.</p>
       </div>`;
+    renderSoundToggle();
     container.querySelector('#rushStartBtn').addEventListener('click', startGame);
   }
 
   function startGame(){
     stopActiveAudioFile();
+    if(typeof RushAudio !== 'undefined'){
+      RushAudio.unlock();
+      RushAudio.playClick();
+      RushAudio.startMusic();
+    }
     s = {
       level: 1,
       score: 0,
@@ -244,6 +287,7 @@ function initRushGame(container){
       setTimeout(()=>{ try{ doPlay(); }catch(e){} }, 250);
     }
 
+    renderSoundToggle();
     startTimer(rushTimeForLevel(s.level), () => handleTimeout(list));
   }
 
@@ -289,6 +333,7 @@ function initRushGame(container){
   }
 
   function registerCorrect(){
+    if(typeof RushAudio !== 'undefined') RushAudio.playCorrect();
     s.combo += 1;
     s.bestCombo = Math.max(s.bestCombo, s.combo);
     s.score += scoreForCorrectAnswer();
@@ -308,6 +353,7 @@ function initRushGame(container){
   }
 
   function registerWrong(){
+    if(typeof RushAudio !== 'undefined') RushAudio.playWrong();
     s.combo = 0;
     s.lives -= 1;
     s.answeredTotal += 1;
@@ -319,6 +365,7 @@ function initRushGame(container){
   }
 
   function renderLevelUpToast(){
+    if(typeof RushAudio !== 'undefined') RushAudio.playLevelUp();
     const card = container.querySelector('.rush-play-card') || container.querySelector('.rush-card');
     const toast = document.createElement('div');
     toast.className = 'rush-levelup-toast';
@@ -331,6 +378,10 @@ function initRushGame(container){
   function endGame(){
     clearTimers();
     stopActiveAudioFile();
+    if(typeof RushAudio !== 'undefined'){
+      RushAudio.stopMusic();
+      RushAudio.playGameOver();
+    }
     const record = rushLoadRecord();
     const isNewRecord = s.score > (record.score || 0);
     if(isNewRecord) rushSaveRecord({ score: s.score, level: s.level, combo: s.bestCombo });
@@ -373,6 +424,7 @@ function initRushGame(container){
     if(backBtn) backBtn.addEventListener('click', ()=>{ window.location.href = 'index.html'; });
     const memberLink = container.querySelector('.rush-over-card a.btn-primary');
     if(memberLink) memberLink.addEventListener('click', ()=> rushTrack('membership_cta_clicked', { from:'game_over' }));
+    renderSoundToggle();
   }
 
   /* ---------- Teclado: 1/2/3(/4) y A/B/C(/D) ---------- */
