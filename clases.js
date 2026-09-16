@@ -225,16 +225,25 @@ function renderStepPhrases(body, state, next){
 function renderStepListening(body, state, next){
   const { listening } = state.data;
   let answered = false;
+  // Baraja el orden de las opciones en cada visita a este paso, para que la
+  // respuesta correcta no quede siempre en la misma posicion (ver DEVLOG).
+  const listenOptionOrder = listening.question.options.map((_,i)=>i);
+  for(let i = listenOptionOrder.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [listenOptionOrder[i], listenOptionOrder[j]] = [listenOptionOrder[j], listenOptionOrder[i]];
+  }
+  const listenShuffledOptions = listenOptionOrder.map(i=> listening.question.options[i]);
+  const listenShuffledCorrectIndex = listenOptionOrder.indexOf(listening.question.correctIndex);
   body.innerHTML = `
     <div class="clase-eyebrow">Escucha</div>
-    <p class="clase-step-intro">Escucha el diálogo con atención — todavía no puedes leerlo.</p>
+    <p class="clase-step-intro">Escucha el diálogo con atención, todavía no puedes leerlo.</p>
     <div class="clase-audio-row">
       <button class="btn btn-primary btn-sm" id="claseHear">${PLAY_ICON} Escuchar diálogo</button>
     </div>
     <div class="clase-question-card">
       <p class="clase-question-text">${listening.question.text}</p>
       <div class="clase-options" id="claseOptions">
-        ${listening.question.options.map((opt,idx)=>`
+        ${listenShuffledOptions.map((opt,idx)=>`
           <button class="clase-option-btn" data-idx="${idx}">${opt}</button>`).join('')}
       </div>
       <div id="claseFeedback"></div>
@@ -260,12 +269,12 @@ function renderStepListening(body, state, next){
     answered = true;
     const btn = this;
     const idx = parseInt(btn.dataset.idx,10);
-    const correct = idx === listening.question.correctIndex;
+    const correct = idx === listenShuffledCorrectIndex;
     recordClaseResult(state, 'listening', correct);
     btn.classList.add(correct ? 'correct' : 'incorrect');
     body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });
     if(!correct){
-      const rightBtn = body.querySelector(`.clase-option-btn[data-idx="${listening.question.correctIndex}"]`);
+      const rightBtn = body.querySelector(`.clase-option-btn[data-idx="${listenShuffledCorrectIndex}"]`);
       if(rightBtn) rightBtn.classList.add('correct');
     }
     const transcriptHtml = `
@@ -278,7 +287,7 @@ function renderStepListening(body, state, next){
       </div>`;
     body.querySelector('#claseFeedback').innerHTML = (correct
       ? `<p class="clase-fb-ok">${OK_ICON} ¡Correcto!</p>`
-      : `<p class="clase-fb-bad">${BAD_ICON} Casi — aquí tienes la transcripción.</p>`) + transcriptHtml;
+      : `<p class="clase-fb-bad">${BAD_ICON} Casi, aquí tienes la transcripción.</p>`) + transcriptHtml;
     showRetryOrNextButtons(body, correct, wireOptions, next);
   }
 
@@ -288,6 +297,13 @@ function renderStepListening(body, state, next){
 function renderStepChoose(body, state, next){
   const { chooseResponse } = state.data;
   let answered = false;
+  // Baraja el orden de las opciones en cada visita a este paso, para que la
+  // respuesta correcta no quede siempre en la misma posicion (ver DEVLOG).
+  const chooseShuffledOptions = [...chooseResponse.options];
+  for(let i = chooseShuffledOptions.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [chooseShuffledOptions[i], chooseShuffledOptions[j]] = [chooseShuffledOptions[j], chooseShuffledOptions[i]];
+  }
   body.innerHTML = `
     <div class="clase-eyebrow">Elige tu respuesta</div>
     <div class="clase-dialogue">
@@ -297,7 +313,7 @@ function renderStepChoose(body, state, next){
       </div>
     </div>
     <div class="clase-options" id="claseOptions">
-      ${chooseResponse.options.map((opt,idx)=>`
+      ${chooseShuffledOptions.map((opt,idx)=>`
         <button class="clase-option-btn" data-idx="${idx}">${opt.en}</button>`).join('')}
     </div>
     <div id="claseFeedback"></div>
@@ -320,7 +336,7 @@ function renderStepChoose(body, state, next){
     answered = true;
     const btn = this;
     const idx = parseInt(btn.dataset.idx,10);
-    const opt = chooseResponse.options[idx];
+    const opt = chooseShuffledOptions[idx];
     recordClaseResult(state, 'chooseResponse', opt.correct);
     btn.classList.add(opt.correct ? 'correct' : 'incorrect');
     body.querySelectorAll('.clase-option-btn').forEach(b=>{ b.disabled = true; });

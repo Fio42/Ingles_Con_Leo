@@ -55,6 +55,33 @@ const MAX_PER_RUN = 200 // tope de correos por corrida, por si acaso
 
 Deno.serve(async (req: Request) => {
   try {
+    // Modo manual (uso puntual desde el boton "Test" de Supabase, NO lo
+    // usa el Cron): si el cuerpo de la peticion trae "manual_emails",
+    // manda el correo indicado (1 o 2) SOLO a esos correos exactos, sin
+    // mirar las ventanas de tiempo de mas abajo. Sigue revisando
+    // is_member=false antes de mandar cada uno (nunca le llega esto a
+    // quien ya paga) y sigue marcando upgrade_email_N_sent_at, para que
+    // el Cron normal no lo vuelva a mandar despues. Si el cuerpo viene
+    // vacio (asi lo manda el Cron), esto no hace nada y sigue el modo
+    // automatico normal como siempre.
+    try {
+      const body = await req.json()
+      if (body && Array.isArray(body.manual_emails) && body.manual_emails.length) {
+        const which: 1 | 2 = body.which === 2 ? 2 : 1
+        let sentManual = 0
+        for (const email of body.manual_emails) {
+          if (typeof email !== 'string' || !email) continue
+          const { data: prof } = await supabase.from('profiles').select('id, is_member').eq('email', email).maybeSingle()
+          if (!prof || prof.is_member) continue
+          const didSend = await sendIfStillEligible(prof.id, email, which)
+          if (didSend) sentManual++
+        }
+        return json({ ok: true, manual: true, which, sentManual }, 200)
+      }
+    } catch (_e) {
+      // Sin cuerpo JSON (o vacio): seguimos con el modo automatico normal.
+    }
+
     const now = Date.now()
     let sent1 = 0
     let sent2 = 0
@@ -123,11 +150,11 @@ async function sendIfStillEligible(userId: string, email: string | null, which: 
 }
 
 async function sendEmail1(to: string): Promise<boolean> {
-  return sendViaResend(to, 'Tu cuenta ya está lista - Inglés con Leo', HTML_EMAIL_1)
+  return sendViaResend(to, '¡Tu cuenta ya está lista! Desbloquea todo por $2 USD/mes 🎉', HTML_EMAIL_1)
 }
 
 async function sendEmail2(to: string): Promise<boolean> {
-  return sendViaResend(to, 'Todo lo que te estás perdiendo en Inglés con Leo', HTML_EMAIL_2)
+  return sendViaResend(to, 'Esto es todo lo que te estás perdiendo en Inglés con Leo 👀', HTML_EMAIL_2)
 }
 
 async function sendViaResend(to: string, subject: string, html: string): Promise<boolean> {
@@ -168,22 +195,37 @@ function json(body: unknown, status: number) {
 const HTML_EMAIL_1 = `
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
   <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
-    <h1 style="color:#253ECC; font-size:22px; margin-top:0;">Tu cuenta ya está lista</h1>
+    <p style="color:#333; font-size:15px; margin:0 0 4px;">¡Hola! 👋</p>
+    <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">Tu cuenta ya está lista</h1>
     <p style="color:#333; font-size:15px; line-height:1.6;">
-      Creaste tu cuenta en Inglés con Leo. Cuando quieras, puedes desbloquear
-      todas las herramientas (práctica ilimitada, tus errores, tu progreso,
-      clases interactivas y preparación para TOEFL/IELTS) por $2 USD al mes.
+      ¡Qué bueno tenerte por aquí! Ya creaste tu cuenta en Inglés con Leo, y
+      estás a un paso de tener acceso completo a todo lo que te va a ayudar
+      a hablar inglés con confianza, sin importar tu nivel.
     </p>
-    <p style="text-align:center; margin:28px 0;">
+    <p style="color:#253ECC; font-size:15px; font-weight:bold; margin:20px 0 8px;">
+      Por solo $2 USD al mes desbloqueas:
+    </p>
+    <ul style="color:#333; font-size:15px; line-height:1.85; padding-left:20px; margin:0;">
+      <li><strong>Práctica ilimitada</strong> en gramática, vocabulario, listening, writing y speaking, sin límite diario</li>
+      <li><strong>Tu dashboard personalizado</strong>: progreso, racha y estadísticas por habilidad</li>
+      <li><strong>Repaso automático de tus errores</strong>, para que no vuelvas a fallar lo mismo</li>
+      <li><strong>Clases interactivas</strong> paso a paso</li>
+      <li><strong>Preparación para TOEFL, IELTS y Cambridge (B2 First)</strong></li>
+      <li><strong>Retos diarios</strong> para mantenerte motivado</li>
+    </ul>
+    <p style="text-align:center; margin:28px 0 10px;">
       <a href="https://inglesconleo.com/miembros.html"
          style="background-color:#253ECC; color:#ffffff; text-decoration:none;
-                padding:12px 24px; border-radius:8px; font-size:15px; display:inline-block;">
-        Ver mi cuenta
+                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
+        Quiero desbloquear todo →
       </a>
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Si ya no te interesa, no pasa nada: puedes seguir practicando gratis
-      cuando quieras.
+    <p style="color:#888; font-size:13px; text-align:center; margin:0 0 20px;">
+      Menos de lo que cuesta un café. Cancela cuando quieras.
+    </p>
+    <p style="color:#888; font-size:13px; line-height:1.6; margin:0;">
+      Si prefieres seguir practicando gratis por ahora, no hay problema: tu
+      cuenta te espera cuando estés listo.
     </p>
   </div>
 </div>
@@ -192,27 +234,57 @@ const HTML_EMAIL_1 = `
 const HTML_EMAIL_2 = `
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
   <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
-    <h1 style="color:#253ECC; font-size:22px; margin-top:0;">Todo lo que te estás perdiendo</h1>
+    <p style="color:#333; font-size:15px; margin:0 0 4px;">¡Hola de nuevo! 👋</p>
+    <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">Esto es todo lo que te estás perdiendo</h1>
     <p style="color:#333; font-size:15px; line-height:1.6;">
-      Con la membresía de Inglés con Leo ($2 USD al mes) tienes:
+      Tu cuenta en Inglés con Leo sigue ahí, esperándote. Por si no lo has
+      visto, con la membresía ($2 USD al mes) tienes acceso a esto:
     </p>
-    <ul style="color:#333; font-size:15px; line-height:1.8; padding-left:20px;">
-      <li>Práctica ilimitada en gramática, vocabulario, listening, writing y speaking</li>
-      <li>Repaso automático de tus errores</li>
-      <li>Tu progreso y estadísticas guardados</li>
-      <li>Clases interactivas</li>
-      <li>Preparación para TOEFL, IELTS y otros exámenes</li>
-    </ul>
-    <p style="text-align:center; margin:28px 0;">
+    <table role="presentation" width="100%" style="border-collapse:collapse; margin:20px 0;">
+      <tr>
+        <td style="padding:10px 0; border-bottom:1px solid #eee2cf;">
+          <strong style="color:#253ECC;">🎯 Práctica sin límites</strong><br>
+          <span style="color:#666; font-size:14px;">Gramática, vocabulario, listening, writing y speaking, cuantas veces quieras cada día.</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0; border-bottom:1px solid #eee2cf;">
+          <strong style="color:#253ECC;">📊 Tu dashboard personalizado</strong><br>
+          <span style="color:#666; font-size:14px;">Progreso, racha y estadísticas por habilidad, para que veas tu avance real.</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0; border-bottom:1px solid #eee2cf;">
+          <strong style="color:#253ECC;">🔁 Repaso automático de tus errores</strong><br>
+          <span style="color:#666; font-size:14px;">El sistema guarda lo que se te complica y te ayuda a repasarlo hasta que lo domines.</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0; border-bottom:1px solid #eee2cf;">
+          <strong style="color:#253ECC;">🎓 Clases interactivas</strong><br>
+          <span style="color:#666; font-size:14px;">Situaciones reales (aeropuerto, restaurante, trabajo) paso a paso.</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:10px 0;">
+          <strong style="color:#253ECC;">📝 Preparación para exámenes</strong><br>
+          <span style="color:#666; font-size:14px;">TOEFL, IELTS y Cambridge (B2 First), con ejercicios enfocados en el examen real.</span>
+        </td>
+      </tr>
+    </table>
+    <p style="text-align:center; margin:28px 0 10px;">
       <a href="https://inglesconleo.com/miembros.html"
          style="background-color:#253ECC; color:#ffffff; text-decoration:none;
-                padding:12px 24px; border-radius:8px; font-size:15px; display:inline-block;">
-        Activar membresía
+                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
+        Activar mi membresía →
       </a>
     </p>
-    <p style="color:#333; font-size:13px; color:#888;">
+    <p style="color:#888; font-size:13px; text-align:center; margin:0 0 20px;">
+      $2 USD al mes. Cancela cuando quieras.
+    </p>
+    <p style="color:#888; font-size:13px; line-height:1.6; margin:0;">
       Este es el último correo de este tipo que te mandamos. Si más adelante
-      cambias de opinión, tu cuenta te espera.
+      cambias de opinión, tu cuenta te espera tal cual la dejaste.
     </p>
   </div>
 </div>

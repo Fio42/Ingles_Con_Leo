@@ -298,3 +298,57 @@ audio/miembros100/s-avanzado-m100-2.mp3,Little did we know the meeting would be 
 audio/miembros100/s-avanzado-m100-3.mp3,It goes without saying that quality comes first.,
 audio/miembros100/s-avanzado-m100-4.mp3,Not until the deadline passed did they respond.,
 audio/miembros100/s-avanzado-m100-5.mp3,"The project succeeded, albeit with some setbacks.",
+audio/clases/frases/immigration-1.mp3,What's the purpose of your visit?,en-US-AvaMultilingualNeural
+audio/clases/frases/immigration-2.mp3,I'm here on vacation.,en-US-AvaMultilingualNeural
+audio/clases/frases/immigration-3.mp3,I'll be staying for two weeks.,en-US-AvaMultilingualNeural
+audio/clases/frases/immigration-4.mp3,I'm staying at a hotel downtown.,en-US-AvaMultilingualNeural
+audio/clases/frases/immigration-5.mp3,"No, I don't have anything to declare.",en-US-AvaMultilingualNeural
+audio/clases/migracion-listening.mp3,"— Good afternoon. What's the purpose of your trip?
+— I'm here on vacation, visiting some friends.
+— Okay. And how long will you be staying in the country?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/migracion-speaking.mp3,I'll be staying for two weeks.,en-US-AvaMultilingualNeural
+audio/clases/frases/directions-1.mp3,"Excuse me, how do I get to the train station?",en-US-AvaMultilingualNeural
+audio/clases/frases/directions-2.mp3,Is it far from here?,en-US-AvaMultilingualNeural
+audio/clases/frases/directions-3.mp3,Go straight and turn left at the corner.,en-US-AvaMultilingualNeural
+audio/clases/frases/directions-4.mp3,It's across from the pharmacy.,en-US-AvaMultilingualNeural
+audio/clases/frases/directions-5.mp3,It's about two blocks away.,en-US-AvaMultilingualNeural
+audio/clases/direcciones-listening.mp3,"— Excuse me, how do I get to the train station?
+— Go straight for two blocks, then turn left. It's right across from the pharmacy.
+— Great, thank you! Is it far from here?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/direcciones-speaking.mp3,"Thank you, I really appreciate it.",en-US-AvaMultilingualNeural
+audio/clases/frases/taxi-uber-1.mp3,Are you my driver?,en-US-AvaMultilingualNeural
+audio/clases/frases/taxi-uber-2.mp3,I'm heading to the airport.,en-US-AvaMultilingualNeural
+audio/clases/frases/taxi-uber-3.mp3,Can you drop me off at the corner?,en-US-AvaMultilingualNeural
+audio/clases/frases/taxi-uber-4.mp3,I'm right in front of the blue building.,en-US-AvaMultilingualNeural
+audio/clases/frases/taxi-uber-5.mp3,Could you help me with my luggage?,en-US-AvaMultilingualNeural
+audio/clases/taxi-listening.mp3,"— Hi! Are you John? I'm here for your ride.
+— Yes, that's me! I'm heading to the airport.
+— Great, hop in. It should take about twenty minutes.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/taxi-speaking.mp3,I'm right in front of the blue building.,en-US-AvaMultilingualNeural
+audio/clases/frases/doctor-1.mp3,I haven't been feeling well.,en-US-AvaMultilingualNeural
+audio/clases/frases/doctor-2.mp3,I have a sore throat and a fever.,en-US-AvaMultilingualNeural
+audio/clases/frases/doctor-3.mp3,It started three days ago.,en-US-AvaMultilingualNeural
+audio/clases/frases/doctor-4.mp3,"The pain is mild, not too bad.",en-US-AvaMultilingualNeural
+audio/clases/frases/doctor-5.mp3,I'm not taking any medication right now.,en-US-AvaMultilingualNeural
+audio/clases/medico-listening.mp3,"— What seems to be the problem today?
+— I have a sore throat and a mild fever since yesterday.
+— Okay, let's take a look. Are you taking any medication right now?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/medico-speaking.mp3,I have a sore throat and a fever.,en-US-AvaMultilingualNeural
+audio/clases/frases/small-talk-1.mp3,"Nice weather today, isn't it?",en-US-AvaMultilingualNeural
+audio/clases/frases/small-talk-2.mp3,Do you have any plans for the weekend?,en-US-AvaMultilingualNeural
+audio/clases/frases/small-talk-3.mp3,That sounds like fun!,en-US-AvaMultilingualNeural
+audio/clases/frases/small-talk-4.mp3,How's work been treating you lately?,en-US-AvaMultilingualNeural
+audio/clases/frases/small-talk-5.mp3,"Yeah, tell me about it.",en-US-AvaMultilingualNeural
+audio/clases/small-talk-listening.mp3,"— Hey! Nice weather today, isn't it?
+— Yeah, finally! Do you have any plans for the weekend?
+— Actually, I'm going hiking with some friends.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/small-talk-speaking.mp3,That sounds like fun!,en-US-AvaMultilingualNeural
+audio/clases/frases/customer-service-1.mp3,I have a problem with my order.,en-US-AvaMultilingualNeural
+audio/clases/frases/customer-service-2.mp3,It arrived damaged.,en-US-AvaMultilingualNeural
+audio/clases/frases/customer-service-3.mp3,Could I get a refund or a replacement?,en-US-AvaMultilingualNeural
+audio/clases/frases/customer-service-4.mp3,Can you confirm my order number?,en-US-AvaMultilingualNeural
+audio/clases/frases/customer-service-5.mp3,How long will that take?,en-US-AvaMultilingualNeural
+audio/clases/atencion-cliente-listening.mp3,"— Thank you for calling. How can I help you today?
+— Hi, I have a problem with my order. It arrived damaged.
+— I'm sorry to hear that. Can you confirm your order number?",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/clases/atencion-cliente-speaking.mp3,Could I get a refund or a replacement?,en-US-AvaMultilingualNeural

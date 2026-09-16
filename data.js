@@ -6939,7 +6939,13 @@ const CLASS_CATALOG = [
   { id:'numbers-symbols', title:'Números, teléfonos y símbolos', category:'Vida diaria', desc:'Aprende a decir un número de teléfono, el + de WhatsApp y caracteres como @, punto, guion, _ y /.', minutes:6, available:true },
   { id:'job-interview', title:'Entrevista de trabajo', category:'Trabajo', desc:'Aprende a hablar de tu experiencia y tus fortalezas en una entrevista de trabajo.', minutes:7, available:true },
   { id:'phone-calls', title:'Llamadas', category:'Trabajo', desc:'Aprende a hacer una llamada, agendar una cita y manejar malentendidos por teléfono.', minutes:6, available:true },
-  { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true }
+  { id:'meetings', title:'Reuniones', category:'Trabajo', desc:'Aprende a dar una actualización, hacer preguntas y participar en una reunión de trabajo.', minutes:6, available:true },
+  { id:"immigration", title:"Migración y aduana", category:"Viajes", desc:"Aprende a responder las preguntas de migración: el propósito de tu viaje, cuánto tiempo te quedas y qué declarar.", minutes:6, available:true },
+  { id:"directions", title:"Pedir direcciones", category:"Viajes", desc:"Aprende a preguntar cómo llegar a un lugar y a entender indicaciones como turn left o two blocks away.", minutes:5, available:true },
+  { id:"taxi-uber", title:"Taxi / Uber", category:"Viajes", desc:"Aprende a confirmar tu destino, explicar dónde estás y pedir ayuda con tu equipaje en un viaje.", minutes:5, available:true },
+  { id:"doctor", title:"En el médico", category:"Situaciones importantes", desc:"Aprende a describir tus síntomas, desde cuándo los tienes y qué tan fuertes son en una consulta médica.", minutes:6, available:true },
+  { id:"small-talk", title:"Small talk", category:"Vida diaria", desc:"Aprende a platicar de forma casual sobre el clima, el fin de semana y el trabajo sin quedarte en blanco.", minutes:5, available:true },
+  { id:"customer-service", title:"Atención al cliente", category:"Situaciones importantes", desc:"Aprende a explicar un problema, pedir una solución y confirmar información con atención al cliente.", minutes:6, available:true }
 ];
 
 const CLASSES_BANK = {
@@ -7976,6 +7982,602 @@ const CLASSES_BANK = {
     summary:{
       keyPhrases:['My phone number is ...', 'The plus sign is +.', 'At is the symbol @.', 'Dot is the symbol .'],
       tip:'Hoy practicaste cómo decir números de teléfono, el código + de WhatsApp y los símbolos más usados en un correo.'
+    }
+  },
+  immigration: {
+    id:"immigration",
+    title:"Migración y aduana",
+    situation:{
+      en:"You just landed in the United States. Before you can leave the airport, you need to go through immigration and customs, and answer a few questions about your trip.",
+      es:"Acabas de aterrizar en Estados Unidos. Antes de poder salir del aeropuerto, tienes que pasar por migración y aduana, y responder algunas preguntas sobre tu viaje."
+    },
+    phrases:[
+      { en:"What's the purpose of your visit?", es:"¿Cuál es el propósito de tu visita?" },
+      { en:"I'm here on vacation.", es:"Estoy aquí de vacaciones." },
+      { en:"I'll be staying for two weeks.", es:"Me voy a quedar dos semanas." },
+      { en:"I'm staying at a hotel downtown.", es:"Me estoy quedando en un hotel en el centro." },
+      { en:"No, I don't have anything to declare.", es:"No, no tengo nada que declarar." }
+    ],
+    listening:{
+      audio:"audio/clases/migracion-listening.mp3",
+      dialogue:[
+        { speaker:"Oficial", en:"Good afternoon. What's the purpose of your trip?" },
+        { speaker:"Tú", en:"I'm here on vacation, visiting some friends." },
+        { speaker:"Oficial", en:"Okay. And how long will you be staying in the country?" }
+      ],
+      question:{
+        text:"¿Cuál es el propósito del viaje?",
+        options:["Vacaciones","Trabajo","Estudios"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Oficial", en:"Do you have anything to declare?" },
+      options:[
+        { en:"No, nothing to declare.", correct:true, feedback:"¡Bien! Es la respuesta directa y correcta si no traes nada que declarar." },
+        { en:"I'll be staying for two weeks.", correct:false, feedback:"Esa respuesta es sobre cuánto tiempo te quedas, pero te preguntaron si traes algo que declarar." },
+        { en:"Yes, I have a hotel reservation.", correct:false, feedback:"Te preguntaron por artículos que declarar en la aduana, no por tu hotel." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Cuánto tiempo te vas a quedar?",
+      words:["are","staying?","long","you","How"],
+      correctOrder:["How","long","are","you","staying?"]
+    },
+    speaking:{
+      audio:"audio/clases/migracion-speaking.mp3",
+      prompt:"I'll be staying for two weeks.",
+      es:'Practica diciendo: "Me voy a quedar dos semanas."'
+    },
+    miniChallenge:{
+      start:"customs",
+      nodes:{
+        customs:{
+          en:"At customs, an officer asks: \"Do you have any fruits, vegetables, or food items in your luggage?\"",
+          es:'En la aduana, un oficial pregunta: "¿Trae frutas, verduras o alimentos en su equipaje?"',
+          options:[
+            { en:"No, I don't have any food with me.", next:"bags", correct:true },
+            { en:"Yes, I have a hotel reservation.", next:"customs-fail", correct:false }
+          ]
+        },
+        "customs-fail":{
+          en:"The officer clarifies: \"I mean food, not your hotel. Do you have any food items?\"",
+          es:'El oficial aclara: "Me refiero a comida, no a su hotel. ¿Trae algún alimento?"',
+          options:[
+            { en:"Oh, sorry! No, no food.", next:"bags", correct:true }
+          ]
+        },
+        bags:{
+          en:"The officer says: \"Please open your bag for a quick inspection.\"",
+          es:'El oficial dice: "Por favor abra su maleta para una inspección rápida."',
+          options:[
+            { en:"Sure, no problem.", next:"end", correct:true },
+            { en:"I already checked it in.", next:"bags-fail", correct:false }
+          ]
+        },
+        "bags-fail":{
+          en:"The officer insists: \"This is a different bag, I need to check your carry-on.\"",
+          es:'El oficial insiste: "Esta es otra maleta, necesito revisar su equipaje de mano."',
+          options:[
+            { en:"Of course, here it is.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"Everything looks good. Welcome to the United States!", es:"Todo está en orden. ¡Bienvenido a Estados Unidos!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["What's the purpose of your visit?", "I'm here on vacation.", "I'll be staying for two weeks.", "No, I don't have anything to declare."],
+      tip:"Hoy practicaste cómo responder las preguntas más comunes de migración y aduana: el propósito de tu viaje, cuánto tiempo te quedas y qué declarar."
+    }
+  },
+
+  directions: {
+    id:"directions",
+    title:"Pedir direcciones",
+    situation:{
+      en:"You're walking around a new city and you're not sure how to get to the train station. You decide to ask someone for directions.",
+      es:"Estás caminando por una ciudad nueva y no sabes cómo llegar a la estación de tren. Decides preguntarle a alguien cómo llegar."
+    },
+    phrases:[
+      { en:"Excuse me, how do I get to the train station?", es:"Disculpe, ¿cómo llego a la estación de tren?" },
+      { en:"Is it far from here?", es:"¿Está lejos de aquí?" },
+      { en:"Go straight and turn left at the corner.", es:"Siga derecho y dé vuelta a la izquierda en la esquina." },
+      { en:"It's across from the pharmacy.", es:"Está enfrente de la farmacia." },
+      { en:"It's about two blocks away.", es:"Está como a dos cuadras." }
+    ],
+    listening:{
+      audio:"audio/clases/direcciones-listening.mp3",
+      dialogue:[
+        { speaker:"Tú", en:"Excuse me, how do I get to the train station?" },
+        { speaker:"Persona", en:"Go straight for two blocks, then turn left. It's right across from the pharmacy." },
+        { speaker:"Tú", en:"Great, thank you! Is it far from here?" }
+      ],
+      question:{
+        text:"¿Dónde está la estación de tren?",
+        options:["Enfrente de la farmacia","Al lado del banco","Atrás del parque"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Persona", en:"Turn right at the next corner, and it will be on your left." },
+      options:[
+        { en:"Okay, thank you so much!", correct:true, feedback:"¡Bien! Es una respuesta natural para agradecer direcciones." },
+        { en:"Yes, I have a reservation.", correct:false, feedback:"Te dieron direcciones, no te preguntaron por una reservación." },
+        { en:"It's two blocks from here.", correct:false, feedback:"Con esa frase tú serías quien da direcciones, no quien las recibe." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Está lejos de aquí?",
+      words:["far","it","from","here?","Is"],
+      correctOrder:["Is","it","far","from","here?"]
+    },
+    speaking:{
+      audio:"audio/clases/direcciones-speaking.mp3",
+      prompt:"Thank you, I really appreciate it.",
+      es:'Practica diciendo: "Gracias, de verdad lo aprecio."'
+    },
+    miniChallenge:{
+      start:"greeting",
+      nodes:{
+        greeting:{
+          en:"A stranger stops to help: \"Sure, what are you looking for?\"",
+          es:'Un desconocido se detiene a ayudar: "Claro, ¿qué está buscando?"',
+          options:[
+            { en:"I'm trying to find the bus stop.", next:"directions-given", correct:true },
+            { en:"No, I don't have anything to declare.", next:"greeting-fail", correct:false }
+          ]
+        },
+        "greeting-fail":{
+          en:"The person looks confused: \"Sorry, I don't understand. What do you need?\"",
+          es:'La persona se ve confundida: "Perdón, no entiendo. ¿Qué necesita?"',
+          options:[
+            { en:"Sorry, I meant I'm looking for the bus stop.", next:"directions-given", correct:true }
+          ]
+        },
+        "directions-given":{
+          en:"The person says: \"It's two blocks straight ahead, next to the bank.\"",
+          es:'La persona dice: "Está dos cuadras adelante, junto al banco."',
+          options:[
+            { en:"Got it, thank you so much!", next:"confirm", correct:true },
+            { en:"I have a reservation for two.", next:"directions-fail", correct:false }
+          ]
+        },
+        "directions-fail":{
+          en:"The person tries again: \"Did that make sense, or should I repeat it?\"",
+          es:'La persona intenta de nuevo: "¿Tuvo sentido, o se lo repito?"',
+          options:[
+            { en:"Could you repeat that, please?", next:"confirm", correct:true }
+          ]
+        },
+        confirm:{
+          en:"Just to be sure, they ask: \"Do you need me to walk you there?\"",
+          es:'Para estar seguro, preguntan: "¿Necesita que lo acompañe?"',
+          options:[
+            { en:"No, I think I've got it. Thanks again!", next:"end", correct:true },
+            { en:"The train leaves at five.", next:"confirm-fail", correct:false }
+          ]
+        },
+        "confirm-fail":{
+          en:"The person looks puzzled: \"Sorry, what train?\"",
+          es:'La persona se ve extrañada: "Perdón, ¿qué tren?"',
+          options:[
+            { en:"Never mind, I've got it. Thank you!", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You find the bus stop with no problem. ¡Excelente!", es:"Encuentras la parada de autobús sin problema. ¡Excelente!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Excuse me, how do I get to the train station?", "Is it far from here?", "Go straight and turn left at the corner.", "It's about two blocks away."],
+      tip:'Hoy practicaste cómo pedir direcciones en inglés y entender indicaciones como "turn left", "across from" y "two blocks away".'
+    }
+  },
+
+  "taxi-uber": {
+    id:"taxi-uber",
+    title:"Taxi / Uber",
+    situation:{
+      en:"You just booked an Uber and you're waiting outside. When the driver arrives, you need to confirm your destination and explain exactly where you are.",
+      es:"Acabas de pedir un Uber y estás esperando afuera. Cuando llega el conductor, necesitas confirmar tu destino y explicar exactamente dónde estás."
+    },
+    phrases:[
+      { en:"Are you my driver?", es:"¿Es usted mi conductor?" },
+      { en:"I'm heading to the airport.", es:"Voy hacia el aeropuerto." },
+      { en:"Can you drop me off at the corner?", es:"¿Me puede dejar en la esquina?" },
+      { en:"I'm right in front of the blue building.", es:"Estoy justo enfrente del edificio azul." },
+      { en:"Could you help me with my luggage?", es:"¿Me puede ayudar con mi equipaje?" }
+    ],
+    listening:{
+      audio:"audio/clases/taxi-listening.mp3",
+      dialogue:[
+        { speaker:"Conductor", en:"Hi! Are you John? I'm here for your ride." },
+        { speaker:"Tú", en:"Yes, that's me! I'm heading to the airport." },
+        { speaker:"Conductor", en:"Great, hop in. It should take about twenty minutes." }
+      ],
+      question:{
+        text:"¿A dónde va el pasajero?",
+        options:["Al aeropuerto","A la estación de tren","A un hotel"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Conductor", en:"Which terminal do you need, domestic or international?" },
+      options:[
+        { en:"International, please.", correct:true, feedback:"¡Bien! Respondes directo a la pregunta sobre la terminal." },
+        { en:"It's about two blocks away.", correct:false, feedback:"Esa respuesta es sobre direcciones, pero te preguntaron por la terminal." },
+        { en:"I'm right in front of the blue building.", correct:false, feedback:"Esa frase sirve para explicar dónde estás esperando, no para elegir terminal." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Es usted mi conductor?",
+      words:["my","you","driver?","Are"],
+      correctOrder:["Are","you","my","driver?"]
+    },
+    speaking:{
+      audio:"audio/clases/taxi-speaking.mp3",
+      prompt:"I'm right in front of the blue building.",
+      es:'Practica diciendo: "Estoy justo enfrente del edificio azul."'
+    },
+    miniChallenge:{
+      start:"confirm",
+      nodes:{
+        confirm:{
+          en:"The driver texts: \"I'm outside, but I don't see you. What are you wearing?\"",
+          es:'El conductor te escribe: "Estoy afuera, pero no lo veo. ¿Qué trae puesto?"',
+          options:[
+            { en:"I'm wearing a red jacket, right by the entrance.", next:"ride", correct:true },
+            { en:"I have a headache today.", next:"confirm-fail", correct:false }
+          ]
+        },
+        "confirm-fail":{
+          en:"The driver asks again: \"Sorry, can you describe where exactly you are?\"",
+          es:'El conductor pregunta de nuevo: "Perdón, ¿puede describir dónde está exactamente?"',
+          options:[
+            { en:"I'm right by the entrance, wearing a red jacket.", next:"ride", correct:true }
+          ]
+        },
+        ride:{
+          en:"During the ride, the driver asks: \"Is this your first time visiting the city?\"",
+          es:'Durante el viaje, el conductor pregunta: "¿Es su primera vez visitando la ciudad?"',
+          options:[
+            { en:"Yes, it is! I'm really excited.", next:"arrival", correct:true },
+            { en:"Two weeks, please.", next:"ride-fail", correct:false }
+          ]
+        },
+        "ride-fail":{
+          en:"The driver clarifies: \"I meant, have you been here before?\"",
+          es:'El conductor aclara: "Digo, ¿había venido antes?"',
+          options:[
+            { en:"Oh, sorry! No, this is my first time.", next:"arrival", correct:true }
+          ]
+        },
+        arrival:{
+          en:"You arrive. The driver says: \"Here we are. Do you need help with your bags?\"",
+          es:'Llegan. El conductor dice: "Aquí estamos. ¿Necesita ayuda con su equipaje?"',
+          options:[
+            { en:"Yes, please, that would be great.", next:"end", correct:true },
+            { en:"It leaves at five.", next:"arrival-fail", correct:false }
+          ]
+        },
+        "arrival-fail":{
+          en:"The driver looks confused: \"Sorry, what leaves at five?\"",
+          es:'El conductor se ve confundido: "Perdón, ¿qué sale a las cinco?"',
+          options:[
+            { en:"Never mind, yes, I'd love some help with my bags.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You arrive safely with all your luggage. ¡Buen viaje!", es:"Llegas sin problema con todo tu equipaje. ¡Buen viaje!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Are you my driver?", "I'm heading to the airport.", "Can you drop me off at the corner?", "Could you help me with my luggage?"],
+      tip:"Hoy practicaste cómo confirmar tu destino, explicar dónde estás y pedir ayuda con tu equipaje en un viaje de taxi o Uber."
+    }
+  },
+
+  doctor: {
+    id:"doctor",
+    title:"En el médico",
+    situation:{
+      en:"You haven't been feeling well for a couple of days, so you go to the doctor. You need to describe your symptoms and understand what the doctor recommends.",
+      es:"Llevas un par de días sin sentirte bien, así que vas al médico. Necesitas describir tus síntomas y entender lo que te recomienda la doctora."
+    },
+    phrases:[
+      { en:"I haven't been feeling well.", es:"No me he sentido bien." },
+      { en:"I have a sore throat and a fever.", es:"Tengo dolor de garganta y fiebre." },
+      { en:"It started three days ago.", es:"Empezó hace tres días." },
+      { en:"The pain is mild, not too bad.", es:"El dolor es leve, no muy fuerte." },
+      { en:"I'm not taking any medication right now.", es:"No estoy tomando ningún medicamento ahorita." }
+    ],
+    listening:{
+      audio:"audio/clases/medico-listening.mp3",
+      dialogue:[
+        { speaker:"Doctora", en:"What seems to be the problem today?" },
+        { speaker:"Tú", en:"I have a sore throat and a mild fever since yesterday." },
+        { speaker:"Doctora", en:"Okay, let's take a look. Are you taking any medication right now?" }
+      ],
+      question:{
+        text:"¿Desde cuándo tiene los síntomas el paciente?",
+        options:["Desde ayer","Desde hace una semana","Desde esta mañana"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Doctora", en:"On a scale from one to ten, how bad is the pain?" },
+      options:[
+        { en:"About a four, it's mild.", correct:true, feedback:"¡Bien! Respondes con un número y describes qué tan fuerte es, justo lo que preguntaron." },
+        { en:"It started three days ago.", correct:false, feedback:"Eso responde desde cuándo, no qué tan fuerte es el dolor." },
+        { en:"I'm allergic to penicillin.", correct:false, feedback:"Es información útil, pero no responde qué tan intenso es el dolor." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Desde cuándo tiene estos síntomas?",
+      words:["you","these","How","symptoms?","had","long","have"],
+      correctOrder:["How","long","have","you","had","these","symptoms?"]
+    },
+    speaking:{
+      audio:"audio/clases/medico-speaking.mp3",
+      prompt:"I have a sore throat and a fever.",
+      es:'Practica diciendo: "Tengo dolor de garganta y fiebre."'
+    },
+    miniChallenge:{
+      start:"symptoms",
+      nodes:{
+        symptoms:{
+          en:"The doctor asks: \"What symptoms are you having?\"",
+          es:'La doctora pregunta: "¿Qué síntomas tiene?"',
+          options:[
+            { en:"I have a headache and a sore throat.", next:"duration", correct:true },
+            { en:"I have a reservation for two.", next:"symptoms-fail", correct:false }
+          ]
+        },
+        "symptoms-fail":{
+          en:"The doctor asks again: \"I need to know how you're feeling. What hurts?\"",
+          es:'La doctora pregunta de nuevo: "Necesito saber cómo se siente. ¿Qué le duele?"',
+          options:[
+            { en:"Sorry, I have a headache and a sore throat.", next:"duration", correct:true }
+          ]
+        },
+        duration:{
+          en:"The doctor asks: \"And how long have you had these symptoms?\"",
+          es:'La doctora pregunta: "¿Y desde hace cuánto tiene estos síntomas?"',
+          options:[
+            { en:"Since yesterday morning.", next:"meds", correct:true },
+            { en:"It's two blocks from here.", next:"duration-fail", correct:false }
+          ]
+        },
+        "duration-fail":{
+          en:"The doctor clarifies: \"I just need to know since when: yesterday, a week ago?\"",
+          es:'La doctora aclara: "Solo necesito saber desde cuándo, ¿ayer, hace una semana?"',
+          options:[
+            { en:"Sorry, since yesterday morning.", next:"meds", correct:true }
+          ]
+        },
+        meds:{
+          en:"The doctor asks: \"Are you allergic to any medication?\"",
+          es:'La doctora pregunta: "¿Es alérgico a algún medicamento?"',
+          options:[
+            { en:"No, not that I know of.", next:"end", correct:true },
+            { en:"I'll have the grilled chicken.", next:"meds-fail", correct:false }
+          ]
+        },
+        "meds-fail":{
+          en:"The doctor repeats: \"I need to know about allergies, not food.\"",
+          es:'La doctora repite: "Necesito saber de alergias, no de comida."',
+          options:[
+            { en:"Sorry, no allergies that I know of.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"The doctor prescribes some medication and tells you to rest. ¡Que te mejores pronto!", es:"La doctora te receta un medicamento y te dice que descanses. ¡Que te mejores pronto!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["I haven't been feeling well.", "I have a sore throat and a fever.", "It started three days ago.", "The pain is mild, not too bad."],
+      tip:"Hoy practicaste cómo describir síntomas básicos, decir desde cuándo los tienes y qué tan fuertes son, para una consulta médica en inglés."
+    }
+  },
+
+  "small-talk": {
+    id:"small-talk",
+    title:"Small talk",
+    situation:{
+      en:"You're waiting in line with a coworker and want to make some small talk to pass the time, about the weather, the weekend, or something casual.",
+      es:"Estás haciendo fila con un compañero de trabajo y quieres platicar un poco para pasar el tiempo, sobre el clima, el fin de semana o algo casual."
+    },
+    phrases:[
+      { en:"Nice weather today, isn't it?", es:"Qué buen clima hoy, ¿no?" },
+      { en:"Do you have any plans for the weekend?", es:"¿Tienes planes para el fin de semana?" },
+      { en:"That sounds like fun!", es:"¡Eso suena divertido!" },
+      { en:"How's work been treating you lately?", es:"¿Cómo te ha ido en el trabajo últimamente?" },
+      { en:"Yeah, tell me about it.", es:"Sí, ni me digas." }
+    ],
+    listening:{
+      audio:"audio/clases/small-talk-listening.mp3",
+      dialogue:[
+        { speaker:"Compañero", en:"Hey! Nice weather today, isn't it?" },
+        { speaker:"Tú", en:"Yeah, finally! Do you have any plans for the weekend?" },
+        { speaker:"Compañero", en:"Actually, I'm going hiking with some friends." }
+      ],
+      question:{
+        text:"¿Qué va a hacer el compañero el fin de semana?",
+        options:["Ir de excursión","Quedarse en casa","Ir al cine"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Compañero", en:"So, how's work been treating you lately?" },
+      options:[
+        { en:"Pretty good, just a bit busy.", correct:true, feedback:"¡Bien! Es una respuesta natural y casual para small talk." },
+        { en:"It's about two blocks away.", correct:false, feedback:"Esa respuesta no tiene nada que ver con la pregunta sobre el trabajo." },
+        { en:"I have a reservation for two.", correct:false, feedback:"Te preguntaron por el trabajo, no por una reservación." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Tienes planes para el fin de semana?",
+      words:["any","you","plans?","Do","have"],
+      correctOrder:["Do","you","have","any","plans?"]
+    },
+    speaking:{
+      audio:"audio/clases/small-talk-speaking.mp3",
+      prompt:"That sounds like fun!",
+      es:'Practica diciendo: "¡Eso suena divertido!"'
+    },
+    miniChallenge:{
+      start:"greeting",
+      nodes:{
+        greeting:{
+          en:"A coworker says: \"Hey! Long time no see. How have you been?\"",
+          es:'Un compañero dice: "¡Oye! Cuánto tiempo. ¿Cómo has estado?"',
+          options:[
+            { en:"Pretty good, thanks! How about you?", next:"weekend", correct:true },
+            { en:"No, nothing to declare.", next:"greeting-fail", correct:false }
+          ]
+        },
+        "greeting-fail":{
+          en:"They look confused: \"Sorry, I just asked how you've been.\"",
+          es:'Se ven confundidos: "Perdón, solo pregunté cómo has estado."',
+          options:[
+            { en:"Oh sorry! I'm doing well, thanks.", next:"weekend", correct:true }
+          ]
+        },
+        weekend:{
+          en:"They ask: \"Do you have any plans for the weekend?\"",
+          es:'Preguntan: "¿Tienes planes para el fin de semana?"',
+          options:[
+            { en:"Not really, just relaxing at home. You?", next:"topic", correct:true },
+            { en:"The train leaves at five.", next:"weekend-fail", correct:false }
+          ]
+        },
+        "weekend-fail":{
+          en:"They laugh: \"Ha, I meant your weekend plans, not a train!\"",
+          es:'Se ríen: "Ja, me refería a tus planes del fin, no a un tren."',
+          options:[
+            { en:"Oh, right! Not much, just relaxing.", next:"topic", correct:true }
+          ]
+        },
+        topic:{
+          en:"They mention: \"I'm actually going hiking on Saturday.\"",
+          es:'Comentan: "De hecho voy de excursión el sábado."',
+          options:[
+            { en:"That sounds like fun! Where are you going?", next:"end", correct:true },
+            { en:"I have a headache today.", next:"topic-fail", correct:false }
+          ]
+        },
+        "topic-fail":{
+          en:"They pause: \"Oh no, are you okay?\"",
+          es:'Se detienen: "Oh no, ¿estás bien?"',
+          options:[
+            { en:"Ha, no I'm fine, I meant your hike sounds fun!", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"You keep chatting easily until it's time to go. ¡Buena plática!", es:"Siguen platicando a gusto hasta que es hora de irse. ¡Buena plática!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["Nice weather today, isn't it?", "Do you have any plans for the weekend?", "That sounds like fun!", "How's work been treating you lately?"],
+      tip:"Hoy practicaste small talk en inglés: cómo hablar del clima, el fin de semana y el trabajo sin quedarte en blanco."
+    }
+  },
+
+  "customer-service": {
+    id:"customer-service",
+    title:"Atención al cliente",
+    situation:{
+      en:"Something you ordered online arrived broken. You call customer service to explain the problem and ask for a solution.",
+      es:"Algo que pediste en línea llegó roto. Llamas a atención al cliente para explicar el problema y pedir una solución."
+    },
+    phrases:[
+      { en:"I have a problem with my order.", es:"Tengo un problema con mi pedido." },
+      { en:"It arrived damaged.", es:"Llegó dañado." },
+      { en:"Could I get a refund or a replacement?", es:"¿Me podrían dar un reembolso o un reemplazo?" },
+      { en:"Can you confirm my order number?", es:"¿Me puede confirmar mi número de pedido?" },
+      { en:"How long will that take?", es:"¿Cuánto tiempo va a tardar eso?" }
+    ],
+    listening:{
+      audio:"audio/clases/atencion-cliente-listening.mp3",
+      dialogue:[
+        { speaker:"Agente", en:"Thank you for calling. How can I help you today?" },
+        { speaker:"Tú", en:"Hi, I have a problem with my order. It arrived damaged." },
+        { speaker:"Agente", en:"I'm sorry to hear that. Can you confirm your order number?" }
+      ],
+      question:{
+        text:"¿Cuál es el problema del cliente?",
+        options:["El pedido llegó dañado","El pedido no llegó","El pedido llegó tarde"],
+        correctIndex:0
+      }
+    },
+    chooseResponse:{
+      prompt:{ speaker:"Agente", en:"Would you prefer a refund or a replacement?" },
+      options:[
+        { en:"I'd prefer a replacement, please.", correct:true, feedback:"¡Bien! Respondes directo a la opción que prefieres." },
+        { en:"It arrived three days ago.", correct:false, feedback:"Esa respuesta es sobre cuándo llegó, no sobre qué solución prefieres." },
+        { en:"Yes, I have a reservation.", correct:false, feedback:"Te preguntaron por reembolso o reemplazo, no por una reservación." }
+      ]
+    },
+    buildSentence:{
+      es:"¿Me podría dar un reembolso?",
+      words:["a","give","Could","me","refund?","you"],
+      correctOrder:["Could","you","give","me","a","refund?"]
+    },
+    speaking:{
+      audio:"audio/clases/atencion-cliente-speaking.mp3",
+      prompt:"Could I get a refund or a replacement?",
+      es:'Practica diciendo: "¿Me podrían dar un reembolso o un reemplazo?"'
+    },
+    miniChallenge:{
+      start:"explain",
+      nodes:{
+        explain:{
+          en:"The agent answers: \"Thank you for calling. What can I help you with?\"",
+          es:'El agente contesta: "Gracias por llamar. ¿En qué le puedo ayudar?"',
+          options:[
+            { en:"My order arrived damaged and I'd like a replacement.", next:"confirm", correct:true },
+            { en:"I have a headache today.", next:"explain-fail", correct:false }
+          ]
+        },
+        "explain-fail":{
+          en:"The agent asks: \"Sorry, is this about a medical issue or an order?\"",
+          es:'El agente pregunta: "Perdón, ¿esto es sobre un tema médico o un pedido?"',
+          options:[
+            { en:"Sorry, it's about an order, it arrived damaged.", next:"confirm", correct:true }
+          ]
+        },
+        confirm:{
+          en:"The agent asks: \"Can you confirm your order number, please?\"",
+          es:'El agente pregunta: "¿Me puede confirmar su número de pedido?"',
+          options:[
+            { en:"Sure, it's four five two one.", next:"solution", correct:true },
+            { en:"The flight is at five forty.", next:"confirm-fail", correct:false }
+          ]
+        },
+        "confirm-fail":{
+          en:"The agent clarifies: \"I meant your order number, not a flight.\"",
+          es:'El agente aclara: "Me refiero al número de pedido, no a un vuelo."',
+          options:[
+            { en:"Sorry, it's four five two one.", next:"solution", correct:true }
+          ]
+        },
+        solution:{
+          en:"The agent offers: \"I can send a replacement or refund your money. Which would you prefer?\"",
+          es:'El agente ofrece: "Puedo enviarle un reemplazo o devolverle el dinero. ¿Cuál prefiere?"',
+          options:[
+            { en:"A replacement would be great, thank you.", next:"end", correct:true },
+            { en:"Two nights, please.", next:"solution-fail", correct:false }
+          ]
+        },
+        "solution-fail":{
+          en:"The agent pauses: \"Sorry, two nights? This isn't a hotel.\"",
+          es:'El agente hace una pausa: "Perdón, ¿dos noches? Esto no es un hotel."',
+          options:[
+            { en:"Sorry! I meant I'd like a replacement.", next:"end", correct:true }
+          ]
+        },
+        end:{ en:"The agent confirms your replacement will arrive in five days. ¡Problema resuelto!", es:"El agente confirma que su reemplazo llegará en cinco días. ¡Problema resuelto!", options:[] }
+      }
+    },
+    summary:{
+      keyPhrases:["I have a problem with my order.", "It arrived damaged.", "Could I get a refund or a replacement?", "Can you confirm my order number?"],
+      tip:"Hoy practicaste cómo explicar un problema, pedir una solución y confirmar información con atención al cliente en inglés."
     }
   }
 };
