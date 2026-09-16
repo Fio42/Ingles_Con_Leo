@@ -128,11 +128,19 @@ create extension if not exists pg_net with schema extensions;
 -- toca el correo 1, a quién el correo 2, y a quién no le toca nada
 -- (ya es miembro, ya se le mandó, o todavía no le toca por tiempo).
 --
--- *** ANTES DE CORRER ESTO ***: reemplaza TU_SERVICE_ROLE_KEY_AQUI
--- por tu Service Role Key real (Supabase -> Project Settings -> API
--- -> "service_role", el secreto largo, no el "anon public"). Es
--- secreta: no la pegues en ningún archivo de este repositorio,
--- solo aquí, directo en el SQL Editor, al momento de correrlo.
+-- *** ANTES DE CORRER ESTO ***: reemplaza TU_SECRET_KEY_AQUI por tu
+-- Secret Key real (Supabase -> Project Settings -> API Keys ->
+-- "Secret keys" -> ojo/copiar). Es secreta: no la pegues en ningún
+-- archivo de este repositorio, solo aquí, directo en el SQL Editor,
+-- al momento de correrlo.
+--
+-- Ojo técnico (para que no se rompa): las claves nuevas de Supabase
+-- (sb_secret_..., sb_publishable_...) NO son JWT, así que van en el
+-- header "apikey", nunca en "Authorization: Bearer" (eso solo es
+-- para JWT). Por eso este llamado usa el header "apikey" en vez de
+-- "Authorization". Además, hay que apagar "Verify JWT" en la
+-- configuración de esta función específica (paso 3 del chat) para
+-- que Supabase no le exija un JWT que esta clave nueva no es.
 select cron.schedule(
   'inglesconleo-upgrade-nudge-emails',
   '*/30 * * * *',
@@ -140,7 +148,7 @@ select cron.schedule(
   select net.http_post(
     url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/upgrade-nudge-emails',
     headers := jsonb_build_object(
-      'Authorization', 'Bearer TU_SERVICE_ROLE_KEY_AQUI',
+      'apikey', 'TU_SECRET_KEY_AQUI',
       'Content-Type', 'application/json'
     ),
     body := '{}'::jsonb
