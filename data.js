@@ -12673,3 +12673,560 @@ SPEAKING_BANK.avanzado.push(
 ]
 );
 
+// ============================================================
+// BLOQUE NUEVO (2026-09-16): 100 ejercicios adicionales mixtos
+// (gramatica/vocabulario/listening/writing/speaking x 4 niveles),
+// disponibles TANTO gratis como para miembros (no se agregan a
+// MEMBERS_ONLY_VARIANT_INDEX en app.js). Se agregan via .push()
+// despues de todos los demas bloques para no pisar los indices
+// ya usados por MEMBERS_ONLY_VARIANT_INDEX (gramatica/vocab/
+// listening/writing/speaking).
+// ============================================================
+GRAMMAR_BANK.principiante.push(
+[
+      { topic:'Verbo "to be": am / is / are',
+        items:[
+          { id:'g-principiante-m200-tobe-1', translation:"Yo soy estudiante.", type:'choice', prompt:"I ___ a student.",
+            options:["am","is","are"], correct:0,
+            explain:"Con \u201cI\u201d siempre se usa \u201cam\u201d.",
+            examples:[
+              {en:"I am a student.", es:"Yo soy estudiante."},
+              {en:"I am happy.", es:"Yo estoy feliz."}
+            ]},
+          { id:'g-principiante-m200-tobe-2', translation:"Ella es mi hermana.", type:'choice', prompt:"She ___ my sister.",
+            options:["is","am","are"], correct:0,
+            explain:"Con \u201che / she / it\u201d se usa \u201cis\u201d.",
+            examples:[
+              {en:"She is my sister.", es:"Ella es mi hermana."},
+              {en:"He is my brother.", es:"Él es mi hermano."}
+            ]},
+          { id:'g-principiante-m200-tobe-3', translation:"Ellos son mis amigos.", type:'choice', prompt:"They ___ my friends.",
+            options:["are","is","am"], correct:0,
+            explain:"Con \u201cyou / we / they\u201d se usa \u201care\u201d.",
+            examples:[
+              {en:"They are my friends.", es:"Ellos son mis amigos."},
+              {en:"We are neighbors.", es:"Somos vecinos."}
+            ]},
+          { id:'g-principiante-m200-tobe-4', translation:"Nosotros somos doctores.", type:'fill', sentence:["We","___","doctors","."], blankIndex:1,
+            bank:["are","is","am"], correct:"are",
+            explain:"Con \u201cwe\u201d se usa \u201care\u201d.",
+            examples:[
+              {en:"We are doctors.", es:"Nosotros somos doctores."},
+              {en:"We are ready.", es:"Estamos listos."}
+            ]}
+        ]},
+      { topic:'"To be" en pasado: was / were',
+        items:[
+          { id:'g-principiante-m200-tobepast-1', translation:"Yo estaba cansado ayer.", type:'choice', prompt:"I ___ tired yesterday.",
+            options:["was","were","am"], correct:0,
+            explain:"Con \u201cI / he / she / it\u201d en pasado se usa \u201cwas\u201d.",
+            examples:[
+              {en:"I was tired yesterday.", es:"Yo estaba cansado ayer."},
+              {en:"He was at home.", es:"Él estaba en casa."}
+            ]},
+          { id:'g-principiante-m200-tobepast-2', translation:"Tú fuiste muy amable.", type:'choice', prompt:"You ___ very kind.",
+            options:["were","was","are"], correct:0,
+            explain:"Con \u201cyou / we / they\u201d en pasado se usa \u201cwere\u201d.",
+            examples:[
+              {en:"You were very kind.", es:"Tú fuiste muy amable."},
+              {en:"You were right.", es:"Tú tenías razón."}
+            ]},
+          { id:'g-principiante-m200-tobepast-3', translation:"Hacía frío anoche.", type:'choice', prompt:"It ___ cold last night.",
+            options:["was","were","is"], correct:0,
+            explain:"Con \u201cit\u201d en pasado se usa \u201cwas\u201d.",
+            examples:[
+              {en:"It was cold last night.", es:"Hacía frío anoche."},
+              {en:"It was a good day.", es:"Fue un buen día."}
+            ]},
+          { id:'g-principiante-m200-tobepast-4', translation:"Ellos estaban en la escuela.", type:'fill', sentence:["They","___","at","school","."], blankIndex:1,
+            bank:["were","was","are"], correct:"were",
+            explain:"Con \u201cthey\u201d en pasado se usa \u201cwere\u201d.",
+            examples:[
+              {en:"They were at school.", es:"Ellos estaban en la escuela."},
+              {en:"They were happy.", es:"Ellos estaban felices."}
+            ]}
+        ]}
+    ]
+);
+GRAMMAR_BANK.facil.push(
+[
+      { topic:'By vs Until',
+        items:[
+          { id:'g-facil-m200-byuntil-1', translation:"Por favor envíame el reporte para el viernes.", type:'choice', prompt:"Please send me the report ___ Friday.",
+            options:["by","until","since"], correct:0,
+            explain:"\u201cBy\u201d indica una fecha límite: a más tardar el viernes.",
+            examples:[
+              {en:"Please send me the report by Friday.", es:"Por favor envíame el reporte para el viernes."},
+              {en:"I need this by tomorrow.", es:"Necesito esto para mañana."}
+            ]},
+          { id:'g-facil-m200-byuntil-2', translation:"Te esperaré hasta las 5.", type:'choice', prompt:"I will wait for you ___ 5 o'clock.",
+            options:["until","by","for"], correct:0,
+            explain:"\u201cUntil\u201d indica que algo continúa hasta cierto momento.",
+            examples:[
+              {en:"I will wait for you until 5 o'clock.", es:"Te esperaré hasta las 5."},
+              {en:"We stayed until midnight.", es:"Nos quedamos hasta la medianoche."}
+            ]},
+          { id:'g-facil-m200-byuntil-3', translation:"La tienda está abierta hasta las 9 PM.", type:'choice', prompt:"The store is open ___ 9 PM.",
+            options:["until","by","since"], correct:0,
+            explain:"\u201cUntil\u201d describe una duración que llega hasta ese momento.",
+            examples:[
+              {en:"The store is open until 9 PM.", es:"La tienda está abierta hasta las 9 PM."},
+              {en:"He studied until late.", es:"Él estudió hasta tarde."}
+            ]},
+          { id:'g-facil-m200-byuntil-4', translation:"Necesito esto para el lunes.", type:'fill', sentence:["I","need","this","___","Monday","."], blankIndex:3,
+            bank:["by","until","since"], correct:"by",
+            explain:"Una fecha límite se marca con \u201cby\u201d.",
+            examples:[
+              {en:"I need this by Monday.", es:"Necesito esto para el lunes."},
+              {en:"Finish it by noon.", es:"Termínalo para el mediodía."}
+            ]}
+        ]},
+      { topic:'A little / Little / A few / Few',
+        items:[
+          { id:'g-facil-m200-littlefew-1', translation:"Tengo un poco de dinero, así que puedo comprar el almuerzo.", type:'choice', prompt:"I have ___ money, so I can buy lunch.",
+            options:["a little","little","a few"], correct:0,
+            explain:"\u201cA little\u201d significa un poco (positivo, sí tienes algo).",
+            examples:[
+              {en:"I have a little money, so I can buy lunch.", es:"Tengo un poco de dinero, así que puedo comprar el almuerzo."},
+              {en:"She has a little time to help.", es:"Ella tiene un poco de tiempo para ayudar."}
+            ]},
+          { id:'g-facil-m200-littlefew-2', translation:"Tengo muy poco dinero, no puedo comprar nada.", type:'choice', prompt:"I have ___ money, I can't buy anything.",
+            options:["little","a little","a few"], correct:0,
+            explain:"\u201cLittle\u201d (sin \u201ca\u201d) significa casi nada (negativo).",
+            examples:[
+              {en:"I have little money, I can't buy anything.", es:"Tengo muy poco dinero, no puedo comprar nada."},
+              {en:"We have little time left.", es:"Nos queda muy poco tiempo."}
+            ]},
+          { id:'g-facil-m200-littlefew-3', translation:"Tengo algunos amigos aquí, podemos salir.", type:'choice', prompt:"I have ___ friends here, we can hang out.",
+            options:["a few","few","a little"], correct:0,
+            explain:"\u201cA few\u201d significa algunos (positivo, con sustantivos contables).",
+            examples:[
+              {en:"I have a few friends here, we can hang out.", es:"Tengo algunos amigos aquí, podemos salir."},
+              {en:"There are a few apples left.", es:"Quedan algunas manzanas."}
+            ]},
+          { id:'g-facil-m200-littlefew-4', translation:"Tengo muy pocos amigos aquí, me siento solo.", type:'choice', prompt:"I have ___ friends here, I feel lonely.",
+            options:["few","a few","little"], correct:0,
+            explain:"\u201cFew\u201d (sin \u201ca\u201d) significa casi ninguno (negativo).",
+            examples:[
+              {en:"I have few friends here, I feel lonely.", es:"Tengo muy pocos amigos aquí, me siento solo."},
+              {en:"Few people came to the party.", es:"Poca gente vino a la fiesta."}
+            ]}
+        ]}
+    ]
+);
+GRAMMAR_BANK.medio.push(
+[
+      { topic:'As vs Like',
+        items:[
+          { id:'g-medio-m200-aslike-1', translation:"Ella trabaja como maestra.", type:'choice', prompt:"She works ___ a teacher.",
+            options:["as","like","for"], correct:0,
+            explain:"\u201cAs\u201d describe un rol o función real.",
+            examples:[
+              {en:"She works as a teacher.", es:"Ella trabaja como maestra."},
+              {en:"He works as a doctor.", es:"Él trabaja como doctor."}
+            ]},
+          { id:'g-medio-m200-aslike-2', translation:"Él nada como un pez.", type:'choice', prompt:"He swims ___ a fish.",
+            options:["like","as","for"], correct:0,
+            explain:"\u201cLike\u201d compara: se parece a un pez, pero no lo es.",
+            examples:[
+              {en:"He swims like a fish.", es:"Él nada como un pez."},
+              {en:"She sings like an angel.", es:"Ella canta como un ángel."}
+            ]},
+          { id:'g-medio-m200-aslike-3', translation:"Hazlo como te mostré.", type:'choice', prompt:"Do it ___ I showed you.",
+            options:["as","like","for"], correct:0,
+            explain:"\u201cAs\u201d introduce una cláusula completa (de la forma en que...).",
+            examples:[
+              {en:"Do it as I showed you.", es:"Hazlo como te mostré."},
+              {en:"As I said before, we need to leave.", es:"Como dije antes, necesitamos irnos."}
+            ]}
+        ]},
+      { topic:'By vs Until (en el trabajo)',
+        items:[
+          { id:'g-medio-m200-byuntilwork-1', translation:"Entrega la propuesta antes de que termine el día.", type:'choice', prompt:"Submit the proposal ___ end of day.",
+            options:["by","until","for"], correct:0,
+            explain:"Fecha límite en contexto laboral: \u201cby end of day\u201d.",
+            examples:[
+              {en:"Submit the proposal by end of day.", es:"Entrega la propuesta antes de que termine el día."},
+              {en:"The invoice is due by Friday.", es:"La factura vence el viernes."}
+            ]},
+          { id:'g-medio-m200-byuntilwork-2', translation:"Él seguirá trabajando hasta que el proyecto esté terminado.", type:'choice', prompt:"He will keep working ___ the project is finished.",
+            options:["until","by","since"], correct:0,
+            explain:"\u201cUntil\u201d describe una acción continua hasta el final.",
+            examples:[
+              {en:"He will keep working until the project is finished.", es:"Él seguirá trabajando hasta que el proyecto esté terminado."},
+              {en:"She stayed until the meeting ended.", es:"Ella se quedó hasta que terminó la reunión."}
+            ]}
+        ]}
+    ]
+);
+GRAMMAR_BANK.avanzado.push(
+[
+      { topic:'Bring vs Take',
+        items:[
+          { id:'g-avanzado-m200-bringtake-1', translation:"¿Puedes traer tu laptop cuando vengas a mi oficina?", type:'choice', prompt:"Can you ___ your laptop when you come to my office?",
+            options:["bring","take","carry"], correct:0,
+            explain:"\u201cBring\u201d se usa cuando algo se mueve hacia donde está o estará quien habla.",
+            examples:[
+              {en:"Can you bring your laptop when you come to my office?", es:"¿Puedes traer tu laptop cuando vengas a mi oficina?"},
+              {en:"Please bring a gift to the party.", es:"Por favor trae un regalo a la fiesta."}
+            ]},
+          { id:'g-avanzado-m200-bringtake-2', translation:"Necesito llevar este paquete a la oficina de correos.", type:'choice', prompt:"I need to ___ this package to the post office.",
+            options:["take","bring","carry"], correct:0,
+            explain:"\u201cTake\u201d se usa cuando algo se mueve lejos de donde está quien habla.",
+            examples:[
+              {en:"I need to take this package to the post office.", es:"Necesito llevar este paquete a la oficina de correos."},
+              {en:"She took the dog for a walk.", es:"Ella llevó al perro a pasear."}
+            ]},
+          { id:'g-avanzado-m200-bringtake-3', translation:"No olvides llevar tu paraguas cuando salgas de casa.", type:'choice', prompt:"Don't forget to ___ your umbrella when you leave home.",
+            options:["take","bring","hold"], correct:0,
+            explain:"Al alejarte de tu casa, usas \u201ctake\u201d.",
+            examples:[
+              {en:"Don't forget to take your umbrella when you leave home.", es:"No olvides llevar tu paraguas cuando salgas de casa."},
+              {en:"He took his keys and left.", es:"Él tomó sus llaves y se fue."}
+            ]}
+        ]}
+    ]
+);
+VOCAB_BANK.principiante.push(
+[
+      { id:'v-principiante-m200-1', word:'Happy', translation:'Feliz · cuando te sientes bien y contento',
+        examples:[{en:"I am happy today.", es:"Hoy estoy feliz."},{en:"She feels happy.", es:"Ella se siente feliz."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuando te sientes bien y contento\"?", options:["happy","sad","tired"], correct:0, explain:"“Happy” es feliz." } },
+      { id:'v-principiante-m200-2', word:'Sad', translation:'Triste · cuando algo te pone mal',
+        examples:[{en:"He is sad today.", es:"Él está triste hoy."},{en:"The movie made me sad.", es:"La película me puso triste."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuando algo te pone mal\"?", options:["sad","happy","angry"], correct:0, explain:"“Sad” es triste." } },
+      { id:'v-principiante-m200-3', word:'Tired', translation:'Cansado · cuando necesitas descansar',
+        examples:[{en:"I am tired after work.", es:"Estoy cansado después del trabajo."},{en:"The kids are tired.", es:"Los niños están cansados."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuando necesitas descansar\"?", options:["tired","hungry","happy"], correct:0, explain:"“Tired” es cansado." } },
+      { id:'v-principiante-m200-4', word:'Hungry', translation:'Con hambre · cuando quieres comer',
+        examples:[{en:"I am hungry, let's eat.", es:"Tengo hambre, comamos."},{en:"The dog is hungry.", es:"El perro tiene hambre."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"cuando quieres comer\"?", options:["hungry","thirsty","tired"], correct:0, explain:"“Hungry” es con hambre." } },
+      { id:'v-principiante-m200-5', word:'Spoon', translation:'Cuchara · para comer sopa o cereal',
+        examples:[{en:"I need a spoon for the soup.", es:"Necesito una cuchara para la sopa."},{en:"The spoon is on the table.", es:"La cuchara está en la mesa."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"para comer sopa o cereal\"?", options:["spoon","fork","knife"], correct:0, explain:"“Spoon” es cuchara." } },
+      { id:'v-principiante-m200-6', word:'Plate', translation:'Plato · donde pones la comida',
+        examples:[{en:"Put the food on the plate.", es:"Pon la comida en el plato."},{en:"The plate is clean.", es:"El plato está limpio."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"donde pones la comida\"?", options:["plate","cup","bowl"], correct:0, explain:"“Plate” es plato." } },
+      { id:'v-principiante-m200-7', word:'Cup', translation:'Taza · para tomar café o té',
+        examples:[{en:"I drink coffee from a cup.", es:"Tomo café en una taza."},{en:"The cup is hot.", es:"La taza está caliente."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"para tomar café o té\"?", options:["cup","glass","plate"], correct:0, explain:"“Cup” es taza." } },
+      { id:'v-principiante-m200-8', word:'Fork', translation:'Tenedor · para pinchar la comida',
+        examples:[{en:"Use a fork to eat the salad.", es:"Usa un tenedor para comer la ensalada."},{en:"The fork is silver.", es:"El tenedor es plateado."}],
+        quiz:{ prompt:"¿Qué palabra significa esto: \"para pinchar la comida\"?", options:["fork","spoon","knife"], correct:0, explain:"“Fork” es tenedor." } }
+    ]
+);
+VOCAB_BANK.facil.push(
+[
+      { id:'v-facil-m200-1', word:'Difficult', translation:'Difícil · lo contrario de fácil',
+        examples:[{en:"This exam is difficult.", es:"Este examen es difícil."},{en:"English can be difficult at first.", es:"El inglés puede ser difícil al principio."}],
+        quiz:{ prompt:"¿Qué palabra significa \"difícil\"?", options:["difficult","easy","simple"], correct:0, explain:"“Difficult” es difícil." } },
+      { id:'v-facil-m200-2', word:'Easy', translation:'Fácil · lo contrario de difícil',
+        examples:[{en:"This game is easy.", es:"Este juego es fácil."},{en:"It was an easy question.", es:"Fue una pregunta fácil."}],
+        quiz:{ prompt:"¿Qué palabra significa \"fácil\"?", options:["easy","difficult","hard"], correct:0, explain:"“Easy” es fácil." } },
+      { id:'v-facil-m200-3', word:'Expensive', translation:'Caro · cuando algo cuesta mucho dinero',
+        examples:[{en:"This car is very expensive.", es:"Este carro es muy caro."},{en:"Gas is expensive this year.", es:"La gasolina está cara este año."}],
+        quiz:{ prompt:"¿Qué palabra significa \"caro\"?", options:["expensive","cheap","free"], correct:0, explain:"“Expensive” es caro." } },
+      { id:'v-facil-m200-4', word:'Cheap', translation:'Barato · cuando algo cuesta poco dinero',
+        examples:[{en:"I found a cheap hotel.", es:"Encontré un hotel barato."},{en:"These shoes were cheap.", es:"Estos zapatos fueron baratos."}],
+        quiz:{ prompt:"¿Qué palabra significa \"barato\"?", options:["cheap","expensive","costly"], correct:0, explain:"“Cheap” es barato." } },
+      { id:'v-facil-m200-5', word:'Fast', translation:'Rápido · lo contrario de lento',
+        examples:[{en:"He drives very fast.", es:"Él maneja muy rápido."},{en:"The internet here is fast.", es:"El internet aquí es rápido."}],
+        quiz:{ prompt:"¿Qué palabra significa \"rápido\"?", options:["fast","slow","late"], correct:0, explain:"“Fast” es rápido." } },
+      { id:'v-facil-m200-6', word:'Slow', translation:'Lento · lo contrario de rápido',
+        examples:[{en:"The traffic is very slow today.", es:"El tráfico está muy lento hoy."},{en:"She walks slowly.", es:"Ella camina lento."}],
+        quiz:{ prompt:"¿Qué palabra significa \"lento\"?", options:["slow","fast","quiet"], correct:0, explain:"“Slow” es lento." } }
+    ]
+);
+VOCAB_BANK.medio.push(
+[
+      { id:'v-medio-m200-1', word:'Opportunity', translation:'Oportunidad · una situación buena para lograr algo',
+        examples:[{en:"This job is a great opportunity.", es:"Este trabajo es una gran oportunidad."},{en:"Don't miss this opportunity.", es:"No dejes pasar esta oportunidad."}],
+        quiz:{ prompt:"¿Qué palabra significa \"oportunidad\"?", options:["opportunity","problem","decision"], correct:0, explain:"“Opportunity” es oportunidad." } },
+      { id:'v-medio-m200-2', word:'Achievement', translation:'Logro · algo que lograste con esfuerzo',
+        examples:[{en:"Graduating was a big achievement.", es:"Graduarme fue un gran logro."},{en:"She's proud of her achievement.", es:"Ella está orgullosa de su logro."}],
+        quiz:{ prompt:"¿Qué palabra significa \"logro\"?", options:["achievement","failure","attempt"], correct:0, explain:"“Achievement” es logro." } },
+      { id:'v-medio-m200-3', word:'Relationship', translation:'Relación · la conexión entre dos personas',
+        examples:[{en:"They have a strong relationship.", es:"Ellos tienen una relación fuerte."},{en:"Trust takes time to build in any relationship.", es:"La confianza toma tiempo en construirse en cualquier relación."}],
+        quiz:{ prompt:"¿Qué palabra significa \"relación\"?", options:["relationship","argument","distance"], correct:0, explain:"“Relationship” es relación." } },
+      { id:'v-medio-m200-4', word:'Challenge', translation:'Reto o desafío · algo difícil que requiere esfuerzo',
+        examples:[{en:"Learning a new language is a challenge.", es:"Aprender un idioma nuevo es un reto."},{en:"She's ready for the next challenge.", es:"Ella está lista para el próximo reto."}],
+        quiz:{ prompt:"¿Qué palabra significa \"reto\" o \"desafío\"?", options:["challenge","solution","reward"], correct:0, explain:"“Challenge” es reto o desafío." } }
+    ]
+);
+VOCAB_BANK.avanzado.push(
+[
+      { id:'v-avanzado-m200-1', word:'Thorough', translation:'Minucioso / exhaustivo · hecho con mucho cuidado y detalle',
+        examples:[{en:"She did a thorough investigation.", es:"Ella hizo una investigación minuciosa."},{en:"We need a thorough review of the contract.", es:"Necesitamos una revisión exhaustiva del contrato."}],
+        quiz:{ prompt:"¿Qué palabra significa \"minucioso / exhaustivo\"?", options:["thorough","careless","quick"], correct:0, explain:"“Thorough” es minucioso o exhaustivo." } },
+      { id:'v-avanzado-m200-2', word:'Reluctant', translation:'Reacio / poco dispuesto · cuando no quieres hacer algo',
+        examples:[{en:"He was reluctant to sign the agreement.", es:"Él estaba reacio a firmar el acuerdo."},{en:"She felt reluctant to speak in public.", es:"Ella se sintió poco dispuesta a hablar en público."}],
+        quiz:{ prompt:"¿Qué palabra significa \"reacio / poco dispuesto\"?", options:["reluctant","eager","willing"], correct:0, explain:"“Reluctant” es reacio o poco dispuesto." } }
+    ]
+);
+LISTENING_BANK.principiante.push(
+[
+      { id:"l-principiante-m200-1", audioFile:"audio/miembros200/l-principiante-m200-1.mp3",
+        transcript:"The teacher is in the classroom.", translation:"La maestra está en el salón de clases.",
+        question:"Where is the teacher?", options:["In the classroom","In the kitchen","In the car"], correct:0,
+        explain:"\u201cClassroom\u201d es sal\u00f3n de clases." },
+      { id:"l-principiante-m200-2", audioFile:"audio/miembros200/l-principiante-m200-2.mp3",
+        transcript:"I wash my hands before eating.", translation:"Me lavo las manos antes de comer.",
+        question:"When does the speaker wash their hands?", options:["Before eating","After sleeping","During school"], correct:0,
+        explain:"\u201cBefore eating\u201d significa antes de comer." },
+      { id:"l-principiante-m200-3", audioFile:"audio/miembros200/l-principiante-m200-3.mp3",
+        transcript:"My brother is taller than me.", translation:"Mi hermano es m\u00e1s alto que yo.",
+        question:"Who is taller?", options:["The brother","The speaker","The sister"], correct:0,
+        explain:"\u201cTaller\u201d significa m\u00e1s alto." },
+      { id:"l-principiante-m200-4", audioFile:"audio/miembros200/l-principiante-m200-4.mp3",
+        transcript:"We eat dinner at seven.", translation:"Cenamos a las siete.",
+        question:"What time do they eat dinner?", options:["Seven","Eight","Nine"], correct:0,
+        explain:"El texto dice \u201cat seven\u201d: a las siete." },
+      { id:"l-principiante-m200-5", audioFile:"audio/miembros200/l-principiante-m200-5.mp3",
+        transcript:"The baby is sleeping now.", translation:"El bebé está durmiendo ahora.",
+        question:"What is the baby doing?", options:["Sleeping","Eating","Playing"], correct:0,
+        explain:"\u201cSleeping\u201d significa durmiendo." },
+      { id:"l-principiante-m200-6", audioFile:"audio/miembros200/l-principiante-m200-6.mp3",
+        transcript:"I need a jacket, it's cold outside.", translation:"Necesito una chaqueta, hace frío afuera.",
+        question:"Why does the speaker need a jacket?", options:["Because it's cold","Because it's raining","Because it's night"], correct:0,
+        explain:"El texto dice \u201cit's cold outside\u201d: hace fr\u00edo afuera." }
+    ]
+);
+LISTENING_BANK.facil.push(
+[
+      { id:"l-facil-m200-1", audioFile:"audio/miembros200/l-facil-m200-1.mp3",
+        transcript:"She has been working here since 2019.", translation:"Ella ha estado trabajando aquí desde 2019.",
+        question:"Since when has she been working here?", options:["2019","2020","2021"], correct:0,
+        explain:"El texto dice \u201csince 2019\u201d: desde 2019." },
+      { id:"l-facil-m200-2", audioFile:"audio/miembros200/l-facil-m200-2.mp3",
+        transcript:"If it snows tonight, school will be closed tomorrow.", translation:"Si nieva esta noche, la escuela estará cerrada mañana.",
+        question:"What will happen if it snows tonight?", options:["School will be closed tomorrow","School will start early","Nothing will change"], correct:0,
+        explain:"El texto dice \u201cschool will be closed tomorrow\u201d: la escuela estará cerrada mañana." },
+      { id:"l-facil-m200-3", audioFile:"audio/miembros200/l-facil-m200-3.mp3",
+        transcript:"He usually takes the bus, but today he is driving.", translation:"Él usualmente toma el autobús, pero hoy está manejando.",
+        question:"How is he traveling today?", options:["Driving","Taking the bus","Walking"], correct:0,
+        explain:"El texto dice \u201ctoday he is driving\u201d: hoy está manejando." },
+      { id:"l-facil-m200-4", audioFile:"audio/miembros200/l-facil-m200-4.mp3",
+        transcript:"I have lived in this city for ten years.", translation:"He vivido en esta ciudad por diez años.",
+        question:"How long has the speaker lived in this city?", options:["Ten years","Ten months","One year"], correct:0,
+        explain:"El texto dice \u201cfor ten years\u201d: por diez años." },
+      { id:"l-facil-m200-5", audioFile:"audio/miembros200/l-facil-m200-5.mp3",
+        transcript:"The meeting was moved from Monday to Wednesday.", translation:"La reunión se movió de lunes a miércoles.",
+        question:"What day is the meeting now?", options:["Wednesday","Monday","Friday"], correct:0,
+        explain:"El texto dice que se movió \u201cto Wednesday\u201d: a miércoles." }
+    ]
+);
+LISTENING_BANK.medio.push(
+[
+      { id:"l-medio-m200-1", audioFile:"audio/miembros200/l-medio-m200-1.mp3",
+        transcript:"Although the project was difficult, the team finished it on time.", translation:"Aunque el proyecto fue difícil, el equipo lo terminó a tiempo.",
+        question:"How did the team finish the project?", options:["On time","Late","They didn't finish it"], correct:0,
+        explain:"El texto dice \u201cfinished it on time\u201d: lo terminaron a tiempo." },
+      { id:"l-medio-m200-2", audioFile:"audio/miembros200/l-medio-m200-2.mp3",
+        transcript:"The company has decided to expand into new markets next year.", translation:"La empresa ha decidido expandirse a nuevos mercados el próximo año.",
+        question:"What is the company planning to do next year?", options:["Expand into new markets","Close some offices","Reduce its staff"], correct:0,
+        explain:"El texto dice \u201cexpand into new markets\u201d: expandirse a nuevos mercados." },
+      { id:"l-medio-m200-3", audioFile:"audio/miembros200/l-medio-m200-3.mp3",
+        transcript:"She would have called you, but she lost her phone.", translation:"Ella te habría llamado, pero perdió su teléfono.",
+        question:"Why didn't she call?", options:["She lost her phone","She didn't want to","She was busy"], correct:0,
+        explain:"El texto dice \u201cshe lost her phone\u201d: perdió su teléfono." }
+    ]
+);
+LISTENING_BANK.avanzado.push(
+[
+      { id:"l-avanzado-m200-1", audioFile:"audio/miembros200/l-avanzado-m200-1.mp3",
+        transcript:"Despite the criticism, the policy remained largely unchanged.", translation:"A pesar de las críticas, la política se mantuvo en gran medida sin cambios.",
+        question:"What happened to the policy despite the criticism?", options:["It remained largely unchanged","It was completely removed","It was improved significantly"], correct:0,
+        explain:"El texto dice \u201cremained largely unchanged\u201d: se mantuvo en gran medida sin cambios." },
+      { id:"l-avanzado-m200-2", audioFile:"audio/miembros200/l-avanzado-m200-2.mp3",
+        transcript:"Had the warning been taken seriously, the outcome might have been different.", translation:"Si la advertencia se hubiera tomado en serio, el resultado podría haber sido diferente.",
+        question:"What does the speaker suggest about the warning?", options:["It was not taken seriously enough","It was followed correctly","It never happened"], correct:0,
+        explain:"La estructura \u201cHad the warning been taken seriously\u201d implica que no se tomó en serio." }
+    ]
+);
+WRITING_BANK.principiante.push(
+[
+      { id:'w-principiante-m200-1', prompt:"Describe algo que te gusta comer (usa \u201cI like ___\u201d).", target:"I like [food]",
+        checkPattern:"i like [a-z]+", hint:"Estructura esperada: \u201cI like ___.\u201d",
+        example:{en:"I like pizza.", es:"Me gusta la pizza."},
+        checklist:["\u00bfEmpezaste con \u201cI like\u201d?","\u00bfEscribiste una comida en ingl\u00e9s?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-principiante-m200-2', prompt:"Di de qu\u00e9 color es tu carro o el de tu familia (usa \u201cMy car is ___\u201d).", target:"my car is [color]",
+        checkPattern:"my car is (red|blue|green|yellow|black|white|brown|gray|grey)", hint:"Estructura esperada: \u201cMy car is ___.\u201d",
+        example:{en:"My car is black.", es:"Mi carro es negro."},
+        checklist:["\u00bfEmpezaste con \u201cMy car is\u201d?","\u00bfUsaste un color en ingl\u00e9s?","\u00bfEl color est\u00e1 bien escrito?"] },
+      { id:'w-principiante-m200-3', prompt:"Escribe d\u00f3nde vives (usa \u201cI live in ___\u201d).", target:"I live in [place]",
+        checkPattern:"i live in [a-z]+", hint:"Estructura esperada: \u201cI live in ___.\u201d",
+        example:{en:"I live in Mexico.", es:"Vivo en M\u00e9xico."},
+        checklist:["\u00bfEmpezaste con \u201cI live in\u201d?","\u00bfEscribiste un lugar?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-principiante-m200-4', prompt:"Describe tu trabajo o estudio (usa \u201cI am a ___\u201d).", target:"I am a [job or student]",
+        checkPattern:"i am an? [a-z]+", hint:"Estructura esperada: \u201cI am a ___.\u201d",
+        example:{en:"I am a nurse.", es:"Soy enfermera."},
+        checklist:["\u00bfEmpezaste con \u201cI am\u201d?","\u00bfUsaste \u201ca\u201d o \u201can\u201d antes de la palabra?","\u00bfEscribiste tu trabajo o estudio en ingl\u00e9s?"] },
+      { id:'w-principiante-m200-5', prompt:"Di qu\u00e9 hora es (usa \u201cIt is ___ o'clock\u201d).", target:"it is [number] o'clock",
+        checkPattern:"it is (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve) o'?clock", hint:"Estructura esperada: \u201cIt is ___ o'clock.\u201d",
+        example:{en:"It is seven o'clock.", es:"Son las siete."},
+        checklist:["\u00bfEmpezaste con \u201cIt is\u201d?","\u00bfUsaste un n\u00famero en ingl\u00e9s?","\u00bfTerminaste con \u201co'clock\u201d?"] },
+      { id:'w-principiante-m200-6', prompt:"Escribe algo que puedes hacer (usa \u201cI can ___\u201d).", target:"I can [verb]",
+        checkPattern:"i can [a-z]+", hint:"Estructura esperada: \u201cI can ___.\u201d",
+        example:{en:"I can swim.", es:"Yo s\u00e9 nadar."},
+        checklist:["\u00bfEmpezaste con \u201cI can\u201d?","\u00bfUsaste un verbo en su forma base?","\u00bfLa frase tiene sentido?"] }
+    ]
+);
+WRITING_BANK.facil.push(
+[
+      { id:'w-facil-m200-1', prompt:"Describe lo que hiciste ayer (usa el pasado: \u201cYesterday I ___\u201d).", target:"yesterday I [verb in past]",
+        checkPattern:"yesterday i [a-z]+", hint:"Estructura esperada: \u201cYesterday I ___.\u201d",
+        example:{en:"Yesterday I visited my grandmother.", es:"Ayer visit\u00e9 a mi abuela."},
+        checklist:["\u00bfEmpezaste con \u201cYesterday I\u201d?","\u00bfUsaste el verbo en pasado?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-facil-m200-2', prompt:"Compara dos cosas (usa \u201c___er than\u201d o \u201cmore ___ than\u201d).", target:"[thing] is [adjective]er than [thing]",
+        checkPattern:"[a-z]+ is [a-z]+(er| more [a-z]+) than [a-z]+", hint:"Estructura esperada: \u201c___ is ___er than ___.\u201d",
+        example:{en:"My sister is taller than me.", es:"Mi hermana es m\u00e1s alta que yo."},
+        checklist:["\u00bfComparaste dos cosas o personas?","\u00bfUsaste \u201c-er than\u201d o \u201cmore ... than\u201d?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-facil-m200-3', prompt:"Escribe qu\u00e9 vas a hacer el fin de semana (usa \u201cgoing to\u201d).", target:"I am going to [verb]",
+        checkPattern:"i('| a)m going to [a-z]+", hint:"Estructura esperada: \u201cI am going to ___.\u201d",
+        example:{en:"I am going to visit my friend.", es:"Voy a visitar a mi amigo."},
+        checklist:["\u00bfUsaste \u201cgoing to\u201d?","\u00bfEscribiste un plan real para el fin de semana?","\u00bfUsaste un verbo despu\u00e9s de \u201cgoing to\u201d?"] },
+      { id:'w-facil-m200-4', prompt:"Pregunta algo usando \u201cDo you...?\u201d", target:"Do you [verb]...?",
+        checkPattern:"do you [a-z]+", hint:"Estructura esperada: \u201cDo you ___?\u201d",
+        example:{en:"Do you like coffee?", es:"\u00bfTe gusta el caf\u00e9?"},
+        checklist:["\u00bfEmpezaste con \u201cDo you\u201d?","\u00bfTerminaste con signo de pregunta?","\u00bfLa pregunta tiene sentido?"] },
+      { id:'w-facil-m200-5', prompt:"Describe algo que sueles hacer (usa always / usually / sometimes).", target:"I [adverb] [verb]",
+        checkPattern:"i (always|usually|sometimes|never) [a-z]+", hint:"Estructura esperada: \u201cI ___ (always/usually/sometimes) ___.\u201d",
+        example:{en:"I usually wake up early.", es:"Usualmente me despierto temprano."},
+        checklist:["\u00bfUsaste un adverbio de frecuencia?","\u00bfEl adverbio va antes del verbo?","\u00bfLa frase describe algo que realmente sueles hacer?"] }
+    ]
+);
+WRITING_BANK.medio.push(
+[
+      { id:'w-medio-m200-1', prompt:"Describe algo que ya hab\u00edas hecho antes de otro evento (usa Past Perfect: \u201chad + participio\u201d).", target:"I had [verb in participle] before ___",
+        checkPattern:"i had [a-z]+ before", hint:"Estructura esperada: \u201cI had ___ before ___.\u201d",
+        example:{en:"I had finished my homework before dinner.", es:"Ya hab\u00eda terminado mi tarea antes de la cena."},
+        checklist:["\u00bfUsaste \u201chad\u201d + participio?","\u00bfMencionaste dos eventos en orden?","\u00bfLa frase tiene sentido en pasado?"] },
+      { id:'w-medio-m200-2', prompt:"Escribe una condici\u00f3n hipot\u00e9tica (usa \u201cIf I ___, I would ___\u201d).", target:"If I [verb], I would [verb]",
+        checkPattern:"if i [a-z]+.*i would [a-z]+", hint:"Estructura esperada: \u201cIf I ___, I would ___.\u201d",
+        example:{en:"If I had more time, I would travel more.", es:"Si tuviera m\u00e1s tiempo, viajar\u00eda m\u00e1s."},
+        checklist:["\u00bfUsaste \u201cIf\u201d y \u201cwould\u201d?","\u00bfEs una situaci\u00f3n hipot\u00e9tica, no real?","\u00bfLa frase tiene sentido?"] },
+      { id:'w-medio-m200-3', prompt:"Describe algo en voz pasiva (usa \u201cwas/is + participio + by\u201d).", target:"The [thing] was [verb in participle] by [someone]",
+        checkPattern:"the [a-z]+ (was|is) [a-z]+ by", hint:"Estructura esperada: \u201cThe ___ was ___ by ___.\u201d",
+        example:{en:"The report was written by the team.", es:"El reporte fue escrito por el equipo."},
+        checklist:["\u00bfUsaste la voz pasiva (was/is + participio)?","\u00bfIncluiste \u201cby\u201d antes de qui\u00e9n hizo la acci\u00f3n?","\u00bfLa frase tiene sentido?"] }
+    ]
+);
+WRITING_BANK.avanzado.push(
+[
+      { id:'w-avanzado-m200-1', prompt:"Escribe una oraci\u00f3n enf\u00e1tica usando \u201cIt is/was ... that\u201d (cleft sentence).", target:"It is/was [X] that ___",
+        checkPattern:"it (is|was) [a-z]+ that", hint:"Estructura esperada: \u201cIt is/was ___ that ___.\u201d",
+        example:{en:"It was her determination that impressed the committee.", es:"Fue su determinaci\u00f3n lo que impresion\u00f3 al comit\u00e9."},
+        checklist:["\u00bfUsaste \u201cIt is/was ... that\u201d para enfatizar algo?","\u00bfLa parte enfatizada tiene sentido?","\u00bfEl resto de la oraci\u00f3n es gramaticalmente correcto?"] },
+      { id:'w-avanzado-m200-2', prompt:"Escribe una oraci\u00f3n con un condicional mixto (pasado hipot\u00e9tico + presente).", target:"If I had [verb in participle], I would [verb] now",
+        checkPattern:"if i had [a-z]+.*i would [a-z]+ now", hint:"Estructura esperada: \u201cIf I had ___, I would ___ now.\u201d",
+        example:{en:"If I had studied medicine, I would be a doctor now.", es:"Si hubiera estudiado medicina, ser\u00eda doctor ahora."},
+        checklist:["\u00bfLa condici\u00f3n est\u00e1 en pasado hipot\u00e9tico (had + participio)?","\u00bfEl resultado est\u00e1 en presente (would + verbo + now)?","\u00bfLa frase tiene sentido l\u00f3gico?"] }
+    ]
+);
+SPEAKING_BANK.principiante.push(
+[
+      { id:"s-principiante-m200-1", sentence:"I brush my teeth every morning.", translation:"Me cepillo los dientes cada mañana.", audioFile:"audio/miembros200/s-principiante-m200-1.mp3" },
+      { id:"s-principiante-m200-2", sentence:"The sun is very bright today.", translation:"El sol está muy brillante hoy.", audioFile:"audio/miembros200/s-principiante-m200-2.mp3" },
+      { id:"s-principiante-m200-3", sentence:"My favorite color is blue.", translation:"Mi color favorito es el azul.", audioFile:"audio/miembros200/s-principiante-m200-3.mp3" },
+      { id:"s-principiante-m200-4", sentence:"We watch a movie on Fridays.", translation:"Vemos una película los viernes.", audioFile:"audio/miembros200/s-principiante-m200-4.mp3" },
+      { id:"s-principiante-m200-5", sentence:"The kitchen is next to the living room.", translation:"La cocina está al lado de la sala.", audioFile:"audio/miembros200/s-principiante-m200-5.mp3" }
+    ]
+);
+SPEAKING_BANK.facil.push(
+[
+      { id:"s-facil-m200-1", sentence:"I have been learning English for two years.", translation:"He estado aprendiendo inglés por dos años.", audioFile:"audio/miembros200/s-facil-m200-1.mp3" },
+      { id:"s-facil-m200-2", sentence:"She is going to visit her parents next week.", translation:"Ella va a visitar a sus padres la próxima semana.", audioFile:"audio/miembros200/s-facil-m200-2.mp3" },
+      { id:"s-facil-m200-3", sentence:"We should leave earlier to avoid traffic.", translation:"Deberíamos salir más temprano para evitar el tráfico.", audioFile:"audio/miembros200/s-facil-m200-3.mp3" },
+      { id:"s-facil-m200-4", sentence:"He always forgets his keys at home.", translation:"Él siempre olvida sus llaves en casa.", audioFile:"audio/miembros200/s-facil-m200-4.mp3" }
+    ]
+);
+SPEAKING_BANK.medio.push(
+[
+      { id:"s-medio-m200-1", sentence:"If I had known about the meeting, I would have attended.", translation:"Si hubiera sabido de la reunión, habría asistido.", audioFile:"audio/miembros200/s-medio-m200-1.mp3" },
+      { id:"s-medio-m200-2", sentence:"The new policy will be reviewed at the end of the quarter.", translation:"La nueva política será revisada al final del trimestre.", audioFile:"audio/miembros200/s-medio-m200-2.mp3" }
+    ]
+);
+SPEAKING_BANK.avanzado.push(
+[
+      { id:"s-avanzado-m200-1", sentence:"It was only after the deadline passed that we realized the mistake.", translation:"Fue solo después de que pasó la fecha límite que nos dimos cuenta del error.", audioFile:"audio/miembros200/s-avanzado-m200-1.mp3" }
+    ]
+);
+READING_BANK.principiante.push(
+[
+      { id:"r-principiante-m200-1", passageId:"r-principiante-m200-p1", title:"At the Park",
+        passage:"I go to the park every Saturday. I play with my ball. My dog runs with me. We have fun together. After the park, we go home and rest.",
+        translation:"Voy al parque todos los sábados. Juego con mi pelota. Mi perro corre conmigo. Nos divertimos juntos. Después del parque, vamos a casa y descansamos.",
+        question:"When does the speaker go to the park?", options:["Every Saturday","Every Sunday","Every Monday"], correct:0,
+        explain:"El texto dice “every Saturday”: todos los sábados." },
+      { id:"r-principiante-m200-2", passageId:"r-principiante-m200-p1", title:"At the Park",
+        passage:"I go to the park every Saturday. I play with my ball. My dog runs with me. We have fun together. After the park, we go home and rest.",
+        translation:"Voy al parque todos los sábados. Juego con mi pelota. Mi perro corre conmigo. Nos divertimos juntos. Después del parque, vamos a casa y descansamos.",
+        question:"Who runs with the speaker?", options:["The dog","The cat","A friend"], correct:0,
+        explain:"El texto dice “My dog runs with me”: mi perro corre conmigo." },
+      { id:"r-principiante-m200-3", passageId:"r-principiante-m200-p1", title:"At the Park",
+        passage:"I go to the park every Saturday. I play with my ball. My dog runs with me. We have fun together. After the park, we go home and rest.",
+        translation:"Voy al parque todos los sábados. Juego con mi pelota. Mi perro corre conmigo. Nos divertimos juntos. Después del parque, vamos a casa y descansamos.",
+        question:"What do they do after the park?", options:["Go home and rest","Eat lunch","Go to school"], correct:0,
+        explain:"El texto dice “we go home and rest”: vamos a casa y descansamos." }
+    ]
+);
+READING_BANK.facil.push(
+[
+      { id:"r-facil-m200-1", passageId:"r-facil-m200-p1", title:"A Trip to the Market",
+        passage:"Yesterday, Maria went to the market to buy fruit. She bought apples, bananas, and oranges. The apples were expensive, but the bananas were cheap. She paid with cash and walked home with her bags.",
+        translation:"Ayer, María fue al mercado a comprar fruta. Compró manzanas, plátanos y naranjas. Las manzanas estaban caras, pero los plátanos estaban baratos. Pagó en efectivo y caminó a casa con sus bolsas.",
+        question:"What did Maria buy?", options:["Apples, bananas, and oranges","Bread and milk","Vegetables only"], correct:0,
+        explain:"El texto dice que compró manzanas, plátanos y naranjas." },
+      { id:"r-facil-m200-2", passageId:"r-facil-m200-p1", title:"A Trip to the Market",
+        passage:"Yesterday, Maria went to the market to buy fruit. She bought apples, bananas, and oranges. The apples were expensive, but the bananas were cheap. She paid with cash and walked home with her bags.",
+        translation:"Ayer, María fue al mercado a comprar fruta. Compró manzanas, plátanos y naranjas. Las manzanas estaban caras, pero los plátanos estaban baratos. Pagó en efectivo y caminó a casa con sus bolsas.",
+        question:"Which fruit was cheap?", options:["Bananas","Apples","Oranges"], correct:0,
+        explain:"El texto dice “the bananas were cheap”: los plátanos estaban baratos." },
+      { id:"r-facil-m200-3", passageId:"r-facil-m200-p1", title:"A Trip to the Market",
+        passage:"Yesterday, Maria went to the market to buy fruit. She bought apples, bananas, and oranges. The apples were expensive, but the bananas were cheap. She paid with cash and walked home with her bags.",
+        translation:"Ayer, María fue al mercado a comprar fruta. Compró manzanas, plátanos y naranjas. Las manzanas estaban caras, pero los plátanos estaban baratos. Pagó en efectivo y caminó a casa con sus bolsas.",
+        question:"How did Maria pay?", options:["With cash","With a card","She didn't pay"], correct:0,
+        explain:"El texto dice “She paid with cash”: pagó en efectivo." }
+    ]
+);
+READING_BANK.medio.push(
+[
+      { id:"r-medio-m200-1", passageId:"r-medio-m200-p1", title:"Working From Home",
+        passage:"More companies are allowing employees to work from home part of the week. Supporters say this improves productivity and saves commuting time. Critics argue that it weakens teamwork, since spontaneous conversations happen less often. Most experts agree that a balance between office and remote days works best for most teams.",
+        translation:"Más empresas están permitiendo que los empleados trabajen desde casa parte de la semana. Los defensores dicen que esto mejora la productividad y ahorra tiempo de traslado. Los críticos argumentan que debilita el trabajo en equipo, ya que las conversaciones espontáneas ocurren con menos frecuencia. La mayoría de los expertos coinciden en que un balance entre días de oficina y remotos funciona mejor para la mayoría de los equipos.",
+        question:"According to supporters, what does remote work improve?", options:["Productivity and commuting time","Salary and vacation days","Office space"], correct:0,
+        explain:"El texto dice que mejora la productividad y ahorra tiempo de traslado." },
+      { id:"r-medio-m200-2", passageId:"r-medio-m200-p1", title:"Working From Home",
+        passage:"More companies are allowing employees to work from home part of the week. Supporters say this improves productivity and saves commuting time. Critics argue that it weakens teamwork, since spontaneous conversations happen less often. Most experts agree that a balance between office and remote days works best for most teams.",
+        translation:"Más empresas están permitiendo que los empleados trabajen desde casa parte de la semana. Los defensores dicen que esto mejora la productividad y ahorra tiempo de traslado. Los críticos argumentan que debilita el trabajo en equipo, ya que las conversaciones espontáneas ocurren con menos frecuencia. La mayoría de los expertos coinciden en que un balance entre días de oficina y remotos funciona mejor para la mayoría de los equipos.",
+        question:"What do critics say is weakened by remote work?", options:["Teamwork","Productivity","Salaries"], correct:0,
+        explain:"El texto dice “it weakens teamwork”: debilita el trabajo en equipo." },
+      { id:"r-medio-m200-3", passageId:"r-medio-m200-p1", title:"Working From Home",
+        passage:"More companies are allowing employees to work from home part of the week. Supporters say this improves productivity and saves commuting time. Critics argue that it weakens teamwork, since spontaneous conversations happen less often. Most experts agree that a balance between office and remote days works best for most teams.",
+        translation:"Más empresas están permitiendo que los empleados trabajen desde casa parte de la semana. Los defensores dicen que esto mejora la productividad y ahorra tiempo de traslado. Los críticos argumentan que debilita el trabajo en equipo, ya que las conversaciones espontáneas ocurren con menos frecuencia. La mayoría de los expertos coinciden en que un balance entre días de oficina y remotos funciona mejor para la mayoría de los equipos.",
+        question:"What do most experts recommend?", options:["A balance between office and remote days","Fully remote work","Fully in-office work"], correct:0,
+        explain:"El texto dice que un balance funciona mejor para la mayoría de los equipos." }
+    ]
+);
+READING_BANK.avanzado.push(
+[
+      { id:"r-avanzado-m200-1", passageId:"r-avanzado-m200-p1", title:"Busyness vs Productivity",
+        passage:"The assumption that busyness equals productivity has proven remarkably resilient, despite mounting evidence to the contrary. Many professionals conflate the two, filling their calendars with meetings that produce little of substance, while genuinely valuable work, which often requires uninterrupted focus, gets pushed to the margins of the day. Reversing this pattern requires not simply working differently, but redefining what counts as meaningful output in the first place.",
+        translation:"La suposición de que estar ocupado equivale a ser productivo ha demostrado ser sorprendentemente resistente, a pesar de la creciente evidencia en contra. Muchos profesionales confunden ambas cosas, llenando sus calendarios con reuniones que producen poca sustancia, mientras que el trabajo genuinamente valioso, que a menudo requiere concentración ininterrumpida, queda relegado a los márgenes del día. Revertir este patrón requiere no simplemente trabajar diferente, sino redefinir qué cuenta como un resultado significativo en primer lugar.",
+        question:"According to the passage, what do many professionals confuse?", options:["Busyness with productivity","Meetings with vacations","Focus with distraction"], correct:0,
+        explain:"El texto dice que muchos confunden estar ocupado con ser productivo." },
+      { id:"r-avanzado-m200-2", passageId:"r-avanzado-m200-p1", title:"Busyness vs Productivity",
+        passage:"The assumption that busyness equals productivity has proven remarkably resilient, despite mounting evidence to the contrary. Many professionals conflate the two, filling their calendars with meetings that produce little of substance, while genuinely valuable work, which often requires uninterrupted focus, gets pushed to the margins of the day. Reversing this pattern requires not simply working differently, but redefining what counts as meaningful output in the first place.",
+        translation:"La suposición de que estar ocupado equivale a ser productivo ha demostrado ser sorprendentemente resistente, a pesar de la creciente evidencia en contra. Muchos profesionales confunden ambas cosas, llenando sus calendarios con reuniones que producen poca sustancia, mientras que el trabajo genuinamente valioso, que a menudo requiere concentración ininterrumpida, queda relegado a los márgenes del día. Revertir este patrón requiere no simplemente trabajar diferente, sino redefinir qué cuenta como un resultado significativo en primer lugar.",
+        question:"What does valuable work often require, according to the text?", options:["Uninterrupted focus","More meetings","A fuller calendar"], correct:0,
+        explain:"El texto dice que el trabajo valioso “requires uninterrupted focus”: requiere concentración ininterrumpida." },
+      { id:"r-avanzado-m200-3", passageId:"r-avanzado-m200-p1", title:"Busyness vs Productivity",
+        passage:"The assumption that busyness equals productivity has proven remarkably resilient, despite mounting evidence to the contrary. Many professionals conflate the two, filling their calendars with meetings that produce little of substance, while genuinely valuable work, which often requires uninterrupted focus, gets pushed to the margins of the day. Reversing this pattern requires not simply working differently, but redefining what counts as meaningful output in the first place.",
+        translation:"La suposición de que estar ocupado equivale a ser productivo ha demostrado ser sorprendentemente resistente, a pesar de la creciente evidencia en contra. Muchos profesionales confunden ambas cosas, llenando sus calendarios con reuniones que producen poca sustancia, mientras que el trabajo genuinamente valioso, que a menudo requiere concentración ininterrumpida, queda relegado a los márgenes del día. Revertir este patrón requiere no simplemente trabajar diferente, sino redefinir qué cuenta como un resultado significativo en primer lugar.",
+        question:"What does the writer say is needed to reverse this pattern?", options:["Redefining what counts as meaningful output","Working more hours","Scheduling more meetings"], correct:0,
+        explain:"El texto dice que se necesita “redefining what counts as meaningful output”: redefinir qué cuenta como resultado significativo." }
+    ]
+);
+
+
+

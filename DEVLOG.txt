@@ -716,3 +716,54 @@ script nuevo, tools/generar_cambridge_c1_audios.py, en la carpeta
 tools para generar SOLO esos 24 audios, sin tocar los mas de 380 que
 ya existen en el resto de la plataforma. Instrucciones exactas en el
 chat.
+
+============================================================
+2026-09-16: 100 ejercicios nuevos, mix de todo, gratis Y miembros
+============================================================
+
+Se agregaron 100 ejercicios nuevos repartidos entre gramatica (24),
+vocabulario (20), listening (16), reading (12), writing (16) y
+speaking (12), en los 4 niveles (principiante/facil/medio/avanzado),
+todos con ids que contienen "m200".
+
+A diferencia del bloque anterior de 100 ejercicios (miembros100, que
+es solo para miembros), este bloque nuevo esta disponible tanto en la
+practica gratis como para miembros: no se agrego a
+MEMBERS_ONLY_VARIANT_INDEX en app.js, asi que cualquier variante
+puede salir en el sorteo aleatorio de la practica gratis igual que
+las variantes originales.
+
+Principiante y facil son notablemente mas simples que medio/avanzado,
+con traducciones al espanol en cada item y enfocados en puntos que
+suelen confundir a hispanohablantes: verbo "to be" (am/is/are, was/
+were), "a little" vs "little" vs "a few" vs "few", "by" vs "until",
+"as" vs "like", etc. Medio y avanzado suben el nivel (bring/take,
+mixed conditionals suaves, colocaciones).
+
+Nota tecnica: el contenido se agrego con .push(...) al final del
+archivo (despues de los bloques miembros100 ya existentes), no
+insertado dentro de los arrays literales de cada nivel. Esto es a
+proposito: varios bancos (gramatica, vocabulario, listening, writing,
+speaking) ya tenian contenido agregado con .push() en otros puntos
+del archivo (incluyendo el bloque miembros100), y ese contenido se
+ejecuta en orden, despues del array literal, sin importar en que
+posicion del literal se inserte algo nuevo. Insertar directamente en
+el literal (lo que se intento primero) hacia que el nuevo contenido
+terminara ocupando el mismo indice que contenido viejo ya marcado
+como "solo miembros" en MEMBERS_ONLY_VARIANT_INDEX, lo cual habria
+hecho gratis contenido que debia ser solo de miembros, y viceversa.
+Usar .push() al final evita ese problema por completo: cada variante
+nueva queda siempre en el ultimo indice de su nivel, verificado uno
+por uno contra MEMBERS_ONLY_VARIANT_INDEX antes de dar esto por
+terminado.
+
+Los 28 audios nuevos (16 listening + 12 speaking) se agregaron a
+tools/lista_audios.csv y hay un script nuevo,
+tools/generar_miembros200_audios.py, para generarlos sin tocar los
+demas. Instrucciones exactas en el chat.
+
+Nota aparte (no relacionado a este cambio): se detecto una oracion
+duplicada preexistente, "Despite the traffic, we arrived on time."
+que aparece tanto en LISTENING_BANK.medio (l-medio10-2) como en
+SPEAKING_BANK.medio (s-medio7-3). No se toco porque no es parte de
+este trabajo, pero queda como pendiente para revisar.
