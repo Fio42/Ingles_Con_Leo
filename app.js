@@ -605,9 +605,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -2769,6 +2769,41 @@ function renderContinueCard(container){
           <div class="continue-sub">Un reto rápido de 5 ejercicios y sigues con tu racha.</div>
         </div>
         <a href="miembros.html" class="btn btn-primary">Ir al panel →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill === 'juego'){
+    // English Rush tampoco usa niveles A1-C1 ni un banco de tamaño fijo
+    // (usa niveles numéricos 1..N propios del juego), así que necesita su
+    // propia rama aquí, igual que 'clases'/'errores' arriba (si no, el
+    // bloque genérico de abajo truena buscando LEVEL_META['todos']).
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">English Rush${last.topic ? ' · ' + last.topic : ''}</div>
+          <div class="continue-sub">¿Hasta dónde puedes llegar hoy?</div>
+        </div>
+        <a href="juego.html" class="btn btn-primary">Jugar →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill && last.skill.indexOf('cambridge-') === 0){
+    // Cambridge (B2 First / C1 Advanced) tampoco usa niveles A1-C1 del
+    // sistema normal (usa 'cambridge'/'cambridge-c1' como level), así que
+    // necesita su propia rama aquí, igual que TOEFL/IELTS abajo (si no,
+    // el bloque genérico truena buscando LEVEL_META['cambridge']).
+    const examLevelLabel = (last.level === 'cambridge-c1') ? 'C1 Advanced' : 'B2 First';
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">${DISPLAY_SKILL_LABELS[last.skill] || 'Cambridge'} · ${examLevelLabel}</div>
+          <div class="continue-sub">Sigue practicando el formato del examen.</div>
+        </div>
+        <a href="cambridge.html" class="btn btn-primary">Continuar →</a>
         <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;

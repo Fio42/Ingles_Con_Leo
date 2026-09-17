@@ -399,7 +399,7 @@ function initRushGame(container){
       recordSession({
         skill: 'juego',
         level: 'todos',
-        topics: ['English Rush · Nivel ' + s.level],
+        topics: ['Nivel ' + s.level],
         results: s.results,
         startedAt: s.startedAt
       });
