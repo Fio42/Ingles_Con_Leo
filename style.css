@@ -1653,3 +1653,16 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .rush-over-stats{grid-template-columns:repeat(2,1fr);}
   .rush-title{font-size:1.6rem;}
 }
+
+/* ============================================================
+   ENCUESTA (encuesta.html)
+   ============================================================ */
+.survey-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 26px;display:flex;flex-direction:column;gap:22px;box-shadow:0 12px 30px rgba(27,35,51,0.06);}
+.survey-opt-list{display:flex;flex-direction:column;gap:8px;}
+.survey-opt input{margin:0;accent-color:var(--blue);}
+.survey-thanks{text-align:center;align-items:center;gap:12px;}
+.survey-thanks h2{font-size:1.4rem;}
+.survey-thanks p{color:var(--ink-soft);}
+@media(max-width:480px){
+  .survey-card{padding:22px 18px;}
+}

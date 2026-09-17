@@ -853,3 +853,47 @@ Probado con Playwright en escritorio y movil, en la practica gratis
 (nivel principiante forzado via Math.random) y en English Rush
 (las 12 preguntas nuevas una por una via un hook de debug), incluido
 el fallback "Audio proximamente" mientras Leo no ha generado los mp3.
+
+============================================================
+2026-09-17: Encuesta a los 15 dias de membresia
+============================================================
+
+Se agrego un correo automatico que se manda una sola vez a cada
+miembro que lleva entre 15 y 22 dias pagando, invitandolo a responder
+una encuesta corta: 3 preguntas de opcion multiple (que tan util le
+parecio la membresia, que es lo que mas ha usado, que le gustaria que
+mejoraramos) mas un campo de texto libre opcional al final. El correo
+lleva el logo y usa el mismo estilo que los demas correos del sitio
+(fondo crema, boton azul).
+
+Piezas nuevas:
+- encuesta.html + survey.js: pagina publica (noindex) que muestra el
+  formulario. No requiere sesion iniciada: identifica a la persona por
+  un token al azar en el link (?t=...) que se genera al mandar el
+  correo.
+- supabase_functions/survey-15d-email.ts: edge function que dispara el
+  Cron cada hora (igual que upgrade-nudge-emails.ts), busca miembros en
+  la ventana de 15-22 dias que no hayan recibido la encuesta, genera su
+  token y manda el correo con Resend. Tiene el mismo modo de prueba
+  manual (manual_emails en el body) que ya existe en
+  upgrade-nudge-emails.ts.
+- supabase_functions/submit-survey.ts: edge function que recibe las
+  respuestas del formulario, valida el token contra profiles, valida
+  que las 3 respuestas cerradas sean valores permitidos, y guarda todo
+  en la tabla nueva survey_responses (una fila por persona; si vuelve a
+  responder, actualiza en vez de duplicar).
+- supabase_schema.sql: columnas nuevas profiles.survey_15d_sent_at /
+  profiles.survey_15d_token, tabla nueva survey_responses (con RLS
+  activado y sin policies, solo se toca desde las edge functions con la
+  service_role key), y el cron.schedule nuevo
+  "inglesconleo-survey-15d-email".
+
+Las respuestas se ven en Supabase, tabla survey_responses, igual que
+ya revisas profiles.
+
+Se probo con node --check en los 3 archivos nuevos (.ts) y con
+Playwright: estado de link invalido (sin token), formulario completo
+con las 18 opciones (4+7+7) mas el campo abierto, envio simulado
+(fetch mockeado, el backend real se prueba una vez este desplegado en
+Supabase) hasta la pantalla de agradecimiento, todo en escritorio y en
+movil (390px), sin errores en consola.
