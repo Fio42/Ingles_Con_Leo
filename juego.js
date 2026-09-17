@@ -20,7 +20,7 @@
 
 /* ---------- Configuración centralizada (free vs miembro) ---------- */
 const RUSH_CONFIG = {
-  FREE_RUNS_PER_DAY: 1,      // partidas completas gratis por día (null = sin límite)
+  FREE_RUNS_PER_DAY: 2,      // partidas completas gratis por día (null = sin límite)
   FREE_MAX_LEVEL: null,      // nivel máximo para gratis dentro de una partida (null = sin tope)
   FREE_MAX_QUESTIONS: null,  // preguntas máximas por partida para gratis (null = sin tope)
   MEMBER_UNLIMITED: true     // los miembros ignoran los límites de arriba
@@ -126,6 +126,11 @@ function initRushGame(container){
     btn.classList.toggle('is-muted', !on);
   }
 
+  function freeRunsUsedUpMessage(){
+    const n = RUSH_CONFIG.FREE_RUNS_PER_DAY;
+    if(n === 1) return 'Ya jugaste tu partida gratis de hoy.';
+    return 'Ya jugaste tus ' + n + ' partidas gratis de hoy.';
+  }
   function freeRunsLeftToday(){
     if(isMember && RUSH_CONFIG.MEMBER_UNLIMITED) return Infinity;
     if(RUSH_CONFIG.FREE_RUNS_PER_DAY == null) return Infinity;
@@ -166,7 +171,7 @@ function initRushGame(container){
       container.innerHTML = `
         <div class="rush-card rush-limit-card">
           <h2>¿Quieres seguir viendo hasta dónde puedes llegar?</h2>
-          <p class="rush-limit-sub">Ya jugaste tu partida gratis de hoy. Como miembro tienes:</p>
+          <p class="rush-limit-sub">${freeRunsUsedUpMessage()} Como miembro tienes:</p>
           <ul class="rush-limit-list">
             <li>Partidas ilimitadas</li>
             <li>Niveles avanzados</li>
