@@ -216,7 +216,9 @@ function initRushGame(container){
       answeredTotal: 0,
       usedIds: new Set(),
       current: null,
-      answered: false
+      answered: false,
+      startedAt: Date.now(),
+      results: []
     };
     rushTrack('game_start', {});
     nextQuestion();
@@ -313,6 +315,7 @@ function initRushGame(container){
     if(list){
       [...list.children].forEach(el=> el.disabled = true);
     }
+    if(s.current) s.results.push({ itemId: s.current.id, isCorrect: false });
     registerWrong();
   }
 
@@ -325,6 +328,7 @@ function initRushGame(container){
       if(j === correctIdx) el.classList.add('correct');
       if(j === chosenIdx && chosenIdx !== correctIdx) el.classList.add('incorrect');
     });
+    if(s.current) s.results.push({ itemId: s.current.id, isCorrect: chosenIdx === correctIdx });
     if(chosenIdx === correctIdx){
       registerCorrect();
     } else {
@@ -386,6 +390,20 @@ function initRushGame(container){
     const isNewRecord = s.score > (record.score || 0);
     if(isNewRecord) rushSaveRecord({ score: s.score, level: s.level, combo: s.bestCombo });
     if(!isMember) rushIncrementRunsToday();
+    /* Cualquier partida de un miembro cuenta como práctica del día y
+       suma a su racha, igual que las demás secciones de Miembros
+       (ver recordSession() en app.js). Los no-miembros no tienen
+       progreso guardado, así que para ellos no se registra nada,
+       igual que en la práctica gratis (practica.html). */
+    if(isMember && s.results.length && typeof recordSession === 'function'){
+      recordSession({
+        skill: 'juego',
+        level: 'todos',
+        topics: ['English Rush · Nivel ' + s.level],
+        results: s.results,
+        startedAt: s.startedAt
+      });
+    }
     rushTrack('game_over', { score: s.score, level: s.level });
     renderGameOver(isNewRecord);
   }
