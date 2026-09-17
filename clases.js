@@ -198,8 +198,16 @@ function renderClassList(container){
     const track = continueArea.querySelector('#clasesContinueTrack');
     const prevBtn = continueArea.querySelector('#clasesContinuePrev');
     const nextBtn = continueArea.querySelector('#clasesContinueNext');
-    if(prevBtn) prevBtn.addEventListener('click', ()=> track.scrollBy({ left: -340, behavior: 'smooth' }));
-    if(nextBtn) nextBtn.addEventListener('click', ()=> track.scrollBy({ left: 340, behavior: 'smooth' }));
+    function moveContinueTrack(direction){
+      const firstCard = track.querySelector('.clase-card');
+      if(!firstCard) return;
+      const gap = parseFloat(getComputedStyle(track).gap) || 0;
+      const step = firstCard.getBoundingClientRect().width + gap;
+      const target = Math.round(track.scrollLeft / step + direction) * step;
+      track.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }
+    if(prevBtn) prevBtn.addEventListener('click', ()=> moveContinueTrack(-1));
+    if(nextBtn) nextBtn.addEventListener('click', ()=> moveContinueTrack(1));
   }
 
   function renderCategories(){
