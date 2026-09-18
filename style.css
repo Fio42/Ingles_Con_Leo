@@ -876,11 +876,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 .hero-v2-character{position:relative;z-index:1;max-width:430px;width:92%;height:auto;filter:drop-shadow(0 18px 26px rgba(27,35,51,0.14));}
 
-/* La tarjeta se posiciona sobre la mano del personaje (como en desktop)
-   usando porcentajes relativos a .hero-v2-media, que en mobile tiene el
-   mismo alto que la imagen (align-items:flex-end + sin alto fijo), así
-   que el punto de la mano cae en el mismo % sin importar el ancho de
-   pantalla. En mobile es una version compacta para no tapar la cara. */
+/* La tarjeta se posiciona con "bottom" (no "top") para que su borde
+   inferior quede siempre fijo justo encima de la mano del personaje.
+   Así, cuando el texto de la mini lección es mas largo, la tarjeta
+   crece hacia ARRIBA (hacia el pelo/fondo vacío) en vez de crecer hacia
+   abajo y tapar la mano. Los porcentajes son relativos a .hero-v2-media,
+   que en mobile tiene el mismo alto que la imagen (align-items:flex-end
+   + sin alto fijo), así que el punto de la mano cae en el mismo % sin
+   importar el ancho de pantalla. En mobile es una version compacta para
+   no tapar la cara. */
 .hero-v2-card{
   position:absolute;
   z-index:2;
@@ -888,7 +892,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   border:1px solid var(--line);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow);
-  top:3%;
+  bottom:57%;
   right:1%;
   width:min(172px, 46%);
   padding:11px 13px;
@@ -896,8 +900,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media(min-width:900px){
   .hero-v2-card{
     right:-2%;
-    top:23%;
-    transform:translateY(-50%);
+    bottom:58%;
     width:min(280px, 84%);
     padding:20px 22px;
   }
