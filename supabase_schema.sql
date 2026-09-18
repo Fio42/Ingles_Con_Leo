@@ -179,3 +179,79 @@ select cron.schedule(
 --     100.0 * count(*) filter (where is_member) / nullif(count(*) filter (where checkout_started_at is not null), 0), 1
 --   ) as conversion_pct_de_los_que_iniciaron_checkout
 -- from public.profiles;
+
+-- ============================================================
+-- Actualización 2026-09-17 — Encuesta a los 15 días de membresía.
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+-- Igual que la actualización anterior: no borra ni toca ninguna
+-- fila que ya exista.
+-- ============================================================
+
+-- 2 columnas nuevas en profiles: cuándo se le mandó la encuesta a
+-- cada quien (para no mandarla dos veces) y un "token" secreto y
+-- único para identificar de quién es cada respuesta sin pedirle que
+-- inicie sesión (el link de la encuesta lo trae en la URL).
+alter table public.profiles add column if not exists survey_15d_sent_at timestamptz;
+alter table public.profiles add column if not exists survey_15d_token text;
+create unique index if not exists profiles_survey_15d_token_idx on public.profiles(survey_15d_token) where survey_15d_token is not null;
+
+-- Tabla donde se guardan las respuestas de la encuesta. La revisas
+-- igual que revisas "profiles": Supabase -> Table Editor -> survey_responses.
+create table if not exists public.survey_responses (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  email text,
+  q1_satisfaccion text,
+  q2_mas_usado text,
+  q3_mejorar text,
+  q4_comentario text,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists survey_responses_user_id_idx on public.survey_responses(user_id);
+
+-- Seguridad: nadie puede leer ni escribir esta tabla directamente
+-- desde el navegador (ni con sesión ni sin ella). Solo la toca la
+-- Edge Function "submit-survey" con la service_role key, que se
+-- salta RLS por diseño. Por eso NO hay políticas de select/insert
+-- aquí a propósito, a diferencia de "profiles"/"progress_sessions".
+alter table public.survey_responses enable row level security;
+
+-- Programa que la función "survey-15d-email" (ver
+-- supabase_functions/survey-15d-email.ts) corra sola cada hora.
+-- Ella decide, revisando profiles, a quién le toca la encuesta
+-- (miembro activo, entre 15 y 22 días de membresía, todavía no se
+-- le mandó) y a quién no le toca nada.
+--
+-- *** ANTES DE CORRER ESTO ***: reemplaza TU_SECRET_KEY_AQUI por tu
+-- Secret Key real, igual que hiciste con el Cron de arriba. Y
+-- recuerda apagar "Verify JWT" para esta función nueva también
+-- (Supabase -> Edge Functions -> survey-15d-email -> Settings).
+select cron.schedule(
+  'inglesconleo-survey-15d-email',
+  '0 * * * *',
+  $$
+  select net.http_post(
+    url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/survey-15d-email',
+    headers := jsonb_build_object(
+      'apikey', 'TU_SECRET_KEY_AQUI',
+      'Content-Type', 'application/json'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+
+-- Para revisar que el Cron quedó programado:
+--   select jobid, schedule, jobname, active from cron.job;
+-- Para pausarlo o borrarlo más adelante si hiciera falta:
+--   select cron.unschedule('inglesconleo-survey-15d-email');
+
+-- ============================================================
+-- Actualización 2026-09-18 — tercer correo de "recuerda activar tu
+-- membresía" (antes eran 2, ahora son 3).
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+-- No hace falta tocar el Cron: ya está programado (cada 30 minutos)
+-- y la misma función revisa sola a quién le toca el correo 3.
+-- ============================================================
+
+alter table public.profiles add column if not exists upgrade_email_3_sent_at timestamptz;

@@ -1,11 +1,16 @@
 // ============================================================
 // Inglés con Leo — Edge Function: upgrade-nudge-emails
 //
-// Manda como máximo 2 correos a cuentas que se crearon pero
+// Manda como máximo 3 correos a cuentas que se crearon pero
 // todavía NO tienen membresía (is_member = false):
 //   Correo 1: 30-180 minutos después de crear la cuenta.
-//   Correo 2: 2-10 días después de crear la cuenta (solo si
-//             recibió el correo 1 y sigue sin ser miembro).
+//   Correo 2: 2 días después de crear la cuenta (con 1 día extra
+//             de margen de seguridad, ver nota de "ventanas" más
+//             abajo; solo si recibió el correo 1 y sigue sin ser
+//             miembro).
+//   Correo 3: 7 días después de crear la cuenta (con 1 día extra
+//             de margen de seguridad; solo si recibió el correo 2
+//             y sigue sin ser miembro).
 //
 // No es una plataforma nueva de emails: reutiliza exactamente el
 // mismo Resend y el mismo remitente (hola@inglesconleo.com) que ya
@@ -49,7 +54,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 const EMAIL_1_MIN_MINUTES = 30
 const EMAIL_1_MAX_MINUTES = 180   // ventana de seguridad, ver nota arriba
 const EMAIL_2_MIN_DAYS = 2
-const EMAIL_2_MAX_DAYS = 10       // ventana de seguridad, ver nota arriba
+const EMAIL_2_MAX_DAYS = 3        // ventana de seguridad, ver nota arriba
+const EMAIL_3_MIN_DAYS = 7
+const EMAIL_3_MAX_DAYS = 8        // ventana de seguridad, ver nota arriba
 
 const MAX_PER_RUN = 200 // tope de correos por corrida, por si acaso
 
@@ -57,7 +64,7 @@ Deno.serve(async (req: Request) => {
   try {
     // Modo manual (uso puntual desde el boton "Test" de Supabase, NO lo
     // usa el Cron): si el cuerpo de la peticion trae "manual_emails",
-    // manda el correo indicado (1 o 2) SOLO a esos correos exactos, sin
+    // manda el correo indicado (1, 2 o 3) SOLO a esos correos exactos, sin
     // mirar las ventanas de tiempo de mas abajo. Sigue revisando
     // is_member=false antes de mandar cada uno (nunca le llega esto a
     // quien ya paga) y sigue marcando upgrade_email_N_sent_at, para que
@@ -67,7 +74,7 @@ Deno.serve(async (req: Request) => {
     try {
       const body = await req.json()
       if (body && Array.isArray(body.manual_emails) && body.manual_emails.length) {
-        const which: 1 | 2 = body.which === 2 ? 2 : 1
+        const which: 1 | 2 | 3 = body.which === 3 ? 3 : body.which === 2 ? 2 : 1
         let sentManual = 0
         for (const email of body.manual_emails) {
           if (typeof email !== 'string' || !email) continue
@@ -85,6 +92,7 @@ Deno.serve(async (req: Request) => {
     const now = Date.now()
     let sent1 = 0
     let sent2 = 0
+    let sent3 = 0
 
     // ---- Correo 1 ----
     const e1From = new Date(now - EMAIL_1_MAX_MINUTES * 60000).toISOString()
@@ -123,7 +131,26 @@ Deno.serve(async (req: Request) => {
       if (didSend) sent2++
     }
 
-    return json({ ok: true, sent1, sent2 }, 200)
+    // ---- Correo 3 ----
+    const e3From = new Date(now - EMAIL_3_MAX_DAYS * 86400000).toISOString()
+    const e3To = new Date(now - EMAIL_3_MIN_DAYS * 86400000).toISOString()
+    const { data: candidates3, error: err3 } = await supabase
+      .from('profiles')
+      .select('id, email, created_at')
+      .eq('is_member', false)
+      .not('upgrade_email_2_sent_at', 'is', null)
+      .is('upgrade_email_3_sent_at', null)
+      .gte('created_at', e3From)
+      .lte('created_at', e3To)
+      .limit(MAX_PER_RUN)
+    if (err3) console.error('Error buscando candidatos correo 3:', err3)
+
+    for (const p of candidates3 || []) {
+      const didSend = await sendIfStillEligible(p.id, p.email, 3)
+      if (didSend) sent3++
+    }
+
+    return json({ ok: true, sent1, sent2, sent3 }, 200)
   } catch (e) {
     console.error(e)
     return json({ ok: false }, 200)
@@ -135,26 +162,32 @@ Deno.serve(async (req: Request) => {
 // correos anteriores de esta misma corrida) y, si sigue sin ser
 // miembro, manda el correo que corresponde y marca la columna de
 // "ya se mandó" para no repetirlo nunca.
-async function sendIfStillEligible(userId: string, email: string | null, which: 1 | 2): Promise<boolean> {
+async function sendIfStillEligible(userId: string, email: string | null, which: 1 | 2 | 3): Promise<boolean> {
   if (!email) return false
   const { data: fresh } = await supabase.from('profiles').select('is_member').eq('id', userId).maybeSingle()
   if (!fresh || fresh.is_member) return false
 
-  const okToSend = which === 1 ? await sendEmail1(email) : await sendEmail2(email)
+  const okToSend =
+    which === 1 ? await sendEmail1(email) : which === 2 ? await sendEmail2(email) : await sendEmail3(email)
   if (!okToSend) return false
 
-  const field = which === 1 ? 'upgrade_email_1_sent_at' : 'upgrade_email_2_sent_at'
+  const field =
+    which === 1 ? 'upgrade_email_1_sent_at' : which === 2 ? 'upgrade_email_2_sent_at' : 'upgrade_email_3_sent_at'
   const { error } = await supabase.from('profiles').update({ [field]: new Date().toISOString() }).eq('id', userId)
   if (error) console.error(`Error marcando ${field} para ${userId}:`, error)
   return true
 }
 
 async function sendEmail1(to: string): Promise<boolean> {
-  return sendViaResend(to, '¡Tu cuenta ya está lista! Desbloquea todo por $2 USD/mes 🎉', HTML_EMAIL_1)
+  return sendViaResend(to, '¡Tu cuenta ya está lista! Desbloquea todo por $2 USD/mes (por tiempo limitado) 🎉', HTML_EMAIL_1)
 }
 
 async function sendEmail2(to: string): Promise<boolean> {
   return sendViaResend(to, 'Esto es todo lo que te estás perdiendo en Inglés con Leo 👀', HTML_EMAIL_2)
+}
+
+async function sendEmail3(to: string): Promise<boolean> {
+  return sendViaResend(to, 'Tu inglés no mejora solo... ¿seguimos? 💬', HTML_EMAIL_3)
 }
 
 async function sendViaResend(to: string, subject: string, html: string): Promise<boolean> {
@@ -203,7 +236,8 @@ const HTML_EMAIL_1 = `
       a hablar inglés con confianza, sin importar tu nivel.
     </p>
     <p style="color:#253ECC; font-size:15px; font-weight:bold; margin:20px 0 8px;">
-      Por solo $2 USD al mes desbloqueas:
+      Por solo $2 USD al mes desbloqueas todo esto (precio por tiempo
+      limitado, luego sube):
     </p>
     <ul style="color:#333; font-size:15px; line-height:1.85; padding-left:20px; margin:0;">
       <li><strong>Práctica ilimitada</strong> en gramática, vocabulario, listening, writing y speaking, sin límite diario</li>
@@ -238,7 +272,8 @@ const HTML_EMAIL_2 = `
     <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">Esto es todo lo que te estás perdiendo</h1>
     <p style="color:#333; font-size:15px; line-height:1.6;">
       Tu cuenta en Inglés con Leo sigue ahí, esperándote. Por si no lo has
-      visto, con la membresía ($2 USD al mes) tienes acceso a esto:
+      visto, con la membresía (todavía a $2 USD al mes, precio por
+      tiempo limitado) tienes acceso a esto:
     </p>
     <table role="presentation" width="100%" style="border-collapse:collapse; margin:20px 0;">
       <tr>
@@ -280,11 +315,48 @@ const HTML_EMAIL_2 = `
       </a>
     </p>
     <p style="color:#888; font-size:13px; text-align:center; margin:0 0 20px;">
-      $2 USD al mes. Cancela cuando quieras.
+      $2 USD al mes por tiempo limitado. Cancela cuando quieras.
     </p>
     <p style="color:#888; font-size:13px; line-height:1.6; margin:0;">
-      Este es el último correo de este tipo que te mandamos. Si más adelante
-      cambias de opinión, tu cuenta te espera tal cual la dejaste.
+      Sin presión: tu cuenta te espera tal cual la dejaste, para cuando
+      quieras darle un vistazo.
+    </p>
+  </div>
+</div>
+`.trim()
+
+const HTML_EMAIL_3 = `
+<div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
+  <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
+    <p style="color:#333; font-size:15px; margin:0 0 4px;">¡Hola! 👋</p>
+    <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">Tu inglés no mejora solo</h1>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      La constancia es lo que realmente hace la diferencia para aprender
+      inglés, un poquito cada día suma más de lo que parece. Si todavía no
+      te has decidido, aquí tienes algunas razones por las que vale la pena:
+    </p>
+    <ul style="color:#333; font-size:15px; line-height:1.85; padding-left:20px; margin:0;">
+      <li>Cuesta <strong>$2 USD al mes</strong> por tiempo limitado, menos de lo que cuesta un café</li>
+      <li>Puedes cancelar cuando quieras, sin compromisos ni contratos</li>
+      <li>Practicas a tu ritmo, unos minutos al día son suficientes</li>
+      <li>El sistema recuerda en qué te equivocas y te ayuda a repasarlo</li>
+    </ul>
+    <p style="color:#333; font-size:15px; line-height:1.6; margin:20px 0 0;">
+      Y si por ahora prefieres seguir practicando gratis, también está
+      perfecto. Lo importante es que sigas avanzando.
+    </p>
+    <p style="text-align:center; margin:28px 0 10px;">
+      <a href="https://inglesconleo.com/miembros.html"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
+        Ver la membresía →
+      </a>
+    </p>
+    <p style="color:#888; font-size:13px; text-align:center; margin:0 0 20px;">
+      $2 USD al mes por tiempo limitado. Cancela cuando quieras.
+    </p>
+    <p style="color:#888; font-size:13px; line-height:1.6; margin:0;">
+      Cualquier duda, solo responde este correo y con gusto te ayudo.
     </p>
   </div>
 </div>
