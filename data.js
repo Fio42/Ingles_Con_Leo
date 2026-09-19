@@ -13098,7 +13098,7 @@ WRITING_BANK.facil.push(
 WRITING_BANK.medio.push(
 [
       { id:'w-medio-m200-1', prompt:"Describe algo que ya hab\u00edas hecho antes de otro evento (usa Past Perfect: \u201chad + participio\u201d).", target:"I had [verb in participle] before ___",
-        checkPattern:"i had [a-z]+ before", hint:"Estructura esperada: \u201cI had ___ before ___.\u201d",
+        checkPattern:"i had .+ before", hint:"Estructura esperada: \u201cI had ___ before ___.\u201d",
         example:{en:"I had finished my homework before dinner.", es:"Ya hab\u00eda terminado mi tarea antes de la cena."},
         checklist:["\u00bfUsaste \u201chad\u201d + participio?","\u00bfMencionaste dos eventos en orden?","\u00bfLa frase tiene sentido en pasado?"] },
       { id:'w-medio-m200-2', prompt:"Escribe una condici\u00f3n hipot\u00e9tica (usa \u201cIf I ___, I would ___\u201d).", target:"If I [verb], I would [verb]",
@@ -13114,11 +13114,11 @@ WRITING_BANK.medio.push(
 WRITING_BANK.avanzado.push(
 [
       { id:'w-avanzado-m200-1', prompt:"Escribe una oraci\u00f3n enf\u00e1tica usando \u201cIt is/was ... that\u201d (cleft sentence).", target:"It is/was [X] that ___",
-        checkPattern:"it (is|was) [a-z]+ that", hint:"Estructura esperada: \u201cIt is/was ___ that ___.\u201d",
+        checkPattern:"it (is|was) .+ that", hint:"Estructura esperada: \u201cIt is/was ___ that ___.\u201d",
         example:{en:"It was her determination that impressed the committee.", es:"Fue su determinaci\u00f3n lo que impresion\u00f3 al comit\u00e9."},
         checklist:["\u00bfUsaste \u201cIt is/was ... that\u201d para enfatizar algo?","\u00bfLa parte enfatizada tiene sentido?","\u00bfEl resto de la oraci\u00f3n es gramaticalmente correcto?"] },
       { id:'w-avanzado-m200-2', prompt:"Escribe una oraci\u00f3n con un condicional mixto (pasado hipot\u00e9tico + presente).", target:"If I had [verb in participle], I would [verb] now",
-        checkPattern:"if i had [a-z]+.*i would [a-z]+ now", hint:"Estructura esperada: \u201cIf I had ___, I would ___ now.\u201d",
+        checkPattern:"if i had .+i would .+ now", hint:"Estructura esperada: \u201cIf I had ___, I would ___ now.\u201d",
         example:{en:"If I had studied medicine, I would be a doctor now.", es:"Si hubiera estudiado medicina, ser\u00eda doctor ahora."},
         checklist:["\u00bfLa condici\u00f3n est\u00e1 en pasado hipot\u00e9tico (had + participio)?","\u00bfEl resultado est\u00e1 en presente (would + verbo + now)?","\u00bfLa frase tiene sentido l\u00f3gico?"] }
     ]
