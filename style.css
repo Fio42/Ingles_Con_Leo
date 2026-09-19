@@ -1600,7 +1600,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .rush-controls-hint{margin-top:12px;color:var(--ink-faint);font-size:0.8rem;}
 
 /* ---------- HUD durante la partida ---------- */
-.rush-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.rush-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-right:44px;}
 .rush-hud-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .rush-level-tag{font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);}
 .rush-points{font-family:'Baloo 2';font-weight:700;color:var(--ink);font-size:1.05rem;}
