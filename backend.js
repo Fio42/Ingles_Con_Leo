@@ -160,8 +160,31 @@ const LeoBackend = (function(){
     try{
       const { data, error } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
       if(error) return null;
+      touchLastSeen(sb, session.user.id);
       return data;
     }catch(e){ return null; }
+  }
+
+  /* Marca "última vez visto" en profiles.last_seen_at, para saber
+     quién sigue usando la cuenta sin depender del "abierto" de los
+     correos (poco confiable: Gmail/Apple precargan la imagen del
+     pixel aunque nadie lea el correo). No bloquea nada si falla o
+     tarda (fire-and-forget) y solo escribe una vez cada 15 minutos
+     por dispositivo, para no llenar la base de datos de escrituras
+     en cada clic. El permiso para escribir SOLO esta columna (no
+     el resto de profiles, como is_member) se da en Supabase con
+     GRANT UPDATE (last_seen_at) — ver supabase_schema.sql. */
+  const LAST_SEEN_THROTTLE_MS = 15 * 60 * 1000;
+  function touchLastSeen(sb, userId){
+    try{
+      const key = 'leo_last_seen_touch';
+      const last = Number(localStorage.getItem(key) || 0);
+      const now = Date.now();
+      if(now - last < LAST_SEEN_THROTTLE_MS) return;
+      localStorage.setItem(key, String(now));
+      sb.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', userId)
+        .then(()=>{}, ()=>{});
+    }catch(e){}
   }
 
   /* Trae las sesiones de práctica guardadas en la nube y las

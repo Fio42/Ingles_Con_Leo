@@ -255,3 +255,33 @@ select cron.schedule(
 -- ============================================================
 
 alter table public.profiles add column if not exists upgrade_email_3_sent_at timestamptz;
+
+-- ============================================================
+-- Actualización 2026-09-19 — "última vez visto" (last_seen_at)
+-- en profiles, para saber quién sigue entrando a su cuenta sin
+-- depender del "abierto" de los correos (poco confiable: Gmail y
+-- Apple Mail precargan la imagen del pixel de tracking aunque la
+-- persona nunca lea el correo).
+--
+-- Se actualiza sola cada vez que alguien con sesión abierta carga
+-- una página de miembros (como máximo una vez cada 15 minutos por
+-- dispositivo, para no llenar la tabla de escrituras).
+--
+-- Ojo de seguridad (por eso no es un simple "alter table" + listo):
+-- esta tabla a propósito NO tiene una política de "actualizar" para
+-- cualquier columna (se quitó antes porque dejaba que cualquiera se
+-- marcara is_member=true desde el navegador sin pagar). Así que acá
+-- se le da permiso de actualizar SOLO la columna last_seen_at, no
+-- el resto de la fila.
+--
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+-- ============================================================
+
+alter table public.profiles add column if not exists last_seen_at timestamptz;
+
+drop policy if exists "profiles: update own last_seen" on public.profiles;
+create policy "profiles: update own last_seen" on public.profiles
+  for update using (auth.uid() = id) with check (auth.uid() = id);
+
+revoke update on public.profiles from authenticated;
+grant update (last_seen_at) on public.profiles to authenticated;
