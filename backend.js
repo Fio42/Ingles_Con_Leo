@@ -302,13 +302,17 @@ const LeoBackend = (function(){
     }
   }
 
-  /* Pide un link de pago de Stripe (tarjeta internacional) para
-     el usuario logueado, ligado a su id. Es el equivalente de
+  /* Pide un client_secret de Stripe (checkout embebido) para el
+     usuario logueado, ligado a su id. Es el equivalente de
      startCheckout() pero para Stripe: se usa cuando alguien paga
      desde fuera de México o con una tarjeta que Mercado Pago no
-     acepta. Devuelve { ok:true, url } o { ok:false, error }.
-     Depende de que la función de Supabase "stripe-checkout" esté
-     desplegada (ver supabase_functions/stripe-checkout.ts). */
+     acepta. A diferencia de antes, ya NO devuelve un link al que
+     redirigir: devuelve un clientSecret que miembros.html usa para
+     mostrar el formulario de tarjeta incrustado en la misma página
+     (ver stripe.initEmbeddedCheckout en miembros.html). Devuelve
+     { ok:true, clientSecret } o { ok:false, error }. Depende de que
+     la función de Supabase "stripe-checkout" esté desplegada (ver
+     supabase_functions/stripe-checkout.ts). */
   async function startStripeCheckout(){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
     const session = await getSession();
@@ -323,8 +327,8 @@ const LeoBackend = (function(){
         body: JSON.stringify({})
       });
       const data = await res.json();
-      if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
-      return { ok:true, url: data.init_point };
+      if(!res.ok || !data.client_secret) return { ok:false, error: (data && data.error) || 'checkout_error' };
+      return { ok:true, clientSecret: data.client_secret };
     }catch(e){
       return { ok:false, error: String(e) };
     }

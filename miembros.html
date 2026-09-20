@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -197,9 +198,17 @@
           <button class="btn btn-primary btn-block" id="payBtnMP">Pagar con Mercado Pago</button>
           <button class="btn btn-primary btn-block" id="payStripeBtn" style="margin-top:10px;">Pagar con tarjeta internacional (Stripe)</button>
           <button class="btn btn-primary btn-block" id="payPaypalBtn" style="margin-top:10px;">Pagar con PayPal</button>
-          <div class="gate-error" id="payStripeError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+          <div class="gate-error" id="payStripeError">No pudimos generar el formulario de pago. Intenta de nuevo en un momento.</div>
           <div class="gate-error" id="payPaypalError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
           <p class="gate-hint" style="margin-top:10px;">🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
+        </div>
+
+        <!-- Formulario de tarjeta de Stripe incrustado aquí mismo (no redirige
+             a otra página): se muestra al elegir "Pagar con tarjeta
+             internacional (Stripe)" y se oculta el resto mientras tanto. -->
+        <div id="stripeEmbeddedWrap" style="display:none;">
+          <p class="gate-hint" style="margin:0 0 6px;text-align:left;"><a href="#" id="backFromStripeEmbedded" style="color:var(--blue);font-weight:600;">‹ Elegir otra forma de pago</a></p>
+          <div id="stripeEmbeddedContainer"></div>
         </div>
 
         <div id="mpEmailStep" style="display:none;">
@@ -594,6 +603,11 @@
   const paypalRecheckBtn = document.getElementById('paypalRecheckBtn');
   const mpEmailStep = document.getElementById('mpEmailStep');
   const backToPayChooser = document.getElementById('backToPayChooser');
+  const stripeEmbeddedWrap = document.getElementById('stripeEmbeddedWrap');
+  const stripeEmbeddedContainer = document.getElementById('stripeEmbeddedContainer');
+  const backFromStripeEmbedded = document.getElementById('backFromStripeEmbedded');
+  const STRIPE_PUBLISHABLE_KEY = 'pk_live_51UE99HA7RWb74UAAsMOMTUyfTtGtsuFo2TEeNNFSBQXO7OlVCCpe6ZA7Vhma2h2kzEdXtdZMCVmzu61gNtul5Wam00fAO4BXea';
+  let stripeEmbeddedInstance = null;
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   let hasSession = false;
@@ -633,6 +647,20 @@
     mpEmailError.classList.remove('show');
     if(paypalConfirming) paypalConfirming.style.display = 'none';
     if(paypalDelayed) paypalDelayed.style.display = 'none';
+    hideStripeEmbedded();
+  }
+
+  // Desmonta el formulario de tarjeta embebido de Stripe (si había uno) y
+  // vuelve a mostrar las opciones de pago. destroy() es lo que pide Stripe
+  // para liberar esa sesión de checkout embebida al salir de ella sin
+  // terminar de pagar (ver docs de Embedded Checkout).
+  function hideStripeEmbedded(){
+    if(stripeEmbeddedWrap) stripeEmbeddedWrap.style.display = 'none';
+    if(stripeEmbeddedInstance){
+      try{ stripeEmbeddedInstance.destroy(); }catch(e){}
+      stripeEmbeddedInstance = null;
+    }
+    if(stripeEmbeddedContainer) stripeEmbeddedContainer.innerHTML = '';
   }
 
   // Después de pagar (con PayPal, Stripe o Mercado Pago), el
@@ -765,22 +793,41 @@
   }
 
   // Igual que goToCheckout, pero para Stripe: no pide un correo
-  // aparte (Stripe ya pide correo y tarjeta dentro de su propia
-  // pantalla de pago), así que solo pide el link y redirige.
+  // aparte (Stripe ya pide correo y tarjeta dentro de su propio
+  // formulario). Ya NO redirige a otra pestaña: pide el
+  // clientSecret y monta el formulario de tarjeta de Stripe
+  // incrustado aquí mismo, en stripeEmbeddedContainer.
   async function goToStripeCheckout(btn){
     payStripeError.classList.remove('show');
     btn.disabled = true;
     const originalText = btn.textContent;
-    btn.textContent = 'Generando link de pago...';
+    btn.textContent = 'Preparando el pago...';
     const res = await LeoBackend.startStripeCheckout();
-    if(res.ok){
-      window.location.href = res.url;
-      return;
-    }
     btn.disabled = false;
     btn.textContent = originalText;
-    payStripeError.textContent = 'No pudimos generar el link de pago. Intenta de nuevo en un momento.';
-    payStripeError.classList.add('show');
+    if(!res.ok){
+      payStripeError.textContent = 'No pudimos generar el formulario de pago. Intenta de nuevo en un momento.';
+      payStripeError.classList.add('show');
+      return;
+    }
+    try{
+      const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+      stripeEmbeddedInstance = await stripe.initEmbeddedCheckout({ clientSecret: res.clientSecret });
+      payChooser.style.display = 'none';
+      stripeEmbeddedWrap.style.display = 'block';
+      stripeEmbeddedInstance.mount('#stripeEmbeddedContainer');
+    }catch(e){
+      console.error('Error montando el checkout embebido de Stripe:', e);
+      payStripeError.textContent = 'No pudimos mostrar el formulario de pago. Intenta de nuevo en un momento.';
+      payStripeError.classList.add('show');
+    }
+  }
+
+  if(backFromStripeEmbedded){
+    backFromStripeEmbedded.addEventListener('click', function(e){
+      e.preventDefault();
+      resetPayChooser();
+    });
   }
 
   // Igual que goToStripeCheckout, pero para PayPal: tampoco pide un

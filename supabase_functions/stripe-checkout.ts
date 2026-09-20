@@ -4,8 +4,15 @@
 // La llama el navegador de un usuario YA LOGUEADO (con su sesión
 // de Supabase) cuando hace clic en "Pagar con tarjeta (Stripe)".
 // Crea una sesión de Checkout de Stripe en modo suscripción,
-// ligada al id de ese usuario (client_reference_id), y devuelve
-// la URL de pago a la que el navegador redirige.
+// ligada al id de ese usuario (client_reference_id), en modo
+// "embedded" (ui_mode=embedded): en vez de devolver un link al que
+// hay que redirigir, devuelve un client_secret que el navegador usa
+// para mostrar el formulario de tarjeta incrustado en la propia
+// página (miembros.html), sin salir del sitio. El webhook
+// (stripe-webhook.ts) NO cambia: Stripe sigue mandando exactamente
+// el mismo aviso checkout.session.completed al terminar, sea
+// embedded o redirigido, así que la activación de membresía sigue
+// funcionando igual que siempre.
 //
 // Es el equivalente de create-checkout.ts pero para Stripe en vez
 // de Mercado Pago. Se pensó para las personas que pagan desde
@@ -93,8 +100,8 @@ Deno.serve(async (req: Request) => {
     body.set('line_items[0][quantity]', '1')
     body.set('client_reference_id', user.id)
     if (user.email) body.set('customer_email', user.email)
-    body.set('success_url', BACK_URL + '?stripe=success')
-    body.set('cancel_url', BACK_URL)
+    body.set('ui_mode', 'embedded')
+    body.set('return_url', BACK_URL + '?stripe=success')
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
@@ -111,7 +118,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'stripe_error', detail: stripeData }, 500)
     }
 
-    return json({ init_point: stripeData.url }, 200)
+    return json({ client_secret: stripeData.client_secret }, 200)
   } catch (e) {
     console.error(e)
     return json({ error: 'server_error' }, 500)
