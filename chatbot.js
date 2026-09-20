@@ -195,8 +195,8 @@
     members: {
       text: function(){
         return isMember()
-          ? 'Ya iniciaste sesión como miembro. Tienes las 5 habilidades completas (Gramática, Vocabulario, Listening, Writing y Speaking) y tu progreso se guarda en tu cuenta.'
-          : 'El área de miembros tiene ejercicios completos de Gramática, Vocabulario, Listening, Writing y Speaking, además de tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, ≈$40 MXN, vía Mercado Pago, oferta por tiempo limitado).';
+          ? 'Ya iniciaste sesión como miembro. Tienes práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas, preparación para TOEFL/IELTS/Cambridge, el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube.'
+          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, oferta por tiempo limitado, vía Stripe, PayPal o Mercado Pago).';
       },
       options: function(){
         var opts = [membersCta()];
@@ -290,7 +290,7 @@
         '<button type="button" class="leobot-greet-close" id="leobotGreetClose" aria-label="Cerrar aviso">' +
           '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
         '</button>' +
-        '<span>\u00bfNecesitas ayuda? \uD83D\uDC4B</span>' +
+        '<span id="leobotGreetText">\u00bfNecesitas ayuda? \uD83D\uDC4B</span>' +
       '</div>' +
       '<button type="button" class="leobot-fab" id="leobotFab" aria-label="Abrir asistente LeoBot" aria-haspopup="dialog" aria-expanded="false">' +
         '<div class="leobot-avatar" id="leobotFabAvatar"></div>' +
@@ -336,6 +336,8 @@
     var fabAvatar = document.getElementById('leobotFabAvatar');
     var headerAvatar = document.getElementById('leobotHeaderAvatar');
     var fabDot = document.getElementById('leobotFabDot');
+    var greetTextEl = document.getElementById('leobotGreetText');
+    var greetPendingNode = null;
 
     var isOpen = false;
     var hasOpenedOnce = false;
@@ -348,7 +350,7 @@
       if(fabDot) fabDot.hidden = true;
     }
 
-    function open(isAutomatic){
+    function open(isAutomatic, startNode){
       isOpen = true;
       hideGreet();
       panel.classList.add('open');
@@ -357,7 +359,9 @@
         hasOpenedOnce = true;
         setAvatarState(fabAvatar, 'wink', 900);
         setAvatarState(headerAvatar, 'wink', 900);
-        goTo('root', false);
+        goTo(startNode || 'root', false);
+      } else if(startNode){
+        goTo(startNode, true);
       }
       window.setTimeout(function(){
         if(isAutomatic) return;
@@ -521,8 +525,28 @@
     }
     if(greet){
       greet.addEventListener('click', function(){
-        if(!isOpen) open();
+        var target = greetPendingNode;
+        greetPendingNode = null;
+        if(!isOpen) open(false, target);
+        else if(target) goTo(target, true);
       });
+    }
+
+    /* Muestra la burbuja del asistente con un texto y, opcionalmente, la
+       lleva directo a un nodo concreto al hacer click (en vez del menú
+       principal). La usan tanto el saludo normal como el aviso de error
+       de más abajo, para no duplicar la lógica de mostrar/ocultar. */
+    function promptGreet(text, nodeId, duration){
+      if(isOpen) return;
+      if(localStorage.getItem(HIDDEN_KEY) === '1') return;
+      if(greetTextEl) greetTextEl.textContent = text;
+      greetPendingNode = nodeId || null;
+      if(greet){
+        greet.classList.add('show');
+        if(fabDot) fabDot.hidden = false;
+        setAvatarState(fabAvatar, 'wink', 900);
+        window.setTimeout(hideGreet, duration || 8000);
+      }
     }
 
     function afterWelcomeGap(cb, gapIfOnboarding, gapDefault){
@@ -548,14 +572,24 @@
       afterWelcomeGap(function(){
         if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
         try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
-        if(greet){
-          greet.classList.add('show');
-          if(fabDot) fabDot.hidden = false;
-          setAvatarState(fabAvatar, 'wink', 900);
-          window.setTimeout(hideGreet, 7000);
-        }
+        promptGreet('\u00bfNecesitas ayuda? \uD83D\uDC4B', null, 7000);
       }, 1600, 1300);
     }
+
+    /* Si algo se rompe en la página (un error real de JavaScript, no un
+       problema de conexión del usuario), avisamos con la misma burbuja
+       pero apuntando directo a "Reportar un problema" en vez del menú
+       principal — así el reporte llega en el momento en que el bug
+       realmente pasó, no depende de que alguien encuentre el ícono solo.
+       Como mucho una vez por sesión de pestaña, para no ser invasivos. */
+    var ERROR_PROMPT_KEY = 'leobot_error_prompt_session_v1';
+    window.addEventListener('error', function(){
+      try{
+        if(sessionStorage.getItem(ERROR_PROMPT_KEY) === '1') return;
+        sessionStorage.setItem(ERROR_PROMPT_KEY, '1');
+      }catch(e){}
+      promptGreet('\u00bfAlgo se vio raro? Cu\u00e9ntanos \uD83D\uDC40', 'reportBug', 9000);
+    });
   }
 
   function renderReopenPill(){
