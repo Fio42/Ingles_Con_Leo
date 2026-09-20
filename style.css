@@ -1414,15 +1414,40 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    el script de miembros.html agrega la clase "no-mistakes" para que
    las otras dos no dejen un hueco vacio. */
 #memberContent .dash-top-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;align-items:stretch;}
-@media(min-width:900px){
-  #memberContent .dash-top-grid{grid-template-columns:1.3fr 1fr 1fr;}
-  #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1.3fr 1fr;}
+@media(min-width:700px){
+  #memberContent .dash-top-grid{grid-template-columns:1fr 1fr;}
+}
+@media(min-width:1150px){
+  #memberContent .dash-top-grid{grid-template-columns:1.15fr 1.15fr 1fr 1fr;}
+  #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1.15fr 1.15fr 1fr;}
 }
 #memberContent .dash-top-grid .continue-card{height:100%;box-sizing:border-box;max-width:none;padding:18px 20px;}
 #memberContent .continue-title{font-size:1.25rem;}
 #memberContent .continue-note{padding:9px 12px;margin-top:10px;}
 #memberContent .dash-top-grid .daily-card,
-#memberContent .dash-top-grid .mistakes-card{height:100%;box-sizing:border-box;}
+#memberContent .dash-top-grid .mistakes-card,
+#memberContent .dash-top-grid .plan-feature-card{height:100%;box-sizing:border-box;}
+
+/* Tarjeta destacada de Plan de estudio en la fila de arriba del
+   dashboard (junto a "Continua donde te quedaste"): mismo lenguaje
+   visual que .daily-card/.mistakes-card (misma familia, mismo radio,
+   mismo hover), pero con acento azul para que se note que es la
+   recomendada del dia, sin llegar a un rediseño (mismos colores del
+   sitio: --blue/--blue-tint/--blue-deep, ya usados en otras partes). */
+.plan-feature-card{position:relative;display:flex;flex-direction:column;gap:8px;background:var(--blue-tint);border:2px solid var(--blue);border-radius:var(--radius-lg);padding:22px 24px;text-decoration:none;transition:transform .2s ease, box-shadow .2s ease;}
+.plan-feature-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(37,62,204,0.12);}
+.plan-feature-badge{position:absolute;top:14px;right:14px;background:var(--blue);color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
+.plan-feature-icon{width:44px;height:44px;border-radius:50%;background:#fff;color:var(--blue-deep);display:flex;align-items:center;justify-content:center;}
+.plan-feature-icon svg{width:22px;height:22px;}
+.plan-feature-card h2{font-family:'Baloo 2';margin:2px 0 0;font-size:1.18rem;color:var(--ink);}
+.plan-feature-sub{font-weight:700;color:var(--ink);margin:0;font-size:0.92rem;}
+.plan-feature-desc{color:var(--ink-soft);margin:0 0 4px;font-size:0.85rem;}
+.plan-feature-card .btn{margin-top:2px;}
+.plan-feature-meta{display:flex;align-items:center;gap:6px;color:var(--blue-deep);font-weight:600;font-size:0.78rem;margin-top:6px;}
+.plan-feature-meta svg{width:14px;height:14px;flex-shrink:0;}
+@media(max-width:899px){
+  .plan-feature-card{padding:18px 18px;}
+}
 #memberContent .daily-card{padding:14px 18px;gap:6px;}
 #memberContent .daily-card-top{gap:8px;}
 #memberContent .daily-card-top .stat-card-icon{width:32px;height:32px;}
