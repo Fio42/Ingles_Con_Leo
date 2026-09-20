@@ -454,6 +454,62 @@ const PROGRESS_KEY = 'leo_progress_v2';
 const PROGRESS_DATE_MIGRATION_KEY = 'leo_progress_localdate_migrated_v1';
 const MIN_SESSIONS_FOR_STATS = 1;
 
+/* Identidad estable de una sesión. La fecha se deja fuera a propósito:
+   versiones anteriores podían guardar la fecha en UTC y luego corregirla
+   localmente, pero startedAt, actividad, temas y respuestas sí describen
+   la misma sesión en el navegador y en Supabase. Sigue funcionando igual
+   con sesiones de Plan de estudio: results ya trae su propia skill por
+   ejercicio y JSON.stringify(s.results) la incluye tal cual, así que dos
+   copias de la misma sesión (local y la que vuelve de la nube) generan
+   la misma identidad sin ningún cambio aquí.
+
+   NOTA (encontrado en auditoría del 2026-09-20): esta función y
+   dedupeProgressSessions() se agregaron en el commit "Corregir
+   sincronización de progreso duplicado" (2d50966, 2026-09-12 13:14) pero
+   se borraron por accidente 20 minutos después en el commit "Agregar
+   1000 ejercicios..." (87c7f2d, 2026-09-12 13:34), que sin querer
+   sobreescribió loadProgress() con una versión más vieja. Desde entonces,
+   syncProgressFromCloud() (backend.js) llamaba a una función que ya no
+   existía; como esa llamada es la primera línea dentro de su try/catch,
+   el error se comía en silencio y NINGUNA sesión de la nube se llegaba a
+   fusionar con el progreso local (afectaba sobre todo abrir la cuenta en
+   un dispositivo nuevo: el progreso de otros dispositivos no aparecía).
+   Se restauran tal cual estaban, sin ningún cambio de diseño. */
+function progressSessionIdentity(s){
+  if(!s) return '';
+  return [
+    s.startedAt || '', s.skill || '', s.level || '',
+    JSON.stringify(s.topics || []), JSON.stringify(s.results || [])
+  ].join('|');
+}
+
+/* Las versiones anteriores podían conservar la sesión local y añadir la
+   misma sesión al volver de la nube. Solo quitamos copias con la misma
+   identidad exacta; si una de ellas tiene cloudId, se conserva esa porque
+   ya está vinculada a su fila real de Supabase. Nunca toca datos remotos. */
+function dedupeProgressSessions(p){
+  if(!p || !Array.isArray(p.sessions)) return false;
+  const unique = new Map();
+  let changed = false;
+  p.sessions.forEach(s=>{
+    const key = progressSessionIdentity(s);
+    const previous = unique.get(key);
+    if(!previous){
+      unique.set(key, s);
+    } else {
+      changed = true;
+      if(!previous.cloudId && s.cloudId) unique.set(key, s);
+    }
+  });
+  if(!changed) return false;
+  p.sessions = Array.from(unique.values()).sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
+  if(p.sessions.length){
+    const last = p.sessions[p.sessions.length - 1];
+    p.lastActivity = { skill:last.skill, level:last.level, topic:(last.topics&&last.topics[0])||null, date:last.date };
+  }
+  return true;
+}
+
 /* Migracion de una sola vez: antes de que existiera localDateStr(), el
    campo "date" de cada sesion se calculaba con Date#toISOString(), que
    siempre da la fecha en UTC. Para alguien en Mexico (UTC-6), cualquier
@@ -487,7 +543,11 @@ function migrateProgressDatesIfNeeded(p){
 function loadProgress(){
   try{
     const p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
-    if(p && Array.isArray(p.sessions)) return migrateProgressDatesIfNeeded(p);
+    if(p && Array.isArray(p.sessions)){
+      migrateProgressDatesIfNeeded(p);
+      if(dedupeProgressSessions(p)) saveProgressRaw(p);
+      return p;
+    }
   }catch(e){}
   return { sessions: [], lastActivity: null };
 }
@@ -652,8 +712,8 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E' }, SKILL_COLORS);
+const DISPLAY_SKILL_LABELS = Object.assign({ plan:'Plan de estudio', clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ plan:'#253ECC', clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E' }, SKILL_COLORS);
 const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
@@ -3114,6 +3174,25 @@ function renderContinueCard(container){
           <div class="continue-sub">Sigue repasando lo que se te ha complicado.</div>
         </div>
         <a href="errores.html" class="btn btn-primary">Continuar →</a>
+        <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
+      </div>`;
+    return;
+  }
+  if(last.skill === 'plan'){
+    // Plan de estudio mezcla varias habilidades reales en una sola
+    // sesion (ver runPlanSessionCore), asi que tampoco encaja en el
+    // "X de Y ejercicios de tal nivel" del bloque generico de abajo:
+    // SKILL_LABELS['plan']/SKILL_PAGE['plan'] no existen (a proposito,
+    // 'plan' no es una habilidad real), asi que sin esta rama esta
+    // tarjeta mostraria "undefined" y un boton roto.
+    container.innerHTML = `
+      <div class="continue-card">
+        <div>
+          <div class="continue-eyebrow">Continúa donde te quedaste</div>
+          <div class="continue-title">Plan de estudio${last.topic ? ' · ' + last.topic : ''}</div>
+          <div class="continue-sub">Tu próxima sesión, según tu progreso.</div>
+        </div>
+        <a href="plan-estudio.html" class="btn btn-primary">Continuar →</a>
         <div class="continue-note">Un poco cada día te acerca a tus metas.</div>
       </div>`;
     return;
