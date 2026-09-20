@@ -5,7 +5,7 @@
 // de Supabase) cuando hace clic en "Pagar con tarjeta (Stripe)".
 // Crea una sesión de Checkout de Stripe en modo suscripción,
 // ligada al id de ese usuario (client_reference_id), en modo
-// "embedded" (ui_mode=embedded): en vez de devolver un link al que
+// "embedded_page" (ui_mode=embedded_page): en vez de devolver un link al que
 // hay que redirigir, devuelve un client_secret que el navegador usa
 // para mostrar el formulario de tarjeta incrustado en la propia
 // página (miembros.html), sin salir del sitio. El webhook
@@ -100,7 +100,7 @@ Deno.serve(async (req: Request) => {
     body.set('line_items[0][quantity]', '1')
     body.set('client_reference_id', user.id)
     if (user.email) body.set('customer_email', user.email)
-    body.set('ui_mode', 'embedded')
+    body.set('ui_mode', 'embedded_page')
     body.set('return_url', BACK_URL + '?stripe=success')
 
     const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
