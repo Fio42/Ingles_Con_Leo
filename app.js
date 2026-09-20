@@ -3126,7 +3126,7 @@ function renderStreakCard(container){
         </div>`).join('')}
     </div>
     <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>
-    <div class="streak-goal">${frozenDate ? 'Pausaste tu racha un día, sigue practicando para no perderla.' : streakGoalMessage(streak, practicedCount)}</div>`;
+    <div class="streak-goal">${frozenDate ? 'Tu racha está en riesgo de perderse, practica hoy para mantenerla.' : streakGoalMessage(streak, practicedCount)}</div>`;
 }
 
 /* Meta semanal simple (7 días, la semana completa contando sáb/dom):
