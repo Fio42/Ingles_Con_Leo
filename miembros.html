@@ -181,7 +181,7 @@
         <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
-        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Solo falta activar la membresía ($2 USD / mes, oferta por tiempo limitado):</p>
+        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Activa tu membresía por $2 USD/mes (oferta por tiempo limitado).</p>
 
         <div id="paypalConfirming" style="display:none;">
           <p style="margin:0 0 10px;font-weight:700;">Estamos confirmando tu pago... ⏳</p>
@@ -195,17 +195,23 @@
         </div>
 
         <div id="payChooser">
-          <button class="btn btn-primary btn-block" id="payBtnMP">Pagar con Mercado Pago</button>
-          <button class="btn btn-primary btn-block" id="payStripeBtn" style="margin-top:10px;">Pagar con tarjeta internacional (Stripe)</button>
-          <button class="btn btn-primary btn-block" id="payPaypalBtn" style="margin-top:10px;">Pagar con PayPal</button>
+          <button class="btn btn-primary btn-block" id="payStripeBtn">💳 Pagar con tarjeta</button>
+          <p class="gate-hint" style="margin-top:8px;">Visa, Mastercard y otras tarjetas · Cobro automático mensual</p>
           <div class="gate-error" id="payStripeError">No pudimos generar el formulario de pago. Intenta de nuevo en un momento.</div>
+
+          <p class="gate-divider" style="margin:24px 0 0;">Otras formas de pago</p>
+          <button class="btn btn-ghost btn-block" id="payBtnMP" style="margin-top:12px;">Mercado Pago</button>
+          <button class="btn btn-ghost btn-block" id="payPaypalBtn" style="margin-top:10px;">PayPal</button>
           <div class="gate-error" id="payPaypalError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
-          <p class="gate-hint" style="margin-top:10px;">🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
+
+          <p class="gate-hint" style="margin-top:14px;">🔒 Pago seguro</p>
         </div>
 
         <!-- Formulario de tarjeta de Stripe incrustado aquí mismo (no redirige
-             a otra página): se muestra al elegir "Pagar con tarjeta
-             internacional (Stripe)" y se oculta el resto mientras tanto. -->
+             a otra página): se muestra al elegir "Pagar con tarjeta" y se
+             oculta el resto mientras tanto. Sigue siendo exactamente la
+             misma integración de Stripe (Embedded Checkout, suscripción
+             mensual) de antes: aquí solo cambió el texto/orden visual. -->
         <div id="stripeEmbeddedWrap" style="display:none;">
           <p class="gate-hint" style="margin:0 0 6px;text-align:left;"><a href="#" id="backFromStripeEmbedded" style="color:var(--blue);font-weight:600;">‹ Elegir otra forma de pago</a></p>
           <div id="stripeEmbeddedContainer"></div>
