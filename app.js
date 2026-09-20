@@ -563,31 +563,69 @@ function computeWeeklyStats(){
 }
 
 /* Fechas (YYYY-MM-DD) que forman parte de la racha ACTIVA actual, del día
-   más reciente hacia atrás, deteniéndose apenas hay un hueco (un día sin
-   práctica). Si la racha se corta, los días de antes del corte no se
-   incluyen: por diseño, si se pierde la racha, se pierde - no debe seguir
-   contando ni mostrándose como parte de la racha actual. */
+   más reciente hacia atrás. Igual que antes, si hay DOS días seguidos sin
+   práctica la racha se corta ahí (por diseño: si se pierde, se pierde, no
+   sigue contando ni mostrándose). La diferencia es que ahora se tolera UN
+   solo día salteado dentro de ese recorrido sin romper la racha (estilo
+   "streak freeze" de Chess.com/Duolingo): ese día se salta calladito y se
+   sigue contando hacia atrás, pero ese día en particular NO se agrega a
+   streakDates (no cuenta como practicado), así que el número de racha no
+   crece ese día, aunque tampoco se resetea a 0. getFrozenStreakDate() de
+   abajo dice cuál fue ese día salteado, para poder pintarlo distinto
+   (❄️) en vez de vacío en los puntitos de racha. */
 function computeActiveStreakDates(){
   const p = loadProgress();
-  const dates = Array.from(new Set(p.sessions.map(s=>s.date))).sort().reverse();
+  const practicedSet = new Set(p.sessions.map(s=>s.date));
+  if(!practicedSet.size) return [];
+
   const streakDates = [];
-  if(!dates.length) return streakDates;
+  let freezeAvailable = true;
   let cursor = new Date();
-  for(let i=0;i<dates.length;i++){
+  // Si hoy todavía no se practicó, no cuenta como "hueco" todavía (el día
+  // no ha terminado): arrancamos el recorrido desde ayer.
+  if(!practicedSet.has(localDateStr(cursor))){
+    cursor.setDate(cursor.getDate()-1);
+  }
+
+  while(true){
     const cursorStr = localDateStr(cursor);
-    if(dates[i] === cursorStr){
-      streakDates.push(dates[i]);
-      cursor.setDate(cursor.getDate()-1);
-    } else if(i===0 && dates[0] !== cursorStr){
-      const yest = new Date(); yest.setDate(yest.getDate()-1);
-      if(dates[0] === localDateStr(yest)){
-        streakDates.push(dates[0]);
-        cursor = yest;
-        cursor.setDate(cursor.getDate()-1);
-      } else break;
-    } else break;
+    if(practicedSet.has(cursorStr)){
+      streakDates.push(cursorStr);
+    } else if(freezeAvailable){
+      freezeAvailable = false;
+    } else {
+      break;
+    }
+    cursor.setDate(cursor.getDate()-1);
   }
   return streakDates;
+}
+
+/* La fecha (YYYY-MM-DD) del único día que se saltó "congelado" dentro de
+   la racha activa actual, o null si no hay ninguno (porque no hubo huecos,
+   o porque no hay racha). La usan renderStreakCard() y renderStatCards()
+   para pintar ese día con el ícono de pausa en vez de vacío. */
+function getFrozenStreakDate(){
+  const p = loadProgress();
+  const practicedSet = new Set(p.sessions.map(s=>s.date));
+  if(!practicedSet.size) return null;
+
+  let freezeAvailable = true;
+  let cursor = new Date();
+  if(!practicedSet.has(localDateStr(cursor))){
+    cursor.setDate(cursor.getDate()-1);
+  }
+  while(true){
+    const cursorStr = localDateStr(cursor);
+    if(practicedSet.has(cursorStr)){
+      cursor.setDate(cursor.getDate()-1);
+      continue;
+    }
+    if(freezeAvailable){
+      return cursorStr;
+    }
+    return null;
+  }
 }
 
 function computeStreak(){
@@ -3064,12 +3102,15 @@ function renderStreakCard(container){
   if(!container) return;
   const streakDates = new Set(computeActiveStreakDates());
   const streak = streakDates.size;
+  const frozenDate = getFrozenStreakDate();
   /* Los puntos solo marcan días que son parte de la racha ACTIVA (sin
      huecos hasta hoy), no simple asistencia de la semana: si la racha se
      cortó, los días de antes del corte se ven vacíos aunque sí hayas
-     practicado ese día. */
+     practicado ese día. El día "congelado" (si hay uno, ver
+     getFrozenStreakDate) se pinta aparte con ❄️: no cuenta como
+     practicado, pero tampoco rompe la racha. */
   const days = computeWeeklyBarData();
-  days.forEach(d => { d.inStreak = streakDates.has(d.date); });
+  days.forEach(d => { d.inStreak = streakDates.has(d.date); d.frozen = d.date === frozenDate; });
   const practicedCount = days.filter(d=>d.inStreak).length;
   container.innerHTML = `
     <div class="streak-flame">
@@ -3080,12 +3121,12 @@ function renderStreakCard(container){
     <div class="streak-dots">
       ${days.map(d=>`
         <div class="streak-dot">
-          <div class="streak-dot-mark ${d.inStreak ? 'done' : ''} ${d.isToday ? 'today-mark' : ''}"></div>
+          <div class="streak-dot-mark ${d.inStreak ? 'done' : ''} ${d.frozen ? 'frozen' : ''} ${d.isToday ? 'today-mark' : ''}">${d.frozen ? '❄️' : ''}</div>
           <span class="streak-dot-label">${d.label.slice(0,1)}</span>
         </div>`).join('')}
     </div>
     <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>
-    <div class="streak-goal">${streakGoalMessage(streak, practicedCount)}</div>`;
+    <div class="streak-goal">${frozenDate ? 'Pausaste tu racha un día, sigue practicando para no perderla.' : streakGoalMessage(streak, practicedCount)}</div>`;
 }
 
 /* Meta semanal simple (7 días, la semana completa contando sáb/dom):

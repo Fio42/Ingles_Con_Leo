@@ -285,3 +285,55 @@ create policy "profiles: update own last_seen" on public.profiles
 
 revoke update on public.profiles from authenticated;
 grant update (last_seen_at) on public.profiles to authenticated;
+
+-- ============================================================
+-- Actualización 2026-09-20 — pausar racha 1 día + correo de
+-- "tu racha está a punto de romperse".
+--
+-- La racha en sí (cuántos días llevas seguidos) se calcula en el
+-- navegador (ver computeActiveStreakDates/getFrozenStreakDate en
+-- app.js), no en Supabase: ahora tolera UN día salteado sin romperse
+-- (como el "streak freeze" de Chess.com/Duolingo), calculado a partir
+-- de las filas normales de progress_sessions, sin tocar la tabla.
+--
+-- Lo único que sí necesita Supabase es la columna de abajo, para que
+-- la Edge Function "streak-reminder-email" (ver
+-- supabase_functions/streak-reminder-email.ts) sepa a quién ya le
+-- mandó el correo hoy y no se lo repita. Corre esto en Supabase ->
+-- tu proyecto -> SQL Editor -> New query.
+-- ============================================================
+
+alter table public.profiles add column if not exists streak_reminder_last_sent date;
+
+-- Programa que "streak-reminder-email" corra sola una vez al día
+-- (01:00 UTC = 7pm hora de México, ver el comentario sobre zonas
+-- horarias arriba de esa función). Ella revisa progress_sessions y
+-- decide sola a quién avisarle: quien practicó ayer pero todavía no
+-- hoy, y no se le haya mandado ya el aviso de hoy.
+--
+-- *** ANTES DE CORRER ESTO ***: reemplaza TU_SECRET_KEY_AQUI por tu
+-- Secret Key real (Supabase -> Project Settings -> API Keys ->
+-- "Secret keys"), igual que hiciste para el Cron de upgrade-nudge-emails
+-- más arriba. Es secreta: no la pegues en ningún archivo del
+-- repositorio, solo aquí, directo en el SQL Editor. Y no olvides
+-- apagar "Verify JWT" en la configuración de esta función nueva en
+-- Supabase (igual que con las demás funciones automáticas).
+select cron.schedule(
+  'inglesconleo-streak-reminder-email',
+  '0 1 * * *',
+  $$
+  select net.http_post(
+    url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/streak-reminder-email',
+    headers := jsonb_build_object(
+      'apikey', 'TU_SECRET_KEY_AQUI',
+      'Content-Type', 'application/json'
+    ),
+    body := '{}'::jsonb
+  );
+  $$
+);
+
+-- Para revisar que el Cron quedó programado:
+--   select jobid, schedule, jobname, active from cron.job;
+-- Para pausarlo o borrarlo más adelante si hiciera falta:
+--   select cron.unschedule('inglesconleo-streak-reminder-email');
