@@ -237,7 +237,7 @@ const HTML_EMAIL_1 = `
     </p>
     <p style="color:#253ECC; font-size:15px; font-weight:bold; margin:20px 0 8px;">
       Por solo $2 USD al mes desbloqueas todo esto (precio por tiempo
-      limitado, luego sube):
+      limitado):
     </p>
     <ul style="color:#333; font-size:15px; line-height:1.85; padding-left:20px; margin:0;">
       <li><strong>Práctica ilimitada</strong> en gramática, vocabulario, listening, writing y speaking, sin límite diario</li>
