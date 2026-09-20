@@ -581,14 +581,40 @@
        pero apuntando directo a "Reportar un problema" en vez del menú
        principal — así el reporte llega en el momento en que el bug
        realmente pasó, no depende de que alguien encuentre el ícono solo.
-       Como mucho una vez por sesión de pestaña, para no ser invasivos. */
+       Como mucho una vez por sesión de pestaña, para no ser invasivos.
+       Si justo en ese momento hay una pregunta de práctica activa en
+       pantalla (body.leobot-away, ver initLeobotAutoHide en app.js), el
+       flotante está escondido a propósito para no tapar los botones del
+       ejercicio: esperamos calladitos a que esa sesión termine (o a que
+       cierren el modal de bienvenida) para recién ahí mostrar el aviso,
+       en vez de perderlo. Y por supuesto, si la persona ya ocultó el
+       asistente del todo ("Ocultar este asistente"), esto tampoco
+       aparece — promptGreet ya respeta HIDDEN_KEY. */
     var ERROR_PROMPT_KEY = 'leobot_error_prompt_session_v1';
+    var errorPromptQueued = false;
     window.addEventListener('error', function(){
       try{
         if(sessionStorage.getItem(ERROR_PROMPT_KEY) === '1') return;
-        sessionStorage.setItem(ERROR_PROMPT_KEY, '1');
       }catch(e){}
-      promptGreet('\u00bfAlgo se vio raro? Cu\u00e9ntanos \uD83D\uDC40', 'reportBug', 9000);
+      if(errorPromptQueued) return;
+      errorPromptQueued = true;
+
+      function showErrorPrompt(){
+        try{ sessionStorage.setItem(ERROR_PROMPT_KEY, '1'); }catch(e){}
+        promptGreet('\u00bfAlgo se vio raro? Cu\u00e9ntanos \uD83D\uDC40', 'reportBug', 9000);
+      }
+
+      if(document.body.classList.contains('leobot-away')){
+        var awayObserver = new MutationObserver(function(){
+          if(!document.body.classList.contains('leobot-away')){
+            awayObserver.disconnect();
+            showErrorPrompt();
+          }
+        });
+        awayObserver.observe(document.body, { attributes:true, attributeFilter:['class'] });
+      } else {
+        showErrorPrompt();
+      }
     });
   }
 
