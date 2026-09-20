@@ -306,7 +306,7 @@ grant update (last_seen_at) on public.profiles to authenticated;
 alter table public.profiles add column if not exists streak_reminder_last_sent date;
 
 -- Programa que "streak-reminder-email" corra sola una vez al día
--- (01:00 UTC = 7pm hora de México, ver el comentario sobre zonas
+-- (13:00 UTC = 7am hora de México, ver el comentario sobre zonas
 -- horarias arriba de esa función). Ella revisa progress_sessions y
 -- decide sola a quién avisarle: quien practicó ayer pero todavía no
 -- hoy, y no se le haya mandado ya el aviso de hoy.
@@ -320,7 +320,7 @@ alter table public.profiles add column if not exists streak_reminder_last_sent d
 -- Supabase (igual que con las demás funciones automáticas).
 select cron.schedule(
   'inglesconleo-streak-reminder-email',
-  '0 1 * * *',
+  '0 13 * * *',
   $$
   select net.http_post(
     url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/streak-reminder-email',
