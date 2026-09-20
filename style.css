@@ -691,12 +691,16 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .weekly-bar-label.today{color:var(--ink);}
 
 .streak-card{align-items:center;text-align:center;justify-content:center;gap:4px;}
+.streak-section{display:flex;flex-direction:column;align-items:center;width:100%;}
+.streak-section-week{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+.streak-subhead{font-weight:700;font-size:0.86rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px;}
 .streak-flame{width:52px;height:52px;border-radius:50%;background:var(--coral-tint);color:var(--coral);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
 .streak-flame svg{width:26px;height:26px;}
 .streak-number{font-family:'Baloo 2';font-weight:700;font-size:2rem;line-height:1;}
 .streak-caption{color:var(--ink-soft);font-size:0.86rem;margin-top:4px;}
 .streak-goal{color:var(--blue-deep);font-weight:700;font-size:0.86rem;margin-top:12px;background:var(--blue-tint);border-radius:999px;padding:8px 14px;}
-.streak-dots{display:flex;gap:8px;margin-top:18px;}
+.streak-goal-week{margin-top:14px;}
+.streak-dots{display:flex;gap:8px;margin-top:14px;}
 .streak-dot{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .streak-dot-mark{width:15px;height:15px;border-radius:50%;background:var(--paper-dim);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1;}
 .streak-dot-mark.done{background:var(--coral);border-color:var(--coral);}

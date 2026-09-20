@@ -3113,31 +3113,37 @@ function renderStreakCard(container){
   days.forEach(d => { d.inStreak = streakDates.has(d.date); d.frozen = d.date === frozenDate; });
   const practicedCount = days.filter(d=>d.inStreak).length;
   container.innerHTML = `
-    <div class="streak-flame">
-      <svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.545 3.75 3.75 0 0 1 3.255 3.717Z" fill="currentColor"/></svg>
+    <div class="streak-section streak-section-current">
+      <div class="streak-flame">
+        <svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 0 0-1.071-.136 9.742 9.742 0 0 0-3.539 6.176 7.547 7.547 0 0 1-1.705-1.715.75.75 0 0 0-1.152-.082A9 9 0 1 0 15.68 4.534a7.46 7.46 0 0 1-2.717-2.248ZM15.75 14.25a3.75 3.75 0 1 1-7.313-1.172c.628.465 1.35.81 2.133 1a5.99 5.99 0 0 1 1.925-3.545 3.75 3.75 0 0 1 3.255 3.717Z" fill="currentColor"/></svg>
+      </div>
+      <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
+      <div class="streak-caption">de racha seguida</div>
+      ${(frozenDate && !streakDates.has(localDateStr(new Date()))) ? `<div class="streak-goal">Tu racha está en riesgo de perderse, practica hoy para mantenerla.</div>` : ''}
     </div>
-    <div class="streak-number">${streak} ${streak === 1 ? 'día' : 'días'}</div>
-    <div class="streak-caption">de racha seguida</div>
-    <div class="streak-dots">
-      ${days.map(d=>`
-        <div class="streak-dot">
-          <div class="streak-dot-mark ${d.inStreak ? 'done' : ''} ${d.frozen ? 'frozen' : ''} ${d.isToday ? 'today-mark' : ''}">${d.frozen ? '❄️' : ''}</div>
-          <span class="streak-dot-label">${d.label.slice(0,1)}</span>
-        </div>`).join('')}
-    </div>
-    <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días esta semana</div>
-    <div class="streak-goal">${(frozenDate && !streakDates.has(localDateStr(new Date()))) ? 'Tu racha está en riesgo de perderse, practica hoy para mantenerla.' : streakGoalMessage(streak, practicedCount)}</div>`;
+    <div class="streak-section streak-section-week">
+      <div class="streak-subhead">Esta semana</div>
+      <div class="streak-dots">
+        ${days.map(d=>`
+          <div class="streak-dot">
+            <div class="streak-dot-mark ${d.inStreak ? 'done' : ''} ${d.frozen ? 'frozen' : ''} ${d.isToday ? 'today-mark' : ''}">${d.frozen ? '❄️' : ''}</div>
+            <span class="streak-dot-label">${d.label.slice(0,1)}</span>
+          </div>`).join('')}
+      </div>
+      <div class="streak-caption" style="margin-top:14px;">${practicedCount} de 7 días</div>
+      <div class="streak-goal streak-goal-week">${streakWeekMessage(practicedCount)}</div>
+    </div>`;
 }
 
 /* Meta semanal simple (7 días, la semana completa contando sáb/dom):
    mensaje corto segun racha y dias practicados esta semana, con los mismos
    datos que ya calculamos arriba (racha activa, no semana calendario). */
-function streakGoalMessage(streak, practicedCount){
+function streakWeekMessage(practicedCount){
   const WEEKLY_GOAL = 7;
-  if(practicedCount >= WEEKLY_GOAL) return '¡Meta semanal cumplida!';
-  if(streak === 0) return 'Empieza hoy y arranca tu racha.';
+  if(practicedCount >= WEEKLY_GOAL) return '¡Semana completada!';
   const left = WEEKLY_GOAL - practicedCount;
-  return `Te ${left === 1 ? 'falta' : 'faltan'} ${left} ${left === 1 ? 'día' : 'días'} para tu meta semanal.`;
+  if(left === 1) return '¡1 día más para completar esta semana!';
+  return `Te faltan ${left} días para completar esta semana.`;
 }
 
 /* ============================================================
