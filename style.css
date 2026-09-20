@@ -202,6 +202,9 @@ section{padding:52px 0;}
 .length-name{font-weight:700;font-size:0.9rem;color:var(--ink);}
 .length-sub{font-size:0.82rem;color:var(--ink-faint);}
 .length-card[aria-pressed="true"] .length-name,.length-card[aria-pressed="true"] .length-sub{color:var(--blue-deep);}
+.plan-preview-list{list-style:none;padding:0;margin:4px 0 22px;display:flex;flex-direction:column;gap:10px;}
+.plan-preview-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;background:var(--paper-dim);border-radius:12px;font-weight:600;}
+.plan-preview-list li b{color:var(--blue-deep);font-weight:700;white-space:nowrap;}
 
 /* ---------- Practice card ---------- */
 .practice-shell{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}
@@ -527,6 +530,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-icon-wrap.tint-writing{background:var(--amber-tint);color:var(--amber);}
 .skill-icon-wrap.tint-speaking{background:var(--violet-tint);color:var(--violet);}
 .skill-icon-wrap.tint-mixto{background:var(--paper-dim);color:var(--ink-soft);}
+.skill-icon-wrap.tint-plan{background:var(--blue-tint);color:var(--blue-deep);}
 .skill-icon-wrap.tint-toefl{background:var(--violet-tint);color:var(--violet-deep);}
 .skill-icon-wrap.tint-clases{background:var(--blue-tint);color:var(--blue-deep);}
 

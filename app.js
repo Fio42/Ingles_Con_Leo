@@ -536,8 +536,17 @@ function bankSizeFor(skill){
 
 function attemptedItemIdsFor(p, skill){
   const ids = new Set();
-  p.sessions.filter(s=>s.skill===skill).forEach(s=>{
-    (s.results||[]).forEach(r=> ids.add(r.itemId));
+  // Normalmente un resultado pertenece a la habilidad de su sesion
+  // (s.skill), pero "Plan de estudio" guarda UNA sola sesion mezclando
+  // varias habilidades reales, y cada resultado individual trae su
+  // propia r.skill para saber a cual pertenece de verdad (ver
+  // runPlanSessionCore). Si un resultado no trae r.skill (todas las
+  // sesiones de antes de Plan de estudio), se usa s.skill como siempre,
+  // asi que el comportamiento previo no cambia en nada.
+  p.sessions.forEach(s=>{
+    (s.results||[]).forEach(r=>{
+      if((r.skill || s.skill) === skill) ids.add(r.itemId);
+    });
   });
   return ids;
 }
@@ -2303,6 +2312,320 @@ function runMixSession({ container, level, onExit }){
 }
 function runFreeMixSession({ container, level, onOtherSkill }){
   runMixSessionCore({ container, level, onOtherSkill, isFree:true });
+}
+
+/* ============================================================
+   PLAN DE ESTUDIO — sesion diaria personalizada (solo Miembros)
+   ------------------------------------------------------------
+   No es "Mixto con otro nombre": arma la sesion combinando, en este
+   orden de prioridad, (1) errores pendientes (reutiliza el mismo
+   buildMistakePool() de "Mis errores"), (2) habilidades donde el
+   usuario tiene menos % de aciertos, (3) habilidades que lleva mas
+   tiempo sin practicar, (4) siempre dentro de su nivel actual, y
+   (5) un poco de variedad para no repetir la misma combinacion.
+   No usa IA ni genera ejercicios nuevos: solo elige items del mismo
+   banco (data.js) con las mismas funciones que ya arman las sesiones
+   de Gramatica/Vocabulario/etc (buildSessionPool) y de Mis errores
+   (buildMistakePool), y los reproduce con el mismo motor de Mixto
+   (renderMixItemInto). Un usuario sin historial (accuracy/ultima vez
+   nulos para todo) simplemente recibe pesos parejos entre las 5
+   habilidades, osea una sesion equilibrada por nivel, sin caso
+   especial aparte.
+
+   Registro de progreso (importante): una sesion de Plan de estudio
+   sigue siendo UNA sola sesion (una sola llamada a recordSession, un
+   solo renglon en "actividad reciente", no infla ningun contador de
+   sesiones ni la racha), pero cada resultado individual guarda su
+   propia habilidad real (result.skill) para que el aro de progreso de
+   Gramatica/Listening/etc, la cobertura del banco y "Mis errores"
+   sigan funcionando exactamente igual que si esos ejercicios se
+   hubieran hecho desde la pagina de esa habilidad. No se guarda
+   ninguna skill nueva tipo "mistakes"/"review": un error de Gramatica
+   sigue contando como Gramatica.
+   ============================================================ */
+
+// Mapas de ida y vuelta entre la "skill" real (como se guarda el
+// progreso: gramatica/vocabulario/listening/writing/speaking) y el
+// "kind" que ya usa el motor de Mixto para dibujar cada tipo de
+// ejercicio (grammar/vocab/listening/writing/speaking). Son los mismos
+// 5 que ya cubre Mixto (ver DASH_SKILLS); Plan de estudio no agrega
+// Lectura ni Cambridge/TOEFL/IELTS.
+const PLAN_SKILL_TO_KIND = { gramatica:'grammar', vocabulario:'vocab', listening:'listening', writing:'writing', speaking:'speaking' };
+const PLAN_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening', writing:'writing', speaking:'speaking' };
+const PLAN_BANK_BY_SKILL = { gramatica:GRAMMAR_BANK, vocabulario:VOCAB_BANK, listening:LISTENING_BANK, writing:WRITING_BANK, speaking:SPEAKING_BANK };
+
+// % de aciertos de una habilidad (0-100) usando el mismo historial de
+// siempre (p.sessions[].results), o null si nunca se calificó nada en
+// esa habilidad todavía. No existía una funcion para esto: hasta ahora
+// solo teniamos "% del banco ya visto" (computeSkillCoverage), no
+// "% de aciertos". Igual que el arreglo de attemptedItemIdsFor de
+// arriba, mira result.skill primero y cae a session.skill si el
+// resultado no trae su propia skill (sesiones de antes de Plan de
+// estudio, o de cualquier habilidad normal).
+function computeSkillAccuracy(p, skill){
+  let correct = 0, graded = 0;
+  p.sessions.forEach(s=>{
+    (s.results||[]).forEach(r=>{
+      if((r.skill || s.skill) !== skill) return;
+      if(r.isCorrect !== true && r.isCorrect !== false) return; // speaking no calificado, se ignora
+      graded++;
+      if(r.isCorrect) correct++;
+    });
+  });
+  return graded ? Math.round(correct/graded*100) : null;
+}
+
+// Fecha (YYYY-MM-DD) de la ultima vez que el usuario practico esa
+// habilidad, o null si nunca. Misma logica de result.skill/session.skill
+// que las funciones de arriba.
+function lastPracticedDateFor(p, skill){
+  let last = null;
+  p.sessions.forEach(s=>{
+    const touchesSkill = (s.results||[]).some(r => (r.skill || s.skill) === skill);
+    if(touchesSkill && (!last || s.date > last)) last = s.date;
+  });
+  return last;
+}
+
+// Dias completos desde una fecha YYYY-MM-DD hasta hoy (hora local),
+// o null si no hay fecha.
+function daysSinceDateStr(dateStr){
+  if(!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date(localDateStr() + 'T00:00:00');
+  return Math.max(0, Math.round((today - d) / 86400000));
+}
+
+/* Decide CUANTOS ejercicios de repaso de errores y de cada habilidad
+   real va a tener la sesion (sin armar los items todavia: eso lo hace
+   buildPlanPool). Se separa en dos pasos para poder mostrar la vista
+   previa sin "gastar" la memoria de variedad de buildSessionPool cada
+   vez que el usuario solo esta mirando/cambiando la duracion: esta
+   funcion no guarda nada en localStorage, se puede llamar las veces
+   que haga falta. */
+function computePlanSelection(level, targetCount){
+  const p = loadProgress();
+
+  // Prioridad 1: errores recientes. Hasta ~30% de la sesion (dejando
+  // siempre al menos 2 lugares para el resto), reutilizando tal cual
+  // buildMistakePool() de "Mis errores" (no filtra por nivel, igual
+  // que esa pantalla ya hace hoy: repasa el error tal como se dio).
+  const errorBudget = Math.max(0, Math.min(targetCount - 2, Math.round(targetCount * 0.3)));
+  const mistakeCandidates = errorBudget > 0 ? buildMistakePool(errorBudget) : [];
+  const mistakeCount = mistakeCandidates.length;
+  const remaining = Math.max(0, targetCount - mistakeCount);
+
+  // Prioridades 2 y 3: mas peso a habilidades con % de aciertos bajo
+  // y a las que lleva mas tiempo sin practicar. Prioridad 4 (nivel) se
+  // cumple sola porque buildPlanPool siempre toma el banco del nivel
+  // actual. Un poco de variedad (prioridad 5) con un jitter chico que
+  // no ignora el progreso, solo evita que el reparto sea identico dia
+  // a dia si las metricas no cambiaron.
+  const skills = DASH_SKILLS.slice();
+  const weights = {};
+  skills.forEach(sk=>{
+    const acc = computeSkillAccuracy(p, sk);
+    const idleDays = daysSinceDateStr(lastPracticedDateFor(p, sk));
+    let w = 1;
+    if(acc !== null) w += Math.max(0, 70 - acc) / 20;      // hasta +3.5 si acc=0%
+    if(idleDays !== null) w += Math.min(idleDays, 14) / 7; // hasta +2 a los 14+ dias
+    else w += 1.5;                                          // nunca practicada: peso parejo, no extremo
+    w *= 0.85 + Math.random() * 0.3;                         // variedad, sin ignorar lo anterior
+    weights[sk] = w;
+  });
+  const totalWeight = skills.reduce((sum, sk)=> sum + weights[sk], 0) || 1;
+
+  // Reparto proporcional a los pesos, redondeando con "mayor resto"
+  // para que la suma de cupos por habilidad sea exactamente "remaining".
+  const raw = skills.map(sk => ({ sk, val: (weights[sk] / totalWeight) * remaining }));
+  const bySkill = {};
+  let assigned = 0;
+  raw.forEach(r=>{ bySkill[r.sk] = Math.floor(r.val); assigned += bySkill[r.sk]; });
+  let leftover = remaining - assigned;
+  raw.sort((a,b)=> (b.val - Math.floor(b.val)) - (a.val - Math.floor(a.val)));
+  for(let i=0; leftover>0 && i<raw.length; i++, leftover--){ bySkill[raw[i].sk]++; }
+
+  return { mistakeCount, bySkill };
+}
+
+// Arma los ejercicios de verdad a partir de una seleccion ya decidida
+// (ver computePlanSelection). Aqui SI se usa buildSessionPool de las
+// paginas normales (con su misma memoria de "no repetir variante"), asi
+// que esta funcion debe llamarse una sola vez por sesion real, no en
+// cada repintado de la vista previa.
+function buildPlanPool(level, selection){
+  const entries = (selection.mistakeCount > 0 ? buildMistakePool(selection.mistakeCount) : [])
+    .map(e => Object.assign({ reviewOrigin:true }, e));
+  DASH_SKILLS.forEach(sk=>{
+    const count = selection.bySkill[sk] || 0;
+    if(!count) return;
+    const { pool } = buildSessionPool({ skill: sk, level, bankLevel: PLAN_BANK_BY_SKILL[sk][level], targetCount: count });
+    pool.forEach(item => entries.push({ kind: PLAN_SKILL_TO_KIND[sk], item }));
+  });
+  return shuffleArray(entries);
+}
+
+// Agrupa una seleccion para la vista previa ("Tu sesion de hoy"): solo
+// muestra las categorias que de verdad va a usar la sesion (nunca un
+// "0 ejercicios").
+function summarizePlanSelection(selection){
+  const groups = [];
+  if(selection.mistakeCount > 0) groups.push({ label:'Repaso de errores', count: selection.mistakeCount });
+  DASH_SKILLS.forEach(sk=>{
+    const count = selection.bySkill[sk] || 0;
+    if(count > 0) groups.push({ label: SKILL_LABELS[sk], count });
+  });
+  return groups;
+}
+
+/* ---------- Duracion de Plan de estudio (preferencia propia, separada
+   de leo_session_length para no afectar la duracion de Gramatica,
+   Vocabulario, etc). Normal queda seleccionada por defecto. ---------- */
+const PLAN_LENGTHS = {
+  rapida:   { label:'Rápida',   sub:'5 min',                 items:5 },
+  normal:   { label:'Normal',   sub:'10–15 min · Recomendada', items:9 },
+  completa: { label:'Completa', sub:'20–25 min',             items:15 }
+};
+const PLAN_LENGTH_KEY = 'leo_plan_length';
+function getPlanLength(){
+  try{
+    const v = localStorage.getItem(PLAN_LENGTH_KEY);
+    return PLAN_LENGTHS[v] ? v : 'normal';
+  }catch(e){ return 'normal'; }
+}
+function setPlanLength(len){
+  try{ if(PLAN_LENGTHS[len]) localStorage.setItem(PLAN_LENGTH_KEY, len); }catch(e){}
+}
+function renderPlanLengthSelector(container, selected, onChange){
+  if(!container) return;
+  container.innerHTML = Object.keys(PLAN_LENGTHS).map(key=>{
+    const l = PLAN_LENGTHS[key];
+    return `<button type="button" class="length-card" data-len="${key}" aria-pressed="${key===selected}">
+      <span class="length-name">${l.label}</span>
+      <span class="length-sub">${l.sub}</span>
+    </button>`;
+  }).join('');
+  container.querySelectorAll('.length-card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const len = btn.dataset.len;
+      if(len === selected) return;
+      onChange(len);
+    });
+  });
+}
+
+/* Pantalla inicial de Plan de estudio: duracion + vista previa. La
+   seleccion (cuantos de cada cosa) se calcula una vez por duracion
+   elegida y se reutiliza tal cual al presionar "Empezar mi sesion",
+   para que la sesion real sea identica a lo que se previsualizo. */
+function renderPlanIntro(container){
+  if(!container) return;
+  const level = getUserLevel();
+  let currentLen = getPlanLength();
+  let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items);
+
+  function paint(){
+    const groups = summarizePlanSelection(currentSelection);
+    container.innerHTML = `
+      <div class="session-shell">
+        <div class="examples-label">Duración</div>
+        <div class="lengths" id="planLengthSelector" style="margin-bottom:24px;"></div>
+        <div class="examples-label">Tu sesión de hoy</div>
+        <ul class="plan-preview-list">
+          ${groups.length ? groups.map(g=>`<li><span>${g.label}</span><b>${g.count} ${g.count===1?'ejercicio':'ejercicios'}</b></li>`).join('') : '<li><span>Sesión equilibrada para tu nivel</span></li>'}
+        </ul>
+        <button class="btn btn-primary btn-block" id="planStartBtn">Empezar mi sesión →</button>
+      </div>`;
+    renderPlanLengthSelector(document.getElementById('planLengthSelector'), currentLen, (newLen)=>{
+      currentLen = newLen;
+      setPlanLength(newLen);
+      currentSelection = computePlanSelection(level, PLAN_LENGTHS[newLen].items);
+      paint();
+    });
+    container.querySelector('#planStartBtn').addEventListener('click', ()=>{
+      const pool = buildPlanPool(level, currentSelection);
+      runPlanSessionCore({ container, level, pool });
+    });
+  }
+  paint();
+}
+
+/* Pantalla final de Plan de estudio: mismas clases visuales que
+   renderSessionSummary (session-summary/summary-score/summary-topics),
+   pero con el texto propio que pidió Leo para esta funcion. */
+function renderPlanSessionSummary({ correct, graded, total, topics }){
+  const scoreText = graded
+    ? `${correct} / ${graded} correctas · ${total} ejercicios completados · ${Math.round(correct/graded*100)}% de aciertos`
+    : `${total} ejercicios completados`;
+  return `
+    <div class="session-summary">
+      <h2>¡Sesión completada!</h2>
+      ${topics.length ? `
+        <div class="summary-topics">
+          <div class="examples-label">Hoy reforzaste:</div>
+          <ul>${topics.map(t=>`<li>${t}</li>`).join('')}</ul>
+        </div>` : ''}
+      <p class="summary-score">${scoreText}</p>
+      <div class="summary-actions">
+        <a href="miembros.html" class="btn btn-primary">Volver al dashboard</a>
+      </div>
+      <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:14px;">Vuelve mañana para continuar con tu plan.</p>
+    </div>`;
+}
+
+/* Motor de la sesion: reutiliza renderMixItemInto (el mismo que dibuja
+   cada ejercicio en Mixto) y el mismo patron de guardado "a medias"
+   (saveInflightSession/loadInflightSession/clearInflightSession) que ya
+   usan Mixto/Gramatica/Mis errores, con su propia llave 'plan' para no
+   pisar una sesion de Mixto a medias ni viceversa.
+
+   Al terminar: UNA sola llamada a recordSession (una sola sesion real,
+   no infla ningun contador ni la racha), pero cada resultado guarda su
+   propia skill real (ver PLAN_KIND_TO_SKILL) para que el progreso por
+   habilidad, la cobertura del banco y "Mis errores" se actualicen
+   exactamente igual que si esos ejercicios se hubieran hecho desde la
+   pagina de esa habilidad. */
+function runPlanSessionCore({ container, level, pool, onExit }){
+  stopActiveAudioFile();
+  const saved = loadInflightSession('plan', level);
+  const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
+  const activePool = useSaved ? saved.pool : pool;
+  const total = activePool.length;
+  const startedAt = useSaved ? saved.startedAt : Date.now();
+  const results = useSaved ? saved.results.slice() : [];
+  let idx = useSaved ? saved.idx : 0;
+
+  function renderItem(){
+    const entry = activePool[idx];
+    saveInflightSession('plan', level, { pool: activePool, idx, results, startedAt });
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Plan de estudio · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderMixItemInto(card, entry, (isCorrect)=>{
+      results.push({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] });
+      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
+    });
+  }
+
+  function finish(){
+    clearInflightSession('plan', level);
+    const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
+    const correct = graded.filter(r=>r.isCorrect).length;
+    const realSkillsUsed = [...new Set(results.map(r=>r.skill))];
+    const topics = realSkillsUsed.map(sk => SKILL_LABELS[sk] || sk);
+    recordSession({ skill:'plan', level, topics, results, startedAt });
+    container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
+    if(typeof onExit === 'function') onExit();
+  }
+
+  renderItem();
 }
 
 /* ============================================================
