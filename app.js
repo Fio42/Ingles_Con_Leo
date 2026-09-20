@@ -2196,7 +2196,7 @@ function renderFreeDailyLimitReachedBlock(){
       <p class="summary-score">Vuelve mañana para seguir practicando gratis, o hazte miembro y practica sin límites desde ahora.</p>
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres seguir ahora mismo?</p>
-        <p class="summary-unlock-copy">Con la membresía puedes seguir practicando sin límites, y además desbloquear tus errores, tu progreso, las clases y la preparación para exámenes. $2 USD al mes.</p>
+        <p class="summary-unlock-copy">Con la membresía puedes seguir practicando sin límites, y además desbloquear tus errores, tu progreso, las clases y la preparación para exámenes. $2 USD al mes (oferta por tiempo limitado).</p>
         <a href="miembros.html" class="btn btn-primary btn-block">Seguir practicando sin límites</a>
       </div>
     </div>`;
@@ -3388,7 +3388,7 @@ function renderFreeSessionSummary({ title, score, topics }){
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
         <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
-        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
+        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes (oferta por tiempo limitado)</a>
       </div>
     </div>`;
 }

@@ -182,7 +182,7 @@ function initRushGame(container){
             <a href="miembros.html" class="btn btn-primary">Continuar como miembro <span aria-hidden="true">→</span></a>
             <button type="button" class="btn btn-ghost" id="rushComeBack">Volver mañana</button>
           </div>
-          <p class="practice-members-price">$2 USD al mes · Cancela cuando quieras</p>
+          <p class="practice-members-price">$2 USD al mes (oferta por tiempo limitado) · Cancela cuando quieras</p>
         </div>`;
       const backBtn = container.querySelector('#rushComeBack');
       if(backBtn) backBtn.addEventListener('click', ()=>{ window.location.href = 'index.html'; });
@@ -437,7 +437,7 @@ function initRushGame(container){
             <a href="miembros.html" class="btn btn-primary">Continuar como miembro <span aria-hidden="true">→</span></a>
             <button type="button" class="btn btn-ghost" id="rushComeBack">Volver mañana</button>
           </div>
-          <p class="practice-members-price">$2 USD al mes · Cancela cuando quieras</p>
+          <p class="practice-members-price">$2 USD al mes (oferta por tiempo limitado) · Cancela cuando quieras</p>
         `}
       </div>`;
 

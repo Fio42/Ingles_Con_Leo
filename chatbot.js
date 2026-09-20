@@ -196,7 +196,7 @@
       text: function(){
         return isMember()
           ? 'Ya iniciaste sesión como miembro. Tienes las 5 habilidades completas (Gramática, Vocabulario, Listening, Writing y Speaking) y tu progreso se guarda en tu cuenta.'
-          : 'El área de miembros tiene ejercicios completos de Gramática, Vocabulario, Listening, Writing y Speaking, además de tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, ≈$40 MXN, vía Mercado Pago).';
+          : 'El área de miembros tiene ejercicios completos de Gramática, Vocabulario, Listening, Writing y Speaking, además de tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, ≈$40 MXN, vía Mercado Pago, oferta por tiempo limitado).';
       },
       options: function(){
         var opts = [membersCta()];
