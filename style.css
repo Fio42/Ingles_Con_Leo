@@ -205,6 +205,13 @@ section{padding:52px 0;}
 .plan-preview-list{list-style:none;padding:0;margin:4px 0 22px;display:flex;flex-direction:column;gap:10px;}
 .plan-preview-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;background:var(--paper-dim);border-radius:12px;font-weight:600;}
 .plan-preview-list li b{color:var(--blue-deep);font-weight:700;white-space:nowrap;}
+.plan-intro-hint{color:var(--ink-faint);font-size:0.92rem;margin:-6px 0 18px;}
+.plan-difficulty-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;background:var(--paper-dim);border-radius:12px;margin-bottom:0;}
+.plan-difficulty-current{font-weight:700;}
+.plan-difficulty-note{color:var(--ink-faint);font-weight:600;font-size:0.85rem;}
+.plan-difficulty-toggle{background:transparent;border:none;color:var(--blue-deep);font-weight:700;font-size:0.9rem;cursor:pointer;padding:6px 4px;white-space:nowrap;}
+.plan-difficulty-toggle:hover{text-decoration:underline;}
+
 
 /* ---------- Practice card ---------- */
 .practice-shell{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);}

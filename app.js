@@ -2574,6 +2574,62 @@ function renderPlanLengthSelector(container, selected, onChange){
   });
 }
 
+/* ---------- Dificultad de Plan de estudio ----------
+   No existe informacion de dificultad por ejercicio en el banco (solo
+   el nivel general LEVELS = ['principiante','facil','medio','avanzado']).
+   Por eso "dificultad" no inventa una escala nueva: simplemente mueve
+   UN paso dentro de la misma escalera de niveles que ya existe, nunca
+   mas, y nunca por debajo/encima de los limites reales. 'A tu nivel'
+   (recomendado, y el valor por defecto siempre) no mueve nada.
+   Esto solo afecta que banco de nivel usa buildPlanPool() para la
+   porcion "fresca" de la sesion; NO cambia cuantos ejercicios de cada
+   habilidad se eligen (eso lo decide computePlanSelection, que no
+   recibe la dificultad), asi que el orden de prioridad ya existente
+   (errores > habilidades debiles > olvidadas > nivel > variedad) queda
+   intacto y la dificultad se aplica al final, sobre los ejercicios
+   concretos. Los items de repaso de errores (buildMistakePool) tampoco
+   cambian de nivel: se revisa el item exacto que se fallo, no una
+   version re-nivelada. */
+const PLAN_DIFFICULTIES = {
+  facil:        { label:'Fácil',      sub:'Un paso más sencillo' },
+  recommended:  { label:'A tu nivel', sub:'Recomendada' },
+  dificil:      { label:'Difícil',    sub:'Un paso más exigente' }
+};
+const PLAN_DIFFICULTY_KEY = 'leo_plan_difficulty';
+function getPlanDifficulty(){
+  try{
+    const v = localStorage.getItem(PLAN_DIFFICULTY_KEY);
+    return PLAN_DIFFICULTIES[v] ? v : 'recommended';
+  }catch(e){ return 'recommended'; }
+}
+function setPlanDifficulty(diff){
+  try{ if(PLAN_DIFFICULTIES[diff]) localStorage.setItem(PLAN_DIFFICULTY_KEY, diff); }catch(e){}
+}
+function resolvePlanContentLevel(userLevel, difficulty){
+  const idx = LEVELS.indexOf(userLevel);
+  if(idx === -1) return userLevel;
+  if(difficulty === 'facil') return LEVELS[Math.max(0, idx - 1)];
+  if(difficulty === 'dificil') return LEVELS[Math.min(LEVELS.length - 1, idx + 1)];
+  return userLevel;
+}
+function renderPlanDifficultySelector(container, selected, onChange){
+  if(!container) return;
+  container.innerHTML = Object.keys(PLAN_DIFFICULTIES).map(key=>{
+    const d = PLAN_DIFFICULTIES[key];
+    return `<button type="button" class="length-card" data-diff="${key}" aria-pressed="${key===selected}">
+      <span class="length-name">${d.label}</span>
+      <span class="length-sub">${d.sub}</span>
+    </button>`;
+  }).join('');
+  container.querySelectorAll('.length-card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const diff = btn.dataset.diff;
+      if(diff === selected) return;
+      onChange(diff);
+    });
+  });
+}
+
 /* Pantalla inicial de Plan de estudio: duracion + vista previa. La
    seleccion (cuantos de cada cosa) se calcula una vez por duracion
    elegida y se reutiliza tal cual al presionar "Empezar mi sesion",
@@ -2582,14 +2638,26 @@ function renderPlanIntro(container){
   if(!container) return;
   const level = getUserLevel();
   let currentLen = getPlanLength();
+  let currentDiff = getPlanDifficulty();
   let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items);
+  let diffPanelOpen = false;
 
   function paint(){
     const groups = summarizePlanSelection(currentSelection);
+    const diffMeta = PLAN_DIFFICULTIES[currentDiff];
     container.innerHTML = `
       <div class="session-shell">
+        <p class="plan-intro-hint">Elige cuánto tiempo quieres practicar. Nosotros elegimos qué te conviene trabajar hoy.</p>
         <div class="examples-label">Duración</div>
         <div class="lengths" id="planLengthSelector" style="margin-bottom:24px;"></div>
+        <div class="plan-difficulty-row">
+          <div>
+            <div class="examples-label">Dificultad ${currentDiff==='recommended' ? 'recomendada' : ''}</div>
+            <div class="plan-difficulty-current">${diffMeta.label}${currentDiff==='recommended' ? ' <span class="plan-difficulty-note">· Basada en tu progreso.</span>' : ''}</div>
+          </div>
+          <button type="button" class="plan-difficulty-toggle" id="planDiffToggle">Cambiar dificultad ${diffPanelOpen ? '▴' : '▾'}</button>
+        </div>
+        <div class="lengths" id="planDifficultySelector" style="margin:${diffPanelOpen ? '12px 0 24px' : '0'};${diffPanelOpen ? '' : 'display:none;'}"></div>
         <div class="examples-label">Tu sesión de hoy</div>
         <ul class="plan-preview-list">
           ${groups.length ? groups.map(g=>`<li><span>${g.label}</span><b>${g.count} ${g.count===1?'ejercicio':'ejercicios'}</b></li>`).join('') : '<li><span>Sesión equilibrada para tu nivel</span></li>'}
@@ -2602,9 +2670,19 @@ function renderPlanIntro(container){
       currentSelection = computePlanSelection(level, PLAN_LENGTHS[newLen].items);
       paint();
     });
+    renderPlanDifficultySelector(document.getElementById('planDifficultySelector'), currentDiff, (newDiff)=>{
+      currentDiff = newDiff;
+      setPlanDifficulty(newDiff);
+      paint();
+    });
+    container.querySelector('#planDiffToggle').addEventListener('click', ()=>{
+      diffPanelOpen = !diffPanelOpen;
+      paint();
+    });
     container.querySelector('#planStartBtn').addEventListener('click', ()=>{
-      const pool = buildPlanPool(level, currentSelection);
-      runPlanSessionCore({ container, level, pool });
+      const contentLevel = resolvePlanContentLevel(level, currentDiff);
+      const pool = buildPlanPool(contentLevel, currentSelection);
+      runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
     });
   }
   paint();
@@ -2627,9 +2705,10 @@ function renderPlanSessionSummary({ correct, graded, total, topics }){
         </div>` : ''}
       <p class="summary-score">${scoreText}</p>
       <div class="summary-actions">
-        <a href="miembros.html" class="btn btn-primary">Volver al dashboard</a>
+        <button type="button" class="btn btn-primary" id="planAnotherBtn">Hacer otra sesión</button>
+        <a href="miembros.html" class="btn btn-ghost">Volver al dashboard</a>
       </div>
-      <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:14px;">Vuelve mañana para continuar con tu plan.</p>
+      <p style="color:var(--ink-faint);font-size:0.85rem;margin-top:14px;">Mañana tendrás una nueva recomendación basada en tu progreso.</p>
     </div>`;
 }
 
@@ -2645,7 +2724,7 @@ function renderPlanSessionSummary({ correct, graded, total, topics }){
    habilidad, la cobertura del banco y "Mis errores" se actualicen
    exactamente igual que si esos ejercicios se hubieran hecho desde la
    pagina de esa habilidad. */
-function runPlanSessionCore({ container, level, pool, onExit }){
+function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
   stopActiveAudioFile();
   const saved = loadInflightSession('plan', level);
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
@@ -2682,6 +2761,12 @@ function runPlanSessionCore({ container, level, pool, onExit }){
     const topics = realSkillsUsed.map(sk => SKILL_LABELS[sk] || sk);
     recordSession({ skill:'plan', level, topics, results, startedAt });
     container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
+    const anotherBtn = container.querySelector('#planAnotherBtn');
+    if(anotherBtn){
+      anotherBtn.addEventListener('click', ()=>{
+        if(typeof onAnother === 'function') onAnother();
+      });
+    }
     if(typeof onExit === 'function') onExit();
   }
 
