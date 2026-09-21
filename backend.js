@@ -387,10 +387,85 @@ const LeoBackend = (function(){
     }
   }
 
+  /* Comentarios en los articulos (articulo-*.html). No requiere
+     sesion iniciada: cualquiera puede comentar, con o sin cuenta.
+     Ver supabase_schema.sql (tabla article_comments) y la funcion
+     notify-new-comment (le avisa a Leo por correo cada comentario
+     nuevo, con el articulo y quien escribio). */
+  async function getArticleComments(slug){
+    const sb = getClient();
+    if(!sb) return [];
+    try{
+      const { data, error } = await sb.from('article_comments')
+        .select('id, display_name, is_member, comment_text, created_at, user_id, parent_comment_id')
+        .eq('article_slug', slug)
+        .order('created_at', { ascending: false })
+        .limit(200);
+      if(error) return [];
+      return data || [];
+    }catch(e){ return []; }
+  }
+
+  /* parentCommentId: solo lo usa la respuesta del admin (ver
+     app.js, openReplyForm). notify: en false evita mandarle a Leo
+     el correo de aviso quien comenta es el mismo Leo respondiendo
+     (sus propias respuestas no necesitan avisarle a el mismo). */
+  async function postArticleComment({ slug, articleTitle, displayName, commentText, isMember, userId, parentCommentId, notify }){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const row = {
+        article_slug: slug,
+        article_title: articleTitle || null,
+        user_id: userId || null,
+        is_member: !!isMember,
+        display_name: displayName,
+        comment_text: commentText
+      };
+      if(parentCommentId) row.parent_comment_id = parentCommentId;
+      const { data, error } = await sb.from('article_comments').insert(row).select('id').single();
+      if(error) return { ok:false, error: error.message };
+      /* Aviso a Leo por correo. No bloquea ni rompe nada si falla
+         (fire-and-forget): el comentario ya quedo guardado. */
+      if(notify !== false){
+        try{
+          fetch(SUPABASE_URL + '/functions/v1/notify-new-comment', {
+            method: 'POST',
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ comment_id: data.id })
+          });
+        }catch(e){}
+      }
+      return { ok:true, id: data.id };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
+  /* Borrar un comentario (o una respuesta). Solo funciona de
+     verdad si quien esta logueado es la cuenta admin: lo autoriza
+     la policy de RLS "article_comments: delete admin" en Supabase,
+     comparando la sesion real contra el id de Leo. Si alguien mas
+     lo intenta, Supabase simplemente no borra nada (0 filas), asi
+     que lo tratamos como error para que el navegador avise. */
+  async function deleteArticleComment(id){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const { data, error } = await sb.from('article_comments').delete().eq('id', id).select('id');
+      if(error) return { ok:false, error: error.message };
+      if(!data || !data.length) return { ok:false, error:'not_allowed' };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout
+    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
+    getArticleComments, postArticleComment, deleteArticleComment
   };
 })();
 

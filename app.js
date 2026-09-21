@@ -4558,3 +4558,268 @@ function renderDailyMiniLesson(){
   if(esEl) esEl.textContent = lesson.es;
   if(explainEl) explainEl.textContent = lesson.explain;
 }
+
+/* ============================================================
+   Comentarios en articulos (articulo-*.html)
+   ------------------------------------------------------------
+   Cualquiera puede comentar, sin necesidad de crear cuenta:
+   - Si la persona tiene sesion iniciada Y es miembro pagado
+     (profiles.is_member = true en Supabase), su comentario queda
+     marcado "Miembro" y usa como nombre lo mismo que ya se usa en
+     el menu de arriba (initMemberHeader): su nombre de perfil local
+     si lo puso al hacer el onboarding, o si no, la parte del correo
+     antes de la "@".
+   - Si no (no tiene sesion, o tiene cuenta pero todavia no es
+     miembro pagado), es "invitado": se le asigna un nombre al azar
+     tipo "Panda482" (un animal de una lista fija + 3 numeros), sin
+     nada ofensivo. Ese nombre se guarda en este navegador
+     (localStorage) para que use el mismo en todos los comentarios
+     que deje aqui, en todos los articulos, en vez de que le cambie
+     cada vez.
+   - La cuenta administradora (Leo, ver ADMIN_USER_ID) ve botones de
+     "Responder" y "Borrar" debajo de cada comentario. Solo se
+     muestran si su sesion coincide con ese id; pero lo que de
+     verdad protege esto es Supabase (RLS en article_comments): esa
+     comprobacion en el navegador es solo para no mostrar botones
+     que igual no podrian usar. Una respuesta de Leo se guarda como
+     un comentario mas, con parent_comment_id apuntando al original
+     (una sola capa, no se puede responder a una respuesta) y se
+     identifica en pantalla como "Inglés con Leo · Admin" siempre
+     que su user_id sea el de Leo (nunca por un dato que mande el
+     navegador).
+   Los comentarios se guardan en Supabase (tabla article_comments,
+   ver supabase_schema.sql) y se publican de inmediato. A Leo le
+   llega un correo avisando cada comentario nuevo (menos sus propias
+   respuestas), con el articulo y quien lo escribio (ver
+   supabase_functions/notify-new-comment.ts), asi puede borrar algo
+   inapropiado desde la propia pagina o desde Supabase.
+   ============================================================ */
+
+/* Id de usuario de Supabase Auth de Leo (no es secreto: un user id
+   de Supabase no sirve para nada sin la sesion real de esa cuenta,
+   igual que la URL/anon key del proyecto ya visibles en backend.js).
+   Es el mismo valor que exige la policy de RLS en Supabase para
+   dejar borrar o publicar una respuesta identificada como admin:
+   aunque alguien cambie esto en el navegador, Supabase solo va a
+   aceptar el borrado/respuesta si su sesion real es esta cuenta. */
+const ADMIN_USER_ID = 'f8c0bf1f-57c9-462a-addf-17559aeab69f';
+
+const COMMENT_GUEST_NAME_KEY = 'leo_comment_guest_name';
+const COMMENT_GUEST_ANIMALS = ['Panda','Zorro','Koala','Lobo','Gato','Perro','Buho','Oso','Conejo','Delfin','Tucan','Pinguino','Mapache','Nutria','Leon','Tigre'];
+
+function getOrCreateGuestCommentName(){
+  try{
+    const saved = localStorage.getItem(COMMENT_GUEST_NAME_KEY);
+    if(saved) return saved;
+  }catch(e){}
+  const animal = COMMENT_GUEST_ANIMALS[Math.floor(Math.random() * COMMENT_GUEST_ANIMALS.length)];
+  const num = Math.floor(100 + Math.random() * 900);
+  const name = `${animal}${num}`;
+  try{ localStorage.setItem(COMMENT_GUEST_NAME_KEY, name); }catch(e){}
+  return name;
+}
+
+function commentEscapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c];
+  });
+}
+
+function formatCommentDate(iso){
+  try{
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' });
+  }catch(e){ return ''; }
+}
+
+async function initArticleComments(){
+  const root = document.getElementById('article-comments');
+  if(!root) return;
+
+  if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()){
+    root.style.display = 'none';
+    return;
+  }
+
+  const slug = (location.pathname.split('/').pop() || 'articulo').replace(/\.html$/i, '');
+  const h1 = document.querySelector('article h1') || document.querySelector('h1');
+  const articleTitle = h1 ? h1.textContent.trim() : document.title;
+
+  let session = null, memberProfile = null;
+  try{ session = await LeoBackend.getSession(); }catch(e){}
+  if(session){
+    try{ memberProfile = await LeoBackend.getMemberProfile(); }catch(e){}
+  }
+  const isMember = !!(memberProfile && memberProfile.is_member);
+  /* Esto solo decide que botones mostrar. Quien de verdad autoriza
+     borrar o publicar una respuesta de admin es Supabase (RLS),
+     comparando la sesion real contra ADMIN_USER_ID otra vez del
+     lado del servidor. */
+  const isAdmin = !!(session && session.user && session.user.id === ADMIN_USER_ID);
+  let myName, myUserId = null;
+  if(isAdmin){
+    myName = 'Inglés con Leo';
+    myUserId = session.user.id;
+  } else if(isMember){
+    const localProfile = getProfile();
+    const email = memberProfile.email || '';
+    myName = (localProfile && localProfile.name) ? localProfile.name : (email ? email.split('@')[0] : 'Miembro');
+    myUserId = session.user.id;
+  } else {
+    myName = getOrCreateGuestCommentName();
+  }
+
+  root.innerHTML = `
+    <h2>Comentarios</h2>
+    <form class="comment-form" id="commentForm">
+      <div class="comment-form-name">Vas a comentar como <strong>${commentEscapeHtml(myName)}</strong>${isMember && !isAdmin ? ' <span class="badge badge-members">Miembro</span>' : ''}</div>
+      <textarea id="commentText" maxlength="1000" placeholder="Escribe tu comentario o tu pregunta..." required></textarea>
+      <button type="submit" class="btn btn-primary" id="commentSubmitBtn">Publicar comentario</button>
+      <p class="form-status" id="commentStatus"></p>
+    </form>
+    <div class="comment-list" id="commentList"><p class="comment-loading">Cargando comentarios...</p></div>
+  `;
+
+  const listEl = document.getElementById('commentList');
+  const statusEl = document.getElementById('commentStatus');
+  const formEl = document.getElementById('commentForm');
+  const btn = document.getElementById('commentSubmitBtn');
+
+  function commentActionsHtml(c){
+    if(!isAdmin) return '';
+    const canReply = !c.parent_comment_id && !c._hasReply;
+    return `
+        <div class="comment-actions">
+          ${canReply ? `<button type="button" class="comment-action-btn" data-reply-id="${c.id}">Responder</button>` : ''}
+          <button type="button" class="comment-action-btn danger" data-delete-id="${c.id}">Borrar</button>
+        </div>`;
+  }
+
+  function commentItemHtml(c, isReply){
+    const isCommentAdmin = c.user_id && c.user_id === ADMIN_USER_ID;
+    const nameHtml = isCommentAdmin
+      ? '<span class="comment-item-name comment-admin-label">Inglés con Leo · Admin</span>'
+      : `<span class="comment-item-name">${commentEscapeHtml(c.display_name)}</span>${(c.is_member && !isCommentAdmin) ? ' <span class="badge badge-members">Miembro</span>' : ''}`;
+    return `
+      <div class="${isReply ? 'comment-item comment-reply' : 'comment-item'}" data-comment-id="${c.id}">
+        <div class="comment-item-head">
+          ${nameHtml}
+          <span class="comment-item-date">${formatCommentDate(c.created_at)}</span>
+        </div>
+        <p class="comment-item-text">${commentEscapeHtml(c.comment_text)}</p>
+        ${commentActionsHtml(c)}
+        <div class="comment-reply-slot" id="replySlot-${c.id}"></div>
+      </div>`;
+  }
+
+  function renderComments(comments){
+    const topLevel = comments.filter(c => !c.parent_comment_id);
+    const repliesByParent = {};
+    comments.forEach(c => {
+      if(c.parent_comment_id) repliesByParent[c.parent_comment_id] = c;
+    });
+    if(!topLevel.length){
+      listEl.innerHTML = '<p class="comment-empty">Todavia no hay comentarios. Se el primero en escribir.</p>';
+      return;
+    }
+    listEl.innerHTML = topLevel.map(function(c){
+      const reply = repliesByParent[c.id];
+      c._hasReply = !!reply;
+      return commentItemHtml(c, false) + (reply ? commentItemHtml(reply, true) : '');
+    }).join('');
+    if(isAdmin) wireAdminButtons();
+  }
+
+  async function loadComments(){
+    let comments = [];
+    try{ comments = await LeoBackend.getArticleComments(slug); }catch(e){}
+    renderComments(comments);
+  }
+
+  function wireAdminButtons(){
+    listEl.querySelectorAll('[data-reply-id]').forEach(function(elBtn){
+      elBtn.addEventListener('click', function(){
+        openReplyForm(Number(elBtn.getAttribute('data-reply-id')));
+      });
+    });
+    listEl.querySelectorAll('[data-delete-id]').forEach(function(elBtn){
+      elBtn.addEventListener('click', function(){
+        deleteComment(Number(elBtn.getAttribute('data-delete-id')));
+      });
+    });
+  }
+
+  function openReplyForm(parentId){
+    const slot = document.getElementById('replySlot-' + parentId);
+    if(!slot || slot.querySelector('form')) return;
+    slot.innerHTML = `
+      <form class="comment-reply-form" data-parent-id="${parentId}">
+        <textarea maxlength="1000" placeholder="Escribe tu respuesta como Inglés con Leo..." required></textarea>
+        <div class="comment-actions">
+          <button type="submit" class="comment-action-btn">Publicar respuesta</button>
+          <button type="button" class="comment-action-btn" data-cancel-reply="1">Cancelar</button>
+        </div>
+      </form>`;
+    const formNode = slot.querySelector('form');
+    formNode.querySelector('[data-cancel-reply]').addEventListener('click', function(){ slot.innerHTML = ''; });
+    formNode.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const textEl = formNode.querySelector('textarea');
+      const text = textEl.value.trim();
+      if(!text) return;
+      const submitBtn = formNode.querySelector('button[type=submit]');
+      submitBtn.disabled = true;
+      const res = await LeoBackend.postArticleComment({
+        slug: slug, articleTitle: articleTitle, displayName: 'Inglés con Leo',
+        commentText: text, isMember: false, userId: myUserId,
+        parentCommentId: parentId, notify: false
+      });
+      if(!res.ok){
+        submitBtn.disabled = false;
+        alert('Hubo un problema al publicar la respuesta. Intenta de nuevo.');
+        return;
+      }
+      loadComments();
+    });
+  }
+
+  async function deleteComment(id){
+    if(!confirm('¿Seguro que quieres borrar este comentario?')) return;
+    const res = await LeoBackend.deleteArticleComment(id);
+    if(!res.ok){
+      alert('No se pudo borrar el comentario. Intenta de nuevo.');
+      return;
+    }
+    loadComments();
+  }
+
+  formEl.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const textEl = document.getElementById('commentText');
+    const text = textEl.value.trim();
+    if(!text){
+      statusEl.textContent = 'Escribe algo antes de publicar.';
+      statusEl.className = 'form-status error';
+      return;
+    }
+    btn.disabled = true;
+    statusEl.textContent = 'Publicando...';
+    statusEl.className = 'form-status';
+    const res = await LeoBackend.postArticleComment({
+      slug: slug, articleTitle: articleTitle, displayName: myName,
+      commentText: text, isMember: isMember, userId: myUserId
+    });
+    btn.disabled = false;
+    if(!res.ok){
+      statusEl.textContent = 'Hubo un problema al publicar. Intenta de nuevo en un momento.';
+      statusEl.className = 'form-status error';
+      return;
+    }
+    textEl.value = '';
+    statusEl.textContent = 'Comentario publicado.';
+    statusEl.className = 'form-status ok';
+    loadComments();
+  });
+
+  loadComments();
+}

@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260916b">
+<link rel="stylesheet" href="style.css?v=20260921b">
 <link rel="stylesheet" href="chatbot.css?v=20260913">
 <script type="application/ld+json">
 {
@@ -289,7 +289,8 @@
     <p style="margin-top:28px;font-size:0.92rem;color:var(--ink-faint);">
       ¿Todavía no repasas el verbo to be? Es la base sobre la que se construye casi toda la gramática básica del inglés: <a href="articulo-verbo-to-be.html" class="inline-link" style="color:var(--ink-faint);text-decoration:underline;">míralo aquí</a>.
     </p>
-  </article>
+    <section class="article-comments" id="article-comments"></section>
+</article>
 </main>
 
 <footer>
@@ -337,7 +338,9 @@
     Miembros
   </button>
 </nav>
-<script src="app.js?v=20260917"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="backend.js?v=20260921b"></script>
+<script src="app.js?v=20260921b"></script>
 <script src="chatbot.js?v=20260914"></script>
 <script>
   initOnboarding(); personalizeNav();
@@ -354,5 +357,6 @@
   })();
 </script>
 
+<script>document.addEventListener("DOMContentLoaded", function(){ if (typeof initArticleComments === "function") initArticleComments(); });</script>
 </body>
 </html>

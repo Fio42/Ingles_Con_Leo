@@ -337,3 +337,139 @@ select cron.schedule(
 --   select jobid, schedule, jobname, active from cron.job;
 -- Para pausarlo o borrarlo más adelante si hiciera falta:
 --   select cron.unschedule('inglesconleo-streak-reminder-email');
+
+-- ============================================================
+-- Comentarios en los articulos (articulo-*.html).
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+--
+-- Cualquiera puede comentar, con o sin cuenta:
+--   - user_id queda null para invitados (is_member = false), y con
+--     el id real de la persona cuando SI es miembro pagado
+--     (is_member = true, igual que profiles.is_member).
+--   - display_name es el nombre que se ve en el comentario: el de
+--     su cuenta si es miembro, o uno generado al azar (tipo
+--     "TigreCurioso482") si es invitado. Eso lo decide app.js, no
+--     esta tabla.
+--   - Se publican de inmediato (sin aprobación previa). A Leo le
+--     llega un correo por cada comentario nuevo (ver la Edge
+--     Function notify-new-comment), así puede borrar uno desde
+--     Supabase -> Table Editor -> article_comments si hace falta.
+-- ============================================================
+
+create table if not exists public.article_comments (
+  id bigint generated always as identity primary key,
+  article_slug text not null,
+  article_title text,
+  user_id uuid references auth.users(id) on delete set null,
+  is_member boolean not null default false,
+  display_name text not null,
+  comment_text text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists article_comments_slug_idx on public.article_comments(article_slug, created_at desc);
+
+alter table public.article_comments enable row level security;
+
+-- Cualquiera puede LEER los comentarios (se muestran en la página
+-- pública del artículo, sin necesidad de sesión).
+drop policy if exists "article_comments: select all" on public.article_comments;
+create policy "article_comments: select all" on public.article_comments
+  for select using (true);
+
+-- Cualquiera puede ESCRIBIR un comentario, con límites básicos de
+-- tamaño para evitar textos vacíos o gigantes, y para que nadie
+-- pueda hacerse pasar por el user_id de otra persona logueada.
+drop policy if exists "article_comments: insert all" on public.article_comments;
+create policy "article_comments: insert all" on public.article_comments
+  for insert with check (
+    char_length(comment_text) > 0 and char_length(comment_text) <= 1000
+    and char_length(display_name) > 0 and char_length(display_name) <= 60
+    and (user_id is null or auth.uid() = user_id)
+  );
+
+-- A propósito NO hay política de "update" ni "delete" desde el
+-- navegador: si un comentario hay que borrarlo (spam, algo
+-- inapropiado), se hace a mano desde Supabase -> Table Editor ->
+-- article_comments -> borrar la fila.
+
+-- ============================================================
+-- Comentarios: respuestas del admin + borrado seguro.
+-- Corre esto DESPUÉS del bloque de "Comentarios en los articulos"
+-- de arriba. Funciona sin importar si ya lo habías corrido antes o
+-- si la tabla article_comments se acaba de crear en este mismo
+-- momento (no borra ninguna fila ni comentario existente).
+--
+-- Qué agrega:
+--   - parent_comment_id: cuando no es null, esta fila es una
+--     respuesta al comentario con ese id. Al borrar el comentario
+--     original, su respuesta se borra sola (ON DELETE CASCADE), sin
+--     dejar respuestas huérfanas. Un índice único evita que se
+--     pueda insertar más de una respuesta por comentario, y la
+--     política de abajo evita responder a una respuesta (solo una
+--     capa).
+--   - La política de INSERT queda más estricta: ya no basta con
+--     mandar is_member=true o parent_comment_id apuntando a algo
+--     desde el navegador. is_member=true solo se acepta si esa
+--     cuenta (auth.uid()) de verdad tiene profiles.is_member=true, y
+--     una respuesta (parent_comment_id) solo se acepta si quien la
+--     manda es tu cuenta admin (el UUID de abajo).
+--   - Política nueva de DELETE: solo tu cuenta admin puede borrar
+--     comentarios o respuestas. Nadie más, ni siquiera para borrar
+--     los suyos propios.
+--
+-- El UUID f8c0bf1f-57c9-462a-addf-17559aeab69f es tu usuario de
+-- Supabase Auth (fiocchettaleandro@gmail.com). No es secreto (sin
+-- tu sesión real no sirve para nada), pero es el único que estas
+-- políticas van a aceptar como admin.
+-- ============================================================
+
+alter table public.article_comments
+  add column if not exists parent_comment_id bigint references public.article_comments(id) on delete cascade;
+
+create index if not exists article_comments_parent_idx on public.article_comments(parent_comment_id);
+
+-- Como mucho una respuesta por comentario (si se necesita corregir
+-- una respuesta, se borra y se vuelve a publicar).
+create unique index if not exists article_comments_one_reply_idx
+  on public.article_comments(parent_comment_id) where parent_comment_id is not null;
+
+drop policy if exists "article_comments: insert all" on public.article_comments;
+drop policy if exists "article_comments: insert" on public.article_comments;
+create policy "article_comments: insert" on public.article_comments
+  for insert with check (
+    char_length(comment_text) > 0 and char_length(comment_text) <= 1000
+    and char_length(display_name) > 0 and char_length(display_name) <= 60
+    and (user_id is null or auth.uid() = user_id)
+    -- is_member=true solo se acepta si esa cuenta de verdad es
+    -- miembro pagado ahora mismo (no un valor mandado a mano).
+    and (
+      is_member = false
+      or (
+        auth.uid() = user_id
+        and exists (
+          select 1 from public.profiles p
+          where p.id = auth.uid() and p.is_member = true
+        )
+      )
+    )
+    -- Una respuesta (parent_comment_id no nulo) solo la puede
+    -- publicar tu cuenta admin, y solo respondiendo a un comentario
+    -- de primer nivel del mismo artículo (nunca a otra respuesta).
+    and (
+      parent_comment_id is null
+      or (
+        auth.uid() = 'f8c0bf1f-57c9-462a-addf-17559aeab69f'::uuid
+        and exists (
+          select 1 from public.article_comments parent
+          where parent.id = parent_comment_id
+            and parent.parent_comment_id is null
+            and parent.article_slug = article_slug
+        )
+      )
+    )
+  );
+
+drop policy if exists "article_comments: delete admin" on public.article_comments;
+create policy "article_comments: delete admin" on public.article_comments
+  for delete using (auth.uid() = 'f8c0bf1f-57c9-462a-addf-17559aeab69f'::uuid);

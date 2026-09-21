@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260916b">
+<link rel="stylesheet" href="style.css?v=20260921b">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <script type="application/ld+json">
 {
@@ -117,7 +117,8 @@
       <p style="color:var(--ink-soft);">Ejercicios cortos, con retroalimentación inmediata.</p>
       <a href="practica.html" class="btn btn-primary" style="width:fit-content;">Practicar gratis</a>
     </div>
-  </article>
+    <section class="article-comments" id="article-comments"></section>
+</article>
 </main>
 
 <footer>
@@ -165,9 +166,12 @@
     Miembros
   </button>
 </nav>
-<script src="app.js?v=20260917"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="backend.js?v=20260921b"></script>
+<script src="app.js?v=20260921b"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>initOnboarding(); personalizeNav();</script>
 
+<script>document.addEventListener("DOMContentLoaded", function(){ if (typeof initArticleComments === "function") initArticleComments(); });</script>
 </body>
 </html>
