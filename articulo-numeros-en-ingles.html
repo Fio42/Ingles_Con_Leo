@@ -53,6 +53,7 @@
 <h2><em>Teen</em> vs <em>ty</em>: 13 no es 30</h2><p>Esta diferencia cambia el número por completo. En <em>thirTEEN</em> suele sentirse más fuerza al final; en <em>THIRty</em>, la primera parte es más marcada. No es una regla mecánica, pero te da una pista al escuchar.</p>
 <div class="article-table-wrap"><table class="article-table"><thead><tr><th><em>-teen</em></th><th><em>-ty</em></th></tr></thead><tbody><tr><td>thirteen (13)</td><td>thirty (30)</td></tr><tr><td>fourteen (14)</td><td>forty (40)</td></tr><tr><td>fifteen (15)</td><td>fifty (50)</td></tr><tr><td>sixteen (16)</td><td>sixty (60)</td></tr><tr><td>seventeen (17)</td><td>seventy (70)</td></tr><tr><td>eighteen (18)</td><td>eighty (80)</td></tr><tr><td>nineteen (19)</td><td>ninety (90)</td></tr></tbody></table></div>
 <p>Para no confundirlos, escucha siempre la palabra dentro de una frase: <em>She is fifteen</em> y <em>It costs fifty dollars</em>. El contexto suele resolver la duda.</p>
+<h3 style="margin-top:26px;">Escucha la diferencia</h3><p>Tócale play a cada palabra y compara: la fuerza cae distinto en <em>-teen</em> y en <em>-ty</em>.</p><div class="phrase-list" data-phrase-list><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-01.mp3"><div class="phrase-item-text"><span class="phrase-en">thirteen</span><span class="phrase-es">(13)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: thirteen"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-02.mp3"><div class="phrase-item-text"><span class="phrase-en">thirty</span><span class="phrase-es">(30)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: thirty"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-03.mp3"><div class="phrase-item-text"><span class="phrase-en">fourteen</span><span class="phrase-es">(14)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: fourteen"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-04.mp3"><div class="phrase-item-text"><span class="phrase-en">forty</span><span class="phrase-es">(40)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: forty"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-05.mp3"><div class="phrase-item-text"><span class="phrase-en">fifteen</span><span class="phrase-es">(15)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: fifteen"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-06.mp3"><div class="phrase-item-text"><span class="phrase-en">fifty</span><span class="phrase-es">(50)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: fifty"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-07.mp3"><div class="phrase-item-text"><span class="phrase-en">eighteen</span><span class="phrase-es">(18)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: eighteen"></button></div><div class="phrase-item" data-audio="audio/articulos/numeros-en-ingles/frase-08.mp3"><div class="phrase-item-text"><span class="phrase-en">eighty</span><span class="phrase-es">(80)</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: eighty"></button></div></div>
 
 <h2>Cómo formar números del 21 al 99</h2><p>Escribe la decena y la unidad unidas con guion: <em>twenty-one</em>, <em>thirty-five</em>, <em>forty-two</em>, <em>fifty-eight</em>, <em>seventy-six</em> y <em>ninety-nine</em>. No uses guion cuando el número es una decena exacta, como <em>forty</em>.</p>
 
@@ -81,4 +82,17 @@
 </article></main>
 <footer><div class="wrap foot-row"><a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a><div class="foot-links"><a href="index.html">Inicio</a><a href="articulos.html">Aprende inglés</a><a href="practica.html">Practicar</a><a href="miembros.html">Miembros</a></div></div></footer>
 <script src="app.js?v=20260917"></script><script src="chatbot.js?v=20260910"></script>
+<script>
+(function(){
+  var list = document.querySelector('[data-phrase-list]');
+  if(!list) return;
+  list.querySelectorAll('.phrase-item').forEach(function(item){
+    var btn = item.querySelector('.phrase-play-btn');
+    var path = item.getAttribute('data-audio');
+    if(!btn || !path) return;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 2l9 5-9 5V2z" fill="currentColor"/></svg>';
+    btn.addEventListener('click', function(){ playAudioFile(path, item, btn); });
+  });
+})();
+</script>
 </body></html>
