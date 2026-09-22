@@ -2286,7 +2286,7 @@ function renderMixItemInto(card, entry, onAnswered){
    idea que ya existía antes con FREE_DAILY_EXERCISE_LIMIT, solo que
    ahora se reparte en dos niveles en vez de uno. */
 var GUEST_EXERCISE_LIMIT = 10;
-var FREE_USER_DAILY_LIMIT = 20;
+var FREE_USER_DAILY_LIMIT = 30;
 
 /* Estado del nivel de acceso para esta carga de página. practica.html
    llama a initLeoAccessTier() una sola vez, justo después de revisar
