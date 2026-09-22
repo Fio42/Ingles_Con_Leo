@@ -2412,7 +2412,18 @@ function runFreeMixSession({ container, level, onOtherSkill }){
 // Lectura ni Cambridge/TOEFL/IELTS.
 const PLAN_SKILL_TO_KIND = { gramatica:'grammar', vocabulario:'vocab', listening:'listening', writing:'writing', speaking:'speaking' };
 const PLAN_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening', writing:'writing', speaking:'speaking' };
-const PLAN_BANK_BY_SKILL = { gramatica:GRAMMAR_BANK, vocabulario:VOCAB_BANK, listening:LISTENING_BANK, writing:WRITING_BANK, speaking:SPEAKING_BANK };
+// Guardado con typeof: esta linea se ejecuta apenas carga app.js
+// (no dentro de una funcion), y varias paginas -como los articulos-
+// cargan app.js SIN data.js (que es quien define GRAMMAR_BANK y los
+// demas bancos). Sin este guardado, con eso rompia con un
+// ReferenceError apenas cargaba app.js en esas paginas, y como es
+// una sola linea de <script>, tumbaba TODO lo que viene despues en
+// el archivo (incluyendo initArticleComments). Plan de estudio, que
+// es quien de verdad usa PLAN_BANK_BY_SKILL, siempre carga data.js,
+// asi que no pierde nada con este guardado.
+const PLAN_BANK_BY_SKILL = (typeof GRAMMAR_BANK !== 'undefined')
+  ? { gramatica:GRAMMAR_BANK, vocabulario:VOCAB_BANK, listening:LISTENING_BANK, writing:WRITING_BANK, speaking:SPEAKING_BANK }
+  : {};
 
 // % de aciertos de una habilidad (0-100) usando el mismo historial de
 // siempre (p.sessions[].results), o null si nunca se calificó nada en
