@@ -89,19 +89,26 @@ Deno.serve(async (req: Request) => {
           // error, o algo raro pasó justo al crear la cuenta), esto la
           // crea directamente en vez de no hacer nada. Si ya existe, la
           // actualiza normal (no borra el resto de sus columnas).
+          // Próxima fecha de cobro, para la "zona de silencio" de los
+          // correos de reactivación de miembros (ver
+          // upgrade-nudge-emails.ts). Solo se guarda si Mercado Pago
+          // la trae en este aviso (no se inventa una fecha si no
+          // viene). Se refresca cada vez que llega este webhook, así
+          // que se mantiene al día mientras Mercado Pago lo siga
+          // mandando en cada ciclo.
+          const upsertPayload: Record<string, unknown> = {
+            id: userId,
+            email: correoDestino,
+            is_member: true,
+            member_since: new Date().toISOString(),
+            mp_preapproval_id: id,
+            mp_preapproval_status: status,
+          }
+          if (data.next_payment_date) upsertPayload.next_renewal_at = data.next_payment_date
+
           const { error } = await supabase
             .from('profiles')
-            .upsert(
-              {
-                id: userId,
-                email: correoDestino,
-                is_member: true,
-                member_since: new Date().toISOString(),
-                mp_preapproval_id: id,
-                mp_preapproval_status: status,
-              },
-              { onConflict: 'id' }
-            )
+            .upsert(upsertPayload, { onConflict: 'id' })
           if (error) console.error('Error activando miembro:', error)
           if (!yaEraMiembro && correoDestino) {
             await mandarCorreoBienvenida(correoDestino)

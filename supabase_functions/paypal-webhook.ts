@@ -121,6 +121,13 @@ Deno.serve(async (req: Request) => {
         if (!yaEraMiembro && correoDestino) {
           await mandarCorreoBienvenida(correoDestino)
         }
+        // Próxima fecha de cobro, para la "zona de silencio" de los
+        // correos de reactivación de miembros (ver
+        // upgrade-nudge-emails.ts). El aviso de activación no siempre
+        // trae esta fecha, así que se consulta aparte.
+        if (subscriptionId) {
+          await refreshNextRenewal(subscriptionId)
+        }
       }
     } else if (CANCEL_EVENTS.has(type)) {
       const subscriptionId = resource.id
@@ -130,6 +137,15 @@ Deno.serve(async (req: Request) => {
           .update({ is_member: false })
           .eq('paypal_subscription_id', subscriptionId)
         if (error) console.error('Error desactivando miembro (PayPal):', error)
+      }
+    } else if (type === 'PAYMENT.SALE.COMPLETED') {
+      // Se dispara en cada cobro recurrente ya hecho de una
+      // suscripción (no solo en la activación). Se usa SOLO para
+      // mantener next_renewal_at al día mes a mes: no toca is_member
+      // ni ninguna otra columna.
+      const billingAgreementId = resource.billing_agreement_id
+      if (billingAgreementId) {
+        await refreshNextRenewal(billingAgreementId)
       }
     }
 
@@ -210,6 +226,34 @@ async function getPaypalAccessToken(): Promise<string | null> {
   } catch (e) {
     console.error(e)
     return null
+  }
+}
+
+// Consulta el detalle de la suscripción en PayPal y guarda
+// billing_info.next_billing_time (si viene) en next_renewal_at. No
+// toca is_member ni nada más: es solo para saber cuándo NO mandar
+// los correos de reactivación de miembros (ver
+// upgrade-nudge-emails.ts). Si PayPal no trae esa fecha por lo que
+// sea, no se escribe nada (no se inventa una fecha aproximada).
+async function refreshNextRenewal(subscriptionId: string) {
+  try {
+    const accessToken = await getPaypalAccessToken()
+    if (!accessToken) return
+    const res = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${subscriptionId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    const nextBillingTime = data && data.billing_info && data.billing_info.next_billing_time
+    if (nextBillingTime) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ next_renewal_at: nextBillingTime })
+        .eq('paypal_subscription_id', subscriptionId)
+      if (error) console.error('Error guardando next_renewal_at (PayPal):', error)
+    }
+  } catch (e) {
+    console.error('Error consultando la próxima renovación (PayPal):', e)
   }
 }
 

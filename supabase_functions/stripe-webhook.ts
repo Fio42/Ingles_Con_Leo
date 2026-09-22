@@ -106,9 +106,23 @@ Deno.serve(async (req: Request) => {
       const customerId = obj.customer
       const isActive = type === 'customer.subscription.updated' && ACTIVE_STATUSES.has(obj.status)
       if (customerId) {
+        const updatePayload: Record<string, unknown> = { is_member: isActive }
+        // Próxima fecha de renovación (para la "zona de silencio" de
+        // los correos de reactivación de miembros, ver
+        // upgrade-nudge-emails.ts). Stripe movió este dato de la
+        // suscripción al "item" de la suscripción a partir de la
+        // versión de API 2025-03-31 ("basil"); se revisa primero ahí
+        // y, si no está, se usa el campo viejo por si esta cuenta
+        // sigue en una versión de API anterior a esa. Si de plano no
+        // viene ninguno de los dos, no se manda nada (queda como
+        // estaba, no se inventa una fecha).
+        const periodEndUnix = obj.items?.data?.[0]?.current_period_end ?? obj.current_period_end
+        if (isActive && periodEndUnix) {
+          updatePayload.next_renewal_at = new Date(periodEndUnix * 1000).toISOString()
+        }
         const { error } = await supabase
           .from('profiles')
-          .update({ is_member: isActive })
+          .update(updatePayload)
           .eq('stripe_customer_id', customerId)
         if (error) console.error('Error actualizando miembro (Stripe):', error)
       }

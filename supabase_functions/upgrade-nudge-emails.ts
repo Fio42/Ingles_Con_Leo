@@ -147,6 +147,34 @@
 //    también (cambio más grande, no lo hice porque no se pidió).
 //
 // ------------------------------------------------------------
+// MIEMBROS INACTIVOS (is_member=true) — Actualización 2026-09-22:
+// además de todo lo de arriba (que es solo para cuentas gratis), hay
+// 2 correos aparte para miembros que llevan varios días sin entrar.
+// NO venden nada (no mencionan pagos/renovación/membresía): solo
+// invitan a volver a practicar. Lógica en decideMemberEmail() (no en
+// decideEmail(), que es solo cuentas gratis):
+//   - member_reactivation_3d   ~3 días sin actividad
+//                              (profiles.last_seen_at).
+//   - member_reactivation_10d ~10 días sin actividad. Es el ÚLTIMO:
+//                              no hay día 15/20/25.
+//   - Cada uno se manda como mucho una vez POR EPISODIO real de
+//     inactividad: si vuelve a entrar (last_seen_at avanza) y luego
+//     vuelve a estar inactivo, cuenta como episodio nuevo y puede
+//     recibir los 2 otra vez.
+//   - Zona de silencio: no se manda ninguno de los 2 si
+//     profiles.next_renewal_at cae entre 3 días antes y 2 días
+//     después de "ahora" (para no hacer pensar en el cobro justo
+//     antes/después de que pase). Si next_renewal_at es NULL (no se
+//     pudo conseguir del proveedor de pago, ver nota de cada webhook)
+//     esa cuenta no tiene zona de silencio: sigue recibiendo los
+//     recordatorios normal.
+//   - Comparte el freno global de 24h (last_marketing_email_at) con
+//     el resto del sistema, pero no compite en prioridad con nada de
+//     lo de arriba: son consultas y bucles completamente aparte, así
+//     que no pueden desplazar ni ser desplazados por la lógica de
+//     cuentas gratis.
+//
+// ------------------------------------------------------------
 // Reutiliza exactamente el mismo Resend y el mismo remitente
 // (hola@inglesconleo.com) que ya usan los demás correos del sitio.
 //
@@ -254,6 +282,31 @@ const ACTIVE_FREE_PITCH_ENABLED = false
 const MARKETING_EMAIL_MIN_GAP_HOURS = 24
 const NO_COOLDOWN_KEYS = new Set(['welcome'])
 
+// ---------------- Miembros inactivos (is_member=true) ----------------
+// Estos correos NO venden nada: solo invitan a volver a practicar.
+// Van por fuera de decideEmail()/PRIORITY_ORDER (que son para cuentas
+// gratis) porque su lógica es más chica y separada: ver
+// decideMemberEmail() más abajo. Máximo 2 por episodio real de
+// inactividad (día 3 y día 10); si vuelve a entrar y luego vuelve a
+// dejar de entrar, es un episodio nuevo y puede recibir los 2 otra
+// vez (se detecta comparando last_seen_at contra la fecha en que se
+// mandó cada uno, igual que ya hace reactivation_3d para cuentas
+// gratis).
+const MEMBER_REACTIVATION_3D_MIN_DAYS = 3
+const MEMBER_REACTIVATION_10D_MIN_DAYS = 10
+
+// Zona de silencio alrededor del cobro mensual: no mandar ninguno de
+// los 2 correos de arriba si next_renewal_at cae dentro de este
+// rango (desde X días antes hasta Y días después). Si next_renewal_at
+// es NULL (no se pudo conseguir una fecha confiable del proveedor de
+// pago), esta zona simplemente no se aplica para esa cuenta: sigue
+// recibiendo los recordatorios normalmente. No se pierde el correo
+// por caer en la zona de silencio: se reintenta en cada pasada del
+// Cron (cada 30 min) y sale en cuanto ya no esté en la zona,
+// mientras las demás condiciones sigan cumpliéndose.
+const MEMBER_RENEWAL_SILENCE_BEFORE_DAYS = 3
+const MEMBER_RENEWAL_SILENCE_AFTER_DAYS = 2
+
 const MAX_PER_RUN = 300
 
 // Orden de prioridad: si a alguien le aplican varias condiciones el
@@ -271,8 +324,23 @@ const PRIORITY_ORDER = [
   'final_onboarding',
   'checkout_abandoned',
   'active_free_pitch',
+  // Los siguientes dos son para MIEMBROS (is_member=true), no para
+  // cuentas gratis: viven en esta misma lista solo para que el modo
+  // manual de prueba (manual_emails + which) los reconozca como
+  // válidos. Su lógica de decisión es aparte (ver decideMemberEmail
+  // más abajo), no pasan por decideEmail ni compiten en prioridad con
+  // los de arriba.
+  'member_reactivation_3d',
+  'member_reactivation_10d',
 ] as const
 type EmailKey = (typeof PRIORITY_ORDER)[number]
+
+// Las 2 claves de arriba que son de miembros en vez de cuentas
+// gratis: se usan para que sendIfStillEligible() sepa que este
+// correo requiere is_member=true (en vez de false, como todos los
+// demás), y para que el modo manual de prueba busque el perfil
+// correcto.
+const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_reactivation_3d', 'member_reactivation_10d'])
 
 // Subconjunto de EmailKey: solo las 4 claves de la secuencia por
 // calendario que pueden "caducar" y marcarse 'skipped' (ver
@@ -293,6 +361,7 @@ type Profile = {
   free_daily_limit_reached_at: string | null
   lifecycle_emails: Record<string, string> | null
   last_marketing_email_at: string | null
+  next_renewal_at: string | null
 }
 
 Deno.serve(async (req: Request) => {
@@ -300,9 +369,12 @@ Deno.serve(async (req: Request) => {
     // Modo manual (botón "Test" de Supabase o una prueba puntual tuya,
     // NO lo usa el Cron): si el cuerpo trae "manual_emails" y "which",
     // manda ESE correo a esos correos exactos, sin mirar ventanas de
-    // tiempo ni cooldown. Sigue revisando is_member=false antes de
-    // mandar (nunca le llega a quien ya paga) y sigue registrando el
-    // envío en lifecycle_emails, para no duplicar después.
+    // tiempo, cooldown, ni (para los 2 de miembros) la zona de
+    // silencio de renovación. Para los 11 correos de cuenta gratis
+    // sigue revisando is_member=false antes de mandar; para los 2 de
+    // miembros (MEMBER_ONLY_KEYS) revisa is_member=true en vez de
+    // false. Sigue registrando el envío en lifecycle_emails, para no
+    // duplicar después.
     try {
       const body = await req.json()
       if (body && Array.isArray(body.manual_emails) && body.manual_emails.length && body.which) {
@@ -310,12 +382,13 @@ Deno.serve(async (req: Request) => {
         if (!PRIORITY_ORDER.includes(which)) {
           return json({ ok: false, error: 'which invalido. Usa uno de: ' + PRIORITY_ORDER.join(', ') }, 200)
         }
+        const wantsMember = MEMBER_ONLY_KEYS.has(which)
         let sentManual = 0
         for (const email of body.manual_emails) {
           if (typeof email !== 'string' || !email) continue
           const { data: prof } = await supabase.from('profiles').select('id, is_member').eq('email', email).maybeSingle()
-          if (!prof || prof.is_member) continue
-          const didSend = await sendIfStillEligible(prof.id, email, which)
+          if (!prof || prof.is_member !== wantsMember) continue
+          const didSend = await sendIfStillEligible(prof.id, email, which, wantsMember)
           if (didSend) sentManual++
         }
         return json({ ok: true, manual: true, which, sentManual }, 200)
@@ -355,6 +428,34 @@ Deno.serve(async (req: Request) => {
       const key = decideEmail(p, now)
       if (!key) continue
       const didSend = await sendIfStillEligible(p.id, p.email, key)
+      if (didSend) counts[key] = (counts[key] || 0) + 1
+    }
+
+    // ---- Segunda pasada, aparte: miembros inactivos (is_member=true) ----
+    // Consulta y bucle totalmente separados de los de arriba (cuentas
+    // gratis): así la lógica existente de onboarding/límite/checkout
+    // no se toca ni se puede ver afectada por esto. Ver
+    // decideMemberEmail() y la nota larga de MEMBER_REACTIVATION_*
+    // más arriba.
+    const { data: memberProfiles, error: memberError } = await supabase
+      .from('profiles')
+      .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at')
+      .eq('is_member', true)
+      .not('email', 'is', null)
+      .not('last_seen_at', 'is', null)
+      .limit(MAX_PER_RUN)
+    if (memberError) {
+      console.error('Error buscando miembros:', memberError)
+      // No se corta todo el run por esto: los correos de cuentas
+      // gratis de arriba ya se mandaron bien. Se devuelve lo que sí
+      // se logró.
+      return json({ ok: true, counts }, 200)
+    }
+
+    for (const p of (memberProfiles || []) as Profile[]) {
+      const key = decideMemberEmail(p, now)
+      if (!key) continue
+      const didSend = await sendIfStillEligible(p.id, p.email, key, true)
       if (didSend) counts[key] = (counts[key] || 0) + 1
     }
 
@@ -482,6 +583,65 @@ function daysSince(iso: string, now: number): number {
   return (now - new Date(iso).getTime()) / 86400000
 }
 
+// ---------------- Decidir el correo (si acaso) de un MIEMBRO inactivo ----------------
+// Aparte de decideEmail() a propósito: solo aplica a is_member=true,
+// solo tiene 2 posibles correos (nunca un día 15/20/25), y no vende
+// nada (ni menciona pagos/renovación/cancelación). Ver la nota larga
+// de MEMBER_REACTIVATION_*/MEMBER_RENEWAL_SILENCE_* arriba.
+
+// true si "ahora" cae dentro de la zona de silencio alrededor de
+// next_renewal_at (o si no hay next_renewal_at conocido -> false,
+// nunca se calla por una fecha que no tenemos).
+function inRenewalSilenceZone(p: Profile, now: number): boolean {
+  if (!p.next_renewal_at) return false
+  const daysUntilRenewal = (new Date(p.next_renewal_at).getTime() - now) / 86400000
+  return daysUntilRenewal <= MEMBER_RENEWAL_SILENCE_BEFORE_DAYS && daysUntilRenewal >= -MEMBER_RENEWAL_SILENCE_AFTER_DAYS
+}
+
+function decideMemberEmail(p: Profile, now: number): EmailKey | null {
+  if (!p.last_seen_at) return null // nunca hay señal de actividad real, no hay "inactividad" que detectar
+
+  const lifecycle = p.lifecycle_emails || {}
+
+  // Mismo freno global de 24h que ya usa decideEmail() para cuentas
+  // gratis, leyendo la misma columna (last_marketing_email_at).
+  if (p.last_marketing_email_at && hoursSince(p.last_marketing_email_at, now) < MARKETING_EMAIL_MIN_GAP_HOURS) {
+    return null
+  }
+
+  // Zona de silencio de renovación: se salta esta pasada nada más,
+  // no se pierde el correo (se reintenta cada 30 min hasta salir de
+  // la zona, mientras siga cumpliendo lo demás).
+  if (inRenewalSilenceZone(p, now)) {
+    return null
+  }
+
+  const inactiveDays = daysSince(p.last_seen_at, now)
+
+  // Día 10 se revisa PRIMERO a propósito: si por cooldown/prioridad
+  // nunca se mandó el de día 3 y ya vamos en el día 12, no tiene
+  // sentido mandar el de día 3 ("hace unos días que no practicas")
+  // tan tarde; se manda directo el de día 10, que sigue siendo
+  // válido. "cameBackSince" es lo que separa un episodio de otro: si
+  // last_seen_at no ha avanzado desde el último envío de esta clave,
+  // sigue siendo el MISMO episodio (no se repite); si sí avanzó
+  // (volvió a entrar y volvió a estar inactivo), es un episodio
+  // nuevo y puede volver a recibirlo.
+  const lastSent10 = lifecycle['member_reactivation_10d']
+  const cameBackSince10 = !lastSent10 || new Date(p.last_seen_at).getTime() > new Date(lastSent10).getTime()
+  if (inactiveDays >= MEMBER_REACTIVATION_10D_MIN_DAYS && cameBackSince10) {
+    return 'member_reactivation_10d'
+  }
+
+  const lastSent3 = lifecycle['member_reactivation_3d']
+  const cameBackSince3 = !lastSent3 || new Date(p.last_seen_at).getTime() > new Date(lastSent3).getTime()
+  if (inactiveDays >= MEMBER_REACTIVATION_3D_MIN_DAYS && cameBackSince3) {
+    return 'member_reactivation_3d'
+  }
+
+  return null
+}
+
 // ---------------- Caducidad/catch-up de la secuencia por calendario ----------------
 // Objetivo: un correo puede retrasarse por el freno de 24h o porque otro
 // de mayor prioridad le ganó el turno, pero si pasa DEMASIADO tiempo sin
@@ -533,14 +693,25 @@ async function markExpiredAsSkipped(
 // el correo que corresponde, y si se mandó, registra el envío tanto
 // en lifecycle_emails[key] como en last_marketing_email_at (el
 // freno global de "no más de uno cada 24h").
-async function sendIfStillEligible(userId: string, email: string | null, key: EmailKey): Promise<boolean> {
+//
+// expectedIsMember: para los 11 correos de cuenta gratis de siempre
+// es false (el default, no hace falta pasarlo). Para los 2 correos
+// nuevos de miembros (ver MEMBER_ONLY_KEYS) es true: así, si alguien
+// se dio de baja o se hizo miembro justo entre que se decidió el
+// correo y este momento, no se manda a la audiencia equivocada.
+async function sendIfStillEligible(
+  userId: string,
+  email: string | null,
+  key: EmailKey,
+  expectedIsMember: boolean = false
+): Promise<boolean> {
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
     .select('is_member, lifecycle_emails')
     .eq('id', userId)
     .maybeSingle()
-  if (!fresh || fresh.is_member) return false
+  if (!fresh || fresh.is_member !== expectedIsMember) return false
 
   const okToSend = await sendEmailFor(key, email)
   if (!okToSend) return false
@@ -835,5 +1006,34 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaText: 'Desbloquear todo',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
+  },
+  member_reactivation_3d: {
+    subject: '¿Practicamos un poco hoy?',
+    greeting: '¡Hola! 👋',
+    title: '¿Practicamos un poco hoy?',
+    bodyHtml: `
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Hace unos días que no practicas. Si tienes unos minutos, puedes
+      volver con una sesión corta y seguir a tu ritmo.
+    </p>`,
+    ctaText: 'Practicar ahora',
+    ctaUrl: `${SITE}/practica-miembros.html`,
+    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+  },
+  member_reactivation_10d: {
+    subject: '¿Retomamos?',
+    greeting: '¡Hola! 👋',
+    title: '¿Retomamos?',
+    bodyHtml: `
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Cuando quieras volver, tienes ejercicios, práctica por nivel y
+      English Rush listos para seguir practicando.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Puedes retomar con una sesión corta.
+    </p>`,
+    ctaText: 'Volver a practicar',
+    ctaUrl: `${SITE}/practica-miembros.html`,
+    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
   },
 }

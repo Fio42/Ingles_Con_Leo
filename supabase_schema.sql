@@ -499,3 +499,80 @@ alter table public.profiles add column if not exists free_daily_count integer no
 alter table public.profiles add column if not exists free_daily_date date;
 
 grant update (free_daily_count, free_daily_date) on public.profiles to authenticated;
+
+-- ============================================================
+-- Actualización 2026-09-22 (2) — sistema completo de correos
+-- automáticos del ciclo de vida de una cuenta gratis (bienvenida,
+-- recordatorios de práctica, descubrir funciones, y solo al final
+-- la membresía). Reemplaza la lógica de la Edge Function
+-- "upgrade-nudge-emails" (mismo nombre y mismo Cron de cada 30
+-- minutos que ya tenías: no hace falta crear nada nuevo en
+-- Supabase, solo pegar el código nuevo de
+-- supabase_functions/upgrade-nudge-emails.ts encima del actual).
+--
+-- 4 columnas nuevas en profiles, las 4 opcionales (empiezan en NULL
+-- o {} / vacío, que quiere decir "todavía no pasó"). No se toca ni
+-- se borra ninguna columna existente (las 3 de upgrade_email_1/2/3
+-- se quedan ahí sin usarse, por si acaso).
+--
+--  - lifecycle_emails: registro de qué correo de este sistema se le
+--    mandó a cada quien y cuándo (una sola columna sirve para todos
+--    los tipos de correo, para no tener que agregar una columna
+--    nueva cada vez que se agregue un correo más adelante).
+--  - last_marketing_email_at: cuándo fue el último correo de
+--    cualquier tipo de este sistema (para el freno de "como mucho
+--    uno cada 24 horas").
+--  - free_first_exercise_at: la primera vez que una cuenta gratis
+--    (is_member=false) contestó un ejercicio. Lo pone app.js/
+--    backend.js solo. Sirve para detectar "creó cuenta y nunca
+--    practicó".
+--  - free_daily_limit_reached_at: el momento exacto en que una
+--    cuenta gratis llegó a su límite diario de ejercicios hoy. Lo
+--    pone app.js/backend.js solo, en el momento en que ocurre. Sirve
+--    para el correo de "ya completaste tu práctica gratis", que se
+--    manda algunas horas después (no al instante).
+--
+-- Igual que last_seen_at: como esto lo escribe el propio navegador
+-- de cada quien (no un webhook de pago), se le da permiso de
+-- escribir SOLO estas 4 columnas de su PROPIA fila, nunca is_member
+-- ni el resto (misma idea de seguridad que ya usabas).
+-- ============================================================
+
+alter table public.profiles add column if not exists lifecycle_emails jsonb not null default '{}'::jsonb;
+alter table public.profiles add column if not exists last_marketing_email_at timestamptz;
+alter table public.profiles add column if not exists free_first_exercise_at timestamptz;
+alter table public.profiles add column if not exists free_daily_limit_reached_at timestamptz;
+
+grant update (free_first_exercise_at, free_daily_limit_reached_at) on public.profiles to authenticated;
+
+-- (lifecycle_emails y last_marketing_email_at NO se agregan a ese
+-- GRANT: nada más los toca la Edge Function con la service_role key,
+-- que se salta RLS por diseño. El navegador nunca necesita
+-- escribirlas directamente.)
+
+-- ============================================================
+-- Actualización 2026-09-22 — próxima renovación de miembros
+-- (next_renewal_at), para la nueva automatización de "recordatorio
+-- de práctica a miembros inactivos" (ver upgrade-nudge-emails.ts).
+--
+-- 1 columna nueva en profiles, opcional (NULL = "no se conoce la
+-- fecha todavía"). No se toca ni se borra ninguna columna existente.
+--
+--  - next_renewal_at: la próxima fecha de cobro/renovación de la
+--    membresía, SOLO cuando el proveedor de pago la entrega de forma
+--    confiable (ver el chat para el detalle exacto por proveedor:
+--    Stripe y Mercado Pago la escriben en cada aviso relevante;
+--    PayPal se consulta aparte porque su aviso de activación y el de
+--    cada cobro no siempre la traen incluida). Se usa ÚNICAMENTE
+--    para no mandarle a un miembro un correo de "vuelve a practicar"
+--    justo antes/después de que se le cobre. Si queda en NULL, esa
+--    cuenta simplemente no tiene la zona de silencio aplicada (sigue
+--    recibiendo los recordatorios normalmente).
+--
+-- La escriben ÚNICAMENTE los webhooks de pago (stripe-webhook.ts,
+-- paypal-webhook.ts, mp-webhook.ts) con la service_role key, igual
+-- que is_member: el navegador nunca la toca, así que no hace falta
+-- ningún GRANT UPDATE nuevo para "authenticated".
+-- ============================================================
+
+alter table public.profiles add column if not exists next_renewal_at timestamptz;
