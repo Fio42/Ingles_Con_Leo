@@ -267,8 +267,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260921c"></script>
-<script src="backend.js?v=20260921b"></script>
+<script src="app.js?v=20260922"></script>
+<script src="backend.js?v=20260922"></script>
 <script src="toefl-data.js?v=20260915"></script>
 <script src="toefl-teaser.js?v=20260914"></script>
 <script src="chatbot.js?v=20260910"></script>
@@ -283,9 +283,11 @@
   // página gratis antes de mandarlo ahí.
   (async function(){
     let isLoggedInMember = false;
+    let loggedInProfile = null;
     if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
       try{
         const profile = await LeoBackend.getMemberProfile();
+        loggedInProfile = profile;
         isLoggedInMember = !!(profile && profile.is_member);
       }catch(e){}
     }
@@ -302,7 +304,29 @@
     }
 
     // No es miembro (o no hay backend configurado): mostrar la página
-    // de práctica gratis normalmente, igual que siempre.
+    // de práctica gratis normalmente, igual que siempre. Si hay una
+    // cuenta gratis (is_member=false) iniciada, se le da el límite
+    // diario de cuenta gratis en vez del límite de visitante (ver
+    // initLeoAccessTier en app.js, única fuente de verdad de los
+    // límites). Si no hay sesión, sigue siendo visitante.
+    if(loggedInProfile){
+      initLeoAccessTier('free', loggedInProfile);
+      // Si el conteo guardado en Supabase de HOY es más alto que el
+      // que hay en este navegador (por ejemplo, ya practicó desde el
+      // celular), lo adoptamos para no dejarlo pasarse del límite.
+      try{
+        const today = todayStr();
+        if(loggedInProfile.free_daily_date === today && typeof loggedInProfile.free_daily_count === 'number'){
+          const localKey = freeAcctLocalKey(loggedInProfile.id);
+          const localCount = parseInt(localStorage.getItem(localKey), 10) || 0;
+          if(loggedInProfile.free_daily_count > localCount){
+            localStorage.setItem(localKey, String(loggedInProfile.free_daily_count));
+          }
+        }
+      }catch(e){}
+    } else {
+      initLeoAccessTier('guest', null);
+    }
     const main = document.getElementById('practicaMain');
     if(main) main.style.visibility = 'visible';
     initFreePractice({

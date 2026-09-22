@@ -564,8 +564,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260921c"></script>
-<script src="backend.js?v=20260921b"></script>
+<script src="app.js?v=20260922"></script>
+<script src="backend.js?v=20260922"></script>
 <script src="chatbot.js?v=20260910"></script>
 <script>
   const gate = document.getElementById('gate');
@@ -626,6 +626,12 @@
   let stripeEmbeddedInstance = null;
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
+  // Si llega con ?modo=registro (por ejemplo desde el aviso de "ya
+  // completaste tus ejercicios de prueba" en practica.html), arranca
+  // directo en el formulario de crear cuenta en vez de login.
+  try{
+    if(new URLSearchParams(window.location.search).get('modo') === 'registro') authMode = 'signup';
+  }catch(e){}
   let hasSession = false;
 
   // Botón de "ojo" para mostrar/ocultar la contraseña mientras se escribe.
@@ -767,6 +773,7 @@
       await LeoBackend.syncProgressFromCloud();
       unlock();
     } else if(fromSignup){
+      if(typeof trackLeoEvent === 'function') trackLeoEvent('free_signup_completed');
       showGate();
       showLoginStep(5);
     } else {

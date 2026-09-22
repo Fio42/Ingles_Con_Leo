@@ -187,6 +187,25 @@ const LeoBackend = (function(){
     }catch(e){}
   }
 
+  /* Guarda cuantos ejercicios lleva hoy una cuenta gratis (is_member
+     false), para que el limite diario (ver FREE_USER_DAILY_LIMIT en
+     app.js) viaje con la cuenta y no solo con el navegador.
+     Fire-and-forget: si falla o tarda, el conteo local en
+     localStorage sigue mandando esa misma sesion, asi que nadie se
+     queda bloqueado por un error de red. Necesita las columnas
+     profiles.free_daily_count / free_daily_date (ver
+     supabase_schema.sql) y su GRANT UPDATE especifico, igual que
+     last_seen_at. */
+  async function bumpFreeDailyCount(count, dateStr){
+    const sb = getClient();
+    if(!sb) return;
+    const session = await getSession();
+    if(!session) return;
+    try{
+      await sb.from('profiles').update({ free_daily_count: count, free_daily_date: dateStr }).eq('id', session.user.id);
+    }catch(e){}
+  }
+
   /* Trae las sesiones de práctica guardadas en la nube y las
      mezcla (sin duplicar) con las que ya hay en localStorage,
      para que el progreso se vea igual en cualquier dispositivo.
@@ -465,7 +484,7 @@ const LeoBackend = (function(){
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
-    getArticleComments, postArticleComment, deleteArticleComment
+    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount
   };
 })();
 

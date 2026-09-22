@@ -473,3 +473,29 @@ create policy "article_comments: insert" on public.article_comments
 drop policy if exists "article_comments: delete admin" on public.article_comments;
 create policy "article_comments: delete admin" on public.article_comments
   for delete using (auth.uid() = 'f8c0bf1f-57c9-462a-addf-17559aeab69f'::uuid);
+
+-- ============================================================
+-- Actualización 2026-09-22 — 3 niveles de acceso (visitante /
+-- cuenta gratis / miembro) y límite diario de ejercicios ligado
+-- a la cuenta para quienes tienen cuenta gratis (is_member=false).
+--
+-- Antes, el límite de ejercicios gratis vivía SOLO en localStorage
+-- del navegador (ver FREE_DAILY_EXERCISE_LIMIT, ahora reemplazado
+-- por GUEST_EXERCISE_LIMIT / FREE_USER_DAILY_LIMIT en app.js). Esto
+-- añade dos columnas a profiles para que, una vez que alguien crea
+-- su cuenta gratis, su conteo diario de ejercicios viaje con la
+-- cuenta (no solo con ese navegador/dispositivo).
+--
+-- No es una columna sensible como is_member (no controla pagos ni
+-- membresía): solo cuenta ejercicios para el aviso de "ya hiciste
+-- tu práctica de hoy". Se le da el mismo tipo de permiso ya usado
+-- para last_seen_at (el usuario solo puede escribir estas dos
+-- columnas de SU PROPIA fila, nunca is_member ni el resto).
+--
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+-- ============================================================
+
+alter table public.profiles add column if not exists free_daily_count integer not null default 0;
+alter table public.profiles add column if not exists free_daily_date date;
+
+grant update (free_daily_count, free_daily_date) on public.profiles to authenticated;

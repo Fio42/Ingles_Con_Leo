@@ -2264,50 +2264,126 @@ function renderMixItemInto(card, entry, onAnswered){
   }
 }
 
-/* ---------- Límite diario de ejercicios gratis (practica.html) ----------
-   Pensado para frenar el abuso normal (alguien haciendo decenas de
-   ejercicios sin parar), NO como un bloqueo a prueba de trampas: se
-   guarda en el navegador (localStorage), así que abrir una ventana de
-   incógnito o borrar los datos del sitio reinicia el contador. Cuenta
-   cada ejercicio individual que el usuario CONTESTA y avanza (no cada
-   sesión completa, y los "Volver a intentar" de la misma pregunta no
-   suman de más). Se reinicia solo al cambiar de día (fecha local del
-   navegador). Solo aplica a las sesiones gratis (isFree / practica.html),
-   nunca a Miembros. */
-var FREE_DAILY_EXERCISE_LIMIT = 50;
-function freeDailyLimitKey(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `leoFreeDailyCount:${y}-${m}-${day}`;
+/* ---------- Niveles de acceso y límites de ejercicios gratis ----------
+   ÚNICA fuente de verdad para "cuántos ejercicios puede hacer cada
+   quien" en practica.html. Tres niveles:
+
+     - Visitante sin cuenta: prueba GUEST_EXERCISE_LIMIT ejercicios y
+       ya. No se reinicia por día a propósito (es una prueba única
+       antes de pedirle cuenta, no una cuota diaria).
+     - Cuenta gratis (is_member=false): FREE_USER_DAILY_LIMIT
+       ejercicios POR DÍA, ligados a la cuenta (no solo al navegador).
+     - Miembro (is_member=true): sin límite. Esto no cambió: las
+       páginas de miembros nunca llaman a freeDailyLimitReached().
+
+   Para cambiar los números basta con tocar estas dos constantes.
+   Nada más en el sitio necesita tocarse.
+
+   Ninguno de estos límites es "a prueba de trampas" (localStorage se
+   puede borrar, y el conteo de cuenta gratis se manda desde el
+   navegador): son para frenar el uso normal y guiar hacia crear
+   cuenta / hacerse miembro, no un candado de seguridad. Es la misma
+   idea que ya existía antes con FREE_DAILY_EXERCISE_LIMIT, solo que
+   ahora se reparte en dos niveles en vez de uno. */
+var GUEST_EXERCISE_LIMIT = 10;
+var FREE_USER_DAILY_LIMIT = 20;
+
+/* Estado del nivel de acceso para esta carga de página. practica.html
+   llama a initLeoAccessTier() una sola vez, justo después de revisar
+   si hay sesión iniciada y si is_member, ANTES de arrancar
+   initFreePractice(). Si nunca se llama (por ejemplo una pestaña
+   vieja en caché), se sigue tratando como visitante: es el límite
+   más chico, así que es el default más seguro. */
+var _leoAccessTier = 'guest'; // 'guest' | 'free'
+var _leoAccessProfile = null; // fila de profiles, solo cuando hay cuenta gratis
+
+function initLeoAccessTier(tier, profile){
+  _leoAccessTier = (tier === 'free') ? 'free' : 'guest';
+  _leoAccessProfile = (tier === 'free') ? (profile || null) : null;
 }
-function getFreeDailyExerciseCount(){
-  try{
-    return parseInt(localStorage.getItem(freeDailyLimitKey()), 10) || 0;
-  }catch(e){ return 0; }
+
+function trackLeoEvent(name, params){
+  try{ if(typeof gtag === 'function') gtag('event', name, params || {}); }catch(e){}
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+/* ---- Visitante sin cuenta: contador único (no diario) en
+   localStorage. Igual que el sistema anterior: abrir una ventana de
+   incógnito o borrar los datos del sitio lo reinicia, y es un riesgo
+   aceptado (no es la barrera real; la barrera real es pedir cuenta). */
+function getGuestExerciseCount(){
+  try{ return parseInt(localStorage.getItem('leoGuestExerciseCount'), 10) || 0; }catch(e){ return 0; }
+}
+function bumpGuestExerciseCount(){
+  try{ localStorage.setItem('leoGuestExerciseCount', String(getGuestExerciseCount() + 1)); }catch(e){}
+}
+
+/* ---- Cuenta gratis: contador diario ligado al id de la cuenta.
+   localStorage es la copia rápida de "hoy" (para no depender de la
+   red en cada clic); Supabase (profiles.free_daily_count /
+   free_daily_date, ver supabase_schema.sql) es la copia que viaja
+   con la cuenta entre dispositivos. Si Supabase no responde o esas
+   columnas todavía no existen, sigue funcionando solo con
+   localStorage (se degrada, no se rompe). */
+function freeAcctLocalKey(userId){
+  return `leoFreeAcctCount:${userId}:${todayStr()}`;
+}
+function getFreeAcctExerciseCount(){
+  const userId = _leoAccessProfile && _leoAccessProfile.id;
+  if(!userId) return 0;
+  try{ return parseInt(localStorage.getItem(freeAcctLocalKey(userId)), 10) || 0; }catch(e){ return 0; }
+}
+function bumpFreeAcctExerciseCount(){
+  const userId = _leoAccessProfile && _leoAccessProfile.id;
+  if(!userId) return;
+  const next = getFreeAcctExerciseCount() + 1;
+  try{ localStorage.setItem(freeAcctLocalKey(userId), String(next)); }catch(e){}
+  if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured() && LeoBackend.bumpFreeDailyCount){
+    LeoBackend.bumpFreeDailyCount(next, todayStr()).catch(function(){});
+  }
+}
+
+/* ---- Punto único que usan las 5 sesiones gratis + runMixSessionCore.
+   Nadie más en el sitio debe leer/escribir estos contadores a mano:
+   siempre a través de estas tres funciones. */
+function freeDailyLimitReached(){
+  if(_leoAccessTier === 'free') return getFreeAcctExerciseCount() >= FREE_USER_DAILY_LIMIT;
+  return getGuestExerciseCount() >= GUEST_EXERCISE_LIMIT;
 }
 function bumpFreeDailyExerciseCount(){
-  try{
-    const next = getFreeDailyExerciseCount() + 1;
-    localStorage.setItem(freeDailyLimitKey(), String(next));
-  }catch(e){}
-}
-function freeDailyLimitReached(){
-  return getFreeDailyExerciseCount() >= FREE_DAILY_EXERCISE_LIMIT;
+  if(_leoAccessTier === 'free') bumpFreeAcctExerciseCount();
+  else bumpGuestExerciseCount();
 }
 function renderFreeDailyLimitReachedBlock(){
+  if(_leoAccessTier === 'free'){
+    trackLeoEvent('free_daily_limit_reached');
+    return `
+      <div class="session-summary">
+        <h2>Completaste tu práctica gratuita de hoy.</h2>
+        <p class="summary-score">Puedes volver mañana o desbloquear práctica ilimitada por $2 USD/mes.</p>
+        <div class="summary-actions">
+          <a href="miembros.html" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Desbloquear todo</a>
+          <a href="index.html" class="btn btn-ghost">Volver mañana</a>
+        </div>
+      </div>`;
+  }
+  trackLeoEvent('guest_exercise_limit_reached');
+  trackLeoEvent('signup_prompt_shown');
   return `
     <div class="session-summary">
-      <h2>¡Ya completaste tus ejercicios gratis de hoy!</h2>
-      <p class="summary-score">Vuelve mañana para seguir practicando gratis, o hazte miembro y practica sin límites desde ahora.</p>
-      <div class="summary-unlock">
-        <p class="summary-unlock-label">¿Quieres seguir ahora mismo?</p>
-        <p class="summary-unlock-copy">Con la membresía puedes seguir practicando sin límites, y además desbloquear tus errores, tu progreso, las clases y la preparación para exámenes. $2 USD al mes (oferta por tiempo limitado).</p>
-        <a href="miembros.html" class="btn btn-primary btn-block">Seguir practicando sin límites</a>
+      <h2>¡Buen trabajo! Ya completaste tus ejercicios de prueba.</h2>
+      <p class="summary-score">Crea tu cuenta gratis para seguir practicando.</p>
+      <div class="summary-actions">
+        <a href="miembros.html?modo=registro" class="btn btn-primary">Crear cuenta gratis</a>
+        <a href="miembros.html" class="btn btn-ghost">Ya tengo cuenta</a>
       </div>
     </div>`;
 }
+
 
 function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
