@@ -196,13 +196,20 @@ const LeoBackend = (function(){
      profiles.free_daily_count / free_daily_date (ver
      supabase_schema.sql) y su GRANT UPDATE especifico, igual que
      last_seen_at. */
-  async function bumpFreeDailyCount(count, dateStr){
+  async function bumpFreeDailyCount(count, dateStr, flags){
     const sb = getClient();
     if(!sb) return;
     const session = await getSession();
     if(!session) return;
+    const payload = { free_daily_count: count, free_daily_date: dateStr };
+    // Estas dos columnas son "solo se ponen una vez" (la primera vez
+    // que aplican): las usan los correos automáticos para saber si ya
+    // practicó alguna vez y en qué momento tocó su límite diario. Ver
+    // supabase_functions/upgrade-nudge-emails.ts.
+    if(flags && flags.isFirstEver) payload.free_first_exercise_at = new Date().toISOString();
+    if(flags && flags.justReachedLimit) payload.free_daily_limit_reached_at = new Date().toISOString();
     try{
-      await sb.from('profiles').update({ free_daily_count: count, free_daily_date: dateStr }).eq('id', session.user.id);
+      await sb.from('profiles').update(payload).eq('id', session.user.id);
     }catch(e){}
   }
 

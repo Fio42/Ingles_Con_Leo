@@ -2343,7 +2343,20 @@ function bumpFreeAcctExerciseCount(){
   const next = getFreeAcctExerciseCount() + 1;
   try{ localStorage.setItem(freeAcctLocalKey(userId), String(next)); }catch(e){}
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured() && LeoBackend.bumpFreeDailyCount){
-    LeoBackend.bumpFreeDailyCount(next, todayStr()).catch(function(){});
+    // Estas dos banderas solo se mandan la primera vez que aplican
+    // (se guardan en Supabase, así que después de la primera vez
+    // _leoAccessProfile ya las trae puestas y no se vuelven a mandar).
+    // Las usan los correos automáticos (ver upgrade-nudge-emails.ts):
+    // isFirstEver = "esta cuenta gratis ya practicó alguna vez" (para
+    // no mandarle el recordatorio de "creaste cuenta y no practicaste").
+    // justReachedLimit = el momento exacto en que topó su límite diario
+    // de hoy (para el correo de "ya completaste tu práctica gratis",
+    // que se manda algunas horas después, no al instante).
+    const isFirstEver = !_leoAccessProfile.free_first_exercise_at;
+    const justReachedLimit = next === FREE_USER_DAILY_LIMIT;
+    LeoBackend.bumpFreeDailyCount(next, todayStr(), { isFirstEver, justReachedLimit }).catch(function(){});
+    if(isFirstEver) _leoAccessProfile.free_first_exercise_at = new Date().toISOString();
+    if(justReachedLimit) _leoAccessProfile.free_daily_limit_reached_at = new Date().toISOString();
   }
 }
 

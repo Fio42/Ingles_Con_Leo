@@ -636,6 +636,78 @@ const GRAMMAR_BANK = {
             ]}
         ]
       }
+    ],
+    [
+      {
+        topic: 'Pronombres objeto (me / you / him / her / it / us / them)',
+        items: [
+          { id:'g-principiante-m300-1', translation:"Ella me llama a mí todos los días.", type:'choice', prompt:"She calls ___ every day.",
+            options:["I","me","my"], correct:1,
+            explain:"Después del verbo usamos el pronombre objeto: me (a mí), no I (yo).",
+            examples:[
+              {en:"He helps me with my homework.", es:"Él me ayuda con mi tarea."},
+              {en:"They invited me to the party.", es:"Ellos me invitaron a la fiesta."}
+            ]},
+          { id:'g-principiante-m300-2', translation:"Queremos ayudarlos a ellos.", type:'fill',
+            sentence:["We","want","to","help","___","."], blankIndex:4,
+            bank:["them","they","their"], correct:"them",
+            explain:"Después de un verbo usamos el pronombre objeto them (a ellos), no they (ellos, sujeto).",
+            examples:[
+              {en:"I saw them at the store.", es:"Los vi a ellos en la tienda."},
+              {en:"She wrote them a letter.", es:"Ella les escribió una carta a ellos."}
+            ]},
+          { id:'g-principiante-m300-3', translation:"Dale el libro a ella.", type:'error',
+            wrong:"Give the book to she.", wrongWord:"she",
+            right:"Give the book to her.", rightWord:"her",
+            explain:"Después de preposiciones como 'to' usamos el pronombre objeto: her, no she.",
+            examples:[
+              {en:"This gift is for her.", es:"Este regalo es para ella."},
+              {en:"Sit next to her.", es:"Siéntate junto a ella."}
+            ]},
+          { id:'g-principiante-m300-4', translation:"¿Puedes ayudarnos a nosotros?", type:'choice', prompt:"Can you help ___?",
+            options:["we","our","us"], correct:2,
+            explain:"El pronombre objeto de 'we' es 'us' (a nosotros).",
+            examples:[
+              {en:"Come with us.", es:"Ven con nosotros."},
+              {en:"He told us the truth.", es:"Él nos dijo la verdad."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Preposiciones de movimiento (to / into / from)',
+        items: [
+          { id:'g-principiante-m300-5', translation:"Camino a la escuela cada mañana.", type:'choice', prompt:"I walk ___ school every morning.",
+            options:["to","from","in"], correct:0,
+            explain:"Usamos 'to' para indicar el destino de un movimiento: hacia la escuela.",
+            examples:[
+              {en:"She drives to work.", es:"Ella maneja al trabajo."},
+              {en:"We ran to the door.", es:"Corrimos hacia la puerta."}
+            ]},
+          { id:'g-principiante-m300-6', translation:"El gato saltó dentro de la caja.", type:'fill',
+            sentence:["The","cat","jumped","___","the","box","."], blankIndex:3,
+            bank:["into","from","to"], correct:"into",
+            explain:"'Into' indica movimiento hacia el interior de algo.",
+            examples:[
+              {en:"He jumped into the pool.", es:"Él saltó dentro de la piscina."},
+              {en:"Water poured into the glass.", es:"El agua se vertió dentro del vaso."}
+            ]},
+          { id:'g-principiante-m300-7', translation:"Ellos vienen de España.", type:'error',
+            wrong:"They come to Spain.", wrongWord:"to",
+            right:"They come from Spain.", rightWord:"from",
+            explain:"'From' indica el origen o punto de partida, no 'to'.",
+            examples:[
+              {en:"This letter is from my mother.", es:"Esta carta es de mi madre."},
+              {en:"He flew from London.", es:"Él voló desde Londres."}
+            ]},
+          { id:'g-principiante-m300-8', translation:"Ella corrió hacia el parque.", type:'choice', prompt:"She ran ___ the park.",
+            options:["from","to","into"], correct:1,
+            explain:"'To' indica el destino de un movimiento: hacia el parque.",
+            examples:[
+              {en:"We walked to the beach.", es:"Caminamos hacia la playa."},
+              {en:"He went to the kitchen.", es:"Él fue a la cocina."}
+            ]}
+        ]
+      }
     ]
   ],
   facil: [
@@ -1446,6 +1518,78 @@ const GRAMMAR_BANK = {
               examples:[
               {en:"This bag is too heavy.", es:"Esta bolsa está demasiado pesada."},
               {en:"He is too tired to drive.", es:"Él está demasiado cansado para manejar."}
+            ]}
+        ]
+      }
+    ],
+    [
+      {
+        topic: 'Sustantivos contables e incontables',
+        items: [
+          { id:'g-facil-m300-1', translation:"¿Cuánta agua necesitas?", type:'choice', prompt:"How ___ water do you need?",
+            options:["many","much","a"], correct:1,
+            explain:"'Water' es incontable, así que usamos 'much', no 'many'.",
+            examples:[
+              {en:"How much rice is left?", es:"¿Cuánto arroz queda?"},
+              {en:"There isn't much time.", es:"No queda mucho tiempo."}
+            ]},
+          { id:'g-facil-m300-2', translation:"Hay muchas manzanas en la mesa.", type:'fill',
+            sentence:["There","are","___","apples","on","the","table","."], blankIndex:2,
+            bank:["many","much","little"], correct:"many",
+            explain:"'Apples' es contable y está en plural, así que usamos 'many'.",
+            examples:[
+              {en:"There are many books here.", es:"Hay muchos libros aquí."},
+              {en:"How many chairs do we need?", es:"¿Cuántas sillas necesitamos?"}
+            ]},
+          { id:'g-facil-m300-3', translation:"No tengo mucha información.", type:'error',
+            wrong:"I don't have many information.", wrongWord:"many",
+            right:"I don't have much information.", rightWord:"much",
+            explain:"'Information' es un sustantivo incontable, así que usamos 'much', no 'many'.",
+            examples:[
+              {en:"She gave me much advice.", es:"Ella me dio mucho consejo."},
+              {en:"We don't have much furniture.", es:"No tenemos mucho mobiliario (en este ejemplo)."}
+            ]},
+          { id:'g-facil-m300-4', translation:"Solo tengo un poco de dinero.", type:'choice', prompt:"I only have a ___ of money.",
+            options:["few","little","many"], correct:1,
+            explain:"'Money' es incontable, entonces decimos 'a little', no 'a few'.",
+            examples:[
+              {en:"He has a little patience left.", es:"Le queda un poco de paciencia."},
+              {en:"There is a little sugar in the jar.", es:"Hay un poco de azúcar en el frasco."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Secuenciadores (first, then, after that, finally)',
+        items: [
+          { id:'g-facil-m300-5', translation:"Primero, me despierto. Luego, desayuno.", type:'choice', prompt:"___, I wake up. Then, I have breakfast.",
+            options:["Finally","First","After"], correct:1,
+            explain:"'First' se usa para indicar el primer paso de una secuencia.",
+            examples:[
+              {en:"First, I brush my teeth.", es:"Primero, me cepillo los dientes."},
+              {en:"First, turn on the computer.", es:"Primero, enciende la computadora."}
+            ]},
+          { id:'g-facil-m300-6', translation:"Después de eso, salgo de casa.", type:'fill',
+            sentence:["After","___",",","I","leave","the","house","."], blankIndex:1,
+            bank:["that","then","first"], correct:"that",
+            explain:"'After that' significa 'después de eso', para conectar pasos en una secuencia.",
+            examples:[
+              {en:"After that, we went home.", es:"Después de eso, fuimos a casa."},
+              {en:"After that, she called me.", es:"Después de eso, ella me llamó."}
+            ]},
+          { id:'g-facil-m300-7', translation:"Finalmente, apago las luces.", type:'error',
+            wrong:"Final, I turn off the lights.", wrongWord:"Final",
+            right:"Finally, I turn off the lights.", rightWord:"Finally",
+            explain:"El adverbio correcto es 'finally' (finalmente), no 'final'.",
+            examples:[
+              {en:"Finally, we arrived home.", es:"Finalmente, llegamos a casa."},
+              {en:"Finally, she finished her homework.", es:"Finalmente, ella terminó su tarea."}
+            ]},
+          { id:'g-facil-m300-8', translation:"Luego, cocino la cena.", type:'choice', prompt:"___, I cook dinner.",
+            options:["Then","First","Finally"], correct:0,
+            explain:"'Then' (luego) conecta un paso con el siguiente en una secuencia.",
+            examples:[
+              {en:"Then, we watched a movie.", es:"Luego, vimos una película."},
+              {en:"Then, he left for work.", es:"Luego, él se fue al trabajo."}
             ]}
         ]
       }
@@ -2271,6 +2415,56 @@ const GRAMMAR_BANK = {
             ]}
         ]
       }
+    ],
+    [
+      {
+        topic: 'Comparativos de igualdad (as...as)',
+        items: [
+          { id:'g-medio-m300-1', translation:"Ella es tan inteligente como su hermano.", type:'choice', prompt:"She is ___ smart as her brother.",
+            options:["as","so","more"], correct:0,
+            explain:"'As...as' expresa igualdad entre dos cosas: tan... como.",
+            examples:[
+              {en:"This test is as hard as the last one.", es:"Este examen es tan difícil como el último."},
+              {en:"He runs as fast as I do.", es:"Él corre tan rápido como yo."}
+            ]},
+          { id:'g-medio-m300-2', translation:"Este trabajo no es tan fácil como parece.", type:'fill',
+            sentence:["This","job","isn't","as","easy","___","it","looks","."], blankIndex:5,
+            bank:["as","than","like"], correct:"as",
+            explain:"La estructura de igualdad negativa es 'not as...as' (no tan... como).",
+            examples:[
+              {en:"It isn't as cold as yesterday.", es:"No hace tan frío como ayer."},
+              {en:"She isn't as tired as she seems.", es:"Ella no está tan cansada como parece."}
+            ]},
+          { id:'g-medio-m300-3', translation:"Corrige: no tan bueno que el original.", type:'error',
+            wrong:"The remake isn't as good than the original.", wrongWord:"than",
+            right:"The remake isn't as good as the original.", rightWord:"as",
+            explain:"Con 'as...as' se usa 'as' en ambos lados, nunca 'than' (eso es para comparativos con -er/more).",
+            examples:[
+              {en:"Her plan isn't as risky as his.", es:"Su plan no es tan arriesgado como el de él."},
+              {en:"This café isn't as busy as that one.", es:"Este café no está tan lleno como ese."}
+            ]}
+        ]
+      },
+      {
+        topic: 'Verbos causativos (have something done)',
+        items: [
+          { id:'g-medio-m300-4', translation:"Voy a mandar a reparar mi carro (no lo repararé yo mismo).", type:'choice', prompt:"I'm going to have my car ___ tomorrow.",
+            options:["repair","repaired","repairing"], correct:1,
+            explain:"'Have something done' usa el participio pasado: alguien más hace la acción por nosotros.",
+            examples:[
+              {en:"She had her hair cut yesterday.", es:"Ella se cortó el pelo (se lo cortaron) ayer."},
+              {en:"We had the house painted.", es:"Mandamos a pintar la casa."}
+            ]},
+          { id:'g-medio-m300-5', translation:"Corrige: mandó a instalar el software.", type:'error',
+            wrong:"He had the software install by a technician.", wrongWord:"install",
+            right:"He had the software installed by a technician.", rightWord:"installed",
+            explain:"En la construcción causativa, el verbo va en participio pasado: installed.",
+            examples:[
+              {en:"They had the report translated.", es:"Ellos mandaron a traducir el informe."},
+              {en:"I had my phone fixed.", es:"Mandé a arreglar mi teléfono."}
+            ]}
+        ]
+      }
     ]
   ],
   avanzado: [
@@ -3090,6 +3284,36 @@ const GRAMMAR_BANK = {
             ]}
         ]
       }
+    ],
+    [
+      {
+        topic: 'Modales perfectos (must have been / should have gone)',
+        items: [
+          { id:'g-avanzado-m300-1', translation:"Debe haber estado dormido cuando llamé (deducción sobre el pasado).", type:'choice', prompt:"He didn't answer, so he ___ asleep when I called.",
+            options:["must have been","must be","must been"], correct:0,
+            explain:"'Must have been' expresa una deducción lógica sobre algo pasado.",
+            examples:[
+              {en:"She must have forgotten the meeting.", es:"Ella debe haber olvidado la reunión."},
+              {en:"They must have left already.", es:"Ellos deben haberse ido ya."}
+            ]},
+          { id:'g-avanzado-m300-2', translation:"Corrige: debería haber ido a la fiesta (arrepentimiento).", type:'error',
+            wrong:"I should have go to the party.", wrongWord:"go",
+            right:"I should have gone to the party.", rightWord:"gone",
+            explain:"Después de 'should have' se usa el participio pasado: gone, no go.",
+            examples:[
+              {en:"You shouldn't have said that.", es:"No deberías haber dicho eso."},
+              {en:"We should have booked earlier.", es:"Deberíamos haber reservado antes."}
+            ]},
+          { id:'g-avanzado-m300-3', translation:"No pudo haber sabido la respuesta.", type:'fill',
+            sentence:["She","can't","have","___","the","answer","."], blankIndex:4,
+            bank:["known","know","knew"], correct:"known",
+            explain:"'Can't have + participio' expresa que algo es imposible que haya ocurrido.",
+            examples:[
+              {en:"He can't have finished already.", es:"No puede haber terminado ya."},
+              {en:"They can't have missed the flight.", es:"No pueden haber perdido el vuelo."}
+            ]}
+        ]
+      }
     ]
   ]
 };
@@ -3415,6 +3639,32 @@ const VOCAB_BANK = {
       { id:'v-principiante6-10', word:'Fish', translation:'Pescado o pez · animal que vive en el agua',
         examples:[{en:"The fish is in the water.", es:"El pez está en el agua."},{en:"I eat fish on Fridays.", es:"Como pescado los viernes."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"animal que vive en el agua\"?", options:["fish","bird","cat"], correct:0, explain:"“Fish” es pescado o pez." } }
+    ],
+    [
+      { id:'v-principiante-m300-1', word:'Grandmother', translation:'Abuela',
+        examples:[{en:"My grandmother lives near the park.", es:"Mi abuela vive cerca del parque."},{en:"I visit my grandmother on Sundays.", es:"Visito a mi abuela los domingos."}],
+        quiz:{ prompt:"¿Qué palabra significa \"abuela\"?", options:["Grandmother","Mother","Sister"], correct:0, explain:"'Grandmother' es la madre de tu padre o madre." } },
+      { id:'v-principiante-m300-2', word:'Brother', translation:'Hermano',
+        examples:[{en:"My brother is ten years old.", es:"Mi hermano tiene diez años."},{en:"I play with my brother every day.", es:"Juego con mi hermano todos los días."}],
+        quiz:{ prompt:"¿Qué palabra significa \"hermano\"?", options:["Cousin","Brother","Uncle"], correct:1, explain:"'Brother' es un hermano varón." } },
+      { id:'v-principiante-m300-3', word:'Sister', translation:'Hermana',
+        examples:[{en:"My sister likes to sing.", es:"A mi hermana le gusta cantar."},{en:"She has one sister.", es:"Ella tiene una hermana."}],
+        quiz:{ prompt:"¿Qué palabra significa \"hermana\"?", options:["Sister","Mother","Friend"], correct:0, explain:"'Sister' es una hermana mujer." } },
+      { id:'v-principiante-m300-4', word:'Bicycle', translation:'Bicicleta',
+        examples:[{en:"I ride my bicycle to school.", es:"Voy en bicicleta a la escuela."},{en:"His bicycle is blue.", es:"Su bicicleta es azul."}],
+        quiz:{ prompt:"¿Qué palabra significa \"bicicleta\"?", options:["Car","Bicycle","Bus"], correct:1, explain:"'Bicycle' es un vehículo de dos ruedas que se pedalea." } },
+      { id:'v-principiante-m300-5', word:'Cake', translation:'Pastel / torta',
+        examples:[{en:"We ate cake at the party.", es:"Comimos pastel en la fiesta."},{en:"She made a chocolate cake.", es:"Ella hizo un pastel de chocolate."}],
+        quiz:{ prompt:"¿Qué palabra significa \"pastel\"?", options:["Bread","Cake","Soup"], correct:1, explain:"'Cake' es un postre dulce horneado." } },
+      { id:'v-principiante-m300-6', word:'Cloud', translation:'Nube',
+        examples:[{en:"The sky has many clouds today.", es:"El cielo tiene muchas nubes hoy."},{en:"That cloud looks like a dog.", es:"Esa nube parece un perro."}],
+        quiz:{ prompt:"¿Qué palabra significa \"nube\"?", options:["Cloud","Sun","Sky"], correct:0, explain:"'Cloud' es la masa blanca o gris que flota en el cielo." } },
+      { id:'v-principiante-m300-7', word:'Snow', translation:'Nieve',
+        examples:[{en:"It snows a lot in winter.", es:"Nieva mucho en invierno."},{en:"The children played in the snow.", es:"Los niños jugaron en la nieve."}],
+        quiz:{ prompt:"¿Qué palabra significa \"nieve\"?", options:["Rain","Snow","Wind"], correct:1, explain:"'Snow' es la precipitación blanca y fría en invierno." } },
+      { id:'v-principiante-m300-8', word:'Coffee', translation:'Café (la bebida)',
+        examples:[{en:"I drink coffee every morning.", es:"Tomo café todas las mañanas."},{en:"She likes coffee with milk.", es:"A ella le gusta el café con leche."}],
+        quiz:{ prompt:"¿Qué palabra significa \"café\" (la bebida)?", options:["Tea","Coffee","Juice"], correct:1, explain:"'Coffee' es la bebida oscura hecha de granos tostados." } }
     ]
   ],
   facil: [
@@ -3836,6 +4086,26 @@ const VOCAB_BANK = {
       { id:'v-facil10-10', word:'Furniture', translation:'Muebles · mesas, sillas, camas, etc.',
         examples:[{en:"We bought new furniture.", es:"Compramos muebles nuevos."},{en:"The furniture is very old.", es:"Los muebles son muy viejos."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"mesas, sillas, camas, etc.\"?", options:["furniture","furniture store","house"], correct:0, explain:"“Furniture” son los muebles." } }
+    ],
+    [
+      { id:'v-facil-m300-1', word:'Waiter', translation:'Mesero / camarero',
+        examples:[{en:"The waiter brought us the menu.", es:"El mesero nos trajo el menú."},{en:"I asked the waiter for water.", es:"Le pedí agua al mesero."}],
+        quiz:{ prompt:"¿Qué palabra significa \"mesero\"?", options:["Customer","Waiter","Cook"], correct:1, explain:"'Waiter' es la persona que atiende las mesas en un restaurante." } },
+      { id:'v-facil-m300-2', word:'Menu', translation:'Menú / carta',
+        examples:[{en:"Can I see the menu, please?", es:"¿Puedo ver el menú, por favor?"},{en:"The menu has many dishes.", es:"El menú tiene muchos platos."}],
+        quiz:{ prompt:"¿Qué palabra significa \"menú\"?", options:["Bill","Menu","Recipe"], correct:1, explain:"'Menu' es la lista de comidas que ofrece un restaurante." } },
+      { id:'v-facil-m300-3', word:'Customer', translation:'Cliente',
+        examples:[{en:"The customer is waiting in line.", es:"El cliente está esperando en la fila."},{en:"We have many customers on weekends.", es:"Tenemos muchos clientes los fines de semana."}],
+        quiz:{ prompt:"¿Qué palabra significa \"cliente\"?", options:["Waiter","Owner","Customer"], correct:2, explain:"'Customer' es la persona que compra un producto o servicio." } },
+      { id:'v-facil-m300-4', word:'Delivery', translation:'Entrega / envío a domicilio',
+        examples:[{en:"The delivery arrived late.", es:"La entrega llegó tarde."},{en:"We offer free delivery.", es:"Ofrecemos envío gratis."}],
+        quiz:{ prompt:"¿Qué palabra significa \"entrega\" (de un pedido)?", options:["Delivery","Order","Receipt"], correct:0, explain:"'Delivery' es el proceso de llevar algo hasta el cliente." } },
+      { id:'v-facil-m300-5', word:'Invoice', translation:'Factura',
+        examples:[{en:"Please send me the invoice.", es:"Por favor envíame la factura."},{en:"The invoice shows the total price.", es:"La factura muestra el precio total."}],
+        quiz:{ prompt:"¿Qué palabra significa \"factura\"?", options:["Invoice","Discount","Voucher"], correct:0, explain:"'Invoice' es el documento que detalla lo que se debe pagar." } },
+      { id:'v-facil-m300-6', word:'Commute', translation:'Trayecto diario al trabajo',
+        examples:[{en:"My commute takes forty minutes.", es:"Mi trayecto al trabajo dura cuarenta minutos."},{en:"She hates the long commute.", es:"Ella odia el trayecto largo al trabajo."}],
+        quiz:{ prompt:"¿Qué palabra significa \"trayecto diario al trabajo\"?", options:["Journey","Commute","Layover"], correct:1, explain:"'Commute' es el viaje regular entre casa y trabajo." } }
     ]
   ],
   medio: [
@@ -4257,6 +4527,20 @@ const VOCAB_BANK = {
       { id:'v-medio10-10', word:'Responsibility', translation:'Responsabilidad · algo que debes cuidar o hacer',
         examples:[{en:"This is a big responsibility.", es:"Esta es una gran responsabilidad."},{en:"She takes responsibility for her actions.", es:"Ella asume la responsabilidad de sus actos."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"algo que debes cuidar o hacer\"?", options:["responsibility","excuse","complaint"], correct:0, explain:"“Responsibility” es responsabilidad." } }
+    ],
+    [
+      { id:'v-medio-m300-1', word:'Bottleneck', translation:'Cuello de botella (obstáculo que retrasa un proceso)',
+        examples:[{en:"The approval process is a major bottleneck.", es:"El proceso de aprobación es un gran cuello de botella."},{en:"We need to fix this bottleneck in production.", es:"Necesitamos arreglar este cuello de botella en producción."}],
+        quiz:{ prompt:"¿Qué palabra significa \"cuello de botella\" (obstáculo en un proceso)?", options:["Bottleneck","Milestone","Turnover"], correct:0, explain:"'Bottleneck' es un punto que ralentiza todo el proceso." } },
+      { id:'v-medio-m300-2', word:'Workaround', translation:'Solución temporal / alternativa',
+        examples:[{en:"We found a workaround for the bug.", es:"Encontramos una solución temporal para el error."},{en:"There's a simple workaround for this problem.", es:"Hay una solución alternativa simple para este problema."}],
+        quiz:{ prompt:"¿Qué palabra significa \"solución temporal\"?", options:["Workaround","Benchmark","Contingency"], correct:0, explain:"'Workaround' es una forma de evitar un problema sin resolverlo del todo." } },
+      { id:'v-medio-m300-3', word:'Turnover', translation:'Rotación de personal (o volumen de ventas, según contexto)',
+        examples:[{en:"Employee turnover is high this year.", es:"La rotación de personal es alta este año."},{en:"The company reported strong turnover.", es:"La empresa reportó un fuerte volumen de ventas."}],
+        quiz:{ prompt:"¿Qué palabra significa \"rotación de personal\"?", options:["Turnover","Merger","Revenue"], correct:0, explain:"'Turnover' describe cuántos empleados se van y son reemplazados." } },
+      { id:'v-medio-m300-4', word:'Milestone', translation:'Hito (logro importante en un proyecto)',
+        examples:[{en:"Launching the app was a major milestone.", es:"Lanzar la aplicación fue un hito importante."},{en:"We celebrated reaching that milestone.", es:"Celebramos alcanzar ese hito."}],
+        quiz:{ prompt:"¿Qué palabra significa \"hito\" (logro importante)?", options:["Milestone","Anomaly","Aggregate"], correct:0, explain:"'Milestone' marca un punto significativo de progreso." } }
     ]
   ],
   avanzado: [
@@ -4678,6 +4962,14 @@ const VOCAB_BANK = {
       { id:'v-avanzado10-10', word:'Adaptability', translation:'Adaptabilidad · capacidad de ajustarse a cambios',
         examples:[{en:"Adaptability is key in a new job.", es:"La adaptabilidad es clave en un trabajo nuevo."},{en:"His adaptability impressed the team.", es:"Su adaptabilidad impresionó al equipo."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"capacidad de ajustarse a cambios\"?", options:["adaptability","rigidity","resistance"], correct:0, explain:"“Adaptability” es la capacidad de adaptarse." } }
+    ],
+    [
+      { id:'v-avanzado-m300-1', word:'Nonchalant', translation:'Despreocupado, indiferente (con calma casi exagerada)',
+        examples:[{en:"He stayed nonchalant despite the bad news.", es:"Se mantuvo despreocupado a pesar de las malas noticias."},{en:"Her nonchalant tone surprised everyone.", es:"Su tono indiferente sorprendió a todos."}],
+        quiz:{ prompt:"¿Qué palabra significa \"despreocupado, indiferente\"?", options:["Nonchalant","Contentious","Presumptuous"], correct:0, explain:"'Nonchalant' describe a alguien que actúa con calma indiferente, incluso ante presión." } },
+      { id:'v-avanzado-m300-2', word:'Perfunctory', translation:'Hecho de forma superficial o rutinaria, sin verdadero interés',
+        examples:[{en:"He gave a perfunctory apology.", es:"Dio una disculpa superficial, sin sinceridad real."},{en:"The inspection was merely perfunctory.", es:"La inspección fue meramente rutinaria y superficial."}],
+        quiz:{ prompt:"¿Qué palabra significa \"hecho de forma superficial, sin interés real\"?", options:["Perfunctory","Meticulous","Prolific"], correct:0, explain:"'Perfunctory' implica que algo se hizo por obligación, sin esfuerzo genuino." } }
     ]
   ]
 };
@@ -4827,6 +5119,32 @@ const LISTENING_BANK = {
         transcript:"We have six windows.", translation:"Tenemos seis ventanas.",
         question:"How many windows do they have?", options:["Six","Five","Seven"], correct:0,
         explain:"“Six” es el número 6." }
+    ],
+    [
+      { id:'l-principiante-m300-1', audioFile:'audio/miembros300/l-principiante-m300-1.mp3',
+        transcript:"My grandmother lives with us.", translation:"Mi abuela vive con nosotros.",
+        question:"Who lives with the speaker?", options:["Her grandmother","Her sister","Her friend"], correct:0,
+        explain:"El audio dice 'my grandmother lives with us'." },
+      { id:'l-principiante-m300-2', audioFile:'audio/miembros300/l-principiante-m300-2.mp3',
+        transcript:"I ride my bicycle to school every day.", translation:"Voy en bicicleta a la escuela todos los días.",
+        question:"How does the speaker go to school?", options:["By bus","By bicycle","By car"], correct:1,
+        explain:"El audio dice 'I ride my bicycle to school'." },
+      { id:'l-principiante-m300-3', audioFile:'audio/miembros300/l-principiante-m300-3.mp3',
+        transcript:"We ate cake at the birthday party.", translation:"Comimos pastel en la fiesta de cumpleaños.",
+        question:"What did they eat?", options:["Bread","Soup","Cake"], correct:2,
+        explain:"El audio dice 'we ate cake'." },
+      { id:'l-principiante-m300-4', audioFile:'audio/miembros300/l-principiante-m300-4.mp3',
+        transcript:"It's snowing outside right now.", translation:"Está nevando afuera ahora mismo.",
+        question:"What is the weather like?", options:["It's raining","It's snowing","It's sunny"], correct:1,
+        explain:"El audio dice 'it's snowing outside'." },
+      { id:'l-principiante-m300-5', audioFile:'audio/miembros300/l-principiante-m300-5.mp3',
+        transcript:"My brother is ten years old.", translation:"Mi hermano tiene diez años.",
+        question:"How old is the brother?", options:["Ten","Twenty","Twelve"], correct:0,
+        explain:"El audio dice 'my brother is ten years old'." },
+      { id:'l-principiante-m300-6', audioFile:'audio/miembros300/l-principiante-m300-6.mp3',
+        transcript:"She drinks coffee every morning.", translation:"Ella toma café todas las mañanas.",
+        question:"What does she drink every morning?", options:["Tea","Juice","Coffee"], correct:2,
+        explain:"El audio dice 'she drinks coffee every morning'." }
     ]
   ],
   facil: [
@@ -5052,6 +5370,29 @@ const LISTENING_BANK = {
         transcript:"The meeting starts at nine in the morning.", translation:"La reunión empieza a las nueve de la mañana.",
         question:"What time does the meeting start?", options:["Nine in the morning","Nine at night","Ten in the morning"], correct:0,
         explain:"“Nine in the morning” es las nueve de la mañana." }
+    ],
+    [
+      { id:'l-facil-m300-1', audioFile:'audio/miembros300/l-facil-m300-1.mp3',
+        transcript:"The waiter brought us the menu right away.", translation:"El mesero nos trajo el menú de inmediato.",
+        question:"Who brought the menu?", options:["The customer","The waiter","The cook"], correct:1,
+        explain:"El audio dice 'the waiter brought us the menu'." },
+      { id:'l-facil-m300-2', audioFile:'audio/miembros300/l-facil-m300-2.mp3',
+        transcript:"My commute takes about forty minutes by train.", translation:"Mi trayecto al trabajo dura unos cuarenta minutos en tren.",
+        question:"How does the speaker commute?", options:["By car","By train","By bicycle"], correct:1,
+        explain:"El audio dice 'by train'." },
+      { id:'l-facil-m300-3', audioFile:'audio/miembros300/l-facil-m300-3.mp3',
+        transcript:"Please send me the invoice by email today.", translation:"Por favor envíame la factura por correo hoy.",
+        question:"What does the speaker ask for?", options:["A refund","The invoice","A discount"], correct:1,
+        explain:"El audio dice 'send me the invoice'." },
+      { id:'l-facil-m300-4', audioFile:'audio/miembros300/l-facil-m300-4.mp3',
+        transcript:"We offer free delivery on weekends.", translation:"Ofrecemos envío gratis los fines de semana.",
+        question:"When is delivery free?", options:["On weekdays","On weekends","Every day"], correct:1,
+        explain:"El audio dice 'free delivery on weekends'." },
+      { id:'l-facil-m300-5', audioFile:'audio/miembros300/l-facil-m300-5.mp3',
+        transcript:"— Can I see the menu, please?\n— Of course, here you go.",
+        translation:"— ¿Puedo ver el menú, por favor?\n— Claro, aquí tienes.",
+        question:"What does the customer ask for?", options:["The bill","The menu","A discount"], correct:1,
+        explain:"El primer hablante pide ver el menú." }
     ]
   ],
   medio: [
@@ -5227,6 +5568,21 @@ const LISTENING_BANK = {
         transcript:"If I had known about the traffic, I would have left earlier.", translation:"Si hubiera sabido sobre el tráfico, habría salido más temprano.",
         question:"What does the speaker regret?", options:["Not leaving earlier","Not taking the bus","Not calling ahead"], correct:0,
         explain:"Esta es una oración condicional sobre algo que no pasó." }
+    ],
+    [
+      { id:'l-medio-m300-1', audioFile:'audio/miembros300/l-medio-m300-1.mp3',
+        transcript:"The approval process has become a real bottleneck for the whole team.", translation:"El proceso de aprobación se ha convertido en un verdadero cuello de botella para todo el equipo.",
+        question:"What is the problem in the office?", options:["A pay raise","A bottleneck in approvals","A new hire"], correct:1,
+        explain:"El audio menciona que el proceso de aprobación es un 'bottleneck'." },
+      { id:'l-medio-m300-2', audioFile:'audio/miembros300/l-medio-m300-2.mp3',
+        transcript:"Employee turnover has increased significantly since last year.", translation:"La rotación de personal ha aumentado significativamente desde el año pasado.",
+        question:"What has increased since last year?", options:["Revenue","Employee turnover","Office space"], correct:1,
+        explain:"El audio dice 'employee turnover has increased'." },
+      { id:'l-medio-m300-3', audioFile:'audio/miembros300/l-medio-m300-3.mp3',
+        transcript:"— I heard you're not coming to the launch tomorrow.\n— That's right, I have to have my car repaired.\n— That's too bad, we really wanted you there.",
+        translation:"— Escuché que no vendrás al lanzamiento mañana.\n— Así es, tengo que llevar el carro a reparar.\n— Qué lástima, de verdad queríamos que estuvieras ahí.",
+        question:"Why won't the person attend the launch?", options:["They are sick","They have to get their car repaired","They are traveling"], correct:1,
+        explain:"El hablante dice que tiene que 'have my car repaired' (mandar a reparar el carro)." }
     ]
   ],
   avanzado: [
@@ -5402,6 +5758,17 @@ const LISTENING_BANK = {
         transcript:"She tends to downplay her achievements, even when they are significant.", translation:"Ella tiende a minimizar sus logros, incluso cuando son importantes.",
         question:"What does she do with her achievements?", options:["She downplays them","She exaggerates them","She ignores them completely"], correct:0,
         explain:"“Downplay” significa minimizar o quitarle importancia." }
+    ],
+    [
+      { id:'l-avanzado-m300-1', audioFile:'audio/miembros300/l-avanzado-m300-1.mp3',
+        transcript:"His nonchalant reaction to the layoffs unsettled everyone in the room.", translation:"Su reacción despreocupada ante los despidos inquietó a todos en la sala.",
+        question:"How did he react to the layoffs?", options:["He was furious","He was nonchalant","He cried"], correct:1,
+        explain:"El audio dice 'his nonchalant reaction'." },
+      { id:'l-avanzado-m300-2', audioFile:'audio/miembros300/l-avanzado-m300-2.mp3',
+        transcript:"— Honestly, that inspection felt entirely perfunctory.\n— I agree, they must have been in a hurry to leave.\n— Either way, we should have insisted on a longer review.",
+        translation:"— Sinceramente, esa inspección se sintió totalmente superficial.\n— Estoy de acuerdo, deben haber tenido prisa por irse.\n— De todas formas, deberíamos haber insistido en una revisión más larga.",
+        question:"What do the speakers agree about the inspection?", options:["It was very thorough","It felt perfunctory","It never happened"], correct:1,
+        explain:"Ambos coinciden en que la inspección fue 'perfunctory' (superficial)." }
     ]
   ]
 };
@@ -5514,6 +5881,23 @@ const READING_BANK = {
         translation:"Mi salón de clase es grande. Hay veinte estudiantes. Nuestra maestra es amable. Tenemos muchos libros y colores. Me siento al lado de mi mejor amigo. Me gusta mucho mi salón.",
         question:"Who does the speaker sit next to?", options:["The teacher","A stranger","Their best friend"], correct:2,
         explain:"El texto dice “I sit next to my best friend”: me siento al lado de mi mejor amigo." }
+    ],
+    [
+      { id:"r-principiante-m300-1", passageId:"r-principiante-m300-p1", title:"My Family",
+        passage:"I live with my mother, my father, and my brother. My grandmother lives near us too. On Sundays, we visit her. She makes cake for us. I love my family very much.",
+        translation:"Vivo con mi madre, mi padre y mi hermano. Mi abuela vive cerca de nosotros también. Los domingos, la visitamos. Ella hace pastel para nosotros. Amo mucho a mi familia.",
+        question:"Who lives near the family?", options:["The grandmother","A friend","The teacher"], correct:0,
+        explain:"El texto dice 'My grandmother lives near us too'." },
+      { id:"r-principiante-m300-2", passageId:"r-principiante-m300-p1", title:"My Family",
+        passage:"I live with my mother, my father, and my brother. My grandmother lives near us too. On Sundays, we visit her. She makes cake for us. I love my family very much.",
+        translation:"Vivo con mi madre, mi padre y mi hermano. Mi abuela vive cerca de nosotros también. Los domingos, la visitamos. Ella hace pastel para nosotros. Amo mucho a mi familia.",
+        question:"When do they visit the grandmother?", options:["On Mondays","On Sundays","On Fridays"], correct:1,
+        explain:"El texto dice 'On Sundays, we visit her'." },
+      { id:"r-principiante-m300-3", passageId:"r-principiante-m300-p1", title:"My Family",
+        passage:"I live with my mother, my father, and my brother. My grandmother lives near us too. On Sundays, we visit her. She makes cake for us. I love my family very much.",
+        translation:"Vivo con mi madre, mi padre y mi hermano. Mi abuela vive cerca de nosotros también. Los domingos, la visitamos. Ella hace pastel para nosotros. Amo mucho a mi familia.",
+        question:"What does the grandmother make for them?", options:["Bread","Cake","Soup"], correct:1,
+        explain:"El texto dice 'She makes cake for us'." }
     ]
   ],
   facil: [
@@ -5612,6 +5996,23 @@ const READING_BANK = {
         translation:"Ayer llovió todo el día, así que no pudimos salir. Mis hijos estaban aburridos al principio. Luego decidimos jugar juegos de mesa juntos. Más tarde, vimos una película e hicimos palomitas. Al final, fue un día divertido aunque el clima fue malo.",
         question:"How did the day end, according to the text?", options:["Badly","Boring","Fun"], correct:2,
         explain:"El texto dice “it was a fun day”." }
+    ],
+    [
+      { id:"r-facil-m300-1", passageId:"r-facil-m300-p1", title:"A Day at the Restaurant",
+        passage:"Last Saturday, Maria and her friend went to a new restaurant downtown. The waiter brought them the menu quickly and was very polite. They ordered soup and coffee. When they finished, Maria asked for the invoice and paid with cash. They enjoyed the free delivery on their next order too.",
+        translation:"El sábado pasado, María y su amiga fueron a un restaurante nuevo en el centro. El mesero les trajo el menú rápidamente y fue muy amable. Pidieron sopa y café. Cuando terminaron, María pidió la factura y pagó en efectivo. También disfrutaron del envío gratis en su siguiente pedido.",
+        question:"Who brought the menu?", options:["The customer","The waiter","The cook"], correct:1,
+        explain:"El texto dice 'The waiter brought them the menu'." },
+      { id:"r-facil-m300-2", passageId:"r-facil-m300-p1", title:"A Day at the Restaurant",
+        passage:"Last Saturday, Maria and her friend went to a new restaurant downtown. The waiter brought them the menu quickly and was very polite. They ordered soup and coffee. When they finished, Maria asked for the invoice and paid with cash. They enjoyed the free delivery on their next order too.",
+        translation:"El sábado pasado, María y su amiga fueron a un restaurante nuevo en el centro. El mesero les trajo el menú rápidamente y fue muy amable. Pidieron sopa y café. Cuando terminaron, María pidió la factura y pagó en efectivo. También disfrutaron del envío gratis en su siguiente pedido.",
+        question:"How did Maria pay?", options:["With cash","With a card","With a voucher"], correct:0,
+        explain:"El texto dice 'paid with cash'." },
+      { id:"r-facil-m300-3", passageId:"r-facil-m300-p1", title:"A Day at the Restaurant",
+        passage:"Last Saturday, Maria and her friend went to a new restaurant downtown. The waiter brought them the menu quickly and was very polite. They ordered soup and coffee. When they finished, Maria asked for the invoice and paid with cash. They enjoyed the free delivery on their next order too.",
+        translation:"El sábado pasado, María y su amiga fueron a un restaurante nuevo en el centro. El mesero les trajo el menú rápidamente y fue muy amable. Pidieron sopa y café. Cuando terminaron, María pidió la factura y pagó en efectivo. También disfrutaron del envío gratis en su siguiente pedido.",
+        question:"What did they get for free on their next order?", options:["A discount","Delivery","A dessert"], correct:1,
+        explain:"El texto dice 'the free delivery on their next order'." }
     ]
   ],
   medio: [
@@ -5710,6 +6111,23 @@ const READING_BANK = {
         translation:"La moda rápida se refiere a ropa barata que se produce rápidamente para seguir las últimas tendencias. Aunque permite a las personas comprar ropa de moda a precios bajos, tiene costos ocultos. Las fábricas a menudo pagan salarios muy bajos a los trabajadores y exigen largas jornadas laborales en malas condiciones. Además, producir tanta ropa tan rápido pone una enorme presión sobre el medio ambiente, desde la contaminación del agua hasta los desechos textiles. A medida que crece la conciencia, más consumidores eligen comprar menos prendas, pero de mejor calidad y que duren más, en lugar de seguir cada nueva tendencia.",
         question:"What are more consumers choosing to do, according to the text?", options:["Buy more cheap clothes","Buy fewer, higher quality items","Stop wearing clothes from stores"], correct:1,
         explain:"El texto dice que eligen comprar menos prendas pero de mejor calidad." }
+    ],
+    [
+      { id:"r-medio-m300-1", passageId:"r-medio-m300-p1", title:"Growing Pains at a Startup",
+        passage:"As the startup grew, the approval process became a serious bottleneck: nothing moved forward until the founder personally signed off. Employee turnover also rose sharply, since many people grew frustrated with the delays. To cope, the operations manager introduced a workaround that let team leads approve small decisions on their own. Reaching that milestone finally gave everyone room to breathe.",
+        translation:"A medida que la startup crecía, el proceso de aprobación se convirtió en un cuello de botella serio: nada avanzaba hasta que el fundador lo firmaba personalmente. La rotación de personal también aumentó considerablemente, ya que muchas personas se frustraron con los retrasos. Para lidiar con esto, el gerente de operaciones introdujo una solución alternativa que permitía a los líderes de equipo aprobar decisiones pequeñas por su cuenta. Alcanzar ese hito finalmente le dio a todos un respiro.",
+        question:"What caused delays in the company?", options:["A lack of employees","The approval bottleneck","A new office"], correct:1,
+        explain:"El texto dice que el proceso de aprobación se convirtió en un 'bottleneck'." },
+      { id:"r-medio-m300-2", passageId:"r-medio-m300-p1", title:"Growing Pains at a Startup",
+        passage:"As the startup grew, the approval process became a serious bottleneck: nothing moved forward until the founder personally signed off. Employee turnover also rose sharply, since many people grew frustrated with the delays. To cope, the operations manager introduced a workaround that let team leads approve small decisions on their own. Reaching that milestone finally gave everyone room to breathe.",
+        translation:"A medida que la startup crecía, el proceso de aprobación se convirtió en un cuello de botella serio: nada avanzaba hasta que el fundador lo firmaba personalmente. La rotación de personal también aumentó considerablemente, ya que muchas personas se frustraron con los retrasos. Para lidiar con esto, el gerente de operaciones introdujo una solución alternativa que permitía a los líderes de equipo aprobar decisiones pequeñas por su cuenta. Alcanzar ese hito finalmente le dio a todos un respiro.",
+        question:"Why did employee turnover increase?", options:["Low salaries","Frustration with delays","Too much vacation"], correct:1,
+        explain:"El texto dice que la gente se frustró con los retrasos, y por eso subió la rotación." },
+      { id:"r-medio-m300-3", passageId:"r-medio-m300-p1", title:"Growing Pains at a Startup",
+        passage:"As the startup grew, the approval process became a serious bottleneck: nothing moved forward until the founder personally signed off. Employee turnover also rose sharply, since many people grew frustrated with the delays. To cope, the operations manager introduced a workaround that let team leads approve small decisions on their own. Reaching that milestone finally gave everyone room to breathe.",
+        translation:"A medida que la startup crecía, el proceso de aprobación se convirtió en un cuello de botella serio: nada avanzaba hasta que el fundador lo firmaba personalmente. La rotación de personal también aumentó considerablemente, ya que muchas personas se frustraron con los retrasos. Para lidiar con esto, el gerente de operaciones introdujo una solución alternativa que permitía a los líderes de equipo aprobar decisiones pequeñas por su cuenta. Alcanzar ese hito finalmente le dio a todos un respiro.",
+        question:"What did the operations manager introduce?", options:["A workaround", "A new salary plan","A merger"], correct:0,
+        explain:"El texto dice que el gerente introdujo 'a workaround' para las decisiones pequeñas." }
     ]
   ],
   avanzado: [
@@ -5808,6 +6226,23 @@ const READING_BANK = {
         translation:"El pensamiento grupal ocurre cuando el deseo de armonía dentro de un grupo prevalece sobre la motivación de sus miembros para evaluar de manera realista cursos de acción alternativos. Tiende a surgir en equipos muy unidos donde la disidencia es desalentada, ya sea implícita o explícitamente, y donde la opinión de un líder fuerte puede fácilmente quedar sin ser cuestionada. Las consecuencias pueden ser graves: la historia ofrece numerosos ejemplos de grupos, por lo demás inteligentes, que tomaron decisiones desastrosas, en gran parte porque nadie estuvo dispuesto a expresar dudas. Para contrarrestar esta tendencia, algunas organizaciones ahora asignan deliberadamente a un miembro del equipo para que haga de abogado del diablo durante discusiones importantes, asegurando que al menos una voz disidente siempre sea escuchada antes de tomar una decisión final.",
         question:"What strategy do some organizations use to counteract groupthink, according to the text?", options:["Assigning someone to play devil's advocate","Avoiding all group discussions","Letting the leader decide alone"], correct:0,
         explain:"El texto dice que asignan a alguien para hacer de abogado del diablo." }
+    ],
+    [
+      { id:"r-avanzado-m300-1", passageId:"r-avanzado-m300-p1", title:"The Inspection That Never Was",
+        passage:"When the auditors finally arrived, their nonchalant demeanor suggested they had little interest in the details. The walkthrough was so perfunctory that several staff members later admitted they must have missed obvious red flags. Had the board insisted on a more rigorous review, the ensuing scandal could arguably have been avoided altogether. As it stood, the company was left to pick up the pieces on its own.",
+        translation:"Cuando los auditores finalmente llegaron, su actitud despreocupada sugería poco interés en los detalles. El recorrido fue tan superficial que varios empleados admitieron después que deben haber pasado por alto señales de alerta obvias. Si la junta directiva hubiera insistido en una revisión más rigurosa, el escándalo posterior posiblemente se podría haber evitado por completo. Tal como estaban las cosas, la empresa quedó sola para lidiar con las consecuencias.",
+        question:"How did the auditors behave during the walkthrough?", options:["Extremely thorough","Nonchalant and perfunctory","Aggressive"], correct:1,
+        explain:"El texto describe su actitud como 'nonchalant' y el recorrido como 'perfunctory'." },
+      { id:"r-avanzado-m300-2", passageId:"r-avanzado-m300-p1", title:"The Inspection That Never Was",
+        passage:"When the auditors finally arrived, their nonchalant demeanor suggested they had little interest in the details. The walkthrough was so perfunctory that several staff members later admitted they must have missed obvious red flags. Had the board insisted on a more rigorous review, the ensuing scandal could arguably have been avoided altogether. As it stood, the company was left to pick up the pieces on its own.",
+        translation:"Cuando los auditores finalmente llegaron, su actitud despreocupada sugería poco interés en los detalles. El recorrido fue tan superficial que varios empleados admitieron después que deben haber pasado por alto señales de alerta obvias. Si la junta directiva hubiera insistido en una revisión más rigurosa, el escándalo posterior posiblemente se podría haber evitado por completo. Tal como estaban las cosas, la empresa quedó sola para lidiar con las consecuencias.",
+        question:"What do staff members admit they must have done?", options:["Missed red flags","Caused the scandal","Fired the auditors"], correct:0,
+        explain:"El texto dice que 'they must have missed obvious red flags'." },
+      { id:"r-avanzado-m300-3", passageId:"r-avanzado-m300-p1", title:"The Inspection That Never Was",
+        passage:"When the auditors finally arrived, their nonchalant demeanor suggested they had little interest in the details. The walkthrough was so perfunctory that several staff members later admitted they must have missed obvious red flags. Had the board insisted on a more rigorous review, the ensuing scandal could arguably have been avoided altogether. As it stood, the company was left to pick up the pieces on its own.",
+        translation:"Cuando los auditores finalmente llegaron, su actitud despreocupada sugería poco interés en los detalles. El recorrido fue tan superficial que varios empleados admitieron después que deben haber pasado por alto señales de alerta obvias. Si la junta directiva hubiera insistido en una revisión más rigurosa, el escándalo posterior posiblemente se podría haber evitado por completo. Tal como estaban las cosas, la empresa quedó sola para lidiar con las consecuencias.",
+        question:"According to the passage, what could have prevented the scandal?", options:["A more rigorous review","Firing the staff","A bigger budget"], correct:0,
+        explain:"El texto dice 'Had the board insisted on a more rigorous review... could have been avoided'." }
     ]
   ]
 };
@@ -5876,6 +6311,13 @@ const SPEAKING_BANK = {
       { id:'s-principiante8-1', sentence:"I have a green backpack.", translation:"Tengo una mochila verde.", audioFile:'audio/a0/a0speaking-020.mp3' },
       { id:'s-principiante8-2', sentence:"My brother is tall.", translation:"Mi hermano es alto.", audioFile:'audio/a0/a0speaking-021.mp3' },
       { id:'s-principiante8-3', sentence:"We eat breakfast at seven.", translation:"Desayunamos a las siete.", audioFile:'audio/a0/a0speaking-022.mp3' }
+    ],
+    [
+      { id:'s-principiante-m300-1', sentence:"My grandmother lives near the park.", translation:"Mi abuela vive cerca del parque.", audioFile:'audio/miembros300/s-principiante-m300-1.mp3' },
+      { id:'s-principiante-m300-2', sentence:"I ride my bicycle every morning.", translation:"Ando en bicicleta todas las mañanas.", audioFile:'audio/miembros300/s-principiante-m300-2.mp3' },
+      { id:'s-principiante-m300-3', sentence:"We ate cake at the party.", translation:"Comimos pastel en la fiesta.", audioFile:'audio/miembros300/s-principiante-m300-3.mp3' },
+      { id:'s-principiante-m300-4', sentence:"It is snowing outside today.", translation:"Está nevando afuera hoy.", audioFile:'audio/miembros300/s-principiante-m300-4.mp3' },
+      { id:'s-principiante-m300-5', sentence:"My brother is ten years old.", translation:"Mi hermano tiene diez años.", audioFile:'audio/miembros300/s-principiante-m300-5.mp3' }
     ]
   ],
   facil: [
@@ -5941,6 +6383,12 @@ const SPEAKING_BANK = {
       { id:'s-facil10-1', sentence:"I need to buy groceries after work.", translation:"Necesito comprar víveres después del trabajo.", audioFile:'audio/a1/a1speaking-025.mp3' },
       { id:'s-facil10-2', sentence:"Can you turn off the lights, please?", translation:"¿Puedes apagar las luces, por favor?", audioFile:'audio/a1/a1speaking-026.mp3' },
       { id:'s-facil10-3', sentence:"The bus was late this morning.", translation:"El bus llegó tarde esta mañana.", audioFile:'audio/a1/a1speaking-027.mp3' }
+    ],
+    [
+      { id:'s-facil-m300-1', sentence:"The waiter brought us the menu right away.", translation:"El mesero nos trajo el menú de inmediato.", audioFile:'audio/miembros300/s-facil-m300-1.mp3' },
+      { id:'s-facil-m300-2', sentence:"My commute takes about forty minutes.", translation:"Mi trayecto al trabajo dura unos cuarenta minutos.", audioFile:'audio/miembros300/s-facil-m300-2.mp3' },
+      { id:'s-facil-m300-3', sentence:"Please send me the invoice by email.", translation:"Por favor envíame la factura por correo.", audioFile:'audio/miembros300/s-facil-m300-3.mp3' },
+      { id:'s-facil-m300-4', sentence:"We offer free delivery on weekends.", translation:"Ofrecemos envío gratis los fines de semana.", audioFile:'audio/miembros300/s-facil-m300-4.mp3' }
     ]
   ],
   medio: [
@@ -6004,6 +6452,10 @@ const SPEAKING_BANK = {
     [
       { id:'s-medio10-1', sentence:"I've been trying to improve my pronunciation lately.", translation:"He estado tratando de mejorar mi pronunciación últimamente.", audioFile:'audio/b1/b1speaking-024.mp3' },
       { id:'s-medio10-2', sentence:"We should have booked the tickets earlier.", translation:"Deberíamos haber reservado los boletos antes.", audioFile:'audio/b1/b1speaking-025.mp3' }
+    ],
+    [
+      { id:'s-medio-m300-1', sentence:"The approval process has become a real bottleneck.", translation:"El proceso de aprobación se ha convertido en un verdadero cuello de botella.", audioFile:'audio/miembros300/s-medio-m300-1.mp3' },
+      { id:'s-medio-m300-2', sentence:"I have to have my car repaired this week.", translation:"Tengo que llevar mi carro a reparar esta semana.", audioFile:'audio/miembros300/s-medio-m300-2.mp3' }
     ]
   ],
   avanzado: [
@@ -6067,6 +6519,9 @@ const SPEAKING_BANK = {
     [
       { id:'s-avanzado9-1', sentence:"The proposal was rejected due to budget constraints.", translation:"La propuesta fue rechazada debido a restricciones de presupuesto.", audioFile:'audio/c1/c1speaking-024.mp3' },
       { id:'s-avanzado9-2', sentence:"He's known for being remarkably meticulous about details.", translation:"Es conocido por ser notablemente meticuloso con los detalles.", audioFile:'audio/c1/c1speaking-025.mp3' }
+    ],
+    [
+      { id:'s-avanzado-m300-1', sentence:"His nonchalant reaction to the layoffs unsettled everyone.", translation:"Su reacción despreocupada ante los despidos inquietó a todos.", audioFile:'audio/miembros300/s-avanzado-m300-1.mp3' }
     ]
   ]
 };
@@ -6235,6 +6690,32 @@ const WRITING_BANK = {
         checkPattern:"i feel (happy|sad|tired|excited|hungry|thirsty|sleepy|nervous)", hint:"Estructura esperada: “I feel ___.”",
         example:{en:"I feel excited.", es:"Me siento emocionado."},
         checklist:["¿Empezaste con “I feel”?","¿Usaste una palabra de sentimiento en inglés?","¿La frase tiene sentido?"] }
+    ],
+    [
+      { id:'w-principiante-m300-1', prompt:"Escribe una frase diciendo dónde vive tu abuela (usa \"My grandmother lives ___\").", target:"my grandmother lives [place]",
+        checkPattern:"my grandmother lives [a-z ]+", hint:"Estructura esperada: \"My grandmother lives ___.\"",
+        example:{en:"My grandmother lives near the park.", es:"Mi abuela vive cerca del parque."},
+        checklist:["¿Empezaste con \"My grandmother lives\"?","¿Agregaste un lugar en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-principiante-m300-2', prompt:"Escribe una frase diciendo cómo vas a la escuela (usa \"I go to school by ___\").", target:"i go to school by [transport]",
+        checkPattern:"i go to school by [a-z]+", hint:"Estructura esperada: \"I go to school by ___.\"",
+        example:{en:"I go to school by bicycle.", es:"Voy a la escuela en bicicleta."},
+        checklist:["¿Empezaste con \"I go to school by\"?","¿Usaste un medio de transporte en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-principiante-m300-3', prompt:"Escribe una frase diciendo qué comiste (usa \"We ate ___\").", target:"we ate [food]",
+        checkPattern:"we ate [a-z]+", hint:"Estructura esperada: \"We ate ___.\"",
+        example:{en:"We ate cake.", es:"Comimos pastel."},
+        checklist:["¿Empezaste con \"We ate\"?","¿Usaste una comida en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-principiante-m300-4', prompt:"Escribe una frase describiendo el clima (usa \"It is ___ today\").", target:"it is [weather] today",
+        checkPattern:"it is [a-z]+ today", hint:"Estructura esperada: \"It is ___ today.\"",
+        example:{en:"It is snowing today.", es:"Está nevando hoy."},
+        checklist:["¿Empezaste con \"It is\"?","¿Terminaste con \"today\"?","¿La frase tiene sentido?"] },
+      { id:'w-principiante-m300-5', prompt:"Escribe una frase diciendo la edad de tu hermano o hermana (usa \"My brother/sister is ___ years old\").", target:"my brother is [number] years old",
+        checkPattern:"my (brother|sister) is [a-z0-9]+ years old", hint:"Estructura esperada: \"My brother/sister is ___ years old.\"",
+        example:{en:"My brother is ten years old.", es:"Mi hermano tiene diez años."},
+        checklist:["¿Usaste \"brother\" o \"sister\"?","¿Terminaste con \"years old\"?","¿La frase tiene sentido?"] },
+      { id:'w-principiante-m300-6', prompt:"Escribe una frase diciendo qué bebes en la mañana (usa \"I drink ___ every morning\").", target:"i drink [drink] every morning",
+        checkPattern:"i drink [a-z]+ every morning", hint:"Estructura esperada: \"I drink ___ every morning.\"",
+        example:{en:"I drink coffee every morning.", es:"Tomo café todas las mañanas."},
+        checklist:["¿Empezaste con \"I drink\"?","¿Terminaste con \"every morning\"?","¿Usaste una bebida en inglés?"] }
     ]
   ],
   facil: [
@@ -6466,6 +6947,28 @@ const WRITING_BANK = {
         checkPattern:"could i have [a-z ]+,? please", hint:"Estructura esperada: “Could I have ___, please?”",
         example:{en:"Could I have the menu, please?", es:"¿Podría darme el menú, por favor?"},
         checklist:["¿Empezaste con “Could I have”?","¿Terminaste con “please”?","¿La frase suena cortés?"] }
+    ],
+    [
+      { id:'w-facil-m300-1', prompt:"Escribe una frase sobre un mesero (usa \"The waiter brought ___\").", target:"the waiter brought [thing]",
+        checkPattern:"the waiter brought [a-z ]+", hint:"Estructura esperada: \"The waiter brought ___.\"",
+        example:{en:"The waiter brought the menu.", es:"El mesero trajo el menú."},
+        checklist:["¿Empezaste con \"The waiter brought\"?","¿Usaste vocabulario en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil-m300-2', prompt:"Escribe cuánto dura tu trayecto al trabajo o a la escuela (usa \"My commute takes ___ minutes\").", target:"my commute takes [number] minutes",
+        checkPattern:"my commute takes [a-z0-9]+ minutes", hint:"Estructura esperada: \"My commute takes ___ minutes.\"",
+        example:{en:"My commute takes thirty minutes.", es:"Mi trayecto dura treinta minutos."},
+        checklist:["¿Empezaste con \"My commute takes\"?","¿Terminaste con \"minutes\"?","¿Incluiste un número en inglés?"] },
+      { id:'w-facil-m300-3', prompt:"Escribe una frase pidiendo algo por correo (usa \"Please send me ___\").", target:"please send me [thing]",
+        checkPattern:"please send me [a-z ]+", hint:"Estructura esperada: \"Please send me ___.\"",
+        example:{en:"Please send me the invoice.", es:"Por favor envíame la factura."},
+        checklist:["¿Empezaste con \"Please send me\"?","¿Usaste vocabulario en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil-m300-4', prompt:"Escribe una frase sobre un servicio gratis (usa \"We offer free ___\").", target:"we offer free [thing]",
+        checkPattern:"we offer free [a-z]+", hint:"Estructura esperada: \"We offer free ___.\"",
+        example:{en:"We offer free delivery.", es:"Ofrecemos envío gratis."},
+        checklist:["¿Empezaste con \"We offer free\"?","¿Usaste vocabulario en inglés?","¿La frase tiene sentido?"] },
+      { id:'w-facil-m300-5', prompt:"Escribe una frase usando \"as...as\" comparando dos cosas (usa \"___ is as ___ as ___\").", target:"[thing] is as [adjective] as [thing]",
+        checkPattern:"[a-z ]+ is as [a-z]+ as [a-z ]+", hint:"Estructura esperada: \"___ is as ___ as ___.\"",
+        example:{en:"This test is as easy as the last one.", es:"Este examen es tan fácil como el último."},
+        checklist:["¿Usaste \"as...as\"?","¿Comparaste dos cosas?","¿La frase tiene sentido?"] }
     ]
   ],
   medio: [
@@ -6693,6 +7196,20 @@ const WRITING_BANK = {
         checkPattern:"by the end of the year,? i will [a-z]+", hint:"Estructura esperada: “By the end of the year, I will ___.”",
         example:{en:"By the end of the year, I will speak English fluently.", es:"Para fin de año, hablaré inglés con fluidez."},
         checklist:["¿Usaste “By the end of the year, I will”?","¿Completaste con un verbo?","¿La frase tiene sentido?"] }
+    ],
+    [
+      { id:'w-medio-m300-1', prompt:"Escribe una frase sobre un problema en el trabajo usando la palabra \"bottleneck\".", target:"the [thing] is a bottleneck",
+        checkPattern:"[a-z ]*bottleneck[a-z ]*", hint:"Estructura esperada: usa la palabra \"bottleneck\" en tu frase.",
+        example:{en:"The approval process is a bottleneck for the team.", es:"El proceso de aprobación es un cuello de botella para el equipo."},
+        checklist:["¿Usaste la palabra \"bottleneck\"?","¿Describiste un problema real?","¿La frase tiene sentido en inglés?"] },
+      { id:'w-medio-m300-2', prompt:"Escribe una frase usando la construcción causativa \"have something done\" (ej: \"I had my ___ ___\").", target:"i had my [thing] [past participle]",
+        checkPattern:"i had my [a-z]+ [a-z]+", hint:"Estructura esperada: \"I had my ___ ___ (participio).\"",
+        example:{en:"I had my car repaired.", es:"Mandé a reparar mi carro."},
+        checklist:["¿Usaste \"had\" + objeto + participio?","¿El participio está correcto?","¿La frase tiene sentido?"] },
+      { id:'w-medio-m300-3', prompt:"Escribe una frase con un modal perfecto de deducción (usa \"must have been\").", target:"[subject] must have been [adjective/verb]",
+        checkPattern:"[a-z ]+ must have been [a-z]+", hint:"Estructura esperada: \"___ must have been ___.\"",
+        example:{en:"She must have been tired after the trip.", es:"Ella debe haber estado cansada después del viaje."},
+        checklist:["¿Usaste \"must have been\"?","¿Expresaste una deducción sobre el pasado?","¿La frase tiene sentido?"] }
     ]
   ],
   avanzado: [
@@ -6920,6 +7437,16 @@ const WRITING_BANK = {
         checkPattern:"it would be advisable to [a-z]+", hint:"Estructura esperada: “It would be advisable to ___.”",
         example:{en:"It would be advisable to review the contract first.", es:"Sería recomendable revisar el contrato primero."},
         checklist:["¿Usaste “It would be advisable to”?","¿Completaste con un verbo?","¿Suena formal?"] }
+    ],
+    [
+      { id:'w-avanzado-m300-1', prompt:"Escribe una frase usando la palabra \"nonchalant\" para describir una actitud despreocupada.", target:"[subject] seemed nonchalant about [situation]",
+        checkPattern:"[a-z ]*nonchalant[a-z ]*", hint:"Estructura esperada: usa la palabra \"nonchalant\" describiendo una reacción o actitud.",
+        example:{en:"He seemed nonchalant about losing the contract.", es:"Parecía despreocupado por perder el contrato."},
+        checklist:["¿Usaste la palabra \"nonchalant\" correctamente?","¿Describiste una actitud o reacción?","¿El registro es formal/natural?"] },
+      { id:'w-avanzado-m300-2', prompt:"Escribe una frase con un condicional tipo 3 usando \"should have\" o \"could have\" para expresar arrepentimiento o crítica.", target:"[subject] should have [past participle]",
+        checkPattern:"[a-z ]+ (should|could) have [a-z]+", hint:"Estructura esperada: \"___ should have/could have + participio.\"",
+        example:{en:"The board should have insisted on a more rigorous review.", es:"La junta debería haber insistido en una revisión más rigurosa."},
+        checklist:["¿Usaste \"should have\" o \"could have\" + participio?","¿Expresaste una crítica o arrepentimiento?","¿El vocabulario es de nivel avanzado?"] }
     ]
   ]
 };
