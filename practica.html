@@ -114,7 +114,8 @@
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
       <p class="lead">Elige tu nivel y una habilidad, y haz una mini sesión real de varios ejercicios. Sin registrarte.</p>
-      <p style="margin-top:8px;font-size:14px;color:var(--ink-faint);">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
+      <p id="freeAccountHint" style="margin-top:8px;font-size:14px;color:var(--ink-faint);">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro&volver=practica.html" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
+      <div id="newAccountBanner" role="status" style="display:none;margin-top:14px;padding:12px 16px;border-radius:12px;background:rgba(37,62,204,0.08);border:1px solid rgba(37,62,204,0.25);font-size:15px;line-height:1.5;"></div>
     </div>
   </section>
 
@@ -183,7 +184,6 @@
           <h3>Todo lo que necesitas para seguir avanzando</h3>
           <p>Practica sin límites y convierte tus errores en progreso. Como miembro tienes ejercicios de todos los niveles, repasos personalizados, seguimiento de tu avance y preparación especial.</p>
           <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Hazte miembro por $2 USD/mes <span aria-hidden="true">→</span></a>
-          <p class="practice-members-offer">Oferta por tiempo limitado</p>
           <p class="practice-members-price">Cancela cuando quieras</p>
         </div>
         <div class="practice-members-benefits" aria-label="Beneficios de ser miembro">
@@ -269,11 +269,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260923"></script>
+<script src="app.js?v=20260923b"></script>
 <script src="backend.js?v=20260922"></script>
 <script src="toefl-data.js?v=20260915"></script>
-<script src="toefl-teaser.js?v=20260914"></script>
-<script src="chatbot.js?v=20260910"></script>
+<script src="toefl-teaser.js?v=20260923"></script>
+<script src="chatbot.js?v=20260923"></script>
 <script>
   // Esta página es la práctica de muestra SIN guardar progreso, pensada
   // para quien todavía no es miembro. Si alguien ya inició sesión como
@@ -313,6 +313,23 @@
     // límites). Si no hay sesión, sigue siendo visitante.
     if(loggedInProfile){
       initLeoAccessTier('free', loggedInProfile);
+      // Ya tiene cuenta gratis: no tiene caso invitarla a crear una.
+      const freeHint = document.getElementById('freeAccountHint');
+      if(freeHint) freeHint.style.display = 'none';
+      // Acaba de crear su cuenta (viene de miembros.html con
+      // ?cuenta=nueva): se lo confirmamos y la dejamos seguir
+      // practicando aqui mismo. Se limpia la URL para que el aviso no
+      // vuelva a salir si recarga.
+      try{
+        if(new URLSearchParams(window.location.search).get('cuenta') === 'nueva'){
+          const banner = document.getElementById('newAccountBanner');
+          if(banner){
+            banner.innerHTML = '<strong>¡Listo, tu cuenta gratis está creada!</strong> Tienes ' + FREE_USER_DAILY_LIMIT + ' ejercicios cada día y tu progreso se guarda. Elige tu nivel y sigue practicando.';
+            banner.style.display = 'block';
+          }
+          history.replaceState(null, '', window.location.pathname);
+        }
+      }catch(e){}
       // Si el conteo guardado en Supabase de HOY es más alto que el
       // que hay en este navegador (por ejemplo, ya practicó desde el
       // celular), lo adoptamos para no dejarlo pasarse del límite.

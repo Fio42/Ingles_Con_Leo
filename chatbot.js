@@ -196,7 +196,7 @@
       text: function(){
         return isMember()
           ? 'Ya iniciaste sesión como miembro. Tienes práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas, preparación para TOEFL/IELTS/Cambridge, el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube.'
-          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, oferta por tiempo limitado, vía Stripe, PayPal o Mercado Pago).';
+          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, vía Stripe, PayPal o Mercado Pago).';
       },
       options: function(){
         var opts = [membersCta()];

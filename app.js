@@ -2408,12 +2408,17 @@ function renderFreeDailyLimitReachedBlock(){
   }
   trackLeoEvent('guest_exercise_limit_reached');
   trackLeoEvent('signup_prompt_shown');
+  // Al crear la cuenta, miembros.html regresa a la persona a esta
+  // misma pagina (?volver=...) para que siga practicando sin perder
+  // el hilo, en vez de dejarla en la pantalla de pago.
+  var volverPage = (window.location.pathname.split('/').pop() || '');
+  if(!/^[a-z0-9-]+\.html$/.test(volverPage)) volverPage = 'practica.html';
   return `
     <div class="session-summary">
       <h2>¡Buen trabajo! Ya completaste tus ejercicios de prueba.</h2>
-      <p class="summary-score">Crea tu cuenta gratis para seguir practicando.</p>
+      <p class="summary-score">Crea tu cuenta gratis y sigue ahora mismo: ${FREE_USER_DAILY_LIMIT} ejercicios cada día, con tu racha y tu progreso guardados. No pide tarjeta.</p>
       <div class="summary-actions">
-        <a href="miembros.html?modo=registro" class="btn btn-primary">Crear cuenta gratis</a>
+        <a href="miembros.html?modo=registro&volver=${volverPage}" class="btn btn-primary">Crear cuenta gratis</a>
         <a href="miembros.html" class="btn btn-ghost">Ya tengo cuenta</a>
       </div>
     </div>`;
@@ -4044,7 +4049,7 @@ function renderFreeSessionSummary({ title, score, topics }){
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
         <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
-        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes (oferta por tiempo limitado)</a>
+        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
       </div>
     </div>`;
 }

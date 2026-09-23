@@ -914,7 +914,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       <li>Preparación para TOEFL, IELTS y Cambridge (B2 First)</li>
     </ul>
     <p style="color:#253ECC; font-size:15px; font-weight:bold; margin:20px 0 0;">
-      $2 USD al mes (oferta por tiempo limitado). Cancela cuando quieras.
+      $2 USD al mes. Cancela cuando quieras.
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6; margin:10px 0 0;">
       Sin presión: tu cuenta gratis sigue funcionando igual si prefieres

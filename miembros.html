@@ -151,7 +151,7 @@
       </div>
       <div id="loginWelcome" style="display:none;text-align:center;">
         <p style="margin:0 0 4px;font-weight:800;font-size:1.15rem;color:var(--ink);">¡Tu cuenta está lista! 🎉</p>
-        <p class="gate-hint" style="margin:0 0 4px;">Desbloquea todas las herramientas de Inglés con Leo por $2 USD al mes (oferta por tiempo limitado).</p>
+        <p class="gate-hint" style="margin:0 0 4px;">Desbloquea todas las herramientas de Inglés con Leo por $2 USD al mes.</p>
         <div class="welcome-benefits">
           <div class="welcome-benefit">
             <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -179,11 +179,11 @@
           </div>
         </div>
         <button class="btn btn-primary btn-block" id="welcomeActivateBtn">Activar membresía — $2 USD/mes</button>
-        <p class="gate-hint" style="margin-top:4px;">Oferta por tiempo limitado</p>
+        <p class="gate-hint" style="margin-top:4px;">Cancela cuando quieras</p>
         <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
-        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Activa tu membresía por $2 USD/mes (oferta por tiempo limitado).</p>
+        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Activa tu membresía por $2 USD/mes.</p>
 
         <div id="paypalConfirming" style="display:none;">
           <p style="margin:0 0 10px;font-weight:700;">Estamos confirmando tu pago... ⏳</p>
@@ -248,7 +248,6 @@
         <span class="pricing-amount">$2</span>
         <span class="pricing-period">USD / mes</span>
       </div>
-      <span class="pricing-limited">🔥 Oferta por tiempo limitado</span>
       <ul class="pricing-features">
         <li>Práctica ilimitada en 5 habilidades</li>
         <li>Progreso y dashboard personalizado</li>
@@ -272,7 +271,7 @@
 
       <div class="upgrade-banner" style="margin:0 auto 6px;">
         <h3>Tu cuenta ya está lista.</h3>
-        <p>Activa tu membresía por $2 USD al mes (oferta por tiempo limitado) y desbloquea todas las herramientas para seguir mejorando tu inglés.</p>
+        <p>Activa tu membresía por $2 USD al mes y desbloquea todas las herramientas para seguir mejorando tu inglés.</p>
         <button type="button" class="btn btn-primary" id="previewActivateBtn">Activar membresía</button>
         <p class="upgrade-banner-note">Stripe · PayPal · Mercado Pago · Cancela cuando quieras</p>
       </div>
@@ -566,9 +565,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260923"></script>
+<script src="app.js?v=20260923b"></script>
 <script src="backend.js?v=20260922"></script>
-<script src="chatbot.js?v=20260910"></script>
+<script src="chatbot.js?v=20260923"></script>
 <script>
   const gate = document.getElementById('gate');
   const gateLoading = document.getElementById('gateLoading');
@@ -790,6 +789,22 @@
       unlock();
     } else if(fromSignup){
       if(typeof trackLeoEvent === 'function') trackLeoEvent('free_signup_completed');
+      // Si creo la cuenta desde una pagina de practica (?volver=...),
+      // la regresamos ahi para que siga practicando con su cuenta
+      // gratis, en vez de mostrarle primero la pantalla de pago. La
+      // membresia se le ofrece despues, al llegar a su limite diario.
+      // Solo se aceptan nombres de pagina simples de este mismo sitio
+      // (nada de enlaces externos). La pequena espera deja que Google
+      // Analytics y el Pixel de Meta registren el evento de registro
+      // antes de cambiar de pagina.
+      let volver = '';
+      try{ volver = new URLSearchParams(window.location.search).get('volver') || ''; }catch(e){}
+      if(/^[a-z0-9-]+\.html$/.test(volver) && volver !== 'miembros.html'){
+        authBtn.disabled = true;
+        authBtn.textContent = '¡Cuenta creada! Volviendo a tu práctica...';
+        setTimeout(function(){ window.location.href = volver + '?cuenta=nueva'; }, 700);
+        return;
+      }
       showGate();
       showLoginStep(5);
     } else {
