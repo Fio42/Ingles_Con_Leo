@@ -26,6 +26,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_97pvm28aLA7UCqTNV6WRUg_Bca5Y4XN';
    -> Google). Si se prende antes, el botón daría error al usarlo. */
 const GOOGLE_LOGIN_ENABLED = true;
 
+/* ID de cliente de Google (Google Cloud -> Google Auth Platform ->
+   Clientes). No es secreto: está hecho para ir en la página. Con
+   él, el botón usa la ventanita propia de Google que dice
+   "inglesconleo.com" en vez de la dirección de Supabase. Si se deja
+   vacío, se usa el método anterior (redirigir a Google). */
+const GOOGLE_CLIENT_ID = '748213508340-kmp8012322g6c7vqk2c6h8okk4oie16u.apps.googleusercontent.com';
+
 const LeoBackend = (function(){
   let client = null;
 
@@ -170,6 +177,22 @@ const LeoBackend = (function(){
     try{
       const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo } });
       if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
+  /* Inicia sesión con el "credencial" que entrega la ventanita de
+     Google (Google Identity Services). El nonce es un número de un
+     solo uso que evita que alguien reutilice un credencial robado. */
+  async function signInWithGoogleIdToken(token, nonce){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const { data, error } = await sb.auth.signInWithIdToken({ provider:'google', token, nonce });
+      if(error) return { ok:false, error: error.message };
+      if(!data || !data.session) return { ok:false, error:'no_session' };
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
@@ -513,7 +536,7 @@ const LeoBackend = (function(){
 
   return {
     isConfigured, getClient, getSession, signOut,
-    signUp, signInWithPassword, signInWithGoogle, sendPasswordReset, updatePassword, onPasswordRecovery,
+    signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount
   };
