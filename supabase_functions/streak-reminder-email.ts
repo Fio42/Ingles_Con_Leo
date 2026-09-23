@@ -115,7 +115,10 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
     .limit(1)
   if (hoy && hoy.length) return false // ya practicó hoy, se adelantó al correo
 
-  const okToSend = await sendEmail(prof.email)
+  const streakCount = await computeCurrentStreak(userId)
+  if (streakCount < 1) return false // sin racha activa no tiene sentido este correo
+
+  const okToSend = await sendEmail(prof.email, streakCount)
   if (!okToSend) return false
 
   const { error } = await supabase
@@ -126,7 +129,42 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
   return true
 }
 
-async function sendEmail(destinatario: string): Promise<boolean> {
+// Cuenta cuántos días seguidos lleva practicando este usuario, contando
+// hacia atrás desde ayer (a estas alturas ya sabemos que hoy todavía no
+// practicó). Usa la misma lógica de "streak freeze" que la página de
+// miembros (computeActiveStreakDates() en app.js): tolera UN solo día
+// salteado sin romper la racha, pero dos huecos seguidos sí la cortan.
+async function computeCurrentStreak(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('progress_sessions')
+    .select('date')
+    .eq('user_id', userId)
+    .order('date', { ascending: false })
+    .limit(400)
+  if (error || !data) return 0
+
+  const practicedSet = new Set(data.map((r: { date: string }) => r.date))
+  const now = new Date(Date.now() + MEXICO_UTC_OFFSET_HOURS * 3600_000)
+  const cursor = new Date(now)
+  cursor.setUTCDate(cursor.getUTCDate() - 1) // arrancamos en "ayer"
+
+  let streak = 0
+  let freezeAvailable = true
+  while (true) {
+    const cursorStr = cursor.toISOString().slice(0, 10)
+    if (practicedSet.has(cursorStr)) {
+      streak++
+    } else if (freezeAvailable) {
+      freezeAvailable = false
+    } else {
+      break
+    }
+    cursor.setUTCDate(cursor.getUTCDate() - 1)
+  }
+  return streak
+}
+
+async function sendEmail(destinatario: string, streakCount: number): Promise<boolean> {
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -139,7 +177,7 @@ async function sendEmail(destinatario: string): Promise<boolean> {
         to: [destinatario],
         reply_to: REPLY_TO_EMAIL,
         subject: 'Tu racha está a punto de romperse 🔥',
-        html: HTML_RACHA,
+        html: buildHtmlRacha(streakCount),
       }),
     })
     if (!res.ok) {
@@ -161,13 +199,15 @@ function json(body: unknown, status: number) {
   })
 }
 
-const HTML_RACHA = `
+function buildHtmlRacha(streakCount: number): string {
+  const dias = streakCount === 1 ? 'día' : 'días'
+  return `
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
   <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
     <p style="color:#333; font-size:15px; margin:0 0 4px;">¡Hola! 👋</p>
     <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">Tu racha está a punto de romperse 🔥</h1>
     <p style="color:#333; font-size:15px; line-height:1.6;">
-      Llevas días seguidos practicando en Inglés con Leo, pero todavía no has
+      Llevas ${streakCount} ${dias} seguidos practicando en Inglés con Leo, pero todavía no has
       hecho ningún ejercicio hoy. Con un solo ejercicio corto (2-3 minutos)
       ya cuenta y sigues tu racha.
     </p>
@@ -178,10 +218,7 @@ const HTML_RACHA = `
         Practicar ahora →
       </a>
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6; margin-top:24px;">
-      Si en algún momento faltas un día, no te preocupes: tu racha se pausa
-      un día en vez de perderse por completo.
-    </p>
   </div>
 </div>
 `.trim()
+}
