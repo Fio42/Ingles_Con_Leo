@@ -1810,3 +1810,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .mail-example-tag{background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;border-radius:999px;padding:3px 10px;}
 .mail-example-body{margin:0;padding:16px;white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:0.95rem;line-height:1.6;color:var(--ink);}
 .dash-announce[hidden]{display:none;}
+
+/* ---------- Resumen destacado (artículos de gramática) ---------- */
+.pp-summary{border-left:4px solid var(--blue);background:var(--blue-tint);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:14px 18px;margin:18px 0 22px;}
+.pp-summary-title{font-family:'Baloo 2';font-weight:800;color:var(--blue-deep);margin-bottom:4px;}
+.pp-summary p{margin:0;}
+.pp-quiz{margin-top:8px;}
