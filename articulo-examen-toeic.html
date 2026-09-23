@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260923">
+<link rel="stylesheet" href="style.css?v=20260923b">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <script type="application/ld+json">
 {
@@ -190,11 +190,57 @@
     <p>El precio depende del país, del centro aplicador y de si presentas solo Listening and Reading o también Speaking and Writing. Como referencia, suele estar entre 125 y 200 dólares, y en México hay centros donde la versión de Listening and Reading cuesta alrededor de 1,000 pesos. Antes de pagar, confirma el precio y las fechas con un aplicador oficial.</p>
     <p>Sobre la vigencia: ETS solo emite reportes de resultados de los últimos dos años, por eso la mayoría de empresas piden un resultado con menos de dos años de antigüedad.</p>
 
-    <h2>Pruébalo: una pregunta estilo TOEIC</h2>
-    <p>Así se ve una pregunta de la Parte 5, la de oraciones incompletas. Elige la opción correcta:</p>
-    <div class="mini-practice-block">
-      <h3>Ejemplo estilo TOEIC: Parte 5</h3>
-      <div class="session-shell" id="toeicMiniExample" style="border:none;box-shadow:none;padding:0;"></div>
+    <h2>Mini simulacro TOEIC gratis</h2>
+    <p>Prueba cómo se siente el examen con 4 preguntas reales en formato TOEIC: dos de Listening con audio y una de Reading. Usa audífonos si puedes.</p>
+    <div class="toeic-mini" id="toeicMini">
+      <div class="toeic-mini-head">
+        <span class="toeic-mini-badge">Gratis</span>
+        <span class="toeic-mini-progress" id="toeicMiniScore">0 de 4 respondidas</span>
+      </div>
+
+      <div class="toeic-mini-q" data-q="0">
+        <div class="toeic-mini-part">Parte 2 · Question-Response</div>
+        <p class="toeic-mini-text">Escucha una pregunta y tres respuestas. Las respuestas no aparecen escritas, igual que en el examen. ¿Cuál es la correcta?</p>
+        <button type="button" class="btn btn-primary btn-sm toeic-mini-play" data-audio="audio/toeic/l-p2-muestra.mp3">▶ Escuchar</button>
+        <div class="option-list toeic-mini-opts" data-correct="2" data-fixed="1" data-transcript="Pregunta: Who is presenting at the sales meeting tomorrow?" data-reveal="(A) It starts at nine o'clock.|(B) In the main conference room.|(C) Mr. Alvarez from the Chicago office." data-explain="La pregunta es Who (quién), así que la respuesta tiene que ser una persona. Las otras dos responden cuándo y dónde: es la trampa más común de la Parte 2."><button type="button" class="option"><span class="dot"></span><span>(A)</span></button><button type="button" class="option"><span class="dot"></span><span>(B)</span></button><button type="button" class="option"><span class="dot"></span><span>(C)</span></button></div>
+        <div class="toeic-mini-fb"></div>
+      </div>
+
+      <div class="toeic-mini-q" data-q="1">
+        <div class="toeic-mini-part">Parte 3 · Conversation</div>
+        <p class="toeic-mini-text">Escucha una conversación entre dos personas y responde las dos preguntas.</p>
+        <button type="button" class="btn btn-primary btn-sm toeic-mini-play" data-audio="audio/toeic/l-p3-muestra.mp3">▶ Escuchar la conversación</button>
+        <p class="toeic-mini-question">1. Why is the woman calling?</p>
+        <div class="option-list toeic-mini-opts" data-correct="0" data-explain="Llama para reservar una mesa para seis personas (I'd like to book a table)."><button type="button" class="option"><span class="dot"></span><span>To make a reservation</span></button><button type="button" class="option"><span class="dot"></span><span>To cancel a dinner</span></button><button type="button" class="option"><span class="dot"></span><span>To order food for delivery</span></button><button type="button" class="option"><span class="dot"></span><span>To complain about a meal</span></button></div>
+        <div class="toeic-mini-fb"></div>
+      </div>
+
+      <div class="toeic-mini-q" data-q="2">
+        <p class="toeic-mini-question">2. What does the man offer the woman?</p>
+        <div class="option-list toeic-mini-opts" data-correct="0" data-explain="Al final dice I'll reserve our private room in the back for you: les ofrece un salón privado." data-transcript="Woman: Hi, I'd like to book a table for six people this Friday at seven thirty. It's a dinner with some clients.|Man: I'm sorry, we're fully booked at seven thirty. We do have a table at eight fifteen, though.|Woman: That should be fine. Could it be in a quiet area? We need to discuss a contract.|Man: Of course. I'll reserve our private room in the back for you."><button type="button" class="option"><span class="dot"></span><span>A private room</span></button><button type="button" class="option"><span class="dot"></span><span>A discount on the bill</span></button><button type="button" class="option"><span class="dot"></span><span>A free dessert</span></button><button type="button" class="option"><span class="dot"></span><span>An earlier time</span></button></div>
+        <div class="toeic-mini-fb"></div>
+      </div>
+
+      <div class="toeic-mini-q" data-q="3">
+        <div class="toeic-mini-part">Parte 5 · Incomplete Sentences</div>
+        <p class="toeic-mini-question">Please send the signed agreement to the legal department ___ the end of the week.</p>
+        <div class="option-list toeic-mini-opts" data-correct="0" data-explain="By indica una fecha límite: a más tardar al final de la semana. Until se usa para algo que continúa hasta ese momento."><button type="button" class="option"><span class="dot"></span><span>by</span></button><button type="button" class="option"><span class="dot"></span><span>until</span></button><button type="button" class="option"><span class="dot"></span><span>since</span></button><button type="button" class="option"><span class="dot"></span><span>among</span></button></div>
+        <div class="toeic-mini-fb"></div>
+      </div>
+
+      <div class="toeic-mini-result" id="toeicMiniResult" hidden></div>
+    </div>
+
+    <div class="toeic-includes">
+      <h3>Lo que incluye la preparación TOEIC para miembros</h3>
+      <div class="toeic-includes-grid">
+        <div class="toeic-includes-item"><strong>42</strong><span>preguntas de Listening con audios de 4 acentos</span></div>
+        <div class="toeic-includes-item"><strong>45</strong><span>preguntas de Reading de las partes 5, 6 y 7</span></div>
+        <div class="toeic-includes-item"><strong>18</strong><span>tareas de Speaking con cronómetro real y grabación</span></div>
+        <div class="toeic-includes-item"><strong>9</strong><span>tareas de Writing con ejemplos modelo</span></div>
+      </div>
+      <p>Al terminar Listening o Reading ves tu puntaje estimado en la escala del examen, y puedes continuar siempre donde te quedaste.</p>
+      <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Empezar mi preparación TOEIC</a>
     </div>
 
     <h2>Cómo prepararte para el TOEIC</h2>
@@ -293,45 +339,53 @@
 <script src="chatbot.js?v=20260923"></script>
 <script>
   (function(){
-    var box = document.getElementById('toeicMiniExample');
-    if(!box) return;
-    var item = {
-      sentence: "Please send the signed agreement to the legal department ___ the end of the week.",
-      options: ['by', 'until', 'since', 'among'],
-      correct: 0,
-      explain: 'By indica una fecha límite: a más tardar al final de la semana. Until se usa para algo que continúa hasta ese momento.'
-    };
-    var shuffled = (typeof shuffleOptions === 'function') ? shuffleOptions(item.options, item.correct) : { options:item.options, correct:item.correct };
-    box.innerHTML =
-      '<div>' +
-        '<p style="font-weight:600;font-size:1.05rem;margin-bottom:14px;">' + item.sentence + '</p>' +
-        '<div id="toeicMiniOptions" style="display:flex;flex-direction:column;gap:10px;"></div>' +
-        '<div id="toeicMiniFeedback" style="margin-top:14px;font-weight:600;"></div>' +
-      '</div>';
-    var optsWrap = document.getElementById('toeicMiniOptions');
-    var feedback = document.getElementById('toeicMiniFeedback');
-    var answered = false;
-    shuffled.options.forEach(function(opt, i){
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = opt;
-      btn.className = 'btn btn-ghost';
-      btn.style.textAlign = 'left';
-      btn.style.justifyContent = 'flex-start';
-      btn.addEventListener('click', function(){
-        if(answered) return;
-        answered = true;
-        if(i === shuffled.correct){
-          btn.style.borderColor = 'var(--green, #1a9e5c)';
-          feedback.style.color = 'var(--green, #1a9e5c)';
-          feedback.textContent = '¡Correcto! ' + item.explain;
-        } else {
-          btn.style.borderColor = '#d64545';
-          feedback.style.color = '#d64545';
-          feedback.textContent = 'La respuesta correcta es "' + item.options[item.correct] + '". ' + item.explain;
-        }
+    var root = document.getElementById('toeicMini');
+    if(!root) return;
+    var answered = 0, correct = 0, total = root.querySelectorAll('.toeic-mini-opts').length;
+    var scoreEl = document.getElementById('toeicMiniScore');
+    root.querySelectorAll('.toeic-mini-play').forEach(function(btn){
+      btn.addEventListener('click', function(){ if(typeof playAudioFile === 'function') playAudioFile(btn.getAttribute('data-audio'), btn.parentNode, btn); });
+    });
+    root.querySelectorAll('.toeic-mini-opts').forEach(function(list){
+      var buttons = Array.prototype.slice.call(list.children);
+      var correctIdx = parseInt(list.getAttribute('data-correct'), 10);
+      // Las opciones escritas se barajan con shuffleOptions() de app.js. Las de
+      // la Parte 2 (A, B, C) no, porque su orden está grabado en el audio.
+      if(!list.getAttribute('data-fixed') && typeof shuffleOptions === 'function'){
+        var sh = shuffleOptions(buttons, correctIdx);
+        sh.options.forEach(function(b){ list.appendChild(b); });
+        buttons = sh.options; correctIdx = sh.correct;
+      }
+      buttons.forEach(function(b, i){
+        b.addEventListener('click', function(){
+          if(list.getAttribute('data-done')) return;
+          list.setAttribute('data-done', '1');
+          var ok = i === correctIdx;
+          var reveal = list.getAttribute('data-reveal');
+          buttons.forEach(function(x, j){
+            x.disabled = true;
+            if(reveal) x.lastChild.textContent = reveal.split('|')[j];
+            if(j === correctIdx) x.classList.add('correct');
+            if(j === i && !ok) x.classList.add('incorrect');
+          });
+          answered++; if(ok) correct++;
+          scoreEl.textContent = answered + ' de ' + total + ' respondidas';
+          var fb = list.parentNode.querySelector('.toeic-mini-fb');
+          var tr = list.getAttribute('data-transcript');
+          fb.innerHTML = '<strong>' + (ok ? '¡Correcto! ' : 'Casi. ') + '</strong>' + list.getAttribute('data-explain') +
+            (tr ? '<div class="toeic-mini-transcript"><div class="examples-label">Transcripción</div>' + tr.split('|').join('<br>') + '</div>' : '');
+          fb.className = 'toeic-mini-fb show ' + (ok ? 'ok' : 'bad');
+          if(typeof trackLeoEvent === 'function' && answered === 1) trackLeoEvent('toeic_article_quiz_started');
+          if(answered === total){
+            var res = document.getElementById('toeicMiniResult');
+            res.hidden = false;
+            res.innerHTML = '<h3>Acertaste ' + correct + ' de ' + total + '</h3>' +
+              '<p>' + (correct === total ? '¡Muy bien! Vas por buen camino. En el examen real son 200 preguntas, así que la clave es practicar con constancia y con tiempo.' : 'Así se siente el TOEIC: trampas en las respuestas, audios que se escuchan una vez y vocabulario de oficina. Con práctica se vuelve mucho más fácil.') + '</p>' +
+              '<a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Practicar el TOEIC completo</a>';
+            if(typeof trackLeoEvent === 'function') trackLeoEvent('toeic_article_quiz_completed', { score: correct });
+          }
+        });
       });
-      optsWrap.appendChild(btn);
     });
   })();
   initOnboarding(); personalizeNav();
