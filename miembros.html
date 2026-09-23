@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
+<script src="meta-pixel.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -703,6 +704,20 @@
       const profile = await LeoBackend.getMemberProfile();
       if(profile && profile.is_member){
         await LeoBackend.syncProgressFromCloud();
+        // Aviso a Google Analytics y al Pixel de Meta de que se acaba
+        // de completar un pago real (no un simple login de alguien que
+        // ya era miembro): solo pasa por aqui justo despues de volver
+        // de Stripe/PayPal/Mercado Pago con el pago ya confirmado por
+        // el webhook. El sessionStorage evita mandarlo dos veces si la
+        // persona recarga esta misma pantalla de "confirmando tu pago".
+        if(typeof trackLeoEvent === 'function'){
+          try{
+            if(!sessionStorage.getItem('leoPurchaseTracked')){
+              sessionStorage.setItem('leoPurchaseTracked', '1');
+              trackLeoEvent('membership_purchase_completed');
+            }
+          }catch(e){ trackLeoEvent('membership_purchase_completed'); }
+        }
         unlock();
         return;
       }

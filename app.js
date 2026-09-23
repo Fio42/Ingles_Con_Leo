@@ -2304,6 +2304,28 @@ function initLeoAccessTier(tier, profile){
 
 function trackLeoEvent(name, params){
   try{ if(typeof gtag === 'function') gtag('event', name, params || {}); }catch(e){}
+  try{ if(typeof fbq === 'function') fireMetaPixelEvent(name); }catch(e){}
+}
+
+/* Traduce nuestros eventos internos a los eventos "estandar" que ya
+   entiende el Pixel de Meta (Facebook/Instagram Ads), para que los
+   anuncios se puedan optimizar hacia gente que de verdad se
+   registra o paga, no solo hacia quien hace clic. Los eventos que
+   no estan en este mapa no se le mandan a Meta a proposito (no
+   tiene caso llenarle el Pixel con cada micro-evento interno). */
+var META_PIXEL_EVENT_MAP = {
+  'free_signup_completed': 'CompleteRegistration',
+  'membership_cta_clicked': 'InitiateCheckout',
+  'membership_purchase_completed': 'Purchase',
+};
+function fireMetaPixelEvent(name){
+  var metaName = META_PIXEL_EVENT_MAP[name];
+  if(!metaName) return;
+  if(metaName === 'Purchase'){
+    fbq('track', 'Purchase', { value: 2, currency: 'USD' });
+  } else {
+    fbq('track', metaName);
+  }
 }
 
 function todayStr(){
