@@ -21,6 +21,11 @@
 const SUPABASE_URL = 'https://iviksyhzhiygkuaojply.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_97pvm28aLA7UCqTNV6WRUg_Bca5Y4XN';
 
+/* Botón "Continuar con Google". Queda en false hasta que Google
+   esté activado en Supabase (Authentication -> Sign In / Providers
+   -> Google). Si se prende antes, el botón daría error al usarlo. */
+const GOOGLE_LOGIN_ENABLED = false;
+
 const LeoBackend = (function(){
   let client = null;
 
@@ -152,6 +157,25 @@ const LeoBackend = (function(){
 
   /* Fila de la tabla profiles del usuario logueado (o null si no
      hay sesión). Incluye is_member: true/false. */
+  /* Inicia sesión (o crea la cuenta, si es la primera vez) con
+     Google. Manda a la persona a Google y Google la regresa a
+     miembros.html?oauth=google (más ?volver=... si venía de una
+     página de práctica). Esa dirección tiene que estar permitida en
+     Supabase -> Authentication -> URL Configuration -> Redirect URLs. */
+  async function signInWithGoogle(volver){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    let redirectTo = window.location.origin + '/miembros.html?oauth=google';
+    if(volver && /^[a-z0-9-]+\.html$/.test(volver)) redirectTo += '&volver=' + volver;
+    try{
+      const { error } = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo } });
+      if(error) return { ok:false, error: error.message };
+      return { ok:true };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   async function getMemberProfile(){
     const sb = getClient();
     if(!sb) return null;
@@ -489,7 +513,7 @@ const LeoBackend = (function(){
 
   return {
     isConfigured, getClient, getSession, signOut,
-    signUp, signInWithPassword, sendPasswordReset, updatePassword, onPasswordRecovery,
+    signUp, signInWithPassword, signInWithGoogle, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount
   };
