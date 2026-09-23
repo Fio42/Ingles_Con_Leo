@@ -24,7 +24,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_97pvm28aLA7UCqTNV6WRUg_Bca5Y4XN';
 /* Botón "Continuar con Google". Queda en false hasta que Google
    esté activado en Supabase (Authentication -> Sign In / Providers
    -> Google). Si se prende antes, el botón daría error al usarlo. */
-const GOOGLE_LOGIN_ENABLED = false;
+const GOOGLE_LOGIN_ENABLED = true;
 
 const LeoBackend = (function(){
   let client = null;
