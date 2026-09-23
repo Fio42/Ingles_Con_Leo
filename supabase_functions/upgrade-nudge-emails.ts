@@ -202,7 +202,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 // en app.js. Viven en dos archivos distintos (uno corre en el
 // navegador, este corre en Supabase) así que si cambias el límite
 // diario de ejercicios en un lado, cámbialo también aquí.
-const FREE_USER_DAILY_LIMIT = 30
+const FREE_USER_DAILY_LIMIT = 20
 
 // ---------------- Configuración centralizada ----------------
 // Todos los tiempos y cooldowns importantes están aquí. Para
