@@ -1816,3 +1816,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .pp-summary-title{font-family:'Baloo 2';font-weight:800;color:var(--blue-deep);margin-bottom:4px;}
 .pp-summary p{margin:0;}
 .pp-quiz{margin-top:8px;}
+
+/* ---------- Ajustes para celular (revisión 23 sep 2026) ---------- */
+@media (max-width:640px){
+  .clases-toolbar{min-width:0;max-width:100%;}
+  .clases-toolbar > *{min-width:0;max-width:100%;}
+  .clases-search-box{min-width:0;width:100%;}
+}
+@media (max-width:480px){
+  /* Los botones con texto largo pueden partirse en dos líneas en lugar de salirse de la pantalla. */
+  .btn{white-space:normal;text-align:center;max-width:100%;}
+  .practice-members-cta{padding:24px 18px;}
+}
