@@ -1828,3 +1828,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .btn{white-space:normal;text-align:center;max-width:100%;}
   .practice-members-cta{padding:24px 18px;}
 }
+
+/* ---------- Pantalla de límite diario de la cuenta gratis ---------- */
+.upgrade-benefits{text-align:left;max-width:420px;margin:0 auto 14px;padding-left:22px;color:var(--ink-soft);line-height:1.6;}
+.upgrade-benefits li{margin-bottom:4px;}
+.upgrade-price{color:var(--ink-soft);margin:0 0 16px;}
+.upgrade-note{color:var(--ink-faint);font-size:0.85rem;margin-top:12px;}

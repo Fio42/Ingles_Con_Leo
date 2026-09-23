@@ -2397,13 +2397,21 @@ function renderFreeDailyLimitReachedBlock(){
   if(_leoAccessTier === 'free'){
     trackLeoEvent('free_daily_limit_reached');
     return `
-      <div class="session-summary">
-        <h2>Completaste tu práctica gratuita de hoy.</h2>
-        <p class="summary-score">Puedes volver mañana o desbloquear práctica ilimitada por $2 USD/mes.</p>
+      <div class="session-summary upgrade-block">
+        <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
+        <p class="summary-score">Vas muy bien. Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
+        <ul class="upgrade-benefits">
+          <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
+          <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
+          <li>Clases interactivas y repaso automático de tus errores</li>
+          <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
+        </ul>
+        <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México, $37 MXN). Cancela cuando quieras.</p>
         <div class="summary-actions">
-          <a href="miembros.html" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Desbloquear todo</a>
+          <a href="miembros.html" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
           <a href="index.html" class="btn btn-ghost">Volver mañana</a>
         </div>
+        <p class="upgrade-note">Tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis se renuevan mañana.</p>
       </div>`;
   }
   trackLeoEvent('guest_exercise_limit_reached');
