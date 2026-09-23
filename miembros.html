@@ -186,7 +186,7 @@
             <span class="welcome-benefit-text">Todo el contenido para miembros</span>
           </div>
         </div>
-        <button class="btn btn-primary btn-block" id="welcomeActivateBtn">Activar membresía — $2 USD/mes</button>
+        <button class="btn btn-primary btn-block" id="welcomeActivateBtn">Activar membresía: $2 USD/mes</button>
         <p class="gate-hint" style="margin-top:4px;">Cancela cuando quieras</p>
         <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
       </div>
@@ -666,6 +666,9 @@
     loginPending.style.display = step === 3 ? 'block' : 'none';
     loginRecovery.style.display = step === 4 ? 'block' : 'none';
     if(loginWelcome) loginWelcome.style.display = step === 5 ? 'block' : 'none';
+    // "¿No tienes cuenta aún?" solo tiene sentido en el formulario de entrar/crear cuenta.
+    const freeSampleHintEl = document.getElementById('freeSampleHint');
+    if(freeSampleHintEl) freeSampleHintEl.style.display = step === 1 ? '' : 'none';
     if(step === 3) resetPayChooser();
   }
 
