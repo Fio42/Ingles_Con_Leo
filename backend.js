@@ -386,7 +386,7 @@ const LeoBackend = (function(){
      { ok:true, clientSecret } o { ok:false, error }. Depende de que
      la función de Supabase "stripe-checkout" esté desplegada (ver
      supabase_functions/stripe-checkout.ts). */
-  async function startStripeCheckout(){
+  async function startStripeCheckout(plan){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
     const session = await getSession();
     if(!session) return { ok:false, error:'no_session' };
@@ -397,7 +397,7 @@ const LeoBackend = (function(){
           'Authorization': 'Bearer ' + session.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly' })
       });
       const data = await res.json();
       if(!res.ok || !data.client_secret) return { ok:false, error: (data && data.error) || 'checkout_error' };

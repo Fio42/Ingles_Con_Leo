@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260923h">
+<link rel="stylesheet" href="style.css?v=20260923i">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -191,7 +191,7 @@
         <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
-        <p style="margin:0 0 14px;">Tu cuenta ya está creada. Activa tu membresía por $2 USD/mes.</p>
+        <p style="margin:0 0 18px;">Tu cuenta ya está creada. Elige tu plan y activa tu membresía.</p>
 
         <div id="paypalConfirming" style="display:none;">
           <p style="margin:0 0 10px;font-weight:700;">Estamos confirmando tu pago... ⏳</p>
@@ -205,14 +205,30 @@
         </div>
 
         <div id="payChooser">
+          <div class="plan-toggle" role="radiogroup" aria-label="Elige tu plan">
+            <button type="button" class="plan-option is-selected" data-plan="monthly" role="radio" aria-checked="true">
+              <span class="plan-name">Mensual</span>
+              <span class="plan-price">$2 USD<small>/mes</small></span>
+              <span class="plan-note">Cancela cuando quieras</span>
+            </button>
+            <button type="button" class="plan-option" data-plan="annual" role="radio" aria-checked="false">
+              <span class="plan-badge">2 meses gratis</span>
+              <span class="plan-name">Anual</span>
+              <span class="plan-price">$20 USD<small>/año</small></span>
+              <span class="plan-note">Pagas 10, usas 12</span>
+            </button>
+          </div>
           <button class="btn btn-primary btn-block" id="payStripeBtn">💳 Pagar con tarjeta</button>
-          <p class="gate-hint" style="margin-top:8px;">Visa, Mastercard y otras tarjetas · Cobro automático mensual</p>
+          <p class="gate-hint" style="margin-top:8px;" id="payStripeHint">Visa, Mastercard y otras tarjetas · Cobro automático mensual</p>
           <div class="gate-error" id="payStripeError">No pudimos generar el formulario de pago. Intenta de nuevo en un momento.</div>
 
+          <p class="gate-hint pay-annual-note" id="payAnnualNote" hidden>El plan anual se paga solo con tarjeta. ¿Prefieres PayPal o Mercado Pago? Elige el plan mensual.</p>
+          <div id="payOtherMethods">
           <p class="gate-divider" style="margin:24px 0 0;">Otras formas de pago</p>
           <button class="btn btn-ghost btn-block" id="payBtnMP" style="margin-top:12px;">Mercado Pago</button>
           <button class="btn btn-ghost btn-block" id="payPaypalBtn" style="margin-top:10px;">PayPal</button>
           <div class="gate-error" id="payPaypalError">No pudimos generar el link de pago. Intenta de nuevo en un momento.</div>
+          </div>
 
           <p class="gate-hint" style="margin-top:14px;">🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
         </div>
@@ -224,7 +240,7 @@
              mensual) de antes: aquí solo cambió el texto/orden visual. -->
         <div id="stripeEmbeddedWrap" style="display:none;">
           <p class="gate-hint" style="margin:0 0 6px;text-align:left;"><a href="#" id="backFromStripeEmbedded" style="color:var(--blue);font-weight:600;">‹ Elegir otra forma de pago</a></p>
-          <p class="gate-hint" style="margin:0 0 10px;text-align:left;">El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).</p>
+          <p class="gate-hint" style="margin:0 0 10px;text-align:left;" id="stripePriceHint">El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).</p>
           <div id="stripeEmbeddedContainer"></div>
         </div>
 
@@ -256,6 +272,7 @@
         <span class="pricing-amount">$2</span>
         <span class="pricing-period">USD / mes</span>
       </div>
+      <p class="pricing-annual">o <strong>$20 USD al año</strong> (2 meses gratis)</p>
       <ul class="pricing-features">
         <li>Práctica ilimitada en 5 habilidades</li>
         <li>Progreso y dashboard personalizado</li>
@@ -279,7 +296,7 @@
 
       <div class="upgrade-banner" style="margin:0 auto 6px;">
         <h3>Tu cuenta ya está lista.</h3>
-        <p>Activa tu membresía por $2 USD al mes y desbloquea todas las herramientas para seguir mejorando tu inglés.</p>
+        <p>Activa tu membresía por $2 USD al mes (o $20 USD al año) y desbloquea todas las herramientas para seguir mejorando tu inglés.</p>
         <button type="button" class="btn btn-primary" id="previewActivateBtn">Activar membresía</button>
         <p class="upgrade-banner-note">Stripe · PayPal · Mercado Pago · Cancela cuando quieras</p>
       </div>
@@ -588,8 +605,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260923e"></script>
-<script src="backend.js?v=20260923c"></script>
+<script src="app.js?v=20260923f"></script>
+<script src="backend.js?v=20260923d"></script>
 <script src="chatbot.js?v=20260923"></script>
 <script>
   const gate = document.getElementById('gate');
@@ -740,9 +757,9 @@
           try{
             if(!sessionStorage.getItem('leoPurchaseTracked')){
               sessionStorage.setItem('leoPurchaseTracked', '1');
-              trackLeoEvent('membership_purchase_completed');
+              trackLeoEvent('membership_purchase_completed', getPurchaseParams());
             }
-          }catch(e){ trackLeoEvent('membership_purchase_completed'); }
+          }catch(e){ trackLeoEvent('membership_purchase_completed', getPurchaseParams()); }
         }
         unlock();
         return;
@@ -891,16 +908,61 @@
   // formulario). Ya NO redirige a otra pestaña: pide el
   // clientSecret y monta el formulario de tarjeta de Stripe
   // incrustado aquí mismo, en stripeEmbeddedContainer.
+  // ---- Plan mensual / anual. El anual ($20 USD/año) es solo con
+  // tarjeta (Stripe); PayPal y Mercado Pago siguen siendo mensuales,
+  // por eso se esconden mientras el anual esté elegido.
+  let selectedPlan = 'monthly';
+  const planOptions = Array.prototype.slice.call(document.querySelectorAll('.plan-option'));
+  const payStripeHint = document.getElementById('payStripeHint');
+  const payAnnualNote = document.getElementById('payAnnualNote');
+  const payOtherMethods = document.getElementById('payOtherMethods');
+  const stripePriceHint = document.getElementById('stripePriceHint');
+  function setPlan(plan){
+    selectedPlan = (plan === 'annual') ? 'annual' : 'monthly';
+    const annual = selectedPlan === 'annual';
+    planOptions.forEach(function(o){
+      const on = o.getAttribute('data-plan') === selectedPlan;
+      o.classList.toggle('is-selected', on);
+      o.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    if(payStripeHint) payStripeHint.textContent = annual
+      ? 'Visa, Mastercard y otras tarjetas · Un solo cobro al año'
+      : 'Visa, Mastercard y otras tarjetas · Cobro automático mensual';
+    if(payAnnualNote) payAnnualNote.hidden = !annual;
+    if(payOtherMethods) payOtherMethods.hidden = annual;
+    if(stripePriceHint) stripePriceHint.textContent = annual
+      ? 'El precio se ajusta automáticamente a tu país (en México: $370 MXN al año, equivalen a $20 USD).'
+      : 'El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).';
+    payStripeError.classList.remove('show');
+  }
+  planOptions.forEach(function(o){
+    o.addEventListener('click', function(){ setPlan(o.getAttribute('data-plan')); });
+  });
+  // Valor del pago para Analytics / Pixel de Meta al volver del pago.
+  function getPurchaseParams(){
+    let plan = 'monthly';
+    try{
+      if(/(^|[?&])stripe=success(&|$)/.test(window.location.search) && sessionStorage.getItem('leoCheckoutPlan') === 'annual') plan = 'annual';
+    }catch(e){}
+    return plan === 'annual'
+      ? { value: 20, currency: 'USD', plan: 'annual' }
+      : { value: 2, currency: 'USD', plan: 'monthly' };
+  }
+
   async function goToStripeCheckout(btn){
     payStripeError.classList.remove('show');
     btn.disabled = true;
     const originalText = btn.textContent;
     btn.textContent = 'Preparando el pago...';
-    const res = await LeoBackend.startStripeCheckout();
+    const plan = selectedPlan;
+    try{ sessionStorage.setItem('leoCheckoutPlan', plan); }catch(e){}
+    const res = await LeoBackend.startStripeCheckout(plan);
     btn.disabled = false;
     btn.textContent = originalText;
     if(!res.ok){
-      payStripeError.textContent = 'No pudimos generar el formulario de pago. Intenta de nuevo en un momento.';
+      payStripeError.textContent = (res.error === 'annual_not_configured')
+        ? 'El plan anual todavía no está disponible. Elige el plan mensual o intenta más tarde.'
+        : 'No pudimos generar el formulario de pago. Intenta de nuevo en un momento.';
       payStripeError.classList.add('show');
       return;
     }

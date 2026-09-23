@@ -1834,3 +1834,18 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .upgrade-benefits li{margin-bottom:4px;}
 .upgrade-price{color:var(--ink-soft);margin:0 0 16px;}
 .upgrade-note{color:var(--ink-faint);font-size:0.85rem;margin-top:12px;}
+
+/* ---- Plan mensual / anual (miembros.html) ---- */
+.plan-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 16px;}
+.plan-option{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 8px 12px;border:2px solid var(--line, #e3e6ee);border-radius:14px;background:#fff;color:var(--ink);font:inherit;cursor:pointer;text-align:center;min-width:0;}
+.plan-option.is-selected{border-color:var(--blue);background:var(--blue-tint);box-shadow:0 0 0 3px rgba(53,84,240,0.15);}
+.plan-option:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
+.plan-name{font-weight:700;font-size:0.9rem;}
+.plan-price{font-weight:800;font-size:1.15rem;white-space:nowrap;}
+.plan-price small{font-weight:600;font-size:0.75rem;color:var(--ink-soft);margin-left:1px;}
+.plan-note{font-size:0.75rem;color:var(--ink-faint);line-height:1.2;}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#16a34a;color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:999px;}
+.pay-annual-note{margin-top:16px;}
+.pay-annual-note[hidden],#payOtherMethods[hidden]{display:none;}
+.pricing-annual{margin:-12px 0 18px;color:var(--ink-soft);font-size:0.9rem;}
+@media (max-width:360px){.plan-price{font-size:1rem;}.plan-option{padding:15px 4px 10px;}}

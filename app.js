@@ -2304,7 +2304,7 @@ function initLeoAccessTier(tier, profile){
 
 function trackLeoEvent(name, params){
   try{ if(typeof gtag === 'function') gtag('event', name, params || {}); }catch(e){}
-  try{ if(typeof fbq === 'function') fireMetaPixelEvent(name); }catch(e){}
+  try{ if(typeof fbq === 'function') fireMetaPixelEvent(name, params); }catch(e){}
 }
 
 /* Traduce nuestros eventos internos a los eventos "estandar" que ya
@@ -2318,11 +2318,13 @@ var META_PIXEL_EVENT_MAP = {
   'membership_cta_clicked': 'InitiateCheckout',
   'membership_purchase_completed': 'Purchase',
 };
-function fireMetaPixelEvent(name){
+function fireMetaPixelEvent(name, params){
   var metaName = META_PIXEL_EVENT_MAP[name];
   if(!metaName) return;
   if(metaName === 'Purchase'){
-    fbq('track', 'Purchase', { value: 2, currency: 'USD' });
+    // Plan anual = 20 USD; mensual (default) = 2 USD.
+    var value = (params && params.value) ? params.value : 2;
+    fbq('track', 'Purchase', { value: value, currency: 'USD' });
   } else {
     fbq('track', metaName);
   }

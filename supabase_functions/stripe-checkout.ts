@@ -26,6 +26,10 @@
 //   STRIPE_PRICE_ID       el id del "Price" recurrente que crees en
 //                         Stripe para la membresía (empieza con
 //                         price_...). Ver DEVLOG para instrucciones.
+//   STRIPE_PRICE_ID_ANNUAL  el id del "Price" ANUAL ($20 USD/año,
+//                         recurrente cada año). Si falta, el plan
+//                         anual responde error y el mensual sigue
+//                         funcionando igual que siempre.
 //   SUPABASE_URL          (ya viene puesta sola en Supabase)
 //   SUPABASE_ANON_KEY     (ya viene puesta sola en Supabase)
 //   SUPABASE_SERVICE_ROLE_KEY  la "service_role" key (Project Settings -> API).
@@ -38,6 +42,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')!
 const STRIPE_PRICE_ID = Deno.env.get('STRIPE_PRICE_ID')!
+// Sin "!" a proposito: si todavia no existe, NO debe tumbar el mensual.
+const STRIPE_PRICE_ID_ANNUAL = Deno.env.get('STRIPE_PRICE_ID_ANNUAL') || ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
 // OJO: a proposito SIN el "!" al final (a diferencia de las otras
@@ -94,9 +100,24 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // Plan elegido en miembros.html: 'monthly' (default) o 'annual'.
+    // Si alguien pide el anual y el precio anual aun no esta
+    // configurado, respondemos error en vez de cobrarle el mensual
+    // (la persona vio "$20 al año" y no debe recibir otro cobro).
+    let plan = 'monthly'
+    try {
+      const reqBody = await req.json()
+      if (reqBody && reqBody.plan === 'annual') plan = 'annual'
+    } catch (_e) { /* cuerpo vacio o no-JSON: plan mensual */ }
+    if (plan === 'annual' && !STRIPE_PRICE_ID_ANNUAL) {
+      return json({ error: 'annual_not_configured' }, 400)
+    }
+    const priceId = plan === 'annual' ? STRIPE_PRICE_ID_ANNUAL : STRIPE_PRICE_ID
+
     const body = new URLSearchParams()
     body.set('mode', 'subscription')
-    body.set('line_items[0][price]', STRIPE_PRICE_ID)
+    body.set('line_items[0][price]', priceId)
+    body.set('subscription_data[metadata][plan]', plan)
     body.set('line_items[0][quantity]', '1')
     body.set('client_reference_id', user.id)
     if (user.email) body.set('customer_email', user.email)
