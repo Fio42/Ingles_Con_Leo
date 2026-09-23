@@ -1795,3 +1795,18 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .toeic-includes-item strong{font-family:'Baloo 2';font-size:1.6rem;color:var(--blue);line-height:1.1;}
 .toeic-includes-item span{font-size:0.85rem;color:var(--ink-soft);}
 .toeic-includes p{color:var(--ink-soft);font-size:0.95rem;}
+
+/* ---------- Aviso de novedades en el panel de miembros ---------- */
+.dash-announce{position:relative;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg, var(--blue-tint) 0%, #fff 100%);border:2px solid var(--blue);border-radius:var(--radius-md);padding:14px 44px 14px 16px;margin:4px 0 18px;}
+.dash-announce-badge{background:var(--blue);color:#fff;font-weight:700;font-size:0.75rem;border-radius:999px;padding:3px 10px;}
+.dash-announce-text{flex:1;min-width:220px;font-size:0.95rem;color:var(--ink-soft);}
+.dash-announce-text strong{color:var(--ink);margin-right:6px;}
+.dash-announce-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:1.4rem;line-height:1;color:var(--ink-faint);cursor:pointer;}
+
+/* ---------- Correos de ejemplo (articulo-correo-formal-en-ingles.html) ---------- */
+.mail-example{border:2px solid var(--line);border-radius:var(--radius-md);margin:14px 0;overflow:hidden;background:#fff;}
+.mail-example-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--paper-dim);border-bottom:1px solid var(--line);}
+.mail-example-head strong{flex:1;min-width:150px;}
+.mail-example-tag{background:var(--blue);color:#fff;font-size:0.75rem;font-weight:700;border-radius:999px;padding:3px 10px;}
+.mail-example-body{margin:0;padding:16px;white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:0.95rem;line-height:1.6;color:var(--ink);}
+.dash-announce[hidden]{display:none;}

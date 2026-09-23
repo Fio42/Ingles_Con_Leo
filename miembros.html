@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260923b">
+<link rel="stylesheet" href="style.css?v=20260923e">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -354,6 +354,13 @@
             <p class="dash-sub">Continúa tu práctica y revisa tu avance.</p>
           </div>
           <div class="dash-quote" id="dashQuote"></div>
+        </div>
+
+        <div class="dash-announce" id="dashAnnounce" hidden>
+          <span class="dash-announce-badge">Nuevo</span>
+          <div class="dash-announce-text"><strong>Preparación TOEIC</strong> El examen de inglés que más piden las empresas: Listening con varios acentos, Reading, Speaking con cronómetro y Writing.</div>
+          <a href="toeic.html" class="btn btn-primary btn-sm" id="dashAnnounceGo">Probarlo →</a>
+          <button type="button" class="dash-announce-close" id="dashAnnounceClose" aria-label="Cerrar aviso">×</button>
         </div>
 
         <div class="stat-cards" id="statCards"></div>
@@ -772,6 +779,20 @@
   }
 
   function startDashboard(){
+    // Aviso de novedades (TOEIC). Se oculta para siempre en este navegador
+    // si la persona lo cierra o entra a la sección.
+    (function(){
+      const KEY = 'leo_announce_toeic_2026_09';
+      const box = document.getElementById('dashAnnounce');
+      if(!box) return;
+      let seen = false;
+      try{ seen = localStorage.getItem(KEY) === '1'; }catch(e){}
+      if(seen) return;
+      box.hidden = false;
+      const dismiss = ()=>{ try{ localStorage.setItem(KEY, '1'); }catch(e){} };
+      document.getElementById('dashAnnounceClose').addEventListener('click', ()=>{ dismiss(); box.hidden = true; });
+      document.getElementById('dashAnnounceGo').addEventListener('click', dismiss);
+    })();
     applyDashboardGreeting(document.getElementById('greetLine'));
     renderDashQuote(document.getElementById('dashQuote'));
     renderStatCards(document.getElementById('statCards'));
