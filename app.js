@@ -712,9 +712,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ plan:'Plan de estudio', clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ plan:'#253ECC', clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ plan:'Plan de estudio', clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing', 'toeic-listening':'TOEIC Listening', 'toeic-reading':'TOEIC Reading', 'toeic-speaking':'TOEIC Speaking', 'toeic-writing':'TOEIC Writing' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ plan:'#253ECC', clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E', 'toeic-listening':'#253ECC', 'toeic-reading':'#253ECC', 'toeic-speaking':'#253ECC', 'toeic-writing':'#253ECC' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html', 'toeic-listening':'toeic.html', 'toeic-reading':'toeic.html', 'toeic-speaking':'toeic.html', 'toeic-writing':'toeic.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -3460,12 +3460,12 @@ function renderContinueCard(container){
       </div>`;
     return;
   }
-  if(last.skill && (last.skill.indexOf('toefl-') === 0 || last.skill.indexOf('ielts-') === 0)){
+  if(last.skill && (last.skill.indexOf('toefl-') === 0 || last.skill.indexOf('ielts-') === 0 || last.skill.indexOf('toeic-') === 0)){
     // Las secciones TOEFL/IELTS no usan niveles (A1-C1) ni un
     // bankSizeForLevel normal, así que necesitan su propia rama aquí (si
     // no, el bloque genérico de abajo truena buscando LEVEL_META[last.level]).
-    const examPage = last.skill.indexOf('ielts-') === 0 ? 'ielts.html' : 'toefl.html';
-    const examLabel = last.skill.indexOf('ielts-') === 0 ? 'IELTS' : 'TOEFL';
+    const examPage = last.skill.indexOf('ielts-') === 0 ? 'ielts.html' : (last.skill.indexOf('toeic-') === 0 ? 'toeic.html' : 'toefl.html');
+    const examLabel = last.skill.indexOf('ielts-') === 0 ? 'IELTS' : (last.skill.indexOf('toeic-') === 0 ? 'TOEIC' : 'TOEFL');
     container.innerHTML = `
       <div class="continue-card">
         <div>
