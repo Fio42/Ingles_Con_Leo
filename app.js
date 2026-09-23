@@ -304,19 +304,19 @@ function initOnboarding(onSaved){
         <div class="onb-levels" id="onbLevels">
           <label class="onb-level-opt">
             <input type="radio" name="onbLevel" value="principiante">
-            <span>Principiante (A0) — nunca he estudiado inglés</span>
+            <span>Principiante (A0): nunca he estudiado inglés</span>
           </label>
           <label class="onb-level-opt">
             <input type="radio" name="onbLevel" value="facil" checked>
-            <span>Fácil (A1–A2) — estoy empezando</span>
+            <span>Fácil (A1–A2): estoy empezando</span>
           </label>
           <label class="onb-level-opt">
             <input type="radio" name="onbLevel" value="medio">
-            <span>Medio (B1–B2) — me defiendo</span>
+            <span>Medio (B1–B2): me defiendo</span>
           </label>
           <label class="onb-level-opt">
             <input type="radio" name="onbLevel" value="avanzado">
-            <span>Avanzado (C1+) — quiero perfeccionar</span>
+            <span>Avanzado (C1+): quiero perfeccionar</span>
           </label>
         </div>
       </div>
