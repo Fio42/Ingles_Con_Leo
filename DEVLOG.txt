@@ -911,3 +911,9 @@ movil (390px), sin errores en consola.
 - Probado con Playwright a 320/360/375px: sin errores, sin overflow, data.js no se descarga en el inicio, LeoBot abre, "Avanzado" abre la práctica en Avanzado (visitante y miembro), nivel inválido cae a Fácil.
 
 REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en data.js (GRAMMAR_BANK), Claude debe correr él mismo "node tools/generar_mini_lecciones.js" desde la carpeta del proyecto para actualizar mini-lecciones.js (la mini lección del inicio). Leo no tiene que acordarse de esto ni correr nada.
+
+2026-09-24 — Inicio: guías, gratis vs miembro y preguntas frecuentes
+- index.html: nueva sección "Guías para empezar" (6 artículos + enlace a articulos.html) para reforzar enlaces internos (SEO). Nueva sección "Gratis o miembro: tú eliges" (#planes) con 2 tarjetas y 6 preguntas frecuentes. Datos tomados del sitio real: visitante 10 ejercicios (GUEST_EXERCISE_LIMIT), cuenta gratis 20/día (FREE_USER_DAILY_LIMIT), $2 USD/mes o $20 USD/año (anual solo tarjeta), Stripe/PayPal/Mercado Pago. Si cambian precios o límites, actualizar también esta sección.
+- Tarjetas "Practica a tu nivel": 2x2 en tablet y 4 en fila en pantalla grande (antes "Avanzado" quedaba sola).
+- style.css: estilos nuevos al final (.home-guides, .home-plans, .home-faq). style.css?v= subido a 20260924a en todas las páginas.
+- Probado con Playwright a 320/360/375/820/1280px: sin errores ni overflow.
