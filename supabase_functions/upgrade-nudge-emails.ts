@@ -780,6 +780,9 @@ function json(body: unknown, status: number) {
 
 type EmailContent = {
   subject: string
+  // Texto gris que Gmail muestra junto al asunto en la bandeja de
+  // entrada (antes de abrir el correo). Va oculto dentro del correo.
+  preheader: string
   greeting: string
   title: string
   bodyHtml: string
@@ -790,6 +793,7 @@ type EmailContent = {
 
 function emailShell(c: EmailContent): string {
   return `
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${c.preheader}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
   <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
     <p style="color:#333; font-size:15px; margin:0 0 4px;">${c.greeting}</p>
@@ -802,7 +806,10 @@ function emailShell(c: EmailContent): string {
         ${c.ctaText} →
       </a>
     </p>
-    <p style="color:#888; font-size:13px; line-height:1.6; margin:20px 0 0;">
+    <p style="color:#333; font-size:15px; line-height:1.6; margin:24px 0 0;">
+      Nos vemos en la práctica,<br><strong>Leo</strong>
+    </p>
+    <p style="color:#888; font-size:13px; line-height:1.6; margin:16px 0 0;">
       ${c.footerNote}
     </p>
   </div>
@@ -810,230 +817,296 @@ function emailShell(c: EmailContent): string {
 `.trim()
 }
 
+// Estilos compartidos de los correos (para no repetirlos en cada uno).
+const P = 'color:#333; font-size:15px; line-height:1.6;'
+// Cajita azul clara para el "mini tip" de inglés de cada correo: le da
+// a la persona algo útil por abrirlo, no solo un "vuelve a practicar".
+const BOX = 'background-color:#f1f4fe; border-left:4px solid #253ECC; border-radius:8px; padding:14px 16px; margin:18px 0; color:#333; font-size:15px; line-height:1.6;'
+const LINK = 'color:#253ECC; font-weight:bold;'
+
 const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   welcome: {
-    subject: 'Tu cuenta en Inglés con Leo ya está lista 🎉',
+    subject: 'Ya estás dentro 🎉 (y un truco para empezar bien)',
+    preheader: 'Tienes 20 ejercicios gratis cada día. Así les sacas el máximo.',
     greeting: '¡Hola! 👋',
-    title: 'Tu cuenta ya está lista',
+    title: 'Tu cuenta gratis ya está activa',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Ya puedes seguir practicando inglés con tu cuenta gratis: gramática,
-      vocabulario, listening, writing y speaking, adaptados a tu nivel.
+    <p style="${P}">
+      Desde hoy tienes <strong>20 ejercicios gratis cada día</strong> de
+      gramática, vocabulario, listening, writing y speaking, adaptados a tu nivel.
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Unos minutos al día son suficientes para empezar a notar la
-      diferencia.
+    <div style="${BOX}">
+      <strong>Truco para empezar bien:</strong> si no sabes tu nivel exacto,
+      haz primero el <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">test de nivel</a>
+      (unos 10 minutos). Así los ejercicios no se te hacen ni muy fáciles ni
+      imposibles.
+    </div>
+    <p style="${P}">
+      Mi recomendación: pocos minutos, pero todos los días. Eso le gana a
+      estudiar dos horas una vez a la semana.
     </p>`,
-    ctaText: 'Seguir practicando',
+    ctaText: 'Empezar a practicar',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
   abandoned_signup: {
-    subject: 'Tu práctica te espera 👀',
+    subject: '¿Cómo dirías "tengo 25 años" en inglés?',
+    preheader: 'Casi todos lo dicen mal al principio. Aquí va la respuesta.',
     greeting: '¡Hola de nuevo!',
-    title: 'Tu práctica te espera',
+    title: 'Una pregunta rápida',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Creaste tu cuenta gratis en Inglés con Leo hace un rato, pero
-      todavía no empezaste a practicar. Tu cuenta sigue ahí, lista
-      cuando quieras.
+    <p style="${P}">¿Cuál es la correcta?</p>
+    <div style="${BOX}">
+      A) I have 25 years.<br>
+      B) I am 25 years old.
+    </div>
+    <p style="${P}">
+      Es la <strong>B</strong>. En inglés la edad se dice con <em>to be</em>
+      (soy/estoy), no con <em>have</em>. Si pensaste en la A, no te
+      preocupes: es de los errores más comunes entre hispanohablantes.
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      No hace falta mucho tiempo: unos ejercicios cortos ya suman.
+    <p style="${P}">
+      Así son los ejercicios de tu cuenta: cortos, con la explicación en
+      español en cuanto contestas. El primero te toma menos de un minuto.
     </p>`,
-    ctaText: 'Continuar practicando',
+    ctaText: 'Hacer mi primer ejercicio',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Algo no funcionó al entrar? Responde este correo y lo vemos.',
   },
   reactivation_3d: {
-    subject: 'Continúa donde lo dejaste',
+    subject: '3 palabras que no significan lo que parece 👀',
+    preheader: 'Una de ellas te puede meter en un lío. Y tu práctica sigue guardada.',
     greeting: '¡Hola! 👋',
-    title: 'Continúa donde lo dejaste',
+    title: 'Cuidado con estos "falsos amigos"',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Llevas unos días sin entrar a practicar. Tu cuenta y tu progreso
-      siguen ahí exactamente como los dejaste.
-    </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Unos minutos hoy son suficientes para retomar el ritmo.
+    <div style="${BOX}">
+      <strong>Embarrassed</strong> = avergonzado (no embarazada: esa es <em>pregnant</em>)<br>
+      <strong>Actually</strong> = en realidad (no actualmente: ese es <em>currently</em>)<br>
+      <strong>Library</strong> = biblioteca (no librería: esa es <em>bookstore</em>)
+    </div>
+    <p style="${P}">
+      Llevas unos días sin practicar, y tu progreso sigue exactamente donde
+      lo dejaste. Una sesión corta hoy basta para no perder el ritmo.
     </p>`,
-    ctaText: 'Seguir practicando',
+    ctaText: 'Retomar mi práctica',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Te gustan estos tips? Responde este correo y cuéntame qué te cuesta más del inglés.',
   },
   day1: {
-    subject: '¿Practicamos hoy? 🙂',
+    subject: '¿"People is" o "people are"?',
+    preheader: 'Un error que se cuela hasta en nivel intermedio.',
     greeting: '¡Hola! 👋',
-    title: '¿Seguimos practicando?',
+    title: 'El tip de hoy',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Ayer creaste tu cuenta gratis en Inglés con Leo. Hoy es un buen
-      día para volver, aunque sea con un par de ejercicios cortos.
+    <p style="${P}">
+      Se dice <strong>people are</strong>. En español "la gente" es singular,
+      pero en inglés <em>people</em> es plural, igual que <em>police</em>.
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Tu progreso se sigue guardando en tu cuenta, así que puedes
-      seguir justo donde lo dejaste.
+    <div style="${BOX}">
+      ✗ People is very friendly here.<br>
+      ✓ People are very friendly here.
+    </div>
+    <p style="${P}">
+      Ayer creaste tu cuenta. Hoy te propongo algo sencillo: 5 ejercicios,
+      unos 3 minutos. Tu progreso se guarda solo.
     </p>`,
-    ctaText: 'Seguir practicando',
+    ctaText: 'Hacer mis 5 ejercicios',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
   day3: {
-    subject: '¿Ya probaste English Rush? 🎮',
+    subject: '¿Hasta qué nivel llegas con 3 vidas? 🎮',
+    preheader: 'English Rush: preguntas rápidas que se ponen cada vez más difíciles.',
     greeting: '¡Hola! 👋',
-    title: 'Practica inglés jugando: English Rush',
+    title: 'Te reto a una partida de English Rush',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Además de los ejercicios normales, en Inglés con Leo tienes
-      <strong>English Rush</strong>: un juego gratis de preguntas
-      rápidas de vocabulario, gramática y listening. Empieza fácil y
-      la dificultad sube mientras más avanzas.
+    <p style="${P}">
+      English Rush es el juego gratis de Inglés con Leo: preguntas rápidas de
+      vocabulario, gramática y listening, con tiempo. Tienes 3 vidas, y cada
+      5 aciertos subes de nivel.
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Es una forma distinta (y más entretenida) de seguir practicando
-      unos minutos al día.
+    <div style="${BOX}">
+      <strong>Reto:</strong> llega al nivel 4 sin perder ni una vida.
+      Suena fácil, hasta que empieza a correr el tiempo. 😅
+    </div>
+    <p style="${P}">
+      Es la forma más divertida de practicar cuando no tienes ganas de
+      "estudiar".
     </p>`,
-    ctaText: 'Practicar gratis',
+    ctaText: 'Jugar una partida',
     ctaUrl: `${SITE}/juego.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Hasta qué nivel llegaste? Responde este correo y cuéntame.',
   },
   membership_intro: {
-    subject: 'Desbloquea práctica ilimitada por $2 USD/mes',
+    subject: 'Una semana practicando 🙌 ¿Qué sigue?',
+    preheader: 'Todo Inglés con Leo sin límite, por menos de lo que cuesta un café.',
     greeting: '¡Hola! 👋',
-    title: 'Conoce la membresía',
+    title: 'Llevas una semana. ¿Vamos por más?',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Llevas ya una semana con tu cuenta gratis en Inglés con Leo.
-      Cuando quieras dar el siguiente paso, la membresía desbloquea:
+    <p style="${P}">
+      Con tu cuenta gratis tienes 20 ejercicios al día, y puedes seguir así
+      todo el tiempo que quieras. Si ya le agarraste el gusto, la membresía te
+      quita todos los límites:
     </p>
-    <ul style="color:#333; font-size:15px; line-height:1.85; padding-left:20px; margin:0;">
-      <li>Práctica ilimitada (sin límite diario de ejercicios)</li>
-      <li>Tu dashboard de progreso, racha y estadísticas por habilidad</li>
+    <ul style="${P} padding-left:20px; margin:0;">
+      <li>Práctica ilimitada en las 5 habilidades</li>
+      <li>Dashboard con tu progreso, racha y estadísticas</li>
       <li>Repaso automático de tus errores</li>
       <li>Clases interactivas paso a paso</li>
-      <li>Preparación para TOEFL, IELTS y Cambridge (B2 First)</li>
+      <li>Preparación para TOEFL, IELTS, TOEIC y Cambridge</li>
     </ul>
-    <p style="color:#253ECC; font-size:15px; font-weight:bold; margin:20px 0 0;">
-      $2 USD al mes. Cancela cuando quieras.
-    </p>
-    <p style="color:#333; font-size:15px; line-height:1.6; margin:10px 0 0;">
-      Sin presión: tu cuenta gratis sigue funcionando igual si prefieres
-      seguir así por ahora.
-    </p>`,
-    ctaText: 'Desbloquear todo',
+    <div style="${BOX}">
+      <strong>$2 USD al mes</strong> (en México, $37 MXN), o <strong>$20 USD al año</strong>,
+      que son 2 meses gratis. Cancelas cuando quieras, sin llamadas ni letras chiquitas.
+    </div>`,
+    ctaText: 'Ver todo lo que incluye',
     ctaUrl: `${SITE}/miembros.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
   reactivation_day14: {
-    subject: '¿Sigues practicando inglés?',
+    subject: 'Te guardé tu lugar',
+    preheader: '3 frases en inglés para volver sin sentir que empiezas de cero.',
     greeting: '¡Hola! 👋',
-    title: '¿Sigues practicando inglés?',
+    title: 'Volver es más fácil de lo que parece',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Ha pasado un tiempo desde que creaste tu cuenta en Inglés con
-      Leo. Si se te fue quedando de lado, no pasa nada: tu cuenta
-      sigue ahí, lista para cuando quieras retomarla.
+    <p style="${P}">
+      Si el inglés se te fue quedando de lado estas semanas, pasa muchísimo.
+      Aquí van 3 frases que sirven justo para eso:
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      La constancia es lo que más ayuda a mejorar, y unos minutos hoy
-      ya suman.
+    <div style="${BOX}">
+      <strong>I'm back!</strong> ¡Ya regresé!<br>
+      <strong>Where was I?</strong> ¿En qué me quedé?<br>
+      <strong>Let's pick up where we left off.</strong> Sigamos donde nos quedamos.
+    </div>
+    <p style="${P}">
+      Tu cuenta y tu progreso siguen ahí. Cinco minutos hoy y ya estás de vuelta.
     </p>`,
-    ctaText: 'Volver a practicar',
+    ctaText: 'Seguir donde me quedé',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: 'Si algo te hizo dejar de practicar, respóndeme y cuéntame. Me ayuda a mejorar la página.',
   },
   final_onboarding: {
-    subject: 'Algo que quizás no has probado en Inglés con Leo',
+    subject: 'Un mes después: ¿cuánto has avanzado?',
+    preheader: 'Una forma rápida de medirlo, y un reto de 1 minuto al día.',
     greeting: '¡Hola! 👋',
-    title: 'Algo que quizás no has probado',
+    title: 'Mide cuánto has avanzado',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Ya llevas un mes con tu cuenta en Inglés con Leo. Por si no lo
-      has visto: cada día hay un <strong>reto diario</strong> corto
-      (gramática, vocabulario, listening y writing mezclados) que
-      puedes hacer gratis desde la página de práctica.
+    <p style="${P}">
+      Ya pasó un mes desde que creaste tu cuenta. Dos ideas para este mes:
     </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Y si en algún momento quieres práctica sin límite diario, más
-      dashboard de progreso y clases interactivas, la membresía sigue
-      disponible por $2 USD al mes.
+    <div style="${BOX}">
+      <strong>1. Vuelve a hacer el test de nivel.</strong> Compara tu resultado
+      con el de antes. Ver el avance en números motiva muchísimo.<br><br>
+      <strong>2. Haz el reto diario.</strong> Son 5 ejercicios, más o menos un
+      minuto. Está en la página de práctica, gratis.
+    </div>
+    <p style="${P}">
+      Y si quieres ir más rápido, la membresía te da práctica sin límite y
+      clases interactivas por $2 USD al mes.
+    </p>
+    <p style="${P}">
+      <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">Hacer el test de nivel</a>
     </p>`,
-    ctaText: 'Practicar gratis',
+    ctaText: 'Hacer el reto de hoy',
     ctaUrl: `${SITE}/practica.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
   limit_reached: {
-    subject: 'Ya completaste tu práctica gratuita de hoy',
+    subject: 'Llegaste al límite 💪 (y eso dice mucho de ti)',
+    preheader: 'Completaste tus 20 ejercicios gratis. Así puedes seguir.',
     greeting: '¡Hola! 👋',
-    title: 'Ya completaste tu práctica gratuita de hoy',
+    title: 'Completaste tus 20 ejercicios del día',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Hoy llegaste al límite de ejercicios de tu cuenta gratis. Puedes
-      volver mañana (el límite se reinicia solo) o, si quieres seguir
-      ahora mismo, desbloquear práctica ilimitada por $2 USD al mes.
-    </p>`,
-    ctaText: 'Desbloquear todo',
+    <p style="${P}">
+      La mayoría de la gente deja el inglés porque no practica. Tú hiciste
+      justo lo contrario: llegaste al tope de tu cuenta gratis.
+    </p>
+    <p style="${P}">Tienes dos opciones:</p>
+    <div style="${BOX}">
+      <strong>Esperar a mañana:</strong> tus 20 ejercicios se reinician solos.<br><br>
+      <strong>Seguir sin límite:</strong> con la membresía practicas todo lo
+      que quieras, por $2 USD al mes (o $20 USD al año). Cancelas cuando quieras.
+    </div>`,
+    ctaText: 'Seguir sin límite',
     ctaUrl: `${SITE}/miembros.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: 'Si prefieres esperar a mañana, perfecto: aquí te esperan tus ejercicios.',
   },
   checkout_abandoned: {
-    subject: '¿Terminamos de activar tu membresía?',
+    subject: '¿Se atoró algo con tu pago?',
+    preheader: 'A veces la tarjeta falla. Aquí van otras opciones que sí funcionan.',
     greeting: '¡Hola! 👋',
-    title: '¿Terminamos de activar tu membresía?',
+    title: 'Tu membresía quedó a medias',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Vimos que empezaste a activar tu membresía en Inglés con Leo,
-      pero no llegó a completarse. Si fue un error técnico o
-      simplemente te quedaste a medias, puedes retomarlo cuando
-      quieras.
-    </p>`,
-    ctaText: 'Ver la membresía',
+    <p style="${P}">
+      Empezaste a activar tu membresía, pero el pago no se completó. Pasa
+      seguido, y casi siempre tiene solución rápida:
+    </p>
+    <div style="${BOX}">
+      <strong>¿Te rechazaron la tarjeta?</strong> Prueba con Mercado Pago o PayPal.
+      Están en la misma pantalla de pago.<br><br>
+      <strong>¿Tienes dudas?</strong> Responde este correo o
+      <a href="https://wa.me/529994996520" style="${LINK}">escríbenos por WhatsApp</a>
+      y te ayudamos.<br><br>
+      <strong>¿Te preocupa quedarte amarrado?</strong> Cancelas cuando quieras
+      desde tu cuenta, sin llamadas.
+    </div>`,
+    ctaText: 'Terminar de activar',
     ctaUrl: `${SITE}/miembros.html`,
-    footerNote: 'Si decidiste no continuar, no hay ningún problema: tu cuenta gratis sigue funcionando igual.',
+    footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
   },
   active_free_pitch: {
-    subject: 'Ya que practicas seguido... esto te puede interesar',
+    subject: 'Se nota que le estás echando ganas 🔥',
+    preheader: 'Ya que practicas seguido, esto te puede servir.',
     greeting: '¡Hola! 👋',
-    title: 'Se nota que le has estado echando ganas',
+    title: 'Se nota que le estás echando ganas',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Llevas un buen rato practicando en Inglés con Leo con tu cuenta
-      gratis. Ya que la usas seguido, con la membresía ($2 USD al mes)
-      te desbloqueas práctica sin límite diario, tu dashboard de
-      progreso, repaso automático de tus errores y clases
-      interactivas.
-    </p>`,
-    ctaText: 'Desbloquear todo',
+    <p style="${P}">
+      Llevas varios días practicando con tu cuenta gratis. Ya que la usas
+      seguido, la membresía te quita el límite diario y te suma tu dashboard
+      de progreso, el repaso automático de tus errores y las clases interactivas.
+    </p>
+    <div style="${BOX}">
+      <strong>$2 USD al mes</strong> o <strong>$20 USD al año</strong>. Cancelas cuando quieras.
+    </div>`,
+    ctaText: 'Ver la membresía',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
   member_reactivation_3d: {
-    subject: '¿Practicamos un poco hoy?',
+    subject: 'Tu sesión de 5 minutos está lista',
+    preheader: 'Y un phrasal verb que vas a usar esta misma semana.',
     greeting: '¡Hola! 👋',
-    title: '¿Practicamos un poco hoy?',
+    title: 'Un tip rápido antes de volver',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Hace unos días que no practicas. Si tienes unos minutos, puedes
-      volver con una sesión corta y seguir a tu ritmo.
+    <div style="${BOX}">
+      <strong>Catch up</strong> = ponerse al día<br>
+      I need to catch up on my English practice. (Necesito ponerme al día con mi práctica de inglés.)
+    </div>
+    <p style="${P}">
+      Hace unos días que no practicas. Elige una sesión corta en tu área de
+      miembros y retomas en 5 minutos.
     </p>`,
-    ctaText: 'Practicar ahora',
+    ctaText: 'Hacer una sesión corta',
     ctaUrl: `${SITE}/practica-miembros.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Hay algo que te gustaría practicar y no encuentras? Respóndeme, lo leo yo.',
   },
   member_reactivation_10d: {
-    subject: '¿Retomamos?',
+    subject: 'Hay cosas nuevas en tu membresía 👀',
+    preheader: 'Preparación TOEIC, un test de nivel con listening y más.',
     greeting: '¡Hola! 👋',
-    title: '¿Retomamos?',
+    title: 'Esto es nuevo desde tu última visita',
     bodyHtml: `
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Cuando quieras volver, tienes ejercicios, práctica por nivel y
-      English Rush listos para seguir practicando.
-    </p>
-    <p style="color:#333; font-size:15px; line-height:1.6;">
-      Puedes retomar con una sesión corta.
+    <div style="${BOX}">
+      <strong>Preparación para el TOEIC:</strong> el examen que piden muchas
+      empresas, con listening y reading tipo examen.<br><br>
+      <strong>Test de nivel con listening:</strong> para ver cuánto has avanzado.
+    </div>
+    <p style="${P}">
+      Y todo lo de siempre: ejercicios por nivel, clases interactivas y
+      English Rush. Tu progreso sigue guardado.
     </p>`,
     ctaText: 'Volver a practicar',
     ctaUrl: `${SITE}/practica-miembros.html`,
-    footerNote: 'Cualquier duda, responde este correo y con gusto te ayudo.',
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
 }
