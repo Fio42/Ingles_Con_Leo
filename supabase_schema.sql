@@ -576,3 +576,14 @@ grant update (free_first_exercise_at, free_daily_limit_reached_at) on public.pro
 -- ============================================================
 
 alter table public.profiles add column if not exists next_renewal_at timestamptz;
+
+
+-- ============================================================
+-- Baja de correos automáticos (2026-09-23)
+-- Cuando alguien da clic en "Ya no quiero recibir estos correos" (o
+-- en el botón "Cancelar suscripción" de Gmail), la función
+-- email-unsubscribe guarda aquí la fecha. upgrade-nudge-emails y
+-- streak-reminder-email ya no le mandan nada mientras tenga fecha.
+-- NO afecta correos de la cuenta (recuperar contraseña, pagos).
+-- ============================================================
+alter table public.profiles add column if not exists email_opt_out_at timestamptz;

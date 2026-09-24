@@ -44,6 +44,25 @@ const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// ---- Baja de correos (ver email-unsubscribe.ts) ----
+// Misma firma que en email-unsubscribe.ts: si cambias una, cambia las
+// dos (y la de streak-reminder-email.ts).
+const UNSUB_PAGE = 'https://inglesconleo.com/baja.html'
+async function unsubToken(userId: string): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', enc.encode(SUPABASE_SERVICE_ROLE_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode('unsub:' + userId)))
+  return Array.from(sig).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+}
+async function unsubLinks(userId: string): Promise<{ page: string; oneClick: string }> {
+  const t = await unsubToken(userId)
+  const qs = `u=${encodeURIComponent(userId)}&t=${t}`
+  return {
+    page: `${UNSUB_PAGE}?${qs}`,
+    oneClick: `${SUPABASE_URL}/functions/v1/email-unsubscribe?${qs}`,
+  }
+}
+
 // México (la mayoría de la audiencia) es UTC-6 todo el año.
 const MEXICO_UTC_OFFSET_HOURS = -6
 const MAX_PER_RUN = 500
@@ -101,10 +120,11 @@ Deno.serve(async (_req: Request) => {
 async function sendIfStillEligible(userId: string, todayStr: string): Promise<boolean> {
   const { data: prof } = await supabase
     .from('profiles')
-    .select('email, is_member, streak_reminder_last_sent')
+    .select('email, is_member, streak_reminder_last_sent, email_opt_out_at')
     .eq('id', userId)
     .maybeSingle()
   if (!prof || !prof.is_member || !prof.email) return false
+  if (prof.email_opt_out_at) return false // se dio de baja de estos correos
   if (prof.streak_reminder_last_sent === todayStr) return false
 
   const { data: hoy } = await supabase
@@ -118,7 +138,7 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
   const streakCount = await computeCurrentStreak(userId)
   if (streakCount < 1) return false // sin racha activa no tiene sentido este correo
 
-  const okToSend = await sendEmail(prof.email, streakCount)
+  const okToSend = await sendEmail(prof.email, streakCount, userId)
   if (!okToSend) return false
 
   const { error } = await supabase
@@ -164,8 +184,9 @@ async function computeCurrentStreak(userId: string): Promise<number> {
   return streak
 }
 
-async function sendEmail(destinatario: string, streakCount: number): Promise<boolean> {
+async function sendEmail(destinatario: string, streakCount: number, userId: string): Promise<boolean> {
   try {
+    const links = await unsubLinks(userId)
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -177,7 +198,11 @@ async function sendEmail(destinatario: string, streakCount: number): Promise<boo
         to: [destinatario],
         reply_to: REPLY_TO_EMAIL,
         subject: 'Tu racha está a punto de romperse 🔥',
-        html: buildHtmlRacha(streakCount),
+        html: buildHtmlRacha(streakCount, links.page),
+        headers: {
+          'List-Unsubscribe': `<${links.oneClick}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       }),
     })
     if (!res.ok) {
@@ -199,7 +224,7 @@ function json(body: unknown, status: number) {
   })
 }
 
-function buildHtmlRacha(streakCount: number): string {
+function buildHtmlRacha(streakCount: number, unsubUrl: string): string {
   const dias = streakCount === 1 ? 'día' : 'días'
   return `
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
@@ -219,6 +244,10 @@ function buildHtmlRacha(streakCount: number): string {
       </a>
     </p>
   </div>
+  <p style="max-width:520px; margin:14px auto 0; text-align:center; color:#999; font-size:12px; line-height:1.6;">
+    Recibes este correo porque eres miembro de Inglés con Leo.<br>
+    <a href="${unsubUrl}" style="color:#999;">Ya no quiero recibir estos correos</a>
+  </p>
 </div>
 `.trim()
 }

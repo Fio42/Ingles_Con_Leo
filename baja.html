@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#030b1a">
+<title>Correos | Inglés con Leo</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20260923i">
+<style>
+  .baja-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 22px;text-align:center;}
+  .baja-card h2{font-size:1.3rem;margin:0 0 10px;}
+  .baja-card p{color:var(--ink-soft);line-height:1.6;margin:0 0 14px;}
+  .baja-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+  .baja-link{background:none;border:none;color:var(--blue);font-weight:600;cursor:pointer;font-size:0.95rem;padding:6px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a href="index.html" class="logo">
+      <img src="logo.png" class="logo-mark" alt="Inglés con Leo">
+      Inglés con <span class="leo">Leo</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Aprende inglés</a>
+      <a href="practica.html">Practicar gratis</a>
+      <a href="miembros.html">Miembros</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section style="padding:40px 0 60px;">
+    <div class="wrap wrap-narrow">
+      <div class="baja-card" id="bajaRoot"><p>Procesando...</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="practica.html">Practicar</a>
+      <a href="privacidad.html">Privacidad</a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
+
+<script>
+/* Página de baja de correos automáticos. La abre el link "Ya no quiero
+   recibir estos correos" del pie de cada correo (con ?u=...&t=...).
+   Llama a la Edge Function email-unsubscribe (ver
+   supabase_functions/email-unsubscribe.ts). */
+(function(){
+  var FN_URL = 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/email-unsubscribe';
+  var ANON_KEY = 'sb_publishable_97pvm28aLA7UCqTNV6WRUg_Bca5Y4XN';
+  var root = document.getElementById('bajaRoot');
+  var params = new URLSearchParams(window.location.search);
+  var u = params.get('u') || '';
+  var t = params.get('t') || '';
+
+  function call(action){
+    return fetch(FN_URL, {
+      method: 'POST',
+      headers: { 'apikey': ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ u: u, t: t, action: action })
+    }).then(function(r){ return r.json().catch(function(){ return {}; }); })
+      .catch(function(){ return {}; });
+  }
+
+  function renderError(invalid){
+    root.innerHTML =
+      '<h2>' + (invalid ? 'Este enlace no es válido' : 'Algo no funcionó') + '</h2>' +
+      '<p>' + (invalid
+        ? 'Puede que el enlace se haya copiado incompleto. Escríbenos a hola@inglesconleo.com y te damos de baja nosotros.'
+        : 'Intenta de nuevo en un momento. Si sigue igual, escríbenos a hola@inglesconleo.com y te damos de baja nosotros.') + '</p>' +
+      '<div class="baja-actions"><a href="index.html" class="btn btn-ghost btn-block">Ir al inicio</a></div>';
+  }
+
+  function renderUnsubscribed(){
+    root.innerHTML =
+      '<h2>Listo, ya no te mandaremos estos correos</h2>' +
+      '<p>No recibirás más recordatorios de práctica ni promociones. Tu cuenta sigue funcionando igual, y solo te escribiremos si es algo importante de tu cuenta, como recuperar tu contraseña o un pago.</p>' +
+      '<div class="baja-actions">' +
+        '<a href="practica.html" class="btn btn-primary btn-block">Seguir practicando</a>' +
+        '<button type="button" class="baja-link" id="bajaUndo">Me equivoqué, quiero seguir recibiéndolos</button>' +
+      '</div>';
+    document.getElementById('bajaUndo').addEventListener('click', function(){
+      this.disabled = true; this.textContent = 'Un momento...';
+      call('resubscribe').then(function(d){
+        if(d && d.ok) renderResubscribed(); else renderError(d && d.error === 'invalid_token');
+      });
+    });
+  }
+
+  function renderResubscribed(){
+    root.innerHTML =
+      '<h2>¡Qué bueno que te quedas! 🙌</h2>' +
+      '<p>Vas a seguir recibiendo los tips y recordatorios de práctica.</p>' +
+      '<div class="baja-actions"><a href="practica.html" class="btn btn-primary btn-block">Practicar ahora</a></div>';
+  }
+
+  if(!u || !t){ renderError(true); return; }
+  call('unsubscribe').then(function(d){
+    if(d && d.ok) renderUnsubscribed(); else renderError(d && d.error === 'invalid_token');
+  });
+})();
+</script>
+</body>
+</html>

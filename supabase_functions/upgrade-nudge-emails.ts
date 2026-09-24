@@ -198,6 +198,25 @@ const SITE = 'https://inglesconleo.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// ---- Baja de correos (ver email-unsubscribe.ts) ----
+// Misma firma que en email-unsubscribe.ts: si cambias una, cambia las
+// dos (y la de streak-reminder-email.ts).
+const UNSUB_PAGE = 'https://inglesconleo.com/baja.html'
+async function unsubToken(userId: string): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', enc.encode(SUPABASE_SERVICE_ROLE_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode('unsub:' + userId)))
+  return Array.from(sig).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+}
+async function unsubLinks(userId: string): Promise<{ page: string; oneClick: string }> {
+  const t = await unsubToken(userId)
+  const qs = `u=${encodeURIComponent(userId)}&t=${t}`
+  return {
+    page: `${UNSUB_PAGE}?${qs}`,
+    oneClick: `${SUPABASE_URL}/functions/v1/email-unsubscribe?${qs}`,
+  }
+}
+
 // OJO: este número tiene que ser el mismo que FREE_USER_DAILY_LIMIT
 // en app.js. Viven en dos archivos distintos (uno corre en el
 // navegador, este corre en Supabase) así que si cambias el límite
@@ -404,6 +423,7 @@ Deno.serve(async (req: Request) => {
       )
       .eq('is_member', false)
       .not('email', 'is', null)
+      .is('email_opt_out_at', null)
       .limit(MAX_PER_RUN)
     if (error) {
       console.error('Error buscando cuentas gratis:', error)
@@ -442,6 +462,7 @@ Deno.serve(async (req: Request) => {
       .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at')
       .eq('is_member', true)
       .not('email', 'is', null)
+      .is('email_opt_out_at', null)
       .not('last_seen_at', 'is', null)
       .limit(MAX_PER_RUN)
     if (memberError) {
@@ -708,12 +729,13 @@ async function sendIfStillEligible(
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, lifecycle_emails')
+    .select('is_member, lifecycle_emails, email_opt_out_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
+  if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
 
-  const okToSend = await sendEmailFor(key, email)
+  const okToSend = await sendEmailFor(key, email, userId)
   if (!okToSend) return false
 
   const nowIso = new Date().toISOString()
@@ -732,12 +754,13 @@ async function sendIfStillEligible(
   return true
 }
 
-function sendEmailFor(key: EmailKey, to: string): Promise<boolean> {
+async function sendEmailFor(key: EmailKey, to: string, userId: string): Promise<boolean> {
   const content = EMAIL_CONTENT[key]
-  return sendViaResend(to, content.subject, emailShell(content))
+  const links = await unsubLinks(userId)
+  return sendViaResend(to, content.subject, emailShell(content, links.page), links.oneClick)
 }
 
-async function sendViaResend(to: string, subject: string, html: string): Promise<boolean> {
+async function sendViaResend(to: string, subject: string, html: string, oneClickUnsubUrl: string): Promise<boolean> {
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -751,6 +774,11 @@ async function sendViaResend(to: string, subject: string, html: string): Promise
         reply_to: REPLY_TO_EMAIL,
         subject,
         html,
+        // Botón "Cancelar suscripción" de Gmail/Outlook junto al remitente.
+        headers: {
+          'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       }),
     })
     if (!res.ok) {
@@ -791,7 +819,7 @@ type EmailContent = {
   footerNote: string
 }
 
-function emailShell(c: EmailContent): string {
+function emailShell(c: EmailContent, unsubUrl: string): string {
   return `
 <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${c.preheader}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
@@ -813,6 +841,10 @@ function emailShell(c: EmailContent): string {
       ${c.footerNote}
     </p>
   </div>
+  <p style="max-width:520px; margin:14px auto 0; text-align:center; color:#999; font-size:12px; line-height:1.6;">
+    Recibes este correo porque tienes una cuenta en Inglés con Leo.<br>
+    <a href="${unsubUrl}" style="color:#999;">Ya no quiero recibir estos correos</a>
+  </p>
 </div>
 `.trim()
 }
