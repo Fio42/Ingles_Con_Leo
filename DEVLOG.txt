@@ -922,3 +922,11 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Leo pidió no anunciar el límite de ejercicios diarios. Se quitaron "20 ejercicios al día" / "10 ejercicios" de index.html (hero, tarjetas Gratis/Miembro y pregunta frecuente) y del aviso de cuenta nueva en practica.html. Los límites siguen funcionando igual (GUEST_EXERCISE_LIMIT, FREE_USER_DAILY_LIMIT); solo el aviso que sale al llegar al límite menciona el número, porque ahí sí hace falta explicarlo.
 - Hero: debajo del botón "Practicar gratis" queda una sola línea ("Sin registro. ¿No sabes tu nivel? Haz el test gratis"). Se quitó el bloque "¿Ya decidiste? Hazte miembro · $2/mes" del hero porque la membresía ahora se explica en la sección #planes (y sigue el botón "Entrar a miembros" del menú). Las reglas CSS .hero-v2-member-* quedaron sin uso.
 - Probado con Playwright a 320/360/375/820/1280px: sin errores ni overflow.
+
+2026-09-24 — Correos automáticos después del día 30 (long_term)
+- upgrade-nudge-emails.ts: nuevo tipo "long_term" para cuentas gratis. Un correo cada 21 días (LONG_TERM_INTERVAL_DAYS) empezando 21 días después de final_onboarding (o desde el día 51 si ese caducó). Rota por LONG_TERM_EMAILS (6 correos: frases naturales, pronunciación de -ed, verbos irregulares, make vs do, "tell me about yourself", in/on/at). Cada uno se manda una vez por persona (lifecycle_emails.long_term_count). Al terminar la lista se detiene; para alargarla basta con agregar correos AL FINAL de LONG_TERM_EMAILS.
+- Se detiene si la persona lleva más de 180 días sin entrar (LONG_TERM_SUNSET_DAYS), para cuidar la reputación del remitente. Respeta el freno de 24h, la baja de correos y se corta si paga.
+- Solo 2 de los 6 mencionan la membresía, de forma suave.
+- De paso: se quitó el número "20 ejercicios" de los correos welcome y membership_intro (Leo no quiere anunciar el límite). Solo limit_reached lo menciona, porque se manda justo cuando la persona llegó al límite.
+- Sin SQL nuevo (usa la columna lifecycle_emails que ya existe). Probado: tsc sin errores y 9 casos de decideEmail simulados (antes/después de 21 días, final_onboarding caducado, lista terminada, inactivo 180+ días, freno de 24h).
+- Pendiente de Leo: pegar el archivo actualizado en Supabase (Edge Function upgrade-nudge-emails) y desplegar.

@@ -51,9 +51,26 @@
 //   - final_onboarding   Elegible desde 30 días después. Última
 //                        función a descubrir + mención suave de
 //                        membresía. Caduca a los 75 días.
-//   - Después del día 30 (o si final_onboarding ya caducó sin
-//     mandarse): NO se manda nada automático todavía (ver nota
-//     "PENDIENTE" más abajo).
+//   - long_term          Después del día 30 (actualización
+//                        2026-09-24, pedido de Leo): un correo cada
+//                        LONG_TERM_INTERVAL_DAYS (21 días), rotando
+//                        por la lista LONG_TERM_EMAILS (un tip útil +
+//                        invitación a practicar; solo algunos
+//                        mencionan la membresía, y siempre suave).
+//                        Empieza 21 días después de final_onboarding
+//                        (o desde el día 51 si final_onboarding
+//                        caducó sin mandarse). Cada correo de la lista
+//                        se manda una sola vez por persona (se lleva
+//                        la cuenta en lifecycle_emails.long_term_count);
+//                        cuando se acaba la lista, se detiene. Para
+//                        seguir más tiempo basta con agregar correos
+//                        nuevos al final de LONG_TERM_EMAILS: la gente
+//                        que ya terminó la lista los recibe solos.
+//                        Se detiene también si la persona lleva más de
+//                        LONG_TERM_SUNSET_DAYS (180) días sin entrar
+//                        a la página, para no insistirle a quien ya no
+//                        abre nada (eso daña la reputación del
+//                        remitente y manda todo a spam).
 //
 //  Por comportamiento (no dependen del día, dependen de lo que hace
 //  cada quien):
@@ -130,12 +147,9 @@
 // ------------------------------------------------------------
 // PENDIENTE (a propósito NO implementado todavía, falta info o lo
 // pediste para después):
-//  - Correos recurrentes después del día 30 (1-2 al mes con
-//    novedades/clases nuevas/English Rush). Se deja el hueco
-//    marcado en el código (ver "AQUÍ IRÍA EL NEWSLETTER") pero no
-//    se activa nada: cuando tengas contenido nuevo que avisar de
-//    verdad, se arma ese correo puntual (no hace falta una
-//    infraestructura de newsletter para eso).
+//  - (Hecho 2026-09-24: correos después del día 30, ver long_term.)
+//    Si hay una novedad puntual que avisar a todos (una sección
+//    nueva, por ejemplo), eso sigue siendo un correo aparte.
 //  - "Continuar donde lo dejaste" con el ejercicio exacto: hoy no
 //    existe ningún registro en Supabase de qué ejercicio exacto
 //    veía una cuenta gratis (el progreso de cuentas gratis vive
@@ -255,6 +269,9 @@ const REACTIVATION_EMAIL_MIN_DAY = 14
 const REACTIVATION_EMAIL_SKIP_AFTER_DAYS = 45
 const FINAL_ONBOARDING_MIN_DAY = 30
 const FINAL_ONBOARDING_SKIP_AFTER_DAYS = 75
+// Después del día 30 (ver "long_term" en la nota de arriba):
+const LONG_TERM_INTERVAL_DAYS = 21
+const LONG_TERM_SUNSET_DAYS = 180
 
 // Las 4 claves de la secuencia por calendario que SÍ pueden caducar
 // (con su plazo), en el mismo orden en que se revisan. Se usa para
@@ -341,6 +358,7 @@ const PRIORITY_ORDER = [
   'membership_intro',
   'reactivation_day14',
   'final_onboarding',
+  'long_term',
   'checkout_abandoned',
   'active_free_pitch',
   // Los siguientes dos son para MIEMBROS (is_member=true), no para
@@ -568,9 +586,28 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
     return 'final_onboarding'
   }
 
-  // AQUÍ IRÍA EL NEWSLETTER (1-2 correos al mes después del día 30):
-  // por ahora no se manda nada automático, ver nota "PENDIENTE" al
-  // inicio del archivo.
+  // 3b) Después del día 30: un correo cada LONG_TERM_INTERVAL_DAYS,
+  // rotando por LONG_TERM_EMAILS (ver nota "long_term" arriba).
+  {
+    const finalMark = lifecycle['final_onboarding']
+    const sentCount = parseInt(lifecycle['long_term_count'] || '0', 10) || 0
+    const lastActivity = p.last_seen_at || p.created_at
+    const stillAround = daysSince(lastActivity, now) <= LONG_TERM_SUNSET_DAYS
+    if (finalMark && sentCount < LONG_TERM_EMAILS.length && stillAround) {
+      // Desde cuándo contar los 21 días: el último long_term; si no hay,
+      // el envío de final_onboarding; y si ese caducó ('skipped'), el
+      // día 30 de la cuenta.
+      let sinceIso = lifecycle['long_term']
+      if (!sinceIso) {
+        sinceIso = finalMark !== 'skipped'
+          ? finalMark
+          : new Date(new Date(p.created_at).getTime() + FINAL_ONBOARDING_MIN_DAY * 86400000).toISOString()
+      }
+      if (daysSince(sinceIso, now) >= LONG_TERM_INTERVAL_DAYS) {
+        return 'long_term'
+      }
+    }
+  }
 
   // 4) Promoción de membresía "porque sí" (prioridad más baja: solo
   // se manda si nada de lo anterior aplicó).
@@ -735,11 +772,20 @@ async function sendIfStillEligible(
   if (!fresh || fresh.is_member !== expectedIsMember) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
 
-  const okToSend = await sendEmailFor(key, email, userId)
+  // long_term rota por LONG_TERM_EMAILS: se elige el siguiente de la
+  // lista según cuántos ya se le mandaron a esta persona.
+  const freshLifecycle: Record<string, string> = fresh.lifecycle_emails || {}
+  const longTermIdx = parseInt(freshLifecycle['long_term_count'] || '0', 10) || 0
+  if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
+  const content = key === 'long_term' ? LONG_TERM_EMAILS[longTermIdx] : EMAIL_CONTENT[key]
+
+  const okToSend = await sendEmailFor(key, email, userId, content)
   if (!okToSend) return false
 
   const nowIso = new Date().toISOString()
-  const mergedLifecycle = Object.assign({}, fresh.lifecycle_emails || {}, { [key]: nowIso })
+  const extra: Record<string, string> = { [key]: nowIso }
+  if (key === 'long_term') extra['long_term_count'] = String(longTermIdx + 1)
+  const mergedLifecycle = Object.assign({}, freshLifecycle, extra)
   const updatePayload: Record<string, unknown> = { lifecycle_emails: mergedLifecycle }
   // "welcome" no cuenta para el freno global de 24h (ver
   // NO_COOLDOWN_KEYS): se registra en lifecycle_emails para no
@@ -754,8 +800,8 @@ async function sendIfStillEligible(
   return true
 }
 
-async function sendEmailFor(key: EmailKey, to: string, userId: string): Promise<boolean> {
-  const content = EMAIL_CONTENT[key]
+async function sendEmailFor(key: EmailKey, to: string, userId: string, override?: EmailContent): Promise<boolean> {
+  const content = override || EMAIL_CONTENT[key]
   const links = await unsubLinks(userId)
   return sendViaResend(to, content.subject, emailShell(content, links.page), links.oneClick)
 }
@@ -857,15 +903,19 @@ const BOX = 'background-color:#f1f4fe; border-left:4px solid #253ECC; border-rad
 const LINK = 'color:#253ECC; font-weight:bold;'
 
 const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
+  // long_term no usa esta entrada: su contenido sale de
+  // LONG_TERM_EMAILS según long_term_count (ver sendIfStillEligible).
+  // Se deja un getter para cumplir con el tipo sin duplicar texto.
+  get long_term() { return LONG_TERM_EMAILS[0] },
   welcome: {
     subject: 'Ya estás dentro 🎉 (y un truco para empezar bien)',
-    preheader: 'Tienes 20 ejercicios gratis cada día. Así les sacas el máximo.',
+    preheader: 'Ya puedes practicar gratis. Así le sacas el máximo.',
     greeting: '¡Hola! 👋',
     title: 'Tu cuenta gratis ya está activa',
     bodyHtml: `
     <p style="${P}">
-      Desde hoy tienes <strong>20 ejercicios gratis cada día</strong> de
-      gramática, vocabulario, listening, writing y speaking, adaptados a tu nivel.
+      Desde hoy puedes practicar gratis gramática, vocabulario, listening,
+      writing y speaking, con ejercicios adaptados a tu nivel.
     </p>
     <div style="${BOX}">
       <strong>Truco para empezar bien:</strong> si no sabes tu nivel exacto,
@@ -976,9 +1026,8 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     title: 'Llevas una semana. ¿Vamos por más?',
     bodyHtml: `
     <p style="${P}">
-      Con tu cuenta gratis tienes 20 ejercicios al día, y puedes seguir así
-      todo el tiempo que quieras. Si ya le agarraste el gusto, la membresía te
-      quita todos los límites:
+      Tu cuenta gratis sigue funcionando todo el tiempo que quieras. Si ya le
+      agarraste el gusto, la membresía te da todo esto sin límites:
     </p>
     <ul style="${P} padding-left:20px; margin:0;">
       <li>Práctica ilimitada en las 5 habilidades</li>
@@ -1142,3 +1191,143 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
 }
+
+// ---------------- Correos después del día 30 (long_term) ----------------
+// Se mandan en este orden, uno cada LONG_TERM_INTERVAL_DAYS. Cada uno
+// trae algo útil (un tip real) para que valga la pena abrirlo; solo
+// algunos mencionan la membresía, y siempre de forma suave. Para
+// alargar la secuencia, agrega correos nuevos AL FINAL (nunca en medio
+// ni reordenando: el orden es lo que usa long_term_count). No repetir
+// tips que ya salen en otros correos (edad con to be, falsos amigos,
+// people are, English Rush, test de nivel, reto diario).
+const LONG_TERM_EMAILS: EmailContent[] = [
+  {
+    subject: '4 frases para sonar más natural en inglés',
+    preheader: 'Las usan los nativos todo el tiempo y casi nunca salen en los libros.',
+    greeting: '¡Hola! 👋',
+    title: 'Suena más natural con estas 4 frases',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>No worries.</strong> No te preocupes / No pasa nada.<br>
+      <strong>Sounds good.</strong> Me parece bien.<br>
+      <strong>I'm on my way.</strong> Voy en camino.<br>
+      <strong>How's it going?</strong> ¿Cómo va todo?
+    </div>
+    <p style="${P}">
+      Son cortas, sirven en casi cualquier conversación y te hacen sonar
+      mucho menos "de libro". Pruébalas esta semana en un mensaje.
+    </p>`,
+    ctaText: 'Practicar un poco hoy',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Qué frase te cuesta decir en inglés? Respóndeme y te ayudo.',
+  },
+  {
+    subject: '¿Worked se pronuncia "work-ed"? 🤔',
+    preheader: 'La terminación -ed tiene 3 sonidos distintos. Así los distingues.',
+    greeting: '¡Hola! 👋',
+    title: 'Los 3 sonidos de la -ed',
+    bodyHtml: `
+    <p style="${P}">
+      En pasado, la -ed casi nunca se pronuncia "ed". Tiene 3 sonidos:
+    </p>
+    <div style="${BOX}">
+      <strong>/t/</strong> worked, stopped, watched (suena "workt")<br>
+      <strong>/d/</strong> played, called, lived (suena "pleid")<br>
+      <strong>/id/</strong> wanted, needed (solo después de t o d)
+    </div>
+    <p style="${P}">
+      La mejor forma de agarrarle el oído es escuchando frases reales.
+      Los ejercicios de listening son justo para eso.
+    </p>`,
+    ctaText: 'Hacer un listening',
+    ctaUrl: `${SITE}/practica.html?skill=listening`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  {
+    subject: 'Los 5 verbos irregulares que más vas a usar',
+    preheader: 'Si te sabes estos, ya cubres una buena parte de las conversaciones.',
+    greeting: '¡Hola! 👋',
+    title: '5 verbos irregulares que no pueden faltar',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>go / went</strong> ir / fui<br>
+      <strong>have / had</strong> tener / tuve<br>
+      <strong>make / made</strong> hacer / hice<br>
+      <strong>get / got</strong> conseguir, llegar / conseguí, llegué<br>
+      <strong>say / said</strong> decir / dije
+    </div>
+    <p style="${P}">
+      Si quieres la lista completa con traducción, está en
+      <a href="${SITE}/articulo-verbos-irregulares.html" style="${LINK}">esta guía gratis</a>.
+      Y si quieres practicarlos sin límite y repasar tus errores
+      automáticamente, la membresía cuesta $2 USD al mes.
+    </p>`,
+    ctaText: 'Practicar gramática',
+    ctaUrl: `${SITE}/practica.html?skill=grammar`,
+    footerNote: 'Tu cuenta gratis sigue funcionando igual, sin presión.',
+  },
+  {
+    subject: '¿Make o do? El truco para no confundirlos',
+    preheader: 'Los dos significan "hacer", pero no se usan igual.',
+    greeting: '¡Hola! 👋',
+    title: 'Make vs do, en 30 segundos',
+    bodyHtml: `
+    <p style="${P}">
+      Regla rápida: <strong>make</strong> es crear o producir algo;
+      <strong>do</strong> es realizar una tarea o actividad.
+    </p>
+    <div style="${BOX}">
+      make a mistake, make a decision, make dinner<br>
+      do homework, do the dishes, do exercise
+    </div>
+    <p style="${P}">
+      Hay excepciones, pero con esta regla aciertas la mayoría de las veces.
+    </p>`,
+    ctaText: 'Ponerlo a prueba',
+    ctaUrl: `${SITE}/practica.html?skill=grammar`,
+    footerNote: '¿Te sirven estos tips? Respóndeme y dime qué tema quieres en el próximo.',
+  },
+  {
+    subject: '"Tell me about yourself": cómo responder en inglés',
+    preheader: 'La pregunta que abre casi todas las entrevistas de trabajo.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu respuesta en 3 pasos',
+    bodyHtml: `
+    <p style="${P}">
+      Si algún día tienes una entrevista en inglés, casi seguro empieza con
+      esta pregunta. Una estructura simple que funciona:
+    </p>
+    <div style="${BOX}">
+      <strong>1. Presente:</strong> I'm a sales assistant at...<br>
+      <strong>2. Pasado:</strong> Before that, I worked in...<br>
+      <strong>3. Futuro:</strong> Now I'm looking for...
+    </div>
+    <p style="${P}">
+      En <a href="${SITE}/articulo-entrevista-trabajo-ingles.html" style="${LINK}">esta guía</a>
+      tienes más preguntas comunes con ejemplos de respuesta.
+    </p>`,
+    ctaText: 'Leer la guía',
+    ctaUrl: `${SITE}/articulo-entrevista-trabajo-ingles.html`,
+    footerNote: '¿Tienes una entrevista pronto? Respóndeme y cuéntame para qué puesto.',
+  },
+  {
+    subject: '¿In, on o at? Así se usan con el tiempo',
+    preheader: 'Una regla de "de grande a pequeño" que te ahorra muchos errores.',
+    greeting: '¡Hola! 👋',
+    title: 'In, on, at: de grande a pequeño',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>in</strong> para lo más grande: in 2026, in March, in summer<br>
+      <strong>on</strong> para días: on Monday, on my birthday<br>
+      <strong>at</strong> para horas exactas: at 7 pm, at night
+    </div>
+    <p style="${P}">
+      Llevas un buen tiempo con tu cuenta. Si quieres dar el siguiente
+      paso, la membresía te da práctica ilimitada, clases interactivas y
+      preparación para exámenes por $2 USD al mes (o $20 USD al año).
+    </p>`,
+    ctaText: 'Seguir practicando',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: 'Gracias por seguir aquí. Si algo se puede mejorar, respóndeme: lo leo yo.',
+  },
+]
