@@ -903,3 +903,9 @@ movil (390px), sin errores en consola.
 - Ahora: no sale a visitantes. Solo aparece cuando hay una cuenta con sesión iniciada y sin perfil local todavía: practica.html (cuenta gratis, incluido el regreso con ?cuenta=nueva) y miembros.html (vista de cuenta gratis, panel de miembro o pantalla de bienvenida recién creada la cuenta, vía maybeOnboard()).
 - app.js sin cambios (initOnboarding igual). Se quitó la llamada de index.html, articulos.html y los 23 articulo-*.html.
 - Probado con Playwright a 360px con backend simulado: visitante no ve modal en index/artículo/practica/miembros; cuenta gratis y miembro sí lo ven; con perfil ya guardado no sale; al guardar, el saludo del panel usa el nombre. Sin overflow.
+
+2026-09-24 — Inicio: tarjetas de nivel y carga más liviana
+- Tarjetas "Practica a tu nivel" del inicio ahora enlazan a practica.html?level=<nivel>. initFreePractice e initMemberPractice leen ?level= (validado contra LEVELS) y bajan hasta el ejercicio. practica.html conserva ?skill=/?level= al redirigir a miembros a practica-miembros.html.
+- index.html ya no carga data.js (~190 KB comprimido). Carga mini-lecciones.js (~14 KB, 305 frases cortas), generado desde GRAMMAR_BANK con: node tools/generar_mini_lecciones.js. pickDailyGrammarExample usa MINI_LESSONS si existe.
+- app.js?v= subido a 20260924a en todas las páginas.
+- Probado con Playwright a 320/360/375px: sin errores, sin overflow, data.js no se descarga en el inicio, LeoBot abre, "Avanzado" abre la práctica en Avanzado (visitante y miembro), nivel inválido cae a Fácil.

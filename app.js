@@ -4539,6 +4539,15 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     const params = new URLSearchParams(window.location.search);
     const skillParam = params.get('skill');
     if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
+    // ?level=avanzado (desde las tarjetas "Practica a tu nivel" del inicio)
+    const levelParam = params.get('level');
+    if(levelParam && LEVELS.includes(levelParam)){
+      currentLevel = levelParam;
+      // Igual que cuando se toca un nivel a mano: bajamos hasta las
+      // pestanas/ejercicio, para que no quede todo debajo del reto diario
+      // y parezca que no paso nada.
+      setTimeout(()=>{ if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' }); }, 300);
+    }
   }catch(e){}
 
   function focusTabs(){
@@ -4625,6 +4634,15 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
     const params = new URLSearchParams(window.location.search);
     const skillParam = params.get('skill');
     if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
+    // ?level=avanzado (desde las tarjetas "Practica a tu nivel" del inicio)
+    const levelParam = params.get('level');
+    if(levelParam && LEVELS.includes(levelParam)){
+      currentLevel = levelParam;
+      // Igual que cuando se toca un nivel a mano: bajamos hasta las
+      // pestanas/ejercicio, para que no quede todo debajo del reto diario
+      // y parezca que no paso nada.
+      setTimeout(()=>{ if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' }); }, 300);
+    }
   }catch(e){}
 
   function focusTabs(){
@@ -4662,6 +4680,12 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
    de repetir siempre la misma. No requiere backend: todo pasa en el
    navegador. */
 function pickDailyGrammarExample(){
+  /* En el inicio se carga mini-lecciones.js (lista corta ya filtrada,
+     ~14 KB) en vez de todo data.js (~190 KB), para que abra rapido en
+     el celular. Se genera con tools/generar_mini_lecciones.js. */
+  if(typeof MINI_LESSONS !== 'undefined' && MINI_LESSONS.length){
+    return MINI_LESSONS[Math.floor(Math.random() * MINI_LESSONS.length)];
+  }
   if(typeof GRAMMAR_BANK === 'undefined') return null;
   const pool = [];
   Object.keys(GRAMMAR_BANK).forEach(level=>{

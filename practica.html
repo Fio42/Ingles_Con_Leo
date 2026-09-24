@@ -271,7 +271,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260923f"></script>
+<script src="app.js?v=20260924a"></script>
 <script src="backend.js?v=20260923d"></script>
 <script src="toefl-data.js?v=20260915"></script>
 <script src="toefl-teaser.js?v=20260923"></script>
@@ -303,7 +303,7 @@
       // aunque la persona ya tenía su sesión iniciada).
       const cta = document.getElementById('navCta');
       if(cta) cta.style.display = 'none';
-      window.location.replace('practica-miembros.html');
+      window.location.replace('practica-miembros.html' + window.location.search); // conserva ?skill= y ?level=
       return;
     }
 
