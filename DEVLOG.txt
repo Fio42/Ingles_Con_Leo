@@ -909,3 +909,5 @@ movil (390px), sin errores en consola.
 - index.html ya no carga data.js (~190 KB comprimido). Carga mini-lecciones.js (~14 KB, 305 frases cortas), generado desde GRAMMAR_BANK con: node tools/generar_mini_lecciones.js. pickDailyGrammarExample usa MINI_LESSONS si existe.
 - app.js?v= subido a 20260924a en todas las páginas.
 - Probado con Playwright a 320/360/375px: sin errores, sin overflow, data.js no se descarga en el inicio, LeoBot abre, "Avanzado" abre la práctica en Avanzado (visitante y miembro), nivel inválido cae a Fácil.
+
+REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en data.js (GRAMMAR_BANK), Claude debe correr él mismo "node tools/generar_mini_lecciones.js" desde la carpeta del proyecto para actualizar mini-lecciones.js (la mini lección del inicio). Leo no tiene que acordarse de esto ni correr nada.
