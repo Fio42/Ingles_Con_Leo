@@ -917,3 +917,8 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Tarjetas "Practica a tu nivel": 2x2 en tablet y 4 en fila en pantalla grande (antes "Avanzado" quedaba sola).
 - style.css: estilos nuevos al final (.home-guides, .home-plans, .home-faq). style.css?v= subido a 20260924a en todas las páginas.
 - Probado con Playwright a 320/360/375/820/1280px: sin errores ni overflow.
+
+2026-09-24 — Sin números de límite en textos de venta + hero más limpio
+- Leo pidió no anunciar el límite de ejercicios diarios. Se quitaron "20 ejercicios al día" / "10 ejercicios" de index.html (hero, tarjetas Gratis/Miembro y pregunta frecuente) y del aviso de cuenta nueva en practica.html. Los límites siguen funcionando igual (GUEST_EXERCISE_LIMIT, FREE_USER_DAILY_LIMIT); solo el aviso que sale al llegar al límite menciona el número, porque ahí sí hace falta explicarlo.
+- Hero: debajo del botón "Practicar gratis" queda una sola línea ("Sin registro. ¿No sabes tu nivel? Haz el test gratis"). Se quitó el bloque "¿Ya decidiste? Hazte miembro · $2/mes" del hero porque la membresía ahora se explica en la sección #planes (y sigue el botón "Entrar a miembros" del menú). Las reglas CSS .hero-v2-member-* quedaron sin uso.
+- Probado con Playwright a 320/360/375/820/1280px: sin errores ni overflow.

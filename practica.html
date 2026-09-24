@@ -326,7 +326,7 @@
         if(new URLSearchParams(window.location.search).get('cuenta') === 'nueva'){
           const banner = document.getElementById('newAccountBanner');
           if(banner){
-            banner.innerHTML = '<strong>¡Listo, tu cuenta gratis está creada!</strong> Tienes ' + FREE_USER_DAILY_LIMIT + ' ejercicios cada día y tu progreso se guarda. Elige tu nivel y sigue practicando.';
+            banner.innerHTML = '<strong>¡Listo, tu cuenta gratis está creada!</strong> Tu progreso y tu racha ahora se guardan. Elige tu nivel y sigue practicando.';
             banner.style.display = 'block';
           }
           history.replaceState(null, '', window.location.pathname);
