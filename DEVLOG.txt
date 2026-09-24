@@ -933,3 +933,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 
 2026-09-24 — Foto real de Leo en "Hola, soy Leo"
 - index.html: la sección "Hola, soy Leo" ahora usa leo-real.webp (foto real, recortada cuadrada 360x360, ~5 KB) en vez del avatar leo-front.png. El avatar se mantiene en el resto del sitio (hero, logo, LeoBot). leo-front.png no se borró.
+
+2026-09-24 — Nombre de la persona en los correos automáticos
+- Nueva columna profiles.display_name (SQL al final de supabase_schema.sql: columna + GRANT UPDATE (display_name) + trigger handle_new_user que guarda el primer nombre de Google + relleno de cuentas Google existentes).
+- app.js: setProfileName() y el onboarding ahora también suben el nombre a Supabase (saveNameToCloud -> LeoBackend.saveDisplayName). backend.js: saveDisplayName(); getMemberProfile() sube el nombre local una vez si la cuenta aún no tiene display_name.
+- upgrade-nudge-emails.ts: personalize() pone el primer nombre en el saludo ("¡Hola, Ana! 👋") de todos los correos y en el título de 8 correos (campo titleWithName). Sin nombre, el correo sale igual que antes. Nombre limpiado (primer nombre, sin símbolos, escapado HTML; descarta correos/números).
+- Versiones: app.js?v=20260924b, backend.js?v=20260924a.
+- Pendiente de Leo: correr el SQL nuevo, redeploy de upgrade-nudge-emails.

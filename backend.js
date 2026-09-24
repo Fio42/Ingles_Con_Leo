@@ -208,8 +208,33 @@ const LeoBackend = (function(){
       const { data, error } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
       if(error) return null;
       touchLastSeen(sb, session.user.id);
+      // Si la cuenta todavía no tiene nombre en Supabase pero en este
+      // navegador sí lo escribió (onboarding o "cambiar nombre"), se
+      // sube una vez para que los correos lo puedan usar.
+      try{
+        const local = (typeof getProfile === 'function' && getProfile()) || null;
+        if(data && !data.display_name && local && local.name){
+          saveDisplayName(local.name);
+        }
+      }catch(e){}
       return data;
     }catch(e){ return null; }
+  }
+
+  /* Guarda el nombre de la persona en profiles.display_name (lo usan
+     los correos automáticos para saludar por nombre). Permiso de
+     escritura SOLO de esa columna: GRANT UPDATE (display_name), ver
+     supabase_schema.sql. Nunca lanza error. */
+  async function saveDisplayName(name){
+    try{
+      const clean = String(name || '').trim().slice(0, 40);
+      if(!clean) return;
+      const sb = getClient();
+      if(!sb) return;
+      const session = await getSession();
+      if(!session) return;
+      await sb.from('profiles').update({ display_name: clean }).eq('id', session.user.id);
+    }catch(e){}
   }
 
   /* Marca "última vez visto" en profiles.last_seen_at, para saber
@@ -538,7 +563,7 @@ const LeoBackend = (function(){
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
-    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount
+    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName
   };
 })();
 

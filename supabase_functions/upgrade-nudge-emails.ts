@@ -398,6 +398,7 @@ type Profile = {
   free_daily_limit_reached_at: string | null
   lifecycle_emails: Record<string, string> | null
   last_marketing_email_at: string | null
+  display_name?: string | null
   next_renewal_at: string | null
 }
 
@@ -766,7 +767,7 @@ async function sendIfStillEligible(
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, lifecycle_emails, email_opt_out_at')
+    .select('is_member, lifecycle_emails, email_opt_out_at, display_name')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
@@ -779,7 +780,7 @@ async function sendIfStillEligible(
   if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
   const content = key === 'long_term' ? LONG_TERM_EMAILS[longTermIdx] : EMAIL_CONTENT[key]
 
-  const okToSend = await sendEmailFor(key, email, userId, content)
+  const okToSend = await sendEmailFor(key, email, userId, personalize(content, fresh.display_name))
   if (!okToSend) return false
 
   const nowIso = new Date().toISOString()
@@ -853,6 +854,9 @@ function json(body: unknown, status: number) {
 // saludo, título, cuerpo, botón y una nota chiquita al pie.
 
 type EmailContent = {
+  // Opcional: versión del título con el nombre de la persona. Usa
+  // {name} donde va el nombre. Si no hay nombre, se usa "title".
+  titleWithName?: string
   subject: string
   // Texto gris que Gmail muestra junto al asunto en la bandeja de
   // entrada (antes de abrir el correo). Va oculto dentro del correo.
@@ -863,6 +867,32 @@ type EmailContent = {
   ctaText: string
   ctaUrl: string
   footerNote: string
+}
+
+// ---------------- Nombre de la persona (profiles.display_name) ----------------
+// Deja solo el primer nombre, con mayúscula inicial, sin símbolos raros
+// y escapado para HTML. Si no parece un nombre (vacío, un correo, puros
+// números), devuelve '' y el correo sale sin nombre, como antes.
+function cleanFirstName(raw: string | null | undefined): string {
+  if (!raw) return ''
+  let first = String(raw).trim().split(/\s+/)[0] || ''
+  if (first.includes('@')) return ''
+  first = first.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ'\-]/g, '').slice(0, 20)
+  if (first.length < 2) return ''
+  first = first.charAt(0).toLocaleUpperCase('es') + first.slice(1).toLocaleLowerCase('es')
+  return first.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
+}
+
+// Pone el nombre en el saludo ("¡Hola, Ana! 👋") y, si el correo tiene
+// titleWithName, también en el título. Sin nombre, devuelve el correo tal cual.
+function personalize(c: EmailContent, rawName: string | null | undefined): EmailContent {
+  const name = cleanFirstName(rawName)
+  if (!name) return c
+  let greeting = c.greeting
+  if (greeting.startsWith('¡Hola de nuevo!')) greeting = greeting.replace('¡Hola de nuevo!', `¡Hola de nuevo, ${name}!`)
+  else if (greeting.startsWith('¡Hola!')) greeting = greeting.replace('¡Hola!', `¡Hola, ${name}!`)
+  const title = c.titleWithName ? c.titleWithName.replace('{name}', name) : c.title
+  return Object.assign({}, c, { greeting, title })
 }
 
 function emailShell(c: EmailContent, unsubUrl: string): string {
@@ -912,6 +942,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Ya puedes practicar gratis. Así le sacas el máximo.',
     greeting: '¡Hola! 👋',
     title: 'Tu cuenta gratis ya está activa',
+    titleWithName: '{name}, tu cuenta gratis ya está activa',
     bodyHtml: `
     <p style="${P}">
       Desde hoy puedes practicar gratis gramática, vocabulario, listening,
@@ -936,6 +967,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Casi todos lo dicen mal al principio. Aquí va la respuesta.',
     greeting: '¡Hola de nuevo!',
     title: 'Una pregunta rápida',
+    titleWithName: '{name}, una pregunta rápida',
     bodyHtml: `
     <p style="${P}">¿Cuál es la correcta?</p>
     <div style="${BOX}">
@@ -979,6 +1011,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Un error que se cuela hasta en nivel intermedio.',
     greeting: '¡Hola! 👋',
     title: 'El tip de hoy',
+    titleWithName: '{name}, este es el tip de hoy',
     bodyHtml: `
     <p style="${P}">
       Se dice <strong>people are</strong>. En español "la gente" es singular,
@@ -1024,6 +1057,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Todo Inglés con Leo sin límite, por menos de lo que cuesta un café.',
     greeting: '¡Hola! 👋',
     title: 'Llevas una semana. ¿Vamos por más?',
+    titleWithName: '{name}, llevas una semana. ¿Vamos por más?',
     bodyHtml: `
     <p style="${P}">
       Tu cuenta gratis sigue funcionando todo el tiempo que quieras. Si ya le
@@ -1071,6 +1105,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Una forma rápida de medirlo, y un reto de 1 minuto al día.',
     greeting: '¡Hola! 👋',
     title: 'Mide cuánto has avanzado',
+    titleWithName: '{name}, mide cuánto has avanzado',
     bodyHtml: `
     <p style="${P}">
       Ya pasó un mes desde que creaste tu cuenta. Dos ideas para este mes:
@@ -1097,6 +1132,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Completaste tus 20 ejercicios gratis. Así puedes seguir.',
     greeting: '¡Hola! 👋',
     title: 'Completaste tus 20 ejercicios del día',
+    titleWithName: '¡Bien hecho, {name}! Completaste tus 20 ejercicios del día',
     bodyHtml: `
     <p style="${P}">
       La mayoría de la gente deja el inglés porque no practica. Tú hiciste
@@ -1140,6 +1176,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Ya que practicas seguido, esto te puede servir.',
     greeting: '¡Hola! 👋',
     title: 'Se nota que le estás echando ganas',
+    titleWithName: '{name}, se nota que le estás echando ganas',
     bodyHtml: `
     <p style="${P}">
       Llevas varios días practicando con tu cuenta gratis. Ya que la usas
@@ -1158,6 +1195,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     preheader: 'Y un phrasal verb que vas a usar esta misma semana.',
     greeting: '¡Hola! 👋',
     title: 'Un tip rápido antes de volver',
+    titleWithName: '{name}, un tip rápido antes de volver',
     bodyHtml: `
     <div style="${BOX}">
       <strong>Catch up</strong> = ponerse al día<br>

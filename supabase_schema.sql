@@ -587,3 +587,41 @@ alter table public.profiles add column if not exists next_renewal_at timestamptz
 -- NO afecta correos de la cuenta (recuperar contraseña, pagos).
 -- ============================================================
 alter table public.profiles add column if not exists email_opt_out_at timestamptz;
+
+
+-- ============================================================
+-- Nombre de la persona para los correos (2026-09-24)
+-- display_name: el nombre que escribe en la bienvenida (onboarding)
+-- o el primer nombre de su cuenta de Google. Los correos automáticos
+-- lo usan para saludar ("¡Hola, Ana!"). Si está vacío, el correo sale
+-- igual que antes, sin nombre.
+-- ============================================================
+alter table public.profiles add column if not exists display_name text;
+grant update (display_name) on public.profiles to authenticated;
+
+-- Cuentas nuevas con Google: se guarda su primer nombre al crearse.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, display_name)
+  values (
+    new.id,
+    new.email,
+    nullif(split_part(trim(coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', '')), ' ', 1), '')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+-- Cuentas que ya existen y entraron con Google: se rellena su primer
+-- nombre una sola vez (no toca a quien ya tiene display_name).
+update public.profiles p
+set display_name = nullif(split_part(trim(coalesce(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', '')), ' ', 1), '')
+from auth.users u
+where u.id = p.id
+  and p.display_name is null
+  and coalesce(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', '') <> '';

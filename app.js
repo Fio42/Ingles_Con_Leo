@@ -47,6 +47,20 @@ function setProfileName(name){
   const p = getProfile() || { level:'facil', createdAt: Date.now() };
   p.name = name;
   saveProfile(p);
+  return saveNameToCloud(name);
+}
+
+/* Guarda el nombre también en Supabase (profiles.display_name), para
+   que los correos automáticos puedan saludar a la persona por su
+   nombre. Solo funciona si hay sesión iniciada; si no, no hace nada.
+   Nunca bloquea: si falla, el nombre local sigue funcionando igual. */
+function saveNameToCloud(name){
+  try{
+    if(name && typeof LeoBackend !== 'undefined' && LeoBackend.saveDisplayName){
+      return LeoBackend.saveDisplayName(name);
+    }
+  }catch(e){}
+  return Promise.resolve();
 }
 
 /* ---------- Header de miembros: buscador rapido, notificaciones y cuenta ----------
@@ -249,7 +263,9 @@ async function initMemberHeader(){
     editBtn.addEventListener('click', ()=>{
       const current = (getProfile() && getProfile().name) || '';
       const name = window.prompt('¿Cómo te llamas?', current);
-      if(name !== null){ setProfileName(name.trim()); location.reload(); }
+      if(name !== null){
+        Promise.resolve(setProfileName(name.trim())).finally(()=> location.reload());
+      }
     });
   }
 
@@ -332,6 +348,7 @@ function initOnboarding(onSaved){
 
   function finish(profile){
     saveProfile(profile);
+    if(profile.name) saveNameToCloud(profile.name);
     overlay.remove();
     if(typeof onSaved === 'function') onSaved(profile);
   }
