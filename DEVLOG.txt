@@ -930,3 +930,6 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - De paso: se quitó el número "20 ejercicios" de los correos welcome y membership_intro (Leo no quiere anunciar el límite). Solo limit_reached lo menciona, porque se manda justo cuando la persona llegó al límite.
 - Sin SQL nuevo (usa la columna lifecycle_emails que ya existe). Probado: tsc sin errores y 9 casos de decideEmail simulados (antes/después de 21 días, final_onboarding caducado, lista terminada, inactivo 180+ días, freno de 24h).
 - Pendiente de Leo: pegar el archivo actualizado en Supabase (Edge Function upgrade-nudge-emails) y desplegar.
+
+2026-09-24 — Foto real de Leo en "Hola, soy Leo"
+- index.html: la sección "Hola, soy Leo" ahora usa leo-real.webp (foto real, recortada cuadrada 360x360, ~5 KB) en vez del avatar leo-front.png. El avatar se mantiene en el resto del sitio (hero, logo, LeoBot). leo-front.png no se borró.
