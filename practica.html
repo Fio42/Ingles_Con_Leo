@@ -361,7 +361,10 @@
       card: document.getElementById('dailyChallengeCard')
     });
     if(typeof renderToeflTeaser === 'function') renderToeflTeaser(document.getElementById('toeflTeaserArea'));
-    initOnboarding();
+    // El onboarding (nombre + nivel) ya no sale a visitantes: solo a quien
+    // tiene cuenta (gratis) iniciada, por ejemplo al volver aqui recien
+    // creada la cuenta (?cuenta=nueva).
+    if(loggedInProfile) initOnboarding();
   })();
 </script>
 

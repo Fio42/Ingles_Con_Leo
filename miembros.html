@@ -626,6 +626,7 @@
       memberPreview.style.display = 'block';
       if(typeof initMemberHeader === 'function') initMemberHeader();
     }
+    maybeOnboard();
   }
   const loginStep1 = document.getElementById('loginStep1');
   const loginStep2 = document.getElementById('loginStep2');
@@ -836,6 +837,7 @@
     memberContent.style.display = 'block';
     startDashboard();
     if(typeof initMemberHeader === 'function') initMemberHeader();
+    maybeOnboard();
   }
 
   async function afterAuthSuccess(fromSignup){
@@ -864,6 +866,7 @@
       }
       showGate();
       showLoginStep(5);
+      maybeOnboard();
     } else {
       showMemberPreview();
     }
@@ -1322,9 +1325,17 @@
     }
   })();
 
-  initOnboarding(()=>{
-    if(memberContent.style.display === 'block') startDashboard();
-  });
+  // Onboarding (nombre + nivel): ya NO se muestra a visitantes sin
+  // cuenta. Solo aparece cuando hay una cuenta con sesion iniciada
+  // (recien creada o entrando por primera vez en este navegador).
+  // initOnboarding no hace nada si ya existe el perfil local.
+  function maybeOnboard(){
+    if(window.__leoOnboardingAsked) return;
+    window.__leoOnboardingAsked = true;
+    initOnboarding(()=>{
+      if(memberContent.style.display === 'block') startDashboard();
+    });
+  }
 </script>
 
 </body>

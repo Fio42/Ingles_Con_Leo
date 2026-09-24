@@ -897,3 +897,9 @@ con las 18 opciones (4+7+7) mas el campo abierto, envio simulado
 (fetch mockeado, el backend real se prueba una vez este desplegado en
 Supabase) hasta la pantalla de agradecimiento, todo en escritorio y en
 movil (390px), sin errores en consola.
+
+2026-09-24 — Onboarding solo para cuentas (ya no para visitantes)
+- Antes: el modal "Bienvenido(a) / ¿Cómo te llamas? / nivel" salía a cualquier visitante nuevo en index, artículos, practica y miembros.
+- Ahora: no sale a visitantes. Solo aparece cuando hay una cuenta con sesión iniciada y sin perfil local todavía: practica.html (cuenta gratis, incluido el regreso con ?cuenta=nueva) y miembros.html (vista de cuenta gratis, panel de miembro o pantalla de bienvenida recién creada la cuenta, vía maybeOnboard()).
+- app.js sin cambios (initOnboarding igual). Se quitó la llamada de index.html, articulos.html y los 23 articulo-*.html.
+- Probado con Playwright a 360px con backend simulado: visitante no ve modal en index/artículo/practica/miembros; cuenta gratis y miembro sí lo ven; con perfil ya guardado no sale; al guardar, el saludo del panel usa el nombre. Sin overflow.
