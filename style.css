@@ -1579,12 +1579,23 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 #memberContent .daily-btn{padding:7px 14px;font-size:0.82rem;}
 /* Mini tarjeta de progreso: un poco mas compacta dentro del dashboard,
    mismo criterio que el resto de tarjetas de #memberContent. */
-#memberContent .progress-summary-card{padding:16px 20px;gap:12px;}
+#memberContent .progress-summary-card{padding:16px 20px;gap:12px;margin-top:16px;}
 #memberContent .progress-summary-icon{width:36px;height:36px;}
 #memberContent .progress-summary-icon svg{width:18px;height:18px;}
 #memberContent .progress-summary-head h2{font-size:1.02rem;}
 #memberContent .progress-summary-num{font-size:1.25rem;}
 #memberContent .progress-summary-stats{gap:24px;}
+/* En escritorio se acomoda en una sola fila horizontal (identidad |
+   metricas | insight | CTA) para que se sienta como un resumen chico,
+   no como otro bloque grande: mismo dato/CTA/insight de siempre, solo
+   mas compacto en alto. En movil se queda apilada (reglas de arriba). */
+@media(min-width:760px){
+  #memberContent .progress-summary-card{display:flex;flex-direction:row;align-items:center;flex-wrap:nowrap;gap:26px;padding:34px 28px;}
+  #memberContent .progress-summary-head{flex-shrink:0;}
+  #memberContent .progress-summary-stats{flex-shrink:0;gap:22px;}
+  #memberContent .progress-summary-insight{flex:1 1 auto;margin:0;background:none;padding:0;font-size:0.86rem;font-weight:600;}
+  #memberContent .progress-summary-cta{flex-shrink:0;margin-left:auto;}
+}
 #memberContent .mistakes-card{padding:14px 18px;gap:8px;}
 #memberContent .mistakes-card-top{gap:8px;}
 #memberContent .mistakes-card-top .stat-card-icon{width:32px;height:32px;}

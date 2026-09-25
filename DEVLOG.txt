@@ -1024,3 +1024,9 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - app.js: 2 funciones nuevas (renderProgressSummaryCard, pickMiniProgressInsight), 100% aditivas. Reutilizan funciones ya existentes y probadas (computeWeeklyStats, computeStreak, computeSkillCoverage, attemptedItemIdsFor) en vez de inventar calculos nuevos. No se toco ninguna funcion existente salvo miembros.html, que ya no llama a renderSkillRings/renderWeeklyChart/renderStreakCard (esas 3 funciones se quedan definidas en app.js sin usarse en ningun HTML por ahora, no se borraron).
 - Probado con datos de prueba (localStorage local, sin tocar Supabase): estado normal (18 ejercicios, 61% aciertos, racha de 4, insight "Vocabulario es tu area con mas oportunidad") y estado vacio (cuenta nueva, sin sesiones) en escritorio y en 375px. Sin desborde horizontal en ningun caso.
 - app.js?v=20260925b, style.css?v=20260925d.
+
+2026-09-25 — Reubicar y compactar la mini tarjeta de progreso
+- Solo miembros.html + style.css. app.js intacto (0 lineas de diff): misma funcion renderProgressSummaryCard/pickMiniProgressInsight de antes, mismos datos, mismo insight, mismo CTA.
+- Movida de posicion: antes vivia entre "Explorar" y "Actividad reciente"; ahora esta dentro de la misma seccion "Tu aprendizaje hoy", justo despues de la fila Continua donde te quedaste/Repaso personal/Reto diario y antes de "Practicar por habilidad". Sigue por debajo de Plan de estudio, nunca por encima.
+- Compactada en escritorio (min-width 760px, mismo breakpoint que .plan-feature-hero): paso de columna apilada (~242px de alto) a una sola fila horizontal (identidad | 3 metricas | insight | CTA), quedando en ~121px de alto medido en el navegador. En movil se queda apilada igual que antes.
+- style.css?v=20260925e.
