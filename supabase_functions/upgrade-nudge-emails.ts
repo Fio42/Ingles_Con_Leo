@@ -1164,8 +1164,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       <strong>¿Tienes dudas?</strong> Responde este correo o
       <a href="https://wa.me/529994996520" style="${LINK}">escríbenos por WhatsApp</a>
       y te ayudamos.<br><br>
-      <strong>¿Te preocupa quedarte amarrado?</strong> Cancelas cuando quieras
-      desde tu cuenta, sin llamadas.
+      <strong>¿Te preocupa quedarte amarrado?</strong> Cancelas cuando quieras.
     </div>`,
     ctaText: 'Terminar de activar',
     ctaUrl: `${SITE}/miembros.html`,
