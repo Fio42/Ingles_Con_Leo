@@ -1460,30 +1460,30 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 #memberContent .dash-quote-es{display:block;font-weight:700;font-size:0.88rem;color:var(--ink);}
 #memberContent .dash-quote-en{display:block;font-size:0.8rem;color:var(--ink-faint);font-style:italic;margin-top:2px;}
 
-/* Continua donde te quedaste + Reto diario + Tus errores frecuentes:
+/* Continua donde te quedaste + Tus errores frecuentes + Reto diario:
    las 3 en una sola fila en escritorio, apiladas en movil. Si no hay
    errores pendientes, renderMistakesBanner() esconde esa tarjeta y
    el script de miembros.html agrega la clase "no-mistakes" para que
-   las otras dos no dejen un hueco vacio. */
+   las otras dos no dejen un hueco vacio. (El Plan de estudio ya no
+   vive en esta fila: ahora es la tarjeta grande de arriba,
+   .plan-feature-hero, para que se note que es la mas importante.) */
 #memberContent .dash-top-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;align-items:stretch;}
 @media(min-width:700px){
   #memberContent .dash-top-grid{grid-template-columns:1fr 1fr;}
 }
 @media(min-width:1150px){
-  #memberContent .dash-top-grid{grid-template-columns:1.15fr 1.15fr 1fr 1fr;}
-  #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1.15fr 1.15fr 1fr;}
+  #memberContent .dash-top-grid{grid-template-columns:1.3fr 1fr 1fr;}
+  #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1fr 1fr;}
 }
 #memberContent .dash-top-grid .continue-card{height:100%;box-sizing:border-box;max-width:none;padding:18px 20px;}
 #memberContent .continue-title{font-size:1.25rem;}
 #memberContent .continue-note{padding:9px 12px;margin-top:10px;}
 #memberContent .dash-top-grid .daily-card,
-#memberContent .dash-top-grid .mistakes-card,
-#memberContent .dash-top-grid .plan-feature-card{height:100%;box-sizing:border-box;}
+#memberContent .dash-top-grid .mistakes-card{height:100%;box-sizing:border-box;}
 
-/* Tarjeta destacada de Plan de estudio en la fila de arriba del
-   dashboard (junto a "Continua donde te quedaste"): mismo lenguaje
-   visual que .daily-card/.mistakes-card (misma familia, mismo radio,
-   mismo hover), pero con acento azul para que se note que es la
+/* Tarjeta destacada de Plan de estudio: mismo lenguaje visual que
+   .daily-card/.mistakes-card (misma familia, mismo radio, mismo
+   hover), pero con acento azul para que se note que es la
    recomendada del dia, sin llegar a un rediseño (mismos colores del
    sitio: --blue/--blue-tint/--blue-deep, ya usados en otras partes). */
 .plan-feature-card{position:relative;display:flex;flex-direction:column;gap:8px;background:var(--blue-tint);border:2px solid var(--blue);border-radius:var(--radius-lg);padding:22px 24px;text-decoration:none;transition:transform .2s ease, box-shadow .2s ease;}
@@ -1499,6 +1499,24 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .plan-feature-meta svg{width:14px;height:14px;flex-shrink:0;}
 @media(max-width:899px){
   .plan-feature-card{padding:18px 18px;}
+}
+
+/* .plan-feature-hero: version "elemento principal" de la misma tarjeta,
+   usada sola en su propia fila (ancho completo) arriba de
+   .dash-top-grid, en vez de compartir columna con las otras 3
+   tarjetas como antes. Mismos colores/clases base de .plan-feature-card,
+   solo un poco mas grande para que se note que es el camino
+   recomendado del panel. */
+.plan-feature-hero{margin:14px 0 16px;padding:30px 32px;}
+.plan-feature-hero .plan-feature-icon{width:52px;height:52px;}
+.plan-feature-hero .plan-feature-icon svg{width:26px;height:26px;}
+.plan-feature-hero h2{font-size:1.45rem;}
+.plan-feature-hero .plan-feature-sub{font-size:1rem;}
+.plan-feature-hero .plan-feature-desc{font-size:0.92rem;}
+.plan-feature-hero .btn{max-width:300px;}
+@media(max-width:899px){
+  .plan-feature-hero{padding:22px 20px;}
+  .plan-feature-hero .btn{max-width:none;}
 }
 #memberContent .daily-card{padding:14px 18px;gap:6px;}
 #memberContent .daily-card-top{gap:8px;}

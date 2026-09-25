@@ -985,3 +985,12 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - De paso, se cerro otro hueco: applyMistakeResults() (backend.js) ahora devuelve {ok:true/false} en vez de tragarse cualquier error en silencio, y backfillMistakeStatsIfNeeded() solo marca el sembrado como hecho (localStorage) cuando la escritura de verdad funciono. Antes, si la escritura fallaba por lo que sea (red, permiso), igual se marcaba como "hecho" y los errores viejos se perdian de vista para siempre en ese navegador.
 - Probado de nuevo simulando exactamente el escenario real (tabla vacia + errores viejos en localStorage): ahora sí siembra y muestra los 5/70 errores correctamente; y si la escritura falla, NO se marca como hecho (reintenta en la proxima visita). Sin errores de consola.
 - app.js?v=20260924e, backend.js?v=20260924c.
+
+2026-09-25 — Reorganizacion del panel de miembros (jerarquia, sin tocar logica)
+- Solo miembros.html + style.css. Cero cambios en app.js: todas las funciones (renderContinueCard, renderStatCards, renderMistakesBanner, initDailyChallenge, etc.) siguen pintando por id de contenedor, sin importar donde este ese div en la pagina.
+- Plan de estudio salio de la fila de 4 tarjetas iguales y ahora es una tarjeta grande de ancho completo (.plan-feature-hero) arriba de todo, bajo el titulo "Tu aprendizaje hoy": es la accion principal recomendada.
+- Debajo, fila secundaria mas chica (.dash-top-grid, ahora con 3 tarjetas en vez de 4): Continua donde te quedaste, Repaso personal (Mis errores), Reto diario.
+- "Que quieres practicar hoy" (12 tarjetas iguales sin agrupar) se dividio en dos secciones separadas: "Practicar por habilidad" (Gramatica/Vocabulario/Listening/Lectura/Writing/Speaking) y "Explorar" (Clases interactivas/English Rush/TOEFL/IELTS/Cambridge/TOEIC).
+- "Juego de inGles" en el dashboard ahora dice "English Rush" (el nombre real del juego, ya usado en juego.html) en vez de la etiqueta generica.
+- Cuidado especial: renderMistakesBanner() sigue encontrando .dash-top-grid con .closest() para ajustar columnas cuando no hay errores pendientes (clase no-mistakes); se probo con y sin errores, en escritorio y en 375px de ancho, sin desborde horizontal.
+- style.css?v=20260925a bump en las 49 paginas HTML que lo cargan (cambio de CSS compartido). app.js sin cambios, se dejo su version igual.

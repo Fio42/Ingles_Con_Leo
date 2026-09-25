@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260924c">
+<link rel="stylesheet" href="style.css?v=20260925a">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -382,34 +382,28 @@
 
         <div class="stat-cards" id="statCards"></div>
 
+        <div class="section-head section-head-center">
+          <h2>Tu aprendizaje hoy</h2>
+          <p>Tu plan personalizado y tus accesos rápidos.</p>
+        </div>
+
+        <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero">
+          <span class="plan-feature-badge">Recomendado</span>
+          <div class="plan-feature-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <h2>Plan de estudio</h2>
+          <p class="plan-feature-sub">Tu práctica recomendada de hoy.</p>
+          <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores.</p>
+          <span class="btn btn-primary btn-block">Empezar →</span>
+          <div class="plan-feature-meta">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>5-25 min · Tú eliges la duración.</span>
+          </div>
+        </a>
+
         <div class="dash-top-grid">
           <div id="continueCard"></div>
-
-          <a href="plan-estudio.html" class="plan-feature-card">
-            <span class="plan-feature-badge">Recomendado</span>
-            <div class="plan-feature-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-            </div>
-            <h2>Plan de estudio</h2>
-            <p class="plan-feature-sub">Tu práctica recomendada de hoy.</p>
-            <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores.</p>
-            <span class="btn btn-primary btn-block">Empezar →</span>
-            <div class="plan-feature-meta">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span>5-25 min · Tú eliges la duración.</span>
-            </div>
-          </a>
-
-          <div class="daily-card" id="dailyChallengeCard">
-            <div class="daily-card-top">
-              <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              </div>
-              <span class="daily-eyebrow">Reto diario</span>
-            </div>
-            <h2>5 ejercicios, un minuto al día</h2>
-            <div id="dailyChallengeBody"></div>
-          </div>
 
           <div class="mistakes-card" id="mistakesSection">
             <div class="mistakes-card-top">
@@ -427,6 +421,17 @@
               <a href="errores.html" class="mistakes-btn-all">Ver todos</a>
             </div>
           </div>
+
+          <div class="daily-card" id="dailyChallengeCard">
+            <div class="daily-card-top">
+              <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="daily-eyebrow">Reto diario</span>
+            </div>
+            <h2>5 ejercicios, un minuto al día</h2>
+            <div id="dailyChallengeBody"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -434,52 +439,10 @@
     <section style="padding-top:8px;">
       <div class="wrap wrap-dash">
         <div class="section-head section-head-center">
-          <h2>¿Qué quieres practicar hoy?</h2>
+          <h2>Practicar por habilidad</h2>
           <p>Elige una habilidad y empieza tu próxima sesión.</p>
         </div>
         <div class="skill-cards-grid">
-          <a href="clases.html" class="skill-card-link featured-clases">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-clases"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3V9z" fill="currentColor"/></svg></span>
-            <h3>Clases interactivas</h3>
-            <p>Situaciones reales: aeropuerto, restaurante, trabajo y más.</p>
-            <span class="go">Explorar →</span>
-          </a>
-          <a href="juego.html" class="skill-card-link featured-juego">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-juego" style="background:var(--coral-tint);color:var(--coral);"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
-            <h3>Juego de inglés</h3>
-            <p>Preguntas rápidas con dificultad progresiva. Como miembro, juega sin límites.</p>
-            <span class="go">Jugar →</span>
-          </a>
-          <a href="toefl.html" class="skill-card-link featured-toefl">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-toefl"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación TOEFL</h3>
-            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="ielts.html" class="skill-card-link featured-ielts">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-ielts"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación IELTS</h3>
-            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="cambridge.html" class="skill-card-link featured-cambridge">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-cambridge"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación Cambridge English</h3>
-            <p>B2 First (FCE) y C1 Advanced (CAE): Reading & Use of English, Listening, Writing y Speaking.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="toeic.html" class="skill-card-link featured-toeic">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-toeic"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <h3>Preparación TOEIC</h3>
-            <p>El examen que más piden las empresas: Listening, Reading, Speaking con cronómetro y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
           <a href="gramatica.html" class="skill-card-link">
             <span class="skill-icon-wrap tint-gramatica"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
             <h3>Gramática</h3>
@@ -514,6 +477,59 @@
             <span class="skill-icon-wrap tint-speaking"><svg class="skill-icon violet" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
             <h3>Speaking</h3>
             <p>Escucha, grábate y compara tu pronunciación.</p>
+            <span class="go">Practicar →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top:8px;">
+      <div class="wrap wrap-dash">
+        <div class="section-head section-head-center">
+          <h2>Explorar</h2>
+          <p>Clases guiadas, un juego y preparación para exámenes oficiales.</p>
+        </div>
+        <div class="skill-cards-grid">
+          <a href="clases.html" class="skill-card-link featured-clases">
+            <span class="card-badge">Nuevo</span>
+            <span class="skill-icon-wrap tint-clases"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3V9z" fill="currentColor"/></svg></span>
+            <h3>Clases interactivas</h3>
+            <p>Situaciones reales: aeropuerto, restaurante, trabajo y más.</p>
+            <span class="go">Explorar →</span>
+          </a>
+          <a href="juego.html" class="skill-card-link featured-juego">
+            <span class="card-badge">Nuevo</span>
+            <span class="skill-icon-wrap tint-juego" style="background:var(--coral-tint);color:var(--coral);"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+            <h3>English Rush</h3>
+            <p>Preguntas rápidas con dificultad progresiva. Como miembro, juega sin límites.</p>
+            <span class="go">Jugar →</span>
+          </a>
+          <a href="toefl.html" class="skill-card-link featured-toefl">
+            <span class="card-badge">Examen</span>
+            <span class="skill-icon-wrap tint-toefl"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Preparación TOEFL</h3>
+            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="ielts.html" class="skill-card-link featured-ielts">
+            <span class="card-badge">Examen</span>
+            <span class="skill-icon-wrap tint-ielts"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Preparación IELTS</h3>
+            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="cambridge.html" class="skill-card-link featured-cambridge">
+            <span class="card-badge">Examen</span>
+            <span class="skill-icon-wrap tint-cambridge"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <h3>Preparación Cambridge English</h3>
+            <p>B2 First (FCE) y C1 Advanced (CAE): Reading & Use of English, Listening, Writing y Speaking.</p>
+            <span class="go">Practicar →</span>
+          </a>
+          <a href="toeic.html" class="skill-card-link featured-toeic">
+            <span class="card-badge">Nuevo</span>
+            <span class="skill-icon-wrap tint-toeic"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <h3>Preparación TOEIC</h3>
+            <p>El examen que más piden las empresas: Listening, Reading, Speaking con cronómetro y Writing.</p>
             <span class="go">Practicar →</span>
           </a>
         </div>
