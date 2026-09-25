@@ -52,6 +52,25 @@ const SURVEY_MAX_DAYS = 22 // ventana de seguridad: si el Cron dejó de
 
 const MAX_PER_RUN = 200 // tope de correos por corrida, por si acaso
 
+// Ventana horaria (ajustado 2026-09-25 por pedido de Leo), misma
+// idea que en upgrade-nudge-emails.ts: 8am-9pm hora de Cancún es la
+// ventana preferida, pero no es candado duro (una encuesta que quede
+// lista a las 10-11pm sale normal). Lo único que sí se bloquea de
+// verdad es la madrugada (1am-7:59am hora de Cancún); la ventana de
+// elegibilidad de esta encuesta es de 7 días (15-22 días de
+// membresía), así que no hay ningún riesgo de perdérsela por esperar
+// a la siguiente pasada del Cron. América/Cancún es UTC-5 todo el
+// año, sin horario de verano.
+const CANCUN_UTC_OFFSET_HOURS = -5
+const BLOCKED_HOUR_LOCAL_START = 1 // 1:00am hora de Cancún
+const BLOCKED_HOUR_LOCAL_END = 7 // hasta las 7:59am hora de Cancún
+function isGoodSendHour(now: number): boolean {
+  const utcHour = new Date(now).getUTCHours()
+  const localHour = (utcHour + CANCUN_UTC_OFFSET_HOURS + 24) % 24
+  const isMadrugada = localHour >= BLOCKED_HOUR_LOCAL_START && localHour <= BLOCKED_HOUR_LOCAL_END
+  return !isMadrugada
+}
+
 Deno.serve(async (req: Request) => {
   try {
     // Modo manual (uso puntual desde el botón "Test" de Supabase, NO lo
@@ -93,9 +112,11 @@ Deno.serve(async (req: Request) => {
     if (error) console.error('Error buscando candidatos para la encuesta:', error)
 
     let sent = 0
-    for (const p of candidates || []) {
-      const didSend = await sendSurveyIfStillEligible(p.id, p.email)
-      if (didSend) sent++
+    if (isGoodSendHour(now)) {
+      for (const p of candidates || []) {
+        const didSend = await sendSurveyIfStillEligible(p.id, p.email)
+        if (didSend) sent++
+      }
     }
 
     return json({ ok: true, sent }, 200)

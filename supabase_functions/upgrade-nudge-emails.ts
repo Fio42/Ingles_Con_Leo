@@ -143,6 +143,18 @@
 //    columna nueva sirve para todos los tipos de correo, en vez de
 //    tener que agregar una columna por cada correo nuevo que se te
 //    ocurra más adelante).
+//  - Ventana horaria (pedido de Leo, 2026-09-25, ajustado el mismo
+//    día): 8am-9pm hora de Cancún es la ventana preferida, pero no es
+//    un candado duro: un correo que quede listo a las 10-11pm sale
+//    normal. Lo único que SÍ se bloquea de verdad es la madrugada
+//    (1am-7:59am hora de Cancún), salvo welcome y abandoned_signup
+//    que se mandan a cualquier hora (ver isGoodSendHour/
+//    HOUR_GATE_EXEMPT_KEYS más abajo). No cambia NADA de a quién le
+//    toca ni cuándo "empieza a contar" cada plazo (eso sigue en UTC
+//    tal cual, sin tocar): solo decide si YA es buen momento para
+//    mandarlo. Si cae en madrugada, se reintenta en la siguiente
+//    pasada del Cron (sigue corriendo cada 30 min todo el día, sin
+//    cambios), nunca se pierde.
 //
 // ------------------------------------------------------------
 // PENDIENTE (a propósito NO implementado todavía, falta info o lo
@@ -343,6 +355,42 @@ const MEMBER_REACTIVATION_10D_MIN_DAYS = 10
 const MEMBER_RENEWAL_SILENCE_BEFORE_DAYS = 3
 const MEMBER_RENEWAL_SILENCE_AFTER_DAYS = 2
 
+// Ventana horaria (ajustado 2026-09-25 por pedido de Leo): 8am-9pm
+// hora de Cancún es la ventana PREFERIDA (mejor probabilidad de
+// apertura), pero NO es un candado duro: un correo que quede listo a
+// las 10 u 11pm sale normal, sin razón para posponerlo. Lo único que
+// sí se bloquea de verdad es la madrugada (1:00am-7:59am hora de
+// Cancún): ahí sí se espera a la siguiente pasada del Cron dentro de
+// zona segura. Todo el resto de esta función sigue trabajando en UTC
+// tal cual (created_at, last_seen_at, etc.), esto SOLO decide si es
+// buen momento para MANDAR el correo que ya se decidió que le toca a
+// alguien. América/Cancún (Quintana Roo) es UTC-5 todo el año (no
+// tiene horario de verano), así que no hace falta ninguna librería
+// de zonas horarias: basta con restar 5 horas a la hora UTC actual.
+// Como ninguna de las ventanas de elegibilidad de estos correos es
+// más angosta que unas horas (salvo abandoned_signup, ver abajo), y
+// la madrugada bloqueada dura como mucho 7 horas, nadie se queda sin
+// su correo por esto, solo puede salir un poco después de lo ideal.
+// Dos claves quedan exentas a propósito, sin importar la hora (ni
+// siquiera en la madrugada):
+//  - abandoned_signup: ventana dura de 30-180 minutos, sin "caduca"
+//    (ver arriba). Esperar a que amanezca lo perdería de verdad, no
+//    solo lo atrasaría.
+//  - welcome: confirmación de que la cuenta ya está lista, no
+//    "caduca" nunca y no es un correo de venta, así que no hay razón
+//    para atrasarlo (además así nunca le tapa el paso a
+//    abandoned_signup unas horas después).
+const CANCUN_UTC_OFFSET_HOURS = -5
+const BLOCKED_HOUR_LOCAL_START = 1 // 1:00am hora de Cancún
+const BLOCKED_HOUR_LOCAL_END = 7 // hasta las 7:59am hora de Cancún
+const HOUR_GATE_EXEMPT_KEYS = new Set(['abandoned_signup', 'welcome'])
+function isGoodSendHour(now: number): boolean {
+  const utcHour = new Date(now).getUTCHours()
+  const localHour = (utcHour + CANCUN_UTC_OFFSET_HOURS + 24) % 24
+  const isMadrugada = localHour >= BLOCKED_HOUR_LOCAL_START && localHour <= BLOCKED_HOUR_LOCAL_END
+  return !isMadrugada
+}
+
 const MAX_PER_RUN = 300
 
 // Orden de prioridad: si a alguien le aplican varias condiciones el
@@ -466,6 +514,7 @@ Deno.serve(async (req: Request) => {
 
       const key = decideEmail(p, now)
       if (!key) continue
+      if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
       const didSend = await sendIfStillEligible(p.id, p.email, key)
       if (didSend) counts[key] = (counts[key] || 0) + 1
     }
@@ -495,6 +544,7 @@ Deno.serve(async (req: Request) => {
     for (const p of (memberProfiles || []) as Profile[]) {
       const key = decideMemberEmail(p, now)
       if (!key) continue
+      if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
       const didSend = await sendIfStillEligible(p.id, p.email, key, true)
       if (didSend) counts[key] = (counts[key] || 0) + 1
     }
