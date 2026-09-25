@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260924c">
+<link rel="stylesheet" href="style.css?v=20260924d">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -111,6 +111,7 @@
 <main>
   <section class="page-hero rush-hero" style="padding-bottom:8px;">
     <div class="wrap wrap-narrow">
+      <a href="miembros.html" class="back-to-panel-link" id="rushBackToPanel" style="display:none;">← Volver a tu panel</a>
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Juego de inglés gratis</h1>
       <p class="lead">English Rush: preguntas rápidas de vocabulario, gramática y listening. Empieza fácil y la dificultad sube mientras más avanzas. ¿Hasta dónde puedes llegar?</p>
@@ -226,6 +227,8 @@
       const cta = document.getElementById('navCta');
       if(cta) cta.style.display = 'none';
       if(typeof initMemberHeader === 'function') initMemberHeader();
+      const backLink = document.getElementById('rushBackToPanel');
+      if(backLink) backLink.style.display = 'inline-block';
     }
 
     const root = document.getElementById('rushRoot');
