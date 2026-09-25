@@ -940,3 +940,8 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - upgrade-nudge-emails.ts: personalize() pone el primer nombre en el saludo ("¡Hola, Ana! 👋") de todos los correos y en el título de 8 correos (campo titleWithName). Sin nombre, el correo sale igual que antes. Nombre limpiado (primer nombre, sin símbolos, escapado HTML; descarta correos/números).
 - Versiones: app.js?v=20260924b, backend.js?v=20260924a.
 - Pendiente de Leo: correr el SQL nuevo, redeploy de upgrade-nudge-emails.
+
+2026-09-24 — Imagen og:image optimizada (vista previa al compartir links)
+- og-logo.png pesaba 1 MB y era cuadrada (1254x1254). Las plataformas (WhatsApp, Facebook, etc.) recomiendan 1200x630 para la vista previa de un link; con el cuadrado, muchas la recortaban y podían cortar el texto del logo.
+- Se generó una versión 1200x630 con el logo completo centrado sobre el fondo azul marino de la marca, comprimida a paleta de colores. Mismo archivo (og-logo.png), no hubo que tocar los 30 HTML que la referencian.
+- Resultado: 1 MB -> 161 KB, y ya no se recorta al compartir.
