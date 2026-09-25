@@ -590,6 +590,7 @@ function recordSession({ skill, level, topics, results, startedAt }){
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
     LeoBackend.pushSession(session);
   }
+  updateMistakeStatsFromResults(session.results);
   return p;
 }
 
@@ -2955,11 +2956,16 @@ function getMistakesItemIndex(){
   const index = new Map();
   LEVELS.forEach(level=>{
     GRAMMAR_BANK[level].forEach(variant=>{
-      variant.forEach(topic=> topic.items.forEach(item=> index.set(item.id, { kind:'grammar', item })));
+      // Gramática sí trae "topic" por grupo de items (ej. "Preguntas con
+      // Do/Does en presente simple"). Se guarda en el índice para poder
+      // detectar patrones y sugerir un artículo real (ver ARTICLE_BY_TOPIC).
+      variant.forEach(topicGroup=> topicGroup.items.forEach(item=> index.set(item.id, { kind:'grammar', item, topic: topicGroup.topic || null })));
     });
-    VOCAB_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'vocab', item })));
-    LISTENING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'listening', item })));
-    WRITING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'writing', item })));
+    // Vocabulario/listening/writing no traen un "topic" individual hoy.
+    // No se inventa: topic queda null para estos.
+    VOCAB_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'vocab', item, topic:null })));
+    LISTENING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'listening', item, topic:null })));
+    WRITING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'writing', item, topic:null })));
   });
   _mistakesItemIndexCache = index;
   return index;
@@ -3008,45 +3014,266 @@ function computeMistakeCountsByKind(){
   return counts;
 }
 
+/* ============================================================
+   REPASO PERSONAL 2.0 — activo / recuperado / dominado
+   ------------------------------------------------------------
+   Capa nueva sobre lo de arriba. Antes, "error" era solo "el
+   último intento de este ejercicio salió mal", recalculado
+   siempre desde cero recorriendo TODO el historial. Ahora se usa
+   la tabla mistake_stats (Supabase, aditiva, ver supabase_schema.sql)
+   que guarda por ejercicio fallado: cuántas veces se falló, cuántos
+   aciertos seguidos lleva, y su estado. Un fallo SIEMPRE reactiva a
+   "active" sin importar el estado anterior; el historial nunca se
+   borra, solo se actualiza.
+
+   Si Supabase no está disponible (sin backend, sin sesión, o un
+   error temporal de red), todo cae de vuelta al método viejo
+   (computeMistakeIds/buildMistakePool) para que la sección nunca
+   se rompa ni muestre "0 errores" por una falla de conexión.
+   ============================================================ */
+
+// Pesos y umbrales centralizados (nada de números sueltos por el código).
+// RECOVER_STREAK y MASTER_STREAK deben coincidir con apply_mistake_results()
+// en supabase_schema.sql: la fuente de verdad de esos dos números vive ahí
+// (es quien realmente decide el estado); aquí solo se repiten para poder
+// mostrarle a la persona cuánto le falta.
+const MISTAKE_PRIORITY = {
+  RECOVER_STREAK: 2,
+  MASTER_STREAK: 4,
+  QUICK_REVIEW_SIZE: 10,
+  MAX_IDLE_DAYS: 14,
+  WEIGHT_FAIL_COUNT: 2,
+  WEIGHT_IDLE_DAY: 1,
+  WEIGHT_CORRECT_STREAK_PENALTY: 1.5
+};
+
+// Concepto (topic real de GRAMMAR_BANK) -> artículo real que ya existe en
+// el sitio. Curado a mano, solo con topics que sí existen tal cual en
+// data.js y artículos que sí existen. No se inventan URLs ni se agregan
+// temas nuevos: si un concepto no está aquí, simplemente no se sugiere
+// artículo (mejor no sugerir que sugerir mal).
+const ARTICLE_BY_TOPIC = {
+  'Preguntas con Do/Does en presente simple': 'articulo-do-vs-does.html',
+  'Do / Does': 'articulo-do-vs-does.html',
+  'Presente simple y "to be"': 'articulo-presente-simple.html',
+  'Verbo "to be": am / is / are': 'articulo-verbo-to-be.html',
+  '"To be" en pasado: was / were': 'articulo-verbo-to-be.html',
+  'Pasado simple con verbos regulares (-ed)': 'articulo-pasado-simple.html',
+  'Present Perfect vs Past Simple': 'articulo-presente-perfecto.html',
+  'Phrasal verbs comunes (look for / give up / find out)': 'articulo-phrasal-verbs.html',
+  'Los números (1-10)': 'articulo-numeros-en-ingles.html',
+  'Números parecidos que confunden (13 vs 30, 14 vs 40...)': 'articulo-numeros-en-ingles.html'
+};
+const ARTICLE_TITLE_BY_HREF = {
+  'articulo-do-vs-does.html': 'Do vs Does',
+  'articulo-presente-simple.html': 'Presente simple',
+  'articulo-verbo-to-be.html': 'Verbo to be',
+  'articulo-pasado-simple.html': 'Pasado simple',
+  'articulo-presente-perfecto.html': 'Presente perfecto',
+  'articulo-phrasal-verbs.html': 'Phrasal verbs',
+  'articulo-numeros-en-ingles.html': 'Números en inglés'
+};
+
+// _mistakeStatsCache: undefined = todavía no se intentó cargar,
+// null = se intentó y falló (usar respaldo viejo), Map = cargado bien.
+let _mistakeStatsCache;
+async function loadMistakeStatsMap(forceReload){
+  if(forceReload) _mistakeStatsCache = undefined;
+  if(_mistakeStatsCache !== undefined) return _mistakeStatsCache;
+  if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()){ _mistakeStatsCache = null; return null; }
+  try{
+    const rows = await LeoBackend.getMistakeStats();
+    if(rows === null){ _mistakeStatsCache = null; return null; } // fallo real: usar respaldo viejo
+    const map = new Map();
+    rows.forEach(r => map.set(r.item_id, r));
+    _mistakeStatsCache = map;
+  }catch(e){ _mistakeStatsCache = null; }
+  return _mistakeStatsCache;
+}
+
+// Migración de una sola vez por navegador: la primera vez que alguien
+// con errores viejos (calculados con el método anterior) abre el panel
+// después de este cambio, se siembra mistake_stats con esos errores como
+// "active" (fail_count:1), para no perder de vista lo que ya tenía
+// pendiente. No borra ni inventa nada: usa exactamente lo que
+// computeMistakeIds() ya sabía. Si falla (sin red), se reintenta en la
+// próxima visita, no se marca como hecho.
+const MISTAKE_BACKFILL_KEY = 'leo_mistake_backfill_v1_done';
+async function backfillMistakeStatsIfNeeded(){
+  try{ if(localStorage.getItem(MISTAKE_BACKFILL_KEY)) return; }catch(e){ return; }
+  const statsMap = await loadMistakeStatsMap();
+  if(statsMap === null) return; // sin backend o falla de red: se reintenta despues
+  if(statsMap.size > 0){ try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} return; }
+  const legacyIds = computeMistakeIds();
+  if(!legacyIds.length){ try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} return; }
+  const index = getMistakesItemIndex();
+  const items = [];
+  legacyIds.forEach(id=>{
+    const found = index.get(id);
+    if(found) items.push({ item_id:id, kind:found.kind, topic:found.topic || null, is_correct:false });
+  });
+  if(items.length && typeof LeoBackend !== 'undefined'){
+    try{ await LeoBackend.applyMistakeResults(items); }catch(e){ return; } // si falla, reintentar despues
+  }
+  try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){}
+  await loadMistakeStatsMap(true); // recargar con lo recien sembrado
+}
+
+// Se llama desde recordSession() cada vez que termina cualquier sesión
+// calificable. Una sola llamada agrupada por sesión (nunca una por
+// ejercicio), con los kind/topic ya resueltos localmente.
+function updateMistakeStatsFromResults(results){
+  if(!results || !results.length) return;
+  if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+  const index = getMistakesItemIndex();
+  const items = [];
+  results.forEach(r=>{
+    if(r.isCorrect !== true && r.isCorrect !== false) return; // sin calificar (ej. speaking): se ignora
+    const found = index.get(r.itemId);
+    if(!found) return; // no indexado
+    items.push({ item_id:r.itemId, kind:found.kind, topic:found.topic || null, is_correct:r.isCorrect });
+  });
+  if(!items.length) return;
+  LeoBackend.applyMistakeResults(items).then(()=>{ _mistakeStatsCache = undefined; }).catch(()=>{});
+}
+
+function computeActiveMistakesFromStats(statsMap){
+  const out = [];
+  statsMap.forEach(s => { if(s.status === 'active') out.push(s); });
+  return out;
+}
+
+function mistakeScore(stat){
+  const idleDays = Math.min(MISTAKE_PRIORITY.MAX_IDLE_DAYS, daysSinceDateStr(localDateStr(new Date(stat.last_seen_at))) || 0);
+  return (stat.fail_count || 0) * MISTAKE_PRIORITY.WEIGHT_FAIL_COUNT
+       + idleDays * MISTAKE_PRIORITY.WEIGHT_IDLE_DAY
+       - (stat.correct_streak || 0) * MISTAKE_PRIORITY.WEIGHT_CORRECT_STREAK_PENALTY;
+}
+
+// Cuántos errores se recuperaron/dominaron en los últimos 7 días, para
+// la señal positiva de la tarjeta ("Esta semana recuperaste N errores").
+function countRecoveredLast7Days(statsMap){
+  const cutoff = Date.now() - 7*86400000;
+  let n = 0;
+  statsMap.forEach(s=>{ if(s.recovered_at && new Date(s.recovered_at).getTime() >= cutoff) n++; });
+  return n;
+}
+
+// Construye el pool de una sesión de repaso.
+//   mode: 'rapido' (hasta 10, priorizados) | undefined (hasta 20, más reciente primero)
+//   skillFilter: 'grammar'|'vocab'|'listening'|'writing' (opcional)
+// Devuelve { pool, topStat, usedFallback } — topStat es la entrada de
+// mayor prioridad (para la sugerencia de artículo), null si no aplica.
+async function buildMistakeReviewPool({ mode, skillFilter } = {}){
+  await backfillMistakeStatsIfNeeded();
+  const statsMap = await loadMistakeStatsMap();
+  const index = getMistakesItemIndex();
+  const maxItems = mode === 'rapido' ? MISTAKE_PRIORITY.QUICK_REVIEW_SIZE : 20;
+
+  if(statsMap === null){
+    // Respaldo: método viejo, sigue siendo correcto, solo no tiene
+    // fail_count/estado. No se le puede aplicar skillFilter por kind
+    // real sin el índice, así que sí se puede (el índice ya trae kind).
+    const ids = computeMistakeIds();
+    const pool = [];
+    for(let i=0; i<ids.length && pool.length<maxItems; i++){
+      const found = index.get(ids[i]);
+      if(found && (!skillFilter || found.kind === skillFilter)) pool.push({ kind:found.kind, item:found.item });
+    }
+    return { pool, topStat:null, usedFallback:true };
+  }
+
+  let actives = computeActiveMistakesFromStats(statsMap);
+  if(skillFilter) actives = actives.filter(s => s.kind === skillFilter);
+  actives = mode === 'rapido'
+    ? actives.slice().sort((a,b) => mistakeScore(b) - mistakeScore(a))
+    : actives.slice().sort((a,b) => new Date(b.last_seen_at) - new Date(a.last_seen_at));
+  const top = actives.slice(0, maxItems);
+  const pool = [];
+  top.forEach(s=>{
+    const found = index.get(s.item_id);
+    if(found) pool.push({ kind:found.kind, item:found.item });
+  });
+  return { pool, topStat: top[0] || null, usedFallback:false };
+}
+
 // Banner "Tus errores frecuentes" del panel de miembros. Si no hay
-// errores pendientes, se oculta la sección entera (no se inventa
-// un mensaje de "0 errores", simplemente no aparece). chipsEl es
-// opcional: si se pasa, se llena con el desglose real por habilidad
-// (solo las que sí tienen errores pendientes, nunca un "0").
-function renderMistakesBanner(sectionEl, textEl, chipsEl){
+// errores activos, se oculta la sección entera (no se inventa un
+// mensaje de "0 errores"). chipsEl (opcional) son ahora links directos
+// a repasar esa habilidad. noteEl (opcional) muestra la señal positiva
+// semanal de errores recuperados.
+async function renderMistakesBanner(sectionEl, textEl, chipsEl, noteEl){
   if(!sectionEl) return;
-  const count = computeMistakeIds().length;
-  if(!count){ sectionEl.style.display = 'none'; return; }
+  const topGrid = sectionEl.closest('.dash-top-grid');
+  const statsMap = await loadMistakeStatsMap();
+  let count, countsByKind, recoveredCount = 0;
+  if(statsMap === null){
+    await backfillMistakeStatsIfNeeded();
+    count = computeMistakeIds().length;
+    countsByKind = computeMistakeCountsByKind();
+  } else {
+    const actives = computeActiveMistakesFromStats(statsMap);
+    count = actives.length;
+    countsByKind = { grammar:0, vocab:0, listening:0, writing:0 };
+    actives.forEach(s => { if(countsByKind.hasOwnProperty(s.kind)) countsByKind[s.kind]++; });
+    recoveredCount = countRecoveredLast7Days(statsMap);
+  }
+  if(!count){
+    sectionEl.style.display = 'none';
+    if(topGrid) topGrid.classList.add('no-mistakes');
+    return;
+  }
   sectionEl.style.display = '';
+  if(topGrid) topGrid.classList.remove('no-mistakes');
   if(textEl){
     textEl.innerHTML = count === 1
-      ? 'Tienes <span class="mistakes-count">1 ejercicio</span> pendiente de repasar.'
-      : `Tienes <span class="mistakes-count">${count} ejercicios</span> pendientes de repasar.`;
+      ? '<span class="mistakes-count">1 ejercicio</span> para reforzar.'
+      : `<span class="mistakes-count">${count} ejercicios</span> para reforzar.`;
   }
   if(chipsEl){
-    const counts = computeMistakeCountsByKind();
     chipsEl.innerHTML = ['grammar','vocab','listening','writing']
-      .filter(kind => counts[kind] > 0)
-      .map(kind => `<span class="mistakes-chip">${MIX_KIND_LABEL[kind]} <b>${counts[kind]}</b></span>`)
+      .filter(kind => countsByKind[kind] > 0)
+      .map(kind => `<a href="errores.html?skill=${kind}" class="mistakes-chip">${MIX_KIND_LABEL[kind]} <b>${countsByKind[kind]}</b></a>`)
       .join('');
+  }
+  if(noteEl){
+    if(recoveredCount > 0){
+      noteEl.textContent = recoveredCount === 1
+        ? 'Esta semana recuperaste 1 error.'
+        : `Esta semana recuperaste ${recoveredCount} errores.`;
+      noteEl.style.display = '';
+    } else {
+      noteEl.style.display = 'none';
+    }
   }
 }
 
-function runMistakesSessionCore({ container }){
+async function runMistakesSessionCore({ container, mode, skillFilter }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
-  const saved = loadInflightSession('errores', 'todos');
+  const sessionLevel = skillFilter ? ('skill-' + skillFilter) : (mode === 'rapido' ? 'rapido' : 'todos');
+  const sessionLabel = skillFilter ? `Repaso: ${MIX_KIND_LABEL[skillFilter]}` : (mode === 'rapido' ? 'Repaso rápido' : 'Repaso de errores');
+  const saved = loadInflightSession('errores', sessionLevel);
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
-  const pool = useSaved ? saved.pool : buildMistakePool();
+
+  let pool, topStat = null;
+  if(useSaved){
+    pool = saved.pool;
+  } else {
+    const built = await buildMistakeReviewPool({ mode, skillFilter });
+    pool = built.pool;
+    topStat = built.topStat;
+  }
   const total = pool.length;
 
   if(!total){
-    clearInflightSession('errores', 'todos');
+    clearInflightSession('errores', sessionLevel);
     container.innerHTML = `
       <div class="session-summary">
         <h2>¡Vas muy bien!</h2>
         <p class="summary-score">No tienes errores pendientes por repasar ahora mismo.</p>
         <div class="summary-actions">
           <a href="miembros.html" class="btn btn-primary">Volver a tu panel</a>
+          <a href="plan-estudio.html" class="btn btn-ghost">Hacer tu plan de estudio</a>
         </div>
       </div>`;
     return;
@@ -3056,14 +3283,24 @@ function runMistakesSessionCore({ container }){
   const results = useSaved ? saved.results.slice() : [];
   let idx = useSaved ? saved.idx : 0;
 
+  // Sugerencia de artículo: solo al empezar una sesión nueva (no al
+  // reanudar), solo gramática, y solo si ese error ya se repitió más
+  // de una vez (no se sugiere un artículo por un fallo aislado).
+  const articleHref = (!useSaved && topStat && topStat.kind === 'grammar' && topStat.fail_count >= 2 && topStat.topic)
+    ? ARTICLE_BY_TOPIC[topStat.topic] : null;
+  const articleBanner = articleHref
+    ? `<div class="mistakes-article-hint">Tu prioridad: <b>${ARTICLE_TITLE_BY_HREF[articleHref] || topStat.topic}</b>. <a href="${articleHref}">¿Quieres repasarlo primero? →</a></div>`
+    : '';
+
   function renderItem(){
     const entry = pool[idx];
-    saveInflightSession('errores', 'todos', { pool, idx, results, startedAt });
+    saveInflightSession('errores', sessionLevel, { pool, idx, results, startedAt });
     const pct = Math.round(((idx+1)/total)*100);
     const wrap = document.createElement('div');
     wrap.innerHTML = `
+      ${idx === 0 ? articleBanner : ''}
       <div class="session-head">
-        <span class="practice-level-tag">Mis errores · ${MIX_KIND_LABEL[entry.kind]}</span>
+        <span class="practice-level-tag">${sessionLabel} · ${MIX_KIND_LABEL[entry.kind]}</span>
         <span class="session-count">Ejercicio ${idx+1} de ${total}</span>
       </div>
       <div class="session-progress"><div class="session-progress-fill" style="width:${pct}%;"></div></div>`;
@@ -3082,19 +3319,29 @@ function runMistakesSessionCore({ container }){
   }
 
   function finish(){
-    clearInflightSession('errores', 'todos');
-    recordSession({ skill:'errores', level:'todos', topics:['Repaso de errores'], results, startedAt });
+    clearInflightSession('errores', sessionLevel);
+    recordSession({ skill:'errores', level:'todos', topics:[sessionLabel], results, startedAt });
     const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
     const correct = graded.filter(r=>r.isCorrect).length;
+    const wrongAgain = graded.length - correct;
     const score = graded.length ? `${correct} / ${graded.length} correctas` : `${total} ejercicios completados`;
-    container.innerHTML = renderSessionSummary({ title:'¡Listo!', score, topics: ['Repaso de errores'] });
-    wireSummaryButtons(container, ()=> runMistakesSessionCore({ container }));
+    container.innerHTML = renderSessionSummary({ title:'¡Listo!', score, topics: [sessionLabel] });
+    if(graded.length){
+      const scoreEl = container.querySelector('.summary-score');
+      if(scoreEl){
+        const extra = document.createElement('p');
+        extra.className = 'summary-extra';
+        extra.textContent = `${correct} correcto${correct===1?'':'s'}${wrongAgain ? `, ${wrongAgain} necesita${wrongAgain===1?'':'n'} más práctica` : ''}.`;
+        scoreEl.insertAdjacentElement('afterend', extra);
+      }
+    }
+    wireSummaryButtons(container, ()=> runMistakesSessionCore({ container, mode, skillFilter }));
   }
 
   renderItem();
 }
-function runMistakesSession({ container }){
-  runMistakesSessionCore({ container });
+function runMistakesSession({ container, mode, skillFilter }){
+  runMistakesSessionCore({ container, mode, skillFilter });
 }
 
 /* ============================================================

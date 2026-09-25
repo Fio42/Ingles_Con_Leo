@@ -372,6 +372,45 @@ const LeoBackend = (function(){
     }catch(e){}
   }
 
+  /* Trae las filas de mistake_stats del usuario (un ejercicio por
+     fila, solo los que alguna vez falló). Se usa para "Repaso
+     personal": activo/recuperado/dominado y prioridad.
+     IMPORTANTE: devuelve null si algo falló de verdad (sin internet,
+     sin sesión, o la tabla/función todavía no existe porque no se
+     corrió el SQL nuevo en Supabase) para que quien llama use el
+     método viejo de respaldo. Solo devuelve [] cuando la consulta
+     funcionó bien y la persona de verdad no tiene ningún error
+     guardado todavía. Nunca confundir "falló la consulta" con
+     "no tiene errores": lo primero debe caer al método viejo, lo
+     segundo sí debe ocultar la tarjeta. */
+  async function getMistakeStats(){
+    const sb = getClient();
+    if(!sb) return null;
+    const session = await getSession();
+    if(!session) return null;
+    try{
+      const { data, error } = await sb.from('mistake_stats')
+        .select('item_id,kind,topic,fail_count,correct_streak,status,recovered_at,last_seen_at')
+        .eq('user_id', session.user.id);
+      if(error) return null;
+      return data || [];
+    }catch(e){ return null; }
+  }
+
+  /* Aplica en una sola llamada los resultados de una sesión completa
+     (evita una consulta por ejercicio). items: [{item_id, kind, topic, is_correct}].
+     Fire-and-forget, igual que pushSession: si falla, no se pierde
+     nada, la próxima sesión que se guarde vuelve a intentarlo. */
+  async function applyMistakeResults(items){
+    const sb = getClient();
+    if(!sb || !items || !items.length) return;
+    const session = await getSession();
+    if(!session) return;
+    try{
+      await sb.rpc('apply_mistake_results', { p_items: items });
+    }catch(e){}
+  }
+
   /* Pide un link de pago de Mercado Pago personalizado para el
      usuario logueado (ligado a su id, no a un correo). Devuelve
      { ok:true, url } o { ok:false, error }. Depende de que la
@@ -563,7 +602,8 @@ const LeoBackend = (function(){
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
-    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName
+    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
+    getMistakeStats, applyMistakeResults
   };
 })();
 

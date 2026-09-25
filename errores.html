@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260924b">
+<link rel="stylesheet" href="style.css?v=20260924c">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -95,7 +95,7 @@
       <span class="badge badge-members">Miembros</span>
       <a href="miembros.html" style="display:inline-block;margin-top:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;">← Volver a tu panel</a>
       <h1 style="margin-top:10px;">Mis errores</h1>
-      <p class="lead">Los ejercicios que más se te han complicado, reunidos en un solo lugar. En cuanto los respondas bien, salen de esta lista.</p>
+      <p class="lead">Los ejercicios que más se te han complicado, priorizados para vos. Un acierto no lo saca de la lista todavía; con un par de aciertos seguidos, lo marcamos como recuperado.</p>
     </div>
   </section>
   <section style="padding-top:8px;">
@@ -157,12 +157,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260924c"></script>
-<script src="backend.js?v=20260924a"></script>
+<script src="app.js?v=20260924d"></script>
+<script src="backend.js?v=20260924b"></script>
 <script src="chatbot.js?v=20260923"></script>
 <script>
   guardMemberPage(function(){
-    runMistakesSession({ container: document.getElementById('sessionArea') });
+    const params = new URLSearchParams(location.search);
+    const modo = params.get('modo') === 'rapido' ? 'rapido' : undefined;
+    const skillParam = params.get('skill');
+    const validSkills = ['grammar','vocab','listening','writing'];
+    const skillFilter = validSkills.includes(skillParam) ? skillParam : undefined;
+    runMistakesSession({ container: document.getElementById('sessionArea'), mode: modo, skillFilter: skillFilter });
   });
 </script>
 

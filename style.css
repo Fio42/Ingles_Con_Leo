@@ -1277,10 +1277,20 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .mistakes-sub{margin:0;color:var(--ink-soft);font-size:0.95rem;}
 .mistakes-sub .mistakes-count{color:var(--coral);font-weight:700;}
 .mistakes-chips{display:flex;flex-wrap:wrap;gap:8px;}
-.mistakes-chip{background:var(--coral-tint);color:var(--ink-soft);font-size:0.8rem;font-weight:600;padding:5px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;}
+.mistakes-chip{background:var(--coral-tint);color:var(--ink-soft);font-size:0.8rem;font-weight:600;padding:5px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;text-decoration:none;transition:background .2s ease;}
+.mistakes-chip:hover{background:var(--coral);color:#fff;}
+.mistakes-chip:hover b{color:#fff;}
 .mistakes-chip b{color:var(--coral);font-weight:700;}
+.mistakes-recovered-note{margin:0;color:var(--green);font-size:0.85rem;font-weight:600;}
+.mistakes-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 .mistakes-btn{align-self:flex-start;background:var(--coral-tint);color:var(--coral);border:2px solid var(--coral);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
 .mistakes-btn:hover{background:var(--coral);color:#fff;box-shadow:0 6px 14px rgba(239,90,69,0.25);}
+.mistakes-btn-all{color:var(--ink-faint);font-weight:600;font-size:0.86rem;text-decoration:underline;}
+
+/* Sugerencia de articulo dentro de una sesion de "Mis errores" */
+.mistakes-article-hint{background:var(--paper-dim);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:14px;font-size:0.9rem;color:var(--ink-soft);}
+.mistakes-article-hint a{color:var(--blue);font-weight:700;text-decoration:none;}
+.summary-extra{color:var(--ink-soft);font-size:0.92rem;margin-top:-6px;}
 @media (max-width:640px){
   .mistakes-card{padding:18px 18px;}
 }

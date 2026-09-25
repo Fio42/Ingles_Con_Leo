@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260924b">
+<link rel="stylesheet" href="style.css?v=20260924c">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -419,9 +419,13 @@
               <span class="mistakes-eyebrow">Repaso personal</span>
             </div>
             <h2>Tus errores frecuentes</h2>
-            <p class="mistakes-sub" id="mistakesBannerText">Repasa los ejercicios que más se te han complicado.</p>
+            <p class="mistakes-sub" id="mistakesBannerText">Ejercicios para reforzar, elegidos por prioridad.</p>
+            <p class="mistakes-recovered-note" id="mistakesRecoveredNote" style="display:none;"></p>
             <div class="mistakes-chips" id="mistakesChips"></div>
-            <a href="errores.html" class="mistakes-btn">Practicar mis errores →</a>
+            <div class="mistakes-actions">
+              <a href="errores.html?modo=rapido" class="mistakes-btn">Repaso rápido →</a>
+              <a href="errores.html" class="mistakes-btn-all">Ver todos</a>
+            </div>
           </div>
         </div>
       </div>
@@ -605,8 +609,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260924c"></script>
-<script src="backend.js?v=20260924a"></script>
+<script src="app.js?v=20260924d"></script>
+<script src="backend.js?v=20260924b"></script>
 <script src="chatbot.js?v=20260923"></script>
 <script>
   const gate = document.getElementById('gate');
@@ -819,16 +823,11 @@
     renderWeeklyChart(document.getElementById('weeklyChart'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
     renderStreakCard(document.getElementById('streakCard'));
-    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'));
+    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
-    // Si no hay errores pendientes, renderMistakesBanner esconde esa
-    // tarjeta (display:none). Le avisamos a la fila de 3 columnas para
-    // que se acomode en 2 columnas en vez de dejar un hueco vacio.
-    const mistakesEl = document.getElementById('mistakesSection');
-    const topGrid = mistakesEl ? mistakesEl.closest('.dash-top-grid') : null;
-    if(topGrid && mistakesEl){
-      topGrid.classList.toggle('no-mistakes', mistakesEl.style.display === 'none');
-    }
+    // renderMistakesBanner es async (consulta Supabase) y ya se encarga
+    // de mostrar/ocultar la tarjeta y avisarle a la fila de 3 columnas
+    // (clase no-mistakes) cuando termine, así que no hace falta repetirlo aquí.
   }
 
   function unlock(){

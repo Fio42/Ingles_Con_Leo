@@ -625,3 +625,103 @@ from auth.users u
 where u.id = p.id
   and p.display_name is null
   and coalesce(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', '') <> '';
+
+-- ============================================================
+-- 2026-09-24: Repaso personal 2.0 (activo / recuperado / dominado)
+-- Tabla NUEVA y aditiva: no modifica profiles ni progress_sessions.
+-- Cada fila es UN ejercicio que la persona falló alguna vez. Nunca
+-- se crea una fila solo por acertar (si nunca lo falló, no hay nada
+-- que "recuperar"). Reemplaza tener que descargar y recalcular todo
+-- el historial de progress_sessions en el navegador cada vez.
+-- ============================================================
+create table if not exists public.mistake_stats (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  item_id text not null,
+  kind text not null,
+  topic text,
+  fail_count int not null default 0,
+  correct_streak int not null default 0,
+  status text not null default 'active', -- 'active' | 'recovered' | 'mastered'
+  last_correct boolean,
+  recovered_at timestamptz,
+  last_seen_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, item_id)
+);
+create index if not exists mistake_stats_user_status_idx on public.mistake_stats(user_id, status);
+
+alter table public.mistake_stats enable row level security;
+
+drop policy if exists "mistake_stats: select own" on public.mistake_stats;
+create policy "mistake_stats: select own" on public.mistake_stats
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "mistake_stats: insert own" on public.mistake_stats;
+create policy "mistake_stats: insert own" on public.mistake_stats
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "mistake_stats: update own" on public.mistake_stats;
+create policy "mistake_stats: update own" on public.mistake_stats
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Aplica TODOS los resultados de una sesión (activa/reactiva/recupera/
+-- domina) en una sola llamada, para no hacer una consulta por ejercicio.
+-- security invoker: corre con los permisos de quien llama (respeta las
+-- policies de arriba, auth.uid() = user_id siempre).
+-- Umbrales (deben coincidir con MISTAKE_PRIORITY en app.js):
+--   2 aciertos seguidos tras un fallo -> "recovered"
+--   4 aciertos seguidos tras un fallo -> "mastered"
+--   un fallo, en cualquier estado, siempre reactiva a "active"
+create or replace function public.apply_mistake_results(p_items jsonb)
+returns void
+language plpgsql
+security invoker
+as $$
+declare
+  rec record;
+  uid uuid := auth.uid();
+begin
+  if uid is null then return; end if;
+  for rec in
+    select * from jsonb_to_recordset(p_items) as x(item_id text, kind text, topic text, is_correct boolean)
+  loop
+    if rec.item_id is null or rec.kind is null or rec.is_correct is null then
+      continue;
+    end if;
+    if rec.is_correct then
+      update public.mistake_stats m
+      set correct_streak = m.correct_streak + 1,
+          last_correct = true,
+          last_seen_at = now(),
+          updated_at = now(),
+          recovered_at = case
+            when m.status = 'active' and m.correct_streak + 1 >= 2 then now()
+            else m.recovered_at
+          end,
+          status = case
+            when m.correct_streak + 1 >= 4 then 'mastered'
+            when m.correct_streak + 1 >= 2 then 'recovered'
+            else m.status
+          end
+      where m.user_id = uid and m.item_id = rec.item_id;
+      -- Si no existe fila, nunca falló este ejercicio: no hay nada que "recuperar".
+    else
+      insert into public.mistake_stats (user_id, item_id, kind, topic, fail_count, correct_streak, status, last_correct, recovered_at, last_seen_at, updated_at)
+      values (uid, rec.item_id, rec.kind, rec.topic, 1, 0, 'active', false, null, now(), now())
+      on conflict (user_id, item_id) do update
+        set fail_count = mistake_stats.fail_count + 1,
+            correct_streak = 0,
+            status = 'active',
+            last_correct = false,
+            recovered_at = null,
+            kind = excluded.kind,
+            topic = coalesce(excluded.topic, mistake_stats.topic),
+            last_seen_at = now(),
+            updated_at = now();
+    end if;
+  end loop;
+end;
+$$;
+
+grant execute on function public.apply_mistake_results(jsonb) to authenticated;
