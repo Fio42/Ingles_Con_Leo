@@ -1784,8 +1784,20 @@ function findModalVerbFormError(text){
   return null;
 }
 
+// Normaliza variantes de apostrofe (comilla curva, acento agudo suelto,
+// comilla tipografica, etc.) a un apostrofe recto simple ('), que es lo
+// unico que usan los checkPattern de data.js. Algunos teclados en
+// espanol (Windows/Mac, layout Latinoamerica) tienen el apostrofe como
+// tecla muerta: si se escribe seguido de una letra que no forma un
+// acento valido, el navegador a veces inserta un acento agudo suelto
+// (´, U+00B4) en vez de un apostrofe, y "don´t" no matcheaba nunca el
+// patron "don't" aunque la frase fuera correcta.
+function normalizeApostrophes(text){
+  return (text || '').replace(/[‘’ʼʻ´`＇]/g, "'");
+}
+
 function evaluateWritingAnswer(text, item){
-  const clean = (text || '').trim().toLowerCase();
+  const clean = normalizeApostrophes((text || '').trim().toLowerCase());
   if(clean.length < 3) return { isOk:false, hint:item.hint };
   let patternOk = false;
   try{ patternOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ patternOk = false; }

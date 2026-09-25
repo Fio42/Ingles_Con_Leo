@@ -1010,3 +1010,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Plan de estudio se sentia demasiado compacto en escritorio (como un banner, con menos presencia que las tarjetas de abajo): .plan-feature-hero paso de padding:44px 32px 22px a padding:58px 32px 28px en el breakpoint min-width:760px (~30% mas de padding vertical). Se verifico que el badge RECOMENDADO sigue sin tocar el boton (22px de aire de sobra). Todo lo demas del grid (3 columnas, colores, CTA, duracion) sin cambios.
 - Los bloques principales del dashboard se sentian muy pegados con el ajuste anterior (20px c/u = 40px entre secciones): #memberContent section paso de padding:20px 0 a padding:16px 0 (32px entre secciones, dentro del rango 30-36px pedido). Movil sin cambios especificos (misma regla, se ve bien igual).
 - style.css?v=20260925c.
+
+2026-09-25 — Arreglo: Writing no aceptaba "don't" si el apostrofe no era el recto
+- Reporte de Leo: alguien escribio "I don´t have a car" (acento agudo suelto, ´, en vez de apostrofe recto ') en un ejercicio de Writing y lo marco como incorrecto pese a que la frase era correcta. Pasa sobre todo en teclados en espanol, donde la tecla del apostrofe es una tecla muerta para acentos: si se escribe seguida de una letra que no forma un acento valido, algunos navegadores insertan ese acento suelto en vez de un apostrofe.
+- evaluateWritingAnswer() (app.js) es la unica funcion de validacion de Writing (session de miembros, sesion mixta, practica gratis y Mis errores la usan todas), pero comparaba el texto tal cual contra checkPattern, que en data.js siempre usa apostrofe recto (').
+- Arreglo: normalizeApostrophes() nueva, convierte comilla curva (' '), acento agudo suelto (´), acento grave (`) y apostrofe de ancho completo a apostrofe recto antes de evaluar el patron. Aplica automaticamente en los 4 lugares que usan Writing, sin tocar data.js ni ningun checkPattern.
+- Probado con el ejemplo real de Leo mas otras variantes (comilla curva izquierda/derecha, acento grave, apostrofe ancho completo): las 6 pasan correctamente ahora; el caso con apostrofe recto normal sigue funcionando igual que antes.
+- app.js?v=20260925a.
