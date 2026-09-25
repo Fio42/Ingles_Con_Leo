@@ -845,6 +845,12 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .mini-practice-block h3{font-size:1.05rem;margin-bottom:14px;}
 .article-example{background:var(--paper-dim);border-radius:var(--radius-md);padding:16px 18px;margin:14px 0;}
 
+/* Link "Volver a tu panel" de las paginas de miembros. Antes era gris
+   claro (--ink-faint) y costaba verlo; ahora usa el azul de marca, sin
+   convertirlo en boton. */
+.back-to-panel-link{display:inline-block;margin-top:14px;color:var(--blue);font-weight:600;font-size:0.85rem;text-decoration:none;}
+.back-to-panel-link:hover{text-decoration:underline;}
+
 /* ---------- Compartir articulo ---------- */
 .article-share{margin-top:36px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .article-share-label{font-weight:700;font-size:0.94rem;margin-right:2px;}
