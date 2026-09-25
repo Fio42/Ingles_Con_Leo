@@ -1404,7 +1404,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    panel (Tu aprendizaje hoy / Practicar por habilidad / Explorar /
    Mi rendimiento / Actividad reciente) usan el mismo padding, asi
    que el espacio entre cualquier par de secciones es el mismo. */
-#memberContent section{padding:20px 0;}
+#memberContent section{padding:16px 0;}
 #memberContent .page-hero{padding-top:22px;}
 #memberContent .dash-sub{margin-bottom:14px;}
 
@@ -1537,7 +1537,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
      la esquina donde va el badge "RECOMENDADO" (position:absolute,
      top:14px/right:14px sobre .plan-feature-card) para que no quede
      encima del boton ni del titulo. */
-  .plan-feature-hero{display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:24px;row-gap:3px;padding:44px 32px 22px;}
+  .plan-feature-hero{display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:24px;row-gap:3px;padding:58px 32px 28px;}
   .plan-feature-hero .plan-feature-icon{grid-column:1;grid-row:1 / span 3;width:50px;height:50px;}
   .plan-feature-hero .plan-feature-icon svg{width:24px;height:24px;}
   .plan-feature-hero h2{grid-column:2;grid-row:1;margin:0;font-size:1.3rem;}
