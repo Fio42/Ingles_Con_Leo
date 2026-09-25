@@ -1129,10 +1129,10 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   },
   limit_reached: {
     subject: 'Llegaste al límite 💪 (y eso dice mucho de ti)',
-    preheader: 'Completaste tus 20 ejercicios gratis. Así puedes seguir.',
+    preheader: 'Completaste tus 10 ejercicios gratis. Así puedes seguir.',
     greeting: '¡Hola! 👋',
-    title: 'Completaste tus 20 ejercicios del día',
-    titleWithName: '¡Bien hecho, {name}! Completaste tus 20 ejercicios del día',
+    title: 'Completaste tus 10 ejercicios del día',
+    titleWithName: '¡Bien hecho, {name}! Completaste tus 10 ejercicios del día',
     bodyHtml: `
     <p style="${P}">
       La mayoría de la gente deja el inglés porque no practica. Tú hiciste
@@ -1140,7 +1140,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     </p>
     <p style="${P}">Tienes dos opciones:</p>
     <div style="${BOX}">
-      <strong>Esperar a mañana:</strong> tus 20 ejercicios se reinician solos.<br><br>
+      <strong>Esperar a mañana:</strong> tus 10 ejercicios se reinician solos.<br><br>
       <strong>Seguir sin límite:</strong> con la membresía practicas todo lo
       que quieras, por $2 USD al mes (o $20 USD al año). Cancelas cuando quieras.
     </div>`,

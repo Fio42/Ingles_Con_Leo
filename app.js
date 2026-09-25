@@ -2298,25 +2298,61 @@ function renderMixItemInto(card, entry, onAnswered){
    ÚNICA fuente de verdad para "cuántos ejercicios puede hacer cada
    quien" en practica.html. Tres niveles:
 
-     - Visitante sin cuenta: prueba GUEST_EXERCISE_LIMIT ejercicios y
-       ya. No se reinicia por día a propósito (es una prueba única
-       antes de pedirle cuenta, no una cuota diaria).
+     - Visitante sin cuenta: GUEST_EXERCISE_LIMIT ejercicios POR DÍA.
      - Cuenta gratis (is_member=false): FREE_USER_DAILY_LIMIT
-       ejercicios POR DÍA, ligados a la cuenta (no solo al navegador).
+       ejercicios POR DÍA EN TOTAL, no adicionales a los del
+       visitante.
      - Miembro (is_member=true): sin límite. Esto no cambió: las
        páginas de miembros nunca llaman a freeDailyLimitReached().
 
    Para cambiar los números basta con tocar estas dos constantes.
-   Nada más en el sitio necesita tocarse.
+   Nada más en el sitio necesita tocarse (salvo el copy fijo del correo
+   "limit_reached" en supabase_functions/upgrade-nudge-emails.ts, que
+   no puede leer esta constante de JS por vivir en otro lado: si
+   cambian estos números, ese correo también hay que actualizarlo a
+   mano, y volver a desplegar esa función en Supabase).
+
+   CÓMO SE CUENTA (importante, léase antes de tocar esto): hay UN SOLO
+   contador por navegador y por día (getLocalDailyCount/
+   bumpLocalDailyCount, guardado en localStorage con la fecha de hoy
+   en la llave), y NO se reinicia ni se duplica al iniciar/cerrar
+   sesión ni al crear una cuenta. Antes existían dos contadores
+   separados (uno de "visitante" y otro de "cuenta gratis", ligado al
+   id de la cuenta) que se intentaban reconciliar con un "traspaso" al
+   registrarse; eso dejaba un hueco real: si alguien ya tenía
+   ejercicios hechos como cuenta gratis y CERRABA SESIÓN para volver a
+   practicar como visitante, el contador de visitante empezaba de 0 y
+   ese traspaso solo corría una vez por día, así que esos ejercicios
+   de más quedaban invisibles y la persona podía terminar haciendo más
+   de FREE_USER_DAILY_LIMIT ejercicios reales en el mismo navegador.
+   Con un solo contador compartido entre modo visitante y modo cuenta
+   gratis, cerrar sesión ya no "resetea" nada: sea cual sea el modo en
+   el que se esté, freeDailyLimitReached() siempre compara contra el
+   mismo total de hoy en este navegador.
+
+   Para cuenta gratis, además se compara ese total local contra
+   profiles.free_daily_count de Supabase (ver getFreeAcctExerciseCount)
+   por si esa misma cuenta ya practicó desde OTRO dispositivo hoy: se
+   usa el mayor de los dos, nunca se suman. Importante limitación
+   aceptada a propósito (no se resuelve con infraestructura nueva):
+   los ejercicios hechos como VISITANTE en un dispositivo/navegador
+   distinto no pueden conocerse desde otro, porque el modo visitante
+   no manda nada a Supabase (no hay cuenta con la que asociarlos
+   todavía). Eso sí podría, en teoría, dejar pasar hasta
+   GUEST_EXERCISE_LIMIT ejercicios extra si alguien practica como
+   visitante en dos navegadores/dispositivos distintos el mismo día
+   antes de tener cuenta. Es el mismo tipo de límite "no a prueba de
+   trampas" que ya existía (ver nota más abajo), y evitarlo del todo
+   requeriría identificar visitantes de alguna forma (huella de
+   dispositivo, cookie server-side, etc.), que es justo la complejidad
+   que se decidió NO construir.
 
    Ninguno de estos límites es "a prueba de trampas" (localStorage se
    puede borrar, y el conteo de cuenta gratis se manda desde el
    navegador): son para frenar el uso normal y guiar hacia crear
-   cuenta / hacerse miembro, no un candado de seguridad. Es la misma
-   idea que ya existía antes con FREE_DAILY_EXERCISE_LIMIT, solo que
-   ahora se reparte en dos niveles en vez de uno. */
-var GUEST_EXERCISE_LIMIT = 10;
-var FREE_USER_DAILY_LIMIT = 20;
+   cuenta / hacerse miembro, no un candado de seguridad. */
+var GUEST_EXERCISE_LIMIT = 5;
+var FREE_USER_DAILY_LIMIT = 10;
 
 /* Estado del nivel de acceso para esta carga de página. practica.html
    llama a initLeoAccessTier() una sola vez, justo después de revisar
@@ -2365,37 +2401,45 @@ function todayStr(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
-/* ---- Visitante sin cuenta: contador único (no diario) en
-   localStorage. Igual que el sistema anterior: abrir una ventana de
-   incógnito o borrar los datos del sitio lo reinicia, y es un riesgo
-   aceptado (no es la barrera real; la barrera real es pedir cuenta). */
-function getGuestExerciseCount(){
-  try{ return parseInt(localStorage.getItem('leoGuestExerciseCount'), 10) || 0; }catch(e){ return 0; }
+/* ---- Contador único por navegador y por día, compartido entre modo
+   visitante y modo cuenta gratis (ver nota grande de arriba: esto es
+   lo que cierra el hueco de "cerrar sesión para resetear el
+   contador"). La fecha de hoy va en la llave, así que se reinicia
+   solo cada día. Abrir una ventana de incógnito o borrar los datos
+   del sitio lo reinicia antes de tiempo, y es un riesgo aceptado (no
+   es la barrera real; la barrera real es pedir cuenta / membresía). */
+function localDailyCountKey(){
+  return `leoLocalDailyCount:${todayStr()}`;
 }
-function bumpGuestExerciseCount(){
-  try{ localStorage.setItem('leoGuestExerciseCount', String(getGuestExerciseCount() + 1)); }catch(e){}
+function getLocalDailyCount(){
+  try{ return parseInt(localStorage.getItem(localDailyCountKey()), 10) || 0; }catch(e){ return 0; }
+}
+function bumpLocalDailyCount(){
+  const next = getLocalDailyCount() + 1;
+  try{ localStorage.setItem(localDailyCountKey(), String(next)); }catch(e){}
+  return next;
 }
 
-/* ---- Cuenta gratis: contador diario ligado al id de la cuenta.
-   localStorage es la copia rápida de "hoy" (para no depender de la
-   red en cada clic); Supabase (profiles.free_daily_count /
-   free_daily_date, ver supabase_schema.sql) es la copia que viaja
-   con la cuenta entre dispositivos. Si Supabase no responde o esas
+/* ---- Cuenta gratis: el conteo real del día es el MAYOR entre lo que
+   este navegador ya sabe (getLocalDailyCount, incluye lo hecho como
+   visitante antes de iniciar sesión hoy mismo, y lo hecho como cuenta
+   gratis después) y lo que trae Supabase de esta cuenta para hoy
+   (profiles.free_daily_count/free_daily_date, ver supabase_schema.sql,
+   por si esa misma cuenta ya practicó desde otro dispositivo). Nunca
+   se suman, siempre se toma el mayor. Si Supabase no responde o esas
    columnas todavía no existen, sigue funcionando solo con
    localStorage (se degrada, no se rompe). */
-function freeAcctLocalKey(userId){
-  return `leoFreeAcctCount:${userId}:${todayStr()}`;
-}
 function getFreeAcctExerciseCount(){
-  const userId = _leoAccessProfile && _leoAccessProfile.id;
-  if(!userId) return 0;
-  try{ return parseInt(localStorage.getItem(freeAcctLocalKey(userId)), 10) || 0; }catch(e){ return 0; }
+  const local = getLocalDailyCount();
+  const remoteToday = (_leoAccessProfile && _leoAccessProfile.free_daily_date === todayStr() && typeof _leoAccessProfile.free_daily_count === 'number')
+    ? _leoAccessProfile.free_daily_count : 0;
+  return Math.max(local, remoteToday);
 }
 function bumpFreeAcctExerciseCount(){
   const userId = _leoAccessProfile && _leoAccessProfile.id;
   if(!userId) return;
   const next = getFreeAcctExerciseCount() + 1;
-  try{ localStorage.setItem(freeAcctLocalKey(userId), String(next)); }catch(e){}
+  try{ localStorage.setItem(localDailyCountKey(), String(next)); }catch(e){}
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured() && LeoBackend.bumpFreeDailyCount){
     // Estas dos banderas solo se mandan la primera vez que aplican
     // (se guardan en Supabase, así que después de la primera vez
@@ -2411,6 +2455,13 @@ function bumpFreeAcctExerciseCount(){
     LeoBackend.bumpFreeDailyCount(next, todayStr(), { isFirstEver, justReachedLimit }).catch(function(){});
     if(isFirstEver) _leoAccessProfile.free_first_exercise_at = new Date().toISOString();
     if(justReachedLimit) _leoAccessProfile.free_daily_limit_reached_at = new Date().toISOString();
+    // Mantiene el perfil en memoria al día: si se vuelve a llamar a
+    // getFreeAcctExerciseCount() en esta misma carga de página (por
+    // ejemplo, justo después, para pintar el bloque de límite), ya
+    // refleja el valor real sin depender de que localStorage y este
+    // objeto coincidan por casualidad.
+    _leoAccessProfile.free_daily_count = next;
+    _leoAccessProfile.free_daily_date = todayStr();
   }
 }
 
@@ -2419,11 +2470,11 @@ function bumpFreeAcctExerciseCount(){
    siempre a través de estas tres funciones. */
 function freeDailyLimitReached(){
   if(_leoAccessTier === 'free') return getFreeAcctExerciseCount() >= FREE_USER_DAILY_LIMIT;
-  return getGuestExerciseCount() >= GUEST_EXERCISE_LIMIT;
+  return getLocalDailyCount() >= GUEST_EXERCISE_LIMIT;
 }
 function bumpFreeDailyExerciseCount(){
   if(_leoAccessTier === 'free') bumpFreeAcctExerciseCount();
-  else bumpGuestExerciseCount();
+  else bumpLocalDailyCount();
 }
 function renderFreeDailyLimitReachedBlock(){
   if(_leoAccessTier === 'free'){

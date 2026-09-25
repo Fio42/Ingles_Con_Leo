@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260924c">
+<link rel="stylesheet" href="style.css?v=20260925e">
 <link rel="stylesheet" href="chatbot.css?v=20260914">
 <script type="application/ld+json">
 {
@@ -271,7 +271,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260924e"></script>
+<script src="app.js?v=20260925d"></script>
 <script src="backend.js?v=20260924c"></script>
 <script src="toefl-data.js?v=20260915"></script>
 <script src="toefl-teaser.js?v=20260923"></script>
@@ -332,19 +332,13 @@
           history.replaceState(null, '', window.location.pathname);
         }
       }catch(e){}
-      // Si el conteo guardado en Supabase de HOY es más alto que el
-      // que hay en este navegador (por ejemplo, ya practicó desde el
-      // celular), lo adoptamos para no dejarlo pasarse del límite.
-      try{
-        const today = todayStr();
-        if(loggedInProfile.free_daily_date === today && typeof loggedInProfile.free_daily_count === 'number'){
-          const localKey = freeAcctLocalKey(loggedInProfile.id);
-          const localCount = parseInt(localStorage.getItem(localKey), 10) || 0;
-          if(loggedInProfile.free_daily_count > localCount){
-            localStorage.setItem(localKey, String(loggedInProfile.free_daily_count));
-          }
-        }
-      }catch(e){}
+      // Nota: ya no hace falta comparar aquí a mano el conteo de
+      // Supabase contra el de este navegador (por ejemplo, si ya
+      // practicó desde el celular): getFreeAcctExerciseCount() en
+      // app.js ya calcula el mayor de los dos cada vez que se
+      // consulta, usando loggedInProfile.free_daily_count/_date que
+      // quedó guardado en initLeoAccessTier('free', loggedInProfile)
+      // de arriba.
     } else {
       initLeoAccessTier('guest', null);
     }
