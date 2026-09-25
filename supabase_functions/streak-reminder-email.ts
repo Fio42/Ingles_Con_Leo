@@ -7,7 +7,12 @@
 //
 // Cómo se ejecuta sola: no la llama el navegador de nadie. La
 // dispara el Cron de Supabase (pg_cron + pg_net) una vez al día,
-// según el SQL que está en supabase_schema.sql.
+// según el SQL que está en supabase_schema.sql, a las 13:00 UTC
+// (8am hora de Cancún/Quintana Roo, UTC-5). Revisado 2026-09-25
+// junto con el resto de correos automáticos (pedido de Leo de evitar
+// mandar de noche/madrugada): esta ya cae dentro de la ventana buena
+// (8am-9pm hora de Cancún) porque solo corre una vez al día a una
+// hora fija, así que no necesitó ningún cambio.
 //
 // Sobre las zonas horarias (importante): "hoy" y "ayer" aquí se
 // calculan usando la hora de México (UTC-6, México ya no usa
