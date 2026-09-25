@@ -3112,8 +3112,11 @@ async function backfillMistakeStatsIfNeeded(){
     const found = index.get(id);
     if(found) items.push({ item_id:id, kind:found.kind, topic:found.topic || null, is_correct:false });
   });
-  if(items.length && typeof LeoBackend !== 'undefined'){
-    try{ await LeoBackend.applyMistakeResults(items); }catch(e){ return; } // si falla, reintentar despues
+  if(items.length){
+    if(typeof LeoBackend === 'undefined') return;
+    let result;
+    try{ result = await LeoBackend.applyMistakeResults(items); }catch(e){ return; }
+    if(!result || !result.ok) return; // fallo real: no marcar como hecho, reintentar en la próxima visita
   }
   try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){}
   await loadMistakeStatsMap(true); // recargar con lo recien sembrado
@@ -3205,10 +3208,15 @@ async function buildMistakeReviewPool({ mode, skillFilter } = {}){
 async function renderMistakesBanner(sectionEl, textEl, chipsEl, noteEl){
   if(!sectionEl) return;
   const topGrid = sectionEl.closest('.dash-top-grid');
+  // Importante: el sembrado de errores viejos tiene que intentarse SIEMPRE
+  // antes de leer, no solo cuando la tabla nueva falla. La primera vez que
+  // alguien con errores viejos abre el panel, mistake_stats existe pero
+  // está vacía (0 filas, sin error) — hay que sembrarla, no solo caer al
+  // método viejo.
+  await backfillMistakeStatsIfNeeded();
   const statsMap = await loadMistakeStatsMap();
   let count, countsByKind, recoveredCount = 0;
   if(statsMap === null){
-    await backfillMistakeStatsIfNeeded();
     count = computeMistakeIds().length;
     countsByKind = computeMistakeCountsByKind();
   } else {

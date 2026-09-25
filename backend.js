@@ -403,12 +403,14 @@ const LeoBackend = (function(){
      nada, la próxima sesión que se guarde vuelve a intentarlo. */
   async function applyMistakeResults(items){
     const sb = getClient();
-    if(!sb || !items || !items.length) return;
+    if(!sb || !items || !items.length) return { ok:false };
     const session = await getSession();
-    if(!session) return;
+    if(!session) return { ok:false };
     try{
-      await sb.rpc('apply_mistake_results', { p_items: items });
-    }catch(e){}
+      const { error } = await sb.rpc('apply_mistake_results', { p_items: items });
+      if(error) return { ok:false };
+      return { ok:true };
+    }catch(e){ return { ok:false }; }
   }
 
   /* Pide un link de pago de Mercado Pago personalizado para el
