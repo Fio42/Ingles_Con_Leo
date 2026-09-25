@@ -4052,6 +4052,98 @@ function streakWeekMessage(practicedCount){
 }
 
 /* ============================================================
+   MINI TARJETA DE PROGRESO (dashboard de miembros)
+   ------------------------------------------------------------
+   Reemplaza al bloque grande "Mi rendimiento" (anillos por
+   habilidad + gráfica semanal + racha) que antes vivía en
+   miembros.html: ese detalle completo sigue existiendo tal cual
+   en progreso.html (renderSkillsPanel, etc., sin tocar), esto es
+   solo un resumen corto con un CTA hacia ahí. Reutiliza funciones
+   ya existentes y probadas (computeWeeklyStats, computeStreak,
+   computeSkillCoverage) en vez de inventar cálculos nuevos.
+   ============================================================ */
+
+// Frase corta y variable según los datos reales (no genérica): primero
+// intenta algo positivo/notable (semana activa, buena precisión, una
+// habilidad claramente más fuerte que las demás), y si no hay nada así
+// de notable todavía, cae a una sugerencia concreta de dónde practicar
+// (misma idea que pickProgressTip, pero en una sola frase corta para
+// que quepa en una tarjeta chica).
+function pickMiniProgressInsight(p, weekly, streak){
+  if(weekly.exercises >= 20){
+    return `Esta semana ya llevas ${weekly.exercises} ejercicios.`;
+  }
+  const started = PROGRESS_SKILLS_DISPLAY.filter(sk => attemptedItemIdsFor(p, sk).size > 0);
+  if(started.length >= 2){
+    let best = null, worst = null;
+    started.forEach(sk=>{
+      const cov = computeSkillCoverage(p, sk);
+      if(!best || cov > best.cov) best = { sk, cov };
+      if(!worst || cov < worst.cov) worst = { sk, cov };
+    });
+    if(best.cov >= 40 && best.cov - worst.cov >= 15){
+      return `Vas más fuerte en ${SKILL_LABELS[best.sk]}.`;
+    }
+    if(worst.cov < 100){
+      return `${SKILL_LABELS[worst.sk]} es tu área con más oportunidad.`;
+    }
+  }
+  if(weekly.accuracy !== null && weekly.accuracy >= 80 && weekly.exercises >= 5){
+    return `Tu precisión esta semana es de ${weekly.accuracy}%. Vas muy bien.`;
+  }
+  if(streak >= 3){
+    return `Llevas ${streak} días seguidos practicando. Sigue así.`;
+  }
+  return 'Tu progreso va bien, sigue practicando para mantener tu ritmo.';
+}
+
+function renderProgressSummaryCard(container){
+  if(!container) return;
+  const p = loadProgress();
+  const ICON = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  if(!p.sessions || !p.sessions.length){
+    container.innerHTML = `
+      <div class="progress-summary-head">
+        <div class="progress-summary-icon">${ICON}</div>
+        <div>
+          <div class="progress-summary-eyebrow">Tu progreso</div>
+          <h2>Aún no tienes actividad</h2>
+        </div>
+      </div>
+      <p class="progress-summary-insight">Completa tu primera sesión y aquí vas a ver cómo avanzas.</p>
+      <a href="progreso.html" class="progress-summary-cta">Ver progreso completo →</a>`;
+    return;
+  }
+  const weekly = computeWeeklyStats();
+  const streak = computeStreak();
+  const insight = pickMiniProgressInsight(p, weekly, streak);
+  container.innerHTML = `
+    <div class="progress-summary-head">
+      <div class="progress-summary-icon">${ICON}</div>
+      <div>
+        <div class="progress-summary-eyebrow">Tu progreso</div>
+        <h2>Así vas esta semana</h2>
+      </div>
+    </div>
+    <div class="progress-summary-stats">
+      <div class="progress-summary-stat">
+        <span class="progress-summary-num">${weekly.exercises}</span>
+        <span class="progress-summary-label">Ejercicios esta semana</span>
+      </div>
+      <div class="progress-summary-stat">
+        <span class="progress-summary-num">${weekly.accuracy !== null ? weekly.accuracy + '%' : '—'}</span>
+        <span class="progress-summary-label">Aciertos</span>
+      </div>
+      <div class="progress-summary-stat">
+        <span class="progress-summary-num">${streak}</span>
+        <span class="progress-summary-label">${streak === 1 ? 'Día de racha' : 'Días de racha'}</span>
+      </div>
+    </div>
+    <p class="progress-summary-insight">${insight}</p>
+    <a href="progreso.html" class="progress-summary-cta">Ver progreso completo →</a>`;
+}
+
+/* ============================================================
    PÁGINA DE PROGRESO (progreso.html)
    ============================================================ */
 /* ---------- Estadísticas semanales con comparación vs. la semana anterior ---------- */

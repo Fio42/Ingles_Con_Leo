@@ -1297,6 +1297,30 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .mistakes-article-hint{background:var(--paper-dim);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:14px;font-size:0.9rem;color:var(--ink-soft);}
 .mistakes-article-hint a{color:var(--blue);font-weight:700;text-decoration:none;}
 .summary-extra{color:var(--ink-soft);font-size:0.92rem;margin-top:-6px;}
+
+/* Mini tarjeta de progreso (panel de Miembros): reemplaza al bloque
+   grande "Mi rendimiento" (anillos + grafica semanal + racha, ese
+   detalle completo sigue en progreso.html). Mismo lenguaje visual que
+   .mistakes-card/.daily-card (tarjeta blanca, borde suave, radio
+   grande), solo que en vez de icono+eyebrow+titulo+CTA de una sola
+   habilidad, muestra 3 numeros + una frase corta con el dato mas
+   relevante + un CTA hacia el progreso completo. */
+.progress-summary-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:14px;}
+.progress-summary-head{display:flex;align-items:center;gap:12px;}
+.progress-summary-icon{width:44px;height:44px;border-radius:50%;background:var(--blue-tint);color:var(--blue-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.progress-summary-icon svg{width:22px;height:22px;}
+.progress-summary-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
+.progress-summary-head h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.progress-summary-stats{display:flex;gap:28px;flex-wrap:wrap;}
+.progress-summary-stat{display:flex;flex-direction:column;gap:2px;}
+.progress-summary-num{font-family:'Baloo 2';font-weight:700;font-size:1.4rem;color:var(--ink);}
+.progress-summary-label{font-size:0.78rem;color:var(--ink-soft);}
+.progress-summary-insight{margin:0;background:var(--paper-dim);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.9rem;color:var(--ink-soft);font-weight:600;}
+.progress-summary-cta{align-self:flex-start;background:var(--blue-tint);color:var(--blue-deep);border:2px solid var(--blue);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
+.progress-summary-cta:hover{background:var(--blue);color:#fff;box-shadow:0 6px 14px rgba(53,84,240,0.25);}
+@media(max-width:480px){
+  .progress-summary-stats{gap:18px;}
+}
 @media (max-width:640px){
   .mistakes-card{padding:18px 18px;}
 }
@@ -1553,6 +1577,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 #memberContent .daily-card h2{font-size:1rem;}
 #memberContent .daily-sub{font-size:0.86rem;}
 #memberContent .daily-btn{padding:7px 14px;font-size:0.82rem;}
+/* Mini tarjeta de progreso: un poco mas compacta dentro del dashboard,
+   mismo criterio que el resto de tarjetas de #memberContent. */
+#memberContent .progress-summary-card{padding:16px 20px;gap:12px;}
+#memberContent .progress-summary-icon{width:36px;height:36px;}
+#memberContent .progress-summary-icon svg{width:18px;height:18px;}
+#memberContent .progress-summary-head h2{font-size:1.02rem;}
+#memberContent .progress-summary-num{font-size:1.25rem;}
+#memberContent .progress-summary-stats{gap:24px;}
 #memberContent .mistakes-card{padding:14px 18px;gap:8px;}
 #memberContent .mistakes-card-top{gap:8px;}
 #memberContent .mistakes-card-top .stat-card-icon{width:32px;height:32px;}

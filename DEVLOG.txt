@@ -1017,3 +1017,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Arreglo: normalizeApostrophes() nueva, convierte comilla curva (' '), acento agudo suelto (´), acento grave (`) y apostrofe de ancho completo a apostrofe recto antes de evaluar el patron. Aplica automaticamente en los 4 lugares que usan Writing, sin tocar data.js ni ningun checkPattern.
 - Probado con el ejemplo real de Leo mas otras variantes (comilla curva izquierda/derecha, acento grave, apostrofe ancho completo): las 6 pasan correctamente ahora; el caso con apostrofe recto normal sigue funcionando igual que antes.
 - app.js?v=20260925a.
+
+2026-09-25 — Quitar "Mi rendimiento" del dashboard, mini tarjeta de progreso
+- Se quito el bloque grande "Mi rendimiento" de miembros.html (anillos por habilidad + grafica semanal + racha, con su propio section-head). Ese detalle completo sigue existiendo intacto en progreso.html (renderSkillsPanel, etc.), no se toco nada ahi.
+- Nueva mini tarjeta .progress-summary-card en su lugar (misma posicion: entre "Explorar" y "Tu actividad reciente"), con 3 numeros (ejercicios de la semana, % de aciertos, dias de racha), una frase corta de interpretacion segun los datos reales, y un CTA "Ver progreso completo ->" hacia progreso.html.
+- app.js: 2 funciones nuevas (renderProgressSummaryCard, pickMiniProgressInsight), 100% aditivas. Reutilizan funciones ya existentes y probadas (computeWeeklyStats, computeStreak, computeSkillCoverage, attemptedItemIdsFor) en vez de inventar calculos nuevos. No se toco ninguna funcion existente salvo miembros.html, que ya no llama a renderSkillRings/renderWeeklyChart/renderStreakCard (esas 3 funciones se quedan definidas en app.js sin usarse en ningun HTML por ahora, no se borraron).
+- Probado con datos de prueba (localStorage local, sin tocar Supabase): estado normal (18 ejercicios, 61% aciertos, racha de 4, insight "Vocabulario es tu area con mas oportunidad") y estado vacio (cuenta nueva, sin sesiones) en escritorio y en 375px. Sin desborde horizontal en ningun caso.
+- app.js?v=20260925b, style.css?v=20260925d.

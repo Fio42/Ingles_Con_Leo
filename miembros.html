@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20260925b">
+<link rel="stylesheet" href="style.css?v=20260925d">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -538,29 +538,7 @@
 
     <section>
       <div class="wrap wrap-dash">
-        <div class="performance-card">
-          <div class="performance-head">
-            <div class="performance-head-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div>
-              <h2>Mi rendimiento</h2>
-              <p>Así vas en cada habilidad y en tu progreso general.</p>
-            </div>
-            <a href="progreso.html" class="see-all">Ver progreso completo →</a>
-          </div>
-          <div class="performance-grid">
-            <div class="performance-col">
-              <div class="performance-col-title">Por habilidad</div>
-              <div class="ring-grid" id="ringGrid"></div>
-            </div>
-            <div class="weekly-chart-card performance-col" id="weeklyChart"></div>
-            <div class="performance-col">
-              <div class="performance-col-title">Racha actual</div>
-              <div class="streak-card" id="streakCard"></div>
-            </div>
-          </div>
-        </div>
+        <div class="progress-summary-card" id="progressSummaryCard"></div>
       </div>
     </section>
 
@@ -625,7 +603,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260915"></script>
-<script src="app.js?v=20260924e"></script>
+<script src="app.js?v=20260925b"></script>
 <script src="backend.js?v=20260924c"></script>
 <script src="chatbot.js?v=20260923"></script>
 <script>
@@ -834,11 +812,9 @@
     applyDashboardGreeting(document.getElementById('greetLine'));
     renderDashQuote(document.getElementById('dashQuote'));
     renderStatCards(document.getElementById('statCards'));
-    renderSkillRings(document.getElementById('ringGrid'));
     renderContinueCard(document.getElementById('continueCard'));
-    renderWeeklyChart(document.getElementById('weeklyChart'));
+    renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
-    renderStreakCard(document.getElementById('streakCard'));
     renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
     // renderMistakesBanner es async (consulta Supabase) y ya se encarga
