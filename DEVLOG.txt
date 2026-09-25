@@ -994,3 +994,13 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - "Juego de inGles" en el dashboard ahora dice "English Rush" (el nombre real del juego, ya usado en juego.html) en vez de la etiqueta generica.
 - Cuidado especial: renderMistakesBanner() sigue encontrando .dash-top-grid con .closest() para ajustar columnas cuando no hay errores pendientes (clase no-mistakes); se probo con y sin errores, en escritorio y en 375px de ancho, sin desborde horizontal.
 - style.css?v=20260925a bump en las 49 paginas HTML que lo cargan (cambio de CSS compartido). app.js sin cambios, se dejo su version igual.
+
+2026-09-25 — Pulido visual del panel de miembros (sin reorganizar nada)
+- Solo miembros.html + style.css. app.js intacto (0 lineas de diff).
+- Plan de estudio (.plan-feature-hero): en escritorio (min-width 760px) paso de columna apilada (mucho hueco vacio a la derecha) a grid de 3 columnas (icono | texto | boton+duracion) para usar el ancho completo sin verse "pegado a una esquina". Padding vertical asimetrico (mas arriba que abajo) para que el badge RECOMENDADO (position:absolute, no se movio) no quede encima del boton. En movil se queda apilada como antes (columna), solo con un poco menos de padding.
+- Continua donde te quedaste (.dash-top-grid .continue-card): fondo cambio de var(--ink) (casi negro) a #333F58 (navy mas suave), mismo radio y padding que Repaso personal/Reto diario (antes tenia mas padding y titulo mas grande, se sentia mas importante que sus vecinas). Sigue siendo la unica tarjeta oscura de la fila (conserva su identidad de "reanudar").
+- Ritmo vertical: las 5 secciones del dashboard (Tu aprendizaje hoy, Practicar por habilidad, Explorar, Mi rendimiento, Actividad reciente) usaban padding inconsistente (16px entre la primera y la segunda, 60px entre el resto, heredado del padding de seccion generico del sitio pensado para paginas de marketing). Ahora #memberContent section{padding:20px 0} pareja en las 5; se quitaron los estilos inline sueltos que pisaban ese valor.
+- Reto diario: copy "5 ejercicios, un minuto al dia" -> "5 ejercicios rapidos al dia" (solo texto, cero logica).
+- Practicar por habilidad y Explorar: revisados, ya estaban bien (alturas/espaciado consistentes via CSS Grid con align-items:stretch por defecto); no se toco nada ahi.
+- Verificado: .dash-top-grid sigue teniendo continueCard/mistakesSection/dailyChallengeCard como hijos directos, renderMistakesBanner() sigue encontrando .closest('.dash-top-grid') y alternando la clase no-mistakes sin problema. Probado con datos de prueba (sin tocar Supabase) en escritorio y 375px: sin overlap del badge, sin desborde horizontal, ritmo vertical parejo.
+- style.css?v=20260925b bump en las 49 paginas que lo cargan.

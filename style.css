@@ -1396,6 +1396,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    Solo cambia tamanos/espacios, no colores, tipografia base ni logica.
    ============================================================ */
 
+/* Ritmo vertical entre secciones del dashboard: antes el hueco entre
+   "Tu aprendizaje hoy" y "Practicar por habilidad" (16px) era mucho
+   mas chico que el resto de los huecos entre secciones (60px, el
+   padding de sección por defecto del sitio, pensado para paginas de
+   marketing, no para un dashboard denso). Ahora las 5 secciones del
+   panel (Tu aprendizaje hoy / Practicar por habilidad / Explorar /
+   Mi rendimiento / Actividad reciente) usan el mismo padding, asi
+   que el espacio entre cualquier par de secciones es el mismo. */
+#memberContent section{padding:20px 0;}
 #memberContent .page-hero{padding-top:22px;}
 #memberContent .dash-sub{margin-bottom:14px;}
 
@@ -1475,9 +1484,17 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .dash-top-grid{grid-template-columns:1.3fr 1fr 1fr;}
   #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1fr 1fr;}
 }
-#memberContent .dash-top-grid .continue-card{height:100%;box-sizing:border-box;max-width:none;padding:18px 20px;}
-#memberContent .continue-title{font-size:1.25rem;}
-#memberContent .continue-note{padding:9px 12px;margin-top:10px;}
+/* Continua donde te quedaste: mismo radio y padding que Repaso
+   personal/Reto diario (antes tenia mas padding y un titulo mas
+   grande que sus vecinas, y se sentia "mas importante" de lo que
+   deberia). Fondo mas claro que --ink (antes casi negro, competia
+   demasiado con Plan de estudio): sigue siendo la unica tarjeta
+   oscura de la fila (conserva su identidad de "reanudar"), pero con
+   menos peso visual. */
+#memberContent .dash-top-grid .continue-card{height:100%;box-sizing:border-box;max-width:none;padding:14px 18px;gap:12px;background:#333F58;border-radius:var(--radius-lg);}
+#memberContent .dash-top-grid .continue-title{font-size:1.05rem;}
+#memberContent .dash-top-grid .continue-sub{font-size:0.86rem;}
+#memberContent .dash-top-grid .continue-note{padding:8px 12px;margin-top:8px;background:rgba(255,255,255,0.14);}
 #memberContent .dash-top-grid .daily-card,
 #memberContent .dash-top-grid .mistakes-card{height:100%;box-sizing:border-box;}
 
@@ -1504,19 +1521,30 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 /* .plan-feature-hero: version "elemento principal" de la misma tarjeta,
    usada sola en su propia fila (ancho completo) arriba de
    .dash-top-grid, en vez de compartir columna con las otras 3
-   tarjetas como antes. Mismos colores/clases base de .plan-feature-card,
-   solo un poco mas grande para que se note que es el camino
-   recomendado del panel. */
-.plan-feature-hero{margin:14px 0 16px;padding:30px 32px;}
-.plan-feature-hero .plan-feature-icon{width:52px;height:52px;}
-.plan-feature-hero .plan-feature-icon svg{width:26px;height:26px;}
-.plan-feature-hero h2{font-size:1.45rem;}
-.plan-feature-hero .plan-feature-sub{font-size:1rem;}
-.plan-feature-hero .plan-feature-desc{font-size:0.92rem;}
-.plan-feature-hero .btn{max-width:300px;}
-@media(max-width:899px){
-  .plan-feature-hero{padding:22px 20px;}
-  .plan-feature-hero .btn{max-width:none;}
+   tarjetas como antes. Mismos colores/clases base de .plan-feature-card.
+   En escritorio se acomoda en fila (icono | texto | boton+duracion)
+   para aprovechar el ancho completo sin dejar contenido pegado a una
+   esquina con un hueco vacio enorme al lado; en movil se queda
+   apilada en columna, igual que .plan-feature-card normal. */
+.plan-feature-hero{margin:12px 0 16px;padding:20px 20px;}
+.plan-feature-hero .plan-feature-icon{width:46px;height:46px;}
+.plan-feature-hero .plan-feature-icon svg{width:23px;height:23px;}
+.plan-feature-hero h2{font-size:1.28rem;}
+.plan-feature-hero .plan-feature-sub{font-size:0.96rem;}
+.plan-feature-hero .plan-feature-desc{font-size:0.88rem;}
+@media(min-width:760px){
+  /* padding-top mas alto que el resto (en vez de parejo): deja libre
+     la esquina donde va el badge "RECOMENDADO" (position:absolute,
+     top:14px/right:14px sobre .plan-feature-card) para que no quede
+     encima del boton ni del titulo. */
+  .plan-feature-hero{display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:24px;row-gap:3px;padding:44px 32px 22px;}
+  .plan-feature-hero .plan-feature-icon{grid-column:1;grid-row:1 / span 3;width:50px;height:50px;}
+  .plan-feature-hero .plan-feature-icon svg{width:24px;height:24px;}
+  .plan-feature-hero h2{grid-column:2;grid-row:1;margin:0;font-size:1.3rem;}
+  .plan-feature-hero .plan-feature-sub{grid-column:2;grid-row:2;}
+  .plan-feature-hero .plan-feature-desc{grid-column:2;grid-row:3;margin:0;}
+  .plan-feature-hero .btn{grid-column:3;grid-row:1 / span 2;align-self:center;justify-self:start;width:auto;min-width:190px;padding:13px 26px;}
+  .plan-feature-hero .plan-feature-meta{grid-column:3;grid-row:3;margin-top:0;justify-self:start;}
 }
 #memberContent .daily-card{padding:14px 18px;gap:6px;}
 #memberContent .daily-card-top{gap:8px;}
