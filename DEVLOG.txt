@@ -945,3 +945,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - og-logo.png pesaba 1 MB y era cuadrada (1254x1254). Las plataformas (WhatsApp, Facebook, etc.) recomiendan 1200x630 para la vista previa de un link; con el cuadrado, muchas la recortaban y podían cortar el texto del logo.
 - Se generó una versión 1200x630 con el logo completo centrado sobre el fondo azul marino de la marca, comprimida a paleta de colores. Mismo archivo (og-logo.png), no hubo que tocar los 30 HTML que la referencian.
 - Resultado: 1 MB -> 161 KB, y ya no se recorta al compartir.
+
+2026-09-24 — Boton de compartir en los articulos
+- Nueva barra "¿Te sirvió? Compártelo" con botones de WhatsApp y "Copiar enlace", agregada arriba de los comentarios en los 23 articulo-*.html.
+- Un solo cambio en app.js (initArticleShare(), llamada desde initArticleComments()) y estilos nuevos en style.css (.article-share). No hubo que editar cada HTML porque todos ya tienen el mismo <section id="article-comments">; la barra se inserta justo antes por JS.
+- "Copiar enlace" intenta navigator.clipboard y si el navegador lo bloquea, cae a un metodo alternativo (textarea + execCommand) para que casi nunca falle.
+- app.js?v=20260924c y style.css?v=20260924b en todas las paginas.
+- Probado con un clic real (no simulado por JS) en escritorio: copia funciona, boton de WhatsApp abre con el titulo y el link correcto del articulo. Probado a 320px sin desborde horizontal.

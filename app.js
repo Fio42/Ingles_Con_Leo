@@ -4810,9 +4810,59 @@ function formatCommentDate(iso){
   }catch(e){ return ''; }
 }
 
+function initArticleShare(articleTitle){
+  const root = document.getElementById('article-comments');
+  if(!root || document.getElementById('article-share')) return;
+
+  const url = (document.querySelector('link[rel="canonical"]') || {}).href || location.href;
+  const text = encodeURIComponent(articleTitle + ' - Inglés con Leo');
+  const waHref = 'https://wa.me/?text=' + text + '%20' + encodeURIComponent(url);
+
+  const bar = document.createElement('div');
+  bar.id = 'article-share';
+  bar.className = 'article-share';
+  bar.innerHTML =
+    '<span class="article-share-label">¿Te sirvió? Compártelo</span>' +
+    '<a href="' + waHref + '" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">WhatsApp</a>' +
+    '<button type="button" class="btn btn-ghost btn-sm" id="article-share-copy">Copiar enlace</button>';
+  root.parentNode.insertBefore(bar, root);
+
+  const copyBtn = document.getElementById('article-share-copy');
+  copyBtn.addEventListener('click', function(){
+    const original = copyBtn.textContent;
+    function showResult(ok){
+      copyBtn.textContent = ok ? '¡Copiado!' : 'No se pudo copiar';
+      setTimeout(function(){ copyBtn.textContent = original; }, 2000);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(function(){ showResult(true); }).catch(function(){
+        copyFallback();
+      });
+    } else {
+      copyFallback();
+    }
+    function copyFallback(){
+      try{
+        const temp = document.createElement('textarea');
+        temp.value = url;
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
+        document.body.appendChild(temp);
+        temp.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(temp);
+        showResult(ok);
+      }catch(e){ showResult(false); }
+    }
+  });
+}
+
 async function initArticleComments(){
   const root = document.getElementById('article-comments');
   if(!root) return;
+
+  const h1Early = document.querySelector('article h1') || document.querySelector('h1');
+  initArticleShare(h1Early ? h1Early.textContent.trim() : document.title);
 
   if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()){
     root.style.display = 'none';
