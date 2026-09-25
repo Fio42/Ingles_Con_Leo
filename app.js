@@ -3033,13 +3033,10 @@ function computeMistakeCountsByKind(){
    ============================================================ */
 
 // Pesos y umbrales centralizados (nada de números sueltos por el código).
-// RECOVER_STREAK y MASTER_STREAK deben coincidir con apply_mistake_results()
-// en supabase_schema.sql: la fuente de verdad de esos dos números vive ahí
-// (es quien realmente decide el estado); aquí solo se repiten para poder
-// mostrarle a la persona cuánto le falta.
+// El estado activo/recuperado/dominado (2 y 4 aciertos seguidos) lo decide
+// únicamente apply_mistake_results() en supabase_schema.sql: esa es la
+// única fuente de verdad para esos umbrales, nada acá los usa ni los repite.
 const MISTAKE_PRIORITY = {
-  RECOVER_STREAK: 2,
-  MASTER_STREAK: 4,
   QUICK_REVIEW_SIZE: 10,
   MAX_IDLE_DAYS: 14,
   WEIGHT_FAIL_COUNT: 2,
