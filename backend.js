@@ -610,7 +610,19 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb) return { ok:false, error:'not_configured' };
     try{
+      /* El id lo genera el navegador (no Supabase): la tabla no tiene
+         ninguna politica de SELECT a proposito (nadie puede leer
+         reportes ajenos), y pedir de vuelta el id insertado (.select())
+         necesitaria justo esa lectura que RLS bloquea. Generandolo acá
+         evitamos necesitar leer nada de vuelta. */
+      const id = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+            const r = Math.random()*16|0;
+            return (c === 'x' ? r : (r&0x3|0x8)).toString(16);
+          });
       const row = {
+        id,
         type,
         message,
         page_url: pageUrl || null,
@@ -621,7 +633,7 @@ const LeoBackend = (function(){
         device: device || null,
         context: context || null
       };
-      const { data, error } = await sb.from('leobot_reports').insert(row).select('id').single();
+      const { error } = await sb.from('leobot_reports').insert(row);
       if(error) return { ok:false, error: error.message };
       /* Aviso a Leo por correo. No bloquea ni rompe nada si falla
          (fire-and-forget): el reporte ya quedo guardado. */
@@ -629,10 +641,10 @@ const LeoBackend = (function(){
         fetch(SUPABASE_URL + '/functions/v1/leobot-notify', {
           method: 'POST',
           headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ report_id: data.id })
+          body: JSON.stringify({ report_id: id })
         });
       }catch(e){}
-      return { ok:true, id: data.id };
+      return { ok:true, id: id };
     }catch(e){
       return { ok:false, error: String(e) };
     }

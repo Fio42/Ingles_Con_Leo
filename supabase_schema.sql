@@ -748,10 +748,17 @@ grant execute on function public.apply_mistake_results(jsonb) to authenticated;
 -- hace leobot-notify). "context" es un jsonb con datos técnicos NO
 -- sensibles (nivel, habilidad, tipo de sesión, viewport, etc.):
 -- backend.js nunca mete ahí contraseñas, tokens ni datos de pago.
+--
+-- El id es un uuid que genera el propio navegador (no la base de
+-- datos) antes de insertar: como no hay política de SELECT, pedirle
+-- a Supabase que "devuelva" el id recién insertado (RETURNING) queda
+-- bloqueado por RLS igual que cualquier otra lectura, aunque el
+-- INSERT en sí sea válido. Generándolo en el navegador, backend.js ya
+-- sabe el id sin necesidad de leer nada de vuelta.
 -- ============================================================
 
 create table if not exists public.leobot_reports (
-  id bigint generated always as identity primary key,
+  id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
   type text not null check (type in ('bug', 'support')),
   message text not null,
