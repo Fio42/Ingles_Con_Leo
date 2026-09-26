@@ -1444,12 +1444,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    que el espacio entre cualquier par de secciones es el mismo. */
 #memberContent section{padding:16px 0;}
 #memberContent .page-hero{padding-top:22px;}
-#memberContent .dash-sub{margin-bottom:14px;}
+#memberContent .dash-sub{margin-bottom:22px;}
 
 /* Metricas superiores: mas chicas, y en movil una sola fila con
-   scroll horizontal en vez de 2 filas apiladas. */
-#memberContent .stat-cards{margin:14px 0 16px;gap:10px;}
-#memberContent .stat-card{padding:14px 16px;gap:12px;}
+   scroll horizontal en vez de 2 filas apiladas. Margen/gap un poco
+   mas generosos que antes (14px/10px): con la frase de animo quitada
+   de al lado del saludo, esta fila de 3 tarjetas es ahora lo primero
+   que se ve despues del saludo y necesita respirar mas. */
+#memberContent .stat-cards{margin:14px 0 24px;gap:14px;}
+#memberContent .stat-card{padding:16px 18px;gap:14px;}
 #memberContent .stat-card-icon{width:42px;height:42px;}
 #memberContent .stat-card-icon svg{width:20px;height:20px;}
 #memberContent .stat-card-value{font-size:1.15rem;}
@@ -1499,13 +1502,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .toefl-banner .btn-primary{flex-shrink:0;}
 }
 
-/* Saludo + frase de animo, en fila (se apila en movil) */
-#memberContent .dash-head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
-#memberContent .dash-quote{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:14px 18px;display:flex;align-items:flex-start;gap:12px;max-width:360px;}
-#memberContent .dash-quote-icon{width:30px;height:30px;border-radius:50%;background:var(--blue-tint);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-#memberContent .dash-quote-icon svg{width:16px;height:16px;}
-#memberContent .dash-quote-es{display:block;font-weight:700;font-size:0.88rem;color:var(--ink);}
-#memberContent .dash-quote-en{display:block;font-size:0.8rem;color:var(--ink-faint);font-style:italic;margin-top:2px;}
+/* Saludo (ya no comparte fila con la frase de animo, se quito) */
+#memberContent .dash-head-row{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;}
 
 /* Continua donde te quedaste + Tus errores frecuentes + Reto diario:
    las 3 en una sola fila en escritorio, apiladas en movil. Si no hay
