@@ -1,0 +1,13 @@
+{
+  "name": "site-health",
+  "private": true,
+  "description": "Auditor de SEO/salud tecnica de inglesconleo.com. No forma parte del sitio publicado, corre aparte (local o en GitHub Actions).",
+  "type": "commonjs",
+  "scripts": {
+    "audit": "node audit.js",
+    "lighthouse": "node run-lighthouse.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}

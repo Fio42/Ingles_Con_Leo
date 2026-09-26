@@ -14,3 +14,8 @@ node_modules/
 
 # Carpeta temporal donde Claude deja archivos para que Leo los borre a mano
 _to_delete/
+
+# Site Health: JSON crudo de Lighthouse por corrida (pesado, es solo
+# intermedio; lo que importa queda resumido en SITE_HEALTH_REPORT.md y
+# tools/site-health/history.json, esos sí se suben).
+tools/site-health/lighthouse-raw/

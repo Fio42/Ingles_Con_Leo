@@ -1,0 +1,59 @@
+name: Site Health
+
+# Auditoría diaria de SEO/rendimiento/salud técnica de inglesconleo.com.
+# Es de SOLO LECTURA sobre el sitio publicado (solo hace peticiones GET/
+# HEAD contra la web en vivo, nunca la modifica). Lo único que este
+# workflow escribe es SITE_HEALTH_REPORT.md y tools/site-health/history.json
+# EN ESTE REPO, para poder avisar "esto se rompió hoy" en vez de solo
+# mostrar una foto del día. No corrige nada automáticamente: si hay
+# problemas, hay que arreglarlos a mano después de leer el reporte.
+#
+# No usa ningún secret: todos los chequeos (crawler + Lighthouse) son
+# contra la web pública, sin login ni credenciales.
+
+on:
+  schedule:
+    - cron: '0 12 * * *' # una vez al día, 6am hora de Cancun (UTC-6/-5)
+  workflow_dispatch: {} # tambien se puede correr a mano desde la pestaña Actions
+
+permissions:
+  contents: write # necesario para poder subir el reporte/historial actualizados
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependencias del auditor
+        working-directory: tools/site-health
+        run: npm install
+
+      - name: Instalar Lighthouse
+        run: npm install -g lighthouse
+
+      - name: Correr Lighthouse en las páginas clave
+        working-directory: tools/site-health
+        run: node run-lighthouse.js
+
+      - name: Correr la auditoría y generar el reporte
+        working-directory: tools/site-health
+        run: node audit.js
+
+      - name: Subir el reporte y el historial actualizados
+        run: |
+          git config user.name "site-health-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add SITE_HEALTH_REPORT.md tools/site-health/history.json
+          if git diff --cached --quiet; then
+            echo "Sin cambios en el reporte, no hay nada que subir."
+          else
+            git commit -m "Site Health: actualizar reporte automático"
+            git push
+          fi

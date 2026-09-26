@@ -1,0 +1,9 @@
+[
+  { "slug": "home", "label": "Home", "url": "https://inglesconleo.com/" },
+  { "slug": "practica", "label": "Práctica (gratis)", "url": "https://inglesconleo.com/practica.html" },
+  { "slug": "articulos", "label": "Artículos (índice)", "url": "https://inglesconleo.com/articulos.html" },
+  { "slug": "articulo-verbo-to-be", "label": "Artículo: verbo to be", "url": "https://inglesconleo.com/articulo-verbo-to-be.html" },
+  { "slug": "articulo-presente-simple", "label": "Artículo: presente simple", "url": "https://inglesconleo.com/articulo-presente-simple.html" },
+  { "slug": "articulo-como-aprender-desde-cero", "label": "Artículo: cómo aprender desde cero", "url": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html" },
+  { "slug": "miembros", "label": "Miembros (landing de pago)", "url": "https://inglesconleo.com/miembros.html" }
+]
