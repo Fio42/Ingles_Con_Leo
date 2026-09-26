@@ -725,3 +725,63 @@ end;
 $$;
 
 grant execute on function public.apply_mistake_results(jsonb) to authenticated;
+
+-- ============================================================
+-- LeoBot: reportes de bugs y mensajes de soporte/contacto.
+-- Corre esto en Supabase -> tu proyecto -> SQL Editor -> New query.
+--
+-- Los llena el propio LeoBot (chatbot.js -> backend.js,
+-- LeoBackend.submitLeobotReport) cuando alguien usa "Reportar un
+-- problema" (type='bug') o "Contactar / Otra duda" (type='support').
+-- Funciona con o sin sesión iniciada (invitados también pueden
+-- reportar). Al insertar, el navegador avisa a la Edge Function
+-- leobot-notify, que le manda a Leo un correo con el detalle (igual
+-- que notify-new-comment ya hace para los comentarios de artículos).
+--
+-- Seguridad: cualquiera puede INSERTAR su propio reporte (con
+-- límites de tamaño para evitar spam/textos gigantes), pero A
+-- PROPÓSITO no hay ninguna política de SELECT/UPDATE/DELETE para
+-- usuarios normales: nadie puede leer reportes, ni siquiera los
+-- suyos propios, desde el navegador. Solo se pueden leer desde
+-- Supabase -> Table Editor -> leobot_reports (como tú, el dueño del
+-- proyecto) o desde una Edge Function con la service_role key (como
+-- hace leobot-notify). "context" es un jsonb con datos técnicos NO
+-- sensibles (nivel, habilidad, tipo de sesión, viewport, etc.):
+-- backend.js nunca mete ahí contraseñas, tokens ni datos de pago.
+-- ============================================================
+
+create table if not exists public.leobot_reports (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  type text not null check (type in ('bug', 'support')),
+  message text not null,
+  page_url text,
+  page_name text,
+  user_id uuid references auth.users(id) on delete set null,
+  email text,
+  browser text,
+  device text,
+  context jsonb,
+  status text not null default 'new'
+);
+
+create index if not exists leobot_reports_created_idx on public.leobot_reports(created_at desc);
+
+alter table public.leobot_reports enable row level security;
+
+-- Cualquiera puede insertar su propio reporte (invitado o con
+-- sesión), con límites básicos de tamaño y sin poder hacerse pasar
+-- por el user_id de otra persona logueada.
+drop policy if exists "leobot_reports: insert" on public.leobot_reports;
+create policy "leobot_reports: insert" on public.leobot_reports
+  for insert with check (
+    char_length(message) > 0 and char_length(message) <= 2000
+    and (page_url is null or char_length(page_url) <= 500)
+    and (email is null or char_length(email) <= 200)
+    and (user_id is null or auth.uid() = user_id)
+  );
+
+-- A propósito NO hay política de "select", "update" ni "delete": ni
+-- siquiera quien mandó el reporte puede volver a leerlo desde el
+-- navegador. Se revisan a mano desde Supabase -> Table Editor, o se
+-- les cambia el "status" ahí mismo (new/reviewed/resuelto, etc.).

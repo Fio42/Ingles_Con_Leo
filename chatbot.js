@@ -1,14 +1,27 @@
 /* ============================================================
-   LEOBOT — asistente flotante 100% precodeado.
-   - Sin IA externa, sin backend, sin tokens, sin costo.
-   - El usuario NUNCA escribe texto libre: todo es selección
-     múltiple (botones). Esto hace que sea 100% predecible.
-   - El "cerebro" es un árbol de nodos (NODES). Cada nodo tiene
-     un texto y una lista de opciones. Cada opción o bien lleva
-     a OTRO nodo (to) o navega a una página real del sitio (href).
-   - Para agregar contenido nuevo en el futuro: agrega un nodo
-     nuevo a NODES y enlázalo desde alguna opción existente.
-     No hace falta tocar el motor de render.
+   LEOBOT — asistente contextual del sitio.
+   - Sin IA externa: todo sigue siendo selección múltiple (botones)
+     más 2 formularios simples (reportar problema / contactar). El
+     usuario nunca tiene un campo de "chat libre".
+   - El "cerebro" sigue siendo un árbol de nodos (NODES), igual que
+     antes. Lo nuevo:
+       1. "Explícame esta página" (PAGE_CONTEXT): explicación corta y
+          fija por página, más el contexto REAL de práctica si existe
+          (leído del propio DOM que ya se muestra en pantalla, nunca
+          inventado — ver readPracticeContext()).
+       2. El menú de siempre ("¿Por dónde empiezo?", "¿Qué nivel
+          elijo?", etc.) ahora vive bajo "Tengo una duda", mostrando
+          como mucho 4 opciones + "Más opciones" en vez de una lista
+          larga de una vez.
+       3. "Reportar un problema" y "Contactar / Otra duda" ahora son
+          formularios reales (un solo campo de texto) que guardan en
+          Supabase (tabla leobot_reports) y le avisan a Leo por
+          correo (Edge Function leobot-notify), en vez de solo abrir
+          WhatsApp.
+   - Para agregar contenido nuevo en el futuro: agrega un nodo nuevo a
+     NODES y enlázalo desde alguna opción existente, o agrega una
+     entrada a PAGE_CONTEXT para una página nueva. No hace falta tocar
+     el motor de render.
    ============================================================ */
 (function(){
   'use strict';
@@ -22,6 +35,12 @@
   function currentPage(){
     var path = location.pathname.split('/').pop();
     return path || 'index.html';
+  }
+
+  function escapeHtmlLite(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
   }
 
   /* El estado real de membresía vive en Supabase (LeoBackend), y consultarlo
@@ -49,6 +68,163 @@
       : { label:'Ir a miembros →', href:'miembros.html' };
   }
 
+  /* Nombre local del usuario (mismo perfil que usa el saludo del
+     dashboard, ver app.js/getProfile). Personalización ligera nada
+     más: si no hay nombre, texto neutral, sin exagerar. */
+  function localName(){
+    try{
+      if(typeof getProfile !== 'function') return null;
+      var p = getProfile();
+      return (p && p.name) ? p.name : null;
+    }catch(e){ return null; }
+  }
+
+  /* ============================================================
+     CONTEXTO DE PRÁCTICA — lee SOLO lo que ya está de verdad en el
+     DOM (el mismo texto que la persona ya ve en pantalla mientras
+     practica: sessionHeaderHtml() en app.js pinta exactamente
+     ".practice-level-tag" con "Habilidad · Nivel" y ".session-count"
+     con "Pregunta X de Y"). Nunca inventa nada: si esos elementos no
+     existen en la página actual, devuelve null y LeoBot simplemente
+     no menciona ningún contexto de práctica.
+     ============================================================ */
+  function readPracticeContext(){
+    var tag = document.querySelector('.practice-level-tag');
+    var count = document.querySelector('.session-count');
+    var inSession = !!document.querySelector('.session-card');
+    if(!tag && !inSession) return null;
+    return {
+      levelSkillText: tag ? tag.textContent.trim() : null,
+      progressText: count ? count.textContent.trim() : null,
+      inSession: inSession
+    };
+  }
+
+  /* ============================================================
+     CONTEXTO DE PÁGINA — explicación corta y fija por página para
+     "Explícame esta página". No es IA: son textos precodeados, uno
+     por página (o por grupo de páginas), igual de "de verdad
+     predecibles" que el resto del árbol de nodos.
+     ============================================================ */
+  var PAGE_CONTEXT = {
+    'index.html': { explain:'Esta es la página de inicio: desde aquí puedes empezar a practicar gratis, ver artículos para aprender inglés, o conocer la membresía.', cta:{ label:'Practicar gratis →', href:'practica.html' } },
+    'articulos.html': { explain:'Aquí están todos los artículos y videos para aprender inglés, organizados por tema. Puedes filtrar por categoría o buscar uno en particular.', cta:null },
+    'practica.html': { explain:'Esta es la práctica gratis: eliges una habilidad y tu nivel, y haces una sesión corta sin necesidad de cuenta. Tu progreso se guarda en este navegador.', cta:{ label:'¿Qué practicar?', to:'practice' } },
+    'practica-miembros.html': { explain:'Desde aquí eliges qué habilidad practicar dentro de tu cuenta: Gramática, Vocabulario, Listening, Writing, Speaking, Lectura o Mixto.', cta:null },
+    'miembros.html': { explain:'Aquí tienes tu panel: racha, nivel, meta semanal, tu plan de estudio recomendado, accesos rápidos a cada habilidad, tus errores frecuentes y el reto diario.', cta:null },
+    'progreso.html': { explain:'Esta página resume tu actividad: ejercicios de la semana, tu precisión reciente, tu racha, y cuánto has cubierto de cada habilidad. Te sirve para ver dónde tienes más margen y volver directo a practicar eso.', cta:{ label:'Ver mi progreso →', href:'progreso.html' } },
+    'plan-estudio.html': { explain:'Tu plan de estudio arma automáticamente una práctica corta combinando tu nivel, tu progreso y tus errores recientes, para que no tengas que decidir qué hacer cada día.', cta:null },
+    'gramatica.html': { explain:'Estás en Gramática: eliges o completas la respuesta correcta y siempre te explico por qué, con ejemplos reales.', cta:null },
+    'vocabulario.html': { explain:'Estás en Vocabulario: cada palabra viene con su traducción y ejemplos reales de uso, no solo la definición.', cta:null },
+    'listening.html': { explain:'Estás en Listening: escuchas un audio corto y respondes sobre lo que entendiste. Después puedes comparar con la transcripción.', cta:null },
+    'writing.html': { explain:'Estás en Writing: escribes una frase y la revisas tú mismo con la guía que te doy, sin corrección automática de IA.', cta:null },
+    'speaking.html': { explain:'Estás en Speaking: escuchas la pronunciación correcta, te grabas diciendo lo mismo, y comparas ambos audios tú mismo.', cta:null },
+    'lectura.html': { explain:'Estás en Lectura: lees un texto corto y respondes preguntas sobre lo que entendiste.', cta:null },
+    'mixto.html': { explain:'Mixto combina varias habilidades en una sola sesión, para practicar de forma más parecida a usar inglés de verdad.', cta:null },
+    'errores.html': { explain:'Aquí están los ejercicios que más se te han dificultado. Repasarlos de vez en cuando ayuda más que solo avanzar con contenido nuevo.', cta:null },
+    'juego.html': { explain:'English Rush es un juego rápido para practicar inglés jugando, sin necesidad de cuenta.', cta:null },
+    'clases.html': { explain:'Las clases interactivas son lecciones guiadas paso a paso sobre situaciones reales (entrevistas, viajes, trabajo, etc.), no solo ejercicios sueltos.', cta:null },
+    'test-de-nivel-de-ingles.html': { explain:'Este test corto te ayuda a saber en qué nivel estás (de A1 a C1) para que practiques con el nivel correcto.', cta:null },
+    'toefl.html': { explain:'Aquí practicas específicamente para el examen TOEFL: Listening, Reading, Speaking con cronómetro y Writing.', cta:null },
+    'ielts.html': { explain:'Aquí practicas específicamente para el examen IELTS.', cta:null },
+    'toeic.html': { explain:'Aquí practicas específicamente para el examen TOEIC, el que más piden las empresas.', cta:null },
+    'cambridge.html': { explain:'Aquí practicas para los exámenes de Cambridge (B2 First y C1 Advanced).', cta:null },
+    'sobre-leo.html': { explain:'Esta página cuenta quién es Leo y por qué existe Inglés con Leo.', cta:null },
+    'privacidad.html': { explain:'Aquí está la política de privacidad del sitio: qué datos se guardan y cómo se usan.', cta:null },
+    'baja.html': { explain:'Aquí puedes administrar qué correos automáticos de Inglés con Leo quieres seguir recibiendo.', cta:null },
+    'encuesta.html': { explain:'Es una encuesta corta para contarnos tu experiencia con Inglés con Leo.', cta:null }
+  };
+
+  function articleExplain(){
+    var h1 = document.querySelector('h1');
+    var topic = h1 ? h1.textContent.trim() : document.title;
+    return 'Este artículo trata sobre "' + escapeHtmlLite(topic) + '". Puedes leerlo completo, y si quieres practicar lo que aprendiste, busca el enlace de práctica relacionado que aparece en la página.';
+  }
+
+  function pageContextFor(page){
+    if(PAGE_CONTEXT[page]) return PAGE_CONTEXT[page];
+    if(/^articulo-/.test(page)) return { explain: articleExplain(), cta:null };
+    return null;
+  }
+
+  function buildExplainText(){
+    var ctx = pageContextFor(currentPage());
+    var text = ctx ? ctx.explain : 'Puedo ayudarte a orientarte en esta página. Si tienes una duda específica, usa "Tengo una duda" abajo.';
+    var practice = readPracticeContext();
+    if(practice && practice.levelSkillText){
+      text += '<br><br>Ahora mismo estás en: <strong>' + escapeHtmlLite(practice.levelSkillText) + '</strong>' + (practice.progressText ? ' (' + escapeHtmlLite(practice.progressText) + ')' : '') + '.';
+    }
+    return text;
+  }
+
+  /* ============================================================
+     REPORTES (bug / soporte) — guarda en Supabase (tabla
+     leobot_reports, ver supabase_schema.sql) y avisa a Leo por
+     correo (Edge Function leobot-notify). Recoge automáticamente
+     contexto técnico NO sensible: URL, nombre de página, nivel,
+     si es miembro, qué se estaba practicando (si algo), navegador,
+     dispositivo y tamaño de pantalla. Nunca contraseñas, tokens ni
+     datos de pago. Si esta página no tiene LeoBackend configurado
+     (no debería pasar: se agregó a todas), el envío simplemente
+     falla de forma controlada y se avisa al usuario. */
+  function detectDevice(){
+    var ua = navigator.userAgent || '';
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) ? 'Móvil' : 'Escritorio';
+  }
+  function detectBrowser(){
+    var ua = navigator.userAgent || '';
+    if(/Edg\//.test(ua)) return 'Edge';
+    if(/OPR\//.test(ua)) return 'Opera';
+    if(/Chrome\//.test(ua) && !/Chromium/.test(ua)) return 'Chrome';
+    if(/Firefox\//.test(ua)) return 'Firefox';
+    if(/Safari\//.test(ua) && !/Chrome/.test(ua)) return 'Safari';
+    return ua.slice(0, 120);
+  }
+
+  function sendLeobotReport(type, message){
+    return new Promise(function(resolve){
+      (async function(){
+        try{
+          if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()){
+            resolve(false);
+            return;
+          }
+          var practice = readPracticeContext();
+          var level = null;
+          try{ level = (typeof getUserLevel === 'function') ? getUserLevel() : null; }catch(e){}
+          var session = null, memberProfile = null;
+          try{ session = await LeoBackend.getSession(); }catch(e){}
+          if(session){
+            try{ memberProfile = await LeoBackend.getMemberProfile(); }catch(e){}
+          }
+          var context = {
+            page: currentPage(),
+            level: level,
+            is_member: !!(memberProfile && memberProfile.is_member),
+            in_session: !!(practice && practice.inSession),
+            practice_tag: practice ? practice.levelSkillText : null,
+            practice_progress: practice ? practice.progressText : null,
+            viewport: window.innerWidth + 'x' + window.innerHeight
+          };
+          var res = await LeoBackend.submitLeobotReport({
+            type: type,
+            message: message,
+            pageUrl: window.location.href,
+            pageName: document.title,
+            userId: (session && session.user) ? session.user.id : null,
+            email: (session && session.user) ? session.user.email : null,
+            browser: detectBrowser(),
+            device: detectDevice(),
+            context: context
+          });
+          resolve(!!(res && res.ok));
+        }catch(e){
+          resolve(false);
+        }
+      })();
+    });
+  }
+
   /* ============================================================
      CONTENIDO — árbol de nodos
      ============================================================ */
@@ -58,8 +234,7 @@
     { label:'¿Qué puedo practicar?', to:'practice' },
     { label:'¿Qué incluye Miembros?', to:'members' },
     { label:'¿Cómo funciona mi progreso?', to:'progress' },
-    { label:'Ver artículos y videos', to:'articles' },
-    { label:'Reportar un problema', to:'reportBug' }
+    { label:'Ver artículos y videos', to:'articles' }
   ];
 
   var PAGE_EXTRA_ROOT = {
@@ -81,10 +256,15 @@
       { label:'¿Cómo funciona Vocabulario?', to:'practice_vocab' }
     ],
     'progreso.html': [
-      { label:'¿Cómo funciona mi progreso?', to:'progress' }
+      { label:'¿Cómo funciona mi progreso?', to:'progress' },
+      { label:'¿Cómo funciona la racha?', to:'streakInfo' }
     ],
     'miembros.html': [
-      { label:'¿Cómo continúo mi sesión?', to:'continueSession' }
+      { label:'¿Cómo continúo mi sesión?', to:'continueSession' },
+      { label:'¿Cómo cambio de nivel?', to:'changeLevel' }
+    ],
+    'plan-estudio.html': [
+      { label:'¿Cómo funciona mi plan?', to:'planInfo' }
     ],
     'articulos.html': [
       { label:'Quiero ver videos', to:'videos' },
@@ -95,7 +275,10 @@
     ]
   };
 
-  function rootOptions(){
+  /* Todas las opciones de FAQ posibles para esta página (sin límite),
+     ya combinadas con las genéricas y sin duplicados. faq/faqMore de
+     abajo son quienes deciden cuántas mostrar de una vez. */
+  function faqOptionsAll(){
     var extra = PAGE_EXTRA_ROOT[currentPage()] || [];
     var combined = extra.concat(BASE_ROOT_OPTIONS);
     var seen = {};
@@ -105,15 +288,52 @@
       if(seen[o.label]) continue;
       seen[o.label] = true;
       out.push(o);
-      if(out.length >= 7) break;
     }
     return out;
   }
+  var FAQ_PRIMARY_COUNT = 4;
 
   var NODES = {
     root: {
-      text:'¡Hola! 👋 ¿Tienes alguna duda?<br>Puedo ayudarte con Inglés con Leo.',
-      options: rootOptions
+      text: function(){
+        var name = localName();
+        return name
+          ? ('¡Hola, ' + escapeHtmlLite(name) + '! 👋 ¿En qué te ayudo?')
+          : '¡Hola! 👋 ¿En qué te ayudo?';
+      },
+      options: function(){
+        var opts = [
+          { label:'Explícame esta página', to:'explainPage' },
+          { label:'Tengo una duda', to:'faq' },
+          { label:'Reportar un problema', to:'reportBug' }
+        ];
+        opts.push({ label:'Contactar / Otra duda', to:'contact' });
+        return opts;
+      }
+    },
+
+    explainPage: {
+      text: buildExplainText,
+      options: function(){
+        var ctx = pageContextFor(currentPage());
+        var opts = [];
+        if(ctx && ctx.cta) opts.push(ctx.cta);
+        return opts;
+      }
+    },
+
+    faq: {
+      text:'¿Qué duda tienes?',
+      options: function(){
+        var all = faqOptionsAll();
+        var primary = all.slice(0, FAQ_PRIMARY_COUNT);
+        if(all.length > FAQ_PRIMARY_COUNT) primary.push({ label:'Más opciones', to:'faqMore' });
+        return primary;
+      }
+    },
+    faqMore: {
+      text:'Más temas:',
+      options: function(){ return faqOptionsAll().slice(FAQ_PRIMARY_COUNT); }
     },
 
     start: {
@@ -130,6 +350,11 @@
       options:[
         { label:'Ver práctica →', href:'practica.html' }
       ]
+    },
+
+    changeLevel: {
+      text:'Dentro de tu panel de Miembros, en la tarjeta "Nivel actual" hay un botón "Ajustar nivel" que te deja cambiarlo cuando quieras.',
+      options: function(){ return [membersCta()]; }
     },
 
     practice: {
@@ -192,6 +417,18 @@
       }
     },
 
+    streakInfo: {
+      text:'Tu racha cuenta días seguidos practicando. Si un día se te pasa, tienes un "freeze" automático que perdona UN día sin cortar la racha (se marca con ❄️); si se te pasa un segundo día seguido, ahí sí se corta.',
+      options: function(){ return [{ label:'Ver mi progreso →', href:'progreso.html' }]; }
+    },
+
+    planInfo: {
+      text:'El Plan de estudio elige por ti una práctica corta cada día, combinando tu nivel, tu progreso y tus errores recientes. Tú solo eliges cuánto tiempo tienes (5 a 25 min).',
+      options:[
+        { label:'Ir a mi plan →', href:'plan-estudio.html' }
+      ]
+    },
+
     members: {
       text: function(){
         return isMember()
@@ -248,10 +485,27 @@
     },
 
     reportBug: {
-      text:'¿Algo no funcionó como esperabas (un ejercicio, un audio, tu progreso, un pago)? Cuéntanos por WhatsApp y lo revisamos.',
-      options:[
-        { label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, encontré un problema en Inglés con Leo: '), external:true }
-      ]
+      text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Se manda junto con información técnica de esta página (URL, navegador, qué estabas practicando si aplica) para poder ayudarte más rápido — nunca datos sensibles.',
+      form: {
+        placeholder:'¿Qué pasó? (ej: "el audio no se reproduce", "no puedo completar el ejercicio")',
+        submitLabel:'Enviar reporte',
+        successText:'Gracias. Ya recibí tu reporte y lo voy a revisar. 🙏',
+        errorText:'No se pudo enviar el reporte. Intenta de nuevo en un momento, o escríbenos por WhatsApp.',
+        errorExtra:[{ label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, encontré un problema en Inglés con Leo: '), external:true }],
+        onSubmit: function(message){ return sendLeobotReport('bug', message); }
+      }
+    },
+
+    contact: {
+      text:'¿Tienes una duda que no alcancé a resolver arriba, o algo que no es exactamente un problema técnico? Cuéntamelo y te respondemos.',
+      form: {
+        placeholder:'Escribe tu mensaje...',
+        submitLabel:'Enviar mensaje',
+        successText:'Mensaje enviado. Te responderé en cuanto pueda. 😊',
+        errorText:'No se pudo enviar tu mensaje. Intenta de nuevo en un momento, o escríbenos por WhatsApp.',
+        errorExtra:[{ label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, tengo una duda sobre Inglés con Leo: '), external:true }],
+        onSubmit: function(message){ return sendLeobotReport('support', message); }
+      }
     }
   };
 
@@ -286,17 +540,19 @@
     root.id = 'leobotRoot';
 
     root.innerHTML =
+      '<div class="leobot-backdrop" id="leobotBackdrop"></div>' +
       '<div class="leobot-greet" id="leobotGreet" role="status">' +
         '<button type="button" class="leobot-greet-close" id="leobotGreetClose" aria-label="Cerrar aviso">' +
           '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
         '</button>' +
-        '<span id="leobotGreetText">\u00bfNecesitas ayuda? \uD83D\uDC4B</span>' +
+        '<span id="leobotGreetText">¿Necesitas ayuda? 👋</span>' +
       '</div>' +
       '<button type="button" class="leobot-fab" id="leobotFab" aria-label="Abrir asistente LeoBot" aria-haspopup="dialog" aria-expanded="false">' +
         '<div class="leobot-avatar" id="leobotFabAvatar"></div>' +
         '<span class="leobot-fab-dot" id="leobotFabDot" hidden></span>' +
       '</button>' +
       '<div class="leobot-panel" id="leobotPanel" role="dialog" aria-modal="false" aria-label="Asistente LeoBot">' +
+        '<div class="leobot-sheet-handle" aria-hidden="true"></div>' +
         '<div class="leobot-header">' +
           '<div class="leobot-avatar" id="leobotHeaderAvatar"></div>' +
           '<div class="leobot-header-text">' +
@@ -328,6 +584,7 @@
     var greet = document.getElementById('leobotGreet');
     var greetClose = document.getElementById('leobotGreetClose');
     var panel = document.getElementById('leobotPanel');
+    var backdrop = document.getElementById('leobotBackdrop');
     var body = document.getElementById('leobotBody');
     var optionsEl = document.getElementById('leobotOptions');
     var closeBtn = document.getElementById('leobotCloseBtn');
@@ -354,6 +611,7 @@
       isOpen = true;
       hideGreet();
       panel.classList.add('open');
+      if(backdrop) backdrop.classList.add('open');
       fab.setAttribute('aria-expanded', 'true');
       if(!hasOpenedOnce){
         hasOpenedOnce = true;
@@ -365,7 +623,7 @@
       }
       window.setTimeout(function(){
         if(isAutomatic) return;
-        var firstBtn = optionsEl.querySelector('.leobot-opt-btn');
+        var firstBtn = optionsEl.querySelector('.leobot-opt-btn, .leobot-textarea');
         if(firstBtn) firstBtn.focus();
       }, 220);
     }
@@ -373,6 +631,7 @@
     function close(){
       isOpen = false;
       panel.classList.remove('open');
+      if(backdrop) backdrop.classList.remove('open');
       fab.setAttribute('aria-expanded', 'false');
       fab.focus();
     }
@@ -440,6 +699,69 @@
       }
     }
 
+    /* Formulario de un solo campo (reportar problema / contactar).
+       Evita doble envío deshabilitando el botón mientras está en
+       curso, y siempre termina mostrando una confirmación breve más
+       el botón de volver al menú (nunca deja el chat "colgado"). */
+    function renderForm(nodeId, formSpec){
+      optionsEl.innerHTML = '';
+      var wrap = document.createElement('div');
+      wrap.className = 'leobot-form';
+      var textarea = document.createElement('textarea');
+      textarea.className = 'leobot-textarea';
+      textarea.maxLength = 2000;
+      textarea.rows = 3;
+      textarea.placeholder = formSpec.placeholder;
+      textarea.setAttribute('aria-label', formSpec.placeholder);
+      var actions = document.createElement('div');
+      actions.className = 'leobot-form-actions';
+      var sendBtn = document.createElement('button');
+      sendBtn.type = 'button';
+      sendBtn.className = 'btn btn-primary leobot-form-send';
+      sendBtn.textContent = formSpec.submitLabel;
+      actions.appendChild(sendBtn);
+      wrap.appendChild(textarea);
+      wrap.appendChild(actions);
+      optionsEl.appendChild(wrap);
+
+      var sending = false;
+      function trySend(){
+        if(sending) return;
+        var msg = (textarea.value || '').trim();
+        if(!msg){ textarea.focus(); return; }
+        sending = true;
+        sendBtn.disabled = true;
+        var originalLabel = sendBtn.textContent;
+        sendBtn.textContent = 'Enviando…';
+        formSpec.onSubmit(msg).then(function(ok){
+          sending = false;
+          sendBtn.disabled = false;
+          sendBtn.textContent = originalLabel;
+          var shown = msg.length > 140 ? msg.slice(0, 140) + '…' : msg;
+          addUserBubble(shown);
+          addTypingIndicator();
+          window.setTimeout(function(){
+            var t = document.getElementById('leobotTyping');
+            if(t) t.remove();
+            addBotBubble(ok ? formSpec.successText : formSpec.errorText);
+            renderOptions(nodeId, (!ok && formSpec.errorExtra) ? formSpec.errorExtra : []);
+          }, 380);
+        });
+      }
+      sendBtn.addEventListener('click', trySend);
+      textarea.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) trySend();
+      });
+
+      var menuBtn = document.createElement('button');
+      menuBtn.type = 'button';
+      menuBtn.className = 'leobot-opt-btn ghost';
+      menuBtn.style.marginTop = '8px';
+      menuBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Menú principal</span>';
+      menuBtn.addEventListener('click', function(){ goTo('root', true); });
+      optionsEl.appendChild(menuBtn);
+    }
+
     function goTo(nodeId, showTyping){
       var node = NODES[nodeId];
       if(!node) return;
@@ -449,7 +771,11 @@
         var text = typeof node.text === 'function' ? node.text() : node.text;
         addBotBubble(text);
         setAvatarState(headerAvatar, 'happy', 700);
-        renderOptions(nodeId, resolveOptions(node));
+        if(node.form){
+          renderForm(nodeId, node.form);
+        } else {
+          renderOptions(nodeId, resolveOptions(node));
+        }
       }
 
       if(showTyping){
@@ -501,6 +827,7 @@
     fab.addEventListener('click', toggle);
     closeBtn.addEventListener('click', close);
     restartBtn.addEventListener('click', restart);
+    if(backdrop) backdrop.addEventListener('click', close);
 
     hideBtn.addEventListener('click', function(){
       localStorage.setItem(HIDDEN_KEY, '1');
@@ -564,6 +891,21 @@
       }
     }
 
+    /* Texto de la mini-burbuja proactiva: varía un poco según la página,
+       para que se sienta "acompañamiento contextual" y no un aviso
+       genérico repetido en todo el sitio. Sigue siendo como mucho UNA
+       sugerencia por sesión de navegador (ver sessionGreeted arriba). */
+    var CONTEXTUAL_GREETS = {
+      'progreso.html': '¿Quieres que te explique tu progreso? 👋',
+      'practica.html': '¿Necesitas ayuda con esta práctica? 👋',
+      'practica-miembros.html': '¿No sabes qué practicar hoy? 👋',
+      'miembros.html': '¿Necesitas ayuda con tu panel? 👋',
+      'plan-estudio.html': 'Puedo explicarte tu plan. 👋'
+    };
+    function defaultGreetText(){
+      return CONTEXTUAL_GREETS[currentPage()] || '¿Necesitas ayuda? 👋';
+    }
+
     /* Cada vez que alguien entra al sitio (una vez por sesión de navegador,
        no en cada página que visite dentro de esa sesión): una burbuja
        pequeña junto al ícono invita a pedir ayuda, sin abrir el panel
@@ -572,7 +914,7 @@
       afterWelcomeGap(function(){
         if(localStorage.getItem(HIDDEN_KEY) === '1' || isOpen) return;
         try{ sessionStorage.setItem(GREET_SESSION_KEY, '1'); }catch(e){}
-        promptGreet('\u00bfNecesitas ayuda? \uD83D\uDC4B', null, 7000);
+        promptGreet(defaultGreetText(), null, 7000);
       }, 1600, 1300);
     }
 
@@ -601,7 +943,7 @@
 
       function showErrorPrompt(){
         try{ sessionStorage.setItem(ERROR_PROMPT_KEY, '1'); }catch(e){}
-        promptGreet('\u00bfAlgo se vio raro? Cu\u00e9ntanos \uD83D\uDC40', 'reportBug', 9000);
+        promptGreet('¿Algo se vio raro? Cuéntanos 👀', 'reportBug', 9000);
       }
 
       if(document.body.classList.contains('leobot-away')){

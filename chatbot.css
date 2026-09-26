@@ -131,6 +131,27 @@ body.leobot-away .leobot-greet{display:none !important;}
   .leobot-greet{transition:none;}
 }
 
+/* Fondo semitransparente detrás del panel: solo aparece en móvil,
+   donde el panel se convierte en un bottom sheet (ver media query de
+   abajo). En escritorio queda siempre oculto: el panel flotante ahí
+   no necesita "apagar" el resto de la página. */
+.leobot-backdrop{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(10,14,30,0.32);
+  z-index:9998;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease;
+}
+.leobot-backdrop.open{opacity:1;pointer-events:auto;}
+@media(prefers-reduced-motion:reduce){.leobot-backdrop{transition:none;}}
+
+/* Barrita del bottom sheet en móvil (indica que se puede cerrar
+   deslizando/tocando). Puramente decorativa y chica, sin animación
+   ni color llamativo: solo una afordancia estándar de bottom sheet. */
+.leobot-sheet-handle{display:none;}
+
 /* ---------- Panel ---------- */
 .leobot-panel{
   position:fixed;
@@ -273,6 +294,25 @@ body.leobot-away .leobot-greet{display:none !important;}
 }
 .leobot-opt-btn.ghost svg{width:14px;height:14px;flex-shrink:0;}
 
+/* Formulario de un solo campo: "Reportar un problema" / "Contactar".
+   Vive dentro de .leobot-options, en vez de la grilla de botones. */
+.leobot-form{grid-column:1 / -1;display:flex;flex-direction:column;gap:10px;}
+.leobot-textarea{
+  width:100%;box-sizing:border-box;
+  border:1.5px solid var(--line,#E4E7F0);
+  border-radius:14px;
+  padding:11px 14px;
+  font-family:inherit;
+  font-size:0.9rem;
+  color:var(--ink,#1B2333);
+  resize:vertical;
+  min-height:70px;
+}
+.leobot-textarea:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;border-color:var(--blue,#3554F0);}
+.leobot-form-actions{display:flex;justify-content:flex-end;}
+.leobot-form-send{min-height:42px;padding:9px 20px;}
+.leobot-form-send:disabled{opacity:0.65;cursor:default;}
+
 .leobot-footer{
   padding:10px 20px 16px;
   display:flex;justify-content:center;
@@ -311,24 +351,42 @@ body.leobot-away .leobot-greet{display:none !important;}
   .leobot-panel, .leobot-fab{transition:none;}
 }
 
-/* ---------- Mobile ---------- */
+/* ---------- Mobile: bottom sheet ----------
+   En vez del panel flotante chico de escritorio, en móvil LeoBot se
+   abre como una hoja que sube desde abajo, con fondo semitransparente
+   detrás (.leobot-backdrop) y una barrita arriba (.leobot-sheet-handle)
+   como en cualquier bottom sheet nativo. Altura máxima ~68vh con
+   scroll interno (.leobot-body ya tenía overflow-y:auto). Respeta el
+   safe-area de iPhone abajo y nunca tapa toda la pantalla. */
 @media (max-width:480px){
+  .leobot-backdrop{display:block;}
+  .leobot-sheet-handle{
+    display:block;
+    width:36px;height:4px;
+    border-radius:999px;
+    background:var(--line,#E4E7F0);
+    margin:10px auto 2px;
+    flex-shrink:0;
+  }
+  .leobot-panel{
+    left:0;right:0;bottom:0;width:100%;
+    max-height:min(68vh, 620px);
+    border-radius:20px 20px 0 0;
+    padding-bottom:env(safe-area-inset-bottom);
+    transform:translateY(100%) scale(1);
+  }
+  .leobot-panel.open{transform:translateY(0) scale(1);}
   /* El sitio tiene una barra de navegación fija abajo en mobile
      (.mobile-nav); dejamos espacio suficiente para no taparla. */
-  .leobot-panel{
-    right:12px;left:12px;bottom:calc(154px + env(safe-area-inset-bottom));width:auto;
-    max-height:min(68vh, 560px);
-    border-radius:20px;
-  }
   .leobot-fab{right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:64px;height:64px;}
   .leobot-reopen{bottom:calc(76px + env(safe-area-inset-bottom));}
   .leobot-greet{right:14px;bottom:calc(166px + env(safe-area-inset-bottom));max-width:180px;font-size:0.82rem;}
   .leobot-greet::after{right:26px;}
-  .leobot-header{padding:16px 16px;}
+  .leobot-header{padding:10px 16px 14px;}
   .leobot-header .leobot-avatar{width:48px;height:48px;}
   .leobot-body{padding:16px 16px 4px;}
   .leobot-options{padding:10px 16px 6px;gap:7px;}
-  .leobot-opt-btn{min-height:40px;padding:8px 10px;font-size:.81rem;}
+  .leobot-opt-btn{min-height:44px;padding:8px 12px;font-size:.85rem;}
   .leobot-footer{padding:8px 16px 14px;}
 }
 

@@ -600,12 +600,50 @@ const LeoBackend = (function(){
     }
   }
 
+  /* LeoBot: "Reportar un problema" / "Contactar" (ver chatbot.js,
+     sendLeobotReport). Guarda en la tabla leobot_reports (ver
+     supabase_schema.sql) y avisa a Leo por correo con la Edge
+     Function leobot-notify, igual que postArticleComment ya hace con
+     notify-new-comment. Funciona con o sin sesión iniciada: userId/
+     email quedan null para invitados. */
+  async function submitLeobotReport({ type, message, pageUrl, pageName, userId, email, browser, device, context }){
+    const sb = getClient();
+    if(!sb) return { ok:false, error:'not_configured' };
+    try{
+      const row = {
+        type,
+        message,
+        page_url: pageUrl || null,
+        page_name: pageName || null,
+        user_id: userId || null,
+        email: email || null,
+        browser: browser || null,
+        device: device || null,
+        context: context || null
+      };
+      const { data, error } = await sb.from('leobot_reports').insert(row).select('id').single();
+      if(error) return { ok:false, error: error.message };
+      /* Aviso a Leo por correo. No bloquea ni rompe nada si falla
+         (fire-and-forget): el reporte ya quedo guardado. */
+      try{
+        fetch(SUPABASE_URL + '/functions/v1/leobot-notify', {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ report_id: data.id })
+        });
+      }catch(e){}
+      return { ok:true, id: data.id };
+    }catch(e){
+      return { ok:false, error: String(e) };
+    }
+  }
+
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
-    getMistakeStats, applyMistakeResults
+    getMistakeStats, applyMistakeResults, submitLeobotReport
   };
 })();
 
