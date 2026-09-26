@@ -62,6 +62,119 @@ const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// ---- Meta Conversions API: avisa a Meta (Facebook/Instagram Ads) que
+// alguien se volvió miembro de pago DE VERDAD (no un simple clic ni un
+// registro gratis: es el mismo momento en que se manda el correo de
+// bienvenida, justo después de confirmar is_member=true por primera
+// vez). Se usa el evento estándar "Subscribe" (no "Purchase": este es
+// un pago recurrente/suscripción, no una compra única).
+//
+// Es intencional que sea código repetido en stripe-webhook.ts,
+// paypal-webhook.ts y mp-webhook.ts en vez de un archivo compartido:
+// cada uno se pega como una Edge Function independiente en el
+// Dashboard de Supabase (copiar/pegar un solo archivo), así que no
+// hay forma de importar un archivo local entre ellas.
+//
+// Variables de entorno nuevas (Supabase -> Edge Functions -> Secrets,
+// hay que agregarlas en ESTA función):
+//   META_CAPI_ACCESS_TOKEN      Token de "Conversions API" del pixel de
+//                               Meta. Se genera en Meta Events Manager ->
+//                               elige el pixel "InglesconLeo" -> pestaña
+//                               "Configuración" -> sección "Conversions
+//                               API" -> "Generar token de acceso". Es
+//                               secreto: nunca va en el sitio web.
+//   META_CAPI_TEST_EVENT_CODE   Opcional, SOLO mientras se hacen pruebas.
+//                               Se obtiene en Events Manager -> pestaña
+//                               "Probar eventos" (empieza con "TEST"). Con
+//                               esto puesto, los eventos aparecen ahí en
+//                               vivo pero NO cuentan como reales para las
+//                               campañas. Hay que borrar este secreto (o
+//                               dejarlo vacío) para que los eventos de
+//                               verdad se registren normal.
+// Si META_CAPI_ACCESS_TOKEN no está configurado todavía, esta función
+// simplemente no manda nada (no rompe la activación de la membresía).
+const META_PIXEL_ID = '2182739922655837' // mismo id que meta-pixel.js, no es secreto
+const META_CAPI_ACCESS_TOKEN = Deno.env.get('META_CAPI_ACCESS_TOKEN') || ''
+const META_CAPI_TEST_EVENT_CODE = Deno.env.get('META_CAPI_TEST_EVENT_CODE') || ''
+
+async function sha256Hex(text: string): Promise<string> {
+  const bytes = new TextEncoder().encode(text)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes)
+  return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function trackMetaSubscribe(opts: {
+  userId: string
+  email?: string | null
+  value: number
+  currency: string
+  eventId: string
+}) {
+  if (!META_CAPI_ACCESS_TOKEN) return
+  try {
+    const userData: Record<string, unknown> = {
+      external_id: await sha256Hex(opts.userId),
+    }
+    if (opts.email) {
+      userData.em = [await sha256Hex(opts.email.trim().toLowerCase())]
+    }
+    const payload: Record<string, unknown> = {
+      data: [{
+        event_name: 'Subscribe',
+        event_time: Math.floor(Date.now() / 1000),
+        // event_id fijo por transacción: si Stripe/PayPal/Mercado Pago
+        // reenvían el mismo aviso (reintentos), Meta descarta el
+        // duplicado en vez de contar dos "nuevos miembros".
+        event_id: opts.eventId,
+        action_source: 'website',
+        event_source_url: 'https://inglesconleo.com/miembros.html',
+        user_data: userData,
+        custom_data: { value: opts.value, currency: opts.currency },
+      }],
+    }
+    if (META_CAPI_TEST_EVENT_CODE) payload.test_event_code = META_CAPI_TEST_EVENT_CODE
+    const res = await fetch(`https://graph.facebook.com/v21.0/${META_PIXEL_ID}/events?access_token=${META_CAPI_ACCESS_TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      // Limite duro para que, si Meta esta lento o no responde, esto no se
+      // quede colgado indefinidamente (ver fireMetaSubscribeInBackground:
+      // esto ya corre en segundo plano y no bloquea la respuesta al
+      // webhook, pero igual conviene no dejar la conexion abierta).
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) console.error('Error mandando evento Subscribe a Meta:', await res.text())
+  } catch (e) {
+    console.error('Error mandando evento Subscribe a Meta:', e)
+  }
+}
+
+// Dispara el evento Subscribe SIN esperar a que termine, para que una
+// falla o lentitud de Meta nunca retrase ni ponga en riesgo la
+// respuesta al webhook real de pago (la activacion de la membresia ya
+// se guardo en Supabase antes de llegar aqui, eso es lo que de verdad
+// importa). trackMetaSubscribe ya atrapa sus propios errores, asi que
+// esta promesa nunca rechaza.
+//
+// EdgeRuntime.waitUntil es la API que da el runtime de Supabase Edge
+// Functions (Deno Deploy) justo para esto: tareas de "despues de
+// responder" (logging, analitica) que no deben demorar la respuesta.
+// Si por lo que sea no existe (por ejemplo corriendo esto fuera de ese
+// runtime), simplemente se deja correr la promesa de todas formas.
+function fireMetaSubscribeInBackground(opts: {
+  userId: string
+  email?: string | null
+  value: number
+  currency: string
+  eventId: string
+}) {
+  const promise = trackMetaSubscribe(opts)
+  const runtime = (globalThis as any).EdgeRuntime
+  if (runtime && typeof runtime.waitUntil === 'function') {
+    runtime.waitUntil(promise)
+  }
+}
+
 // Eventos de PayPal que SÍ cuentan como "ya no es miembro activo".
 const CANCEL_EVENTS = new Set([
   'BILLING.SUBSCRIPTION.CANCELLED',
@@ -121,12 +234,46 @@ Deno.serve(async (req: Request) => {
         if (!yaEraMiembro && correoDestino) {
           await mandarCorreoBienvenida(correoDestino)
         }
+        // subscriptionDetails solo se llena si de verdad se hizo una
+        // consulta a la API de PayPal más abajo (para poder reusarla en
+        // refreshNextRenewal sin pedir el mismo dato dos veces). Si se
+        // deja en null, refreshNextRenewal simplemente hace su propia
+        // consulta normal, igual que siempre.
+        let subscriptionDetails: any = null
+        let sePidioDetalleAparte = false
+        if (!yaEraMiembro) {
+          // Monto real del primer cobro: primero se busca en el propio
+          // aviso (algunos avisos de PayPal ya traen billing_info), y
+          // solo si no viene ahí se consulta la suscripción aparte.
+          let lastPaymentAmount = resource.billing_info && resource.billing_info.last_payment && resource.billing_info.last_payment.amount
+          if (!lastPaymentAmount && subscriptionId) {
+            subscriptionDetails = await fetchPaypalSubscriptionDetails(subscriptionId)
+            sePidioDetalleAparte = true
+            lastPaymentAmount = subscriptionDetails && subscriptionDetails.billing_info && subscriptionDetails.billing_info.last_payment && subscriptionDetails.billing_info.last_payment.amount
+          }
+          // Si por lo que sea PayPal todavía no trae el monto real en
+          // ningún lado, se usa el precio fijo del plan mensual como
+          // último respaldo (PayPal solo ofrece mensual, $2 USD, ver
+          // PAYPAL_PLAN_ID en paypal-checkout.ts).
+          const valorPago = lastPaymentAmount ? parseFloat(lastPaymentAmount.value) : 2
+          const moneda = lastPaymentAmount ? lastPaymentAmount.currency_code : 'USD'
+          fireMetaSubscribeInBackground({
+            userId,
+            email: correoDestino,
+            value: valorPago,
+            currency: moneda,
+            eventId: `paypal_subscribe_${subscriptionId}`,
+          })
+        }
         // Próxima fecha de cobro, para la "zona de silencio" de los
         // correos de reactivación de miembros (ver
         // upgrade-nudge-emails.ts). El aviso de activación no siempre
-        // trae esta fecha, así que se consulta aparte.
+        // trae esta fecha, así que se consulta aparte (reusando
+        // subscriptionDetails solo si de verdad ya se pidió arriba; si
+        // no, refreshNextRenewal hace su propia consulta, igual que
+        // siempre).
         if (subscriptionId) {
-          await refreshNextRenewal(subscriptionId)
+          await refreshNextRenewal(subscriptionId, sePidioDetalleAparte ? subscriptionDetails : undefined)
         }
       }
     } else if (CANCEL_EVENTS.has(type)) {
@@ -229,21 +376,36 @@ async function getPaypalAccessToken(): Promise<string | null> {
   }
 }
 
-// Consulta el detalle de la suscripción en PayPal y guarda
-// billing_info.next_billing_time (si viene) en next_renewal_at. No
-// toca is_member ni nada más: es solo para saber cuándo NO mandar
-// los correos de reactivación de miembros (ver
-// upgrade-nudge-emails.ts). Si PayPal no trae esa fecha por lo que
-// sea, no se escribe nada (no se inventa una fecha aproximada).
-async function refreshNextRenewal(subscriptionId: string) {
+// Consulta el detalle completo de una suscripción en PayPal (incluye
+// billing_info.next_billing_time y billing_info.last_payment.amount).
+// Se comparte entre refreshNextRenewal y el evento Subscribe de Meta
+// para no pedirle a PayPal el mismo dato dos veces.
+async function fetchPaypalSubscriptionDetails(subscriptionId: string): Promise<any | null> {
   try {
     const accessToken = await getPaypalAccessToken()
-    if (!accessToken) return
+    if (!accessToken) return null
     const res = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${subscriptionId}`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
-    if (!res.ok) return
-    const data = await res.json()
+    if (!res.ok) return null
+    return await res.json()
+  } catch (e) {
+    console.error('Error consultando la suscripción de PayPal:', e)
+    return null
+  }
+}
+
+// Guarda billing_info.next_billing_time (si viene) en next_renewal_at.
+// No toca is_member ni nada más: es solo para saber cuándo NO mandar
+// los correos de reactivación de miembros (ver
+// upgrade-nudge-emails.ts). Si PayPal no trae esa fecha por lo que
+// sea, no se escribe nada (no se inventa una fecha aproximada).
+// Acepta un "prefetched" opcional (el mismo detalle que ya se haya
+// consultado para el evento Subscribe de Meta) para no repetir la
+// llamada a la API de PayPal.
+async function refreshNextRenewal(subscriptionId: string, prefetched?: any | null) {
+  try {
+    const data = prefetched !== undefined ? prefetched : await fetchPaypalSubscriptionDetails(subscriptionId)
     const nextBillingTime = data && data.billing_info && data.billing_info.next_billing_time
     if (nextBillingTime) {
       const { error } = await supabase

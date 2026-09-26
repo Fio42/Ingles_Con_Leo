@@ -53,6 +53,119 @@ const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// ---- Meta Conversions API: avisa a Meta (Facebook/Instagram Ads) que
+// alguien se volvió miembro de pago DE VERDAD (no un simple clic ni un
+// registro gratis: es el mismo momento en que se manda el correo de
+// bienvenida, justo después de confirmar is_member=true por primera
+// vez). Se usa el evento estándar "Subscribe" (no "Purchase": este es
+// un pago recurrente/suscripción, no una compra única).
+//
+// Es intencional que sea código repetido en stripe-webhook.ts,
+// paypal-webhook.ts y mp-webhook.ts en vez de un archivo compartido:
+// cada uno se pega como una Edge Function independiente en el
+// Dashboard de Supabase (copiar/pegar un solo archivo), así que no
+// hay forma de importar un archivo local entre ellas.
+//
+// Variables de entorno nuevas (Supabase -> Edge Functions -> Secrets,
+// hay que agregarlas en ESTA función):
+//   META_CAPI_ACCESS_TOKEN      Token de "Conversions API" del pixel de
+//                               Meta. Se genera en Meta Events Manager ->
+//                               elige el pixel "InglesconLeo" -> pestaña
+//                               "Configuración" -> sección "Conversions
+//                               API" -> "Generar token de acceso". Es
+//                               secreto: nunca va en el sitio web.
+//   META_CAPI_TEST_EVENT_CODE   Opcional, SOLO mientras se hacen pruebas.
+//                               Se obtiene en Events Manager -> pestaña
+//                               "Probar eventos" (empieza con "TEST"). Con
+//                               esto puesto, los eventos aparecen ahí en
+//                               vivo pero NO cuentan como reales para las
+//                               campañas. Hay que borrar este secreto (o
+//                               dejarlo vacío) para que los eventos de
+//                               verdad se registren normal.
+// Si META_CAPI_ACCESS_TOKEN no está configurado todavía, esta función
+// simplemente no manda nada (no rompe la activación de la membresía).
+const META_PIXEL_ID = '2182739922655837' // mismo id que meta-pixel.js, no es secreto
+const META_CAPI_ACCESS_TOKEN = Deno.env.get('META_CAPI_ACCESS_TOKEN') || ''
+const META_CAPI_TEST_EVENT_CODE = Deno.env.get('META_CAPI_TEST_EVENT_CODE') || ''
+
+async function sha256Hex(text: string): Promise<string> {
+  const bytes = new TextEncoder().encode(text)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes)
+  return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function trackMetaSubscribe(opts: {
+  userId: string
+  email?: string | null
+  value: number
+  currency: string
+  eventId: string
+}) {
+  if (!META_CAPI_ACCESS_TOKEN) return
+  try {
+    const userData: Record<string, unknown> = {
+      external_id: await sha256Hex(opts.userId),
+    }
+    if (opts.email) {
+      userData.em = [await sha256Hex(opts.email.trim().toLowerCase())]
+    }
+    const payload: Record<string, unknown> = {
+      data: [{
+        event_name: 'Subscribe',
+        event_time: Math.floor(Date.now() / 1000),
+        // event_id fijo por transacción: si Stripe/PayPal/Mercado Pago
+        // reenvían el mismo aviso (reintentos), Meta descarta el
+        // duplicado en vez de contar dos "nuevos miembros".
+        event_id: opts.eventId,
+        action_source: 'website',
+        event_source_url: 'https://inglesconleo.com/miembros.html',
+        user_data: userData,
+        custom_data: { value: opts.value, currency: opts.currency },
+      }],
+    }
+    if (META_CAPI_TEST_EVENT_CODE) payload.test_event_code = META_CAPI_TEST_EVENT_CODE
+    const res = await fetch(`https://graph.facebook.com/v21.0/${META_PIXEL_ID}/events?access_token=${META_CAPI_ACCESS_TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      // Limite duro para que, si Meta esta lento o no responde, esto no se
+      // quede colgado indefinidamente (ver fireMetaSubscribeInBackground:
+      // esto ya corre en segundo plano y no bloquea la respuesta al
+      // webhook, pero igual conviene no dejar la conexion abierta).
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) console.error('Error mandando evento Subscribe a Meta:', await res.text())
+  } catch (e) {
+    console.error('Error mandando evento Subscribe a Meta:', e)
+  }
+}
+
+// Dispara el evento Subscribe SIN esperar a que termine, para que una
+// falla o lentitud de Meta nunca retrase ni ponga en riesgo la
+// respuesta al webhook real de pago (la activacion de la membresia ya
+// se guardo en Supabase antes de llegar aqui, eso es lo que de verdad
+// importa). trackMetaSubscribe ya atrapa sus propios errores, asi que
+// esta promesa nunca rechaza.
+//
+// EdgeRuntime.waitUntil es la API que da el runtime de Supabase Edge
+// Functions (Deno Deploy) justo para esto: tareas de "despues de
+// responder" (logging, analitica) que no deben demorar la respuesta.
+// Si por lo que sea no existe (por ejemplo corriendo esto fuera de ese
+// runtime), simplemente se deja correr la promesa de todas formas.
+function fireMetaSubscribeInBackground(opts: {
+  userId: string
+  email?: string | null
+  value: number
+  currency: string
+  eventId: string
+}) {
+  const promise = trackMetaSubscribe(opts)
+  const runtime = (globalThis as any).EdgeRuntime
+  if (runtime && typeof runtime.waitUntil === 'function') {
+    runtime.waitUntil(promise)
+  }
+}
+
 // Estados de suscripción de Stripe que SÍ cuentan como miembro activo.
 const ACTIVE_STATUSES = new Set(['active', 'trialing'])
 
@@ -100,6 +213,20 @@ Deno.serve(async (req: Request) => {
         if (error) console.error('Error activando miembro (Stripe):', error)
         if (!yaEraMiembro && correoDestino) {
           await mandarCorreoBienvenida(correoDestino)
+        }
+        if (!yaEraMiembro) {
+          // amount_total/currency son el monto REAL cobrado en esta sesión
+          // (Stripe ya ajusta el precio según el país), así que no hay que
+          // inventar ni hardcodear el valor mensual/anual acá.
+          const valorPago = typeof obj.amount_total === 'number' ? obj.amount_total / 100 : 2
+          const moneda = (obj.currency || 'usd').toUpperCase()
+          fireMetaSubscribeInBackground({
+            userId,
+            email: correoDestino,
+            value: valorPago,
+            currency: moneda,
+            eventId: `stripe_subscribe_${obj.id}`,
+          })
         }
       }
     } else if ((type === 'customer.subscription.updated' || type === 'customer.subscription.deleted') && obj) {
