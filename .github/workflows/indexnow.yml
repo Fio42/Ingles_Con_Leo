@@ -1,0 +1,49 @@
+name: IndexNow ping
+
+# Avisa a Bing (y a cualquier buscador que soporte IndexNow, como
+# Yandex y Seznam) que el sitio se actualizo, cada vez que se hace
+# push a main y cambio algun archivo .html o el sitemap. No hace
+# falta ningun secreto ni credencial: IndexNow solo pide que el
+# archivo de la clave este publicado en el propio sitio (ver
+# 41c1350951c5e79e95e8a4d0b5c84112.txt en la raiz del repo), asi que
+# este workflow no necesita configurar nada en GitHub para funcionar.
+#
+# Que hace exactamente: lee todas las URLs de sitemap.xml y se las
+# manda de una sola vez a la API de IndexNow. No distingue "solo lo
+# que cambio en este push" (seria mas preciso, pero mas complicado de
+# armar de forma segura): mandar el sitemap completo cada vez es
+# gratis, no tiene limite de uso raro, y a Bing no le importa que le
+# avises de una URL que no cambio, asi que no hay ningun riesgo por
+# ser mas simple.
+#
+# Google NO usa IndexNow (solo Bing/Yandex/Seznam), asi que esto no
+# reemplaza al sitemap.xml ni a Google Search Console: son avisos
+# complementarios, no la fuente principal de indexacion.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'sitemap.xml'
+  workflow_dispatch: {}
+
+jobs:
+  ping-indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extraer URLs del sitemap y avisar a IndexNow
+        run: |
+          KEY="41c1350951c5e79e95e8a4d0b5c84112"
+          HOST="inglesconleo.com"
+          urls=$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's/<loc>//;s#</loc>##')
+          json_urls=$(printf '%s\n' "$urls" | jq -R . | jq -s .)
+          payload=$(jq -n --arg host "$HOST" --arg key "$KEY" --argjson urlList "$json_urls" \
+            '{host:$host, key:$key, keyLocation:("https://" + $host + "/" + $key + ".txt"), urlList:$urlList}')
+          echo "Mandando $(printf '%s\n' "$urls" | wc -l) URLs a IndexNow..."
+          curl -s -o /dev/null -w "IndexNow respondio con codigo: %{http_code}\n" \
+            -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$payload"
