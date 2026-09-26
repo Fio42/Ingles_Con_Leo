@@ -103,20 +103,24 @@
 
 <main>
 
-  <!-- LOADING (ya no se muestra de entrada: el ACCESS GATE de abajo es
-       contenido publico identico para cualquier visitante sin sesion
-       confirmada todavia, asi que se muestra directo en vez de esperar
-       con un spinner. Este loader queda de respaldo por si algun flujo
-       lo necesita mas adelante, pero hoy nada lo vuelve a mostrar. -->
+  <!-- LOADING: oculto de entrada para la gran mayoria de visitas
+       (invitados sin sesion, ver ACCESS GATE de abajo). El script justo
+       despues del ACCESS GATE lo muestra en el momento, ANTES de pintar
+       nada, solo cuando detecta que este navegador ya tiene una sesion
+       guardada (para no mostrarle el login a alguien que ya inicio
+       sesion). initGate() (abajo del todo) tambien lo oculta al resolver
+       cual es el estado real (gate/preview/dashboard). -->
   <div id="gateLoading" style="max-width:520px;margin:60px auto;text-align:center;display:none;">
     <div style="width:34px;height:34px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:leoSpin 0.8s linear infinite;"></div>
-    <p style="color:var(--ink-faint);font-weight:600;">Cargando tu panel...</p>
+    <p style="color:var(--ink-faint);font-weight:600;">Preparando tu panel…</p>
   </div>
   <style>@keyframes leoSpin{to{transform:rotate(360deg);}}</style>
 
   <!-- ACCESS GATE: visible desde el primer render (antes esperaba a
        confirmar la sesion). Es el mismo formulario de login + precio
-       para CUALQUIER visitante sin sesion, nada personalizado. En
+       para CUALQUIER visitante sin sesion, nada personalizado. Si el
+       script de abajo detecta una sesion ya guardada, lo oculta al
+       instante (antes de pintar) y muestra el loader en su lugar. En
        cuanto initGate() confirma que la persona ya es miembro o tiene
        cuenta gratis, showMemberPreview()/unlock() ya se encargan de
        ocultarlo (sin cambios en esa logica). -->
@@ -295,6 +299,32 @@
       <p class="pricing-cancel-note">Cancela cuando quieras. 🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
     </div>
   </div>
+
+  <!-- Chequeo SINCRONO (corre antes de que el navegador pinte nada mas)
+       para que alguien que YA tiene sesion guardada en este navegador
+       nunca vea el formulario de login, ni un instante, al refrescar.
+       Solo mira si existe el token que el propio cliente de Supabase ya
+       guarda en localStorage (sin esperar red ni validar nada todavia:
+       eso lo sigue haciendo initGate() de siempre, sin cambios). Si no
+       hay ningun token (la gran mayoria de las visitas: invitados que
+       nunca han iniciado sesion en este navegador), no hace nada y el
+       ACCESS GATE de arriba se queda visible tal cual, sin ningun costo
+       extra de LCP/CLS. Si initGate() concluye despues que la sesion no
+       era valida, showGate() ya se encarga de mostrar el login normal. -->
+  <script>
+    (function(){
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k = localStorage.key(i);
+          if(k && /^sb-.*-auth-token$/.test(k)){
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('gateLoading').style.display = 'block';
+            break;
+          }
+        }
+      }catch(e){}
+    })();
+  </script>
 
   <!-- ÁREA DE MIEMBROS PARA CUENTAS SIN MEMBRESÍA (is_member=false) -->
   <div id="memberPreview" style="display:none;">
