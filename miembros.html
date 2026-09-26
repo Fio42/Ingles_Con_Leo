@@ -23,13 +23,15 @@
 <meta name="twitter:image" content="https://inglesconleo.com/og-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="style.css?v=20260925e">
 <link rel="stylesheet" href="chatbot.css?v=20260910">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script src="meta-pixel.js"></script>
-<script src="https://js.stripe.com/v3/"></script>
+<script defer src="https://js.stripe.com/v3/"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -101,15 +103,24 @@
 
 <main>
 
-  <!-- LOADING (mientras se confirma la sesion, para no mostrar el gate de golpe) -->
-  <div id="gateLoading" style="max-width:520px;margin:60px auto;text-align:center;">
+  <!-- LOADING (ya no se muestra de entrada: el ACCESS GATE de abajo es
+       contenido publico identico para cualquier visitante sin sesion
+       confirmada todavia, asi que se muestra directo en vez de esperar
+       con un spinner. Este loader queda de respaldo por si algun flujo
+       lo necesita mas adelante, pero hoy nada lo vuelve a mostrar. -->
+  <div id="gateLoading" style="max-width:520px;margin:60px auto;text-align:center;display:none;">
     <div style="width:34px;height:34px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blue);animation:leoSpin 0.8s linear infinite;"></div>
     <p style="color:var(--ink-faint);font-weight:600;">Cargando tu panel...</p>
   </div>
   <style>@keyframes leoSpin{to{transform:rotate(360deg);}}</style>
 
-  <!-- ACCESS GATE -->
-  <div class="gate-shell" id="gate" style="max-width:520px;display:none;">
+  <!-- ACCESS GATE: visible desde el primer render (antes esperaba a
+       confirmar la sesion). Es el mismo formulario de login + precio
+       para CUALQUIER visitante sin sesion, nada personalizado. En
+       cuanto initGate() confirma que la persona ya es miembro o tiene
+       cuenta gratis, showMemberPreview()/unlock() ya se encargan de
+       ocultarlo (sin cambios en esa logica). -->
+  <div class="gate-shell" id="gate" style="max-width:520px;">
     <div style="text-align:center;margin-bottom:8px;">
       <span class="badge badge-members">Miembros</span>
       <h1 style="margin-top:14px;">Practica inglés todos los días</h1>
