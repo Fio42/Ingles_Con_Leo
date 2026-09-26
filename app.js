@@ -4261,7 +4261,31 @@ function openLevelSwitcher(onChanged){
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
 }
 
-function renderProgressStatCards(container, stats, streak, level, practicedCount){
+/* Mini fila de días dentro de la tarjeta "Días de racha" (no una
+   sección grande aparte: ver .streak-dots/renderStreakCard, que es la
+   versión grande usada antes y que se dejó de mostrar). Reutiliza
+   exactamente la misma fuente de verdad que renderStreakCard
+   (computeActiveStreakDates + getFrozenStreakDate): un día se pinta
+   "hecho" solo si es parte de la racha activa (sin huecos hasta hoy,
+   no simple asistencia de la semana), "congelado" (❄) si es el día
+   protegido por un freeze sin contar como practicado, y vacío si no
+   hubo actividad — nunca se inventa un cuarto estado. */
+function miniStreakDaysHtml(){
+  const streakDates = new Set(computeActiveStreakDates());
+  const frozenDate = getFrozenStreakDate();
+  const days = computeWeeklyBarData();
+  return days.map(d=>{
+    const inStreak = streakDates.has(d.date);
+    const frozen = d.date === frozenDate;
+    const cls = ['mini-streak-dot'];
+    if(inStreak) cls.push('done');
+    if(frozen) cls.push('frozen');
+    if(d.isToday) cls.push('today');
+    return `<span class="${cls.join(' ')}" title="${d.label}">${frozen ? '❄' : ''}</span>`;
+  }).join('');
+}
+
+function renderProgressStatCards(container, stats, streak, level){
   if(!container) return;
   const accText = stats.current.accuracy === null ? '—' : stats.current.accuracy + '%';
   container.innerHTML = `
@@ -4292,7 +4316,7 @@ function renderProgressStatCards(container, stats, streak, level, practicedCount
       <div>
         <div class="stat-card-label">Días de racha</div>
         <div class="stat-card-value">${streak}</div>
-        <div class="stat-card-delta ${practicedCount>0 ? 'up' : 'flat'}">${practicedCount>0 ? '¡Sigue así!' : 'Practica hoy para empezar'}</div>
+        <div class="mini-streak-row">${miniStreakDaysHtml()}</div>
       </div>
     </div>
     <div class="stat-card">
@@ -4395,8 +4419,6 @@ function renderProgressPage(root){
   const stats = computeWeeklyStatsWithDelta();
   const streak = computeStreak();
   const level = getUserLevel();
-  const weekDays = computeWeeklyBarData();
-  const practicedCount = weekDays.filter(d=>d.count>0).length;
 
   /* Recomendación: la habilidad con menor cobertura entre las ya
      empezadas; si nada se ha practicado, Gramática. */
@@ -4446,7 +4468,7 @@ function renderProgressPage(root){
       <a href="${SKILL_PAGE[recommendation.skill]}" class="btn btn-primary">Practicar →</a>
     </div>`;
 
-  renderProgressStatCards(document.getElementById('progressStatCards'), stats, streak, level, practicedCount);
+  renderProgressStatCards(document.getElementById('progressStatCards'), stats, streak, level);
   renderSkillsPanel(document.getElementById('skillsPanel'), p);
   renderRecentActivityV2(document.getElementById('progressRecent'));
   renderWeeklyChart(document.getElementById('progressWeekly'));
