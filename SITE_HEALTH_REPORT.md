@@ -26,7 +26,7 @@ Acción: Dejar un solo H1 y bajar los demás a H2/H3.
 <details>
 <summary>ℹ️ Contexto / notas del propio auditor</summary>
 
-ℹ️ https://inglesconleo.com 🆕 NUEVO
+ℹ️ https://inglesconleo.com
 No se encontraron resultados de Lighthouse en esta corrida.
 Impacto: El reporte de rendimiento queda incompleto.
 Acción: Ejecutar tools/site-health/run-lighthouse.js antes del audit, o revisar el paso de Lighthouse en el workflow.

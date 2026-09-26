@@ -1751,7 +1751,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .locked-grid{grid-template-columns:1fr;}
 }
 .member-preview-head{max-width:640px;margin:0 auto 18px;}
-.member-preview-head h1{margin:10px 0 4px;font-size:1.5rem;}
+.member-preview-head h2{margin:10px 0 4px;font-size:1.5rem;}
 .member-preview-head p{color:var(--ink-soft);margin:0;}
 .member-preview-wrap{max-width:900px;margin:0 auto;padding:0 16px;}
 
