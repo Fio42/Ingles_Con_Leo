@@ -52,14 +52,52 @@
   "url": "https://inglesconleo.com/"
 }
 </script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
-<script src="meta-pixel.js"></script>
+<!-- Google Analytics (gtag.js) + Meta Pixel, carga diferida.
+     Aqui solo se crean las colas (dataLayer/gtag y fbq), asi que
+     cualquier evento (PageView, trackLeoEvent...) se guarda desde el
+     primer momento. Los scripts pesados de Google y Meta se descargan
+     despues de window.load, cuando el navegador queda libre (o a los
+     3 s como maximo, o antes si la persona toca la pagina), y al
+     cargar procesan la cola completa. Asi no compiten con el primer
+     pintado de la Home. Mismo ID de GA y de Pixel que meta-pixel.js. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-0DRL810MYR');
+
+  !function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];}(window);
+  fbq('init', '2182739922655837');
+  fbq('track', 'PageView');
+
+  (function(){
+    var loaded = false;
+    function addScript(src){
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = src;
+      document.head.appendChild(s);
+    }
+    function loadTags(){
+      if(loaded) return;
+      loaded = true;
+      removeEventListener('pointerdown', loadTags, true);
+      removeEventListener('keydown', loadTags, true);
+      addScript('https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR');
+      addScript('https://connect.facebook.net/en_US/fbevents.js');
+    }
+    function scheduleTags(){
+      if('requestIdleCallback' in window) requestIdleCallback(loadTags, { timeout: 3000 });
+      else setTimeout(loadTags, 1500);
+    }
+    addEventListener('pointerdown', loadTags, true);
+    addEventListener('keydown', loadTags, true);
+    if(document.readyState === 'complete') scheduleTags();
+    else addEventListener('load', scheduleTags);
+  })();
 </script>
 </head>
 <body>
