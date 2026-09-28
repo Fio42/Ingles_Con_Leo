@@ -19,12 +19,18 @@ on:
 permissions:
   contents: write # necesario para poder subir el reporte/historial actualizados
 
+concurrency:
+  group: site-health-report-main
+  cancel-in-progress: false
+
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node
         uses: actions/setup-node@v4
@@ -55,5 +61,6 @@ jobs:
             echo "Sin cambios en el reporte, no hay nada que subir."
           else
             git commit -m "Site Health: actualizar reporte automático"
-            git push
+            git pull --rebase origin main
+            git push origin main
           fi
