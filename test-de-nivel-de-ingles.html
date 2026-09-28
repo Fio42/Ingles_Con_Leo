@@ -72,6 +72,10 @@
   .lt-listen .audio-missing-note{flex-basis:100%;margin:0;}
   .lt-transcript{background:var(--paper-dim);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:0.9rem;color:var(--ink-soft);}
   .lt-transcript span{font-weight:700;font-size:0.8rem;}
+  .lt-cta-main{margin:22px 0 8px;padding:22px 18px;background:var(--blue-tint);border-radius:var(--radius-lg);border:2px solid var(--blue);}
+  .lt-cta-lead{color:var(--ink-soft);font-size:0.95rem;margin:0 0 6px;}
+  .lt-cta-title{font-family:'Baloo 2';font-weight:800;font-size:1.35rem;color:var(--blue);margin:0 0 16px;}
+  .lt-cta-btn{font-size:1.08rem;padding:17px 20px;}
 </style>
 </head>
 <body>
@@ -378,7 +382,7 @@
     if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile();
     var r = computeLevel(st);
     var info = RESULTS[r.level];
-    if(justFinished) track('level_test_completed', { level: r.level });
+    if(justFinished){ track('level_test_completed', { level: r.level }); track('test_complete', { level: r.level }); }
     // Guarda el nivel en el perfil del sitio, para que la práctica
     // gratis y la de miembros arranquen en el nivel correcto.
     try{
@@ -399,8 +403,12 @@
         '<p style="color:var(--ink-soft);line-height:1.6;">' + info.text + '</p>' +
         '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;">Acertaste ' + total + ' de ' + QUESTIONS.length + ' preguntas.</p>' +
         '<div class="lt-bars">' + bars + '</div>' +
+        '<div class="lt-cta-main">' +
+          '<p class="lt-cta-lead">Ya sabemos tu nivel. Ahora úsalo para practicar.</p>' +
+          '<h2 class="lt-cta-title">Practica ahora a tu nivel</h2>' +
+          '<a href="practica.html?level=' + encodeURIComponent(info.site) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar práctica gratis →</a>' +
+        '</div>' +
         '<div class="lt-actions">' +
-          '<a href="practica.html" class="btn btn-primary btn-block" id="ltPractice">Practicar ejercicios de mi nivel</a>' +
           '<a href="miembros.html?modo=registro&volver=practica.html" class="btn btn-ghost btn-block" id="ltSignup">Crear mi cuenta gratis</a>' +
           '<a href="https://wa.me/?text=' + encodeURIComponent(shareText) + '" target="_blank" rel="noopener" class="lt-link" id="ltShare">Compartir mi resultado por WhatsApp</a>' +
           '<button class="lt-link" id="ltReviewBtn">Ver mis respuestas</button>' +
@@ -408,6 +416,7 @@
         '</div>' +
         '<div class="lt-review" id="ltReview" style="display:none;"></div>' +
       '</div>';
+    document.getElementById('ltPractice').addEventListener('click', function(){ track('test_to_practice_click', { level: r.level }); });
     document.getElementById('ltShare').addEventListener('click', function(){ track('level_test_shared', { level: r.level }); });
     document.getElementById('ltSignup').addEventListener('click', function(){ track('level_test_signup_clicked', { level: r.level }); });
     document.getElementById('ltAgain').addEventListener('click', function(){ clear(); renderStart(null); });
