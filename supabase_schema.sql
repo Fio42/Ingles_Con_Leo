@@ -792,3 +792,55 @@ create policy "leobot_reports: insert" on public.leobot_reports
 -- siquiera quien mandó el reporte puede volver a leerlo desde el
 -- navegador. Se revisan a mano desde Supabase -> Table Editor, o se
 -- les cambia el "status" ahí mismo (new/reviewed/resuelto, etc.).
+
+-- ============================================================
+-- profiles.last_practice_at — última vez que un MIEMBRO terminó una
+-- sesión de práctica REAL (gramática, vocabulario, listening,
+-- writing, speaking, mixto, plan de estudio). Se agregó porque
+-- last_seen_at se actualiza con CUALQUIER visita estando logueado
+-- (abrir progreso.html, un artículo, etc.), no solo al practicar, así
+-- que no sirve para decidir cuándo mandar un correo de reactivación
+-- ("dejaste de practicar") sin mandarlo de más a quien solo entra a
+-- mirar. La escribe backend.js (LeoBackend.pushSession(), el único
+-- punto donde se guarda una sesión de Miembros) cada vez que termina
+-- una sesión real, con el mismo patrón de "solo puede tocar esta
+-- columna" que ya usan last_seen_at/free_daily_count.
+--
+-- Cuentas gratis NO usan esta columna (pushSession() nunca se llama
+-- para práctica gratis, ver la nota en app.js sobre
+-- "PRÁCTICA GRATIS"): para cuentas gratis la señal equivalente ya
+-- existe y es profiles.free_daily_date (última fecha con un
+-- ejercicio gratis real, se actualiza en cada ejercicio, no solo el
+-- primero del día).
+--
+-- Corre esto UNA VEZ en Supabase -> SQL Editor. Es seguro volver a
+-- correrlo (agregar la columna es "if not exists", y el backfill de
+-- abajo solo AVANZA la fecha, nunca la retrocede ni la borra).
+alter table public.profiles add column if not exists last_practice_at timestamptz;
+
+grant update (last_practice_at) on public.profiles to authenticated;
+
+-- Backfill para miembros que ya tenían sesiones guardadas ANTES de
+-- que existiera esta columna: sin esto, todo miembro veterano
+-- aparecería con last_practice_at NULL y el sistema lo trataría como
+-- "nunca practicó", disparándole por error el correo de activación
+-- de miembro nuevo (member_activation) o los de reactivación antes de
+-- tiempo. Se usa progress_sessions.started_at (el timestamp exacto en
+-- milisegundos de cuando empezó cada sesión, columna bigint) y, para
+-- las pocas filas viejas donde started_at pudiera faltar, se cae a
+-- progress_sessions.date (columna date, siempre presente). Es
+-- idempotente y aditivo: no toca progress_sessions, no toca rachas ni
+-- progreso, y el "where" de abajo evita pisar un last_practice_at que
+-- ya esté más adelantado (por ejemplo si ya practicó de nuevo después
+-- de correr esto una primera vez).
+update public.profiles p
+set last_practice_at = sub.last_practice
+from (
+  select
+    user_id,
+    max(coalesce(to_timestamp(started_at / 1000.0), date::timestamptz)) as last_practice
+  from public.progress_sessions
+  group by user_id
+) sub
+where sub.user_id = p.id
+  and (p.last_practice_at is null or p.last_practice_at < sub.last_practice);

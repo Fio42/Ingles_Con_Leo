@@ -277,6 +277,11 @@ const DAY3_MIN_DAYS = 3
 const DAY3_SKIP_AFTER_DAYS = 7
 const MEMBERSHIP_EMAIL_MIN_DAY = 7
 // (sin SKIP_AFTER: membership_intro no caduca, ver nota arriba)
+// Días de espera desde que tocó el límite gratis antes de ofrecerle
+// membership_intro por comportamiento (ver decideEmail punto 3): para
+// no encimarse con limit_reached, que ya vende la membresía por ese
+// mismo golpe de límite.
+const MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS = 3
 const REACTIVATION_EMAIL_MIN_DAY = 14
 const REACTIVATION_EMAIL_SKIP_AFTER_DAYS = 45
 const FINAL_ONBOARDING_MIN_DAY = 30
@@ -342,6 +347,13 @@ const NO_COOLDOWN_KEYS = new Set(['welcome'])
 // gratis).
 const MEMBER_REACTIVATION_3D_MIN_DAYS = 3
 const MEMBER_REACTIVATION_10D_MIN_DAYS = 10
+
+// Ventana de "member_activation" (miembro nuevo que no ha practicado
+// ni una vez desde que pagó): 24-48h después de member_since. Fuera de
+// esta ventana ya no se ofrece (si sigue sin practicar, lo toma
+// member_reactivation_3d más adelante, que sí repite).
+const MEMBER_ACTIVATION_MIN_HOURS = 24
+const MEMBER_ACTIVATION_MAX_HOURS = 48
 
 // Zona de silencio alrededor del cobro mensual: no mandar ninguno de
 // los 2 correos de arriba si next_renewal_at cae dentro de este
@@ -409,23 +421,24 @@ const PRIORITY_ORDER = [
   'long_term',
   'checkout_abandoned',
   'active_free_pitch',
-  // Los siguientes dos son para MIEMBROS (is_member=true), no para
+  // Los siguientes 3 son para MIEMBROS (is_member=true), no para
   // cuentas gratis: viven en esta misma lista solo para que el modo
   // manual de prueba (manual_emails + which) los reconozca como
   // válidos. Su lógica de decisión es aparte (ver decideMemberEmail
   // más abajo), no pasan por decideEmail ni compiten en prioridad con
   // los de arriba.
+  'member_activation',
   'member_reactivation_3d',
   'member_reactivation_10d',
 ] as const
 type EmailKey = (typeof PRIORITY_ORDER)[number]
 
-// Las 2 claves de arriba que son de miembros en vez de cuentas
+// Las 3 claves de arriba que son de miembros en vez de cuentas
 // gratis: se usan para que sendIfStillEligible() sepa que este
 // correo requiere is_member=true (en vez de false, como todos los
 // demás), y para que el modo manual de prueba busque el perfil
 // correcto.
-const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_reactivation_3d', 'member_reactivation_10d'])
+const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation', 'member_reactivation_3d', 'member_reactivation_10d'])
 
 // Subconjunto de EmailKey: solo las 4 claves de la secuencia por
 // calendario que pueden "caducar" y marcarse 'skipped' (ver
@@ -448,6 +461,11 @@ type Profile = {
   last_marketing_email_at: string | null
   display_name?: string | null
   next_renewal_at: string | null
+  member_since?: string | null
+  // Última práctica REAL de un Miembro (distinto de last_seen_at, que
+  // se actualiza con cualquier visita). La escribe backend.js
+  // (pushSession()). Ver la nota larga en decideMemberEmail().
+  last_practice_at?: string | null
 }
 
 Deno.serve(async (req: Request) => {
@@ -527,11 +545,10 @@ Deno.serve(async (req: Request) => {
     // más arriba.
     const { data: memberProfiles, error: memberError } = await supabase
       .from('profiles')
-      .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at')
+      .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at, member_since, last_practice_at')
       .eq('is_member', true)
       .not('email', 'is', null)
       .is('email_opt_out_at', null)
-      .not('last_seen_at', 'is', null)
       .limit(MAX_PER_RUN)
     if (memberError) {
       console.error('Error buscando miembros:', memberError)
@@ -604,14 +621,21 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
       return 'abandoned_signup'
     }
   }
-  //    2b) Ya había practicado, pero lleva varios días sin entrar.
-  if (p.free_first_exercise_at && p.last_seen_at) {
-    const inactiveDays = daysSince(p.last_seen_at, now)
+  //    2b) Ya había practicado, pero lleva varios días sin practicar
+  //    DE VERDAD. Usa free_daily_date (última fecha con un ejercicio
+  //    gratis real) en vez de last_seen_at: last_seen_at se actualiza
+  //    con cualquier visita estando logueado (abrir progreso.html, un
+  //    artículo, etc.), así que abrir una página sin practicar ya NO
+  //    cuenta como "seguir activo" ni resetea la inactividad.
+  if (p.free_first_exercise_at && p.free_daily_date) {
+    const lastPracticeMs = new Date(p.free_daily_date + 'T00:00:00Z').getTime()
+    const inactiveDays = (now - lastPracticeMs) / 86400000
     const lastSent = lifecycle['reactivation_3d']
     const cooldownOk = !lastSent || daysSince(lastSent, now) >= INACTIVE_REACTIVATION_COOLDOWN_DAYS
-    // Solo si volvió a entrar (last_seen_at más nuevo) desde el último
-    // envío: así no se repite el mismo correo por la misma ausencia.
-    const cameBackSince = !lastSent || new Date(p.last_seen_at).getTime() > new Date(lastSent).getTime()
+    // Solo si volvió a practicar (free_daily_date más nuevo) desde el
+    // último envío: así no se repite el mismo correo por la misma
+    // ausencia, solo por un episodio nuevo de verdad.
+    const cameBackSince = !lastSent || lastPracticeMs > new Date(lastSent).getTime()
     if (inactiveDays >= INACTIVE_USER_DAYS && cooldownOk && cameBackSince) {
       return 'reactivation_3d'
     }
@@ -627,8 +651,34 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
   if (!lifecycle['day3'] && ageDays >= DAY3_MIN_DAYS) {
     return 'day3'
   }
-  if (!lifecycle['membership_intro'] && ageDays >= MEMBERSHIP_EMAIL_MIN_DAY) {
-    return 'membership_intro'
+  // "membership_intro" (presentar la membresía, UNA sola vez) tiene 2
+  // caminos de entrada, para que se sienta como un solo sistema en vez
+  // de "membership_intro" + "active_free_pitch" mandando lo mismo por
+  // separado:
+  //   a) Comportamiento: ya demostró que usa el producto en serio
+  //      (tocó el límite gratis) Y volvió a practicar después de ese
+  //      golpe (no es la misma visita que ya aprovechó limit_reached,
+  //      es señal de que sigue viniendo). Se espera
+  //      MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS desde el golpe de límite a
+  //      propósito, para NO mandar este correo pegado a limit_reached
+  //      (que ya vende la membresía por ese mismo evento) y no sentirse
+  //      como 2 correos de venta seguidos por lo mismo.
+  //   b) Calendario (día 7): el piso de siempre, por si (a) nunca se
+  //      cumplió. No reutiliza ninguna columna nueva: free_daily_date y
+  //      free_daily_limit_reached_at ya existían para otras cosas.
+  if (!lifecycle['membership_intro']) {
+    const hitLimitBefore = !!p.free_daily_limit_reached_at
+    const practicedAfterLimitHit =
+      hitLimitBefore &&
+      !!p.free_daily_date &&
+      new Date(p.free_daily_date + 'T00:00:00Z').getTime() > new Date(p.free_daily_limit_reached_at!).getTime()
+    const daysSinceLimitHit = hitLimitBefore ? daysSince(p.free_daily_limit_reached_at!, now) : 0
+    if (practicedAfterLimitHit && daysSinceLimitHit >= MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS) {
+      return 'membership_intro'
+    }
+    if (ageDays >= MEMBERSHIP_EMAIL_MIN_DAY) {
+      return 'membership_intro'
+    }
   }
   if (!lifecycle['reactivation_day14'] && ageDays >= REACTIVATION_EMAIL_MIN_DAY) {
     return 'reactivation_day14'
@@ -708,42 +758,75 @@ function inRenewalSilenceZone(p: Profile, now: number): boolean {
 }
 
 function decideMemberEmail(p: Profile, now: number): EmailKey | null {
-  if (!p.last_seen_at) return null // nunca hay señal de actividad real, no hay "inactividad" que detectar
-
   const lifecycle = p.lifecycle_emails || {}
 
   // Mismo freno global de 24h que ya usa decideEmail() para cuentas
   // gratis, leyendo la misma columna (last_marketing_email_at).
+  // member_activation NO queda exento a propósito (pedido explícito):
+  // si a este miembro ya se le mandó otro correo de este sistema en
+  // las últimas 24h, espera su turno como cualquier otro en vez de
+  // amontonarse.
   if (p.last_marketing_email_at && hoursSince(p.last_marketing_email_at, now) < MARKETING_EMAIL_MIN_GAP_HOURS) {
     return null
   }
 
+  // 0) Activación de miembro nuevo: pagó y no ha practicado NI UNA VEZ
+  // desde que se hizo miembro (last_practice_at sigue vacío, o es de
+  // ANTES de member_since -> era la práctica de cuando todavía era
+  // cuenta gratis, no cuenta). Ventana de 24-48h; fuera de ella ya no
+  // se ofrece por member_activation (si sigue sin practicar, lo toma
+  // member_reactivation_3d más adelante, que sí repite). Se manda una
+  // sola vez en la vida de la membresía (lifecycle_emails.member_activation).
+  if (!lifecycle['member_activation'] && p.member_since) {
+    const hrsSinceMember = hoursSince(p.member_since, now)
+    const practicedSinceMember = !!p.last_practice_at && new Date(p.last_practice_at).getTime() > new Date(p.member_since).getTime()
+    if (!practicedSinceMember && hrsSinceMember >= MEMBER_ACTIVATION_MIN_HOURS && hrsSinceMember <= MEMBER_ACTIVATION_MAX_HOURS) {
+      return 'member_activation'
+    }
+  }
+
+  // El resto (reactivación por inactividad) necesita una señal de
+  // práctica real primero: sin last_practice_at no hay "inactividad"
+  // que detectar todavía (puede ser un miembro nuevo dentro de su
+  // ventana de activación, o fuera de ella pero que aún no cae en el
+  // día 3 de reactivación).
+  if (!p.last_practice_at) return null
+
   // Zona de silencio de renovación: se salta esta pasada nada más,
   // no se pierde el correo (se reintenta cada 30 min hasta salir de
-  // la zona, mientras siga cumpliendo lo demás).
+  // la zona, mientras siga cumpliendo lo demás). No aplica a
+  // member_activation (ya se resolvió arriba, punto 0): no tiene
+  // relación con el cobro, es sobre usar lo que ya compró.
   if (inRenewalSilenceZone(p, now)) {
     return null
   }
 
-  const inactiveDays = daysSince(p.last_seen_at, now)
+  // Última práctica REAL (no visitas): profiles.last_practice_at, que
+  // escribe backend.js (pushSession()) cada vez que un miembro termina
+  // una sesión. Antes se usaba last_seen_at, pero esa columna se
+  // actualiza con CUALQUIER visita logueada (progreso.html, un
+  // artículo, etc.), así que "abrir una página sin practicar" ya no
+  // cuenta como seguir activo ni resetea la inactividad.
+  const inactiveDays = daysSince(p.last_practice_at, now)
 
   // Día 10 se revisa PRIMERO a propósito: si por cooldown/prioridad
   // nunca se mandó el de día 3 y ya vamos en el día 12, no tiene
   // sentido mandar el de día 3 ("hace unos días que no practicas")
   // tan tarde; se manda directo el de día 10, que sigue siendo
   // válido. "cameBackSince" es lo que separa un episodio de otro: si
-  // last_seen_at no ha avanzado desde el último envío de esta clave,
-  // sigue siendo el MISMO episodio (no se repite); si sí avanzó
-  // (volvió a entrar y volvió a estar inactivo), es un episodio
-  // nuevo y puede volver a recibirlo.
+  // last_practice_at no ha avanzado desde el último envío de esta
+  // clave, sigue siendo el MISMO episodio (no se repite); si sí
+  // avanzó (volvió a practicar y volvió a estar inactivo), es un
+  // episodio nuevo y puede volver a recibirlo (con la siguiente
+  // variante, ver sendIfStillEligible).
   const lastSent10 = lifecycle['member_reactivation_10d']
-  const cameBackSince10 = !lastSent10 || new Date(p.last_seen_at).getTime() > new Date(lastSent10).getTime()
+  const cameBackSince10 = !lastSent10 || new Date(p.last_practice_at).getTime() > new Date(lastSent10).getTime()
   if (inactiveDays >= MEMBER_REACTIVATION_10D_MIN_DAYS && cameBackSince10) {
     return 'member_reactivation_10d'
   }
 
   const lastSent3 = lifecycle['member_reactivation_3d']
-  const cameBackSince3 = !lastSent3 || new Date(p.last_seen_at).getTime() > new Date(lastSent3).getTime()
+  const cameBackSince3 = !lastSent3 || new Date(p.last_practice_at).getTime() > new Date(lastSent3).getTime()
   if (inactiveDays >= MEMBER_REACTIVATION_3D_MIN_DAYS && cameBackSince3) {
     return 'member_reactivation_3d'
   }
@@ -817,18 +900,41 @@ async function sendIfStillEligible(
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, lifecycle_emails, email_opt_out_at, display_name')
+    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
 
   // long_term rota por LONG_TERM_EMAILS: se elige el siguiente de la
-  // lista según cuántos ya se le mandaron a esta persona.
+  // lista según cuántos ya se le mandaron a esta persona. Se detiene
+  // sola cuando se acaba la lista (a propósito NO da la vuelta, a
+  // diferencia de las variantes de abajo).
   const freshLifecycle: Record<string, string> = fresh.lifecycle_emails || {}
   const longTermIdx = parseInt(freshLifecycle['long_term_count'] || '0', 10) || 0
   if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
-  const content = key === 'long_term' ? LONG_TERM_EMAILS[longTermIdx] : EMAIL_CONTENT[key]
+
+  // Variantes de los correos de reactivación (reactivation_3d,
+  // member_reactivation_3d, member_reactivation_10d): un contador por
+  // clave en lifecycle_emails (mismo patrón que long_term_count) elige
+  // la siguiente variante EN ORDEN, y al llegar al final vuelve a
+  // empezar (%), para que nadie reciba el mismo texto palabra por
+  // palabra en cada episodio de inactividad.
+  const variantList = REACTIVATION_VARIANTS[key]
+  let variantIdx = -1
+  let content: EmailContent
+  if (key === 'long_term') {
+    content = LONG_TERM_EMAILS[longTermIdx]
+  } else if (variantList) {
+    variantIdx = (parseInt(freshLifecycle[`${key}_count`] || '0', 10) || 0) % variantList.length
+    content = variantList[variantIdx]
+  } else if (key === 'day1') {
+    // day1 reconoce si ya hizo su primera práctica (no le habla como
+    // si todavía no hubiera empezado nada).
+    content = fresh.free_first_exercise_at ? DAY1_PRACTICED_CONTENT : EMAIL_CONTENT.day1
+  } else {
+    content = EMAIL_CONTENT[key]
+  }
 
   const okToSend = await sendEmailFor(key, email, userId, personalize(content, fresh.display_name))
   if (!okToSend) return false
@@ -836,6 +942,7 @@ async function sendIfStillEligible(
   const nowIso = new Date().toISOString()
   const extra: Record<string, string> = { [key]: nowIso }
   if (key === 'long_term') extra['long_term_count'] = String(longTermIdx + 1)
+  if (variantIdx >= 0) extra[`${key}_count`] = String(variantIdx + 1)
   const mergedLifecycle = Object.assign({}, freshLifecycle, extra)
   const updatePayload: Record<string, unknown> = { lifecycle_emails: mergedLifecycle }
   // "welcome" no cuenta para el freno global de 24h (ver
@@ -1037,25 +1144,12 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaUrl: `${SITE}/practica.html`,
     footerNote: '¿Algo no funcionó al entrar? Responde este correo y lo vemos.',
   },
-  reactivation_3d: {
-    subject: '3 palabras que no significan lo que parece 👀',
-    preheader: 'Una de ellas te puede meter en un lío. Y tu práctica sigue guardada.',
-    greeting: '¡Hola! 👋',
-    title: 'Cuidado con estos "falsos amigos"',
-    bodyHtml: `
-    <div style="${BOX}">
-      <strong>Embarrassed</strong> = avergonzado (no embarazada: esa es <em>pregnant</em>)<br>
-      <strong>Actually</strong> = en realidad (no actualmente: ese es <em>currently</em>)<br>
-      <strong>Library</strong> = biblioteca (no librería: esa es <em>bookstore</em>)
-    </div>
-    <p style="${P}">
-      Llevas unos días sin practicar, y tu progreso sigue exactamente donde
-      lo dejaste. Una sesión corta hoy basta para no perder el ritmo.
-    </p>`,
-    ctaText: 'Retomar mi práctica',
-    ctaUrl: `${SITE}/practica.html`,
-    footerNote: '¿Te gustan estos tips? Responde este correo y cuéntame qué te cuesta más del inglés.',
-  },
+  // reactivation_3d no usa esta entrada directamente: su contenido
+  // sale de REACTIVATION_VARIANTS.reactivation_3d según
+  // reactivation_3d_count (ver sendIfStillEligible). Se deja un
+  // getter para cumplir con el tipo sin duplicar texto, igual que
+  // long_term arriba.
+  get reactivation_3d() { return REACTIVATION_VARIANTS.reactivation_3d![0] },
   day1: {
     subject: '¿"People is" o "people are"?',
     preheader: 'Un error que se cuela hasta en nivel intermedio.',
@@ -1239,44 +1333,299 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
-  member_reactivation_3d: {
-    subject: 'Tu sesión de 5 minutos está lista',
-    preheader: 'Y un phrasal verb que vas a usar esta misma semana.',
+  // member_reactivation_3d/10d no usan esta entrada directamente: su
+  // contenido sale de REACTIVATION_VARIANTS según su contador (ver
+  // sendIfStillEligible). Getters para cumplir con el tipo.
+  get member_reactivation_3d() { return REACTIVATION_VARIANTS.member_reactivation_3d![0] },
+  get member_reactivation_10d() { return REACTIVATION_VARIANTS.member_reactivation_10d![0] },
+  member_activation: {
+    subject: 'Ya tienes todo listo. Empieza por aquí 👋',
+    preheader: 'Armamos tu plan de estudio, según tu nivel y tu progreso.',
     greeting: '¡Hola! 👋',
-    title: 'Un tip rápido antes de volver',
-    titleWithName: '{name}, un tip rápido antes de volver',
+    title: 'Tu membresía ya está activa',
+    titleWithName: '{name}, tu membresía ya está activa',
     bodyHtml: `
+    <p style="${P}">
+      Ya tienes acceso completo: práctica ilimitada en las 5 habilidades,
+      clases interactivas y repaso automático de tus errores.
+    </p>
     <div style="${BOX}">
-      <strong>Catch up</strong> = ponerse al día<br>
-      I need to catch up on my English practice. (Necesito ponerme al día con mi práctica de inglés.)
+      Para que no tengas que pensar por dónde empezar, armamos un
+      <strong>plan de estudio</strong> con tu nivel, tu progreso y tus
+      errores más frecuentes. Es tu mejor primer paso ahora mismo.
     </div>
     <p style="${P}">
-      Hace unos días que no practicas. Elige una sesión corta en tu área de
-      miembros y retomas en 5 minutos.
+      Con 5-10 minutos hoy ya arrancas. Tú eliges cuánto tiempo practicar
+      cada vez.
     </p>`,
-    ctaText: 'Hacer una sesión corta',
-    ctaUrl: `${SITE}/practica-miembros.html`,
-    footerNote: '¿Hay algo que te gustaría practicar y no encuentras? Respóndeme, lo leo yo.',
+    ctaText: 'Ver mi plan de estudio',
+    ctaUrl: `${SITE}/plan-estudio.html`,
+    footerNote: '¿Dudas sobre cómo usar tu membresía? Responde este correo, lo leo yo.',
   },
-  member_reactivation_10d: {
-    subject: 'Hay cosas nuevas en tu membresía 👀',
-    preheader: 'Preparación TOEIC, un test de nivel con listening y más.',
-    greeting: '¡Hola! 👋',
-    title: 'Esto es nuevo desde tu última visita',
-    bodyHtml: `
+}
+
+// day1 con una versión distinta para quien YA hizo su primera
+// práctica (no le habla como si no hubiera empezado nada). El "tip
+// del día" se mantiene (es el gancho del correo), cambia el cierre.
+const DAY1_PRACTICED_CONTENT: EmailContent = {
+  subject: '¿"People is" o "people are"?',
+  preheader: 'Un error que se cuela hasta en nivel intermedio.',
+  greeting: '¡Hola! 👋',
+  title: 'El tip de hoy',
+  titleWithName: '{name}, este es el tip de hoy',
+  bodyHtml: `
+    <p style="${P}">
+      Se dice <strong>people are</strong>. En español "la gente" es singular,
+      pero en inglés <em>people</em> es plural, igual que <em>police</em>.
+    </p>
     <div style="${BOX}">
-      <strong>Preparación para el TOEIC:</strong> el examen que piden muchas
-      empresas, con listening y reading tipo examen.<br><br>
-      <strong>Test de nivel con listening:</strong> para ver cuánto has avanzado.
+      ✗ People is very friendly here.<br>
+      ✓ People are very friendly here.
     </div>
     <p style="${P}">
-      Y todo lo de siempre: ejercicios por nivel, clases interactivas y
-      English Rush. Tu progreso sigue guardado.
+      Ya hiciste tu primer ejercicio, va muy bien. Hoy te propongo seguir
+      con algo cortito: unos minutos bastan para no perder el impulso.
     </p>`,
-    ctaText: 'Volver a practicar',
-    ctaUrl: `${SITE}/practica-miembros.html`,
-    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-  },
+  ctaText: 'Seguir practicando',
+  ctaUrl: `${SITE}/practica.html`,
+  footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+}
+
+// ---------------- Variantes de los correos de reactivación ----------------
+// reactivation_3d (cuenta gratis), member_reactivation_3d y
+// member_reactivation_10d se pueden repetir varias veces en la vida de
+// una cuenta (cada episodio nuevo de inactividad). Antes mandaban
+// siempre el mismo texto; ahora rotan EN ORDEN (nunca al azar) por
+// estas listas, usando un contador en lifecycle_emails
+// (`${key}_count`, mismo patrón que long_term_count) que sendIfStillEligible
+// calcula con "% variants.length": al llegar al final vuelve a
+// empezar. Todas atacan el mismo objetivo (volver a practicar), nunca
+// venta, desde un ángulo distinto cada vez.
+const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
+  reactivation_3d: [
+    // v0: "falsos amigos" (el original, se mantiene igual para no
+    // romper continuidad de quien ya lo recibió antes de este cambio).
+    {
+      subject: '3 palabras que no significan lo que parece 👀',
+      preheader: 'Una de ellas te puede meter en un lío. Y tu práctica sigue guardada.',
+      greeting: '¡Hola! 👋',
+      title: 'Cuidado con estos "falsos amigos"',
+      bodyHtml: `
+      <div style="${BOX}">
+        <strong>Embarrassed</strong> = avergonzado (no embarazada: esa es <em>pregnant</em>)<br>
+        <strong>Actually</strong> = en realidad (no actualmente: ese es <em>currently</em>)<br>
+        <strong>Library</strong> = biblioteca (no librería: esa es <em>bookstore</em>)
+      </div>
+      <p style="${P}">
+        Llevas unos días sin practicar, y tu progreso sigue exactamente donde
+        lo dejaste. Una sesión corta hoy basta para no perder el ritmo.
+      </p>`,
+      ctaText: 'Retomar mi práctica',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Te gustan estos tips? Responde este correo y cuéntame qué te cuesta más del inglés.',
+    },
+    // v1: sesión de 5 minutos (bajar la barrera de entrada).
+    {
+      subject: '¿Tienes 5 minutos? Con eso alcanza',
+      preheader: 'Una sesión cortita, solo para no perder el hilo.',
+      greeting: '¡Hola! 👋',
+      title: 'No hace falta mucho tiempo',
+      bodyHtml: `
+      <p style="${P}">
+        No se trata de sentarte una hora. Una sesión de 5 minutos ya cuenta,
+        y suele ser justo lo que hace falta para volver a agarrar el ritmo.
+      </p>
+      <div style="${BOX}">
+        Elige la habilidad que más se te antoje hoy: gramática, vocabulario,
+        listening, writing o speaking. Lo demás puede esperar.
+      </div>`,
+      ctaText: 'Hacer una sesión de 5 minutos',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: 'Si un día quieres más tiempo, ahí también está. Tú decides cuánto.',
+    },
+    // v2: hábito/racha (constancia, no intensidad).
+    {
+      subject: 'El hábito se construye así',
+      preheader: 'No se trata de hacer mucho, se trata de no cortar la seguidilla.',
+      greeting: '¡Hola! 👋',
+      title: 'Un poquito hoy también cuenta',
+      bodyHtml: `
+      <p style="${P}">
+        Aprender un idioma se parece más a regar una planta todos los días
+        que a estudiar para un examen. Un ejercicio corto hoy pesa más de lo
+        que parece.
+      </p>
+      <div style="${BOX}">
+        No hace falta retomar donde ibas a full. Basta con un ejercicio para
+        que el hábito siga en pie.
+      </div>`,
+      ctaText: 'Practicar hoy',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Qué horario del día te queda mejor para practicar? Respóndeme, me sirve para mejorar los recordatorios.',
+    },
+    // v3: continuar donde quedó, sin culpa.
+    {
+      subject: 'Justo donde lo dejaste',
+      preheader: 'Tu progreso no se borra por unos días de pausa.',
+      greeting: '¡Hola! 👋',
+      title: 'Nada se perdió',
+      bodyHtml: `
+      <p style="${P}">
+        Unos días sin practicar no borran nada: tu progreso sigue guardado
+        tal cual lo dejaste, y puedes retomar exactamente ahí.
+      </p>
+      <div style="${BOX}">
+        Sin presión ni "empezar de cero". Solo entra y sigue donde ibas.
+      </div>`,
+      ctaText: 'Seguir donde me quedé',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+  ],
+  member_reactivation_3d: [
+    // v0: el original (5 minutos + phrasal verb), se mantiene igual.
+    {
+      subject: 'Tu sesión de 5 minutos está lista',
+      preheader: 'Y un phrasal verb que vas a usar esta misma semana.',
+      greeting: '¡Hola! 👋',
+      title: 'Un tip rápido antes de volver',
+      titleWithName: '{name}, un tip rápido antes de volver',
+      bodyHtml: `
+      <div style="${BOX}">
+        <strong>Catch up</strong> = ponerse al día<br>
+        I need to catch up on my English practice. (Necesito ponerme al día con mi práctica de inglés.)
+      </div>
+      <p style="${P}">
+        Hace unos días que no practicas. Elige una sesión corta en tu área de
+        miembros y retomas en 5 minutos.
+      </p>`,
+      ctaText: 'Hacer una sesión corta',
+      ctaUrl: `${SITE}/practica-miembros.html`,
+      footerNote: '¿Hay algo que te gustaría practicar y no encuentras? Respóndeme, lo leo yo.',
+    },
+    // v1: pequeño reto (English Rush ya lo usa day3, aquí un reto de
+    // vocabulario dentro del mismo correo, sin mandar a otra página).
+    {
+      subject: 'Un reto chiquito para hoy',
+      preheader: '30 segundos para responder. A ver si le achuntas.',
+      greeting: '¡Hola! 👋',
+      title: 'Te propongo algo simple',
+      bodyHtml: `
+      <p style="${P}">¿Cuál de las dos es correcta?</p>
+      <div style="${BOX}">
+        A) I'm agree with you.<br>
+        B) I agree with you.
+      </div>
+      <p style="${P}">
+        Es la <strong>B</strong>: <em>agree</em> ya es un verbo en inglés, no
+        hace falta el <em>to be</em> antes (a diferencia del español "estoy
+        de acuerdo"). Si te lo supiste, tu nivel sigue ahí, solo falta
+        retomar el ritmo.
+      </p>`,
+      ctaText: 'Practicar un poco hoy',
+      ctaUrl: `${SITE}/practica-miembros.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+    // v2: progreso ya conseguido (dashboard/racha, sin culpa).
+    {
+      subject: 'Tu progreso te está esperando',
+      preheader: 'Todo lo que llevas avanzado sigue guardado, tal cual.',
+      greeting: '¡Hola! 👋',
+      title: 'Sigue justo donde ibas',
+      bodyHtml: `
+      <p style="${P}">
+        Tu progreso, tu racha y tus estadísticas siguen guardados exactamente
+        como los dejaste. No hay que "empezar de nuevo", solo continuar.
+      </p>
+      <div style="${BOX}">
+        Un vistazo rápido a tu progreso suele ser el mejor empujón para
+        retomar.
+      </div>`,
+      ctaText: 'Ver mi progreso',
+      ctaUrl: `${SITE}/progreso.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+    // v3: volver sin culpa (tono más suave, ninguna venta).
+    {
+      subject: 'Sin culpa, retoma cuando puedas',
+      preheader: 'Unos días de pausa no cambian nada de lo que ya avanzaste.',
+      greeting: '¡Hola! 👋',
+      title: 'No pasa nada por la pausa',
+      bodyHtml: `
+      <p style="${P}">
+        La vida se pone ocupada y el inglés a veces queda en pausa. Es
+        completamente normal, y tu cuenta sigue exactamente como la
+        dejaste.
+      </p>
+      <div style="${BOX}">
+        Cuando tengas un ratito, ahí va a estar todo esperándote. Sin
+        presión.
+      </div>`,
+      ctaText: 'Retomar cuando quieras',
+      ctaUrl: `${SITE}/practica-miembros.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+  ],
+  member_reactivation_10d: [
+    // v0: el original (novedades: TOEIC, test de nivel).
+    {
+      subject: 'Hay cosas nuevas en tu membresía 👀',
+      preheader: 'Preparación TOEIC, un test de nivel con listening y más.',
+      greeting: '¡Hola! 👋',
+      title: 'Esto es nuevo desde tu última visita',
+      bodyHtml: `
+      <div style="${BOX}">
+        <strong>Preparación para el TOEIC:</strong> el examen que piden muchas
+        empresas, con listening y reading tipo examen.<br><br>
+        <strong>Test de nivel con listening:</strong> para ver cuánto has avanzado.
+      </div>
+      <p style="${P}">
+        Y todo lo de siempre: ejercicios por nivel, clases interactivas y
+        English Rush. Tu progreso sigue guardado.
+      </p>`,
+      ctaText: 'Volver a practicar',
+      ctaUrl: `${SITE}/practica-miembros.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+    // v1: lo que ya construyó (progreso real, no presión de pago).
+    {
+      subject: 'Ya construiste algo, no lo dejes ahí',
+      preheader: 'Tu avance de estas semanas sigue guardado tal cual.',
+      greeting: '¡Hola! 👋',
+      title: 'Tu avance sigue ahí',
+      bodyHtml: `
+      <p style="${P}">
+        Antes de dejar de entrar ya habías avanzado en varias habilidades.
+        Ese avance no se pierde por unas semanas sin practicar, sigue
+        guardado tal cual.
+      </p>
+      <div style="${BOX}">
+        Retomar no es "empezar de cero": es seguir exactamente donde ibas.
+      </div>`,
+      ctaText: 'Retomar mi práctica',
+      ctaUrl: `${SITE}/practica-miembros.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+    // v2: sesión preparada (plan de estudio, sin que decida nada).
+    {
+      subject: 'Te dejé una sesión lista para hoy',
+      preheader: 'Con tu nivel y tu progreso, no tienes que pensar por dónde empezar.',
+      greeting: '¡Hola! 👋',
+      title: 'Solo tienes que entrar',
+      bodyHtml: `
+      <p style="${P}">
+        Tu plan de estudio arma una práctica recomendada según tu nivel, tu
+        progreso y tus errores frecuentes. No tienes que decidir nada, solo
+        entrar y seguirlo.
+      </p>
+      <div style="${BOX}">
+        5 a 25 minutos, tú eliges cuánto tiempo.
+      </div>`,
+      ctaText: 'Ir a mi plan de estudio',
+      ctaUrl: `${SITE}/plan-estudio.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+  ],
 }
 
 // ---------------- Correos después del día 30 (long_term) ----------------

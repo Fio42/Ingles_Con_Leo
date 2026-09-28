@@ -369,6 +369,20 @@ const LeoBackend = (function(){
         duration_ms: session.durationMs,
         results: session.results || []
       });
+      /* Marca "última práctica REAL" en profiles.last_practice_at,
+         distinto de last_seen_at (que se actualiza con cualquier
+         visita, no solo al practicar). La usan los correos de
+         reactivación de Miembros (supabase_functions/upgrade-nudge-
+         emails.ts) para no confundir "abrió una página" con "practicó
+         de verdad". recordSession() SOLO llama a pushSession() desde
+         los motores de sesión de Miembros (nunca desde práctica
+         gratis), así que esta columna nunca se toca para cuentas
+         gratis: ahí la señal equivalente ya es free_daily_date, ver
+         supabase_schema.sql. Fire-and-forget, igual que touchLastSeen.
+         Necesita GRANT UPDATE (last_practice_at) — ver
+         supabase_schema.sql. */
+      sb.from('profiles').update({ last_practice_at: new Date().toISOString() }).eq('id', session_.user.id)
+        .then(()=>{}, ()=>{});
     }catch(e){}
   }
 
