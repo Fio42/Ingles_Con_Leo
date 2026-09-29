@@ -1012,6 +1012,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* ---------- Cómo funciona (con mini-demos, cards clickeables) ---------- */
 .how-v2{padding:24px 0 56px;}
+@media(min-width:900px){.how-v2{margin-top:-100px;}}
 .how-v2-grid{display:grid;gap:22px;grid-template-columns:1fr;margin-top:34px;align-items:start;}
 @media(min-width:760px){.how-v2-grid{grid-template-columns:repeat(3,1fr);}}
 .how-v2-card{
