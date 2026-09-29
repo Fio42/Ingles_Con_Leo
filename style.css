@@ -905,7 +905,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    ============================================================ */
 
 /* ---------- Hero ---------- */
-.hero-v2{padding:36px 0 28px;}
+.hero-v2{padding:36px 0 0;}
 .hero-v2 .wrap{max-width:1180px;}
 .hero-v2-grid{display:grid;gap:40px;align-items:start;grid-template-columns:1fr;}
 @media(min-width:900px){.hero-v2-grid{grid-template-columns:1.1fr 0.9fr;gap:48px;}}
@@ -1011,7 +1011,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 
 /* ---------- Cómo funciona (con mini-demos, cards clickeables) ---------- */
-.how-v2{padding:64px 0 56px;}
+.how-v2{padding:24px 0 56px;}
 .how-v2-grid{display:grid;gap:22px;grid-template-columns:1fr;margin-top:34px;align-items:start;}
 @media(min-width:760px){.how-v2-grid{grid-template-columns:repeat(3,1fr);}}
 .how-v2-card{
