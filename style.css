@@ -905,14 +905,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    ============================================================ */
 
 /* ---------- Hero ---------- */
-.hero-v2{padding:44px 0 36px;}
+.hero-v2{padding:36px 0 28px;}
 .hero-v2 .wrap{max-width:1300px;}
 .hero-v2-grid{display:grid;gap:40px;align-items:center;grid-template-columns:1fr;}
 @media(min-width:900px){.hero-v2-grid{grid-template-columns:1fr 1fr;gap:48px;}}
 
 .hero-v2-copy h1{font-size:clamp(2.3rem,5.2vw,3.6rem);line-height:1.1;font-weight:800;}
 .hero-v2-sub{margin-top:18px;font-size:1.18rem;color:var(--ink-soft);max-width:50ch;}
-.hero-v2-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin-top:30px;}
+.hero-v2-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:22px;margin-top:22px;}
 .hero-cta-main{min-width:328px;justify-content:center;padding:21px 46px;font-size:1.28rem;box-shadow:0 10px 26px rgba(53,84,240,0.32);}
 .hero-cta-main:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(53,84,240,0.4);}
 .hero-cta-main:active{transform:translateY(0) scale(0.97);}
@@ -925,7 +925,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .hero-v2-member-group{display:flex;flex-direction:column;gap:4px;}
 .hero-v2-member-note{font-size:0.82rem;color:var(--ink-faint);padding-left:4px;}
 
-.hero-v2-benefits{display:flex;flex-wrap:wrap;gap:20px 30px;margin-top:34px;}
+.hero-v2-benefits{display:flex;flex-wrap:wrap;gap:16px 30px;margin-top:24px;}
 .hero-v2-benefit{display:flex;align-items:center;gap:10px;font-weight:600;font-size:0.92rem;color:var(--ink-soft);}
 .hero-v2-benefit-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .hero-v2-benefit-icon svg{width:18px;height:18px;}
