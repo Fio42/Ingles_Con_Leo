@@ -905,10 +905,12 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    ============================================================ */
 
 /* ---------- Hero ---------- */
-.hero-v2{padding:36px 0 0;}
+.hero-v2{position:relative;padding:36px 0 0;}
 .hero-v2 .wrap{max-width:1180px;}
 .hero-v2-grid{display:grid;gap:40px;align-items:start;grid-template-columns:1fr;}
-@media(min-width:900px){.hero-v2-grid{grid-template-columns:1.1fr 0.9fr;gap:48px;}}
+@media(min-width:900px){
+  .hero-v2-grid{grid-template-columns:1.1fr 0.9fr;gap:48px;}
+}
 
 .hero-v2-copy{max-width:620px;}
 .hero-v2-copy h1{font-size:clamp(2.3rem,5.2vw,3.6rem);line-height:1.1;font-weight:800;}
@@ -943,6 +945,16 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 
 .hero-v2-media{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+@media(min-width:900px){
+  .hero-v2-media{
+    position:absolute;
+    top:36px;
+    right:max(20px,calc((100% - 1180px) / 2 + 20px));
+    width:min(492px,43vw);
+    transform:scale(.62);
+    transform-origin:top right;
+  }
+}
 .hero-v2-character-wrap{position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:380px;width:100%;}
 .hero-v2-character-wrap::before{
   content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
@@ -1012,7 +1024,6 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* ---------- Cómo funciona (con mini-demos, cards clickeables) ---------- */
 .how-v2{padding:24px 0 56px;}
-@media(min-width:900px){.how-v2{margin-top:-100px;}}
 .how-v2-grid{display:grid;gap:22px;grid-template-columns:1fr;margin-top:34px;align-items:start;}
 @media(min-width:760px){.how-v2-grid{grid-template-columns:repeat(3,1fr);}}
 .how-v2-card{
