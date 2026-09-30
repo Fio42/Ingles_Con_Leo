@@ -512,15 +512,26 @@ Deno.serve(async (req: Request) => {
       // Sin cuerpo JSON (o vacío): seguimos con el modo automático normal.
     }
 
-    const { data: profiles, error } = await supabase
-      .from('profiles')
-      .select(
-        'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
-      )
-      .eq('is_member', false)
-      .not('email', 'is', null)
-      .is('email_opt_out_at', null)
-      .limit(MAX_PER_RUN)
+    // Se leen TODAS las cuentas gratis por páginas de 1000 (orden fijo
+    // por id). Antes era .limit(300) sin orden: con más de 300 cuentas,
+    // las de más allá del corte nunca recibían ningún correo.
+    const profiles: Record<string, unknown>[] = []
+    let error: unknown = null
+    for (let page = 0; page < 20; page++) {
+      const { data: chunk, error: e } = await supabase
+        .from('profiles')
+        .select(
+          'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+        )
+        .eq('is_member', false)
+        .not('email', 'is', null)
+        .is('email_opt_out_at', null)
+        .order('id', { ascending: true })
+        .range(page * 1000, page * 1000 + 999)
+      if (e) { error = e; break }
+      profiles.push(...(chunk || []))
+      if (!chunk || chunk.length < 1000) break
+    }
     if (error) {
       console.error('Error buscando cuentas gratis:', error)
       return json({ ok: false }, 200)
@@ -545,16 +556,17 @@ Deno.serve(async (req: Request) => {
       .order('created_at', { ascending: false })
       .limit(MAX_PER_RUN)
     const seenIds = new Set<string>()
-    const allProfiles = [...(recentProfiles || []), ...(profiles || [])].filter((x: { id: string }) => {
-      if (seenIds.has(x.id)) return false
-      seenIds.add(x.id)
+    const allProfiles = [...(recentProfiles || []), ...profiles].filter((x) => {
+      const id = x.id as string
+      if (seenIds.has(id)) return false
+      seenIds.add(id)
       return true
     })
 
     const now = Date.now()
     const counts: Record<string, number> = {}
 
-    for (const p of allProfiles as Profile[]) {
+    for (const p of allProfiles as unknown as Profile[]) {
       // Antes de decidir, revisar si algún correo de la secuencia por
       // calendario ya "caducó" (pasó su SKIP_AFTER_DAYS) sin haberse
       // mandado. Si sí, se marca 'skipped' en lifecycle_emails (una sola
@@ -579,13 +591,21 @@ Deno.serve(async (req: Request) => {
     // no se toca ni se puede ver afectada por esto. Ver
     // decideMemberEmail() y la nota larga de MEMBER_REACTIVATION_*
     // más arriba.
-    const { data: memberProfiles, error: memberError } = await supabase
-      .from('profiles')
-      .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at, member_since, last_practice_at')
-      .eq('is_member', true)
-      .not('email', 'is', null)
-      .is('email_opt_out_at', null)
-      .limit(MAX_PER_RUN)
+    const memberProfiles: Record<string, unknown>[] = []
+    let memberError: unknown = null
+    for (let page = 0; page < 20; page++) {
+      const { data: chunk, error: e } = await supabase
+        .from('profiles')
+        .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at, member_since, last_practice_at')
+        .eq('is_member', true)
+        .not('email', 'is', null)
+        .is('email_opt_out_at', null)
+        .order('id', { ascending: true })
+        .range(page * 1000, page * 1000 + 999)
+      if (e) { memberError = e; break }
+      memberProfiles.push(...(chunk || []))
+      if (!chunk || chunk.length < 1000) break
+    }
     if (memberError) {
       console.error('Error buscando miembros:', memberError)
       // No se corta todo el run por esto: los correos de cuentas
@@ -594,7 +614,7 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, counts }, 200)
     }
 
-    for (const p of (memberProfiles || []) as Profile[]) {
+    for (const p of memberProfiles as unknown as Profile[]) {
       const key = decideMemberEmail(p, now)
       if (!key) continue
       if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
