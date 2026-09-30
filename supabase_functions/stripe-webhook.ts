@@ -199,6 +199,24 @@ Deno.serve(async (req: Request) => {
         const yaEraMiembro = !!(existing && existing.is_member)
         const correoDestino = (existing && existing.email) || obj.customer_details?.email || obj.customer_email
 
+        // Reclamo atómico de "pasó de gratis a miembro" (auditoría
+        // 2026-09-30): los proveedores de pago a veces mandan el mismo
+        // aviso dos veces casi al mismo tiempo. Antes, ambas copias
+        // leían is_member=false a la vez y las dos mandaban la
+        // bienvenida (y el evento a Meta). Ahora solo UNA copia logra
+        // este update (filtra is_member=false) y esa es la que manda.
+        let esNuevo = false
+        if (!yaEraMiembro) {
+          const { data: reclamado } = await supabase
+            .from('profiles')
+            .update({ is_member: true, member_since: new Date().toISOString(), member_welcome_sent_at: null, member_welcome_claimed_at: null })
+            .eq('id', userId)
+            .eq('is_member', false)
+            .select('id')
+          if (reclamado && reclamado.length) esNuevo = true
+          else if (!existing) esNuevo = true // fila inexistente: el upsert de abajo la crea
+        }
+
         // upsert en vez de update: si por lo que sea la fila de profiles
         // no existiera todavía (por ejemplo alguien la borró a mano por
         // error, o algo raro pasó justo al crear la cuenta), esto la
@@ -207,14 +225,14 @@ Deno.serve(async (req: Request) => {
         const { error } = await supabase
           .from('profiles')
           .upsert(
-            { id: userId, email: correoDestino, is_member: true, member_since: new Date().toISOString(), stripe_customer_id: customerId },
+            { id: userId, email: correoDestino, is_member: true, ...(esNuevo ? { member_since: new Date().toISOString() } : {}), stripe_customer_id: customerId },
             { onConflict: 'id' }
           )
         if (error) console.error('Error activando miembro (Stripe):', error)
-        if (!yaEraMiembro && correoDestino) {
-          await mandarCorreoBienvenida(correoDestino)
+        if (correoDestino) {
+          await ensureMemberWelcome(userId, correoDestino)
         }
-        if (!yaEraMiembro) {
+        if (esNuevo) {
           // amount_total/currency son el monto REAL cobrado en esta sesión
           // (Stripe ya ajusta el precio según el país), así que no hay que
           // inventar ni hardcodear el valor mensual/anual acá.
@@ -297,28 +315,68 @@ async function verifyStripeSignature(payload: string, signatureHeader: string, s
   return computedSig === expectedSig
 }
 
-async function mandarCorreoBienvenida(destinatario: string) {
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [destinatario],
-        reply_to: REPLY_TO_EMAIL,
-        subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
-        html: HTML_BIENVENIDA,
-      }),
-    })
-    if (!res.ok) {
+async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
+  // Hasta 3 intentos (Resend a veces responde 429 o falla un instante).
+  for (let intento = 1; intento <= 3; intento++) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [destinatario],
+          reply_to: REPLY_TO_EMAIL,
+          subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
+          html: HTML_BIENVENIDA,
+        }),
+      })
+      if (res.ok) return true
       const detalle = await res.text()
-      console.error('Error mandando correo de bienvenida:', detalle)
+      console.error(`Error mandando correo de bienvenida (intento ${intento}):`, detalle)
+    } catch (e) {
+      console.error(`Error mandando correo de bienvenida (intento ${intento}):`, e)
     }
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1200 * intento))
+  }
+  return false
+}
+
+// Bienvenida de miembro con reintento seguro (auditoría 2026-09-30).
+// member_welcome_sent_at = ya se mandó (lo único que la cierra).
+// member_welcome_claimed_at = "alguien la está mandando ahora" (lease de
+// WELCOME_LEASE_MINUTES: solo una ejecución a la vez, y si el proceso
+// muriera la reserva caduca sola). La membresía ya quedó activa ANTES
+// de llamar esto, así que un fallo de Resend nunca afecta el acceso; y
+// si la bienvenida falla, el barrido de upgrade-nudge-emails (cada 30
+// min) y cualquier aviso repetido del proveedor la reintentan.
+const WELCOME_LEASE_MINUTES = 15
+async function ensureMemberWelcome(userId: string, email: string): Promise<void> {
+  try {
+    const { data: row } = await supabase
+      .from('profiles')
+      .select('is_member, member_welcome_sent_at')
+      .eq('id', userId)
+      .maybeSingle()
+    if (!row || !row.is_member || row.member_welcome_sent_at) return
+    const leaseCutoff = new Date(Date.now() - WELCOME_LEASE_MINUTES * 60000).toISOString()
+    const { data: reclamado } = await supabase
+      .from('profiles')
+      .update({ member_welcome_claimed_at: new Date().toISOString() })
+      .eq('id', userId)
+      .is('member_welcome_sent_at', null)
+      .or(`member_welcome_claimed_at.is.null,member_welcome_claimed_at.lt.${leaseCutoff}`)
+      .select('id')
+    if (!reclamado || !reclamado.length) return
+    const ok = await mandarCorreoBienvenida(email)
+    await supabase
+      .from('profiles')
+      .update(ok ? { member_welcome_sent_at: new Date().toISOString(), member_welcome_claimed_at: null } : { member_welcome_claimed_at: null })
+      .eq('id', userId)
   } catch (e) {
-    console.error('Error mandando correo de bienvenida:', e)
+    console.error('Error en ensureMemberWelcome:', e)
   }
 }
 

@@ -70,7 +70,8 @@ async function unsubLinks(userId: string): Promise<{ page: string; oneClick: str
 
 // México (la mayoría de la audiencia) es UTC-6 todo el año.
 const MEXICO_UTC_OFFSET_HOURS = -6
-const MAX_PER_RUN = 500
+const TIME_BUDGET_MS = 100_000
+const CLAIM_LEASE_MINUTES = 15
 
 Deno.serve(async (_req: Request) => {
   try {
@@ -81,32 +82,32 @@ Deno.serve(async (_req: Request) => {
     const yesterdayStr = yesterday.toISOString().slice(0, 10)
 
     // Quiénes practicaron ayer (posible racha activa) y quiénes ya
-    // practicaron hoy (a esos no hace falta avisarles).
-    const { data: practicedYesterday, error: err1 } = await supabase
-      .from('progress_sessions')
-      .select('user_id')
-      .eq('date', yesterdayStr)
-    if (err1) {
-      console.error('Error buscando quién practicó ayer:', err1)
+    // practicaron hoy (a esos no hace falta avisarles). Se leen TODAS
+    // las filas por páginas (auditoría 2026-09-30): Supabase corta
+    // cualquier consulta en 1000 filas y aquí hay varias sesiones por
+    // persona, así que sin paginar, con suficiente actividad, algunos
+    // miembros con racha nunca entraban en la lista.
+    const practicedYesterday = await fetchUserIdsForDate(yesterdayStr)
+    const practicedToday = await fetchUserIdsForDate(todayStr)
+    if (!practicedYesterday || !practicedToday) {
+      console.error('Error buscando quién practicó ayer/hoy')
       return json({ ok: false }, 200)
     }
 
-    const { data: practicedToday, error: err2 } = await supabase
-      .from('progress_sessions')
-      .select('user_id')
-      .eq('date', todayStr)
-    if (err2) {
-      console.error('Error buscando quién practicó hoy:', err2)
-      return json({ ok: false }, 200)
-    }
+    const yaHoy = new Set(practicedToday)
+    const candidatos = Array.from(new Set(practicedYesterday)).filter((id) => !yaHoy.has(id))
 
-    const yaHoy = new Set((practicedToday || []).map((r) => r.user_id))
-    const candidatos = Array.from(new Set((practicedYesterday || []).map((r) => r.user_id))).filter(
-      (id) => !yaHoy.has(id)
-    )
-
+    // Presupuesto de tiempo en vez de un tope fijo de 500 (que dejaba a
+    // los demás sin aviso para siempre): se procesan todos hasta ~100 s.
+    // Lo ya mandado queda marcado con la fecha de hoy, así que una
+    // segunda ejecución continúa donde se quedó sin repetir a nadie.
+    const startedAt = Date.now()
     let sent = 0
-    for (const userId of candidatos.slice(0, MAX_PER_RUN)) {
+    for (const userId of candidatos) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) {
+        console.error('Presupuesto de tiempo agotado; quedaron candidatos sin procesar. Volver a ejecutar la función.')
+        break
+      }
       const didSend = await sendIfStillEligible(userId, todayStr)
       if (didSend) sent++
     }
@@ -117,6 +118,27 @@ Deno.serve(async (_req: Request) => {
     return json({ ok: false }, 200)
   }
 })
+
+// Todos los user_id con al menos una sesión en una fecha, paginado
+// (orden fijo por id). Devuelve null si alguna página falla.
+async function fetchUserIdsForDate(dateStr: string): Promise<string[] | null> {
+  const ids: string[] = []
+  for (let page = 0; page < 50; page++) {
+    const { data, error } = await supabase
+      .from('progress_sessions')
+      .select('user_id')
+      .eq('date', dateStr)
+      .order('id', { ascending: true })
+      .range(page * 1000, page * 1000 + 999)
+    if (error) {
+      console.error('Error leyendo progress_sessions:', error)
+      return null
+    }
+    ids.push(...(data || []).map((r: { user_id: string }) => r.user_id))
+    if (!data || data.length < 1000) break
+  }
+  return ids
+}
 
 // Revisa TODO otra vez justo antes de mandar (no confía en la lista de
 // candidatos, que pudo quedar vieja mientras se mandaban los correos
@@ -143,12 +165,40 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
   const streakCount = await computeCurrentStreak(userId)
   if (streakCount < 1) return false // sin racha activa no tiene sentido este correo
 
-  const okToSend = await sendEmail(prof.email, streakCount, userId)
-  if (!okToSend) return false
+  // Reserva con "lease" (auditoría 2026-09-30): streak_reminder_claimed_at
+  // marca "alguien está mandando este aviso ahora". Solo UNA ejecución
+  // logra la reserva (evita doble envío en ejecuciones simultáneas). Si el
+  // envío falla, se libera en el acto. Si el proceso muriera a media
+  // operación, la reserva caduca sola a los CLAIM_LEASE_MINUTES y una
+  // nueva ejecución el mismo día puede volver a intentarlo: nunca queda
+  // bloqueada para siempre. Solo al confirmar el envío se escribe
+  // streak_reminder_last_sent (lo que de verdad cierra el día).
+  const leaseCutoff = new Date(Date.now() - CLAIM_LEASE_MINUTES * 60000).toISOString()
+  const { data: reclamado, error: claimError } = await supabase
+    .from('profiles')
+    .update({ streak_reminder_claimed_at: new Date().toISOString() })
+    .eq('id', userId)
+    .or(`and(or(streak_reminder_last_sent.is.null,streak_reminder_last_sent.neq.${todayStr}),or(streak_reminder_claimed_at.is.null,streak_reminder_claimed_at.lt.${leaseCutoff}))`)
+    .select('id')
+  if (claimError) {
+    console.error(`Error reservando el aviso de racha para ${userId}:`, claimError)
+    return false
+  }
+  if (!reclamado || !reclamado.length) return false
 
+  let okToSend = false
+  try {
+    okToSend = await sendEmail(prof.email, streakCount, userId)
+  } catch (e) {
+    console.error('Error inesperado mandando aviso de racha:', e)
+  }
+  if (!okToSend) {
+    await supabase.from('profiles').update({ streak_reminder_claimed_at: null }).eq('id', userId)
+    return false
+  }
   const { error } = await supabase
     .from('profiles')
-    .update({ streak_reminder_last_sent: todayStr })
+    .update({ streak_reminder_last_sent: todayStr, streak_reminder_claimed_at: null })
     .eq('id', userId)
   if (error) console.error(`Error marcando streak_reminder_last_sent para ${userId}:`, error)
   return true
@@ -192,7 +242,7 @@ async function computeCurrentStreak(userId: string): Promise<number> {
 async function sendEmail(destinatario: string, streakCount: number, userId: string): Promise<boolean> {
   try {
     const links = await unsubLinks(userId)
-    const res = await fetch('https://api.resend.com/emails', {
+    const doFetch = () => fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
@@ -210,6 +260,13 @@ async function sendEmail(destinatario: string, streakCount: number, userId: stri
         },
       }),
     })
+    // Resend limita a ~2 envíos por segundo: si responde 429, se espera
+    // un momento y se reintenta una vez (este aviso corre solo 1 vez al día).
+    let res = await doFetch()
+    if (res.status === 429) {
+      await new Promise((r) => setTimeout(r, 1200))
+      res = await doFetch()
+    }
     if (!res.ok) {
       const detalle = await res.text()
       console.error('Error mandando correo de racha:', detalle)

@@ -844,3 +844,19 @@ from (
 ) sub
 where sub.user_id = p.id
   and (p.last_practice_at is null or p.last_practice_at < sub.last_practice);
+
+-- ============================================================
+-- Auditoría de correos 2026-09-30: reservas con "lease" para que los
+-- correos no se dupliquen NI se pierdan (ver streak-reminder-email.ts,
+-- survey-15d-email.ts, los webhooks de pago y upgrade-nudge-emails.ts).
+-- CORRER ESTO EN EL SQL EDITOR DE SUPABASE *ANTES* DE DESPLEGAR LAS
+-- FUNCIONES. Es seguro correrlo más de una vez.
+-- ============================================================
+alter table public.profiles add column if not exists streak_reminder_claimed_at timestamptz;
+alter table public.profiles add column if not exists survey_15d_claimed_at timestamptz;
+alter table public.profiles add column if not exists member_welcome_claimed_at timestamptz;
+alter table public.profiles add column if not exists member_welcome_sent_at timestamptz;
+-- Los miembros que ya existen NO deben recibir una "bienvenida" nueva:
+update public.profiles
+   set member_welcome_sent_at = coalesce(member_since, now())
+ where is_member = true and member_welcome_sent_at is null;

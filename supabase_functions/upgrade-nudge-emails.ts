@@ -622,12 +622,124 @@ Deno.serve(async (req: Request) => {
       if (didSend) counts[key] = (counts[key] || 0) + 1
     }
 
+    // Barrido de bienvenidas de miembro que no salieron (auditoría
+    // 2026-09-30): ver sweepMemberWelcomes().
+    const welcomesSent = await sweepMemberWelcomes()
+    if (welcomesSent) counts['member_welcome_sweep'] = welcomesSent
+
     return json({ ok: true, counts }, 200)
   } catch (e) {
     console.error(e)
     return json({ ok: false }, 200)
   }
 })
+
+// ---------------- Barrido: bienvenida de miembro pendiente ----------------
+// Red de seguridad para la bienvenida que mandan los webhooks de pago
+// (stripe/paypal/mp): si Resend falló o el proceso murió, member_welcome_sent_at
+// sigue vacío y esta pasada (cada 30 min) la manda. Solo miembros de los
+// últimos 3 días (no se manda fuera de contexto) y con 10 min de espera para
+// dejar que el webhook la mande primero. Usa el mismo lease que los webhooks
+// (member_welcome_claimed_at), así nunca salen dos.
+async function sweepMemberWelcomes(): Promise<number> {
+  let sent = 0
+  try {
+    const nowMs = Date.now()
+    const { data: rows, error } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('is_member', true)
+      .is('member_welcome_sent_at', null)
+      .not('email', 'is', null)
+      .gte('member_since', new Date(nowMs - 3 * 86400000).toISOString())
+      .lte('member_since', new Date(nowMs - 10 * 60000).toISOString())
+      .order('member_since', { ascending: true })
+      .limit(200)
+    if (error) {
+      console.error('Error buscando bienvenidas pendientes:', error)
+      return 0
+    }
+    for (const r of rows || []) {
+      const cutoff = new Date(Date.now() - 15 * 60000).toISOString()
+      const { data: reclamado } = await supabase
+        .from('profiles')
+        .update({ member_welcome_claimed_at: new Date().toISOString() })
+        .eq('id', r.id)
+        .eq('is_member', true)
+        .is('member_welcome_sent_at', null)
+        .or(`member_welcome_claimed_at.is.null,member_welcome_claimed_at.lt.${cutoff}`)
+        .select('id')
+      if (!reclamado || !reclamado.length) continue
+      const ok = await sendMemberWelcomeViaResend(r.email as string)
+      await supabase
+        .from('profiles')
+        .update(ok ? { member_welcome_sent_at: new Date().toISOString(), member_welcome_claimed_at: null } : { member_welcome_claimed_at: null })
+        .eq('id', r.id)
+      if (ok) sent++
+    }
+  } catch (e) {
+    console.error('Error en sweepMemberWelcomes:', e)
+  }
+  return sent
+}
+
+async function sendMemberWelcomeViaResend(to: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [to],
+        reply_to: REPLY_TO_EMAIL,
+        subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
+        html: HTML_MEMBER_WELCOME,
+      }),
+    })
+    if (!res.ok) console.error('Error mandando bienvenida de miembro (barrido):', await res.text())
+    return res.ok
+  } catch (e) {
+    console.error('Error mandando bienvenida de miembro (barrido):', e)
+    return false
+  }
+}
+
+const HTML_MEMBER_WELCOME = `
+<div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
+  <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
+    <h1 style="color:#253ECC; font-size:22px; margin-top:0;">¡Bienvenido a Inglés con Leo!</h1>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Tu membresía ya está activa y puedes empezar a practicar desde hoy.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Dentro encontrarás actividades de gramática, vocabulario, listening,
+      speaking y writing, organizadas para que avances a tu ritmo y sin
+      complicaciones.
+    </p>
+    <p style="text-align:center; margin:28px 0;">
+      <a href="https://inglesconleo.com/miembros.html"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:12px 24px; border-radius:8px; font-size:15px; display:inline-block;">
+        Entrar a mi cuenta
+      </a>
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      No necesitas estudiar horas. Con unos minutos de práctica constante
+      puedes avanzar muchísimo.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Empieza por la habilidad que más quieras mejorar y continúa desde ahí.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Si en algún momento tienes una duda o necesitas ayuda, puedes responder
+      directamente a este correo.
+    </p>
+    <p style="color:#333; font-size:15px; margin-bottom:0;">
+      Gracias por formar parte de Inglés con Leo. ¡Bienvenida(o)!
+    </p>
+  </div>
+</div>
+`.trim()
 
 // ---------------- Decidir qué correo (si acaso) le toca a alguien ----------------
 

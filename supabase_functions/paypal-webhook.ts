@@ -214,6 +214,24 @@ Deno.serve(async (req: Request) => {
         const yaEraMiembro = !!(existing && existing.is_member)
         const correoDestino = (existing && existing.email) || paypalEmail
 
+        // Reclamo atómico de "pasó de gratis a miembro" (auditoría
+        // 2026-09-30): los proveedores de pago a veces mandan el mismo
+        // aviso dos veces casi al mismo tiempo. Antes, ambas copias
+        // leían is_member=false a la vez y las dos mandaban la
+        // bienvenida (y el evento a Meta). Ahora solo UNA copia logra
+        // este update (filtra is_member=false) y esa es la que manda.
+        let esNuevo = false
+        if (!yaEraMiembro) {
+          const { data: reclamado } = await supabase
+            .from('profiles')
+            .update({ is_member: true, member_since: new Date().toISOString(), member_welcome_sent_at: null, member_welcome_claimed_at: null })
+            .eq('id', userId)
+            .eq('is_member', false)
+            .select('id')
+          if (reclamado && reclamado.length) esNuevo = true
+          else if (!existing) esNuevo = true // fila inexistente: el upsert de abajo la crea
+        }
+
         // upsert en vez de update: si por lo que sea la fila de profiles
         // no existiera todavía, esto la crea directamente en vez de no
         // hacer nada. Si ya existe, la actualiza normal (no borra el
@@ -225,14 +243,14 @@ Deno.serve(async (req: Request) => {
               id: userId,
               email: correoDestino,
               is_member: true,
-              member_since: new Date().toISOString(),
+              ...(esNuevo ? { member_since: new Date().toISOString() } : {}),
               paypal_subscription_id: subscriptionId,
             },
             { onConflict: 'id' }
           )
         if (error) console.error('Error activando miembro (PayPal):', error)
-        if (!yaEraMiembro && correoDestino) {
-          await mandarCorreoBienvenida(correoDestino)
+        if (correoDestino) {
+          await ensureMemberWelcome(userId, correoDestino)
         }
         // subscriptionDetails solo se llena si de verdad se hizo una
         // consulta a la API de PayPal más abajo (para poder reusarla en
@@ -241,7 +259,7 @@ Deno.serve(async (req: Request) => {
         // consulta normal, igual que siempre.
         let subscriptionDetails: any = null
         let sePidioDetalleAparte = false
-        if (!yaEraMiembro) {
+        if (esNuevo) {
           // Monto real del primer cobro: primero se busca en el propio
           // aviso (algunos avisos de PayPal ya traen billing_info), y
           // solo si no viene ahí se consulta la suscripción aparte.
@@ -419,28 +437,68 @@ async function refreshNextRenewal(subscriptionId: string, prefetched?: any | nul
   }
 }
 
-async function mandarCorreoBienvenida(destinatario: string) {
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [destinatario],
-        reply_to: REPLY_TO_EMAIL,
-        subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
-        html: HTML_BIENVENIDA,
-      }),
-    })
-    if (!res.ok) {
+async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
+  // Hasta 3 intentos (Resend a veces responde 429 o falla un instante).
+  for (let intento = 1; intento <= 3; intento++) {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [destinatario],
+          reply_to: REPLY_TO_EMAIL,
+          subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
+          html: HTML_BIENVENIDA,
+        }),
+      })
+      if (res.ok) return true
       const detalle = await res.text()
-      console.error('Error mandando correo de bienvenida:', detalle)
+      console.error(`Error mandando correo de bienvenida (intento ${intento}):`, detalle)
+    } catch (e) {
+      console.error(`Error mandando correo de bienvenida (intento ${intento}):`, e)
     }
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1200 * intento))
+  }
+  return false
+}
+
+// Bienvenida de miembro con reintento seguro (auditoría 2026-09-30).
+// member_welcome_sent_at = ya se mandó (lo único que la cierra).
+// member_welcome_claimed_at = "alguien la está mandando ahora" (lease de
+// WELCOME_LEASE_MINUTES: solo una ejecución a la vez, y si el proceso
+// muriera la reserva caduca sola). La membresía ya quedó activa ANTES
+// de llamar esto, así que un fallo de Resend nunca afecta el acceso; y
+// si la bienvenida falla, el barrido de upgrade-nudge-emails (cada 30
+// min) y cualquier aviso repetido del proveedor la reintentan.
+const WELCOME_LEASE_MINUTES = 15
+async function ensureMemberWelcome(userId: string, email: string): Promise<void> {
+  try {
+    const { data: row } = await supabase
+      .from('profiles')
+      .select('is_member, member_welcome_sent_at')
+      .eq('id', userId)
+      .maybeSingle()
+    if (!row || !row.is_member || row.member_welcome_sent_at) return
+    const leaseCutoff = new Date(Date.now() - WELCOME_LEASE_MINUTES * 60000).toISOString()
+    const { data: reclamado } = await supabase
+      .from('profiles')
+      .update({ member_welcome_claimed_at: new Date().toISOString() })
+      .eq('id', userId)
+      .is('member_welcome_sent_at', null)
+      .or(`member_welcome_claimed_at.is.null,member_welcome_claimed_at.lt.${leaseCutoff}`)
+      .select('id')
+    if (!reclamado || !reclamado.length) return
+    const ok = await mandarCorreoBienvenida(email)
+    await supabase
+      .from('profiles')
+      .update(ok ? { member_welcome_sent_at: new Date().toISOString(), member_welcome_claimed_at: null } : { member_welcome_claimed_at: null })
+      .eq('id', userId)
   } catch (e) {
-    console.error('Error mandando correo de bienvenida:', e)
+    console.error('Error en ensureMemberWelcome:', e)
   }
 }
 

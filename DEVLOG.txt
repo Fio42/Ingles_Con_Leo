@@ -1118,3 +1118,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Pruebas: node tools/tests/session-cycle.test.js (9 pruebas con los bancos reales). También se probó en el navegador con el código real: 3 sesiones seguidas, 27 ejercicios únicos, retomar y limpiar inflight bien. app.js?v=20260930b.
 - Ajuste de Gramática (mismo día): en gramática cada tema (topic, ~4 ejercicios de un mismo concepto) es la unidad pedagógica, así que pickCycleItemsByTopic arma la sesión con pocos temas: primero termina los temas que quedaron empezados, luego temas nuevos al azar, ejercicios intercalados como antes. Mismo mazo (sin repetir hasta agotar el banco). Temas por sesión: igual o mejor que antes (p. ej. media: prom 3.1, máx 4 vs máx 5 antes). Las otras 5 habilidades no cambian. 10 pruebas en tools/tests/session-cycle.test.js.
 2026-09-30 Lote miembros400: 64 ejercicios (listening, vocab, speaking, gramatica) en 4 niveles; 32 audios pendientes de generar.
+
+2026-09-30 - Auditoria de correos automaticos (reservas con lease, sin duplicados ni perdidos)
+- Columnas nuevas en profiles: streak_reminder_claimed_at, survey_15d_claimed_at, member_welcome_claimed_at, member_welcome_sent_at (ya aplicadas en Supabase).
+- Desplegado en Supabase: survey-15d-email v6, streak-reminder-email v5, stripe-webhook v27, paypal-webhook v19, rapid-service v33, upgrade-nudge-emails v24 (este ultimo con Supabase CLI).
+- OJO con los nombres: el webhook de Mercado Pago (archivo supabase_functions/mp-webhook.ts) esta desplegado en Supabase con el nombre "rapid-service", NO "mp-webhook". Desplegar siempre sobre rapid-service para no cambiar la URL registrada en Mercado Pago.
+- Bienvenida de miembro: los 3 webhooks de pago y el barrido de upgrade-nudge-emails (sweepMemberWelcomes) usan member_welcome_sent_at + reserva de 15 min. La membresia nunca depende de Resend.
+- Pendiente de probar con un pago real: una sola bienvenida por suscripcion y que un aviso repetido no mande otra.

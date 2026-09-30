@@ -50,6 +50,7 @@ const SURVEY_MAX_DAYS = 22 // ventana de seguridad: si el Cron dejó de
                             // la encuesta semanas tarde. Fuera de esta
                             // ventana, simplemente no se manda.
 
+const CLAIM_LEASE_MINUTES = 15
 const MAX_PER_RUN = 200 // tope de correos por corrida, por si acaso
 
 // Ventana horaria (ajustado 2026-09-25 por pedido de Leo), misma
@@ -106,8 +107,10 @@ Deno.serve(async (req: Request) => {
       .select('id, email, member_since')
       .eq('is_member', true)
       .is('survey_15d_sent_at', null)
+      .is('email_opt_out_at', null)
       .gte('member_since', from)
       .lte('member_since', to)
+      .order('member_since', { ascending: true })
       .limit(MAX_PER_RUN)
     if (error) console.error('Error buscando candidatos para la encuesta:', error)
 
@@ -132,18 +135,55 @@ Deno.serve(async (req: Request) => {
 // mandó (para no repetirlo nunca).
 async function sendSurveyIfStillEligible(userId: string, email: string | null): Promise<boolean> {
   if (!email) return false
-  const { data: fresh } = await supabase.from('profiles').select('is_member').eq('id', userId).maybeSingle()
+  const { data: fresh } = await supabase
+    .from('profiles')
+    .select('is_member, email_opt_out_at, survey_15d_sent_at, survey_15d_token')
+    .eq('id', userId)
+    .maybeSingle()
   if (!fresh || !fresh.is_member) return false
+  if (fresh.email_opt_out_at) return false // se dio de baja de los correos
+  if (fresh.survey_15d_sent_at) return false // ya se mandó
 
-  const token = crypto.randomUUID()
+  // Si ya había un token de un intento anterior que quedó a medias, se
+  // reutiliza: así, aunque el correo anterior sí hubiera salido, su link
+  // sigue funcionando.
+  const token = fresh.survey_15d_token || crypto.randomUUID()
   const surveyUrl = `${SURVEY_URL_BASE}?t=${token}`
 
-  const okToSend = await sendViaResend(email, '¿Cómo va tu experiencia con Inglés con Leo? 📝', htmlEncuesta(surveyUrl))
-  if (!okToSend) return false
+  // Reserva con "lease" (auditoría 2026-09-30): survey_15d_claimed_at
+  // marca "alguien está mandando esta encuesta ahora". Solo UNA ejecución
+  // logra la reserva. Si el envío falla, se libera en el acto. Si el
+  // proceso muriera a media operación, la reserva caduca sola a los
+  // CLAIM_LEASE_MINUTES y el Cron (cada hora) lo reintenta: nunca queda
+  // bloqueada para siempre ni se pierde la encuesta. survey_15d_sent_at
+  // solo se escribe al confirmar el envío.
+  const leaseCutoff = new Date(Date.now() - CLAIM_LEASE_MINUTES * 60000).toISOString()
+  const { data: reclamado, error: claimError } = await supabase
+    .from('profiles')
+    .update({ survey_15d_claimed_at: new Date().toISOString(), survey_15d_token: token })
+    .eq('id', userId)
+    .is('survey_15d_sent_at', null)
+    .or(`survey_15d_claimed_at.is.null,survey_15d_claimed_at.lt.${leaseCutoff}`)
+    .select('id')
+  if (claimError) {
+    console.error(`Error reservando la encuesta para ${userId}:`, claimError)
+    return false
+  }
+  if (!reclamado || !reclamado.length) return false
 
+  let okToSend = false
+  try {
+    okToSend = await sendViaResend(email, '¿Cómo va tu experiencia con Inglés con Leo? 📝', htmlEncuesta(surveyUrl))
+  } catch (e) {
+    console.error('Error inesperado mandando la encuesta:', e)
+  }
+  if (!okToSend) {
+    await supabase.from('profiles').update({ survey_15d_claimed_at: null }).eq('id', userId)
+    return false
+  }
   const { error } = await supabase
     .from('profiles')
-    .update({ survey_15d_sent_at: new Date().toISOString(), survey_15d_token: token })
+    .update({ survey_15d_sent_at: new Date().toISOString(), survey_15d_claimed_at: null })
     .eq('id', userId)
   if (error) console.error(`Error marcando survey_15d_sent_at para ${userId}:`, error)
   return true
