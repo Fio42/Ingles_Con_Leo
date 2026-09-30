@@ -1098,3 +1098,11 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - 28 audios nuevos (audio/cambridge-b1/): 10 dialogos con dos voces (Ava mujer / Andrew hombre, ambas US), el resto una sola voz. Filas agregadas a tools/lista_audios.csv y script tools/generar_cambridge_b1_audios.py.
 - Textos actualizados en cambridge.html, miembros.html, chatbot.js, toefl-teaser.js, app.js (etiqueta "Continuar"). Bump de app.js?v en todos los HTML.
 - Verificado: node --check, las 74 tarjetas renderizan sin errores, y revision a 320px.
+
+2026-09-30 - Nueva página de clases particulares (clases-particulares.html)
+- Pedido de Leo: una landing para mandar por enlace cuando le pregunten "¿das clases?": clase individual online, 50 min, US$25, CTA "Consultar disponibilidad" por WhatsApp (mensaje prellenado) o correo, sin calendario ni pago automático.
+- URL: /clases ya era clases.html (clases interactivas de miembros), así que NO se tocó; la página nueva vive en clases-particulares.html (también se sirve como /clases-particulares).
+- Navegación discreta: solo enlace "Clases con Leo" en el footer de las 49 páginas que tienen footer estándar, más un enlace contextual en sobre-leo.html y en articulo-clases-de-ingles-online.html (que apunta a la intención informativa, para no competir por la misma palabra clave). No se tocó el menú principal ni el index.
+- Página ligera: sin app.js ni Supabase; CSS propio inline (usa las variables de style.css). Schema Service+Offer (sin reseñas ni datos inventados). Agregada al sitemap.xml.
+- Tracking: la visita ya la cuentan GA (page_view) y Meta (PageView) desde el head, sin duplicar. Eventos nuevos en GA: classes_availability_click (params location=hero|precio), classes_whatsapp_click, classes_email_click; WhatsApp/correo también mandan el evento estándar Contact a Meta.
+- Verificado: sin desborde horizontal a 360px, un solo H1, links internos ok, eventos disparan. Lighthouse móvil local: rendimiento 88, accesibilidad 95, SEO 100, LCP 2.0 s, CLS 0.022.
