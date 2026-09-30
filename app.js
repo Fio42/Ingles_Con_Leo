@@ -987,6 +987,159 @@ function rebuildPoolFromVariantIdxs({ skill, bankLevel, variantIdxs, targetCount
   return { pool, topics: [...new Set(topics)] };
 }
 
+/* ---------- Mazo barajado por usuario/nivel/habilidad (sesiones de Miembros) ----------
+   Antes, cada sesion juntaba "variantes" completas (bloques fijos de
+   ejercicios) y solo evitaba las de la sesion anterior, recordadas en
+   localStorage. Con pocas variantes por nivel eso repetia bloques enteros
+   enseguida, el recorte de la ultima variante dejaba ejercicios que casi
+   nunca salian, y el orden dentro del bloque era siempre el mismo.
+   Ahora funciona como un mazo barajado: se baraja TODO el banco del
+   nivel, cada ejercicio terminado sale del mazo, y solo cuando se agota
+   el banco se baraja de nuevo (evitando abrir el ciclo nuevo con los
+   ultimos que se vieron).
+   No se guarda un estado aparte: el ciclo se RECONSTRUYE del historial
+   (progress.sessions: results[].itemId), que ya es por usuario, ya vive
+   en Supabase (progress_sessions) y se mezcla en localStorage al entrar
+   desde otro dispositivo. Asi no hay tabla nueva ni nada que pueda
+   quedar desfasado del progreso real, y los ejercicios nuevos del banco
+   entran solos al ciclo en curso (no estan en "vistos"). El repaso
+   intencional (Mis errores, Plan de estudio) no pasa por aqui y sigue
+   igual. */
+/* CYCLE-START */
+function memberBankItems(skill, bankLevel){
+  let all = [];
+  bankLevel.forEach(variant => { all = all.concat(flattenVariant(skill, variant)); });
+  return all;
+}
+// Reproduce el historial en orden y devuelve que ejercicios del banco ya
+// se vieron en el ciclo actual y cuales fueron los ultimos del ciclo
+// anterior (tailSize). Un id repetido dentro del mismo ciclo (repaso
+// deliberado) se ignora; ids que ya no estan en el banco tambien.
+function computeCycleState(progress, bankIds, tailSize){
+  const inBank = new Set(bankIds);
+  const sessions = ((progress && progress.sessions) || []).slice()
+    .sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
+  let seen = new Set();
+  let order = [];
+  let lastTail = [];
+  let cycles = 0;
+  sessions.forEach(s => {
+    (s.results || []).forEach(r => {
+      const id = r && r.itemId;
+      if(!inBank.has(id) || seen.has(id)) return;
+      seen.add(id);
+      order.push(id);
+      if(seen.size >= inBank.size){
+        lastTail = order.slice(-tailSize);
+        seen = new Set();
+        order = [];
+        cycles++;
+      }
+    });
+  });
+  return { seen, lastTail, cycles };
+}
+// Elige los ejercicios de la sesion nueva. Devuelve ids en el orden en que
+// se van a jugar. Primero los que faltan del ciclo actual (barajados); si
+// no alcanzan, se completa con un ciclo nuevo barajado que no repite los
+// que acaban de tocar en esta misma sesion.
+function pickCycleItems(items, state, targetCount){
+  const total = items.length;
+  const target = Math.min(targetCount, total);
+  const tail = new Set(state.lastTail);
+  // Ciclo recien reiniciado (nada visto todavia): los ultimos que se vieron
+  // del ciclo anterior se barajan aparte y van al final, para no abrir con ellos.
+  const freshStart = state.seen.size === 0 && tail.size > 0;
+  let remaining = items.filter(i => !state.seen.has(i.id));
+  remaining = freshStart
+    ? shuffleArray(remaining.filter(i => !tail.has(i.id))).concat(shuffleArray(remaining.filter(i => tail.has(i.id))))
+    : shuffleArray(remaining);
+  if(remaining.length >= target) return remaining.slice(0, target);
+  // Faltan menos de los que pide la sesion: se termina el ciclo con lo que
+  // queda y se completa con un ciclo nuevo barajado, sin repetir lo que
+  // acaba de tocar en esta misma sesion.
+  const pickedIds = new Set(remaining.map(i => i.id));
+  const fresh = shuffleArray(items.filter(i => !pickedIds.has(i.id)));
+  return remaining.concat(fresh).slice(0, target);
+}
+// Variante de pickCycleItems solo para Gramatica: cada tema (topic) es una
+// unidad pedagogica de ~4 ejercicios sobre un mismo concepto, asi que la
+// sesion se arma con pocos temas completos (no con ejercicios sueltos de
+// muchos temas). Primero se terminan los temas que ya quedaron empezados,
+// luego temas nuevos al azar; dentro de la sesion los ejercicios de los
+// temas elegidos se intercalan como antes. Si el ciclo se acaba a mitad de
+// sesion, lo que falta del ciclo va primero y el ciclo nuevo despues (asi
+// el orden de resultados coincide con el ciclo que reconstruye
+// computeCycleState).
+function pickCycleItemsByTopic(items, state, targetCount){
+  const target = Math.min(targetCount, items.length);
+  const tail = new Set(state.lastTail);
+  const sizeByTopic = new Map();
+  items.forEach(i => sizeByTopic.set(i.topic, (sizeByTopic.get(i.topic) || 0) + 1));
+  function groupByTopic(list){
+    const m = new Map();
+    list.forEach(i => { if(!m.has(i.topic)) m.set(i.topic, []); m.get(i.topic).push(i); });
+    return [...m.values()];
+  }
+  function take(groups, need){
+    const chosen = [];
+    let left = need;
+    for(const g of groups){
+      if(left <= 0) break;
+      const part = shuffleArray(g).slice(0, left);
+      chosen.push(part);
+      left -= part.length;
+    }
+    return chosen;
+  }
+  function interleave(groups){
+    const out = [];
+    const max = Math.max(0, ...groups.map(g => g.length));
+    for(let k = 0; k < max; k++) groups.forEach(g => { if(g[k]) out.push(g[k]); });
+    return out;
+  }
+  const freshStart = state.seen.size === 0 && tail.size > 0;
+  const groups = groupByTopic(items.filter(i => !state.seen.has(i.id)));
+  const started = groups.filter(g => g.length < sizeByTopic.get(g[0].topic));
+  const whole = groups.filter(g => g.length === sizeByTopic.get(g[0].topic));
+  const wholeOrdered = freshStart
+    ? shuffleArray(whole.filter(g => !g.some(i => tail.has(i.id)))).concat(shuffleArray(whole.filter(g => g.some(i => tail.has(i.id)))))
+    : shuffleArray(whole);
+  const partA = interleave(take(shuffleArray(started).concat(wholeOrdered), target));
+  if(partA.length >= target) return partA;
+  const pickedIds = new Set(partA.map(i => i.id));
+  const rest = groupByTopic(items.filter(i => !pickedIds.has(i.id)));
+  return partA.concat(interleave(take(shuffleArray(rest), target - partA.length)));
+}
+/* CYCLE-END */
+function topicsOfPool(skill, pool){
+  return skill === 'gramatica' ? [...new Set(pool.map(i => i.topic).filter(Boolean))] : [];
+}
+// Punto unico que usan las 6 sesiones de Miembros para armar su pool:
+// retoma la sesion a medias (por ids nuevos o, si quedo guardada con la
+// version anterior, por variantes) o arma una nueva con el mazo barajado.
+// Devuelve { pool, topics, itemIds, variantIdxs, resumed } (resumed=false
+// si se armo una sesion nueva, aunque hubiera una guardada que ya no cuadra).
+function resolveMemberPool({ skill, level, bankLevel, saved }){
+  if(saved && Array.isArray(saved.itemIds)){
+    const byId = new Map(memberBankItems(skill, bankLevel).map(i => [i.id, i]));
+    const pool = saved.itemIds.map(id => byId.get(id)).filter(Boolean);
+    if(pool.length === saved.total && pool.length){
+      return { pool, topics: topicsOfPool(skill, pool), itemIds: saved.itemIds.slice(), variantIdxs: [], resumed: true };
+    }
+    // el banco cambio y ya no coincide: se arma una sesion nueva (abajo)
+  } else if(saved && Array.isArray(saved.variantIdxs) && saved.variantIdxs.length){
+    const r = rebuildPoolFromVariantIdxs({ skill, bankLevel, variantIdxs:saved.variantIdxs, targetCount:saved.total });
+    return { pool:r.pool, topics:r.topics, itemIds: r.pool.map(i => i.id), variantIdxs:saved.variantIdxs, resumed: true };
+  }
+  const items = memberBankItems(skill, bankLevel);
+  const target = SESSION_LENGTHS[getSessionLength()].items;
+  const tailSize = Math.min(target, Math.floor(items.length / 3));
+  const state = computeCycleState(loadProgress(), items.map(i => i.id), tailSize);
+  const pool = skill === 'gramatica' ? pickCycleItemsByTopic(items, state, target) : pickCycleItems(items, state, target);
+  return { pool, topics: topicsOfPool(skill, pool), itemIds: pool.map(i => i.id), variantIdxs: [], resumed: false };
+}
+
 /* ---------- UI: tarjetas de nivel reutilizables ---------- */
 function renderLevelSelector(container, selected, onChange){
   container.innerHTML = LEVELS.map(lvl => `
@@ -1290,21 +1443,15 @@ function runGrammarSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, topics, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool, topics } = rebuildPoolFromVariantIdxs({ skill:'gramatica', bankLevel:GRAMMAR_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs, topics } = buildSessionPool({ skill:'gramatica', level, bankLevel:GRAMMAR_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, topics, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'gramatica', level, bankLevel:GRAMMAR_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('gramatica', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('gramatica', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
     const card = document.createElement('div');
@@ -1493,21 +1640,15 @@ function runVocabSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'vocabulario', bankLevel:VOCAB_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'vocabulario', level, bankLevel:VOCAB_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'vocabulario', level, bankLevel:VOCAB_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('vocabulario', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('vocabulario', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
     const card = document.createElement('div');
@@ -1577,21 +1718,15 @@ function runListeningSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'listening', bankLevel:LISTENING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'listening', level, bankLevel:LISTENING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'listening', level, bankLevel:LISTENING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('listening', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('listening', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
     const card = document.createElement('div');
@@ -1676,21 +1811,15 @@ function runReadingSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'lectura', bankLevel:READING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'lectura', level, bankLevel:READING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'lectura', level, bankLevel:READING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('lectura', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('lectura', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Lectura', level, idx+1, total);
     const card = document.createElement('div');
@@ -1817,17 +1946,11 @@ function runWritingSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'writing', bankLevel:WRITING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'writing', level, bankLevel:WRITING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'writing', level, bankLevel:WRITING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   // Validación estructural honesta: no es IA, es una comprobación de patrón
   // (¿aparece la estructura objetivo en el texto?). No mide "buen inglés"
@@ -1838,7 +1961,7 @@ function runWritingSession({ container, level, onExit }){
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('writing', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('writing', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
     const card = document.createElement('div');
@@ -1943,21 +2066,15 @@ function runSpeakingSession({ container, level, onExit }){
   // la duracion real de esta sesion en curso, para que no se vea una
   // duracion distinta a la que en realidad esta corriendo (ver DEVLOG).
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
-  let pool, usedVariantIdxs;
-  if(canResume){
-    usedVariantIdxs = saved.variantIdxs;
-    ({ pool } = rebuildPoolFromVariantIdxs({ skill:'speaking', bankLevel:SPEAKING_BANK[level], variantIdxs:usedVariantIdxs, targetCount:saved.total }));
-  } else {
-    ({ pool, usedVariantIdxs } = buildSessionPool({ skill:'speaking', level, bankLevel:SPEAKING_BANK[level], targetCount:SESSION_LENGTHS[getSessionLength()].items }));
-  }
+  const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'speaking', level, bankLevel:SPEAKING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
-  const startedAt = canResume ? saved.startedAt : Date.now();
-  const results = canResume ? saved.results.slice() : [];
-  let idx = canResume ? saved.idx : 0;
+  const startedAt = resumed ? saved.startedAt : Date.now();
+  const results = resumed ? saved.results.slice() : [];
+  let idx = resumed ? saved.idx : 0;
 
   function renderItem(){
     const item = pool[idx];
-    saveInflightSession('speaking', level, { variantIdxs:usedVariantIdxs, total, idx, results, startedAt });
+    saveInflightSession('speaking', level, { variantIdxs:usedVariantIdxs, itemIds, total, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
     const card = document.createElement('div');
