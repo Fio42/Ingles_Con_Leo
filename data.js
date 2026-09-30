@@ -13930,3 +13930,237 @@ LISTENING_BANK.avanzado.push([
     question:"How much is it?", options:["$1,300","$13,000","$130"], correct:0,
     explain:"“One thousand three hundred” es 1,300." }
 ]);
+
+// ===== Lote miembros400: ejercicios nuevos de Listening, Vocabulario, Speaking y Gramatica =====
+LISTENING_BANK.principiante.push([
+  { id:'l-principiante-m400-1', audioFile:'audio/miembros400/l-principiante-m400-1.mp3',
+    transcript:"The store opens at nine o'clock.", translation:"La tienda abre a las nueve.",
+    question:"What time does the store open?", options:["At six","At nine","At ten"], correct:1,
+    explain:"El audio dice 'opens at nine o'clock'." },
+  { id:'l-principiante-m400-2', audioFile:'audio/miembros400/l-principiante-m400-2.mp3',
+    transcript:"My brother plays soccer on Sundays.", translation:"Mi hermano juega fútbol los domingos.",
+    question:"When does the brother play soccer?", options:["On Sundays","On Fridays","On Mondays"], correct:0,
+    explain:"El audio dice 'on Sundays'." },
+  { id:'l-principiante-m400-3', audioFile:'audio/miembros400/l-principiante-m400-3.mp3',
+    transcript:"There are three eggs in the fridge.", translation:"Hay tres huevos en el refrigerador.",
+    question:"How many eggs are there?", options:["Four","Two","Three"], correct:2,
+    explain:"'Three' es el número 3." },
+  { id:'l-principiante-m400-4', audioFile:'audio/miembros400/l-principiante-m400-4.mp3',
+    transcript:"— Do you want some water?\n— Yes, please. I am very thirsty.", translation:"— ¿Quieres agua?\n— Sí, por favor. Tengo mucha sed.",
+    question:"What does the second person want?", options:["Juice","Water","Coffee"], correct:1,
+    explain:"Dice 'yes, please' y que tiene sed: quiere agua." },
+  { id:'l-principiante-m400-5', audioFile:'audio/miembros400/l-principiante-m400-5.mp3',
+    transcript:"The red bag is under the table.", translation:"La bolsa roja está debajo de la mesa.",
+    question:"Where is the red bag?", options:["Under the table","On the chair","Behind the door"], correct:0,
+    explain:"'Under' significa debajo." }
+]);
+VOCAB_BANK.principiante.push([
+  { id:'v-principiante-m400-1', word:"Window", translation:"Ventana",
+    examples:[{en:"Do you want to open the window?",es:"¿Quieres abrir la ventana?"},{en:"The window is very big.",es:"La ventana es muy grande."}],
+    quiz:{prompt:"¿Qué significa 'Window'?",options:["Puerta","Ventana","Techo"],correct:1,explain:"'Window' significa ventana."} },
+  { id:'v-principiante-m400-2', word:"Breakfast", translation:"Desayuno",
+    examples:[{en:"I eat breakfast at seven.",es:"Desayuno a las siete."},{en:"Breakfast is ready.",es:"El desayuno está listo."}],
+    quiz:{prompt:"¿Qué significa 'Breakfast'?",options:["Cena","Almuerzo","Desayuno"],correct:2,explain:"'Breakfast' significa desayuno."} },
+  { id:'v-principiante-m400-3', word:"Rain", translation:"Lluvia",
+    examples:[{en:"I like the rain.",es:"Me gusta la lluvia."},{en:"The rain is cold today.",es:"La lluvia está fría hoy."}],
+    quiz:{prompt:"¿Qué significa 'Rain'?",options:["Lluvia","Viento","Nieve"],correct:0,explain:"'Rain' significa lluvia."} },
+  { id:'v-principiante-m400-4', word:"Hungry", translation:"Con hambre",
+    examples:[{en:"I am hungry.",es:"Tengo hambre."},{en:"Are you hungry now?",es:"¿Tienes hambre ahora?"}],
+    quiz:{prompt:"¿Qué significa 'Hungry'?",options:["Cansado","Con hambre","Feliz"],correct:1,explain:"'Hungry' significa con hambre."} },
+  { id:'v-principiante-m400-5', word:"Kitchen", translation:"Cocina",
+    examples:[{en:"My mother is in the kitchen.",es:"Mi mamá está en la cocina."},{en:"The kitchen is very clean.",es:"La cocina está muy limpia."}],
+    quiz:{prompt:"¿Qué significa 'Kitchen'?",options:["Baño","Jardín","Cocina"],correct:2,explain:"'Kitchen' significa cocina."} }
+]);
+SPEAKING_BANK.principiante.push([
+  { id:'s-principiante-m400-1', sentence:"I drink water every morning.", translation:"Tomo agua todas las mañanas.", audioFile:'audio/miembros400/s-principiante-m400-1.mp3' },
+  { id:'s-principiante-m400-2', sentence:"The kitchen is very small.", translation:"La cocina es muy pequeña.", audioFile:'audio/miembros400/s-principiante-m400-2.mp3' },
+  { id:'s-principiante-m400-3', sentence:"It is raining, so I take an umbrella.", translation:"Está lloviendo, así que llevo un paraguas.", audioFile:'audio/miembros400/s-principiante-m400-3.mp3' }
+]);
+GRAMMAR_BANK.principiante.push([{ topic:"Verbo to be, have y there is/are", items:[
+  { id:'g-principiante-m400-1', translation:"Hay dos gatos en el jardín.", type:'choice', prompt:"There ___ two cats in the garden.",
+    options:["is","are","am"], correct:1,
+    explain:"Con plural (two cats) usamos 'there are'.",
+    examples:[{en:"There are five books on the desk.",es:"Hay cinco libros en el escritorio."},{en:"There are many people here.",es:"Hay mucha gente aquí."}] },
+  { id:'g-principiante-m400-2', translation:"Ella desayuna a las siete.", type:'choice', prompt:"She ___ breakfast at seven.",
+    options:["has","have","haves"], correct:0,
+    explain:"Con he/she/it, 'have' cambia a 'has'.",
+    examples:[{en:"He has a new bike.",es:"Él tiene una bici nueva."},{en:"She has two sisters.",es:"Ella tiene dos hermanas."}] },
+  { id:'g-principiante-m400-3', translation:"Yo tengo hambre.", type:'choice', prompt:"I ___ hungry.",
+    options:["is","are","am"], correct:2,
+    explain:"Con 'I' usamos 'am'.",
+    examples:[{en:"I am tired.",es:"Estoy cansado."},{en:"I am at home.",es:"Estoy en casa."}] }
+]}]);
+LISTENING_BANK.facil.push([
+  { id:'l-facil-m400-1', audioFile:'audio/miembros400/l-facil-m400-1.mp3',
+    transcript:"I missed the bus, so I walked to work.", translation:"Perdí el bus, así que caminé al trabajo.",
+    question:"How did the speaker get to work?", options:["By bus","On foot","By taxi"], correct:1,
+    explain:"Perdió el bus y caminó: 'walked'." },
+  { id:'l-facil-m400-2', audioFile:'audio/miembros400/l-facil-m400-2.mp3',
+    transcript:"Could you turn down the music? I'm trying to study.", translation:"¿Podrías bajar la música? Estoy tratando de estudiar.",
+    question:"Why does the speaker ask for quieter music?", options:["To study","To sleep","To talk on the phone"], correct:0,
+    explain:"Dice 'I'm trying to study'." },
+  { id:'l-facil-m400-3', audioFile:'audio/miembros400/l-facil-m400-3.mp3',
+    transcript:"We are going to visit my aunt next weekend.", translation:"Vamos a visitar a mi tía el próximo fin de semana.",
+    question:"When will they visit the aunt?", options:["Tomorrow","Last weekend","Next weekend"], correct:2,
+    explain:"'Next weekend' es el próximo fin de semana." },
+  { id:'l-facil-m400-4', audioFile:'audio/miembros400/l-facil-m400-4.mp3',
+    transcript:"— Excuse me, where is the post office?\n— It's next to the bank, on the corner.", translation:"— Disculpe, ¿dónde está el correo?\n— Está junto al banco, en la esquina.",
+    question:"Where is the post office?", options:["Across the park","Next to the bank","Behind the school"], correct:1,
+    explain:"'Next to the bank' es junto al banco." },
+  { id:'l-facil-m400-5', audioFile:'audio/miembros400/l-facil-m400-5.mp3',
+    transcript:"— How was your trip to the beach?\n— It was great, but it rained on the second day.", translation:"— ¿Cómo estuvo tu viaje a la playa?\n— Fue genial, pero llovió el segundo día.",
+    question:"What was the problem on the trip?", options:["It rained one day","The hotel was full","They lost their bags"], correct:0,
+    explain:"Dice 'it rained on the second day'." }
+]);
+VOCAB_BANK.facil.push([
+  { id:'v-facil-m400-1', word:"Borrow", translation:"Pedir prestado",
+    examples:[{en:"Can I borrow your pen?",es:"¿Puedo pedir prestado tu lápiz?"},{en:"She borrowed a book from the library.",es:"Ella pidió prestado un libro de la biblioteca."}],
+    quiz:{prompt:"¿Qué significa 'Borrow'?",options:["Prestar","Pedir prestado","Comprar"],correct:1,explain:"'Borrow' significa pedir prestado."} },
+  { id:'v-facil-m400-2', word:"Delay", translation:"Retraso",
+    examples:[{en:"The flight has a two-hour delay.",es:"El vuelo tiene dos horas de retraso."},{en:"Sorry for the delay.",es:"Perdón por el retraso."}],
+    quiz:{prompt:"¿Qué significa 'Delay'?",options:["Cancelación","Salida","Retraso"],correct:2,explain:"'Delay' significa retraso."} },
+  { id:'v-facil-m400-3', word:"Receipt", translation:"Recibo / comprobante",
+    examples:[{en:"Keep the receipt, please.",es:"Guarda el recibo, por favor."},{en:"I lost my receipt.",es:"Perdí mi recibo."}],
+    quiz:{prompt:"¿Qué significa 'Receipt'?",options:["Recibo / comprobante","Recuerdo","Receta"],correct:0,explain:"'Receipt' significa recibo / comprobante."} },
+  { id:'v-facil-m400-4', word:"Neighbor", translation:"Vecino",
+    examples:[{en:"My neighbor is very friendly.",es:"Mi vecino es muy amable."},{en:"The neighbors have a dog.",es:"Los vecinos tienen un perro."}],
+    quiz:{prompt:"¿Qué significa 'Neighbor'?",options:["Pariente","Vecino","Colega"],correct:1,explain:"'Neighbor' significa vecino."} },
+  { id:'v-facil-m400-5', word:"Ticket", translation:"Boleto / entrada",
+    examples:[{en:"I bought two tickets for the show.",es:"Compré dos entradas para el show."},{en:"Where can I buy a train ticket?",es:"¿Dónde puedo comprar un boleto de tren?"}],
+    quiz:{prompt:"¿Qué significa 'Ticket'?",options:["Mapa","Maleta","Boleto / entrada"],correct:2,explain:"'Ticket' significa boleto / entrada."} }
+]);
+SPEAKING_BANK.facil.push([
+  { id:'s-facil-m400-1', sentence:"Could you help me find my keys?", translation:"¿Podrías ayudarme a encontrar mis llaves?", audioFile:'audio/miembros400/s-facil-m400-1.mp3' },
+  { id:'s-facil-m400-2', sentence:"I usually go to bed before eleven.", translation:"Normalmente me acuesto antes de las once.", audioFile:'audio/miembros400/s-facil-m400-2.mp3' },
+  { id:'s-facil-m400-3', sentence:"She has been studying English for two years.", translation:"Ella ha estado estudiando inglés por dos años.", audioFile:'audio/miembros400/s-facil-m400-3.mp3' }
+]);
+GRAMMAR_BANK.facil.push([{ topic:"Condicionales, comparativos y presente perfecto", items:[
+  { id:'g-facil-m400-1', translation:"Si llueve mañana, nos quedaremos en casa.", type:'choice', prompt:"If it rains tomorrow, we ___ at home.",
+    options:["stay","will stay","stayed"], correct:1,
+    explain:"En el primer condicional: if + presente, will + verbo.",
+    examples:[{en:"If you study, you will pass.",es:"Si estudias, aprobarás."},{en:"If he calls, I will answer.",es:"Si él llama, contestaré."}] },
+  { id:'g-facil-m400-2', translation:"Él es más alto que su hermano.", type:'choice', prompt:"He is taller ___ his brother.",
+    options:["than","that","then"], correct:0,
+    explain:"Para comparar usamos 'than'.",
+    examples:[{en:"She is older than me.",es:"Ella es mayor que yo."},{en:"This bag is cheaper than that one.",es:"Esta bolsa es más barata que esa."}] },
+  { id:'g-facil-m400-3', translation:"Vivo aquí desde 2019.", type:'choice', prompt:"I have lived here ___ 2019.",
+    options:["for","from","since"], correct:2,
+    explain:"'Since' se usa con un punto en el tiempo (2019); 'for' con duración.",
+    examples:[{en:"I have worked here since May.",es:"Trabajo aquí desde mayo."},{en:"We have known him since 2015.",es:"Lo conocemos desde 2015."}] }
+]}]);
+LISTENING_BANK.medio.push([
+  { id:'l-medio-m400-1', audioFile:'audio/miembros400/l-medio-m400-1.mp3',
+    transcript:"The meeting has been moved to Thursday because the manager is traveling.", translation:"La reunión se movió al jueves porque el gerente está de viaje.",
+    question:"Why was the meeting moved?", options:["The room is busy","The manager is traveling","It was canceled"], correct:1,
+    explain:"Dice 'because the manager is traveling'." },
+  { id:'l-medio-m400-2', audioFile:'audio/miembros400/l-medio-m400-2.mp3',
+    transcript:"I would have called you earlier, but my phone died.", translation:"Te habría llamado antes, pero mi teléfono se apagó.",
+    question:"Why didn't the speaker call earlier?", options:["The phone died","The speaker forgot","The speaker was sleeping"], correct:0,
+    explain:"Dice 'but my phone died'." },
+  { id:'l-medio-m400-3', audioFile:'audio/miembros400/l-medio-m400-3.mp3',
+    transcript:"Although the film was long, most people enjoyed it.", translation:"Aunque la película fue larga, a la mayoría le gustó.",
+    question:"What does the speaker say about the film?", options:["It was too short","Nobody liked it","Most people enjoyed it"], correct:2,
+    explain:"'Although' introduce un contraste: fue larga, pero gustó." },
+  { id:'l-medio-m400-4', audioFile:'audio/miembros400/l-medio-m400-4.mp3',
+    transcript:"— Did you finish the report?\n— Almost. I'm just waiting for the sales numbers from Mark.\n— Okay, but we need it by five.", translation:"— ¿Terminaste el informe?\n— Casi. Solo espero los números de ventas de Mark.\n— Bien, pero lo necesitamos a las cinco.",
+    question:"What is the second speaker waiting for?", options:["Approval from the boss","The sales numbers","A new computer"], correct:1,
+    explain:"Dice 'waiting for the sales numbers from Mark'." },
+  { id:'l-medio-m400-5', audioFile:'audio/miembros400/l-medio-m400-5.mp3',
+    transcript:"— I'm thinking of changing jobs.\n— Really? I thought you liked your team.\n— I do, but the commute is exhausting.", translation:"— Estoy pensando en cambiar de trabajo.\n— ¿En serio? Pensé que te gustaba tu equipo.\n— Sí, pero el trayecto es agotador.",
+    question:"Why does the first speaker want to change jobs?", options:["The commute is tiring","They dislike the team","The salary is low"], correct:0,
+    explain:"Dice 'the commute is exhausting'." }
+]);
+VOCAB_BANK.medio.push([
+  { id:'v-medio-m400-1', word:"Deadline", translation:"Fecha límite",
+    examples:[{en:"The deadline is Friday.",es:"La fecha límite es el viernes."},{en:"We missed the deadline.",es:"Perdimos la fecha límite."}],
+    quiz:{prompt:"¿Qué significa 'Deadline'?",options:["Descanso","Fecha límite","Reunión"],correct:1,explain:"'Deadline' significa fecha límite."} },
+  { id:'v-medio-m400-2', word:"Reliable", translation:"Confiable",
+    examples:[{en:"He is a reliable worker.",es:"Él es un trabajador confiable."},{en:"Is this car reliable?",es:"¿Es confiable este carro?"}],
+    quiz:{prompt:"¿Qué significa 'Reliable'?",options:["Rápido","Caro","Confiable"],correct:2,explain:"'Reliable' significa confiable."} },
+  { id:'v-medio-m400-3', word:"Improve", translation:"Mejorar",
+    examples:[{en:"I want to improve my English.",es:"Quiero mejorar mi inglés."},{en:"The service has improved a lot.",es:"El servicio ha mejorado mucho."}],
+    quiz:{prompt:"¿Qué significa 'Improve'?",options:["Mejorar","Empeorar","Cambiar"],correct:0,explain:"'Improve' significa mejorar."} },
+  { id:'v-medio-m400-4', word:"Schedule", translation:"Horario / agenda",
+    examples:[{en:"My schedule is full today.",es:"Mi agenda está llena hoy."},{en:"What is your work schedule?",es:"¿Cuál es tu horario de trabajo?"}],
+    quiz:{prompt:"¿Qué significa 'Schedule'?",options:["Sueldo","Horario / agenda","Oficina"],correct:1,explain:"'Schedule' significa horario / agenda."} },
+  { id:'v-medio-m400-5', word:"Afford", translation:"Permitirse (pagar)",
+    examples:[{en:"I can't afford a new phone.",es:"No puedo comprar un teléfono nuevo."},{en:"Can you afford this apartment?",es:"¿Puedes pagar este apartamento?"}],
+    quiz:{prompt:"¿Qué significa 'Afford'?",options:["Ofrecer","Evitar","Permitirse (pagar)"],correct:2,explain:"'Afford' significa permitirse (pagar)."} }
+]);
+SPEAKING_BANK.medio.push([
+  { id:'s-medio-m400-1', sentence:"I'd rather stay home than go out tonight.", translation:"Prefiero quedarme en casa que salir esta noche.", audioFile:'audio/miembros400/s-medio-m400-1.mp3' },
+  { id:'s-medio-m400-2', sentence:"She suggested that we meet after lunch.", translation:"Ella sugirió que nos reuniéramos después del almuerzo.", audioFile:'audio/miembros400/s-medio-m400-2.mp3' },
+  { id:'s-medio-m400-3', sentence:"Despite the rain, the match went ahead as planned.", translation:"A pesar de la lluvia, el partido siguió según lo planeado.", audioFile:'audio/miembros400/s-medio-m400-3.mp3' }
+]);
+GRAMMAR_BANK.medio.push([{ topic:"Wish, estilo indirecto y pasado perfecto", items:[
+  { id:'g-medio-m400-1', translation:"Ojalá tuviera más tiempo libre.", type:'choice', prompt:"I wish I ___ more free time.",
+    options:["have","had","would have"], correct:1,
+    explain:"Para deseos irreales en el presente usamos wish + pasado.",
+    examples:[{en:"I wish I knew the answer.",es:"Ojalá supiera la respuesta."},{en:"She wishes she lived closer.",es:"Ella desea vivir más cerca."}] },
+  { id:'g-medio-m400-2', translation:"Ella me preguntó si podía ayudarla.", type:'choice', prompt:"She asked me ___ I could help her.",
+    options:["if","what","which"], correct:0,
+    explain:"En preguntas sí/no en estilo indirecto usamos 'if'.",
+    examples:[{en:"He asked if I was ready.",es:"Él preguntó si yo estaba listo."},{en:"I wonder if it will rain.",es:"Me pregunto si lloverá."}] },
+  { id:'g-medio-m400-3', translation:"Cuando llegamos, la película ya había empezado.", type:'choice', prompt:"By the time we arrived, the movie ___.",
+    options:["started","has started","had started"], correct:2,
+    explain:"Acción anterior a otra en el pasado: pasado perfecto (had + participio).",
+    examples:[{en:"By the time I called, she had left.",es:"Cuando llamé, ella ya se había ido."},{en:"They had eaten before we came.",es:"Habían comido antes de que llegáramos."}] }
+]}]);
+LISTENING_BANK.avanzado.push([
+  { id:'l-avanzado-m400-1', audioFile:'audio/miembros400/l-avanzado-m400-1.mp3',
+    transcript:"Had I known about the delay, I would have booked an earlier flight.", translation:"Si hubiera sabido del retraso, habría reservado un vuelo más temprano.",
+    question:"What does the speaker imply?", options:["He booked an earlier flight","He did not know about the delay","He missed the flight on purpose"], correct:1,
+    explain:"'Had I known' implica que no lo sabía." },
+  { id:'l-avanzado-m400-2', audioFile:'audio/miembros400/l-avanzado-m400-2.mp3',
+    transcript:"The proposal, while ambitious, overlooks several practical constraints.", translation:"La propuesta, aunque ambiciosa, pasa por alto varias limitaciones prácticas.",
+    question:"What is the speaker's opinion of the proposal?", options:["It ignores practical limits","It is too cheap","It is perfectly realistic"], correct:0,
+    explain:"'Overlooks several practical constraints' significa que ignora limitaciones." },
+  { id:'l-avanzado-m400-3', audioFile:'audio/miembros400/l-avanzado-m400-3.mp3',
+    transcript:"Not only did the team meet the deadline, but they also exceeded expectations.", translation:"El equipo no solo cumplió la fecha límite, sino que superó las expectativas.",
+    question:"What did the team do?", options:["Missed the deadline","Met it but disappointed everyone","Met the deadline and exceeded expectations"], correct:2,
+    explain:"'Not only... but also' suma dos logros." },
+  { id:'l-avanzado-m400-4', audioFile:'audio/miembros400/l-avanzado-m400-4.mp3',
+    transcript:"— Do you think the merger will go through?\n— Hard to say. Regulators are still scrutinizing the deal.\n— That's what worries me. A long delay could hurt the share price.", translation:"— ¿Crees que la fusión se concretará?\n— Difícil decirlo. Los reguladores aún examinan el acuerdo.\n— Eso me preocupa. Un retraso largo podría dañar el precio de las acciones.",
+    question:"What is the second speaker's view?", options:["It will surely be approved","It is uncertain because regulators are still reviewing","The deal was cancelled"], correct:1,
+    explain:"Dice 'Hard to say' y que los reguladores aún revisan." },
+  { id:'l-avanzado-m400-5', audioFile:'audio/miembros400/l-avanzado-m400-5.mp3',
+    transcript:"— You seem hesitant about the offer.\n— It's not the salary. It's that I'd have to relocate, and my family is settled here.\n— Understandable. Have you considered negotiating remote work?", translation:"— Pareces dudar de la oferta.\n— No es el sueldo. Es que tendría que mudarme y mi familia está establecida aquí.\n— Comprensible. ¿Has pensado en negociar trabajo remoto?",
+    question:"What is the main concern?", options:["Having to relocate","The salary","The job title"], correct:0,
+    explain:"Dice 'I'd have to relocate'." }
+]);
+VOCAB_BANK.avanzado.push([
+  { id:'v-avanzado-m400-1', word:"Overlook", translation:"Pasar por alto",
+    examples:[{en:"Don't overlook the small details.",es:"No pases por alto los detalles pequeños."},{en:"He overlooked an important clause.",es:"Él pasó por alto una cláusula importante."}],
+    quiz:{prompt:"¿Qué significa 'Overlook'?",options:["Supervisar","Pasar por alto","Mirar desde arriba"],correct:1,explain:"'Overlook' significa pasar por alto."} },
+  { id:'v-avanzado-m400-2', word:"Reluctant", translation:"Reacio",
+    examples:[{en:"She was reluctant to sign.",es:"Ella era reacia a firmar."},{en:"I'm reluctant to change plans.",es:"Soy reacio a cambiar los planes."}],
+    quiz:{prompt:"¿Qué significa 'Reluctant'?",options:["Entusiasta","Confiado","Reacio"],correct:2,explain:"'Reluctant' significa reacio."} },
+  { id:'v-avanzado-m400-3', word:"Thorough", translation:"Minucioso",
+    examples:[{en:"He did a thorough review.",es:"Él hizo una revisión minuciosa."},{en:"We need a thorough investigation.",es:"Necesitamos una investigación exhaustiva."}],
+    quiz:{prompt:"¿Qué significa 'Thorough'?",options:["Minucioso","Superficial","Rápido"],correct:0,explain:"'Thorough' significa minucioso."} },
+  { id:'v-avanzado-m400-4', word:"Mitigate", translation:"Mitigar",
+    examples:[{en:"Steps to mitigate the risk.",es:"Medidas para mitigar el riesgo."},{en:"Trees help mitigate pollution.",es:"Los árboles ayudan a mitigar la contaminación."}],
+    quiz:{prompt:"¿Qué significa 'Mitigate'?",options:["Aumentar","Mitigar","Ignorar"],correct:1,explain:"'Mitigate' significa mitigar."} },
+  { id:'v-avanzado-m400-5', word:"Outweigh", translation:"Superar en importancia",
+    examples:[{en:"The benefits outweigh the costs.",es:"Los beneficios superan los costos."},{en:"Do the risks outweigh the rewards?",es:"¿Los riesgos superan las recompensas?"}],
+    quiz:{prompt:"¿Qué significa 'Outweigh'?",options:["Pesar menos","Equilibrar","Superar en importancia"],correct:2,explain:"'Outweigh' significa superar en importancia."} }
+]);
+SPEAKING_BANK.avanzado.push([
+  { id:'s-avanzado-m400-1', sentence:"The results were far better than we anticipated.", translation:"Los resultados fueron mucho mejores de lo que anticipamos.", audioFile:'audio/miembros400/s-avanzado-m400-1.mp3' },
+  { id:'s-avanzado-m400-2', sentence:"I'm not convinced that this is the best approach.", translation:"No estoy convencido de que este sea el mejor enfoque.", audioFile:'audio/miembros400/s-avanzado-m400-2.mp3' },
+  { id:'s-avanzado-m400-3', sentence:"Should you need any assistance, please let me know.", translation:"Si necesitas ayuda, avísame por favor.", audioFile:'audio/miembros400/s-avanzado-m400-3.mp3' }
+]);
+GRAMMAR_BANK.avanzado.push([{ topic:"Inversión, would rather y it's high time", items:[
+  { id:'g-avanzado-m400-1', translation:"Apenas había abierto ella la puerta cuando sonó el teléfono.", type:'choice', prompt:"Hardly ___ the door when the phone rang.",
+    options:["she had opened","had she opened","did she open"], correct:1,
+    explain:"Tras 'hardly' al inicio se invierte: Hardly + had + sujeto + participio.",
+    examples:[{en:"Hardly had we sat down when it started to rain.",es:"Apenas nos sentamos cuando empezó a llover."},{en:"Hardly had he left when she arrived.",es:"Apenas se fue cuando ella llegó."}] },
+  { id:'g-avanzado-m400-2', translation:"Preferiría que no le dijeras nada a nadie.", type:'choice', prompt:"I'd rather you ___ tell anyone about this.",
+    options:["didn't","don't","won't"], correct:0,
+    explain:"Con 'would rather + sujeto' usamos el pasado simple para hablar del presente.",
+    examples:[{en:"I'd rather you stayed here.",es:"Preferiría que te quedaras aquí."},{en:"She'd rather we left early.",es:"Ella preferiría que nos fuéramos temprano."}] },
+  { id:'g-avanzado-m400-3', translation:"Ya es hora de que tomemos una decisión.", type:'choice', prompt:"It's high time we ___ a decision.",
+    options:["make","will make","made"], correct:2,
+    explain:"'It's high time' va seguido de pasado simple.",
+    examples:[{en:"It's time you went to bed.",es:"Ya es hora de que te acuestes."},{en:"It's high time they apologized.",es:"Ya es hora de que se disculpen."}] }
+]}]);
