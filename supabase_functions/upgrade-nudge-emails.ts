@@ -247,7 +247,7 @@ async function unsubLinks(userId: string): Promise<{ page: string; oneClick: str
 // en app.js. Viven en dos archivos distintos (uno corre en el
 // navegador, este corre en Supabase) así que si cambias el límite
 // diario de ejercicios en un lado, cámbialo también aquí.
-const FREE_USER_DAILY_LIMIT = 20
+const FREE_USER_DAILY_LIMIT = 10
 
 // ---------------- Configuración centralizada ----------------
 // Todos los tiempos y cooldowns importantes están aquí. Para
@@ -275,6 +275,11 @@ const DAY1_MIN_HOURS = 20
 const DAY1_SKIP_AFTER_DAYS = 4
 const DAY3_MIN_DAYS = 3
 const DAY3_SKIP_AFTER_DAYS = 7
+// day5 (2026-09-29, pedido de Leo: seguimiento sin huecos): tapa el
+// hueco entre day3 y membership_intro (día 7). Un tip + invitación, no
+// vende nada.
+const DAY5_MIN_DAYS = 5
+const DAY5_SKIP_AFTER_DAYS = 9
 const MEMBERSHIP_EMAIL_MIN_DAY = 7
 // (sin SKIP_AFTER: membership_intro no caduca, ver nota arriba)
 // Días de espera desde que tocó el límite gratis antes de ofrecerle
@@ -284,10 +289,14 @@ const MEMBERSHIP_EMAIL_MIN_DAY = 7
 const MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS = 3
 const REACTIVATION_EMAIL_MIN_DAY = 14
 const REACTIVATION_EMAIL_SKIP_AFTER_DAYS = 45
-const FINAL_ONBOARDING_MIN_DAY = 30
-const FINAL_ONBOARDING_SKIP_AFTER_DAYS = 75
-// Después del día 30 (ver "long_term" en la nota de arriba):
-const LONG_TERM_INTERVAL_DAYS = 21
+// 2026-09-29: final_onboarding pasó del día 30 al día 21 (antes había
+// 16 días de silencio entre reactivation_day14 y este). El texto habla
+// de "un mes"; se ajustó a "unas semanas".
+const FINAL_ONBOARDING_MIN_DAY = 21
+const FINAL_ONBOARDING_SKIP_AFTER_DAYS = 60
+// Después de final_onboarding (ver "long_term" en la nota de arriba).
+// 2026-09-29: de 21 a 14 días entre correos, para no dejar huecos.
+const LONG_TERM_INTERVAL_DAYS = 14
 const LONG_TERM_SUNSET_DAYS = 180
 
 // Las 4 claves de la secuencia por calendario que SÍ pueden caducar
@@ -296,6 +305,7 @@ const LONG_TERM_SUNSET_DAYS = 180
 const EXPIRABLE_SCHEDULE: { key: EmailKeyScheduled; skipAfterDays: number }[] = [
   { key: 'day1', skipAfterDays: DAY1_SKIP_AFTER_DAYS },
   { key: 'day3', skipAfterDays: DAY3_SKIP_AFTER_DAYS },
+  { key: 'day5', skipAfterDays: DAY5_SKIP_AFTER_DAYS },
   { key: 'reactivation_day14', skipAfterDays: REACTIVATION_EMAIL_SKIP_AFTER_DAYS },
   { key: 'final_onboarding', skipAfterDays: FINAL_ONBOARDING_SKIP_AFTER_DAYS },
 ]
@@ -415,6 +425,7 @@ const PRIORITY_ORDER = [
   'welcome',
   'day1',
   'day3',
+  'day5',
   'membership_intro',
   'reactivation_day14',
   'final_onboarding',
@@ -444,7 +455,7 @@ const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation', 'member_reactiv
 // calendario que pueden "caducar" y marcarse 'skipped' (ver
 // EXPIRABLE_SCHEDULE arriba). membership_intro queda fuera a
 // propósito: nunca caduca.
-type EmailKeyScheduled = 'day1' | 'day3' | 'reactivation_day14' | 'final_onboarding'
+type EmailKeyScheduled = 'day1' | 'day3' | 'day5' | 'reactivation_day14' | 'final_onboarding'
 
 type Profile = {
   id: string
@@ -650,6 +661,11 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
   }
   if (!lifecycle['day3'] && ageDays >= DAY3_MIN_DAYS) {
     return 'day3'
+  }
+  // (no se manda si membership_intro ya salió: sería un tip "de relleno"
+  // después de la venta, en el orden equivocado)
+  if (!lifecycle['day5'] && !lifecycle['membership_intro'] && ageDays >= DAY5_MIN_DAYS) {
+    return 'day5'
   }
   // "membership_intro" (presentar la membresía, UNA sola vez) tiene 2
   // caminos de entrada, para que se sienta como un solo sistema en vez
@@ -1196,6 +1212,28 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaUrl: `${SITE}/juego.html`,
     footerNote: '¿Hasta qué nivel llegaste? Responde este correo y cuéntame.',
   },
+  day5: {
+    subject: '¿"Make" o "do"? Casi todos se equivocan',
+    preheader: 'Un truco de 10 segundos para no volver a confundirlos.',
+    greeting: '¡Hola! 👋',
+    title: 'El truco para "make" y "do"',
+    titleWithName: '{name}, el truco para "make" y "do"',
+    bodyHtml: `
+    <p style="${P}">
+      En español todo es "hacer", pero en inglés se reparte así:
+    </p>
+    <div style="${BOX}">
+      <strong>do</strong> = actividades y tareas: <em>do homework, do the dishes</em><br>
+      <strong>make</strong> = crear o producir algo: <em>make a cake, make a decision</em>
+    </div>
+    <p style="${P}">
+      Para fijarlo, nada como practicarlo. Cinco ejercicios, unos 3 minutos,
+      y tu progreso se guarda solo.
+    </p>`,
+    ctaText: 'Practicar 3 minutos',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
   membership_intro: {
     subject: 'Una semana practicando 🙌 ¿Qué sigue?',
     preheader: 'Todo Inglés con Leo sin límite, por menos de lo que cuesta un café.',
@@ -1245,14 +1283,14 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     footerNote: 'Si algo te hizo dejar de practicar, respóndeme y cuéntame. Me ayuda a mejorar la página.',
   },
   final_onboarding: {
-    subject: 'Un mes después: ¿cuánto has avanzado?',
+    subject: 'Unas semanas después: ¿cuánto has avanzado?',
     preheader: 'Una forma rápida de medirlo, y un reto de 1 minuto al día.',
     greeting: '¡Hola! 👋',
     title: 'Mide cuánto has avanzado',
     titleWithName: '{name}, mide cuánto has avanzado',
     bodyHtml: `
     <p style="${P}">
-      Ya pasó un mes desde que creaste tu cuenta. Dos ideas para este mes:
+      Ya pasaron unas semanas desde que creaste tu cuenta. Dos ideas para lo que sigue:
     </p>
     <div style="${BOX}">
       <strong>1. Vuelve a hacer el test de nivel.</strong> Compara tu resultado
