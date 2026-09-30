@@ -148,6 +148,8 @@ header{
   .nav .nav-cta{display:inline-flex;}
   .nav-burger{display:none;}
 }
+.nav-links a{white-space:nowrap;}
+@media(min-width:900px) and (max-width:1099px){.nav-links{gap:16px;font-size:0.9rem;}.nav .nav-cta{display:none;}}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:14px 24px;font-weight:700;font-size:1rem;border:none;transition:transform .15s ease, box-shadow .15s ease, background .15s ease;white-space:nowrap;}
 .btn:active{transform:scale(0.97);}
