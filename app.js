@@ -3785,11 +3785,11 @@ function renderContinueCard(container){
     return;
   }
   if(last.skill && last.skill.indexOf('cambridge-') === 0){
-    // Cambridge (B2 First / C1 Advanced) tampoco usa niveles A1-C1 del
+    // Cambridge (B1 Preliminary / B2 First / C1 Advanced) tampoco usa niveles A1-C1 del
     // sistema normal (usa 'cambridge'/'cambridge-c1' como level), así que
     // necesita su propia rama aquí, igual que TOEFL/IELTS abajo (si no,
     // el bloque genérico truena buscando LEVEL_META['cambridge']).
-    const examLevelLabel = (last.level === 'cambridge-c1') ? 'C1 Advanced' : 'B2 First';
+    const examLevelLabel = (last.level === 'cambridge-c1') ? 'C1 Advanced' : (last.level === 'cambridge-b1') ? 'B1 Preliminary' : 'B2 First';
     container.innerHTML = `
       <div class="continue-card">
         <div>

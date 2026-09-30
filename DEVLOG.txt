@@ -1091,3 +1091,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - gtag.js y fbevents.js se inyectan despues de window.load via requestIdleCallback (timeout 3 s, fallback setTimeout 1.5 s), o antes si la persona toca/teclea. Guard para no cargarlos dos veces. meta-pixel.js ya no se carga en la Home (el resto de paginas sigue igual).
 - Verificado con Chrome headless antes/despues: gtag/fbq existen desde DOMContentLoaded, los scripts cargan una sola vez, 1 PageView de Meta y 1 page_view de GA (igual que antes), trackLeoEvent sigue llegando a GA y a Meta, sin errores nuevos en consola. CAPI (webhooks) no depende del navegador, sin cambios.
 - Lighthouse local (localhost, 5 corridas): mediana 82 -> 82, sin regresion. En localhost el primer pintado ocurre antes que cualquier tag, asi que no reproduce el problema; la medicion que importa es contra el sitio en vivo.
+
+2026-09-30 — Cambridge B1 Preliminary (PET) como tercer nivel de Cambridge
+- Nuevo cambridge-b1-data.js (32 Reading, 19 Listening, 7 Writing, 16 Speaking) con el formato real de B1 Preliminary: Reading 6 partes, Listening 4, Writing (correo + historia/articulo), Speaking 4.
+- cambridge.js: nuevo nivel b1 (pestana en la pagina, ordenes y etiquetas por nivel, conteos dinamicos, sesion reanudable con clave cambridge-b1). B2 y C1 sin cambios de comportamiento.
+- 28 audios nuevos (audio/cambridge-b1/): 10 dialogos con dos voces (Ava mujer / Andrew hombre, ambas US), el resto una sola voz. Filas agregadas a tools/lista_audios.csv y script tools/generar_cambridge_b1_audios.py.
+- Textos actualizados en cambridge.html, miembros.html, chatbot.js, toefl-teaser.js, app.js (etiqueta "Continuar"). Bump de app.js?v en todos los HTML.
+- Verificado: node --check, las 74 tarjetas renderizan sin errores, y revision a 320px.

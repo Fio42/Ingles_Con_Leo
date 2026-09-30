@@ -128,7 +128,7 @@
     'toefl.html': { explain:'Aquí practicas específicamente para el examen TOEFL: Listening, Reading, Speaking con cronómetro y Writing.', cta:null },
     'ielts.html': { explain:'Aquí practicas específicamente para el examen IELTS.', cta:null },
     'toeic.html': { explain:'Aquí practicas específicamente para el examen TOEIC, el que más piden las empresas.', cta:null },
-    'cambridge.html': { explain:'Aquí practicas para los exámenes de Cambridge (B2 First y C1 Advanced).', cta:null },
+    'cambridge.html': { explain:'Aquí practicas para los exámenes de Cambridge (B1 Preliminary, B2 First y C1 Advanced).', cta:null },
     'sobre-leo.html': { explain:'Esta página cuenta quién es Leo y por qué existe Inglés con Leo.', cta:null },
     'privacidad.html': { explain:'Aquí está la política de privacidad del sitio: qué datos se guardan y cómo se usan.', cta:null },
     'baja.html': { explain:'Aquí puedes administrar qué correos automáticos de Inglés con Leo quieres seguir recibiendo.', cta:null },
@@ -433,7 +433,7 @@
       text: function(){
         return isMember()
           ? 'Ya iniciaste sesión como miembro. Tienes práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas, preparación para TOEFL/IELTS/Cambridge, el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube.'
-          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, vía Stripe, PayPal o Mercado Pago).';
+          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B1 Preliminary, B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, vía Stripe, PayPal o Mercado Pago).';
       },
       options: function(){
         var opts = [membersCta()];
