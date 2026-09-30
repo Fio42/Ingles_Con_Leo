@@ -526,10 +526,35 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false }, 200)
     }
 
+    // Cuentas recientes primero (arreglo 2026-09-30): la consulta de
+    // arriba no tiene orden y corta en MAX_PER_RUN, así que si hay más
+    // cuentas gratis que ese límite, una cuenta NUEVA podía no entrar
+    // nunca en la lista y su correo de bienvenida no salía. Esta
+    // consulta aparte trae solo las cuentas de los últimos 3 días,
+    // ordenadas de la más nueva a la más vieja, y se pone al
+    // principio de la lista (sin duplicar ids).
+    const { data: recentProfiles } = await supabase
+      .from('profiles')
+      .select(
+        'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+      )
+      .eq('is_member', false)
+      .not('email', 'is', null)
+      .is('email_opt_out_at', null)
+      .gte('created_at', new Date(Date.now() - 3 * 86400000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(MAX_PER_RUN)
+    const seenIds = new Set<string>()
+    const allProfiles = [...(recentProfiles || []), ...(profiles || [])].filter((x: { id: string }) => {
+      if (seenIds.has(x.id)) return false
+      seenIds.add(x.id)
+      return true
+    })
+
     const now = Date.now()
     const counts: Record<string, number> = {}
 
-    for (const p of (profiles || []) as Profile[]) {
+    for (const p of allProfiles as Profile[]) {
       // Antes de decidir, revisar si algún correo de la secuencia por
       // calendario ya "caducó" (pasó su SKIP_AFTER_DAYS) sin haberse
       // mandado. Si sí, se marca 'skipped' en lifecycle_emails (una sola
