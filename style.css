@@ -2084,13 +2084,22 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .diag-week-list b{color:var(--ink);}
 .plan-focus-note{background:var(--blue-tint);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.9rem;color:var(--ink-soft);margin:0 0 12px;}
 .plan-focus-note a{color:var(--blue);font-weight:600;}
-/* Writing con IA (beta, solo visible con writing.html?ia=1 mientras WRITING_AI_PUBLIC sea false) */
-.writing-ai{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;color:var(--ink);}
-.writing-ai-head{font-weight:700;font-size:0.95rem;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.writing-ai-beta{font-size:0.7rem;font-weight:700;background:var(--blue-tint);color:var(--blue-deep);border-radius:999px;padding:2px 8px;}
-.writing-ai-loading{margin:0;color:var(--ink-soft);font-size:0.9rem;}
-.writing-ai-fixed{background:var(--green-tint);color:#116B41;border-radius:var(--radius-sm);padding:8px 12px;font-weight:600;margin:6px 0 8px;overflow-wrap:anywhere;}
-.writing-ai-text{margin:0 0 6px;font-size:0.92rem;line-height:1.5;color:var(--ink);}
-.writing-ai-tip{margin:0 0 4px;font-size:0.88rem;color:var(--ink-soft);}
-.writing-ai-tip::before{content:"• ";}
-.writing-ai-note{margin:8px 0 0;font-size:0.78rem;color:var(--ink-faint);}
+/* Leo AI: botón chico de ayuda bajo la corrección y su respuesta (ver LEO AI en app.js) */
+.leo-ai{margin-top:12px;}
+.leo-ai-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--blue);color:var(--blue-deep);font-weight:700;font-size:0.86rem;font-family:inherit;padding:7px 14px;border-radius:999px;cursor:pointer;line-height:1.2;text-align:left;max-width:100%;}
+.leo-ai-btn svg{width:15px;height:15px;flex-shrink:0;}
+.leo-ai-btn:hover{background:var(--blue-tint);}
+.leo-ai-btn:disabled{opacity:.6;cursor:default;}
+.leo-ai-answer{margin-top:10px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:var(--radius-sm);padding:12px 14px;color:var(--ink);text-align:left;}
+.leo-ai-answer.is-error{border-left-color:var(--line);}
+.leo-ai-head{font-weight:800;font-size:0.82rem;letter-spacing:0.03em;color:var(--blue-deep);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.leo-ai-beta{font-size:0.68rem;font-weight:700;letter-spacing:0;background:var(--blue-tint);color:var(--blue-deep);border-radius:999px;padding:2px 8px;}
+.leo-ai-loading{margin:0;color:var(--ink-soft);font-size:0.9rem;}
+.leo-ai-verdict{font-weight:700;font-size:0.95rem;margin-bottom:6px;}
+.leo-ai-fixed{background:var(--green-tint);color:#116B41;border-radius:var(--radius-sm);padding:8px 12px;font-weight:600;margin:6px 0 8px;overflow-wrap:anywhere;}
+.leo-ai-text{margin:0 0 6px;font-size:0.92rem;line-height:1.55;color:var(--ink);}
+.leo-ai-tip{margin:0 0 4px;font-size:0.88rem;color:var(--ink-soft);}
+.leo-ai-tip::before{content:"• ";}
+.leo-ai-example{background:var(--paper-dim);border-radius:var(--radius-sm);padding:8px 12px;margin:6px 0;}
+.leo-ai-note{margin:8px 0 0;font-size:0.76rem;color:var(--ink-faint);}
+.diag-hl [data-leo-ai-weak] .leo-ai{margin-top:10px;}

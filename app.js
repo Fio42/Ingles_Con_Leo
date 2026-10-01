@@ -1496,7 +1496,7 @@ function shuffleOptions(options, correctIndex){
   return { options: shuffled, correct: newCorrect };
 }
 
-function renderGrammarItemInto(container, item, onAnswered){
+function renderGrammarItemInto(container, item, onAnswered, aiOpts){
   if(item.type === 'choice'){
     container.innerHTML = `
       <div class="practice-instruction">Elige la opción correcta</div>
@@ -1519,6 +1519,7 @@ function renderGrammarItemInto(container, item, onAnswered){
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:opt }, aiOpts));
         onAnswered(isCorrect);
       });
       list.appendChild(b);
@@ -1559,6 +1560,7 @@ function renderGrammarItemInto(container, item, onAnswered){
         slot.style.borderColor = isCorrect ? '#1FA463' : '#EF5A45';
         slot.style.background = isCorrect ? '#E7F7EE' : '#FDEBE8';
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:word }, aiOpts));
         onAnswered(isCorrect);
       });
       bank.appendChild(chip);
@@ -1621,6 +1623,7 @@ function renderGrammarItemInto(container, item, onAnswered){
         container.querySelector('.error-sentence').after(box);
 
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:cleanTokens[pickedIdx] }, aiOpts));
         onAnswered(isCorrect);
       });
     });
@@ -1681,6 +1684,7 @@ function runVocabSession({ container, level, onExit }){
         reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        leoAiAttach(card.querySelector('#fb'), { kind:'vocab', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
@@ -1771,6 +1775,7 @@ function runListeningSession({ container, level, onExit }){
             <div class="examples-label">Transcripción</div>
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        leoAiAttach(fb, { kind:'listening', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
@@ -1859,6 +1864,7 @@ function runReadingSession({ container, level, onExit }){
             <div class="examples-label">Traducción</div>
             <div class="example-pair"><div class="example-en">${item.passage}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        leoAiAttach(fb, { kind:'reading', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           idx++;
@@ -1936,77 +1942,205 @@ function evaluateWritingAnswer(text, item){
   return { isOk:true, hint:null };
 }
 
-/* ---------- Writing con IA (Gemini gratis): TOTALMENTE APAGADO ----------
-   Por pedido de Leo (2026-10-01) queda conectado pero desactivado hasta
-   terminar de validar la parte sin IA. WRITING_AI_ENABLED = false apaga
-   todo (no se llama al servidor ni con ?ia=1). Cuando se active:
-   WRITING_AI_ENABLED = true deja probarlo solo en el navegador donde se
-   abrió writing.html?ia=1 (se apaga con ?ia=0), y WRITING_AI_PUBLIC =
-   true lo abre a todos los miembros. La función writing-feedback NO
-   está desplegada en Supabase todavía.
-   Es solo un extra debajo de la corrección normal: no cambia si el
-   ejercicio cuenta como bien o mal, ni el progreso, ni Mis errores, y
-   si falla no se ve nada (ver LeoBackend.getWritingFeedback). */
-const WRITING_AI_ENABLED = false; // interruptor maestro: con false no se muestra NADA, ni con ?ia=1
-const WRITING_AI_PUBLIC = false;
-const WRITING_AI_BETA_KEY = 'leo_writing_ai_beta';
+/* ============================================================
+   LEO AI — ayuda con IA bajo demanda (proveedor principal: Cloudflare
+   Workers AI con Gemma 4, plan gratis; ver supabase_functions/leo-ai.ts)
+   ------------------------------------------------------------
+   Un botón pequeño ("Explícame por qué", "Explícame este error",
+   "Revisar mi frase con Leo AI", "¿Por qué es mi punto débil?") que
+   aparece debajo de la corrección normal. Solo cuando el alumno lo toca
+   se llama a la Edge Function leo-ai (LeoBackend.askLeoAI). Reglas:
+     - La IA NUNCA califica: no toca isCorrect, results, progreso,
+       Mis errores ni el diagnóstico. Todo eso pasa antes y sin ella.
+     - Nunca bloquea: si falla, tarda o llegó al límite, sale un aviso
+       corto y el ejercicio sigue igual.
+     - Un toque = como mucho una llamada (botón bloqueado mientras
+       espera) y la misma pregunta no se vuelve a pedir en la página
+       (caché en memoria, por ejemplo al "Volver a intentar").
+     - Solo se envían datos del ejercicio (buildLeoAiPayload), nada
+       personal.
+   Interruptores:
+     LEO_AI_ENABLED = false  -> todo apagado: no aparece ningún botón ni
+                                se llama al servidor, ni con ?ia=1.
+     LEO_AI_ENABLED = true   -> solo en el navegador donde se abrió una
+                                página de miembros con ?ia=1 (?ia=0 apaga).
+     LEO_AI_PUBLIC  = true   -> para todos los miembros.
+   Además, el botón solo aparece cuando el sitio ya confirmó que la
+   persona es miembro (guardMemberPage / unlock de miembros.html marcan
+   window.__leoMemberVerified). La práctica gratis nunca lo muestra.
+   Pasos para activar: ver el encabezado de supabase_functions/leo-ai.ts.
+   ============================================================ */
+const LEO_AI_ENABLED = true;  // servidor desplegado; quién lo usa lo decide leo_ai_config/leo_ai_testers en Supabase
+const LEO_AI_PUBLIC = true;   // abierto a todos los miembros (2026-10-01); el servidor también lo exige (leo_ai_config.public)
+const LEO_AI_BETA_KEY = 'leo_ai_beta';
 (function(){
   try{
     const flag = new URLSearchParams(location.search).get('ia');
-    if(flag === '1') localStorage.setItem(WRITING_AI_BETA_KEY, '1');
-    if(flag === '0') localStorage.removeItem(WRITING_AI_BETA_KEY);
+    if(flag === '1') localStorage.setItem(LEO_AI_BETA_KEY, '1');
+    if(flag === '0') localStorage.removeItem(LEO_AI_BETA_KEY);
   }catch(e){}
 })();
-function isWritingAiEnabled(){
-  if(!WRITING_AI_ENABLED) return false;
-  if(typeof LeoBackend === 'undefined' || typeof LeoBackend.getWritingFeedback !== 'function') return false;
-  if(WRITING_AI_PUBLIC) return true;
-  try{ return localStorage.getItem(WRITING_AI_BETA_KEY) === '1'; }catch(e){ return false; }
+function isLeoAiEnabled(){
+  if(!LEO_AI_ENABLED) return false;
+  if(typeof LeoBackend === 'undefined' || typeof LeoBackend.askLeoAI !== 'function') return false;
+  if(window.__leoMemberVerified !== true) return false;
+  if(LEO_AI_PUBLIC) return true;
+  try{ return localStorage.getItem(LEO_AI_BETA_KEY) === '1'; }catch(e){ return false; }
 }
-const WRITING_AI_VERDICT_LABEL = { correct:'Tu frase está bien escrita', minor:'Casi perfecta: un detalle por pulir', incorrect:'Hay algo que corregir' };
-function showWritingAiFeedback(fbEl, item, text){
-  if(!fbEl || !isWritingAiEnabled()) return;
-  if(String(text || '').trim().split(/\s+/).length < 2) return;
-  const box = document.createElement('div');
-  box.className = 'writing-ai';
-  box.innerHTML = '<div class="writing-ai-head">Corrección detallada <span class="writing-ai-beta">Beta</span></div><p class="writing-ai-loading">Revisando tu frase…</p>';
-  fbEl.appendChild(box);
-  LeoBackend.getWritingFeedback({ prompt: stripHtmlForAi(item.prompt), target: stripHtmlForAi(item.target || ''), answer: text })
-    .then(res=>{
-      if(!box.isConnected) return; // el alumno ya pasó a otro ejercicio
-      if(!res){ box.remove(); return; }
-      box.innerHTML = '';
-      const head = document.createElement('div');
-      head.className = 'writing-ai-head';
-      head.textContent = WRITING_AI_VERDICT_LABEL[res.verdict];
-      box.appendChild(head);
-      if(res.verdict !== 'correct' && res.corrected.trim() !== String(text).trim()){
-        const fixed = document.createElement('div');
-        fixed.className = 'writing-ai-fixed';
-        fixed.textContent = res.corrected;
-        box.appendChild(fixed);
-      }
-      const exp = document.createElement('p');
-      exp.className = 'writing-ai-text';
-      exp.textContent = res.explanation;
-      box.appendChild(exp);
-      res.tips.forEach(t=>{
-        const tip = document.createElement('p');
-        tip.className = 'writing-ai-tip';
-        tip.textContent = t;
-        box.appendChild(tip);
-      });
-      const note = document.createElement('p');
-      note.className = 'writing-ai-note';
-      note.textContent = 'Sugerencia automática. Si algo no te cuadra, guíate por el ejemplo de arriba.';
-      box.appendChild(note);
-    })
-    .catch(()=>{ box.remove(); });
-}
+
 function stripHtmlForAi(html){
   const d = document.createElement('div');
-  d.innerHTML = String(html || '');
-  return (d.textContent || '').trim();
+  d.innerHTML = String(html == null ? '' : html);
+  return (d.textContent || '').replace(/\s+/g, ' ').trim();
+}
+function leoAiText(v, max){ return stripHtmlForAi(v).slice(0, max || 400); }
+
+/* Arma lo ÚNICO que viaja al servidor (y de ahí al proveedor de IA): datos del
+   ejercicio. Nunca ids de usuario, nombre, correo, token ni historial.
+   Devuelve null si no hay datos suficientes (entonces no hay botón). */
+function buildLeoAiPayload(ctx){
+  if(!ctx) return null;
+  const level = (typeof getUserLevel === 'function') ? getUserLevel() : '';
+  const it = ctx.item || {};
+  const opts = arr => (Array.isArray(arr) ? arr : []).slice(0, 6).map(o => leoAiText(o, 120));
+  if(ctx.kind === 'diagnosis'){
+    const u = ctx.unit;
+    if(!u || typeof u.current !== 'number') return null;
+    return { mode:'diagnosis', level, unit:{
+      label: leoAiText(u.label, 80), current: u.current, answered: u.n,
+      previous: u.trend ? u.prevAcc : null, recent: u.trend ? u.recentAcc : null,
+      trend: u.trend || 'none', pendingMistakes: u.activeMistakes || 0, repeatedMistakes: u.repeatedMistakes || 0
+    } };
+  }
+  if(ctx.kind === 'writing'){
+    const answer = leoAiText(ctx.userAnswer, 400);
+    if(answer.split(' ').filter(Boolean).length < 2) return null;
+    return { mode:'writing', skill:'writing', level, question: leoAiText(it.prompt, 400),
+      target: leoAiText(it.target, 160), example: it.example ? leoAiText(it.example.en, 200) : '', studentAnswer: answer };
+  }
+  const base = { mode:'explain', level, isCorrect: ctx.isCorrect === true, studentAnswer: leoAiText(ctx.userAnswer, 400) };
+  if(ctx.kind === 'grammar'){
+    let topic = '';
+    try{ const f = getMistakesItemIndex().get(it.id); topic = f && f.topic ? f.topic : ''; }catch(e){}
+    Object.assign(base, { skill:'grammar', topic: leoAiText(topic, 120), baseExplanation: leoAiText(it.explain, 500) });
+    if(it.type === 'choice'){
+      Object.assign(base, { exerciseType:'Elegir la opción correcta', question: leoAiText(it.prompt), options: opts(it.options), correctAnswer: leoAiText(it.options[it.correct], 200) });
+    } else if(it.type === 'fill'){
+      const sentence = (it.sentence || []).map((w, i) => i === it.blankIndex ? '___' : w).join(' ');
+      Object.assign(base, { exerciseType:'Completar la frase', question: leoAiText(sentence), options: opts(it.bank), correctAnswer: leoAiText(it.correct, 200) });
+    } else if(it.type === 'error'){
+      Object.assign(base, { exerciseType:'Encontrar la palabra incorrecta en la frase', question: leoAiText(it.wrong),
+        correctAnswer: leoAiText(`La palabra incorrecta es "${it.wrongWord}". Frase correcta: ${it.right}`, 300),
+        studentAnswer: leoAiText(`Tocó la palabra "${ctx.userAnswer}"`, 200) });
+    } else return null;
+  } else if(ctx.kind === 'vocab'){
+    const q = it.quiz || {};
+    Object.assign(base, { skill:'vocab', topic: leoAiText('Palabra: ' + (it.word || ''), 120), exerciseType:'Significado de una palabra',
+      question: leoAiText(q.prompt), options: opts(q.options), correctAnswer: leoAiText((q.options || [])[q.correct], 200),
+      baseExplanation: leoAiText(`${it.word} = ${it.translation}. ${q.explain || ''}`, 500) });
+  } else if(ctx.kind === 'listening'){
+    Object.assign(base, { skill:'listening', exerciseType:'Comprensión auditiva', question: leoAiText(it.question), options: opts(it.options),
+      correctAnswer: leoAiText((it.options || [])[it.correct], 200), baseExplanation: leoAiText(it.explain, 500), context: leoAiText(it.transcript, 1500) });
+  } else if(ctx.kind === 'reading'){
+    Object.assign(base, { skill:'reading', exerciseType:'Comprensión de lectura', question: leoAiText(it.question), options: opts(it.options),
+      correctAnswer: leoAiText((it.options || [])[it.correct], 200), baseExplanation: leoAiText(it.explain, 500), context: leoAiText(it.passage, 1500) });
+  } else return null;
+  return (base.question && base.correctAnswer && base.studentAnswer) ? base : null;
+}
+
+function leoAiDefaultLabel(ctx){
+  if(ctx.kind === 'writing') return 'Revisar mi frase con Leo AI';
+  if(ctx.kind === 'diagnosis') return '¿Por qué es mi punto débil?';
+  if(ctx.isCorrect === true) return '¿Por qué es correcta?';
+  return ctx.reviewMode ? 'Explícame este error' : 'Explícame por qué';
+}
+
+const LEO_AI_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" fill="currentColor"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="currentColor"/></svg>';
+const LEO_AI_WRITING_VERDICT = { correct:'Tu frase está bien escrita', minor:'Casi perfecta: un detalle por pulir', incorrect:'Hay algo que corregir' };
+const LEO_AI_FAIL_TEXT = {
+  daily_limit: 'Ya usaste tus explicaciones de Leo AI de hoy. Mañana tendrás más.',
+  default: 'Leo AI no está disponible en este momento. La explicación de arriba sigue siendo válida.'
+};
+const _leoAiCache = new Map();
+
+/* Pone el botón de Leo AI dentro de "host" (normalmente el #fb de la
+   corrección). No hace nada si Leo AI está apagado o si no hay datos
+   suficientes. Nunca lanza errores hacia el ejercicio. */
+function leoAiAttach(host, ctx){
+  try{
+    if(!host || !isLeoAiEnabled()) return null;
+    const payload = buildLeoAiPayload(ctx);
+    if(!payload) return null;
+    const box = document.createElement('div');
+    box.className = 'leo-ai';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'leo-ai-btn';
+    btn.innerHTML = LEO_AI_ICON + '<span></span>';
+    btn.querySelector('span').textContent = ctx.label || leoAiDefaultLabel(ctx);
+    box.appendChild(btn);
+    host.appendChild(box);
+    let busy = false;
+    btn.addEventListener('click', ()=>{
+      if(busy) return;            // doble toque: se ignora
+      busy = true;
+      btn.disabled = true;
+      const out = document.createElement('div');
+      out.className = 'leo-ai-answer';
+      out.setAttribute('aria-live', 'polite');
+      out.innerHTML = '<p class="leo-ai-loading">Leo AI está pensando…</p>';
+      box.appendChild(out);
+      const key = JSON.stringify(payload);
+      const request = _leoAiCache.has(key)
+        ? Promise.resolve(_leoAiCache.get(key))
+        : Promise.resolve().then(()=> LeoBackend.askLeoAI(payload)).catch(()=> ({ ok:false, reason:'network' }));
+      request.then(res=>{
+        if(!box.isConnected) return; // el alumno ya pasó a otro ejercicio
+        if(res && res.ok) _leoAiCache.set(key, res);
+        btn.remove();
+        renderLeoAiAnswer(out, payload, res);
+      });
+    });
+    return box;
+  }catch(e){
+    return null;
+  }
+}
+
+function renderLeoAiAnswer(out, payload, res){
+  out.innerHTML = '';
+  const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
+  const head = add('div', 'leo-ai-head', 'Leo AI');
+  if(!LEO_AI_PUBLIC){ const beta = document.createElement('span'); beta.className = 'leo-ai-beta'; beta.textContent = 'Beta'; head.appendChild(beta); }
+  const a = res && res.ok && res.answer;
+  if(!a || typeof a.explanation !== 'string'){
+    out.classList.add('is-error');
+    add('p', 'leo-ai-text', LEO_AI_FAIL_TEXT[res && res.reason] || LEO_AI_FAIL_TEXT.default);
+    return;
+  }
+  if(payload.mode === 'writing'){
+    add('div', 'leo-ai-verdict', LEO_AI_WRITING_VERDICT[a.verdict] || '');
+    if(a.verdict !== 'correct' && a.corrected && a.corrected.trim() !== String(payload.studentAnswer).trim()){
+      add('div', 'leo-ai-fixed', a.corrected);
+    }
+    add('p', 'leo-ai-text', a.explanation);
+    (Array.isArray(a.tips) ? a.tips : []).slice(0, 2).forEach(t => add('p', 'leo-ai-tip', t));
+  } else if(payload.mode === 'diagnosis'){
+    add('p', 'leo-ai-text', a.explanation);
+    if(a.tip) add('p', 'leo-ai-tip', a.tip);
+  } else {
+    add('p', 'leo-ai-text', a.explanation);
+    if(a.example_en){
+      const ex = document.createElement('div');
+      ex.className = 'leo-ai-example';
+      const en = document.createElement('div'); en.className = 'example-en'; en.textContent = a.example_en; ex.appendChild(en);
+      if(a.example_es){ const es = document.createElement('div'); es.className = 'example-es'; es.textContent = a.example_es; ex.appendChild(es); }
+      out.appendChild(ex);
+    }
+  }
+  add('p', 'leo-ai-note', payload.mode === 'diagnosis'
+    ? 'Explicación automática de los números de tu diagnóstico.'
+    : 'Explicación automática. La calificación del ejercicio no cambia.');
 }
 
 function runWritingSession({ container, level, onExit }){
@@ -2085,7 +2219,7 @@ function runWritingSession({ container, level, onExit }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       }
       results.push({ itemId:item.id, isCorrect:isOk });
-      showWritingAiFeedback(fb, item, text);
+      leoAiAttach(fb, { kind:'writing', item, userAnswer:text });
       nextRow.innerHTML = '';
       if(!isOk){
         const retryBtn = document.createElement('button');
@@ -2305,8 +2439,11 @@ const MIX_KIND_LABEL = { grammar:'Gramática', vocab:'Vocabulario', listening:'L
 
 function renderMixItemInto(card, entry, onAnswered){
   const item = entry.item;
+  // En "Mis errores" y en el repaso de errores del Plan, el botón de Leo AI
+  // dice "Explícame este error".
+  const aiReview = { reviewMode: !!entry.reviewOrigin || /errores(\.html)?$/.test(location.pathname) };
   if(entry.kind === 'grammar'){
-    renderGrammarItemInto(card, item, onAnswered);
+    renderGrammarItemInto(card, item, onAnswered, aiReview);
     return;
   }
   if(entry.kind === 'vocab'){
@@ -2334,6 +2471,7 @@ function renderMixItemInto(card, entry, onAnswered){
         reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        leoAiAttach(card.querySelector('#fb'), Object.assign({ kind:'vocab', item, isCorrect, userAnswer:opt }, aiReview));
         onAnswered(isCorrect);
       });
       list.appendChild(b);
@@ -2375,6 +2513,7 @@ function renderMixItemInto(card, entry, onAnswered){
             <div class="examples-label">Transcripción</div>
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        leoAiAttach(fb, Object.assign({ kind:'listening', item, isCorrect, userAnswer:opt }, aiReview));
         onAnswered(isCorrect);
       });
       list.appendChild(b);
@@ -2406,6 +2545,7 @@ function renderMixItemInto(card, entry, onAnswered){
           <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
         </div>
         <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+      leoAiAttach(fb, { kind:'writing', item, userAnswer:input.value });
       onAnswered(isOk);
     });
     return;
@@ -4915,7 +5055,7 @@ function renderDiagnosisSection(container){
         </div>
         <div class="diag-card diag-hl diag-hl-weak">
           <div class="diag-hl-label">Punto a reforzar</div>
-          ${w ? `<div class="diag-hl-value">${w.label}</div><div class="diag-muted">${w.current}% de aciertos ahora${w.activeMistakes ? ` · ${w.activeMistakes} ${w.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'}` : ''}</div>`
+          ${w ? `<div class="diag-hl-value">${w.label}</div><div class="diag-muted">${w.current}% de aciertos ahora${w.activeMistakes ? ` · ${w.activeMistakes} ${w.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'}` : ''}</div><div data-leo-ai-weak></div>`
               : `<div class="diag-hl-value diag-hl-empty">Nada urgente</div><div class="diag-muted">Todo lo que practicas va por encima de ${DIAG.WEAK_BELOW}%.</div>`}
         </div>
         <div class="diag-card diag-hl">
@@ -4951,6 +5091,7 @@ function renderDiagnosisSection(container){
       </div>
 
       ${diagWeeklyHtml(week)}`;
+    if(w) leoAiAttach(container.querySelector('[data-leo-ai-weak]'), { kind:'diagnosis', unit:w });
   }
   diagRenderWithStats(paint);
 }

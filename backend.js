@@ -487,37 +487,36 @@ const LeoBackend = (function(){
     }
   }
 
-  /* Corrección detallada de Writing con IA (Edge Function
-     writing-feedback, plan gratis de Gemini). Es solo un extra: ante
-     CUALQUIER problema (sin sesión, sin red, límite diario, Gemini
-     lento o caído, respuesta rara) devuelve null y la página
-     simplemente no muestra nada más. Solo se manda la consigna, la
-     estructura pedida y la frase del alumno; nada personal. */
-  async function getWritingFeedback({ prompt, target, answer }){
-    if(!isConfigured()) return null;
+  /* Leo AI (Edge Function leo-ai; el proveedor de IA lo elige el
+     servidor: Cloudflare Workers AI con Gemma 4). Es solo un
+     extra que el alumno pide con un botón: NUNCA lanza error ni bloquea
+     el ejercicio. Siempre devuelve { ok:true, answer } o
+     { ok:false, reason } (reason: 'daily_limit', 'disabled', 'timeout',
+     'network', 'bad_output', etc.). Solo manda el payload que ya armó
+     app.js (datos del ejercicio, sin nada personal); el token de sesión
+     va únicamente a NUESTRO servidor para comprobar que es miembro. */
+  async function askLeoAI(payload){
+    if(!isConfigured()) return { ok:false, reason:'not_configured' };
+    let session = null;
+    try{ session = await getSession(); }catch(e){ session = null; }
+    if(!session) return { ok:false, reason:'no_session' };
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(()=> ctrl.abort(), 12000) : null;
     try{
-      const session = await getSession();
-      if(!session) return null;
-      const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timer = ctrl ? setTimeout(()=> ctrl.abort(), 12000) : null;
-      try{
-        const res = await fetch(SUPABASE_URL + '/functions/v1/writing-feedback', {
-          method: 'POST',
-          signal: ctrl ? ctrl.signal : undefined,
-          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: String(prompt || '').slice(0, 300), target: String(target || '').slice(0, 160), answer: String(answer || '').slice(0, 400) })
-        });
-        if(!res.ok) return null;
-        const data = await res.json();
-        const fb = data && data.ok && data.feedback;
-        if(!fb || typeof fb.explanation !== 'string' || typeof fb.corrected !== 'string') return null;
-        if(['correct','minor','incorrect'].indexOf(fb.verdict) === -1) return null;
-        return { verdict: fb.verdict, corrected: fb.corrected, explanation: fb.explanation, tips: Array.isArray(fb.tips) ? fb.tips.filter(t => typeof t === 'string').slice(0, 2) : [] };
-      } finally {
-        if(timer) clearTimeout(timer);
-      }
+      const res = await fetch(SUPABASE_URL + '/functions/v1/leo-ai', {
+        method: 'POST',
+        signal: ctrl ? ctrl.signal : undefined,
+        headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {})
+      });
+      let data = null;
+      try{ data = await res.json(); }catch(e){ data = null; }
+      if(data && data.ok && data.answer && typeof data.answer === 'object') return { ok:true, answer: data.answer };
+      return { ok:false, reason: (data && typeof data.reason === 'string') ? data.reason : ('http_' + res.status) };
     }catch(e){
-      return null;
+      return { ok:false, reason: (e && e.name === 'AbortError') ? 'timeout' : 'network' };
+    }finally{
+      if(timer) clearTimeout(timer);
     }
   }
 
@@ -703,7 +702,7 @@ const LeoBackend = (function(){
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
-    getMistakeStats, applyMistakeResults, submitLeobotReport, getWritingFeedback
+    getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI
   };
 })();
 
@@ -714,6 +713,7 @@ const LeoBackend = (function(){
 function guardMemberPage(startFn){
   LeoBackend.requireMemberAsync().then(function(ok){
     if(ok){
+      window.__leoMemberVerified = true; // lo usa Leo AI (app.js) para mostrarse solo a miembros
       startFn();
       if(typeof initMemberHeader === 'function') initMemberHeader();
     }

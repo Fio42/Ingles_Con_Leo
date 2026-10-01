@@ -24,7 +24,7 @@ vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, computeWeeklyReport, computePlanSelection, summarizePlanSelection, buildPlanPool,
   planSkillAccuracy, computeMistakeIds, diagFamilyForTopic, getDiagItemIndex, PROGRESS_KEY, DIAG, PLAN_LENGTHS,
-  G:GRAMMAR_BANK, LB:LISTENING_BANK, VB:VOCAB_BANK, WB:WRITING_BANK, RB:READING_BANK, isWritingAiEnabled };`, ctx);
+  G:GRAMMAR_BANK, LB:LISTENING_BANK, VB:VOCAB_BANK, WB:WRITING_BANK, RB:READING_BANK, isLeoAiEnabled };`, ctx);
 const T = ctx.__t;
 
 /* ---------- utilidades para armar alumnos inventados ---------- */
@@ -279,10 +279,10 @@ test('Speaking (sin calificar) y secciones de examen no entran al diagnóstico',
   assert.strictEqual(d.total, 0);
 });
 
-test('Writing con IA queda totalmente apagado', ()=>{
-  store.leo_writing_ai_beta = '1';
-  assert.strictEqual(T.isWritingAiEnabled(), false, 'ni con el modo prueba activado');
-  delete store.leo_writing_ai_beta;
+test('Leo AI queda totalmente apagado (ni con modo prueba ni siendo miembro)', ()=>{
+  store.leo_ai_beta = '1'; ctx.__leoMemberVerified = true;
+  assert.strictEqual(T.isLeoAiEnabled(), false);
+  delete store.leo_ai_beta; delete ctx.__leoMemberVerified;
 });
 
 console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
