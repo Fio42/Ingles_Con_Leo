@@ -487,6 +487,40 @@ const LeoBackend = (function(){
     }
   }
 
+  /* Corrección detallada de Writing con IA (Edge Function
+     writing-feedback, plan gratis de Gemini). Es solo un extra: ante
+     CUALQUIER problema (sin sesión, sin red, límite diario, Gemini
+     lento o caído, respuesta rara) devuelve null y la página
+     simplemente no muestra nada más. Solo se manda la consigna, la
+     estructura pedida y la frase del alumno; nada personal. */
+  async function getWritingFeedback({ prompt, target, answer }){
+    if(!isConfigured()) return null;
+    try{
+      const session = await getSession();
+      if(!session) return null;
+      const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = ctrl ? setTimeout(()=> ctrl.abort(), 12000) : null;
+      try{
+        const res = await fetch(SUPABASE_URL + '/functions/v1/writing-feedback', {
+          method: 'POST',
+          signal: ctrl ? ctrl.signal : undefined,
+          headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: String(prompt || '').slice(0, 300), target: String(target || '').slice(0, 160), answer: String(answer || '').slice(0, 400) })
+        });
+        if(!res.ok) return null;
+        const data = await res.json();
+        const fb = data && data.ok && data.feedback;
+        if(!fb || typeof fb.explanation !== 'string' || typeof fb.corrected !== 'string') return null;
+        if(['correct','minor','incorrect'].indexOf(fb.verdict) === -1) return null;
+        return { verdict: fb.verdict, corrected: fb.corrected, explanation: fb.explanation, tips: Array.isArray(fb.tips) ? fb.tips.filter(t => typeof t === 'string').slice(0, 2) : [] };
+      } finally {
+        if(timer) clearTimeout(timer);
+      }
+    }catch(e){
+      return null;
+    }
+  }
+
   /* Verifica que haya una sesión iniciada Y que is_member sea
      true. Si no, redirige a miembros.html. Úsala desde las
      páginas de miembros vía guardMemberPage() (más abajo). */
@@ -669,7 +703,7 @@ const LeoBackend = (function(){
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
-    getMistakeStats, applyMistakeResults, submitLeobotReport
+    getMistakeStats, applyMistakeResults, submitLeobotReport, getWritingFeedback
   };
 })();
 

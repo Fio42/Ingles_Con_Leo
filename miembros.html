@@ -26,7 +26,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20260930a">
+<link rel="stylesheet" href="style.css?v=20261001a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -643,8 +643,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260930m400"></script>
-<script src="app.js?v=20260930b"></script>
-<script src="backend.js?v=20260928"></script>
+<script src="app.js?v=20261001b"></script>
+<script src="backend.js?v=20261001a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga
@@ -879,6 +879,16 @@
     renderContinueCard(document.getElementById('continueCard'));
     renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
+    // Igual que progreso.html: si llegan sesiones de otro dispositivo,
+    // se redibujan los números y "Tu diagnóstico" con los datos completos.
+    if(!window._dashSyncListener){
+      window._dashSyncListener = true;
+      window.addEventListener('leo-progress-synced', function(){
+        renderStatCards(document.getElementById('statCards'));
+        renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
+        renderRecentActivityV2(document.getElementById('recentActivity'));
+      });
+    }
     renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
     // renderMistakesBanner es async (consulta Supabase) y ya se encarga

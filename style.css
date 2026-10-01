@@ -1631,6 +1631,12 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .progress-summary-stats{flex-shrink:0;gap:22px;}
   #memberContent .progress-summary-insight{flex:1 1 auto;margin:0;background:none;padding:0;font-size:0.86rem;font-weight:600;}
   #memberContent .progress-summary-cta{flex-shrink:0;margin-left:auto;}
+  /* Tu diagnóstico: la fila de arriba queda igual (título, números y
+     botón); las frases y "Hoy te conviene" bajan a una fila propia a
+     todo el ancho, en vez de apretarse en una columna angosta. */
+  #memberContent .progress-summary-card{flex-wrap:wrap;row-gap:16px;}
+  #memberContent .progress-summary-card .diag-insights{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 24px;}
+  #memberContent .progress-summary-card .diag-today{order:6;flex:1 1 100%;flex-direction:row;align-items:center;gap:12px;}
 }
 #memberContent .mistakes-card{padding:14px 18px;gap:8px;}
 #memberContent .mistakes-card-top{gap:8px;}
@@ -2021,3 +2027,70 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 /* Tarjetas de nivel: 2x2 en tablet y 4 en fila en pantalla grande (antes quedaba "Avanzado" sola en una segunda fila). */
 @media(min-width:760px){.home-levels-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:1040px){.home-levels-grid{grid-template-columns:repeat(4,1fr);}}
+
+/* ---------- Tu diagnóstico (panel de miembros y progreso.html) ---------- */
+.diag-insights{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.diag-insight{display:flex;align-items:flex-start;gap:10px;font-size:0.92rem;line-height:1.45;color:var(--ink);}
+.diag-insight-icon{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:-1px;}
+.diag-insight-icon svg{width:15px;height:15px;}
+.diag-insight.tone-up .diag-insight-icon,.diag-insight.tone-good .diag-insight-icon{background:var(--green-tint);color:#116B41;}
+.diag-insight.tone-down .diag-insight-icon{background:var(--coral-tint);color:#A32E1E;}
+.diag-insight.tone-warn .diag-insight-icon{background:var(--amber-tint);color:#8A5A00;}
+.diag-today{display:flex;flex-direction:column;gap:2px;background:var(--blue-tint);border-radius:var(--radius-sm);padding:10px 14px;text-decoration:none;}
+.diag-today-label{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
+.diag-today-title{font-weight:700;color:var(--blue-deep);font-size:0.95rem;}
+.diag-today:hover .diag-today-title{text-decoration:underline;}
+.diag-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;min-width:0;}
+.diag-h3{font-family:'Baloo 2';font-size:1.1rem;margin:0 0 12px;color:var(--ink);}
+.diag-muted{color:var(--ink-soft);font-size:0.86rem;line-height:1.45;}
+.diag-highlights{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
+@media(min-width:760px){.diag-highlights{grid-template-columns:repeat(3,1fr);}}
+.diag-highlights .diag-card{margin-bottom:0;}
+.diag-hl-label{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);margin-bottom:4px;}
+.diag-hl-weak .diag-hl-label{color:#A32E1E;}
+.diag-hl-value{font-family:'Baloo 2';font-weight:700;font-size:1.2rem;line-height:1.25;color:var(--ink);margin-bottom:2px;}
+.diag-hl-empty{color:var(--ink-soft);}
+.diag-actions{display:flex;flex-direction:column;gap:12px;}
+.diag-action{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--paper-dim);border-radius:var(--radius-md);padding:14px 16px;}
+.diag-action > div{min-width:0;}
+.diag-action .btn{flex-shrink:0;}
+.diag-action-title{font-weight:700;color:var(--ink);margin-bottom:2px;}
+.diag-action-article{display:inline-block;margin-top:6px;font-size:0.86rem;font-weight:600;color:var(--blue);text-decoration:none;}
+@media(max-width:520px){.diag-action{flex-direction:column;align-items:flex-start;}}
+.diag-units{list-style:none;margin:0;padding:0;}
+.diag-unit{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+.diag-unit:last-child{border-bottom:none;}
+.diag-unit-main{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.diag-unit-name{font-weight:600;color:var(--ink);font-size:0.95rem;}
+.diag-unit-detail{font-size:0.84rem;color:var(--ink-soft);}
+.diag-arrow{font-weight:800;}
+.diag-arrow.up{color:#116B41;}
+.diag-arrow.down{color:#A32E1E;}
+.diag-chip{flex-shrink:0;font-size:0.76rem;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap;}
+.diag-chip.state-dominado{background:var(--green-tint);color:#116B41;}
+.diag-chip.state-mejorando{background:var(--blue-tint);color:var(--blue-deep);}
+.diag-chip.state-bien{background:var(--green-tint);color:#116B41;}
+.diag-chip.state-practica{background:var(--paper-dim);color:var(--ink-soft);}
+.diag-chip.state-refuerzo{background:var(--coral-tint);color:#A32E1E;}
+.diag-foot{margin:14px 0 0;}
+.diag-wait p{margin:0 0 10px;}
+.diag-wait-bar{height:10px;border-radius:999px;background:var(--paper-dim);overflow:hidden;margin-bottom:8px;}
+.diag-wait-bar span{display:block;height:100%;background:var(--blue);border-radius:999px;}
+.diag-week-stats{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:12px;}
+.diag-week-stats > div{display:flex;flex-direction:column;}
+.diag-week-num{font-family:'Baloo 2';font-weight:700;font-size:1.4rem;color:var(--ink);line-height:1.2;}
+.diag-week-num .diag-arrow{font-size:0.9rem;}
+.diag-week-list{margin:0;padding-left:20px;color:var(--ink-soft);font-size:0.92rem;line-height:1.6;}
+.diag-week-list b{color:var(--ink);}
+.plan-focus-note{background:var(--blue-tint);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.9rem;color:var(--ink-soft);margin:0 0 12px;}
+.plan-focus-note a{color:var(--blue);font-weight:600;}
+/* Writing con IA (beta, solo visible con writing.html?ia=1 mientras WRITING_AI_PUBLIC sea false) */
+.writing-ai{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);padding:14px 16px;color:var(--ink);}
+.writing-ai-head{font-weight:700;font-size:0.95rem;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.writing-ai-beta{font-size:0.7rem;font-weight:700;background:var(--blue-tint);color:var(--blue-deep);border-radius:999px;padding:2px 8px;}
+.writing-ai-loading{margin:0;color:var(--ink-soft);font-size:0.9rem;}
+.writing-ai-fixed{background:var(--green-tint);color:#116B41;border-radius:var(--radius-sm);padding:8px 12px;font-weight:600;margin:6px 0 8px;overflow-wrap:anywhere;}
+.writing-ai-text{margin:0 0 6px;font-size:0.92rem;line-height:1.5;color:var(--ink);}
+.writing-ai-tip{margin:0 0 4px;font-size:0.88rem;color:var(--ink-soft);}
+.writing-ai-tip::before{content:"• ";}
+.writing-ai-note{margin:8px 0 0;font-size:0.78rem;color:var(--ink-faint);}

@@ -1936,6 +1936,79 @@ function evaluateWritingAnswer(text, item){
   return { isOk:true, hint:null };
 }
 
+/* ---------- Writing con IA (Gemini gratis): TOTALMENTE APAGADO ----------
+   Por pedido de Leo (2026-10-01) queda conectado pero desactivado hasta
+   terminar de validar la parte sin IA. WRITING_AI_ENABLED = false apaga
+   todo (no se llama al servidor ni con ?ia=1). Cuando se active:
+   WRITING_AI_ENABLED = true deja probarlo solo en el navegador donde se
+   abrió writing.html?ia=1 (se apaga con ?ia=0), y WRITING_AI_PUBLIC =
+   true lo abre a todos los miembros. La función writing-feedback NO
+   está desplegada en Supabase todavía.
+   Es solo un extra debajo de la corrección normal: no cambia si el
+   ejercicio cuenta como bien o mal, ni el progreso, ni Mis errores, y
+   si falla no se ve nada (ver LeoBackend.getWritingFeedback). */
+const WRITING_AI_ENABLED = false; // interruptor maestro: con false no se muestra NADA, ni con ?ia=1
+const WRITING_AI_PUBLIC = false;
+const WRITING_AI_BETA_KEY = 'leo_writing_ai_beta';
+(function(){
+  try{
+    const flag = new URLSearchParams(location.search).get('ia');
+    if(flag === '1') localStorage.setItem(WRITING_AI_BETA_KEY, '1');
+    if(flag === '0') localStorage.removeItem(WRITING_AI_BETA_KEY);
+  }catch(e){}
+})();
+function isWritingAiEnabled(){
+  if(!WRITING_AI_ENABLED) return false;
+  if(typeof LeoBackend === 'undefined' || typeof LeoBackend.getWritingFeedback !== 'function') return false;
+  if(WRITING_AI_PUBLIC) return true;
+  try{ return localStorage.getItem(WRITING_AI_BETA_KEY) === '1'; }catch(e){ return false; }
+}
+const WRITING_AI_VERDICT_LABEL = { correct:'Tu frase está bien escrita', minor:'Casi perfecta: un detalle por pulir', incorrect:'Hay algo que corregir' };
+function showWritingAiFeedback(fbEl, item, text){
+  if(!fbEl || !isWritingAiEnabled()) return;
+  if(String(text || '').trim().split(/\s+/).length < 2) return;
+  const box = document.createElement('div');
+  box.className = 'writing-ai';
+  box.innerHTML = '<div class="writing-ai-head">Corrección detallada <span class="writing-ai-beta">Beta</span></div><p class="writing-ai-loading">Revisando tu frase…</p>';
+  fbEl.appendChild(box);
+  LeoBackend.getWritingFeedback({ prompt: stripHtmlForAi(item.prompt), target: stripHtmlForAi(item.target || ''), answer: text })
+    .then(res=>{
+      if(!box.isConnected) return; // el alumno ya pasó a otro ejercicio
+      if(!res){ box.remove(); return; }
+      box.innerHTML = '';
+      const head = document.createElement('div');
+      head.className = 'writing-ai-head';
+      head.textContent = WRITING_AI_VERDICT_LABEL[res.verdict];
+      box.appendChild(head);
+      if(res.verdict !== 'correct' && res.corrected.trim() !== String(text).trim()){
+        const fixed = document.createElement('div');
+        fixed.className = 'writing-ai-fixed';
+        fixed.textContent = res.corrected;
+        box.appendChild(fixed);
+      }
+      const exp = document.createElement('p');
+      exp.className = 'writing-ai-text';
+      exp.textContent = res.explanation;
+      box.appendChild(exp);
+      res.tips.forEach(t=>{
+        const tip = document.createElement('p');
+        tip.className = 'writing-ai-tip';
+        tip.textContent = t;
+        box.appendChild(tip);
+      });
+      const note = document.createElement('p');
+      note.className = 'writing-ai-note';
+      note.textContent = 'Sugerencia automática. Si algo no te cuadra, guíate por el ejemplo de arriba.';
+      box.appendChild(note);
+    })
+    .catch(()=>{ box.remove(); });
+}
+function stripHtmlForAi(html){
+  const d = document.createElement('div');
+  d.innerHTML = String(html || '');
+  return (d.textContent || '').trim();
+}
+
 function runWritingSession({ container, level, onExit }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const saved = loadInflightSession('writing', level);
@@ -2012,6 +2085,7 @@ function runWritingSession({ container, level, onExit }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       }
       results.push({ itemId:item.id, isCorrect:isOk });
+      showWritingAiFeedback(fb, item, text);
       nextRow.innerHTML = '';
       if(!isOk){
         const retryBtn = document.createElement('button');
@@ -2816,10 +2890,16 @@ function computePlanSelection(level, targetCount){
   // actual. Un poco de variedad (prioridad 5) con un jitter chico que
   // no ignora el progreso, solo evita que el reparto sea identico dia
   // a dia si las metricas no cambiaron.
+  // El % de cada habilidad sale del diagnóstico (mismo número que ve el
+  // alumno en "Tu diagnóstico": cómo va AHORA, con la habilidad real de
+  // cada ejercicio aunque venga de Mixto o del Plan). Si todavía no hay
+  // datos suficientes, se usa el % histórico de siempre.
+  let diag = null;
+  try{ diag = computeDiagnosis(p); }catch(e){ diag = null; } // el diagnóstico nunca debe impedir armar el plan
   const skills = DASH_SKILLS.slice();
   const weights = {};
   skills.forEach(sk=>{
-    const acc = computeSkillAccuracy(p, sk);
+    const acc = planSkillAccuracy(p, sk, diag);
     const idleDays = daysSinceDateStr(lastPracticedDateFor(p, sk));
     let w = 1;
     if(acc !== null) w += Math.max(0, 70 - acc) / 20;      // hasta +3.5 si acc=0%
@@ -2840,7 +2920,37 @@ function computePlanSelection(level, targetCount){
   raw.sort((a,b)=> (b.val - Math.floor(b.val)) - (a.val - Math.floor(a.val)));
   for(let i=0; leftover>0 && i<raw.length; i++, leftover--){ bySkill[raw[i].sk]++; }
 
-  return { mistakeCount, bySkill };
+  // Entrenamiento recomendado: si el diagnóstico encontró un punto débil
+  // concreto de gramática (ej. Preposiciones), parte de los ejercicios de
+  // Gramática de hoy salen de ese tema. Se asegura un mínimo de cupos de
+  // Gramática quitándolos de la habilidad con más cupos, así el total de
+  // la sesión no cambia. Si no hay diagnóstico todavía, todo sigue igual.
+  let focus = null;
+  try{
+    if(diag && diag.ready && diag.weak && diag.weak.type === 'family' && remaining >= 4){
+      const want = Math.min(3, Math.max(2, Math.round(remaining * 0.25)));
+      while((bySkill.gramatica || 0) < want){
+        const donor = skills.filter(sk => sk !== 'gramatica').sort((a,b)=> (bySkill[b]||0) - (bySkill[a]||0))[0];
+        if(!donor || !bySkill[donor]) break;
+        bySkill[donor]--; bySkill.gramatica = (bySkill.gramatica || 0) + 1;
+      }
+      const count = Math.min(want, bySkill.gramatica || 0);
+      if(count > 0) focus = { familyId: diag.weak.id, label: diag.weak.label, count };
+    }
+  }catch(e){ focus = null; }
+
+  return { mistakeCount, bySkill, focus };
+}
+
+// % de aciertos que usa el Plan para repartir cupos: el "ahora" del
+// diagnóstico si esa habilidad ya tiene datos suficientes; si no, el %
+// histórico (computeSkillAccuracy), como siempre.
+function planSkillAccuracy(p, skill, diag){
+  if(diag && diag.ready){
+    const u = diag.units.find(x => x.key === 'skill:' + skill && x.state);
+    if(u) return u.current;
+  }
+  return computeSkillAccuracy(p, skill);
 }
 
 // Arma los ejercicios de verdad a partir de una seleccion ya decidida
@@ -2851,11 +2961,22 @@ function computePlanSelection(level, targetCount){
 function buildPlanPool(level, selection){
   const entries = (selection.mistakeCount > 0 ? buildMistakePool(selection.mistakeCount) : [])
     .map(e => Object.assign({ reviewOrigin:true }, e));
+  const alreadyIn = new Set(entries.map(e => e.item.id));
+  const focusEntries = selection.focus ? pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn) : [];
+  focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; entries.push(e); alreadyIn.add(e.item.id); });
   DASH_SKILLS.forEach(sk=>{
-    const count = selection.bySkill[sk] || 0;
-    if(!count) return;
-    const { pool } = buildSessionPool({ skill: sk, level, bankLevel: PLAN_BANK_BY_SKILL[sk][level], targetCount: count });
-    pool.forEach(item => entries.push({ kind: PLAN_SKILL_TO_KIND[sk], item }));
+    let count = selection.bySkill[sk] || 0;
+    if(sk === 'gramatica') count -= focusEntries.length;
+    if(count <= 0) return;
+    // Se piden unos pocos de más para poder saltar los que ya vienen en
+    // la sesión (repaso de errores o refuerzo) y no repetir un ejercicio.
+    // Si el banco es tan chico que no alcanza, se completa como antes,
+    // para que la sesión siempre tenga la duración elegida.
+    const extra = Math.min(5, alreadyIn.size);
+    const { pool } = buildSessionPool({ skill: sk, level, bankLevel: PLAN_BANK_BY_SKILL[sk][level], targetCount: count + extra });
+    const picked = pool.filter(item => !alreadyIn.has(item.id)).slice(0, count);
+    if(picked.length < count) picked.push(...pool.filter(item => picked.indexOf(item) === -1).slice(0, count - picked.length));
+    picked.forEach(item=>{ alreadyIn.add(item.id); entries.push({ kind: PLAN_SKILL_TO_KIND[sk], item }); });
   });
   return shuffleArray(entries);
 }
@@ -2866,8 +2987,10 @@ function buildPlanPool(level, selection){
 function summarizePlanSelection(selection){
   const groups = [];
   if(selection.mistakeCount > 0) groups.push({ label:'Repaso de errores', count: selection.mistakeCount });
+  if(selection.focus) groups.push({ label: 'Refuerzo: ' + selection.focus.label, count: selection.focus.count });
   DASH_SKILLS.forEach(sk=>{
-    const count = selection.bySkill[sk] || 0;
+    let count = selection.bySkill[sk] || 0;
+    if(sk === 'gramatica' && selection.focus) count -= selection.focus.count;
     if(count > 0) groups.push({ label: SKILL_LABELS[sk], count });
   });
   return groups;
@@ -2994,6 +3117,7 @@ function renderPlanIntro(container){
         </div>
         <div class="lengths" id="planDifficultySelector" style="margin:${diffPanelOpen ? '12px 0 24px' : '0'};${diffPanelOpen ? '' : 'display:none;'}"></div>
         <div class="examples-label">Tu sesión de hoy</div>
+        ${currentSelection.focus ? `<p class="plan-focus-note">Incluye refuerzo de <b>${currentSelection.focus.label}</b>, tu punto a reforzar según <a href="progreso.html#diagnostico">tu diagnóstico</a>.</p>` : ''}
         <ul class="plan-preview-list">
           ${groups.length ? groups.map(g=>`<li><span>${g.label}</span><b>${g.count} ${g.count===1?'ejercicio':'ejercicios'}</b></li>`).join('') : '<li><span>Sesión equilibrada para tu nivel</span></li>'}
         </ul>
@@ -3094,6 +3218,8 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     const correct = graded.filter(r=>r.isCorrect).length;
     const realSkillsUsed = [...new Set(results.map(r=>r.skill))];
     const topics = realSkillsUsed.map(sk => SKILL_LABELS[sk] || sk);
+    const focusEntry = activePool.find(e => e.focus && e.focusLabel);
+    if(focusEntry) topics.unshift(focusEntry.focusLabel);
     recordSession({ skill:'plan', level, topics, results, startedAt });
     container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
     const anotherBtn = container.querySelector('#planAnotherBtn');
@@ -3239,7 +3365,8 @@ const ARTICLE_BY_TOPIC = {
   'Present Perfect vs Past Simple': 'articulo-presente-perfecto.html',
   'Phrasal verbs comunes (look for / give up / find out)': 'articulo-phrasal-verbs.html',
   'Los números (1-10)': 'articulo-numeros-en-ingles.html',
-  'Números parecidos que confunden (13 vs 30, 14 vs 40...)': 'articulo-numeros-en-ingles.html'
+  'Números parecidos que confunden (13 vs 30, 14 vs 40...)': 'articulo-numeros-en-ingles.html',
+  'In / On / At': 'articulo-in-on-at.html'
 };
 const ARTICLE_TITLE_BY_HREF = {
   'articulo-do-vs-does.html': 'Do vs Does',
@@ -3248,7 +3375,8 @@ const ARTICLE_TITLE_BY_HREF = {
   'articulo-pasado-simple.html': 'Pasado simple',
   'articulo-presente-perfecto.html': 'Presente perfecto',
   'articulo-phrasal-verbs.html': 'Phrasal verbs',
-  'articulo-numeros-en-ingles.html': 'Números en inglés'
+  'articulo-numeros-en-ingles.html': 'Números en inglés',
+  'articulo-in-on-at.html': 'In, on, at'
 };
 
 // _mistakeStatsCache: undefined = todavía no se intentó cargar,
@@ -4238,50 +4366,619 @@ function pickMiniProgressInsight(p, weekly, streak){
   return 'Tu progreso va bien, sigue practicando para mantener tu ritmo.';
 }
 
+/* ============================================================
+   TU DIAGNÓSTICO — análisis personal del progreso, SIN IA
+   ------------------------------------------------------------
+   Todo sale de datos que ya existen, sin tablas nuevas:
+     - p.sessions[].results (loadProgress, sincronizado con
+       progress_sessions en Supabase): cada intento calificado.
+     - mistake_stats (loadMistakeStatsMap): errores activos,
+       recuperados y dominados, con fail_count. Si no está
+       disponible (sin red), se usa el historial local.
+     - Los bancos de data.js (getMistakesItemIndex) para saber la
+       habilidad real de cada ejercicio y el tema de gramática.
+
+   Regla de oro: cada frase que se muestra sale de un número real.
+   Si no hay suficientes intentos para opinar de algo, no se dice
+   nada de eso (nunca se inventa una conclusión con 1 o 2 respuestas).
+
+   Los temas de gramática de data.js son ~100 y cada uno tiene ~4
+   ejercicios, así que por tema casi nunca hay datos suficientes.
+   Por eso se agrupan en "familias" (Preposiciones, Pasado, etc.)
+   con DIAG_GRAMMAR_FAMILIES: así sí se juntan intentos suficientes
+   para decir algo con fundamento.
+   ============================================================ */
+const DIAG = {
+  MIN_TOTAL: 15,        // intentos calificados en total para dar diagnóstico
+  MIN_UNIT: 8,          // intentos mínimos para opinar de un tema o habilidad
+  MIN_MASTERED: 12,     // intentos mínimos para decir "dominado"
+  MIN_TREND_EACH: 6,    // intentos en cada periodo para hablar de tendencia
+  TREND_DELTA: 10,      // puntos de % para decir que mejoró o bajó
+  RECENT_DAYS: 7,       // "ahora": últimos 7 días
+  PREV_DAYS: 35,        // "antes": del día 8 al 35
+  FORGOTTEN_DAYS: 10,   // días sin practicar algo para sugerir repasarlo
+  WEAK_BELOW: 75        // % por debajo del cual algo puede ser punto débil
+};
+const DIAG_SKILLS = ['gramatica','vocabulario','listening','lectura','writing'];
+const DIAG_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening', writing:'writing', reading:'lectura' };
+
+// El orden importa: gana la primera familia cuyo patrón coincide con el
+// tema (por ejemplo "Present Perfect vs Past Simple" es de Presente
+// perfecto, no de Pasado). Verificado contra los 99 temas reales de
+// GRAMMAR_BANK; lo que no encaja en ninguna queda en "otros" y nunca se
+// nombra como fortaleza ni como punto débil (sería un nombre vago).
+const DIAG_GRAMMAR_FAMILIES = [
+  { id:'preposiciones', label:'Preposiciones', re:/in \/ on \/ at|preposici|by vs until|beside/i, article:'articulo-in-on-at.html' },
+  { id:'pasiva', label:'Voz pasiva', re:/pasiva|causativ/i },
+  { id:'modales', label:'Verbos modales', re:/modal|can \/ can't/i },
+  { id:'condicionales', label:'Condicionales', re:/condicional|conditional|wish|if only/i },
+  { id:'perfecto', label:'Presente perfecto', re:/present perfect|presente perfecto|past perfect|since \/ for|pasado perfecto/i, article:'articulo-presente-perfecto.html' },
+  { id:'indirecto', label:'Estilo indirecto', re:/reported|indirecto/i },
+  { id:'presente-simple', label:'Presente simple', re:/presente simple|do \/ does|frecuencia/i, article:'articulo-presente-simple.html' },
+  { id:'to-be', label:'Verbo to be', re:/to be|is \/ are/i, article:'articulo-verbo-to-be.html' },
+  { id:'pasado', label:'Pasado simple', re:/pasado simple|used to/i, article:'articulo-pasado-simple.html' },
+  { id:'continuo', label:'Presente continuo', re:/continuo/i },
+  { id:'futuro', label:'Futuro (will y going to)', re:/futuro|going to/i },
+  { id:'relativas', label:'Cláusulas relativas', re:/relativ|whom/i },
+  { id:'cuantificadores', label:'Some, any, much y many', re:/some \/ any|much \/ many|little|few|cuantificador|contables|fewer/i },
+  { id:'comparativos', label:'Comparativos', re:/comparativ/i },
+  { id:'pronombres', label:'Pronombres y posesivos', re:/pronombre|posesiv/i },
+  { id:'bases', label:'Números, días y preguntas básicas', re:/número|numero|colores|días|plural|yes \/ no|question words|preguntas simples/i, article:'articulo-numeros-en-ingles.html' },
+  { id:'demostrativos', label:'A/an y this/that', re:/a \/ an|this|these/i },
+  { id:'conectores', label:'Conectores', re:/conector|despite|although|secuenciador/i },
+  { id:'verbos', label:'Verbos y phrasal verbs', re:/phrasal|gerundio|verbo "have"|colocacion/i, article:'articulo-phrasal-verbs.html' },
+  { id:'confusiones', label:'Palabras que se confunden', re:/ vs |"to" vs|your|their|actually/i },
+];
+const DIAG_FAMILY_BY_ID = DIAG_GRAMMAR_FAMILIES.reduce((m,f)=>{ m[f.id] = f; return m; }, {});
+
+function diagFamilyForTopic(topic){
+  if(!topic) return null;
+  for(let i=0; i<DIAG_GRAMMAR_FAMILIES.length; i++){
+    if(DIAG_GRAMMAR_FAMILIES[i].re.test(topic)) return DIAG_GRAMMAR_FAMILIES[i];
+  }
+  return null;
+}
+
+// Índice id -> { kind, item, topic } igual al de "Mis errores", más
+// Lectura (que "Mis errores" no usa). null si la página no cargó data.js.
+let _diagItemIndexCache = null;
+function getDiagItemIndex(){
+  if(_diagItemIndexCache) return _diagItemIndexCache;
+  if(typeof GRAMMAR_BANK === 'undefined' || typeof READING_BANK === 'undefined') return null;
+  const index = new Map(getMistakesItemIndex());
+  LEVELS.forEach(level=>{
+    READING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'reading', item, topic:null })));
+  });
+  _diagItemIndexCache = index;
+  return index;
+}
+
+// Todos los intentos calificados, en orden de tiempo, con su habilidad
+// real y su familia de gramática. Speaking (sin calificar) y las
+// secciones de examen (TOEFL, IELTS...) no entran: tienen bancos propios.
+function collectDiagAttempts(p){
+  const index = getDiagItemIndex();
+  if(!index) return [];
+  const out = [];
+  (p.sessions || []).forEach(s=>{
+    const when = s.startedAt || (s.date ? new Date(s.date + 'T12:00:00').getTime() : 0);
+    (s.results || []).forEach(r=>{
+      if(r.isCorrect !== true && r.isCorrect !== false) return;
+      const found = index.get(r.itemId);
+      const skill = r.skill || (found && DIAG_KIND_TO_SKILL[found.kind]) || s.skill;
+      if(DIAG_SKILLS.indexOf(skill) === -1) return;
+      const fam = (skill === 'gramatica' && found) ? diagFamilyForTopic(found.topic) : null;
+      out.push({ itemId:r.itemId, ok:r.isCorrect, when, skill, family: fam ? fam.id : null });
+    });
+  });
+  out.sort((a,b)=> a.when - b.when);
+  return out;
+}
+
+function diagPct(c, n){ return n ? Math.round(c / n * 100) : null; }
+
+// Límite inferior de Wilson (z=1): un 90% con 10 intentos vale menos que
+// un 88% con 60. Sirve para elegir la fortaleza sin premiar la suerte.
+function diagWilsonLow(c, n){
+  if(!n) return 0;
+  const z = 1, ph = c / n;
+  return (ph + z*z/(2*n) - z*Math.sqrt(ph*(1-ph)/n + z*z/(4*n*n))) / (1 + z*z/n);
+}
+
+function diagUnitStats(list, now){
+  const recentCut = now - DIAG.RECENT_DAYS*86400000;
+  const prevCut = now - DIAG.PREV_DAYS*86400000;
+  let c = 0, rN = 0, rC = 0, pN = 0, pC = 0, lastWhen = 0;
+  const items = new Set();
+  list.forEach(a=>{
+    if(a.ok) c++;
+    items.add(a.itemId);
+    if(a.when > lastWhen) lastWhen = a.when;
+    if(a.when >= recentCut){ rN++; if(a.ok) rC++; }
+    else if(a.when >= prevCut){ pN++; if(a.ok) pC++; }
+  });
+  const last = list.slice(-10);
+  const lastC = last.filter(a=>a.ok).length;
+  const u = {
+    n: list.length, correct: c, acc: diagPct(c, list.length),
+    last10Acc: diagPct(lastC, last.length),
+    recentN: rN, recentAcc: diagPct(rC, rN),
+    prevN: pN, prevAcc: diagPct(pC, pN),
+    items: items.size, lastWhen,
+    wilsonLow: diagWilsonLow(c, list.length),
+    trend: null, delta: null
+  };
+  if(rN >= DIAG.MIN_TREND_EACH && pN >= DIAG.MIN_TREND_EACH){
+    u.delta = u.recentAcc - u.prevAcc;
+    u.trend = u.delta >= DIAG.TREND_DELTA ? 'up' : (u.delta <= -DIAG.TREND_DELTA ? 'down' : 'flat');
+  }
+  // "Cómo va ahora": la semana si hay datos, si no los últimos 10 intentos.
+  u.current = rN >= DIAG.MIN_TREND_EACH ? u.recentAcc : u.last10Acc;
+  return u;
+}
+
+const DIAG_STATE_LABELS = { dominado:'Dominado', mejorando:'Mejorando', bien:'Vas bien', practica:'En práctica', refuerzo:'Necesita refuerzo' };
+
+function diagState(u){
+  if(!u || u.n < DIAG.MIN_UNIT) return null;
+  const tolerance = Math.max(1, Math.round(u.items * 0.1));
+  if(u.n >= DIAG.MIN_MASTERED && u.acc >= 85 && u.last10Acc >= 80 && u.activeMistakes <= tolerance && u.trend !== 'down') return 'dominado';
+  if(u.trend === 'up') return 'mejorando';
+  if(u.current < 65 || (u.trend === 'down' && u.current < DIAG.WEAK_BELOW) || (u.activeMistakes >= 3 && u.current < DIAG.WEAK_BELOW)) return 'refuerzo';
+  if(u.current >= DIAG.WEAK_BELOW) return 'bien';
+  return 'practica';
+}
+
+// Errores activos / repetidos / recuperados por habilidad y familia.
+// Con mistake_stats si está; si no, desde el historial local.
+function diagMistakeSummary(attempts, statsMap, now){
+  const index = getDiagItemIndex();
+  const weekCut = now - 7*86400000;
+  const active = [];   // { itemId, failCount, skill, family }
+  let recoveredWeek = 0, masteredWeek = 0;
+  function place(itemId){
+    const found = index && index.get(itemId);
+    if(!found) return null;
+    const skill = DIAG_KIND_TO_SKILL[found.kind];
+    const fam = skill === 'gramatica' ? diagFamilyForTopic(found.topic) : null;
+    return { skill, family: fam ? fam.id : null };
+  }
+  if(statsMap instanceof Map){
+    statsMap.forEach(s=>{
+      if(s.status === 'active'){
+        const where = place(s.item_id);
+        if(where) active.push({ itemId:s.item_id, failCount:s.fail_count || 1, skill:where.skill, family:where.family });
+      }
+      if(s.recovered_at && new Date(s.recovered_at).getTime() >= weekCut) recoveredWeek++;
+      if(s.status === 'mastered' && s.updated_at && new Date(s.updated_at).getTime() >= weekCut) masteredWeek++;
+    });
+  } else {
+    // Respaldo sin red: los errores pendientes salen de computeMistakeIds(),
+    // la misma regla que ya usan Mis errores y el Plan de estudio (último
+    // intento incorrecto). "Recuperado" = falló alguna vez y sus 2 últimos
+    // intentos fueron correctos, el último esta semana (igual que el umbral
+    // de 2 aciertos seguidos de apply_mistake_results).
+    const byItem = new Map();
+    attempts.forEach(a=>{
+      if(!byItem.has(a.itemId)) byItem.set(a.itemId, []);
+      byItem.get(a.itemId).push(a);
+    });
+    computeMistakeIds().forEach(itemId=>{
+      const where = place(itemId);
+      if(!where) return;
+      const list = byItem.get(itemId) || [];
+      active.push({ itemId, failCount: Math.max(1, list.filter(a=>!a.ok).length), skill:where.skill, family:where.family });
+    });
+    byItem.forEach(list=>{
+      const n = list.length;
+      if(n >= 3 && list[n-1].ok && list[n-2].ok && list.slice(0, n-2).some(a=>!a.ok) && list[n-1].when >= weekCut) recoveredWeek++;
+    });
+  }
+  return { active, recoveredWeek, masteredWeek };
+}
+
+/* Calcula el diagnóstico completo. statsMap es opcional (Map de
+   mistake_stats); si no se pasa, se usa el que ya esté en caché. */
+function computeDiagnosis(p, statsMap){
+  p = p || loadProgress();
+  if(statsMap === undefined) statsMap = (_mistakeStatsCache instanceof Map) ? _mistakeStatsCache : null;
+  const now = Date.now();
+  const attempts = collectDiagAttempts(p);
+  const total = attempts.length;
+  const diag = { ready: total >= DIAG.MIN_TOTAL, total, remaining: Math.max(0, DIAG.MIN_TOTAL - total), units: [], insights: [], actions: [] };
+  const mistakes = diagMistakeSummary(attempts, statsMap, now);
+  diag.activeMistakes = mistakes.active.length;
+  diag.recoveredWeek = mistakes.recoveredWeek;
+  diag.masteredWeek = mistakes.masteredWeek;
+  if(!diag.ready) return diag;
+
+  // Unidades: cada habilidad, y cada familia de gramática.
+  const groups = new Map();
+  attempts.forEach(a=>{
+    const keys = ['skill:' + a.skill];
+    if(a.family) keys.push('family:' + a.family);
+    keys.forEach(k=>{ if(!groups.has(k)) groups.set(k, []); groups.get(k).push(a); });
+  });
+  groups.forEach((list, key)=>{
+    const [type, id] = key.split(':');
+    const u = diagUnitStats(list, now);
+    u.key = key; u.type = type; u.id = id;
+    u.label = type === 'skill' ? SKILL_LABELS[id] : DIAG_FAMILY_BY_ID[id].label;
+    u.article = type === 'family' ? (DIAG_FAMILY_BY_ID[id].article || null) : null;
+    u.href = type === 'skill' ? SKILL_PAGE[id] : 'plan-estudio.html';
+    const own = mistakes.active.filter(m => type === 'skill' ? m.skill === id : m.family === id);
+    u.activeMistakes = own.length;
+    u.repeatedMistakes = own.filter(m => m.failCount >= 2).length;
+    u.daysIdle = Math.floor((now - u.lastWhen) / 86400000);
+    u.state = diagState(u);
+    diag.units.push(u);
+  });
+  const rated = diag.units.filter(u => u.state);
+  const skills = rated.filter(u => u.type === 'skill');
+  const families = rated.filter(u => u.type === 'family');
+
+  // Fortaleza: la mejor habilidad con muestra suficiente (Wilson), y
+  // solo si de verdad va bien (no se declara fortaleza un 60%).
+  const strengthPool = skills.filter(u => u.n >= 15 && u.acc >= 70);
+  diag.strength = strengthPool.sort((a,b)=> b.wilsonLow - a.wilsonLow)[0] || null;
+
+  // Punto débil: se prefiere una familia de gramática (es más concreto y
+  // accionable que "Gramática"). Cuenta el % de ahora, los errores
+  // pendientes y si viene bajando.
+  function weakScore(u){
+    return (100 - u.current) + 3*Math.min(u.activeMistakes, 5) + 2*Math.min(u.repeatedMistakes, 5) + (u.trend === 'down' ? 8 : 0);
+  }
+  const weakCandidates = rated.filter(u => u.state !== 'dominado' && (u.current < DIAG.WEAK_BELOW || (u.activeMistakes >= 3 && u.current < 85)));
+  const weakFamily = weakCandidates.filter(u => u.type === 'family').sort((a,b)=> weakScore(b) - weakScore(a))[0];
+  const weakSkill = weakCandidates.filter(u => u.type === 'skill' && u.id !== 'gramatica').sort((a,b)=> weakScore(b) - weakScore(a))[0];
+  diag.weak = (weakFamily && (!weakSkill || weakScore(weakFamily) >= weakScore(weakSkill) - 10)) ? weakFamily : (weakSkill || weakFamily || null);
+  if(diag.strength && diag.weak && diag.strength.key === diag.weak.key) diag.strength = null;
+
+  diag.improving = rated.filter(u => u.trend === 'up').sort((a,b)=> b.delta - a.delta);
+  diag.declining = rated.filter(u => u.trend === 'down').sort((a,b)=> a.delta - b.delta);
+  diag.mastered = families.filter(u => u.state === 'dominado').sort((a,b)=> b.acc - a.acc);
+  diag.forgotten = rated
+    .filter(u => u.daysIdle >= DIAG.FORGOTTEN_DAYS && u.state !== 'dominado' && (!diag.weak || u.key !== diag.weak.key))
+    .sort((a,b)=> b.daysIdle - a.daysIdle);
+
+  // Errores que se repiten: ejercicios fallados 2+ veces y todavía
+  // pendientes, agrupados donde más se concentran.
+  const repeatGroups = new Map();
+  mistakes.active.filter(m => m.failCount >= 2).forEach(m=>{
+    const key = m.family ? 'family:' + m.family : 'skill:' + m.skill;
+    repeatGroups.set(key, (repeatGroups.get(key) || 0) + 1);
+  });
+  diag.repeated = Array.from(repeatGroups.entries())
+    .map(([key, count])=>{
+      const [type, id] = key.split(':');
+      return { key, count, label: type === 'skill' ? SKILL_LABELS[id] : DIAG_FAMILY_BY_ID[id].label };
+    })
+    .sort((a,b)=> b.count - a.count);
+
+  // Frases del diagnóstico, en orden de importancia.
+  // Si mejoró un tema de gramática, no se repite además "mejoraste en Gramática".
+  const improvingFamilies = diag.improving.filter(u => u.type === 'family');
+  diag.improving
+    .filter(u => !(u.type === 'skill' && u.id === 'gramatica' && improvingFamilies.length))
+    .slice(0, 2).forEach(u=>{
+    diag.insights.push({ tone:'up', text:`Mejoraste en ${u.label}: de ${u.prevAcc}% a ${u.recentAcc}% de aciertos.` });
+  });
+  if(diag.repeated.length){
+    const r = diag.repeated[0];
+    diag.insights.push({ tone:'warn', text: r.count === 1
+      ? `Sigues fallando un ejercicio de ${r.label} que ya fallaste más de una vez.`
+      : `Sigues fallando con ${r.label}: ${r.count} ejercicios que ya fallaste más de una vez.` });
+  }
+  diag.declining.slice(0, 1).forEach(u=>{
+    diag.insights.push({ tone:'down', text:`Bajaste en ${u.label}: de ${u.prevAcc}% a ${u.recentAcc}%. Conviene repasarlo.` });
+  });
+  if(diag.recoveredWeek > 0){
+    diag.insights.push({ tone:'up', text: diag.recoveredWeek === 1 ? 'Recuperaste 1 error esta semana.' : `Recuperaste ${diag.recoveredWeek} errores esta semana.` });
+  }
+  if(diag.strength){
+    diag.insights.push({ tone:'good', text:`Tu mejor habilidad ahora es ${diag.strength.label}, con ${diag.strength.acc}% de aciertos.` });
+  }
+  if(diag.mastered.length){
+    const names = diag.mastered.slice(0, 3).map(u=>u.label);
+    diag.insights.push({ tone:'good', text:`Ya dominas: ${names.join(', ')}.` });
+  }
+
+  // Qué practicar hoy (máximo 3 acciones, sin repetir destino).
+  if(diag.weak){
+    diag.actions.push({
+      title: diag.weak.type === 'family' ? `Reforzar ${diag.weak.label}` : `Practicar ${diag.weak.label}`,
+      reason: diag.weak.activeMistakes
+        ? `Vas en ${diag.weak.current}% y tienes ${diag.weak.activeMistakes} ${diag.weak.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'} aquí.`
+        : `Es donde más fallas ahora: ${diag.weak.current}% de aciertos.`,
+      href: diag.weak.href,
+      cta: diag.weak.type === 'family' ? 'Hacer mi plan de hoy' : 'Practicar',
+      article: diag.weak.article
+    });
+  }
+  if(diag.activeMistakes >= 5){
+    diag.actions.push({
+      title:'Repasar tus errores',
+      reason: diag.activeMistakes > MISTAKE_PRIORITY.QUICK_REVIEW_SIZE
+        ? `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir. El repaso rápido toma los ${MISTAKE_PRIORITY.QUICK_REVIEW_SIZE} más importantes.`
+        : `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir.`,
+      href:'errores.html?modo=rapido', cta:'Repaso rápido'
+    });
+  }
+  if(diag.forgotten.length){
+    const f = diag.forgotten[0];
+    diag.actions.push({
+      title:`Volver a ${f.label}`,
+      reason:`Hace ${f.daysIdle} días que no lo practicas y vas en ${f.acc}%.`,
+      href: f.href, cta: f.type === 'family' ? 'Hacer mi plan de hoy' : 'Practicar'
+    });
+  }
+  return diag;
+}
+
+/* Resumen de la semana (lunes a hoy no: últimos 7 días, igual que el
+   resto del panel). Reutiliza computeWeeklyStatsWithDelta para los
+   números base, así coincide con las tarjetas de arriba. */
+function computeWeeklyReport(diag){
+  const w = computeWeeklyStatsWithDelta();
+  const p = loadProgress();
+  const days = new Set(sessionsInLastDays(p, 7).map(s=>s.date)).size;
+  let goal;
+  if(days === 0 && (p.sessions || []).length){
+    goal = 'Retomar tu ritmo: practicar al menos 3 días esta semana.';
+  } else if(diag.ready && diag.weak){
+    // Meta alcanzable en una semana: unos 20 puntos más, redondeado a 5.
+    const target = Math.min(90, Math.ceil((diag.weak.current + 20) / 5) * 5);
+    goal = `Subir ${diag.weak.label} de ${diag.weak.current}% a ${target}%.`;
+  } else if(days < 4){
+    goal = `Practicar al menos 4 días esta semana (llevas ${days}).`;
+  } else if(w.current.accuracy !== null && w.current.accuracy >= 85){
+    goal = 'Vas muy bien: prueba la dificultad "Difícil" en tu Plan de estudio.';
+  } else {
+    goal = 'Mantener tu ritmo y repasar tus errores pendientes.';
+  }
+  return {
+    exercises: w.current.exercises,
+    accuracy: w.current.accuracy,
+    accDelta: w.accDelta,
+    days,
+    improved: diag.ready ? diag.improving.map(u=>u.label) : [],
+    recovered: diag.recoveredWeek,
+    mastered: diag.masteredWeek,
+    focus: diag.ready && diag.weak ? diag.weak.label : null,
+    goal
+  };
+}
+
+/* Para Plan de estudio: si el punto débil es una familia de gramática,
+   devuelve hasta n ejercicios de esa familia del nivel pedido. Primero
+   los que la persona falló, luego los que no ha visto, y al final el
+   resto; nunca los que respondió bien en los últimos 3 días, ni los que
+   ya vienen en la misma sesión como repaso de errores (excludeIds). */
+function pickDiagFocusItems(level, familyId, n, excludeIds){
+  if(!familyId || !n || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return [];
+  const p = loadProgress();
+  const recentOk = new Set(), everFailed = new Set(), seen = new Set();
+  const cut = Date.now() - 3*86400000;
+  (p.sessions || []).forEach(s=> (s.results || []).forEach(r=>{
+    seen.add(r.itemId);
+    if(r.isCorrect === false) everFailed.add(r.itemId);
+    if(r.isCorrect === true && (s.startedAt || 0) >= cut) recentOk.add(r.itemId);
+  }));
+  const candidates = [];
+  GRAMMAR_BANK[level].forEach(variant=> variant.forEach(group=>{
+    const fam = diagFamilyForTopic(group.topic);
+    if(!fam || fam.id !== familyId) return;
+    group.items.forEach(item=>{ if(!recentOk.has(item.id) && !(excludeIds && excludeIds.has(item.id))) candidates.push(item); });
+  }));
+  const rank = item => everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1);
+  return shuffleArray(candidates)
+    .sort((a,b)=> rank(a) - rank(b))
+    .slice(0, n)
+    .map(item => ({ kind:'grammar', item, focus:true }));
+}
+
+
+/* ---------- Tu diagnóstico: piezas visuales ---------- */
+const DIAG_TONE_ICON = {
+  up:   '<svg viewBox="0 0 24 24" fill="none"><path d="M5 15l6-6 4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 9l6 6 4-4 4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16.5v.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>',
+  good: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+function diagInsightsHtml(insights, max){
+  return `<ul class="diag-insights">${insights.slice(0, max).map(i=>`<li class="diag-insight tone-${i.tone}"><span class="diag-insight-icon">${DIAG_TONE_ICON[i.tone]}</span><span>${i.text}</span></li>`).join('')}</ul>`;
+}
+
+function diagNotReadyText(diag){
+  return diag.total === 0
+    ? 'Completa tus primeros ejercicios y aquí verás qué estás mejorando y qué te conviene reforzar.'
+    : `Todavía estamos conociendo tu progreso. Completa ${diag.remaining} ${diag.remaining === 1 ? 'ejercicio más' : 'ejercicios más'} y aquí verás qué estás mejorando y qué te conviene reforzar.`;
+}
+
+// Dibuja algo que depende de mistake_stats (Supabase): primero con lo
+// que ya hay (sin esperar a la red) y, si llegan datos nuevos, se
+// vuelve a dibujar una vez. Si la red falla, se queda lo local.
+function diagRenderWithStats(paint){
+  paint();
+  if(_mistakeStatsCache instanceof Map) return;
+  loadMistakeStatsMap().then(map=>{ if(map instanceof Map) paint(); }).catch(()=>{});
+}
+
+/* Tarjeta compacta del panel de miembros (miembros.html). Reemplaza el
+   contenido de la antigua tarjeta "Así vas esta semana": mantiene sus
+   3 números y cambia el mensaje genérico por el diagnóstico real. */
 function renderProgressSummaryCard(container){
   if(!container) return;
-  const p = loadProgress();
   const ICON = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  if(!p.sessions || !p.sessions.length){
+  function paint(){
+    const p = loadProgress();
+    if(!p.sessions || !p.sessions.length){
+      container.innerHTML = `
+        <div class="progress-summary-head">
+          <div class="progress-summary-icon">${ICON}</div>
+          <div>
+            <div class="progress-summary-eyebrow">Tu diagnóstico</div>
+            <h2>Aún no tienes actividad</h2>
+          </div>
+        </div>
+        <p class="progress-summary-insight">Completa tu primera sesión y aquí vas a ver cómo avanzas.</p>
+        <a href="progreso.html" class="progress-summary-cta">Ver progreso completo →</a>`;
+      return;
+    }
+    const weekly = computeWeeklyStats();
+    const streak = computeStreak();
+    const diag = computeDiagnosis(p);
+    let body;
+    if(!diag.ready){
+      body = `<p class="progress-summary-insight">${diagNotReadyText(diag)}</p>`;
+    } else if(diag.insights.length){
+      body = diagInsightsHtml(diag.insights, 3);
+    } else {
+      body = `<p class="progress-summary-insight">${pickMiniProgressInsight(p, weekly, streak)}</p>`;
+    }
+    const today = diag.ready && diag.actions.length ? diag.actions[0] : null;
     container.innerHTML = `
       <div class="progress-summary-head">
         <div class="progress-summary-icon">${ICON}</div>
         <div>
-          <div class="progress-summary-eyebrow">Tu progreso</div>
-          <h2>Aún no tienes actividad</h2>
+          <div class="progress-summary-eyebrow">Tu diagnóstico</div>
+          <h2>Así vas esta semana</h2>
         </div>
       </div>
-      <p class="progress-summary-insight">Completa tu primera sesión y aquí vas a ver cómo avanzas.</p>
-      <a href="progreso.html" class="progress-summary-cta">Ver progreso completo →</a>`;
-    return;
+      <div class="progress-summary-stats">
+        <div class="progress-summary-stat">
+          <span class="progress-summary-num">${weekly.exercises}</span>
+          <span class="progress-summary-label">Ejercicios esta semana</span>
+        </div>
+        <div class="progress-summary-stat">
+          <span class="progress-summary-num">${weekly.accuracy !== null ? weekly.accuracy + '%' : '—'}</span>
+          <span class="progress-summary-label">Aciertos</span>
+        </div>
+        <div class="progress-summary-stat">
+          <span class="progress-summary-num">${streak}</span>
+          <span class="progress-summary-label">${streak === 1 ? 'Día de racha' : 'Días de racha'}</span>
+        </div>
+      </div>
+      ${body}
+      ${today ? `<a href="${today.href}" class="diag-today"><span class="diag-today-label">Hoy te conviene</span><span class="diag-today-title">${today.title} →</span></a>` : ''}
+      <a href="progreso.html#diagnostico" class="progress-summary-cta">${diag.ready ? 'Ver tu diagnóstico completo →' : 'Ver progreso completo →'}</a>`;
   }
-  const weekly = computeWeeklyStats();
-  const streak = computeStreak();
-  const insight = pickMiniProgressInsight(p, weekly, streak);
-  container.innerHTML = `
-    <div class="progress-summary-head">
-      <div class="progress-summary-icon">${ICON}</div>
-      <div>
-        <div class="progress-summary-eyebrow">Tu progreso</div>
-        <h2>Así vas esta semana</h2>
+  diagRenderWithStats(paint);
+}
+
+function diagUnitRowHtml(u){
+  const detail = u.trend
+    ? `Antes ${u.prevAcc}% · ahora ${u.recentAcc}%`
+    : `${u.acc}% de aciertos · ${u.n} ejercicios`;
+  const arrow = u.trend === 'up' ? ' <span class="diag-arrow up">↑</span>' : (u.trend === 'down' ? ' <span class="diag-arrow down">↓</span>' : '');
+  return `
+    <li class="diag-unit">
+      <div class="diag-unit-main">
+        <span class="diag-unit-name">${u.label}</span>
+        <span class="diag-unit-detail">${detail}${arrow}</span>
       </div>
-    </div>
-    <div class="progress-summary-stats">
-      <div class="progress-summary-stat">
-        <span class="progress-summary-num">${weekly.exercises}</span>
-        <span class="progress-summary-label">Ejercicios esta semana</span>
+      <span class="diag-chip state-${u.state}">${DIAG_STATE_LABELS[u.state]}</span>
+    </li>`;
+}
+
+const DIAG_STATE_ORDER = { refuerzo:0, practica:1, mejorando:2, bien:3, dominado:4 };
+
+/* Sección completa en progreso.html (#diagnostico). */
+function renderDiagnosisSection(container){
+  if(!container) return;
+  function paint(){
+    const diag = computeDiagnosis();
+    const week = computeWeeklyReport(diag);
+    if(!diag.ready){
+      const pct = Math.round(Math.min(diag.total, DIAG.MIN_TOTAL) / DIAG.MIN_TOTAL * 100);
+      container.innerHTML = `
+        <div class="diag-card diag-wait">
+          <p>${diagNotReadyText(diag)}</p>
+          <div class="diag-wait-bar"><span style="width:${pct}%"></span></div>
+          <p class="diag-muted">${diag.total} de ${DIAG.MIN_TOTAL} ejercicios calificados.</p>
+          <a href="plan-estudio.html" class="btn btn-primary btn-sm">Hacer mi plan de hoy →</a>
+        </div>
+        ${diagWeeklyHtml(week)}`;
+      return;
+    }
+    const s = diag.strength, w = diag.weak;
+    const rated = diag.units.filter(u=>u.state).sort((a,b)=> (DIAG_STATE_ORDER[a.state] - DIAG_STATE_ORDER[b.state]) || (a.current - b.current));
+    const skillRows = rated.filter(u=>u.type === 'skill');
+    const familyRows = rated.filter(u=>u.type === 'family');
+    container.innerHTML = `
+      <div class="diag-highlights">
+        <div class="diag-card diag-hl">
+          <div class="diag-hl-label">Tu fortaleza</div>
+          ${s ? `<div class="diag-hl-value">${s.label}</div><div class="diag-muted">${s.acc}% de aciertos en ${s.n} ejercicios</div>`
+              : `<div class="diag-hl-value diag-hl-empty">Aún sin definir</div><div class="diag-muted">Necesitamos más ejercicios de una misma habilidad.</div>`}
+        </div>
+        <div class="diag-card diag-hl diag-hl-weak">
+          <div class="diag-hl-label">Punto a reforzar</div>
+          ${w ? `<div class="diag-hl-value">${w.label}</div><div class="diag-muted">${w.current}% de aciertos ahora${w.activeMistakes ? ` · ${w.activeMistakes} ${w.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'}` : ''}</div>`
+              : `<div class="diag-hl-value diag-hl-empty">Nada urgente</div><div class="diag-muted">Todo lo que practicas va por encima de ${DIAG.WEAK_BELOW}%.</div>`}
+        </div>
+        <div class="diag-card diag-hl">
+          <div class="diag-hl-label">Errores esta semana</div>
+          <div class="diag-hl-value">${diag.recoveredWeek} ${diag.recoveredWeek === 1 ? 'recuperado' : 'recuperados'}</div>
+          <div class="diag-muted">${diag.activeMistakes} ${diag.activeMistakes === 1 ? 'pendiente' : 'pendientes'} por repasar</div>
+        </div>
       </div>
-      <div class="progress-summary-stat">
-        <span class="progress-summary-num">${weekly.accuracy !== null ? weekly.accuracy + '%' : '—'}</span>
-        <span class="progress-summary-label">Aciertos</span>
+
+      ${diag.insights.length ? `<div class="diag-card"><h3 class="diag-h3">Lo que vemos en tus respuestas</h3>${diagInsightsHtml(diag.insights, 6)}</div>` : ''}
+
+      ${diag.actions.length ? `
+        <div class="diag-card">
+          <h3 class="diag-h3">Hoy te conviene</h3>
+          <div class="diag-actions">
+            ${diag.actions.map(a=>`
+              <div class="diag-action">
+                <div>
+                  <div class="diag-action-title">${a.title}</div>
+                  <div class="diag-muted">${a.reason}</div>
+                  ${a.article ? `<a href="${a.article}" class="diag-action-article">Leer la explicación →</a>` : ''}
+                </div>
+                <a href="${a.href}" class="btn btn-primary btn-sm">${a.cta}</a>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+
+      <div class="diag-card">
+        <h3 class="diag-h3">Tus habilidades</h3>
+        ${skillRows.length ? `<ul class="diag-units">${skillRows.map(diagUnitRowHtml).join('')}</ul>` : `<p class="diag-muted">Practica al menos ${DIAG.MIN_UNIT} ejercicios de una habilidad para ver cómo vas en ella.</p>`}
+        ${familyRows.length ? `<h3 class="diag-h3" style="margin-top:22px;">Tus temas de gramática</h3><ul class="diag-units">${familyRows.map(diagUnitRowHtml).join('')}</ul>` : ''}
+        <p class="diag-muted diag-foot">Solo mostramos temas con al menos ${DIAG.MIN_UNIT} ejercicios respondidos, para no sacar conclusiones con muy pocos datos.</p>
       </div>
-      <div class="progress-summary-stat">
-        <span class="progress-summary-num">${streak}</span>
-        <span class="progress-summary-label">${streak === 1 ? 'Día de racha' : 'Días de racha'}</span>
+
+      ${diagWeeklyHtml(week)}`;
+  }
+  diagRenderWithStats(paint);
+}
+
+function diagWeeklyHtml(week){
+  const acc = week.accuracy !== null ? week.accuracy + '%' : '—';
+  const accDelta = week.accDelta !== null && week.accDelta !== 0
+    ? ` <span class="diag-arrow ${week.accDelta > 0 ? 'up' : 'down'}">${week.accDelta > 0 ? '+' : ''}${week.accDelta}</span>` : '';
+  const rows = [];
+  if(week.improved.length) rows.push(`<li><b>Mejoraste en:</b> ${week.improved.join(', ')}</li>`);
+  if(week.recovered || week.mastered){
+    const parts = [];
+    if(week.recovered) parts.push(`${week.recovered} ${week.recovered === 1 ? 'recuperado' : 'recuperados'}`);
+    if(week.mastered) parts.push(`${week.mastered} ${week.mastered === 1 ? 'dominado' : 'dominados'}`);
+    rows.push(`<li><b>Errores:</b> ${parts.join(' y ')}</li>`);
+  }
+  if(week.focus) rows.push(`<li><b>A reforzar:</b> ${week.focus}</li>`);
+  rows.push(`<li><b>Siguiente objetivo:</b> ${week.goal}</li>`);
+  return `
+    <div class="diag-card diag-week">
+      <h3 class="diag-h3">Tu resumen de la semana</h3>
+      <div class="diag-week-stats">
+        <div><span class="diag-week-num">${week.exercises}</span><span class="diag-muted">ejercicios</span></div>
+        <div><span class="diag-week-num">${acc}${accDelta}</span><span class="diag-muted">de aciertos</span></div>
+        <div><span class="diag-week-num">${week.days}</span><span class="diag-muted">${week.days === 1 ? 'día practicado' : 'días practicados'}</span></div>
       </div>
-    </div>
-    <p class="progress-summary-insight">${insight}</p>
-    <a href="progreso.html" class="progress-summary-cta">Ver progreso completo →</a>`;
+      <ul class="diag-week-list">${rows.join('')}</ul>
+    </div>`;
 }
 
 /* ============================================================
@@ -4522,6 +5219,17 @@ function renderProgressPage(root){
     });
     recommendation = { skill: lowest.sk, reason: 'Sigue teniendo margen para practicar más.' };
   }
+  let recoTitle = SKILL_LABELS[recommendation.skill];
+  let recoHref = SKILL_PAGE[recommendation.skill];
+  let recoReason = recommendation.reason;
+  let recoCta = 'Practicar';
+  try{
+    const diagForReco = computeDiagnosis(p);
+    if(diagForReco.ready && diagForReco.actions.length){
+      const a = diagForReco.actions[0];
+      recoTitle = a.title; recoHref = a.href; recoReason = a.reason; recoCta = a.cta;
+    }
+  }catch(e){}
 
   root.innerHTML = `
     <div class="section-head">
@@ -4530,6 +5238,12 @@ function renderProgressPage(root){
     </div>
 
     <div class="stat-cards" id="progressStatCards"></div>
+
+    <div class="section-head" style="margin-top:44px;" id="diagnostico">
+      <h2 style="font-size:1.5rem;">Tu diagnóstico</h2>
+      <p>Calculado con tus respuestas reales. Se actualiza cada vez que practicas.</p>
+    </div>
+    <div id="diagnosisSection"></div>
 
     <div class="section-head" style="margin-top:44px;">
       <h2 style="font-size:1.5rem;">Tu avance por habilidad</h2>
@@ -4552,13 +5266,19 @@ function renderProgressPage(root){
     <div class="continue-card">
       <div>
         <div class="continue-eyebrow">Recomendado para ti</div>
-        <div class="continue-title">${SKILL_LABELS[recommendation.skill]}</div>
-        <div class="continue-sub">${recommendation.reason}</div>
+        <div class="continue-title">${recoTitle}</div>
+        <div class="continue-sub">${recoReason}</div>
       </div>
-      <a href="${SKILL_PAGE[recommendation.skill]}" class="btn btn-primary">Practicar →</a>
+      <a href="${recoHref}" class="btn btn-primary">${recoCta} →</a>
     </div>`;
 
   renderProgressStatCards(document.getElementById('progressStatCards'), stats, streak, level);
+  renderDiagnosisSection(document.getElementById('diagnosisSection'));
+  if(location.hash === '#diagnostico' && !root._diagScrolled){
+    root._diagScrolled = true;
+    const target = document.getElementById('diagnostico');
+    if(target) setTimeout(()=> target.scrollIntoView({ block:'start' }), 50);
+  }
   renderSkillsPanel(document.getElementById('skillsPanel'), p);
   renderRecentActivityV2(document.getElementById('progressRecent'));
   renderWeeklyChart(document.getElementById('progressWeekly'));

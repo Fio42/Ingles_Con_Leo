@@ -1142,3 +1142,27 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Al buscar: oculta Destacado, "Empieza por aqui" y los botones de categoria; muestra "Resultados de busqueda" + cantidad, o un mensaje si no hay nada. Boton x para borrar. articulos.html?q=tema abre ya filtrado.
 - Evento GA4 estandar "search" (search_term) para ver que temas busca la gente. CSS inline en articulos.html (style.css sin cambios).
 - Verificado a 320 px: sin desborde, resultados justo debajo del buscador.
+
+2026-10-01 - Tu diagnostico (sin IA), entrenamiento recomendado, resumen semanal y Writing con IA (apagado)
+- Datos reutilizados, sin tablas nuevas para el diagnostico: p.sessions[].results (progress_sessions), mistake_stats (activo/recuperado/dominado, fail_count), bancos de data.js via getMistakesItemIndex (+ Lectura). computeWeeklyStatsWithDelta, computeStreak y loadMistakeStatsMap se usan tal cual.
+- app.js, bloque "TU DIAGNOSTICO": computeDiagnosis(), computeWeeklyReport(), pickDiagFocusItems(). Umbrales en DIAG (min 15 respuestas para diagnosticar, 8 por tema, 12 para "Dominado", tendencia = ultimos 7 dias vs dias 8-35 con 6+ respuestas en cada periodo y 10+ puntos de diferencia). Fortaleza con limite inferior de Wilson (no premia muestras chicas).
+- Los ~100 temas de gramatica se agrupan en 20 familias (DIAG_GRAMMAR_FAMILIES, verificado contra los 99 temas reales; 7 temas avanzados quedan sin familia y nunca se nombran).
+- Estados: Dominado / Mejorando / Vas bien / En practica / Necesita refuerzo. Sin datos suficientes no se afirma nada ("Todavia estamos conociendo tu progreso").
+- miembros.html: la tarjeta "Asi vas esta semana" ahora es "Tu diagnostico" (mismos 3 numeros + 3 frases reales + "Hoy te conviene"). progreso.html: seccion #diagnostico (fortaleza, punto a reforzar, errores de la semana, frases, acciones, habilidades y temas con estado, resumen semanal con objetivo) y "Continua aprendiendo" usa la accion del diagnostico.
+- Plan de estudio: si el punto debil es una familia de gramatica, 2-3 ejercicios de Gramatica salen de esa familia ("Refuerzo: X" en la vista previa y en "Hoy reforzaste"). El total de la sesion no cambia; sin diagnostico todo sigue igual; nunca duplica un ejercicio que ya va como repaso de errores. ARTICLE_BY_TOPIC: In / On / At -> articulo-in-on-at.html.
+- Writing con IA (Gemini plan gratis): supabase_functions/writing-feedback.ts (miembros, tope 20/dia por persona en tabla ai_usage + bump_ai_usage, 8 s max, respuesta validada, solo manda consigna+estructura+frase). Tabla ai_usage YA aplicada en Supabase. La funcion NO esta desplegada todavia y falta el secreto GEMINI_API_KEY.
+  En la pagina: WRITING_AI_PUBLIC = false (apagado para alumnos). Solo aparece en el navegador que abrio writing.html?ia=1 (se apaga con ?ia=0). Es un extra debajo de la correccion normal: no cambia nota, progreso ni Mis errores; si falla, desaparece sin mensaje.
+- Probado: motor con alumno simulado (Node), tarjeta y seccion a 360 px sin desborde, Plan de estudio completo de punta a punta (se guarda, limpia inflight, sin duplicados en 40 corridas), Writing con IA apagada / encendida-fallando / respuesta simulada, 10 paginas sin errores de consola.
+- OJO: tools/tests/session-cycle.test.js tiene 1 prueba fallando ("al empezar un ciclo nuevo no abre con los ultimos vistos"), pero falla igual con el app.js de antes de este cambio: es previa, no de esto.
+- app.js, backend.js y style.css: ?v=20261001a en todas las paginas.
+
+2026-10-01 (cont.) - Validacion del diagnostico antes de seguir con Gemini
+- Una sola fuente de verdad con el Plan: computePlanSelection calcula el diagnostico una vez y reparte cupos con planSkillAccuracy() (el % "ahora" del diagnostico; si la habilidad no tiene 8+ respuestas, el % historico de siempre). El refuerzo usa ese mismo diagnostico.
+- Errores sin red: el diagnostico ya no tiene regla propia, usa computeMistakeIds() (la misma de Mis errores y del Plan).
+- Meta semanal: si no practico en 7 dias, la meta es retomar (3 dias); etiqueta "Dificil" (antes decia "Reto", que no existe).
+- progreso.html "Continua aprendiendo": el boton usa el texto de la accion (ej. "Hacer mi plan de hoy").
+- miembros.html: al llegar sesiones de otro dispositivo (leo-progress-synced) se redibujan tarjetas, Tu diagnostico y actividad (antes solo progreso.html lo hacia).
+- Writing con IA: WRITING_AI_ENABLED = false, interruptor maestro; ni con ?ia=1 se muestra ni se llama al servidor. Funcion writing-feedback NO desplegada. (La tabla ai_usage ya existe en Supabase, vacia y sin uso.)
+- Pruebas nuevas: node tools/tests/diagnosis.test.js (16 escenarios: nuevo, pocos datos, muestra chica, mejora, retroceso, Plan coherente con el diagnostico, errores repetidos con y sin Supabase, recuperados/dominados, semanas sin actividad, 4.000 respuestas en ~5 ms, Mixto/Plan por habilidad real, Speaking/examenes excluidos, IA apagada). Navegador: 320/375/1280 px sin desborde; Plan completo y retomado a medias con refuerzo; refresco por sincronizacion en miembros.html.
+- Datos reales (solo totales): 8 cuentas con sesiones, 7 ya tienen 15+ respuestas (mediana 85), 5 activas en los ultimos 7 dias.
+- Validacion final en navegador: en desktop (760px+) la tarjeta Tu diagnostico del panel apretaba las frases en una columna angosta; style.css ahora baja frases y 'Hoy te conviene' a una fila propia (solo CSS). Todo lo demas paso sin cambios.
