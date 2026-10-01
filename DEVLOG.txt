@@ -1131,3 +1131,4 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - SEO: title 55 car., meta description 150, un H1, canonical, schema Article + FAQPage (7 preguntas), sitemap.xml, tarjeta en articulos.html (Gramatica) y enlace interno desde articulo-errores-comunes.html (seccion 1).
 - Sin data.js (no hace falta). CSS de la piramide y tabla de transporte inline en el articulo, style.css sin cambios.
 - Verificado a 320 y 375 px: sin desborde horizontal; la tabla de transporte se ve completa en el celular; ejercicios cuentan bien.
+- Audio (mismo dia): 10 frases de transporte con boton de play en la seccion Transporte (audio/articulos/in-on-at/frase-01..10.mp3, voz Ava), filas agregadas a tools/lista_audios.csv. Pendiente que Leo los genere.

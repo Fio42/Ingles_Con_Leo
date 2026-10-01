@@ -276,6 +276,10 @@
     <p>Si añades un artículo o un posesivo, vuelves a in u on: by car, pero in my car; by bus, pero on the 8:15 bus.</p>
     <p>Detalle de nivel avanzado: a veces oirás in the bus o in the plane cuando alguien habla del espacio físico (por ejemplo, del calor que hace adentro). Aun así, on the bus y on the plane son las formas normales, y son las que debes usar al hablar de viajar.</p>
 
+    <h3>Escúchalo: frases reales de transporte</h3>
+    <p>Tócale play a cada frase y fíjate en cómo suenan on y in dentro de la frase: casi no se oyen, van pegadas a la palabra siguiente.</p>
+    <div class="phrase-list" data-phrase-list><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-01.mp3"><div class="phrase-item-text"><span class="phrase-en">I'm on the bus. I'll be there soon.</span><span class="phrase-es">Voy en el bus. Llego pronto.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: I&#x27;m on the bus. I&#x27;ll be there soon."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-02.mp3"><div class="phrase-item-text"><span class="phrase-en">Are you on the train yet?</span><span class="phrase-es">¿Ya estás en el tren?</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: Are you on the train yet?"></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-03.mp3"><div class="phrase-item-text"><span class="phrase-en">I couldn't sleep on the plane.</span><span class="phrase-es">No pude dormir en el avión.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: I couldn&#x27;t sleep on the plane."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-04.mp3"><div class="phrase-item-text"><span class="phrase-en">He rides to school on his bike.</span><span class="phrase-es">Va al colegio en su bici.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: He rides to school on his bike."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-05.mp3"><div class="phrase-item-text"><span class="phrase-en">I'm in the car. I'll call you later.</span><span class="phrase-es">Estoy en el carro. Te llamo luego.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: I&#x27;m in the car. I&#x27;ll call you later."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-06.mp3"><div class="phrase-item-text"><span class="phrase-en">We went to the airport in a taxi.</span><span class="phrase-es">Fuimos al aeropuerto en taxi.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: We went to the airport in a taxi."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-07.mp3"><div class="phrase-item-text"><span class="phrase-en">We need to get off at the third stop.</span><span class="phrase-es">Tenemos que bajarnos en la tercera parada.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: We need to get off at the third stop."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-08.mp3"><div class="phrase-item-text"><span class="phrase-en">She got into the back seat of the car.</span><span class="phrase-es">Se subió al asiento de atrás del carro.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: She got into the back seat of the car."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-09.mp3"><div class="phrase-item-text"><span class="phrase-en">It's faster by train than by car.</span><span class="phrase-es">Es más rápido en tren que en carro.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: It&#x27;s faster by train than by car."></button></div><div class="phrase-item" data-audio="audio/articulos/in-on-at/frase-10.mp3"><div class="phrase-item-text"><span class="phrase-en">I usually go to work on foot.</span><span class="phrase-es">Normalmente voy al trabajo a pie.</span></div><button type="button" class="phrase-play-btn" aria-label="Escuchar: I usually go to work on foot."></button></div></div>
+
     <h2 id="expresiones">Expresiones fijas que conviene memorizar</h2>
     <p>Algunas combinaciones no siguen del todo la regla general. Lo más práctico es aprenderlas como bloques.</p>
 
@@ -647,6 +651,19 @@
   personalizeNav();
 </script>
 
+<script>
+(function(){
+  var list = document.querySelector('[data-phrase-list]');
+  if(!list) return;
+  list.querySelectorAll('.phrase-item').forEach(function(item){
+    var btn = item.querySelector('.phrase-play-btn');
+    var path = item.getAttribute('data-audio');
+    if(!btn || !path) return;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M3 2l9 5-9 5V2z" fill="currentColor"/></svg>';
+    btn.addEventListener('click', function(){ playAudioFile(path, item, btn); });
+  });
+})();
+</script>
 <script>document.addEventListener("DOMContentLoaded", function(){ if (typeof initArticleComments === "function") initArticleComments(); });</script>
 </body>
 </html>
