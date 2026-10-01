@@ -2085,6 +2085,34 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .diag-week-num .diag-arrow{font-size:0.9rem;}
 .diag-week-list{margin:0;padding-left:20px;color:var(--ink-soft);font-size:0.92rem;line-height:1.6;}
 .diag-week-list b{color:var(--ink);}
+/* progreso.html simplificado: orden Resumen → Hoy te conviene → Diagnóstico → Habilidades → Temas → Semana → Actividad */
+.progress-sec-head{margin-top:36px;}
+.progress-sec-head[hidden]{display:none;}
+.progress-today:empty{display:none;}
+.progress-today .diag-today-card{border:2px solid var(--blue);margin:0;}
+.diag-action-main{background:var(--blue-tint);}
+.diag-also-label{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 8px;}
+.diag-action-alt{background:none;border:1px solid var(--line);padding:12px 14px;}
+.diag-action-link{flex-shrink:0;font-weight:700;font-size:0.88rem;color:var(--blue);text-decoration:none;white-space:nowrap;}
+.diag-action-link:hover{text-decoration:underline;}
+.diag-more{margin-top:10px;}
+.diag-more > summary{display:inline-block;cursor:pointer;font-weight:700;font-size:0.88rem;color:var(--blue);list-style:none;padding:6px 0;}
+.diag-more > summary::-webkit-details-marker{display:none;}
+.diag-more > summary::after{content:" ▾";}
+.diag-more[open] > summary::after{content:" ▴";}
+.diag-more-body{margin-top:6px;}
+.diag-week .diag-more .diag-week-list{margin-top:0;}
+.skill-row-v2{display:flex;flex-direction:column;gap:6px;padding:14px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;border-radius:var(--radius-sm);transition:background .15s ease;min-width:0;}
+.skill-row-v2:last-child{border-bottom:none;}
+.skill-row-v2:hover{background:var(--paper-dim);}
+.skill-v2-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;}
+.skill-v2-foot{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0;}
+.skill-v2-bar{display:flex;align-items:center;gap:12px;min-width:0;}
+.skill-v2-bar .skill-row-track{flex:1;min-width:0;}
+.skill-v2-pct{font-weight:700;font-size:0.82rem;color:var(--ink-soft);white-space:nowrap;}
+.skill-v2-detail{font-size:0.82rem;color:var(--ink-soft);}
+@media(max-width:400px){.skill-row-v2 .diag-chip{font-size:0.7rem;padding:3px 8px;}}
+@media(max-width:480px){#progressTopics .diag-unit{flex-wrap:wrap;row-gap:6px;}#progressTopics .diag-unit-main{flex:1 1 200px;}}
 .plan-focus-note{background:var(--blue-tint);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.9rem;color:var(--ink-soft);margin:0 0 12px;}
 .plan-focus-note a{color:var(--blue);font-weight:600;}
 /* Leo AI: botón chico de ayuda bajo la corrección y su respuesta (ver LEO AI en app.js) */

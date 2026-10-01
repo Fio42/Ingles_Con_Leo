@@ -725,7 +725,7 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 
 // "Clases interactivas" es una actividad aparte de las 5 habilidades de
 // arriba (no debe sumarse a sus anillos/porcentajes de cobertura, ver
-// computeTotalStats y renderSkillsPanel), pero SÍ necesita su propia
+// computeTotalStats y la lista "Tus habilidades"), pero SÍ necesita su propia
 // etiqueta/color/página para mostrarse bien en "Continúa donde te
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
@@ -4597,7 +4597,7 @@ function streakWeekMessage(practicedCount){
    Reemplaza al bloque grande "Mi rendimiento" (anillos por
    habilidad + gráfica semanal + racha) que antes vivía en
    miembros.html: ese detalle completo sigue existiendo tal cual
-   en progreso.html (renderSkillsPanel, etc., sin tocar), esto es
+   en progreso.html (barras de "Tus habilidades", etc., sin tocar), esto es
    solo un resumen corto con un CTA hacia ahí. Reutiliza funciones
    ya existentes y probadas (computeWeeklyStats, computeStreak,
    computeSkillCoverage) en vez de inventar cálculos nuevos.
@@ -5182,10 +5182,19 @@ function renderProgressSummaryCard(container){
   diagRenderWithStats(paint);
 }
 
+// El estado (chip) se decide con los aciertos recientes (u.current); si
+// difieren del total se muestran ambos para que el chip no parezca
+// contradecir el número.
+function diagAccText(u){
+  return u.current !== u.acc
+    ? `Ahora ${u.current}% de aciertos (${u.acc}% en total)`
+    : `${u.acc}% de aciertos en ${u.n} ejercicios`;
+}
+
 function diagUnitRowHtml(u){
   const detail = u.trend
     ? `Antes ${u.prevAcc}% · ahora ${u.recentAcc}%`
-    : `${u.acc}% de aciertos · ${u.n} ejercicios`;
+    : diagAccText(u);
   const arrow = u.trend === 'up' ? ' <span class="diag-arrow up">↑</span>' : (u.trend === 'down' ? ' <span class="diag-arrow down">↓</span>' : '');
   return `
     <li class="diag-unit">
@@ -5199,28 +5208,119 @@ function diagUnitRowHtml(u){
 
 const DIAG_STATE_ORDER = { refuerzo:0, practica:1, mejorando:2, bien:3, dominado:4 };
 
-/* Sección completa en progreso.html (#diagnostico). */
-function renderDiagnosisSection(container){
-  if(!container) return;
+/* Sección completa en progreso.html (#diagnostico). Dibuja en varios
+   contenedores para que la página siga el orden Resumen → Hoy te conviene
+   → Diagnóstico → Habilidades → Temas → Semana. Los cálculos son los
+   mismos de siempre; aquí solo cambia dónde y cuánto se muestra.
+   els = { diag, today, skills, topics, topicsHead, week, fallbackToday, p } */
+const DIAG_INSIGHTS_VISIBLE = 2;
+const DIAG_TOPICS_VISIBLE = 3;
+
+function diagMoreHtml(label, inner){
+  return `<details class="diag-more"><summary>${label}</summary><div class="diag-more-body">${inner}</div></details>`;
+}
+
+function diagActionBodyHtml(a){
+  return `
+    <div>
+      <div class="diag-action-title">${a.title}</div>
+      <div class="diag-muted">${a.reason}</div>
+      ${a.article ? `<a href="${a.article}" class="diag-action-article">Leer la explicación →</a>` : ''}
+    </div>`;
+}
+
+// "Hoy te conviene": la primera acción es la principal; las otras (máx. 2)
+// quedan como opciones secundarias más discretas.
+function diagTodayHtml(actions){
+  const [main, ...rest] = actions;
+  return `
+    <div class="diag-card diag-today-card">
+      <h3 class="diag-h3">Hoy te conviene</h3>
+      <div class="diag-action diag-action-main">
+        ${diagActionBodyHtml(main)}
+        <a href="${main.href}" class="btn btn-primary btn-sm">${main.cta}</a>
+      </div>
+      ${rest.length ? `
+        <div class="diag-also-label">También te puede servir</div>
+        <div class="diag-actions">
+          ${rest.map(a=>`
+            <div class="diag-action diag-action-alt">
+              ${diagActionBodyHtml(a)}
+              <a href="${a.href}" class="diag-action-link">${a.cta} →</a>
+            </div>`).join('')}
+        </div>` : ''}
+    </div>`;
+}
+
+// Una sola lista de habilidades (antes eran dos secciones): la barra es
+// cuánto del banco ya practicaste (computeSkillCoverage, igual que antes)
+// y el estado viene del diagnóstico (aciertos), si ya hay datos.
+function diagSkillsHtml(p, diag){
+  const unitFor = skill => (diag && diag.ready) ? diag.units.find(u => u.key === 'skill:' + skill && u.state) : null;
+  const skills = PROGRESS_SKILLS_DISPLAY.slice();
+  // Lectura solo aparecía en el diagnóstico: se suma si ya tiene estado.
+  if(unitFor('lectura')) skills.splice(skills.indexOf('listening') + 1, 0, 'lectura');
+  return skills.map(skill=>{
+    const pct = computeSkillCoverage(p, skill);
+    const u = unitFor(skill);
+    let detail = 'Practica un poco más para ver tu estado';
+    if(u){
+      const arrow = u.trend === 'up' ? ' <span class="diag-arrow up">↑</span>' : (u.trend === 'down' ? ' <span class="diag-arrow down">↓</span>' : '');
+      detail = (u.trend ? `Aciertos: antes ${u.prevAcc}% · ahora ${u.recentAcc}%` : diagAccText(u)) + arrow;
+    }
+    return `
+      <a href="${SKILL_PAGE[skill]}" class="skill-row-v2">
+        <span class="skill-v2-top">
+          <span class="skill-row-label">${SKILL_LABELS[skill]}</span>
+          ${u ? `<span class="diag-chip state-${u.state}">${DIAG_STATE_LABELS[u.state]}</span>` : ''}
+        </span>
+        <span class="skill-v2-bar">
+          <span class="skill-row-track"><span class="skill-row-fill" style="width:${pct}%;background:${SKILL_COLORS[skill]};"></span></span>
+          <span class="skill-v2-pct">${pct}% practicado</span>
+        </span>
+        <span class="skill-v2-foot">
+          <span class="skill-v2-detail">${detail}</span>
+          <span class="skill-row-practice">Practicar →</span>
+        </span>
+      </a>`;
+  }).join('');
+}
+
+function renderDiagnosisSection(els){
+  if(!els || !els.diag) return;
+  const container = els.diag;
   function paint(){
     const diag = computeDiagnosis();
     const week = computeWeeklyReport(diag);
+    if(els.week) els.week.innerHTML = diagWeeklyHtml(week);
+    if(els.skills) els.skills.innerHTML = diagSkillsHtml(els.p || loadProgress(), diag);
     if(!diag.ready){
       const pct = Math.round(Math.min(diag.total, DIAG.MIN_TOTAL) / DIAG.MIN_TOTAL * 100);
+      if(els.today && els.fallbackToday) els.today.innerHTML = diagTodayHtml([els.fallbackToday]);
       container.innerHTML = `
         <div class="diag-card diag-wait">
           <p>${diagNotReadyText(diag)}</p>
           <div class="diag-wait-bar"><span style="width:${pct}%"></span></div>
           <p class="diag-muted">${diag.total} de ${DIAG.MIN_TOTAL} ejercicios calificados.</p>
-          <a href="plan-estudio.html" class="btn btn-primary btn-sm">Hacer mi plan de hoy →</a>
-        </div>
-        ${diagWeeklyHtml(week)}`;
+        </div>`;
+      if(els.topics) els.topics.innerHTML = '';
+      if(els.topicsHead) els.topicsHead.hidden = true;
       return;
     }
     const s = diag.strength, w = diag.weak;
     const rated = diag.units.filter(u=>u.state).sort((a,b)=> (DIAG_STATE_ORDER[a.state] - DIAG_STATE_ORDER[b.state]) || (a.current - b.current));
-    const skillRows = rated.filter(u=>u.type === 'skill');
     const familyRows = rated.filter(u=>u.type === 'family');
+
+    // La acción principal empieza directo, igual que en el panel de
+    // miembros (reemplaza a la vieja tarjeta "Continúa aprendiendo").
+    if(els.today){
+      const actions = diag.actions.slice();
+      if(actions.length) actions[0] = Object.assign({}, actions[0], { href: todayStartHref(actions[0]), cta:'Empezar lo que me toca hoy' });
+      els.today.innerHTML = actions.length ? diagTodayHtml(actions) : '';
+    }
+
+    const shown = diag.insights.slice(0, DIAG_INSIGHTS_VISIBLE);
+    const hidden = diag.insights.slice(DIAG_INSIGHTS_VISIBLE, 6);
     container.innerHTML = `
       <div class="diag-highlights">
         <div class="diag-card diag-hl">
@@ -5240,32 +5340,18 @@ function renderDiagnosisSection(container){
         </div>
       </div>
 
-      ${diag.insights.length ? `<div class="diag-card"><h3 class="diag-h3">Lo que vemos en tus respuestas</h3>${diagInsightsHtml(diag.insights, 6)}<div data-leo-ai-progress></div></div>` : '<div data-leo-ai-progress></div>'}
+      ${shown.length ? `<div class="diag-card"><h3 class="diag-h3">Lo que vemos en tus respuestas</h3>${diagInsightsHtml(shown, DIAG_INSIGHTS_VISIBLE)}${hidden.length ? diagMoreHtml('Ver diagnóstico completo', diagInsightsHtml(hidden, hidden.length)) : ''}<div data-leo-ai-progress></div></div>` : '<div data-leo-ai-progress></div>'}`;
 
-      ${diag.actions.length ? `
+    if(els.topics){
+      const top = familyRows.slice(0, DIAG_TOPICS_VISIBLE), rest = familyRows.slice(DIAG_TOPICS_VISIBLE);
+      els.topics.innerHTML = familyRows.length ? `
         <div class="diag-card">
-          <h3 class="diag-h3">Hoy te conviene</h3>
-          <div class="diag-actions">
-            ${diag.actions.map(a=>`
-              <div class="diag-action">
-                <div>
-                  <div class="diag-action-title">${a.title}</div>
-                  <div class="diag-muted">${a.reason}</div>
-                  ${a.article ? `<a href="${a.article}" class="diag-action-article">Leer la explicación →</a>` : ''}
-                </div>
-                <a href="${a.href}" class="btn btn-primary btn-sm">${a.cta}</a>
-              </div>`).join('')}
-          </div>
-        </div>` : ''}
-
-      <div class="diag-card">
-        <h3 class="diag-h3">Tus habilidades</h3>
-        ${skillRows.length ? `<ul class="diag-units">${skillRows.map(diagUnitRowHtml).join('')}</ul>` : `<p class="diag-muted">Practica al menos ${DIAG.MIN_UNIT} ejercicios de una habilidad para ver cómo vas en ella.</p>`}
-        ${familyRows.length ? `<h3 class="diag-h3" style="margin-top:22px;">Tus temas de gramática</h3><ul class="diag-units">${familyRows.map(diagUnitRowHtml).join('')}</ul>` : ''}
-        <p class="diag-muted diag-foot">Solo mostramos temas con al menos ${DIAG.MIN_UNIT} ejercicios respondidos, para no sacar conclusiones con muy pocos datos.</p>
-      </div>
-
-      ${diagWeeklyHtml(week)}`;
+          <ul class="diag-units">${top.map(diagUnitRowHtml).join('')}</ul>
+          ${rest.length ? diagMoreHtml(`Ver todos los temas (${familyRows.length})`, `<ul class="diag-units">${rest.map(diagUnitRowHtml).join('')}</ul>`) : ''}
+          <p class="diag-muted diag-foot">Solo mostramos temas con al menos ${DIAG.MIN_UNIT} ejercicios respondidos, para no sacar conclusiones con muy pocos datos.</p>
+        </div>` : '';
+    }
+    if(els.topicsHead) els.topicsHead.hidden = !familyRows.length;
     // Un solo botón de Leo AI para todo el progreso (antes había uno solo
     // para el punto débil): una llamada explica fortaleza, punto débil,
     // mejoras, errores repetidos y siguiente objetivo.
@@ -5275,29 +5361,26 @@ function renderDiagnosisSection(container){
   diagRenderWithStats(paint);
 }
 
+// Compacto: ejercicios y % de aciertos de 7 días ya están en las tarjetas
+// de arriba (van en una sola línea); "Errores" y "A reforzar" repiten el
+// diagnóstico, así que quedan plegados en "Ver detalles".
 function diagWeeklyHtml(week){
-  const acc = week.accuracy !== null ? week.accuracy + '%' : '—';
-  const accDelta = week.accDelta !== null && week.accDelta !== 0
-    ? ` <span class="diag-arrow ${week.accDelta > 0 ? 'up' : 'down'}">${week.accDelta > 0 ? '+' : ''}${week.accDelta}</span>` : '';
-  const rows = [];
-  if(week.improved.length) rows.push(`<li><b>Mejoraste en:</b> ${week.improved.join(', ')}</li>`);
+  // La variación de aciertos vs. la semana pasada ya está en la tarjeta de arriba.
+  const main = [], extra = [];
+  main.push(`<li><b>Practicaste:</b> ${week.days} ${week.days === 1 ? 'día' : 'días'} · ${week.exercises} ejercicios${week.accuracy !== null ? ` · ${week.accuracy}% de aciertos` : ''}</li>`);
+  if(week.improved.length) main.push(`<li><b>Mejoraste en:</b> ${week.improved.join(', ')}</li>`);
+  main.push(`<li><b>Siguiente objetivo:</b> ${week.goal}</li>`);
   if(week.recovered || week.mastered){
     const parts = [];
     if(week.recovered) parts.push(`${week.recovered} ${week.recovered === 1 ? 'recuperado' : 'recuperados'}`);
     if(week.mastered) parts.push(`${week.mastered} ${week.mastered === 1 ? 'dominado' : 'dominados'}`);
-    rows.push(`<li><b>Errores:</b> ${parts.join(' y ')}</li>`);
+    extra.push(`<li><b>Errores:</b> ${parts.join(' y ')}</li>`);
   }
-  if(week.focus) rows.push(`<li><b>A reforzar:</b> ${week.focus}</li>`);
-  rows.push(`<li><b>Siguiente objetivo:</b> ${week.goal}</li>`);
+  if(week.focus) extra.push(`<li><b>A reforzar:</b> ${week.focus}</li>`);
   return `
     <div class="diag-card diag-week">
-      <h3 class="diag-h3">Tu resumen de la semana</h3>
-      <div class="diag-week-stats">
-        <div><span class="diag-week-num">${week.exercises}</span><span class="diag-muted">ejercicios</span></div>
-        <div><span class="diag-week-num">${acc}${accDelta}</span><span class="diag-muted">de aciertos</span></div>
-        <div><span class="diag-week-num">${week.days}</span><span class="diag-muted">${week.days === 1 ? 'día practicado' : 'días practicados'}</span></div>
-      </div>
-      <ul class="diag-week-list">${rows.join('')}</ul>
+      <ul class="diag-week-list">${main.join('')}</ul>
+      ${extra.length ? diagMoreHtml('Ver detalles', `<ul class="diag-week-list">${extra.join('')}</ul>`) : ''}
     </div>`;
 }
 
@@ -5831,25 +5914,10 @@ function renderProgressStatCards(container, stats, streak, level){
   }
 }
 
-/* Habilidades reales que se muestran en "Tu avance por habilidad".
+/* Habilidades reales que se muestran en "Tus habilidades" (progreso.html).
    "Mixto" no se incluye aquí a propósito: es una mezcla de las otras
    5, no una habilidad aparte (ver nota en renderProgressPage/DEVLOG). */
 const PROGRESS_SKILLS_DISPLAY = ['gramatica','vocabulario','listening','writing','speaking'];
-
-function renderSkillsPanel(container, p){
-  if(!container) return;
-  container.innerHTML = PROGRESS_SKILLS_DISPLAY.map(skill=>{
-    const pct = computeSkillCoverage(p, skill);
-    const color = SKILL_COLORS[skill];
-    return `
-      <a href="${SKILL_PAGE[skill]}" class="skill-row-link">
-        <span class="skill-row-label">${SKILL_LABELS[skill]}</span>
-        <span class="skill-row-track"><span class="skill-row-fill" style="width:${pct}%;background:${color};"></span></span>
-        <span class="skill-row-pct">${pct}%</span>
-        <span class="skill-row-practice">Practicar →</span>
-      </a>`;
-  }).join('');
-}
 
 /* Consejo específico según los datos reales del usuario (no una frase
    motivacional obvia tipo "practica todos los días"). Cada rama usa
@@ -5926,17 +5994,15 @@ function renderProgressPage(root){
     });
     recommendation = { skill: lowest.sk, reason: 'Sigue teniendo margen para practicar más.' };
   }
-  let recoTitle = SKILL_LABELS[recommendation.skill];
-  let recoHref = SKILL_PAGE[recommendation.skill];
-  let recoReason = recommendation.reason;
-  let recoCta = 'Practicar';
-  try{
-    const diagForReco = computeDiagnosis(p);
-    if(diagForReco.ready && diagForReco.today){
-      const a = diagForReco.today; // la misma recomendación principal del panel
-      recoTitle = a.title; recoHref = todayStartHref(a); recoReason = a.reason; recoCta = 'Empezar lo que me toca hoy';
-    }
-  }catch(e){}
+  // Si el diagnóstico todavía no está listo, "Hoy te conviene" muestra
+  // esta recomendación (la que antes iba en "Continúa aprendiendo").
+  // Con diagnóstico listo, renderDiagnosisSection usa diag.actions.
+  const fallbackToday = {
+    title: SKILL_LABELS[recommendation.skill],
+    reason: recommendation.reason,
+    href: SKILL_PAGE[recommendation.skill],
+    cta: 'Practicar'
+  };
 
   root.innerHTML = `
     <div class="section-head">
@@ -5946,47 +6012,55 @@ function renderProgressPage(root){
 
     <div class="stat-cards" id="progressStatCards"></div>
 
-    <div class="section-head" style="margin-top:44px;" id="diagnostico">
+    <div id="progressToday" class="progress-today"></div>
+
+    <div class="section-head progress-sec-head" id="diagnostico">
       <h2 style="font-size:1.5rem;">Tu diagnóstico</h2>
       <p>Calculado con tus respuestas reales. Se actualiza cada vez que practicas.</p>
     </div>
     <div id="diagnosisSection"></div>
 
-    <div class="section-head" style="margin-top:44px;">
-      <h2 style="font-size:1.5rem;">Tu avance por habilidad</h2>
-      <p>Mira qué tanto has practicado en cada área.</p>
+    <div class="section-head progress-sec-head">
+      <h2 style="font-size:1.5rem;">Tus habilidades</h2>
+      <p>La barra muestra cuánto has practicado; la etiqueta, cómo vas en aciertos.</p>
     </div>
     <div class="skills-panel" id="skillsPanel"></div>
 
-    <div class="section-head" style="margin-top:44px;">
+    <div class="section-head progress-sec-head" id="progressTopicsHead" hidden>
+      <h2 style="font-size:1.5rem;">Temas a reforzar</h2>
+      <p>Primero los que más te conviene repasar.</p>
+    </div>
+    <div id="progressTopics"></div>
+
+    <div class="section-head progress-sec-head">
+      <h2 style="font-size:1.5rem;">Tu resumen de la semana</h2>
+    </div>
+    <div id="progressWeekReport"></div>
+
+    <div class="section-head progress-sec-head">
       <h2 style="font-size:1.5rem;">Tu actividad</h2>
     </div>
     <div class="bottom-grid" id="progressBottomGrid">
       <div class="activity-card" id="progressRecent"></div>
       <div class="weekly-chart-card" id="progressWeekly"></div>
       <div class="tip-card" id="progressTip"></div>
-    </div>
-
-    <div class="section-head" style="margin-top:44px;">
-      <h2 style="font-size:1.5rem;">Continúa aprendiendo</h2>
-    </div>
-    <div class="continue-card">
-      <div>
-        <div class="continue-eyebrow">Recomendado para ti</div>
-        <div class="continue-title">${recoTitle}</div>
-        <div class="continue-sub">${recoReason}</div>
-      </div>
-      <a href="${recoHref}" class="btn btn-primary">${recoCta} →</a>
     </div>`;
 
   renderProgressStatCards(document.getElementById('progressStatCards'), stats, streak, level);
-  renderDiagnosisSection(document.getElementById('diagnosisSection'));
+  renderDiagnosisSection({
+    diag: document.getElementById('diagnosisSection'),
+    today: document.getElementById('progressToday'),
+    skills: document.getElementById('skillsPanel'),
+    topics: document.getElementById('progressTopics'),
+    topicsHead: document.getElementById('progressTopicsHead'),
+    week: document.getElementById('progressWeekReport'),
+    fallbackToday, p
+  });
   if(location.hash === '#diagnostico' && !root._diagScrolled){
     root._diagScrolled = true;
     const target = document.getElementById('diagnostico');
     if(target) setTimeout(()=> target.scrollIntoView({ block:'start' }), 50);
   }
-  renderSkillsPanel(document.getElementById('skillsPanel'), p);
   renderRecentActivityV2(document.getElementById('progressRecent'));
   renderWeeklyChart(document.getElementById('progressWeekly'));
   renderProgressTipCard(document.getElementById('progressTip'), p, streak);

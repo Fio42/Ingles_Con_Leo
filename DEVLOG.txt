@@ -1216,3 +1216,11 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - IMPORTANTE: la Edge Function leo-ai debe redesplegarse con el modo "insight" antes (o junto con) el push; si no, esos 3 botones responden "no disponible" (los botones por ejercicio siguen igual).
 - Pruebas: tools/tests/personalization.test.js (19), leo-ai-server.test.js (+3 insight). Navegador: 320/375/1280 px sin desborde, sesion real de Gramatica con clics, Plan con foco y empezar directo, IA apagada, Cloudflare falla, limite diario, doble toque, cache, consola limpia.
 - app.js?v=20261001e, style.css?v=20261001d en todas las paginas.
+
+2026-10-01 — progreso.html: limpieza de jerarquía (sin cambiar cálculos)
+- Nuevo orden: Resumen (4 tarjetas) → Hoy te conviene → Tu diagnóstico → Tus habilidades → Temas a reforzar → Tu resumen de la semana → Tu actividad.
+- "Continúa aprendiendo" eliminado: repetía diag.today. Ahora "Hoy te conviene" es la acción principal (empieza directo con todayStartHref) y las otras 2 acciones van como secundarias. Sin diagnóstico listo, muestra la recomendación por cobertura que antes iba en "Continúa aprendiendo".
+- "Tus habilidades" (diagnóstico) + "Tu avance por habilidad" unidos en una sola lista: barra = computeSkillCoverage (% practicado), chip = estado del diagnóstico. Lectura aparece solo si ya tiene estado. renderSkillsPanel eliminado.
+- Diagnóstico: 2 insights visibles, el resto en "Ver diagnóstico completo" (<details>). Temas: 3 primeros (ya ordenados por refuerzo), resto en "Ver todos los temas". Semana: una línea con días/ejercicios/aciertos; "Errores" y "A reforzar" (repetidos del diagnóstico) en "Ver detalles".
+- Texto de aciertos: si los aciertos recientes (u.current, con los que se decide el chip) difieren del total, se muestran ambos. Solo texto.
+- renderDiagnosisSection ahora recibe un objeto con varios contenedores. Archivos: app.js, style.css, ?v= de app.js y style.css en todos los HTML.
