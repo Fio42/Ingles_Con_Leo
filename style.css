@@ -2103,3 +2103,46 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-ai-example{background:var(--paper-dim);border-radius:var(--radius-sm);padding:8px 12px;margin:6px 0;}
 .leo-ai-note{margin:8px 0 0;font-size:0.76rem;color:var(--ink-faint);}
 .diag-hl [data-leo-ai-weak] .leo-ai{margin-top:10px;}
+
+/* ---------- Leo AI como beneficio premium de la membresía ----------
+   .ai-pitch: tarjeta oscura reutilizable (home, miembros, práctica gratis).
+   .is-ai: variante destacada para un beneficio de IA dentro de las listas
+   y tarjetas que ya existían (pricing, home, bienvenida, candados). */
+.ai-pitch{position:relative;overflow:hidden;background:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%);color:#fff;border-radius:var(--radius-lg);padding:22px 20px;box-shadow:0 10px 30px rgba(37,62,204,0.28);text-align:left;}
+.ai-pitch::after{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.18),rgba(255,255,255,0) 70%);pointer-events:none;}
+.ai-pitch-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:0.76rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;border-radius:999px;padding:4px 10px;}
+.ai-pitch-badge svg{width:14px;height:14px;}
+.ai-pitch h3{font-family:'Baloo 2';font-size:1.3rem;line-height:1.2;margin:10px 0 6px;color:#fff;}
+.ai-pitch p{margin:0 0 12px;color:rgba(255,255,255,0.86);font-size:0.95rem;line-height:1.5;}
+.ai-pitch-points{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px;}
+.ai-pitch-points li{position:relative;padding-left:24px;font-size:0.92rem;color:#fff;line-height:1.4;}
+.ai-pitch-points li::before{content:"✦";position:absolute;left:2px;top:0;color:#9fb1ff;font-size:0.85rem;}
+.ai-pitch .btn{background:#fff;color:var(--blue-deep);border-color:#fff;}
+.ai-pitch .btn:hover{background:var(--blue-tint);}
+.ai-pitch-note{margin:10px 0 0 !important;font-size:0.8rem !important;color:rgba(255,255,255,0.7) !important;}
+@media(min-width:760px){.ai-pitch{padding:28px 30px;}.ai-pitch h3{font-size:1.5rem;}.ai-pitch-points{grid-template-columns:repeat(2,1fr);gap:8px 22px;}}
+.ai-pitch.is-compact{padding:18px 18px;}
+.ai-pitch.is-compact h3{font-size:1.15rem;}
+@media(min-width:760px){.ai-pitch.is-compact .ai-pitch-points{grid-template-columns:1fr;}}
+
+.pricing-features li.is-ai,.home-plan-list li.is-ai{font-weight:700;color:var(--ink);}
+.pricing-features li.is-ai::before{content:"✦";color:var(--blue);}
+.home-plan-list li.is-ai::before{content:"✦";color:var(--blue);}
+.ai-chip{display:inline-block;margin-left:6px;vertical-align:1px;font-size:0.66rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#253ECC,#3554F0);border-radius:999px;padding:2px 7px;}
+.welcome-benefit.is-ai{background:linear-gradient(135deg,#1d2f7a,#3554F0);}
+.welcome-benefit.is-ai .welcome-benefit-text{color:#fff;}
+.welcome-benefit.is-ai .welcome-benefit-icon{color:var(--blue-deep);}
+.locked-card.is-ai{grid-column:1 / -1;background:linear-gradient(135deg,#0b1736 0%,#1d2f7a 60%,#3554F0 100%);border-color:transparent;opacity:1;color:#fff;}
+.locked-card.is-ai h3{color:#fff;font-size:1.15rem;}
+.locked-card.is-ai p{color:rgba(255,255,255,0.86);font-size:0.92rem;}
+.locked-card.is-ai .stat-card-icon{background:rgba(255,255,255,0.16) !important;color:#fff !important;}
+.locked-card.is-ai .locked-badge{background:rgba(255,255,255,0.16);color:#fff;}
+.home-ai-pitch{margin:0 auto 26px;max-width:880px;}
+.hero-v2-benefit-ai{text-decoration:none;color:var(--blue-deep);font-weight:700;}
+.hero-v2-benefit-ai .hero-v2-benefit-icon{background:linear-gradient(135deg,#253ECC,#3554F0);color:#fff;}
+.hero-v2-benefit-ai:hover span:last-child{text-decoration:underline;}
+.hero-v2-benefit-ai{background:var(--blue-tint);border-radius:999px;padding:6px 16px 6px 6px;width:fit-content;max-width:100%;}
+@media(min-width:900px){
+  .hero-v2-benefit-ai{grid-column:1 / -1;}
+  .hero-v2-benefit.hero-v2-benefit-ai > span:last-child{max-width:none;}
+}

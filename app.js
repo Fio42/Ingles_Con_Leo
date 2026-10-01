@@ -2815,6 +2815,7 @@ function renderFreeDailyLimitReachedBlock(){
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
         <p class="summary-score">Vas muy bien. Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
         <ul class="upgrade-benefits">
+          <li><strong>Leo AI</strong>: explicaciones personalizadas de tus errores y análisis de tu progreso</li>
           <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
           <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
           <li>Clases interactivas y repaso automático de tus errores</li>
@@ -2887,7 +2888,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     const correct = graded.filter(r=>r.isCorrect).length;
     const score = graded.length ? `${correct} / ${graded.length} correctas · ${total} ejercicios en total` : `${total} ejercicios completados`;
     if(isFree){
-      container.innerHTML = renderFreeSessionSummary({
+      container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
         title:'¡Listo!', score, topics: ['Mezcla de habilidades']
       });
       wireFreeSummaryButtons(container, {
@@ -5438,8 +5439,50 @@ function renderProgressPage(root){
    runWritingSession) sin cambios.
    ============================================================ */
 
+/* ---------- Leo AI como gancho de la membresía (solo práctica gratis) ----------
+   Para no cansar: el bloque grande de Leo AI NO sale en cada resumen.
+   Sale (a) si la sesión tuvo 3 o más errores, o (b) una vez cada 5
+   sesiones gratis terminadas; y nunca en dos resúmenes seguidos. En
+   Writing gratis sale una sola vez por sesión, en la primera frase
+   revisada. Nunca a miembros (window.__leoMemberVerified). El conteo
+   vive en localStorage de este navegador (no se manda a ningún lado). */
+const LEO_AI_PITCH_KEY = 'leo_ai_pitch_state';
+function nextLeoAiPitchVariant(wrong){
+  if(window.__leoMemberVerified === true) return null;
+  let st = { sessions:0, lastShownAt:-99 };
+  try{ st = Object.assign(st, JSON.parse(localStorage.getItem(LEO_AI_PITCH_KEY)) || {}); }catch(e){}
+  st.sessions++;
+  const sinceLast = st.sessions - st.lastShownAt;
+  let variant = null;
+  if(sinceLast >= 2 && wrong >= 3) variant = 'errors';
+  else if(sinceLast >= 2 && st.sessions % 5 === 0) variant = 'progress';
+  if(variant) st.lastShownAt = st.sessions;
+  try{ localStorage.setItem(LEO_AI_PITCH_KEY, JSON.stringify(st)); }catch(e){}
+  return variant;
+}
+const LEO_AI_PITCH_COPY = {
+  errors: { h:'¿No sabes por qué sigues fallando esto?', p:'Con Leo AI, cada error viene con una explicación personalizada al instante. Convierte tus errores en progreso.', cta:'Conocer Leo AI' },
+  progress: { h:'Tus resultados pueden decirte mucho más.', p:'Con la membresía, Leo AI analiza tu progreso, encuentra tus puntos débiles y te ayuda a decidir qué estudiar después.', cta:'Probar la membresía' },
+  writing: { h:'¿Quieres que la IA revise tu respuesta?', p:'Los miembros le piden a Leo AI que revise su frase: te dice qué corregir y por qué, en español sencillo.', cta:'Conocer Leo AI' }
+};
+function leoAiPitchHtml(variant){
+  const c = LEO_AI_PITCH_COPY[variant];
+  if(!c || window.__leoMemberVerified === true) return '';
+  if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_pitch_shown', { variant });
+  return `
+    <div class="ai-pitch is-compact" style="margin-top:22px;">
+      <span class="ai-pitch-badge">${LEO_AI_ICON}Leo AI · Miembros</span>
+      <h3>${c.h}</h3>
+      <p>${c.p}</p>
+      <a href="miembros.html#leo-ai" class="btn btn-primary" onclick="if(typeof trackLeoEvent==='function')trackLeoEvent('leo_ai_pitch_clicked',{variant:'${variant}'})">${c.cta} →</a>
+      <p class="ai-pitch-note">Membresía de $2 USD al mes. Cancela cuando quieras.</p>
+    </div>`;
+}
+
 /* ---------- Resumen de sesión gratis (independiente del de Miembros) ---------- */
-function renderFreeSessionSummary({ title, score, topics }){
+function renderFreeSessionSummary({ title, score, topics, results }){
+  const wrong = Array.isArray(results) ? results.filter(r => r && r.isCorrect === false).length : 0;
+  const aiVariant = nextLeoAiPitchVariant(wrong);
   return `
     <div class="session-summary">
       <h2>${title}</h2>
@@ -5453,11 +5496,12 @@ function renderFreeSessionSummary({ title, score, topics }){
         <button class="btn btn-primary" id="freeAgainBtn">Hacer otra sesión</button>
         <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
       </div>
+      ${aiVariant ? leoAiPitchHtml(aiVariant) : `
       <div class="summary-unlock">
         <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
-        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
+        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores con Leo AI, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
         <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
-      </div>
+      </div>`}
     </div>`;
 }
 function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
@@ -5505,7 +5549,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
-    container.innerHTML = renderFreeSessionSummary({
+    container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
       topics: topics.map(t=>t.topic)
     });
@@ -5576,7 +5620,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
-    container.innerHTML = renderFreeSessionSummary({
+    container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`Repasaste ${total} palabras · ${correct}/${total} en el mini quiz`,
       topics: ['Vocabulario en contexto']
     });
@@ -5659,7 +5703,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
-    container.innerHTML = renderFreeSessionSummary({
+    container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
       topics: ['Comprensión auditiva']
     });
@@ -5677,6 +5721,7 @@ function checkWritingAnswer(text, item){
   return evaluateWritingAnswer(text, item).isOk;
 }
 function runFreeWritingSession({ container, level, onOtherSkill }){
+  let aiPitchShown = false; // Leo AI se ofrece una vez por sesión de Writing gratis
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.writing[level]);
   const pool = WRITING_BANK[level][variantIdx];
@@ -5738,6 +5783,8 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       }
       results.push({ itemId:item.id, isCorrect:isOk });
+      // Leo AI (solo miembros): se ofrece una sola vez por sesión, en la primera frase revisada.
+      if(!aiPitchShown){ aiPitchShown = true; fb.insertAdjacentHTML('beforeend', leoAiPitchHtml('writing')); }
       nextRow.innerHTML = '';
       if(!isOk){
         const retryBtn = document.createElement('button');
@@ -5766,7 +5813,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const okCount = results.filter(r=>r.isCorrect).length;
-    container.innerHTML = renderFreeSessionSummary({
+    container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${okCount} / ${total} frases bien encaminadas`,
       topics: ['Escritura guiada']
     });
@@ -5896,7 +5943,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
     }
   }
   function finish(){
-    container.innerHTML = renderFreeSessionSummary({
+    container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`Practicaste ${total} frases en voz alta`,
       topics: ['Pronunciación guiada']
     });

@@ -1196,3 +1196,11 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Abierto a todos los miembros: leo_ai_config public=true (100/1.500/8.000) y app.js LEO_AI_PUBLIC=true. La practica gratis no lo muestra (sin miembro verificado) y el servidor rechaza a no miembros.
 - Pendiente: Leo borra a mano la funcion temporal leo-ai-bench en Supabase (ya apagada).
 - Fix (mismo dia): en el sitio en vivo Leo AI respondia 'no disponible' porque leo-ai usaba auth.getUser(), que exige que la sesion siga viva en Supabase Auth ('Session not found' si el miembro inicio sesion en otro lado). Ahora lee el usuario del token ya verificado por verify_jwt (igual que el resto del sitio) y revisa vencimiento y rol. Probado: token falsificado -> 401 'Invalid JWT' en la puerta de Supabase. leo-ai version 2.
+
+2026-10-01 - Leo AI como argumento de venta de la membresia (sin rediseno, sin popups)
+- Componente nuevo reutilizable .ai-pitch (tarjeta oscura premium) y variante .is-ai para destacar beneficios de IA en listas/tarjetas existentes (style.css).
+- index.html: chip 'Leo AI te explica tus errores' en el hero (enlaza a #planes); bloque 'Practica. Descubre tus errores. Mejora con IA.' en Gratis o miembro; 2 beneficios de IA primero en la tarjeta Miembro.
+- miembros.html: bloque 'Aprende con Leo AI' (#leo-ai) antes del precio; pricing con 4 beneficios de IA primero y kicker 'Con Leo AI incluido'; bienvenida tras crear cuenta con 2 beneficios de IA; area de cuentas sin membresia con Leo AI como tarjeta principal.
+- Practica gratis (app.js): el resumen muestra el bloque de Leo AI solo con 3+ errores o cada 5 sesiones, nunca dos veces seguidas (localStorage leo_ai_pitch_state); Writing gratis lo ofrece una vez por sesion; limite diario gratis con Leo AI primero. Nunca a miembros. Eventos GA: leo_ai_pitch_shown / leo_ai_pitch_clicked.
+- CTAs de 4 articulos (in-on-at, presente perfecto, do vs does, presente simple) mencionan Leo AI.
+- app.js?v=20261001d, style.css?v=20261001c.
