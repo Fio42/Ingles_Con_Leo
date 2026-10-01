@@ -1605,6 +1605,9 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .plan-feature-hero .plan-feature-desc{grid-column:2;grid-row:3;margin:0;}
   .plan-feature-hero .btn{grid-column:3;grid-row:1 / span 2;align-self:center;justify-self:start;width:auto;min-width:190px;padding:13px 26px;}
   .plan-feature-hero .plan-feature-meta{grid-column:3;grid-row:3;margin-top:0;justify-self:start;}
+  .today-hero .today-hero-eyebrow{grid-column:2;grid-row:1;margin:0;}
+  .today-hero h2{grid-row:2;}
+  .today-hero .today-hero-links{grid-column:3;grid-row:3;}
 }
 #memberContent .daily-card{padding:14px 18px;gap:6px;}
 #memberContent .daily-card-top{gap:8px;}
@@ -2146,3 +2149,29 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   .hero-v2-benefit-ai{grid-column:1 / -1;}
   .hero-v2-benefit.hero-v2-benefit-ai > span:last-child{max-width:none;}
 }
+
+/* ---------- Personalización: análisis de sesión, patrones de error, "Hoy te conviene" ---------- */
+.sess-insight{text-align:left;background:var(--paper-dim);border-radius:var(--radius-md);padding:16px 16px 14px;margin:0 0 22px;min-width:0;}
+.sess-insight-label{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
+.sess-insight-next{margin-top:16px;}
+.sess-next{display:flex;flex-direction:column;gap:8px;}
+.sess-next-link{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-sm);padding:11px 14px;font-weight:700;font-size:0.92rem;color:var(--ink);text-decoration:none;min-width:0;transition:border-color .15s ease;}
+.sess-next-link span:first-child{min-width:0;overflow-wrap:anywhere;}
+.sess-next-link:hover{border-color:var(--blue);color:var(--blue-deep);}
+.sess-next-link.is-main{background:var(--blue);border-color:var(--blue);color:#fff;}
+.sess-next-link.is-main:hover{background:var(--blue-deep);color:#fff;}
+.sess-insight .leo-ai{margin-top:14px;}
+.mistake-patterns{margin-bottom:18px;}
+.mistake-patterns .diag-muted{margin:0 0 6px;}
+.mistake-pattern-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:4px;}
+.mistake-pattern-links a{font-size:0.86rem;font-weight:600;color:var(--blue);text-decoration:none;}
+.mistake-pattern-links a:hover{text-decoration:underline;}
+.mistake-patterns .leo-ai{margin-top:12px;}
+#mistakePatterns[hidden]{display:none;}
+.today-hero h2{overflow-wrap:anywhere;}
+.today-hero-eyebrow{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);margin-top:2px;}
+.today-hero-links{display:flex;flex-wrap:wrap;gap:6px 18px;}
+.today-hero-links:empty{display:none;}
+.today-hero-links a{font-size:0.86rem;font-weight:600;color:var(--blue-deep);text-decoration:none;}
+.today-hero-links a:hover{text-decoration:underline;}
+.diag-card .leo-ai{margin-top:14px;}

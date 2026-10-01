@@ -26,7 +26,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261001c">
+<link rel="stylesheet" href="style.css?v=20261001d">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -456,7 +456,7 @@
           <p>Tu plan personalizado y tus accesos rápidos.</p>
         </div>
 
-        <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero">
+        <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero" id="todayHero">
           <span class="plan-feature-badge">Recomendado</span>
           <div class="plan-feature-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
@@ -669,7 +669,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260930m400"></script>
-<script src="app.js?v=20261001d"></script>
+<script src="app.js?v=20261001e"></script>
 <script src="backend.js?v=20261001b"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -904,6 +904,7 @@
     renderStatCards(document.getElementById('statCards'));
     renderContinueCard(document.getElementById('continueCard'));
     renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
+    renderTodayHero(document.getElementById('todayHero'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
     // Igual que progreso.html: si llegan sesiones de otro dispositivo,
     // se redibujan los números y "Tu diagnóstico" con los datos completos.
@@ -912,6 +913,7 @@
       window.addEventListener('leo-progress-synced', function(){
         renderStatCards(document.getElementById('statCards'));
         renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
+        renderTodayHero(document.getElementById('todayHero'));
         renderRecentActivityV2(document.getElementById('recentActivity'));
       });
     }

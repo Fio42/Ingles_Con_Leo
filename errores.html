@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261001c">
+<link rel="stylesheet" href="style.css?v=20261001d">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -104,6 +104,7 @@
   <section style="padding-top:8px;">
     <div class="wrap">
       <div style="margin-top:8px;">
+        <div id="mistakePatterns" hidden></div>
         <div class="session-shell" id="sessionArea"></div>
       </div>
     </div>
@@ -161,7 +162,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260930m400"></script>
-<script src="app.js?v=20261001d"></script>
+<script src="app.js?v=20261001e"></script>
 <script src="backend.js?v=20261001b"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -196,6 +197,8 @@
     const skillParam = params.get('skill');
     const validSkills = ['grammar','vocab','listening','writing'];
     const skillFilter = validSkills.includes(skillParam) ? skillParam : undefined;
+    // Patrones solo en la vista general (no al entrar directo a un repaso).
+    if(!modo && !skillFilter) renderMistakePatterns(document.getElementById('mistakePatterns'));
     runMistakesSession({ container: document.getElementById('sessionArea'), mode: modo, skillFilter: skillFilter });
   });
 </script>

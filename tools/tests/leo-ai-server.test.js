@@ -143,6 +143,33 @@ async function test(name, fn){
     const r = await call({ env:Object.assign({}, CF_OK, { GROQ_API_KEY:'q' }), provider: cfReply(undefined, undefined, 429) });
     assert(r.calls.every(c => !c.url.includes('groq')));
   });
+  const INSIGHT = { mode:'insight', scope:'session', level:'facil',
+    facts:['Ejercicios: 12, correctos: 8 (67%)', 'Sigues fallando con Preposiciones: 3 errores hoy.', 'Corregiste 2 ejercicios que antes habías fallado.'],
+    examples:['In / On / At: I was born ___ 1990. → in'], next:'Practicar Preposiciones' };
+  await test('insight (sesión/errores/progreso): un solo pedido compacto, sin thinking y con formato fijo', async()=>{
+    const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Hoy acertaste 8 de 12.', tip:'Practica preposiciones hoy.' })) });
+    assert.strictEqual(r.out.ok, true); assert.strictEqual(r.out.answer.tip, 'Practica preposiciones hoy.');
+    assert.strictEqual(r.calls.length, 1);
+    const b = r.calls[0].body;
+    assert.deepStrictEqual(b.chat_template_kwargs, { enable_thinking:false });
+    assert.strictEqual(b.max_completion_tokens, 300);
+    assert.strictEqual(b.response_format.json_schema.name, 'leo_ai_insight');
+    const user = b.messages.map(m => m.content).join('\n');
+    assert(/Análisis de la sesión/.test(user) && /- Sigues fallando con Preposiciones/.test(user) && /Siguiente paso: Practicar Preposiciones/.test(user));
+    assert(user.length < 2200, 'prompt compacto (' + user.length + ' caracteres)');
+  });
+  await test('insight: recorta a 10 datos y 4 ejemplos; scope desconocido o menos de 2 datos -> bad_input sin llamar', async()=>{
+    const many = Object.assign({}, INSIGHT, { scope:'mistakes', facts: Array.from({ length:20 }, (_, i)=> 'dato ' + i), examples: Array.from({ length:9 }, (_, i)=> 'ej ' + i) });
+    let r = await call({ body:many, provider: cfReply(JSON.stringify({ explanation:'x', tip:'y' })) });
+    const user = r.calls[0].body.messages.map(m => m.content).join('\n');
+    assert(/dato 9/.test(user) && !/dato 10/.test(user)); assert(/ej 3/.test(user) && !/ej 4/.test(user));
+    r = await call({ body:Object.assign({}, INSIGHT, { scope:'otra' }) }); assert.strictEqual(r.out.reason, 'bad_input'); assert.strictEqual(r.calls.length, 0);
+    r = await call({ body:Object.assign({}, INSIGHT, { facts:['solo uno'] }) }); assert.strictEqual(r.out.reason, 'bad_input'); assert.strictEqual(r.calls.length, 0);
+  });
+  await test('insight: respuesta sin consejo se descarta (bad_output)', async()=>{
+    const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Hola', tip:'' })) });
+    assert.strictEqual(r.out.reason, 'bad_output');
+  });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);
 })();

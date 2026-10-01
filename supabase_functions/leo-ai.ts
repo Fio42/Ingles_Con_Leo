@@ -8,7 +8,14 @@
 //              estudio, Mixto, Mis errores y Reto diario).
 //   writing    revisar una frase libre de Writing.
 //   diagnosis  explicar con palabras el punto débil que YA calculó
-//              nuestro motor (computeDiagnosis en app.js).
+//              nuestro motor (computeDiagnosis en app.js). Se mantiene
+//              por compatibilidad; la página ahora usa "insight".
+//   insight    explicar un análisis YA calculado por app.js: una sesión
+//              recién terminada (scope "session"), los errores
+//              pendientes agrupados (scope "mistakes") o el progreso
+//              completo (scope "progress"). Llegan solo frases cortas con
+//              números (máx. 10) y hasta 4 ejercicios de ejemplo
+//              ("pregunta -> respuesta correcta"). Una llamada por análisis.
 //
 // La IA NUNCA califica: la nota la pone siempre el sitio. Leo AI solo
 // se llama cuando el alumno toca el botón, y es un extra: si falla, el
@@ -29,7 +36,7 @@
 //               como respaldo automático (el plan gratis de Gemini no
 //               sirve para menores de 18 ni para usuarios de Europa).
 //
-// ESTADO (2026-10-01): DESPLEGADA, ENCENDIDA SOLO PARA PROBADORES.
+// ESTADO (2026-10-01): DESPLEGADA Y ABIERTA A TODOS LOS MIEMBROS (public=true).
 //   Todo se maneja desde la base (tabla leo_ai_config, ver leo-ai.sql):
 //     enabled  interruptor general (false = nadie usa Leo AI).
 //     public   false = solo las cuentas de leo_ai_testers; true = todos
@@ -80,6 +87,9 @@ const PROVIDER_TIMEOUT_MS = 10000
 // 220 deja margen y corta rápido si el modelo se traba (le pasó una vez
 // con 350: se quedó rellenando espacios y gastó el doble).
 const MAX_OUTPUT_TOKENS = 220
+// "insight" explica varias cosas a la vez (3-4 frases + consejo): un poco
+// más de margen para que no se corte, sigue siendo una sola llamada.
+const maxOutputFor = (mode: string) => mode === 'insight' ? 300 : MAX_OUTPUT_TOKENS
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
@@ -89,7 +99,12 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-const MODES = ['explain', 'writing', 'diagnosis']
+const MODES = ['explain', 'writing', 'diagnosis', 'insight']
+const INSIGHT_SCOPES: Record<string, string> = {
+  session: 'Análisis de la sesión de práctica que el alumno acaba de terminar',
+  mistakes: 'Resumen de los errores pendientes del alumno, agrupados por tema',
+  progress: 'Resumen del progreso del alumno',
+}
 const SKILLS: Record<string, string> = { grammar: 'Gramática', vocab: 'Vocabulario', listening: 'Listening', reading: 'Lectura', writing: 'Writing' }
 const LEVELS: Record<string, string> = { principiante: 'principiante (A0-A1)', facil: 'fácil (A1-A2)', medio: 'intermedio (B1-B2)', avanzado: 'avanzado (C1)' }
 const VERDICTS = ['correct', 'minor', 'incorrect']
@@ -117,6 +132,12 @@ const WRITING_RULES = `${BASE_RULES}
 const DIAGNOSIS_RULES = `${BASE_RULES}
 - Te damos el análisis que ya hizo la plataforma: explica con esos números por qué es su punto a reforzar, sin agregar datos.
 - "tip": un consejo práctico para esta semana (1 frase).`
+
+const INSIGHT_RULES = `${BASE_RULES}
+- Te damos un análisis que YA hizo la plataforma. Explica en 3 o 4 frases qué pasó y qué significa para el alumno.
+- Si los ejemplos muestran un patrón (por ejemplo, falla cuando hay que usar pasado, o la -s con he/she/it), nómbralo con palabras simples. Si no hay un patrón claro, no lo inventes.
+- No agregues números, temas ni ejercicios que no estén en los datos.
+- "tip": una frase con lo que conviene hacer ahora, de acuerdo con el "Siguiente paso".`
 
 // Formato de respuesta (JSON Schema estándar).
 // Siempre se manda (sin él, Gemma inventa los nombres de los campos).
@@ -150,6 +171,7 @@ export const SCHEMAS: Record<string, any> = {
     additionalProperties: false,
   },
 }
+SCHEMAS.insight = SCHEMAS.diagnosis
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
@@ -170,6 +192,21 @@ function cleanInt(v: unknown, min: number, max: number): number | null {
 // Devuelve null si faltan datos mínimos (no se llama al proveedor).
 export function buildPrompt(mode: string, b: any): { rules: string; text: string } | null {
   const level = LEVELS[cleanText(b.level, 20)] || 'no indicado'
+  if (mode === 'insight') {
+    const scope = INSIGHT_SCOPES[cleanText(b.scope, 20)]
+    const facts = Array.isArray(b.facts) ? b.facts.map((f: unknown) => cleanText(f, 180)).filter(Boolean).slice(0, 10) : []
+    if (!scope || facts.length < 2) return null
+    const lines = [scope + '.', `Nivel del alumno: ${level}`, 'Datos:']
+    facts.forEach((f: string) => lines.push('- ' + f))
+    const examples = Array.isArray(b.examples) ? b.examples.map((e: unknown) => cleanText(e, 260)).filter(Boolean).slice(0, 4) : []
+    if (examples.length) {
+      lines.push('Ejercicios que falló (pregunta -> respuesta correcta):')
+      examples.forEach((e: string) => lines.push('- ' + e))
+    }
+    const next = cleanText(b.next, 120)
+    if (next) lines.push(`Siguiente paso: ${next}`)
+    return { rules: INSIGHT_RULES, text: lines.join('\n') }
+  }
   if (mode === 'diagnosis') {
     const u = b.unit || {}
     const label = cleanText(u.label, 80)
@@ -247,8 +284,8 @@ export function validateOutput(mode: string, parsed: any) {
     const tips = rawTips.map((t: unknown) => cleanText(t, 160)).filter(Boolean).slice(0, 2)
     return verdict && corrected && explanation ? { verdict, corrected, explanation, tips } : null
   }
-  if (mode === 'diagnosis') {
-    const explanation = cleanText(parsed.explanation, 600)
+  if (mode === 'diagnosis' || mode === 'insight') {
+    const explanation = cleanText(parsed.explanation, mode === 'insight' ? 800 : 600)
     const tip = cleanText(parsed.tip, 240)
     return explanation && tip ? { explanation, tip } : null
   }
@@ -304,7 +341,7 @@ export async function callCloudflare(mode: string, rules: string, text: string):
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({
       messages: [{ role: 'system', content: rules }, { role: 'user', content: text }],
-      max_completion_tokens: MAX_OUTPUT_TOKENS,
+      max_completion_tokens: maxOutputFor(mode),
       temperature: 0.2,
       chat_template_kwargs: { enable_thinking: false }, // SIEMPRE: sin razonamiento extra
       response_format: { type: 'json_schema', json_schema: { name: 'leo_ai_' + mode, schema: SCHEMAS[mode] } },
@@ -334,7 +371,7 @@ export async function callGroq(mode: string, rules: string, text: string): Promi
     body: JSON.stringify({
       model: env('GROQ_MODEL') || 'openai/gpt-oss-20b',
       messages: [{ role: 'system', content: rules }, { role: 'user', content: text }],
-      max_completion_tokens: MAX_OUTPUT_TOKENS,
+      max_completion_tokens: maxOutputFor(mode),
       temperature: 0.2,
       response_format: { type: 'json_object' },
     }),

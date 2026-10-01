@@ -1477,6 +1477,7 @@ function runGrammarSession({ container, level, onExit }){
       topics, currentHref:'gramatica.html'
     });
     wireSummaryButtons(container, ()=>runGrammarSession({ container, level, onExit }));
+    appendSessionInsight(container, results, startedAt, 'gramatica');
   }
 
   renderItem();
@@ -1703,6 +1704,7 @@ function runVocabSession({ container, level, onExit }){
       topics: ['Vocabulario general'], currentHref:'vocabulario.html'
     });
     wireSummaryButtons(container, ()=>runVocabSession({ container, level, onExit }));
+    appendSessionInsight(container, results, startedAt, 'vocabulario');
   }
   renderItem();
 }
@@ -1794,6 +1796,7 @@ function runListeningSession({ container, level, onExit }){
       topics: ['Comprensión auditiva'], currentHref:'listening.html'
     });
     wireSummaryButtons(container, ()=>runListeningSession({ container, level, onExit }));
+    appendSessionInsight(container, results, startedAt, 'listening');
   }
   renderItem();
 }
@@ -1883,6 +1886,7 @@ function runReadingSession({ container, level, onExit }){
       topics: ['Comprensión de lectura'], currentHref:'lectura.html'
     });
     wireSummaryButtons(container, ()=>runReadingSession({ container, level, onExit }));
+    appendSessionInsight(container, results, startedAt, 'lectura');
   }
   renderItem();
 }
@@ -2012,6 +2016,17 @@ function buildLeoAiPayload(ctx){
       trend: u.trend || 'none', pendingMistakes: u.activeMistakes || 0, repeatedMistakes: u.repeatedMistakes || 0
     } };
   }
+  if(ctx.kind === 'insight'){
+    // Resumen YA calculado por nuestro motor (sesión, errores o progreso):
+    // frases cortas con números y, como mucho, 4 ejercicios de ejemplo.
+    // Nunca el historial ni las respuestas una por una.
+    const scopes = ['session','mistakes','progress'];
+    const facts = (Array.isArray(ctx.facts) ? ctx.facts : []).map(f => leoAiText(f, 180)).filter(Boolean).slice(0, 10);
+    if(scopes.indexOf(ctx.scope) === -1 || facts.length < 2) return null;
+    return { mode:'insight', scope: ctx.scope, level, facts,
+      examples: (Array.isArray(ctx.examples) ? ctx.examples : []).map(e => leoAiText(e, 260)).filter(Boolean).slice(0, 4),
+      next: leoAiText(ctx.next, 120) };
+  }
   if(ctx.kind === 'writing'){
     const answer = leoAiText(ctx.userAnswer, 400);
     if(answer.split(' ').filter(Boolean).length < 2) return null;
@@ -2051,6 +2066,7 @@ function buildLeoAiPayload(ctx){
 function leoAiDefaultLabel(ctx){
   if(ctx.kind === 'writing') return 'Revisar mi frase con Leo AI';
   if(ctx.kind === 'diagnosis') return '¿Por qué es mi punto débil?';
+  if(ctx.kind === 'insight') return 'Analizar con Leo AI';
   if(ctx.isCorrect === true) return '¿Por qué es correcta?';
   return ctx.reviewMode ? 'Explícame este error' : 'Explícame por qué';
 }
@@ -2062,6 +2078,34 @@ const LEO_AI_FAIL_TEXT = {
   default: 'Leo AI no está disponible en este momento. La explicación de arriba sigue siendo válida.'
 };
 const _leoAiCache = new Map();
+// Los análisis (modo "insight") se guardan también en el navegador: si el
+// alumno vuelve a abrir su progreso o sus errores y los datos no
+// cambiaron, se muestra la respuesta guardada sin gastar otra llamada.
+// La clave es el resumen exacto que se mandaría: si cambia un número,
+// es otra clave. Máximo 12 respuestas, 7 días.
+const LEO_AI_INSIGHT_CACHE_KEY = 'leo_ai_insight_cache_v1';
+const LEO_AI_INSIGHT_TTL = 7*86400000;
+function leoAiHash(str){
+  let h = 5381;
+  for(let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36) + '_' + str.length;
+}
+function leoAiInsightCacheGet(key){
+  try{
+    const all = JSON.parse(localStorage.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
+    const hit = all[leoAiHash(key)];
+    return hit && Date.now() - hit.t < LEO_AI_INSIGHT_TTL ? hit.res : null;
+  }catch(e){ return null; }
+}
+function leoAiInsightCacheSet(key, res){
+  try{
+    const all = JSON.parse(localStorage.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
+    all[leoAiHash(key)] = { t: Date.now(), res };
+    const keys = Object.keys(all).sort((a,b)=> all[b].t - all[a].t);
+    keys.slice(12).forEach(k => delete all[k]);
+    localStorage.setItem(LEO_AI_INSIGHT_CACHE_KEY, JSON.stringify(all));
+  }catch(e){}
+}
 
 /* Pone el botón de Leo AI dentro de "host" (normalmente el #fb de la
    corrección). No hace nada si Leo AI está apagado o si no hay datos
@@ -2080,6 +2124,21 @@ function leoAiAttach(host, ctx){
     btn.querySelector('span').textContent = ctx.label || leoAiDefaultLabel(ctx);
     box.appendChild(btn);
     host.appendChild(box);
+    const key = JSON.stringify(payload);
+    const isInsight = payload.mode === 'insight';
+    if(isInsight){
+      box.classList.add('is-insight');
+      // Ya lo había pedido con estos mismos datos: se muestra sin llamar.
+      const saved = leoAiInsightCacheGet(key);
+      if(saved){
+        btn.remove();
+        const out = document.createElement('div');
+        out.className = 'leo-ai-answer';
+        box.appendChild(out);
+        renderLeoAiAnswer(out, payload, saved);
+        return box;
+      }
+    }
     let busy = false;
     btn.addEventListener('click', ()=>{
       if(busy) return;            // doble toque: se ignora
@@ -2090,13 +2149,12 @@ function leoAiAttach(host, ctx){
       out.setAttribute('aria-live', 'polite');
       out.innerHTML = '<p class="leo-ai-loading">Leo AI está pensando…</p>';
       box.appendChild(out);
-      const key = JSON.stringify(payload);
       const request = _leoAiCache.has(key)
         ? Promise.resolve(_leoAiCache.get(key))
         : Promise.resolve().then(()=> LeoBackend.askLeoAI(payload)).catch(()=> ({ ok:false, reason:'network' }));
       request.then(res=>{
         if(!box.isConnected) return; // el alumno ya pasó a otro ejercicio
-        if(res && res.ok) _leoAiCache.set(key, res);
+        if(res && res.ok){ _leoAiCache.set(key, res); if(isInsight) leoAiInsightCacheSet(key, res); }
         btn.remove();
         renderLeoAiAnswer(out, payload, res);
       });
@@ -2125,7 +2183,7 @@ function renderLeoAiAnswer(out, payload, res){
     }
     add('p', 'leo-ai-text', a.explanation);
     (Array.isArray(a.tips) ? a.tips : []).slice(0, 2).forEach(t => add('p', 'leo-ai-tip', t));
-  } else if(payload.mode === 'diagnosis'){
+  } else if(payload.mode === 'diagnosis' || payload.mode === 'insight'){
     add('p', 'leo-ai-text', a.explanation);
     if(a.tip) add('p', 'leo-ai-tip', a.tip);
   } else {
@@ -2138,7 +2196,9 @@ function renderLeoAiAnswer(out, payload, res){
       out.appendChild(ex);
     }
   }
-  add('p', 'leo-ai-note', payload.mode === 'diagnosis'
+  add('p', 'leo-ai-note', payload.mode === 'insight'
+    ? 'Análisis automático de tus resultados. No cambia tu progreso.'
+    : payload.mode === 'diagnosis'
     ? 'Explicación automática de los números de tu diagnóstico.'
     : 'Explicación automática. La calificación del ejercicio no cambia.');
 }
@@ -2256,6 +2316,7 @@ function runWritingSession({ container, level, onExit }){
       topics: ['Escritura guiada'], currentHref:'writing.html'
     });
     wireSummaryButtons(container, ()=>runWritingSession({ container, level, onExit }));
+    appendSessionInsight(container, results, startedAt, 'writing');
   }
   renderItem();
 }
@@ -2901,6 +2962,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
         title:'¡Listo!', score, topics: ['Mezcla de habilidades']
       });
       wireSummaryButtons(container, ()=>runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }));
+      appendSessionInsight(container, results, startedAt, 'mixto');
     }
   }
 
@@ -3013,8 +3075,12 @@ function daysSinceDateStr(dateStr){
    vez que el usuario solo esta mirando/cambiando la duracion: esta
    funcion no guarda nada en localStorage, se puede llamar las veces
    que haga falta. */
-function computePlanSelection(level, targetCount){
+function computePlanSelection(level, targetCount, opts){
   const p = loadProgress();
+  // Foco elegido desde un enlace ("Practicar Preposiciones", "Reforzar en
+  // mi Plan"): usa el mismo refuerzo de abajo con otra familia y más cupos.
+  const forcedFamily = (opts && opts.focusFamily && DIAG_FAMILY_BY_ID[opts.focusFamily] && familyHasItemsAt(opts.focusFamily, level))
+    ? DIAG_FAMILY_BY_ID[opts.focusFamily] : null;
 
   // Prioridad 1: errores recientes. Hasta ~30% de la sesion (dejando
   // siempre al menos 2 lugares para el resto), reutilizando tal cual
@@ -3068,15 +3134,20 @@ function computePlanSelection(level, targetCount){
   // la sesión no cambia. Si no hay diagnóstico todavía, todo sigue igual.
   let focus = null;
   try{
-    if(diag && diag.ready && diag.weak && diag.weak.type === 'family' && remaining >= 4){
-      const want = Math.min(3, Math.max(2, Math.round(remaining * 0.25)));
+    const target = forcedFamily
+      ? { id: forcedFamily.id, label: forcedFamily.label }
+      : (diag && diag.ready && diag.weak && diag.weak.type === 'family' ? { id: diag.weak.id, label: diag.weak.label } : null);
+    if(target && remaining >= 4){
+      const want = forcedFamily
+        ? Math.min(6, Math.max(3, Math.round(remaining * 0.5)))
+        : Math.min(3, Math.max(2, Math.round(remaining * 0.25)));
       while((bySkill.gramatica || 0) < want){
         const donor = skills.filter(sk => sk !== 'gramatica').sort((a,b)=> (bySkill[b]||0) - (bySkill[a]||0))[0];
         if(!donor || !bySkill[donor]) break;
         bySkill[donor]--; bySkill.gramatica = (bySkill.gramatica || 0) + 1;
       }
       const count = Math.min(want, bySkill.gramatica || 0);
-      if(count > 0) focus = { familyId: diag.weak.id, label: diag.weak.label, count };
+      if(count > 0) focus = { familyId: target.id, label: target.label, count, chosen: !!forcedFamily };
     }
   }catch(e){ focus = null; }
 
@@ -3233,12 +3304,17 @@ function renderPlanDifficultySelector(container, selected, onChange){
    seleccion (cuantos de cada cosa) se calcula una vez por duracion
    elegida y se reutiliza tal cual al presionar "Empezar mi sesion",
    para que la sesion real sea identica a lo que se previsualizo. */
-function renderPlanIntro(container){
+// opts (opcional, viene de la URL de plan-estudio.html):
+//   focusFamily  familia de gramática a reforzar (?foco=preposiciones)
+//   autoStart    empezar sin pasar por la vista previa (?empezar=1)
+function renderPlanIntro(container, opts){
   if(!container) return;
+  opts = opts || {};
   const level = getUserLevel();
   let currentLen = getPlanLength();
   let currentDiff = getPlanDifficulty();
-  let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items);
+  const selOpts = { focusFamily: opts.focusFamily };
+  let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items, selOpts);
   let diffPanelOpen = false;
 
   function paint(){
@@ -3258,7 +3334,9 @@ function renderPlanIntro(container){
         </div>
         <div class="lengths" id="planDifficultySelector" style="margin:${diffPanelOpen ? '12px 0 24px' : '0'};${diffPanelOpen ? '' : 'display:none;'}"></div>
         <div class="examples-label">Tu sesión de hoy</div>
-        ${currentSelection.focus ? `<p class="plan-focus-note">Incluye refuerzo de <b>${currentSelection.focus.label}</b>, tu punto a reforzar según <a href="progreso.html#diagnostico">tu diagnóstico</a>.</p>` : ''}
+        ${currentSelection.focus ? (currentSelection.focus.chosen
+          ? `<p class="plan-focus-note">Hoy tu sesión se enfoca en <b>${currentSelection.focus.label}</b>, junto con tus errores pendientes.</p>`
+          : `<p class="plan-focus-note">Incluye refuerzo de <b>${currentSelection.focus.label}</b>, tu punto a reforzar según <a href="progreso.html#diagnostico">tu diagnóstico</a>.</p>`) : ''}
         <ul class="plan-preview-list">
           ${groups.length ? groups.map(g=>`<li><span>${g.label}</span><b>${g.count} ${g.count===1?'ejercicio':'ejercicios'}</b></li>`).join('') : '<li><span>Sesión equilibrada para tu nivel</span></li>'}
         </ul>
@@ -3267,7 +3345,7 @@ function renderPlanIntro(container){
     renderPlanLengthSelector(document.getElementById('planLengthSelector'), currentLen, (newLen)=>{
       currentLen = newLen;
       setPlanLength(newLen);
-      currentSelection = computePlanSelection(level, PLAN_LENGTHS[newLen].items);
+      currentSelection = computePlanSelection(level, PLAN_LENGTHS[newLen].items, selOpts);
       paint();
     });
     renderPlanDifficultySelector(document.getElementById('planDifficultySelector'), currentDiff, (newDiff)=>{
@@ -3279,13 +3357,16 @@ function renderPlanIntro(container){
       diffPanelOpen = !diffPanelOpen;
       paint();
     });
-    container.querySelector('#planStartBtn').addEventListener('click', ()=>{
-      const contentLevel = resolvePlanContentLevel(level, currentDiff);
-      const pool = buildPlanPool(contentLevel, currentSelection);
-      runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
-    });
+    container.querySelector('#planStartBtn').addEventListener('click', start);
   }
-  paint();
+  function start(){
+    const contentLevel = resolvePlanContentLevel(level, currentDiff);
+    const pool = buildPlanPool(contentLevel, currentSelection);
+    runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
+  }
+  // Con ?empezar=1 se arranca directo (o se retoma la sesión a medias,
+  // como siempre hace runPlanSessionCore).
+  if(opts.autoStart) start(); else paint();
 }
 
 /* Pantalla final de Plan de estudio: mismas clases visuales que
@@ -3363,6 +3444,7 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     if(focusEntry) topics.unshift(focusEntry.focusLabel);
     recordSession({ skill:'plan', level, topics, results, startedAt });
     container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
+    appendSessionInsight(container, results, startedAt, 'plan');
     const anotherBtn = container.querySelector('#planAnotherBtn');
     if(anotherBtn){
       anotherBtn.addEventListener('click', ()=>{
@@ -3517,8 +3599,55 @@ const ARTICLE_TITLE_BY_HREF = {
   'articulo-presente-perfecto.html': 'Presente perfecto',
   'articulo-phrasal-verbs.html': 'Phrasal verbs',
   'articulo-numeros-en-ingles.html': 'Números en inglés',
-  'articulo-in-on-at.html': 'In, on, at'
+  'articulo-in-on-at.html': 'In, on, at',
+  'articulo-vocabulario-basico.html': 'Vocabulario básico'
 };
+
+/* ---------- Mapa de contenido: debilidad -> contenido real ----------
+   Un solo lugar para saber a dónde llevar al alumno según lo que le
+   cuesta. Solo usa contenido que existe hoy: los artículos de cada
+   familia (DIAG_GRAMMAR_FAMILIES[].article), las páginas de cada
+   habilidad (SKILL_PAGE) y el Plan de estudio con foco en una familia
+   (?foco=, ver renderPlanIntro). Si algo no tiene artículo, no se
+   sugiere ninguno. */
+const SKILL_ARTICLE = { vocabulario:'articulo-vocabulario-basico.html' };
+function planFocusHref(familyId, start){
+  return 'plan-estudio.html?foco=' + encodeURIComponent(familyId) + (start ? '&empezar=1' : '');
+}
+// ¿Hay ejercicios de esa familia en ese nivel? (para no mandar a un
+// "refuerzo" vacío).
+function familyHasItemsAt(familyId, level){
+  if(typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return false;
+  return GRAMMAR_BANK[level].some(variant => variant.some(group=>{
+    const fam = diagFamilyForTopic(group.topic);
+    return fam && fam.id === familyId && group.items.length > 0;
+  }));
+}
+// { label, practiceHref, practiceLabel, article, articleTitle } o null.
+// type: 'family' (familia de gramática) | 'skill' (gramatica, listening...).
+function contentForUnit(type, id){
+  if(type === 'family'){
+    const fam = DIAG_FAMILY_BY_ID[id];
+    if(!fam) return null;
+    const hasPractice = familyHasItemsAt(id, getUserLevel());
+    return {
+      label: fam.label,
+      practiceHref: hasPractice ? planFocusHref(id, true) : 'gramatica.html',
+      practiceLabel: `Practicar ${fam.label}`,
+      article: fam.article || null,
+      articleTitle: fam.article ? (ARTICLE_TITLE_BY_HREF[fam.article] || fam.label) : null
+    };
+  }
+  if(!SKILL_PAGE[id]) return null;
+  const article = SKILL_ARTICLE[id] || null;
+  return {
+    label: SKILL_LABELS[id],
+    practiceHref: SKILL_PAGE[id],
+    practiceLabel: `Practicar ${SKILL_LABELS[id]}`,
+    article,
+    articleTitle: article ? ARTICLE_TITLE_BY_HREF[article] : null
+  };
+}
 
 // _mistakeStatsCache: undefined = todavía no se intentó cargar,
 // null = se intentó y falló (usar respaldo viejo), Map = cargado bien.
@@ -3790,6 +3919,7 @@ async function runMistakesSessionCore({ container, mode, skillFilter }){
       }
     }
     wireSummaryButtons(container, ()=> runMistakesSessionCore({ container, mode, skillFilter }));
+    appendSessionInsight(container, results, startedAt, 'errores');
   }
 
   renderItem();
@@ -4746,7 +4876,9 @@ function computeDiagnosis(p, statsMap){
     u.key = key; u.type = type; u.id = id;
     u.label = type === 'skill' ? SKILL_LABELS[id] : DIAG_FAMILY_BY_ID[id].label;
     u.article = type === 'family' ? (DIAG_FAMILY_BY_ID[id].article || null) : null;
-    u.href = type === 'skill' ? SKILL_PAGE[id] : 'plan-estudio.html';
+    // Familia: el Plan con foco en ella si hay ejercicios en su nivel; si
+    // no, el Plan de siempre (nunca un "refuerzo" vacío).
+    u.href = type === 'skill' ? SKILL_PAGE[id] : (familyHasItemsAt(id, getUserLevel()) ? planFocusHref(id) : 'plan-estudio.html');
     const own = mistakes.active.filter(m => type === 'skill' ? m.skill === id : m.family === id);
     u.activeMistakes = own.length;
     u.repeatedMistakes = own.filter(m => m.failCount >= 2).length;
@@ -4823,36 +4955,80 @@ function computeDiagnosis(p, statsMap){
     const names = diag.mastered.slice(0, 3).map(u=>u.label);
     diag.insights.push({ tone:'good', text:`Ya dominas: ${names.join(', ')}.` });
   }
+  // Cerca de dominar: va bien (o mejorando) con muestra suficiente, pero
+  // todavía no cumple "Dominado". Es lo que más rinde consolidar.
+  diag.nearMastery = families
+    .filter(u => (u.state === 'bien' || u.state === 'mejorando') && u.acc >= 75 && u.n >= DIAG.MIN_UNIT && (!diag.weak || u.key !== diag.weak.key))
+    .sort((a,b)=> b.acc - a.acc);
+  if(diag.nearMastery.length){
+    const u = diag.nearMastery[0];
+    diag.insights.push({ tone:'good', text:`Estás cerca de dominar ${u.label}: vas en ${u.acc}%.` });
+  }
 
-  // Qué practicar hoy (máximo 3 acciones, sin repetir destino).
+  // Qué practicar hoy (máximo 3 acciones, sin repetir destino). El orden
+  // ES la prioridad de "Hoy te conviene" (diag.today = la primera):
+  //   1. errores frecuentes, si están dispersos o acumulados (si se
+  //      concentran en el punto débil, el refuerzo de abajo ya los cubre:
+  //      el Plan con foco pone primero los ejercicios fallados);
+  //   2. punto débil actual; 3. retroceso reciente; 4. consolidar lo que
+  //   está cerca de dominar; 5. material olvidado; 6. el Plan de siempre.
+  const seen = new Set();
+  function push(a, key){
+    if(diag.actions.length >= 3 || seen.has(key) || seen.has(a.href)) return;
+    seen.add(key); seen.add(a.href);
+    diag.actions.push(a);
+  }
+  const repeatedTotal = diag.repeated.reduce((n, r)=> n + r.count, 0);
+  const mistakesAction = {
+    title:'Repasar tus errores',
+    reason: diag.activeMistakes > MISTAKE_PRIORITY.QUICK_REVIEW_SIZE
+      ? `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir. El repaso rápido toma los ${MISTAKE_PRIORITY.QUICK_REVIEW_SIZE} más importantes.`
+      : `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir.`,
+    href:'errores.html?modo=rapido', cta:'Repaso rápido'
+  };
+  if(diag.activeMistakes >= 10 || (repeatedTotal >= 3 && (!diag.weak || diag.repeated[0].key !== diag.weak.key))){
+    push(mistakesAction, 'mistakes');
+  }
   if(diag.weak){
-    diag.actions.push({
+    push({
       title: diag.weak.type === 'family' ? `Reforzar ${diag.weak.label}` : `Practicar ${diag.weak.label}`,
       reason: diag.weak.activeMistakes
         ? `Vas en ${diag.weak.current}% y tienes ${diag.weak.activeMistakes} ${diag.weak.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'} aquí.`
         : `Es donde más fallas ahora: ${diag.weak.current}% de aciertos.`,
       href: diag.weak.href,
-      cta: diag.weak.type === 'family' ? 'Hacer mi plan de hoy' : 'Practicar',
+      cta: diag.weak.type === 'family' ? 'Reforzar ahora' : 'Practicar',
       article: diag.weak.article
-    });
+    }, diag.weak.key);
   }
-  if(diag.activeMistakes >= 5){
-    diag.actions.push({
-      title:'Repasar tus errores',
-      reason: diag.activeMistakes > MISTAKE_PRIORITY.QUICK_REVIEW_SIZE
-        ? `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir. El repaso rápido toma los ${MISTAKE_PRIORITY.QUICK_REVIEW_SIZE} más importantes.`
-        : `Tienes ${diag.activeMistakes} ejercicios pendientes de corregir.`,
-      href:'errores.html?modo=rapido', cta:'Repaso rápido'
-    });
+  if(diag.activeMistakes >= 5) push(mistakesAction, 'mistakes');
+  const drop = diag.declining.find(u => !diag.weak || u.key !== diag.weak.key);
+  if(drop){
+    push({
+      title:`Recuperar ${drop.label}`,
+      reason:`Bajó de ${drop.prevAcc}% a ${drop.recentAcc}% en los últimos días.`,
+      href: drop.href, cta:'Practicar', article: drop.article
+    }, drop.key);
+  }
+  if(diag.nearMastery.length){
+    const u = diag.nearMastery[0];
+    push({
+      title:`Consolidar ${u.label}`,
+      reason:`Vas en ${u.acc}%: un poco más de práctica y lo dominas.`,
+      href: u.href, cta:'Practicar', article: u.article
+    }, u.key);
   }
   if(diag.forgotten.length){
     const f = diag.forgotten[0];
-    diag.actions.push({
+    push({
       title:`Volver a ${f.label}`,
       reason:`Hace ${f.daysIdle} días que no lo practicas y vas en ${f.acc}%.`,
-      href: f.href, cta: f.type === 'family' ? 'Hacer mi plan de hoy' : 'Practicar'
-    });
+      href: f.href, cta:'Practicar'
+    }, f.key);
   }
+  if(!diag.actions.length){
+    push({ title:'Hacer tu plan de hoy', reason:'Vas bien en todo: tu plan mezcla tus habilidades según tu nivel.', href:'plan-estudio.html', cta:'Empezar' }, 'plan');
+  }
+  diag.today = diag.actions[0];
   return diag;
 }
 
@@ -4978,7 +5154,6 @@ function renderProgressSummaryCard(container){
     } else {
       body = `<p class="progress-summary-insight">${pickMiniProgressInsight(p, weekly, streak)}</p>`;
     }
-    const today = diag.ready && diag.actions.length ? diag.actions[0] : null;
     container.innerHTML = `
       <div class="progress-summary-head">
         <div class="progress-summary-icon">${ICON}</div>
@@ -5002,7 +5177,6 @@ function renderProgressSummaryCard(container){
         </div>
       </div>
       ${body}
-      ${today ? `<a href="${today.href}" class="diag-today"><span class="diag-today-label">Hoy te conviene</span><span class="diag-today-title">${today.title} →</span></a>` : ''}
       <a href="progreso.html#diagnostico" class="progress-summary-cta">${diag.ready ? 'Ver tu diagnóstico completo →' : 'Ver progreso completo →'}</a>`;
   }
   diagRenderWithStats(paint);
@@ -5056,7 +5230,7 @@ function renderDiagnosisSection(container){
         </div>
         <div class="diag-card diag-hl diag-hl-weak">
           <div class="diag-hl-label">Punto a reforzar</div>
-          ${w ? `<div class="diag-hl-value">${w.label}</div><div class="diag-muted">${w.current}% de aciertos ahora${w.activeMistakes ? ` · ${w.activeMistakes} ${w.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'}` : ''}</div><div data-leo-ai-weak></div>`
+          ${w ? `<div class="diag-hl-value">${w.label}</div><div class="diag-muted">${w.current}% de aciertos ahora${w.activeMistakes ? ` · ${w.activeMistakes} ${w.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'}` : ''}</div>`
               : `<div class="diag-hl-value diag-hl-empty">Nada urgente</div><div class="diag-muted">Todo lo que practicas va por encima de ${DIAG.WEAK_BELOW}%.</div>`}
         </div>
         <div class="diag-card diag-hl">
@@ -5066,7 +5240,7 @@ function renderDiagnosisSection(container){
         </div>
       </div>
 
-      ${diag.insights.length ? `<div class="diag-card"><h3 class="diag-h3">Lo que vemos en tus respuestas</h3>${diagInsightsHtml(diag.insights, 6)}</div>` : ''}
+      ${diag.insights.length ? `<div class="diag-card"><h3 class="diag-h3">Lo que vemos en tus respuestas</h3>${diagInsightsHtml(diag.insights, 6)}<div data-leo-ai-progress></div></div>` : '<div data-leo-ai-progress></div>'}
 
       ${diag.actions.length ? `
         <div class="diag-card">
@@ -5092,7 +5266,11 @@ function renderDiagnosisSection(container){
       </div>
 
       ${diagWeeklyHtml(week)}`;
-    if(w) leoAiAttach(container.querySelector('[data-leo-ai-weak]'), { kind:'diagnosis', unit:w });
+    // Un solo botón de Leo AI para todo el progreso (antes había uno solo
+    // para el punto débil): una llamada explica fortaleza, punto débil,
+    // mejoras, errores repetidos y siguiente objetivo.
+    const aiCtx = progressAiCtx(diag, week);
+    if(aiCtx) leoAiAttach(container.querySelector('[data-leo-ai-progress]'), aiCtx);
   }
   diagRenderWithStats(paint);
 }
@@ -5121,6 +5299,393 @@ function diagWeeklyHtml(week){
       </div>
       <ul class="diag-week-list">${rows.join('')}</ul>
     </div>`;
+}
+
+/* ============================================================
+   PERSONALIZACIÓN: "Qué pasó → Qué significa → Qué hacer ahora"
+   ------------------------------------------------------------
+   Todo se calcula aquí, con el mismo motor del diagnóstico
+   (collectDiagAttempts, familias, mistake_stats) y SIN IA:
+     - computeSessionInsight: análisis de la sesión que acaba de
+       terminar (comparada con el historial anterior a esa sesión).
+     - computeMistakePatterns: errores pendientes agrupados por
+       familia/habilidad (para "Mis errores").
+     - getTodayPick: la única recomendación principal del día
+       (= diag.today, la primera acción del diagnóstico).
+   Leo AI solo recibe un resumen corto de estos números (modo
+   "insight") cuando el alumno toca el botón, y nunca decide qué
+   contenido recomendar: los enlaces los pone siempre este código
+   (contentForUnit), así nunca se recomienda algo que no existe.
+   ============================================================ */
+const SESSION_INSIGHT = {
+  MIN_GRADED: 3,      // respuestas calificadas mínimas para opinar de una sesión
+  UNIT_MIN_NOW: 3,    // respuestas de un tema HOY para compararlo
+  UNIT_MIN_PREV: 6,   // respuestas de ese tema ANTES para compararlo
+  DELTA: 15,          // puntos de % para decir "mejoraste"/"te costó más"
+  PREV_DAYS: 35,      // "antes" = intentos de los últimos 35 días
+  AI_MIN_GRADED: 5    // sesiones más cortas no ofrecen análisis con Leo AI
+};
+
+function unitLabelFromKey(key){
+  const [type, id] = key.split(':');
+  return type === 'family' ? DIAG_FAMILY_BY_ID[id].label : SKILL_LABELS[id];
+}
+
+// Enlace que empieza directo: el Plan con ?empezar=1; lo demás ya empieza solo.
+function todayStartHref(action){
+  if(!action || !action.href) return 'plan-estudio.html?empezar=1';
+  if(/^plan-estudio\.html/.test(action.href) && action.href.indexOf('empezar=1') === -1){
+    return action.href + (action.href.indexOf('?') === -1 ? '?' : '&') + 'empezar=1';
+  }
+  return action.href;
+}
+
+// La única recomendación principal ("Hoy te conviene"). Sin diagnóstico
+// todavía, el Plan de estudio (que ya mezcla errores y nivel).
+function getTodayPick(diag){
+  if(diag && diag.ready && diag.today) return diag.today;
+  return { title:'Tu plan de hoy', reason:'Una sesión armada según tu nivel y tus errores.', href:'plan-estudio.html', cta:'Empezar' };
+}
+
+/* Análisis de UNA sesión recién terminada. Se llama después de
+   recordSession (el historial ya la incluye; se separa por startedAt).
+   Devuelve null si no hay suficientes respuestas calificadas de los
+   bancos de data.js (Speaking, exámenes, sesiones de 1-2 ejercicios). */
+function computeSessionInsight(results, startedAt, sessionSkill){
+  const index = getDiagItemIndex();
+  if(!index || !Array.isArray(results)) return null;
+  const now = [];
+  results.forEach(r=>{
+    if(r.isCorrect !== true && r.isCorrect !== false) return;
+    const found = index.get(r.itemId);
+    if(!found) return;
+    const skill = r.skill || DIAG_KIND_TO_SKILL[found.kind];
+    if(DIAG_SKILLS.indexOf(skill) === -1) return;
+    const fam = skill === 'gramatica' ? diagFamilyForTopic(found.topic) : null;
+    now.push({ itemId:r.itemId, ok:r.isCorrect, skill, family: fam ? fam.id : null });
+  });
+  if(now.length < SESSION_INSIGHT.MIN_GRADED) return null;
+
+  const t0 = startedAt || Date.now();
+  const prior = collectDiagAttempts(loadProgress()).filter(a => a.when < t0);
+  const lastPrior = new Map(), everFailed = new Set();
+  prior.forEach(a=>{ lastPrior.set(a.itemId, a.ok); if(!a.ok) everFailed.add(a.itemId); });
+
+  const correct = now.filter(a=>a.ok).length;
+  const ins = {
+    n: now.length, correct, acc: diagPct(correct, now.length),
+    recovered: now.filter(a => a.ok && lastPrior.get(a.itemId) === false).length,
+    repeated: now.filter(a => !a.ok && everFailed.has(a.itemId)).length,
+    lines: [], actions: [], struggle: null, improved: null, wrongIds: now.filter(a=>!a.ok).map(a=>a.itemId)
+  };
+
+  // Por tema (familia) y por habilidad: hoy vs. antes.
+  const prevCut = t0 - SESSION_INSIGHT.PREV_DAYS*86400000;
+  const units = new Map();
+  function unit(key){
+    if(!units.has(key)) units.set(key, { key, n:0, c:0, wrong:0, repeatedWrong:0, prevN:0, prevC:0 });
+    return units.get(key);
+  }
+  now.forEach(a=>{
+    ['skill:' + a.skill].concat(a.family ? ['family:' + a.family] : []).forEach(k=>{
+      const u = unit(k); u.n++;
+      if(a.ok) u.c++; else { u.wrong++; if(everFailed.has(a.itemId)) u.repeatedWrong++; }
+    });
+  });
+  prior.forEach(a=>{
+    if(a.when < prevCut) return;
+    ['skill:' + a.skill].concat(a.family ? ['family:' + a.family] : []).forEach(k=>{
+      if(!units.has(k)) return;
+      const u = units.get(k); u.prevN++; if(a.ok) u.prevC++;
+    });
+  });
+  const list = Array.from(units.values()).map(u => Object.assign(u, {
+    acc: diagPct(u.c, u.n), prevAcc: diagPct(u.prevC, u.prevN), label: unitLabelFromKey(u.key)
+  }));
+  const comparable = list.filter(u => u.n >= SESSION_INSIGHT.UNIT_MIN_NOW && u.prevN >= SESSION_INSIGHT.UNIT_MIN_PREV);
+  // Un tema concreto es más útil que "Gramática" en general.
+  const famFirst = (a, b)=> (a.key.indexOf('family:') === 0 ? 0 : 1) - (b.key.indexOf('family:') === 0 ? 0 : 1);
+
+  ins.improved = comparable.filter(u => u.acc - u.prevAcc >= SESSION_INSIGHT.DELTA)
+    .sort((a,b)=> famFirst(a,b) || ((b.acc - b.prevAcc) - (a.acc - a.prevAcc)))[0] || null;
+  const struggles = list.filter(u => u.wrong >= 2 || (u.wrong >= 1 && u.repeatedWrong >= 1));
+  const hasFamilyStruggle = struggles.some(u => u.key.indexOf('family:') === 0);
+  ins.struggle = struggles
+    .filter(u => !(hasFamilyStruggle && u.key === 'skill:gramatica'))
+    .sort((a,b)=> (b.wrong - a.wrong) || (b.repeatedWrong - a.repeatedWrong) || famFirst(a,b))[0] || null;
+  if(ins.struggle && ins.improved && ins.struggle.key === ins.improved.key) ins.improved = null;
+  const dropped = ins.struggle && ins.struggle.prevN >= SESSION_INSIGHT.UNIT_MIN_PREV && ins.struggle.n >= SESSION_INSIGHT.UNIT_MIN_NOW
+    && ins.struggle.prevAcc - ins.struggle.acc >= SESSION_INSIGHT.DELTA;
+
+  let diag = null;
+  try{ diag = computeDiagnosis(); }catch(e){ diag = null; }
+  const weakKey = diag && diag.ready && diag.weak ? diag.weak.key : null;
+
+  // Qué pasó (máximo 3 frases, cada una sale de un número real).
+  if(correct === now.length){
+    ins.lines.push({ tone:'good', text:`Sesión perfecta: ${correct} de ${now.length} correctas.` });
+  }
+  if(ins.improved){
+    const u = ins.improved;
+    ins.lines.push({ tone:'up', text: u.key.indexOf('skill:') === 0
+      ? `Tu ${u.label} mejoró respecto a tus sesiones anteriores: ${u.acc}% hoy, ${u.prevAcc}% antes.`
+      : `Hoy mejoraste en ${u.label}: ${u.acc}% de aciertos, antes ibas en ${u.prevAcc}%.` });
+  }
+  if(ins.struggle){
+    const u = ins.struggle;
+    let text;
+    if(dropped) text = `Hoy te costó más ${u.label} que de costumbre: ${u.acc}% hoy, ${u.prevAcc}% antes.`;
+    else if(u.repeatedWrong || u.key === weakKey) text = `Sigues fallando con ${u.label}: ${u.wrong} ${u.wrong === 1 ? 'error' : 'errores'} hoy.`;
+    else text = `Hoy te costó ${u.label}: fallaste ${u.wrong} de ${u.n}.`;
+    ins.lines.push({ tone: dropped ? 'down' : 'warn', text });
+  }
+  if(ins.recovered){
+    ins.lines.push({ tone:'up', text: ins.recovered === 1
+      ? 'Corregiste 1 ejercicio que antes habías fallado.'
+      : `Corregiste ${ins.recovered} ejercicios que antes habías fallado.` });
+  }
+  if(ins.repeated >= 2 && !(ins.struggle && ins.struggle.repeatedWrong >= ins.repeated)){
+    ins.lines.push({ tone:'warn', text:`Volviste a fallar ${ins.repeated} ejercicios que ya habías fallado antes.` });
+  }
+  if(!ins.struggle && ins.acc < 50 && now.length >= 6){
+    ins.lines.push({ tone:'down', text:`Fue una sesión difícil: ${correct} de ${now.length} correctas. Repasar ahora ayuda a fijarlo.` });
+  }
+  if(!ins.lines.length){
+    ins.lines.push({ tone:'good', text:`${correct} de ${now.length} correctas (${ins.acc}%).` });
+  }
+  ins.lines = ins.lines.slice(0, 3);
+
+  // Lo mejor para hacer ahora (máximo 3, sin repetir destino).
+  const seen = new Set();
+  const push = (title, href, main)=>{
+    if(ins.actions.length >= 3 || !href || seen.has(href)) return;
+    seen.add(href); ins.actions.push({ title, href, main: !!main });
+  };
+  if(ins.struggle){
+    const [type, id] = ins.struggle.key.split(':');
+    const c = contentForUnit(type, id);
+    if(c){
+      push(c.practiceLabel, c.practiceHref, true);
+      if(c.article) push(`Leer la explicación de ${c.articleTitle}`, c.article);
+    }
+  }
+  if(ins.correct < ins.n && (ins.n - ins.correct >= 2 || ins.repeated)) push('Hacer un repaso rápido', 'errores.html?modo=rapido', !ins.actions.length);
+  const today = getTodayPick(diag);
+  const todayHref = todayStartHref(today);
+  if(!(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
+    push(today.title, todayHref, !ins.actions.length);
+  }
+  return ins;
+}
+
+// "Pregunta → respuesta correcta" de un ejercicio, corto, para que Leo AI
+// pueda ver patrones (los resultados no guardan qué respondió el alumno).
+function leoAiItemBrief(found){
+  if(!found) return null;
+  const it = found.item || {};
+  let q = '', a = '';
+  if(found.kind === 'grammar'){
+    if(it.type === 'choice'){ q = it.prompt; a = (it.options || [])[it.correct]; }
+    else if(it.type === 'fill'){ q = (it.sentence || []).map((w, i) => i === it.blankIndex ? '___' : w).join(' '); a = it.correct; }
+    else if(it.type === 'error'){ q = it.wrong; a = it.right; }
+  } else if(found.kind === 'vocab'){ q = (it.quiz || {}).prompt || it.word; a = `${it.word} = ${it.translation}`; }
+  else if(found.kind === 'listening' || found.kind === 'reading'){ q = it.question; a = (it.options || [])[it.correct]; }
+  else if(found.kind === 'writing'){ q = it.prompt; a = it.example && it.example.en; }
+  q = leoAiText(q, 140); a = leoAiText(a, 100);
+  if(!q || !a) return null;
+  return (found.topic ? leoAiText(found.topic, 60) + ': ' : '') + q + ' → ' + a;
+}
+function leoAiExamples(ids, max){
+  const index = getDiagItemIndex();
+  const out = [];
+  for(let i = 0; index && i < ids.length && out.length < max; i++){
+    const b = leoAiItemBrief(index.get(ids[i]));
+    if(b && out.indexOf(b) === -1) out.push(b);
+  }
+  return out;
+}
+
+function sessionInsightAiCtx(ins){
+  if(ins.n < SESSION_INSIGHT.AI_MIN_GRADED || (ins.correct === ins.n && !ins.improved)) return null;
+  const facts = [`Ejercicios: ${ins.n}, correctos: ${ins.correct} (${ins.acc}%)`].concat(ins.lines.map(l => l.text));
+  if(ins.struggle) facts.push(`Principal dificultad: ${ins.struggle.label} (${ins.struggle.wrong} de ${ins.struggle.n} mal)`);
+  // Ejemplos: primero los fallos del tema que más costó.
+  let ids = ins.wrongIds;
+  if(ins.struggle){
+    const index = getDiagItemIndex();
+    const [type, id] = ins.struggle.key.split(':');
+    const inUnit = itemId => { const f = index.get(itemId); if(!f) return false;
+      if(type === 'skill') return DIAG_KIND_TO_SKILL[f.kind] === id;
+      const fam = diagFamilyForTopic(f.topic); return !!fam && fam.id === id; };
+    ids = ids.filter(inUnit).concat(ids.filter(x => !inUnit(x)));
+  }
+  return { kind:'insight', scope:'session', facts, examples: leoAiExamples(ids, 3),
+    next: ins.actions[0] ? ins.actions[0].title : '', label:'Analizar mi sesión con Leo AI' };
+}
+
+function sessionInsightHtml(ins){
+  return `
+    <div class="sess-insight">
+      <div class="sess-insight-label">Qué pasó hoy</div>
+      ${diagInsightsHtml(ins.lines, 3)}
+      ${ins.actions.length ? `
+        <div class="sess-insight-label sess-insight-next">Lo mejor para hacer ahora</div>
+        <div class="sess-next">
+          ${ins.actions.map(a=>`<a href="${a.href}" class="sess-next-link${a.main ? ' is-main' : ''}"><span>${a.title}</span><span aria-hidden="true">→</span></a>`).join('')}
+        </div>` : ''}
+      <div data-leo-ai-session></div>
+    </div>`;
+}
+
+/* Pone el análisis dentro de la pantalla final de la sesión (justo antes
+   de los botones). Nunca rompe la pantalla final: si algo falla, no
+   aparece nada y todo sigue igual que antes. */
+function appendSessionInsight(container, results, startedAt, sessionSkill){
+  try{
+    const summary = container && container.querySelector('.session-summary');
+    if(!summary) return;
+    const ins = computeSessionInsight(results, startedAt, sessionSkill);
+    if(!ins) return;
+    const holder = document.createElement('div');
+    holder.innerHTML = sessionInsightHtml(ins);
+    const block = holder.firstElementChild;
+    const anchor = summary.querySelector('.summary-actions');
+    if(anchor) summary.insertBefore(block, anchor); else summary.appendChild(block);
+    const ai = sessionInsightAiCtx(ins);
+    if(ai) leoAiAttach(block.querySelector('[data-leo-ai-session]'), ai);
+  }catch(e){ /* el resumen normal ya está en pantalla */ }
+}
+
+/* Errores pendientes agrupados por familia de gramática o habilidad.
+   Mismo origen que el diagnóstico (mistake_stats o, sin red, la regla de
+   Mis errores). null si no hay datos de los bancos. */
+function computeMistakePatterns(statsMap){
+  const index = getDiagItemIndex();
+  if(!index) return null;
+  const active = diagMistakeSummary(collectDiagAttempts(loadProgress()), statsMap, Date.now()).active;
+  const groups = new Map();
+  active.forEach(m=>{
+    const key = m.family ? 'family:' + m.family : 'skill:' + m.skill;
+    if(!groups.has(key)) groups.set(key, { key, label: unitLabelFromKey(key), count:0, repeated:0, items:[] });
+    const g = groups.get(key);
+    g.count++; if(m.failCount >= 2) g.repeated++;
+    g.items.push(m);
+  });
+  const sorted = Array.from(groups.values()).sort((a,b)=> (b.count - a.count) || (b.repeated - a.repeated));
+  sorted.forEach(g=>{
+    g.items.sort((a,b)=> b.failCount - a.failCount);
+    const [type, id] = g.key.split(':');
+    g.content = contentForUnit(type, id);
+    // En "Mis errores", repasar una habilidad sin familia = filtro por habilidad.
+    const kind = Object.keys(DIAG_KIND_TO_SKILL).find(k => DIAG_KIND_TO_SKILL[k] === id);
+    g.reviewHref = type === 'skill' && ['grammar','vocab','listening','writing'].indexOf(kind) !== -1 ? 'errores.html?skill=' + kind : null;
+  });
+  return {
+    total: active.length,
+    repeatedTotal: active.filter(m => m.failCount >= 2).length,
+    groups: sorted.slice(0, 3),
+    otherCount: sorted.slice(3).reduce((n, g)=> n + g.count, 0)
+  };
+}
+
+function mistakePatternsAiCtx(pat){
+  if(pat.total < 3) return null;
+  const facts = [`Errores pendientes: ${pat.total}, fallados más de una vez: ${pat.repeatedTotal}`];
+  pat.groups.forEach(g => facts.push(`${g.label}: ${g.count} ${g.count === 1 ? 'error' : 'errores'}${g.repeated ? `, ${g.repeated} repetidos` : ''}`));
+  if(pat.otherCount) facts.push(`Otros temas: ${pat.otherCount} errores sueltos`);
+  // Ejemplos: los más fallados de los grupos principales, alternando grupos.
+  const ids = [];
+  for(let i = 0; i < 3 && ids.length < 6; i++) pat.groups.forEach(g => { if(g.items[i]) ids.push(g.items[i].itemId); });
+  const top = pat.groups[0];
+  return { kind:'insight', scope:'mistakes', facts, examples: leoAiExamples(ids, 4),
+    next: top && top.content ? top.content.practiceLabel : 'Hacer un repaso rápido', label:'Analizar mis errores con Leo AI' };
+}
+
+/* Tarjeta "Tus patrones de error" en errores.html (arriba del repaso). */
+async function renderMistakePatterns(container){
+  if(!container) return;
+  try{
+    await backfillMistakeStatsIfNeeded();
+    const statsMap = await loadMistakeStatsMap();
+    const pat = computeMistakePatterns(statsMap);
+    if(!pat || pat.total < 3 || !pat.groups.length){ container.hidden = true; return; }
+    const top = pat.groups[0];
+    const share = Math.round(top.count / pat.total * 100);
+    const lead = (top.count >= 2 && share >= 30)
+      ? `${share}% de tus errores pendientes son de <b>${top.label}</b>.`
+      : `Tus errores están repartidos entre varios temas.`;
+    container.innerHTML = `
+      <div class="diag-card mistake-patterns">
+        <h2 class="diag-h3">Tus patrones de error</h2>
+        <p class="diag-muted">${lead}${pat.repeatedTotal ? ` ${pat.repeatedTotal} ${pat.repeatedTotal === 1 ? 'ejercicio lo fallaste' : 'ejercicios los fallaste'} más de una vez.` : ''}</p>
+        <ul class="diag-units">
+          ${pat.groups.map(g=>`
+            <li class="diag-unit mistake-pattern">
+              <div class="diag-unit-main">
+                <span class="diag-unit-name">${g.label}</span>
+                <span class="diag-unit-detail">${g.count} ${g.count === 1 ? 'error' : 'errores'}${g.repeated ? ` · ${g.repeated} ${g.repeated === 1 ? 'repetido' : 'repetidos'}` : ''}</span>
+                <span class="mistake-pattern-links">
+                  ${g.content ? `<a href="${g.key.indexOf('family:') === 0 ? g.content.practiceHref : (g.reviewHref || g.content.practiceHref)}">${g.key.indexOf('family:') === 0 ? 'Reforzar en mi Plan' : 'Repasar estos errores'}</a>` : ''}
+                  ${g.content && g.content.article ? `<a href="${g.content.article}">Leer la explicación</a>` : ''}
+                </span>
+              </div>
+            </li>`).join('')}
+        </ul>
+        <div data-leo-ai-mistakes></div>
+      </div>`;
+    container.hidden = false;
+    const ai = mistakePatternsAiCtx(pat);
+    if(ai) leoAiAttach(container.querySelector('[data-leo-ai-mistakes]'), ai);
+  }catch(e){ container.hidden = true; }
+}
+
+function progressAiCtx(diag, week){
+  if(!diag || !diag.ready) return null;
+  const facts = [`Esta semana: ${week.exercises} ejercicios en ${week.days} ${week.days === 1 ? 'día' : 'días'}${week.accuracy !== null ? `, ${week.accuracy}% de aciertos` : ''}`];
+  if(diag.strength) facts.push(`Fortaleza: ${diag.strength.label} (${diag.strength.acc}% en ${diag.strength.n} ejercicios)`);
+  if(diag.weak) facts.push(`Punto a reforzar: ${diag.weak.label} (${diag.weak.current}% ahora${diag.weak.activeMistakes ? `, ${diag.weak.activeMistakes} errores pendientes` : ''})`);
+  diag.improving.slice(0, 2).forEach(u => facts.push(`Mejoró: ${u.label} (de ${u.prevAcc}% a ${u.recentAcc}%)`));
+  diag.declining.slice(0, 1).forEach(u => facts.push(`Bajó: ${u.label} (de ${u.prevAcc}% a ${u.recentAcc}%)`));
+  diag.repeated.slice(0, 2).forEach(r => facts.push(`Errores repetidos en ${r.label}: ${r.count}`));
+  if(diag.nearMastery.length) facts.push(`Cerca de dominar: ${diag.nearMastery[0].label} (${diag.nearMastery[0].acc}%)`);
+  if(diag.mastered.length) facts.push(`Ya domina: ${diag.mastered.slice(0, 3).map(u => u.label).join(', ')}`);
+  if(diag.recoveredWeek) facts.push(`Errores recuperados esta semana: ${diag.recoveredWeek}`);
+  facts.push(`Siguiente objetivo: ${week.goal}`);
+  return { kind:'insight', scope:'progress', facts: facts.slice(0, 10), examples: [],
+    next: diag.today ? diag.today.title : '', label:'Explícame mi progreso' };
+}
+
+/* Panel de miembros: la tarjeta principal "Recomendado" pasa a decir qué
+   te toca hoy (misma acción que "Hoy te conviene" del diagnóstico) y
+   empieza directo. Sin diagnóstico todavía queda la tarjeta del Plan
+   tal cual está en el HTML. */
+function renderTodayHero(el){
+  if(!el) return;
+  function paint(){
+    let diag = null;
+    try{ diag = computeDiagnosis(); }catch(e){ diag = null; }
+    if(!diag || !diag.ready || !diag.today) return;
+    const t = diag.today;
+    const card = document.createElement('div');
+    card.className = 'plan-feature-card plan-feature-hero today-hero';
+    card.id = el.id || '';
+    card.innerHTML = `
+      <span class="plan-feature-badge">Recomendado</span>
+      <div class="plan-feature-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+      </div>
+      <div class="today-hero-eyebrow">Hoy te conviene</div>
+      <h2>${t.title}</h2>
+      <p class="plan-feature-desc">${t.reason}</p>
+      <a href="${todayStartHref(t)}" class="btn btn-primary btn-block">Empezar lo que me toca hoy →</a>
+      <div class="today-hero-links">
+        ${t.article ? `<a href="${t.article}">Leer la explicación</a>` : ''}
+        ${/^plan-estudio\.html$/.test(t.href) ? '' : '<a href="plan-estudio.html">Ver mi Plan de estudio</a>'}
+      </div>`;
+    el.replaceWith(card);
+    el = card;
+  }
+  diagRenderWithStats(paint);
 }
 
 /* ============================================================
@@ -5367,9 +5932,9 @@ function renderProgressPage(root){
   let recoCta = 'Practicar';
   try{
     const diagForReco = computeDiagnosis(p);
-    if(diagForReco.ready && diagForReco.actions.length){
-      const a = diagForReco.actions[0];
-      recoTitle = a.title; recoHref = a.href; recoReason = a.reason; recoCta = a.cta;
+    if(diagForReco.ready && diagForReco.today){
+      const a = diagForReco.today; // la misma recomendación principal del panel
+      recoTitle = a.title; recoHref = todayStartHref(a); recoReason = a.reason; recoCta = 'Empezar lo que me toca hoy';
     }
   }catch(e){}
 
