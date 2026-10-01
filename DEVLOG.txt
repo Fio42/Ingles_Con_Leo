@@ -1136,3 +1136,9 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 2026-10-01 - Video de YouTube en articulo-in-on-at.html
 - Short "Aprende IN, ON y AT en menos de 1 minuto" (qYfRn_KUcyE) embebido despues de la seccion de la piramide, en formato vertical 9:16 (max 300px, loading="lazy" para no frenar la carga en celular). Schema VideoObject agregado al @graph del articulo (fecha real de subida tomada de YouTube).
 - Tarjeta nueva del video al inicio de la grilla "Aprende tambien en video" en articulos.html.
+
+2026-10-01 - Buscador en articulos.html (arriba, en el encabezado)
+- Busca en titulo, etiqueta y descripcion de las tarjetas de "Todos los articulos" (26). Sin tildes ni mayusculas; palabras cortas (in, on, at, to) como palabra completa; ignora relleno (de, en, como, ingles...). Atributo opcional data-search-keywords en una tarjeta para sinonimos (usado en in-on-at: "preposiciones").
+- Al buscar: oculta Destacado, "Empieza por aqui" y los botones de categoria; muestra "Resultados de busqueda" + cantidad, o un mensaje si no hay nada. Boton x para borrar. articulos.html?q=tema abre ya filtrado.
+- Evento GA4 estandar "search" (search_term) para ver que temas busca la gente. CSS inline en articulos.html (style.css sin cambios).
+- Verificado a 320 px: sin desborde, resultados justo debajo del buscador.

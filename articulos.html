@@ -28,6 +28,20 @@
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
+<style>
+  .article-search{position:relative;max-width:560px;margin-top:22px;}
+  .article-search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-faint);pointer-events:none;display:flex;}
+  .article-search input{width:100%;box-sizing:border-box;border:2px solid var(--line);border-radius:999px;padding:14px 46px;font-size:1rem;font-family:inherit;background:#fff;color:var(--ink);transition:border-color .15s ease,box-shadow .15s ease;-webkit-appearance:none;appearance:none;}
+  .article-search input::-webkit-search-cancel-button{display:none;}
+  .article-search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-tint);}
+  .article-search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:0;background:var(--paper-dim);color:var(--ink-soft);font-size:1.2rem;line-height:1;cursor:pointer;}
+  .article-search-clear[hidden]{display:none;}
+  .article-search-status{margin:0 0 16px;color:var(--ink-soft);font-size:0.95rem;}
+  .article-search-status[hidden]{display:none;}
+  .article-search-empty{background:var(--paper-dim);border-radius:var(--radius-lg);padding:22px;color:var(--ink-soft);}
+  .article-search-empty[hidden]{display:none;}
+  .article-search-empty a{color:var(--blue);font-weight:600;}
+</style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script src="meta-pixel.js"></script>
@@ -74,13 +88,18 @@
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Aprende inglés</h1>
       <p class="lead">Explicaciones cortas y directas. Sin relleno, sin academia.</p>
+      <div class="article-search" role="search">
+        <span class="article-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <input type="search" id="articleSearch" placeholder="¿Qué quieres aprender?" aria-label="Buscar artículos" autocomplete="off" enterkeyhint="search" data-article-search>
+        <button type="button" class="article-search-clear" aria-label="Borrar búsqueda" data-article-search-clear hidden>&times;</button>
+      </div>
     </div>
   </section>
 
   <section style="padding-top:0;">
     <div class="wrap">
 
-      <a href="articulo-como-aprender-ingles-desde-cero.html" class="article-featured">
+      <a href="articulo-como-aprender-ingles-desde-cero.html" class="article-featured" data-hide-on-search>
         <div class="article-featured-body">
           <span class="badge badge-members">Destacado</span>
           <h2>Cómo aprender inglés desde cero: curso gratis paso a paso</h2>
@@ -94,10 +113,10 @@
         </svg>
       </a>
 
-      <div class="section-head" style="margin-top:44px;">
+      <div class="section-head" style="margin-top:44px;" data-hide-on-search>
         <h2>Empieza por aquí</h2>
       </div>
-      <div class="article-grid">
+      <div class="article-grid" data-hide-on-search>
 
         <a href="articulo-verbo-to-be.html" class="article-card">
           <span class="tag">Gramática</span>
@@ -144,8 +163,9 @@
       </div>
 
       <div class="section-head" style="margin-top:44px;">
-        <h2>Todos los artículos</h2>
+        <h2 data-all-title>Todos los artículos</h2>
       </div>
+      <p class="article-search-status" data-search-status aria-live="polite" hidden></p>
       <div class="article-filters" data-article-filters>
         <button type="button" class="article-filter active" data-article-filter="all">Todos</button>
         <button type="button" class="article-filter" data-article-filter="aprender-ingles">Aprender inglés</button>
@@ -221,7 +241,7 @@
           <span class="read">Leer artículo →</span>
         </a>
 
-        <a href="articulo-in-on-at.html" class="article-card" data-article-category="gramatica">
+        <a href="articulo-in-on-at.html" class="article-card" data-article-category="gramatica" data-search-keywords="preposiciones prepositions bus carro car">
           <span class="tag">Gramática</span>
           <h3>In, On, At en inglés: cuándo usar cada uno (con ejercicios)</h3>
           <p>Tiempo, lugares y transporte (on the bus, in the car), expresiones fijas, errores comunes y 20 ejercicios con respuestas.</p>
@@ -341,6 +361,9 @@
         </a>
 
       </div>
+      <div class="article-search-empty" data-search-empty hidden>
+        <p style="margin:0;">No encontramos artículos con esa búsqueda. Prueba con otra palabra (por ejemplo "verbos", "entrevista" o "examen") o <a href="#" data-search-reset>ver todos los artículos</a>.</p>
+      </div>
     </div>
   </section>
 
@@ -349,19 +372,88 @@
       var bar = document.querySelector('[data-article-filters]');
       var grid = document.querySelector('[data-article-grid]');
       if(!bar || !grid) return;
-      var cards = grid.querySelectorAll('[data-article-category]');
+      var cards = Array.prototype.slice.call(grid.querySelectorAll('[data-article-category]'));
+      var input = document.querySelector('[data-article-search]');
+      var clearBtn = document.querySelector('[data-article-search-clear]');
+      var status = document.querySelector('[data-search-status]');
+      var empty = document.querySelector('[data-search-empty]');
+      var allTitle = document.querySelector('[data-all-title]');
+      var hideOnSearch = document.querySelectorAll('[data-hide-on-search]');
+      var filter = 'all', query = '', trackTimer = null;
+      /* Palabras de relleno que no ayudan a buscar ("como usar el pasado en ingles"). */
+      var STOP = ['de','del','la','las','el','los','en','y','a','un','una','con','para','por','que','como','se','mi','ingles','english'];
+
+      /* Minusculas y sin tildes, para que "gramatica" encuentre "Gramática". */
+      function norm(t){
+        return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+      }
+      cards.forEach(function(card){
+        card._searchText = ' ' + norm(card.textContent + ' ' + (card.getAttribute('data-search-keywords') || '')) + ' ';
+      });
+
+      function apply(){
+        var words = norm(query).split(' ').filter(function(w){ return w && STOP.indexOf(w) === -1; });
+        if(!words.length && norm(query)) words = norm(query).split(' ');
+        var searching = words.length > 0, shown = 0;
+        cards.forEach(function(card){
+          var cats = (card.getAttribute('data-article-category') || '').split(/\s+/);
+          /* Palabras de 1-2 letras (in, on, at, to) deben coincidir como palabra
+             completa; las demas pueden ser el inicio o parte de una palabra. */
+          var match = (searching || filter === 'all' || cats.indexOf(filter) !== -1) &&
+            words.every(function(w){ return card._searchText.indexOf(w.length <= 2 ? ' ' + w + ' ' : w) !== -1; });
+          card.style.display = match ? '' : 'none';
+          if(match) shown++;
+        });
+        hideOnSearch.forEach(function(el){ el.style.display = searching ? 'none' : ''; });
+        /* Al buscar se busca en todas las categorias y se ocultan los botones,
+           asi los resultados quedan justo debajo del buscador en el celular. */
+        bar.style.display = searching ? 'none' : '';
+        allTitle.parentNode.style.marginTop = searching ? '0' : '44px';
+        allTitle.textContent = searching ? 'Resultados de búsqueda' : 'Todos los artículos';
+        clearBtn.hidden = !query;
+        status.hidden = !searching;
+        if(searching) status.textContent = shown === 1 ? '1 artículo encontrado' : shown + ' artículos encontrados';
+        empty.hidden = shown > 0;
+      }
+
+      function setFilter(value){
+        filter = value;
+        bar.querySelectorAll('.article-filter').forEach(function(b){
+          b.classList.toggle('active', b.getAttribute('data-article-filter') === value);
+        });
+      }
+
       bar.addEventListener('click', function(e){
         var btn = e.target.closest('.article-filter');
         if(!btn) return;
-        bar.querySelectorAll('.article-filter').forEach(function(b){ b.classList.remove('active'); });
-        btn.classList.add('active');
-        var filter = btn.getAttribute('data-article-filter');
-        cards.forEach(function(card){
-          var cats = (card.getAttribute('data-article-category') || '').split(/\s+/);
-          var match = filter === 'all' || cats.indexOf(filter) !== -1;
-          card.style.display = match ? '' : 'none';
-        });
+        setFilter(btn.getAttribute('data-article-filter'));
+        apply();
       });
+
+      input.addEventListener('input', function(){
+        query = input.value;
+        apply();
+        /* Avisa a Google Analytics que se busco (evento estandar "search"),
+           para saber que temas busca la gente. */
+        clearTimeout(trackTimer);
+        var term = norm(query);
+        if(term.length >= 3 && typeof gtag === 'function'){
+          trackTimer = setTimeout(function(){ gtag('event', 'search', { search_term: term }); }, 1500);
+        }
+      });
+      input.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){ e.preventDefault(); input.blur(); }
+        if(e.key === 'Escape'){ input.value = ''; query = ''; apply(); }
+      });
+      function reset(){
+        input.value = ''; query = ''; setFilter('all'); apply(); input.focus();
+      }
+      clearBtn.addEventListener('click', reset);
+      document.querySelector('[data-search-reset]').addEventListener('click', function(e){ e.preventDefault(); reset(); });
+
+      /* articulos.html?q=pasado abre la pagina ya filtrada. */
+      var q = new URLSearchParams(location.search).get('q');
+      if(q){ input.value = q; query = q; apply(); }
     })();
   </script>
 
