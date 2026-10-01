@@ -1125,3 +1125,9 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - OJO con los nombres: el webhook de Mercado Pago (archivo supabase_functions/mp-webhook.ts) esta desplegado en Supabase con el nombre "rapid-service", NO "mp-webhook". Desplegar siempre sobre rapid-service para no cambiar la URL registrada en Mercado Pago.
 - Bienvenida de miembro: los 3 webhooks de pago y el barrido de upgrade-nudge-emails (sweepMemberWelcomes) usan member_welcome_sent_at + reserva de 15 min. La membresia nunca depende de Resend.
 - Pendiente de probar con un pago real: una sola bienvenida por suscripcion y que un aviso repetido no mande otra.
+
+2026-09-30 - Nuevo articulo: In, On, At en ingles (articulo-in-on-at.html)
+- Pilar de preposiciones: piramide in/on/at, tiempo (excepciones: at night, on Monday morning, weekend US/UK), lugar (in the supermarket vs at the supermarket), transporte (on the bus/train/plane vs in the car/taxi, get on/in, by bus, on foot), expresiones fijas, sin preposicion (next/last/this/every, go home), pares confusos (on time/in time, at the end/in the end, arrive in/at), errores, tabla resumen, 3 ejercicios interactivos (20 preguntas, opciones barajadas con shuffleOptions) y FAQ.
+- SEO: title 55 car., meta description 150, un H1, canonical, schema Article + FAQPage (7 preguntas), sitemap.xml, tarjeta en articulos.html (Gramatica) y enlace interno desde articulo-errores-comunes.html (seccion 1).
+- Sin data.js (no hace falta). CSS de la piramide y tabla de transporte inline en el articulo, style.css sin cambios.
+- Verificado a 320 y 375 px: sin desborde horizontal; la tabla de transporte se ve completa en el celular; ejercicios cuentan bien.
