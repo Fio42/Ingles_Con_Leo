@@ -1641,6 +1641,16 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .progress-summary-card .diag-insights{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 24px;}
   #memberContent .progress-summary-card .diag-today{order:6;flex:1 1 100%;flex-direction:row;align-items:center;gap:12px;}
 }
+/* PC: titulo | numeros | boton juntos con gaps fijos (sin estirarse a
+   todo el ancho) y las frases debajo, del mismo ancho que esa fila.
+   width:0 + min-width:100% evita que una frase larga ensanche las columnas. */
+@media(min-width:1024px){
+  #memberContent .progress-summary-card{display:grid;grid-template-columns:auto auto auto;justify-content:start;align-items:center;column-gap:40px;row-gap:16px;}
+  #memberContent .progress-summary-card:not(:has(.progress-summary-stats)){grid-template-columns:auto auto;}
+  #memberContent .progress-summary-cta{grid-column:-2 / -1;grid-row:1;margin-left:0;justify-self:start;}
+  #memberContent .progress-summary-card .diag-insights,
+  #memberContent .progress-summary-card .progress-summary-insight{grid-column:1 / -1;grid-row:2;width:0;min-width:100%;}
+}
 #memberContent .mistakes-card{padding:14px 18px;gap:8px;}
 #memberContent .mistakes-card-top{gap:8px;}
 #memberContent .mistakes-card-top .stat-card-icon{width:32px;height:32px;}
