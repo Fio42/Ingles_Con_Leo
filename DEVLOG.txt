@@ -1132,3 +1132,7 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Sin data.js (no hace falta). CSS de la piramide y tabla de transporte inline en el articulo, style.css sin cambios.
 - Verificado a 320 y 375 px: sin desborde horizontal; la tabla de transporte se ve completa en el celular; ejercicios cuentan bien.
 - Audio (mismo dia): 10 frases de transporte con boton de play en la seccion Transporte (audio/articulos/in-on-at/frase-01..10.mp3, voz Ava), filas agregadas a tools/lista_audios.csv. Pendiente que Leo los genere.
+
+2026-10-01 - Video de YouTube en articulo-in-on-at.html
+- Short "Aprende IN, ON y AT en menos de 1 minuto" (qYfRn_KUcyE) embebido despues de la seccion de la piramide, en formato vertical 9:16 (max 300px, loading="lazy" para no frenar la carga en celular). Schema VideoObject agregado al @graph del articulo (fecha real de subida tomada de YouTube).
+- Tarjeta nueva del video al inicio de la grilla "Aprende tambien en video" en articulos.html.
