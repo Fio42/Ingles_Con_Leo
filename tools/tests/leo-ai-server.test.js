@@ -10,15 +10,20 @@ const src = fs.readFileSync(path.join(root, 'supabase_functions', 'leo-ai.ts'), 
   .replace("import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'", '');
 const js = ts.transpileModule(src, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
 
+// Token con forma real de Supabase (la firma la verifica la puerta de
+// Supabase con verify_jwt, por eso aquí la parte de firma es de mentira).
+const b64u = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+const jwt = claims => b64u({ alg:'HS256', typ:'JWT' }) + '.' + b64u(claims) + '.firma';
+const MEMBER_TOKEN = jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600, email:'alumno@mail.com' });
 const CF_OK = { CLOUDFLARE_ACCOUNT_ID: 'acc', CLOUDFLARE_API_TOKEN: 'cf-token-secreto' };
 async function call(o){
   o = o || {};
   let handler; const calls = []; const recorded = [];
   const envAll = Object.assign({ SUPABASE_URL:'x', SUPABASE_SERVICE_ROLE_KEY:'y' }, o.env === undefined ? CF_OK : o.env);
-  const ctx = { console:{ error(){}, log(){} }, JSON, Date, Math, Promise, setTimeout, clearTimeout, AbortController, Response, Array, String, Object, Number, parseInt, exports:{}, require,
+  const ctx = { console:{ error(){}, log(){} }, atob, JSON, Date, Math, Promise, setTimeout, clearTimeout, AbortController, Response, Array, String, Object, Number, parseInt, exports:{}, require,
     Deno:{ env:{ get:k=> envAll[k] }, serve:h=>{ handler = h; } },
     createClient: ()=>({
-      auth:{ getUser: async()=> o.user === null ? { data:{ user:null }, error:'bad' } : { data:{ user: o.user || { id:'u-123', email:'alumno@mail.com' } }, error:null } },
+      auth:{ getUser: async()=>{ throw new Error('no debe usarse auth.getUser (exige sesión viva)'); } },
       from: ()=>({ select:()=>({ eq:()=>({ maybeSingle: async()=>({ data:{ is_member: o.member !== false } }) }) }) }),
       rpc: async (fn, args)=>{
         if(fn === 'leo_ai_reserve') return o.reserve || { data:'ok', error:null };
@@ -29,7 +34,8 @@ async function call(o){
     fetch: async (url, init)=>{ calls.push({ url, body: JSON.parse(init.body), headers: init.headers }); return (o.provider || cfReply())(url, init); }
   };
   vm.createContext(ctx); vm.runInContext(js, ctx);
-  const headers = Object.assign({ Authorization:'Bearer tok-secreto' }, o.headers || {});
+  const token = o.user === null ? (o.badToken || 'no-es-un-token') : MEMBER_TOKEN;
+  const headers = Object.assign({ Authorization:'Bearer ' + token }, o.headers || {});
   const res = await handler({ method:'POST', headers:{ get:k=> headers[k] !== undefined ? headers[k] : (headers[k.toLowerCase()] !== undefined ? headers[k.toLowerCase()] : null) }, json: async()=> o.body || EXPLAIN });
   return { status: res.status, out: await res.json(), calls, recorded };
 }
@@ -58,6 +64,8 @@ async function test(name, fn){
   });
   await test('sin sesión -> 401, no miembro -> 403, sin llamadas', async()=>{
     let r = await call({ user:null }); assert.strictEqual(r.status, 401); assert.strictEqual(r.calls.length, 0);
+    r = await call({ user:null, badToken: jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) - 10 }) }); assert.strictEqual(r.status, 401, 'token vencido');
+    r = await call({ user:null, badToken: jwt({ sub:'x', role:'anon', exp: Math.floor(Date.now()/1000) + 3600 }) }); assert.strictEqual(r.status, 401, 'token de visitante (anon)');
     r = await call({ member:false }); assert.strictEqual(r.status, 403); assert.strictEqual(r.calls.length, 0);
   });
   await test('datos incompletos o modo raro -> 400 sin llamadas', async()=>{
@@ -84,7 +92,7 @@ async function test(name, fn){
   await test('privacidad: al proveedor solo van datos del ejercicio (sin id, token, email, nombre, historial)', async()=>{
     const r = await call();
     const sent = JSON.stringify(r.calls[0].body);
-    assert(!/u-123|tok-secreto|alumno@mail|Juan|history/.test(sent), sent);
+    assert(!/u-123|alumno@mail|Juan|history|firma/.test(sent), sent);
   });
   await test('consumo: se registran solo números (tokens y neurons estimados), nunca texto', async()=>{
     const r = await call();
