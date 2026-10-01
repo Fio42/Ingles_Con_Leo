@@ -19,3 +19,4 @@ _to_delete/
 # intermedio; lo que importa queda resumido en SITE_HEALTH_REPORT.md y
 # tools/site-health/history.json, esos sí se suben).
 tools/site-health/lighthouse-raw/
+.claude/
