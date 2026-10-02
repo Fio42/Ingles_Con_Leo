@@ -49,6 +49,23 @@ const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// Solo el Cron puede llamar esta función (2026-10-01): manda el header
+// x-internal-secret con la llave 'internal_functions_secret' de Supabase
+// Vault, revisada con public.internal_secret_ok (solo service_role).
+async function internalSecretOk(secret: string | null): Promise<boolean> {
+  if (!secret) return false
+  // Reintenta si la consulta falla (p. ej. "JWT issued at future" al
+  // arrancar con el reloj un poco adelantado). Una llave mala no falla:
+  // devuelve false y se rechaza de inmediato.
+  for (let intento = 1; intento <= 3; intento++) {
+    const { data, error } = await supabase.rpc('internal_secret_ok', { p_secret: secret })
+    if (!error) return data === true
+    console.error(`Error revisando la llave interna (intento ${intento}):`, error)
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1000))
+  }
+  return false
+}
+
 // ---- Baja de correos (ver email-unsubscribe.ts) ----
 // Misma firma que en email-unsubscribe.ts: si cambias una, cambia las
 // dos (y la de streak-reminder-email.ts).
@@ -73,7 +90,10 @@ const MEXICO_UTC_OFFSET_HOURS = -6
 const TIME_BUDGET_MS = 100_000
 const CLAIM_LEASE_MINUTES = 15
 
-Deno.serve(async (_req: Request) => {
+Deno.serve(async (req: Request) => {
+  if (!(await internalSecretOk(req.headers.get('x-internal-secret')))) {
+    return json({ ok: false, error: 'unauthorized' }, 401)
+  }
   try {
     const now = new Date(Date.now() + MEXICO_UTC_OFFSET_HOURS * 3600_000)
     const todayStr = now.toISOString().slice(0, 10)
@@ -297,6 +317,10 @@ function buildHtmlRacha(streakCount: number, unsubUrl: string): string {
       Llevas ${streakCount} ${dias} seguidos practicando en Inglés con Leo, pero todavía no has
       hecho ningún ejercicio hoy. Con un solo ejercicio corto (2-3 minutos)
       ya cuenta y sigues tu racha.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Y si fallas alguno, toca <strong>Explícame por qué</strong>: Leo AI te
+      lo explica en segundos, así ese error ya no se repite.
     </p>
     <p style="text-align:center; margin:28px 0 10px;">
       <a href="https://inglesconleo.com/miembros.html"

@@ -224,6 +224,22 @@ const SITE = 'https://inglesconleo.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// Compara contra la llave de Vault con public.internal_secret_ok (solo
+// service_role puede llamarla). Si la consulta falla, se rechaza.
+async function internalSecretOk(secret: string | null): Promise<boolean> {
+  if (!secret) return false
+  // Reintenta si la consulta falla (p. ej. "JWT issued at future" al
+  // arrancar con el reloj un poco adelantado). Una llave mala no falla:
+  // devuelve false y se rechaza de inmediato.
+  for (let intento = 1; intento <= 3; intento++) {
+    const { data, error } = await supabase.rpc('internal_secret_ok', { p_secret: secret })
+    if (!error) return data === true
+    console.error(`Error revisando la llave interna (intento ${intento}):`, error)
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1000))
+  }
+  return false
+}
+
 // ---- Baja de correos (ver email-unsubscribe.ts) ----
 // Misma firma que en email-unsubscribe.ts: si cambias una, cambia las
 // dos (y la de streak-reminder-email.ts).
@@ -344,6 +360,12 @@ const ACTIVE_FREE_PITCH_ENABLED = false
 // aquí.
 const MARKETING_EMAIL_MIN_GAP_HOURS = 24
 const NO_COOLDOWN_KEYS = new Set(['welcome'])
+// La bienvenida sale al instante por el trigger profiles_send_welcome;
+// el Cron solo la toma como respaldo pasados estos minutos.
+const WELCOME_CRON_DELAY_MINUTES = 10
+// Si el proceso muere con la bienvenida reservada, otro la puede tomar
+// pasado este tiempo (mismo criterio que member_welcome_claimed_at).
+const WELCOME_CLAIM_LEASE_MINUTES = 15
 
 // ---------------- Miembros inactivos (is_member=true) ----------------
 // Estos correos NO venden nada: solo invitan a volver a practicar.
@@ -480,6 +502,12 @@ type Profile = {
 }
 
 Deno.serve(async (req: Request) => {
+  // Solo el Cron y el trigger de bienvenida pueden llamar esta función
+  // (2026-10-01): mandan el header x-internal-secret con la llave que
+  // vive en Supabase Vault ('internal_functions_secret'). Sin ella: 401.
+  if (!(await internalSecretOk(req.headers.get('x-internal-secret')))) {
+    return json({ ok: false, error: 'unauthorized' }, 401)
+  }
   try {
     // Modo manual (botón "Test" de Supabase o una prueba puntual tuya,
     // NO lo usa el Cron): si el cuerpo trae "manual_emails" y "which",
@@ -507,6 +535,23 @@ Deno.serve(async (req: Request) => {
           if (didSend) sentManual++
         }
         return json({ ok: true, manual: true, which, sentManual }, 200)
+      }
+      // Bienvenida al instante (2026-10-01): la llama el trigger
+      // profiles_send_welcome de la base de datos en cuanto se crea el
+      // perfil, para no esperar hasta 30 min al Cron. Solo manda
+      // "welcome" y solo si todavía no salió; si esta llamada falla, el
+      // Cron la manda en su siguiente pasada (ver WELCOME_CRON_DELAY_MINUTES).
+      if (body && typeof body.welcome_user_id === 'string' && body.welcome_user_id) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('id, email, is_member, email_opt_out_at, lifecycle_emails')
+          .eq('id', body.welcome_user_id)
+          .maybeSingle()
+        if (!prof || prof.is_member || prof.email_opt_out_at || (prof.lifecycle_emails || {})['welcome']) {
+          return json({ ok: true, welcome: false }, 200)
+        }
+        const didSend = await sendIfStillEligible(prof.id, prof.email, 'welcome')
+        return json({ ok: true, welcome: didSend }, 200)
       }
     } catch (_e) {
       // Sin cuerpo JSON (o vacío): seguimos con el modo automático normal.
@@ -716,6 +761,16 @@ const HTML_MEMBER_WELCOME = `
       speaking y writing, organizadas para que avances a tu ritmo y sin
       complicaciones.
     </p>
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI · Incluido</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">Tu profesor de apoyo con IA ya está activo</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">Después de contestar un ejercicio, busca los botones con la estrellita ✦:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Explícame por qué</strong>: te explica tu error en español sencillo</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar</td></tr>
+      </table>
+    </div>
     <p style="text-align:center; margin:28px 0;">
       <a href="https://inglesconleo.com/miembros.html"
          style="background-color:#253ECC; color:#ffffff; text-decoration:none;
@@ -725,10 +780,12 @@ const HTML_MEMBER_WELCOME = `
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
       No necesitas estudiar horas. Con unos minutos de práctica constante
-      puedes avanzar muchísimo.
+      puedes avanzar muchísimo, sobre todo si cada error lo conviertes en
+      algo que ya entiendes.
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
-      Empieza por la habilidad que más quieras mejorar y continúa desde ahí.
+      Si no sabes por dónde empezar, entra a tu plan de estudio: está armado
+      con tu nivel y tus puntos débiles.
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
       Si en algún momento tienes una duda o necesitas ayuda, puedes responder
@@ -754,8 +811,11 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
   // inicial de "tu cuenta está lista", no cuenta como marketing, y no
   // debe bloquear ni ser bloqueado por abandoned_signup (que sí puede
   // tocarle unas horas después, si de verdad no practicó).
+  // Las cuentas de menos de WELCOME_CRON_DELAY_MINUTES las atiende el
+  // trigger al instante (modo welcome_user_id); el Cron solo la manda
+  // si eso falló, así nunca salen dos bienvenidas por coincidir.
   if (!lifecycle['welcome']) {
-    return 'welcome'
+    return ageMinutes >= WELCOME_CRON_DELAY_MINUTES ? 'welcome' : null
   }
 
   // Anti-spam global: si ya recibió cualquier correo de este sistema
@@ -1109,8 +1169,29 @@ async function sendIfStillEligible(
     content = EMAIL_CONTENT[key]
   }
 
+  // Bienvenida: reserva atómica antes de mandar (welcome_claimed_at con
+  // lease de WELCOME_CLAIM_LEASE_MINUTES). Si el trigger llega dos veces
+  // o coincide con el Cron, solo quien gana la reserva la manda.
+  if (key === 'welcome') {
+    if (freshLifecycle['welcome']) return false
+    const cutoff = new Date(Date.now() - WELCOME_CLAIM_LEASE_MINUTES * 60000).toISOString()
+    const { data: claimed, error: claimError } = await supabase
+      .from('profiles')
+      .update({ welcome_claimed_at: new Date().toISOString() })
+      .eq('id', userId)
+      .is('lifecycle_emails->>welcome', null)
+      .or(`welcome_claimed_at.is.null,welcome_claimed_at.lt.${cutoff}`)
+      .select('id')
+    if (claimError) console.error('Error reservando la bienvenida:', claimError)
+    if (!claimed || !claimed.length) return false
+  }
+
   const okToSend = await sendEmailFor(key, email, userId, personalize(content, fresh.display_name))
-  if (!okToSend) return false
+  if (!okToSend) {
+    // Se libera la reserva para que el Cron la reintente.
+    if (key === 'welcome') await supabase.from('profiles').update({ welcome_claimed_at: null }).eq('id', userId)
+    return false
+  }
 
   const nowIso = new Date().toISOString()
   const extra: Record<string, string> = { [key]: nowIso }
@@ -1118,6 +1199,7 @@ async function sendIfStillEligible(
   if (variantIdx >= 0) extra[`${key}_count`] = String(variantIdx + 1)
   const mergedLifecycle = Object.assign({}, freshLifecycle, extra)
   const updatePayload: Record<string, unknown> = { lifecycle_emails: mergedLifecycle }
+  if (key === 'welcome') updatePayload.welcome_claimed_at = null
   // "welcome" no cuenta para el freno global de 24h (ver
   // NO_COOLDOWN_KEYS): se registra en lifecycle_emails para no
   // repetirse, pero NO se guarda en last_marketing_email_at, así no
@@ -1262,6 +1344,28 @@ const P = 'color:#333; font-size:15px; line-height:1.6;'
 const BOX = 'background-color:#f1f4fe; border-left:4px solid #253ECC; border-radius:8px; padding:14px 16px; margin:18px 0; color:#333; font-size:15px; line-height:1.6;'
 const LINK = 'color:#253ECC; font-weight:bold;'
 
+// Tarjeta oscura de Leo AI (2026-10-02): la misma idea que .ai-pitch del
+// sitio, con estilos en línea para que se vea igual en Gmail y Outlook
+// (Outlook ignora el degradado y usa el azul oscuro de fondo). Solo va en
+// correos donde Leo AI es EL argumento (venta de membresía o activar a un
+// miembro), nunca en todos: así no se vuelve ruido.
+// Ojo con lo que se promete: Leo AI explica ejercicios ya calificados,
+// revisa frases de Writing y analiza sesiones/errores/progreso. NO es un
+// chat libre. Del tope diario NO se habla en los correos (pedido de Leo):
+// ni "ilimitado" ni "tiene límite", simplemente no se menciona.
+function aiCard(title: string, intro: string, points: string[]): string {
+  const items = points.map((t) =>
+    `<tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;">${t}</td></tr>`
+  ).join('')
+  return `
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">${title}</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">${intro}</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">${items}</table>
+    </div>`
+}
+
 const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   // long_term no usa esta entrada: su contenido sale de
   // LONG_TERM_EMAILS según long_term_count (ver sendIfStillEligible).
@@ -1392,28 +1496,38 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
   membership_intro: {
-    subject: 'Una semana practicando 🙌 ¿Qué sigue?',
-    preheader: 'Todo Inglés con Leo sin límite, por menos de lo que cuesta un café.',
+    subject: 'Una semana practicando 🙌 Ahora entiende por qué fallas',
+    preheader: 'Leo AI te explica cada error en español sencillo. Incluido en la membresía de $2 USD.',
     greeting: '¡Hola! 👋',
-    title: 'Llevas una semana. ¿Vamos por más?',
-    titleWithName: '{name}, llevas una semana. ¿Vamos por más?',
+    title: 'Llevas una semana. Es momento de dejar de adivinar',
+    titleWithName: '{name}, llevas una semana. Es momento de dejar de adivinar',
     bodyHtml: `
     <p style="${P}">
-      Tu cuenta gratis sigue funcionando todo el tiempo que quieras. Si ya le
-      agarraste el gusto, la membresía te da todo esto sin límites:
+      Practicar ya lo estás haciendo. Lo que más acelera el inglés es
+      entender <em>por qué</em> te equivocas, para no repetir el mismo error
+      la próxima vez. Para eso está Leo AI:
     </p>
+    ${aiCard(
+      'Tu profesor de apoyo, dentro de cada ejercicio',
+      'Contestas, ves la respuesta y tocas un botón. En segundos tienes la explicación pensada para tu error.',
+      [
+        'Te explica cada error en español sencillo, con un ejemplo',
+        'Revisa tus frases de Writing y te dice qué corregir',
+        'Analiza tus sesiones y tus errores para decirte qué reforzar',
+      ],
+    )}
+    <p style="${P}">Y además, todo lo de la membresía:</p>
     <ul style="${P} padding-left:20px; margin:0;">
-      <li>Práctica ilimitada en las 5 habilidades</li>
-      <li>Dashboard con tu progreso, racha y estadísticas</li>
-      <li>Repaso automático de tus errores</li>
-      <li>Clases interactivas paso a paso</li>
-      <li>Preparación para TOEFL, IELTS, TOEIC y Cambridge</li>
+      <li>Práctica sin límite diario en las 5 habilidades</li>
+      <li>Plan de estudio armado con tus puntos débiles</li>
+      <li>Repaso automático de tus errores y tu progreso</li>
+      <li>Clases interactivas y preparación para TOEFL, IELTS y más</li>
     </ul>
     <div style="${BOX}">
       <strong>$2 USD al mes</strong> (en México, $37 MXN), o <strong>$20 USD al año</strong>,
       que son 2 meses gratis. Cancelas cuando quieras, sin llamadas ni letras chiquitas.
     </div>`,
-    ctaText: 'Ver todo lo que incluye',
+    ctaText: 'Conocer Leo AI y la membresía',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
@@ -1456,8 +1570,9 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       minuto. Está en la página de práctica, gratis.
     </div>
     <p style="${P}">
-      Y si quieres ir más rápido, la membresía te da práctica sin límite y
-      clases interactivas por $2 USD al mes.
+      Y si quieres ir más rápido: con la membresía, Leo AI revisa tus
+      errores de estas semanas y te dice qué reforzar primero, para que
+      cada minuto de práctica vaya justo a lo que te falta. $2 USD al mes.
     </p>
     <p style="${P}">
       <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">Hacer el test de nivel</a>
@@ -1482,7 +1597,16 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       <strong>Esperar a mañana:</strong> tus 10 ejercicios se reinician solos.<br><br>
       <strong>Seguir sin límite:</strong> con la membresía practicas todo lo
       que quieras, por $2 USD al mes (o $20 USD al año). Cancelas cuando quieras.
-    </div>`,
+    </div>
+    ${aiCard(
+      'Más práctica, y que cada error te enseñe algo',
+      'Si ya practicas tanto, lo que más te va a servir es entender tus errores. Con la membresía, Leo AI:',
+      [
+        'Te explica en segundos por qué fallaste cada ejercicio',
+        'Revisa tus frases de Writing y te dice cómo mejorarlas',
+        'Analiza tu sesión y te dice qué te conviene practicar después',
+      ],
+    )}`,
     ctaText: 'Seguir sin límite',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Si prefieres esperar a mañana, perfecto: aquí te esperan tus ejercicios.',
@@ -1504,7 +1628,12 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       <a href="https://wa.me/529994996520" style="${LINK}">escríbenos por WhatsApp</a>
       y te ayudamos.<br><br>
       <strong>¿Te preocupa quedarte amarrado?</strong> Cancelas cuando quieras.
-    </div>`,
+    </div>
+    <p style="${P}">
+      Te recuerdo lo que se activa al terminar: práctica sin límite diario,
+      tu plan de estudio y <strong>Leo AI</strong>, que te explica cada error,
+      revisa tus frases de Writing y te dice qué reforzar. Todo por $2 USD al mes.
+    </p>`,
     ctaText: 'Terminar de activar',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
@@ -1518,9 +1647,18 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     bodyHtml: `
     <p style="${P}">
       Llevas varios días practicando con tu cuenta gratis. Ya que la usas
-      seguido, la membresía te quita el límite diario y te suma tu dashboard
-      de progreso, el repaso automático de tus errores y las clases interactivas.
+      seguido, la membresía te quita el límite diario y te suma tu plan de
+      estudio, el repaso automático de tus errores y las clases interactivas.
     </p>
+    ${aiCard(
+      'Lo que más vas a notar: Leo AI',
+      'Con tanta práctica, cada error es una oportunidad. Leo AI la aprovecha por ti:',
+      [
+        'Te explica por qué fallaste, en español sencillo',
+        'Revisa tus frases de Writing',
+        'Analiza tu progreso y te dice qué reforzar',
+      ],
+    )}
     <div style="${BOX}">
       <strong>$2 USD al mes</strong> o <strong>$20 USD al año</strong>. Cancelas cuando quieras.
     </div>`,
@@ -1535,20 +1673,30 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   get member_reactivation_10d() { return REACTIVATION_VARIANTS.member_reactivation_10d![0] },
   member_activation: {
     subject: 'Ya tienes todo listo. Empieza por aquí 👋',
-    preheader: 'Armamos tu plan de estudio, según tu nivel y tu progreso.',
+    preheader: 'Tu plan de estudio y Leo AI ya te están esperando.',
     greeting: '¡Hola! 👋',
     title: 'Tu membresía ya está activa',
     titleWithName: '{name}, tu membresía ya está activa',
     bodyHtml: `
     <p style="${P}">
-      Ya tienes acceso completo: práctica ilimitada en las 5 habilidades,
-      clases interactivas y repaso automático de tus errores.
+      Ya tienes acceso completo: práctica sin límite diario en las 5
+      habilidades, clases interactivas, repaso automático de tus errores
+      y Leo AI.
     </p>
     <div style="${BOX}">
       Para que no tengas que pensar por dónde empezar, armamos un
       <strong>plan de estudio</strong> con tu nivel, tu progreso y tus
       errores más frecuentes. Es tu mejor primer paso ahora mismo.
     </div>
+    ${aiCard(
+      'Cuando falles, no sigas de largo',
+      'Después de contestar, busca los botones de Leo AI (los que tienen la estrellita ✦):',
+      [
+        '<strong>Explícame por qué</strong>: te explica tu error en ese mismo ejercicio',
+        '<strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir',
+        '<strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar',
+      ],
+    )}
     <p style="${P}">
       Con 5-10 minutos hoy ya arrancas. Tú eliges cuánto tiempo practicar
       cada vez.
@@ -1734,7 +1882,9 @@ const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
       </p>
       <div style="${BOX}">
         Un vistazo rápido a tu progreso suele ser el mejor empujón para
-        retomar.
+        retomar. En tu diagnóstico, toca <strong>Explícame mi progreso</strong>
+        y Leo AI te dice en palabras simples cómo vas y qué te conviene
+        practicar hoy.
       </div>`,
       ctaText: 'Ver mi progreso',
       ctaUrl: `${SITE}/progreso.html`,
@@ -1765,10 +1915,19 @@ const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
     // v0: el original (novedades: TOEIC, test de nivel).
     {
       subject: 'Hay cosas nuevas en tu membresía 👀',
-      preheader: 'Preparación TOEIC, un test de nivel con listening y más.',
+      preheader: 'Leo AI ya te explica tus errores. Y hay más novedades.',
       greeting: '¡Hola! 👋',
       title: 'Esto es nuevo desde tu última visita',
       bodyHtml: `
+      ${aiCard(
+        'Nuevo: Leo AI, incluido en tu membresía',
+        'Ya no te quedas con la duda cuando fallas un ejercicio. Leo AI:',
+        [
+          'Te explica cada error en español sencillo, con un ejemplo',
+          'Revisa tus frases de Writing y te dice qué corregir',
+          'Analiza tu progreso y te dice qué reforzar primero',
+        ],
+      )}
       <div style="${BOX}">
         <strong>Preparación para el TOEIC:</strong> el examen que piden muchas
         empresas, con listening y reading tipo examen.<br><br>
@@ -1811,7 +1970,8 @@ const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
       <p style="${P}">
         Tu plan de estudio arma una práctica recomendada según tu nivel, tu
         progreso y tus errores frecuentes. No tienes que decidir nada, solo
-        entrar y seguirlo.
+        entrar y seguirlo. Y si algo no te queda claro, Leo AI te lo explica
+        ahí mismo.
       </p>
       <div style="${BOX}">
         5 a 25 minutos, tú eliges cuánto tiempo.
@@ -1890,8 +2050,8 @@ const LONG_TERM_EMAILS: EmailContent[] = [
     <p style="${P}">
       Si quieres la lista completa con traducción, está en
       <a href="${SITE}/articulo-verbos-irregulares.html" style="${LINK}">esta guía gratis</a>.
-      Y si quieres practicarlos sin límite y repasar tus errores
-      automáticamente, la membresía cuesta $2 USD al mes.
+      Y si quieres practicarlos sin límite y que Leo AI te explique cada
+      vez que te equivocas, la membresía cuesta $2 USD al mes.
     </p>`,
     ctaText: 'Practicar gramática',
     ctaUrl: `${SITE}/practica.html?skill=grammar`,
@@ -1954,11 +2114,45 @@ const LONG_TERM_EMAILS: EmailContent[] = [
     </div>
     <p style="${P}">
       Llevas un buen tiempo con tu cuenta. Si quieres dar el siguiente
-      paso, la membresía te da práctica ilimitada, clases interactivas y
-      preparación para exámenes por $2 USD al mes (o $20 USD al año).
+      paso, la membresía te da práctica sin límite diario, Leo AI para
+      entender tus errores y preparación para exámenes por $2 USD al mes
+      (o $20 USD al año).
     </p>`,
     ctaText: 'Seguir practicando',
     ctaUrl: `${SITE}/practica.html`,
     footerNote: 'Gracias por seguir aquí. Si algo se puede mejorar, respóndeme: lo leo yo.',
+  },
+  // 2026-10-02: presentación de Leo AI. Va al final a propósito: quien ya
+  // terminó la lista lo recibe en su siguiente turno (sin correo masivo
+  // aparte) y quien va a la mitad lo recibe cuando le toque.
+  {
+    subject: '¿Por qué "I didn\'t went" está mal? 🤖',
+    preheader: 'Así te lo explicaría Leo AI, la nueva herramienta de la membresía.',
+    greeting: '¡Hola! 👋',
+    title: 'Equivocarte está bien. Quedarte con la duda, no',
+    bodyHtml: `
+    <p style="${P}">Mira este error, de los más comunes:</p>
+    <div style="${BOX}">
+      ✗ I didn't went to work yesterday.<br>
+      ✓ I didn't go to work yesterday.<br><br>
+      <em>Después de <strong>didn't</strong> el verbo va en su forma base. El
+      "pasado" ya lo lleva did, así que no hace falta ponerlo dos veces.</em>
+    </div>
+    <p style="${P}">
+      Ese tipo de explicación, pensada para tu error y en español, es lo que
+      hace Leo AI dentro de cada ejercicio de la membresía.
+    </p>
+    ${aiCard(
+      'Leo AI: tu profesor de apoyo con IA',
+      'Incluido en la membresía de $2 USD al mes, sin costo extra:',
+      [
+        'Te explica cada error en segundos, con un ejemplo',
+        'Revisa tus frases de Writing y te dice qué corregir',
+        'Analiza tus errores y tu progreso para decirte qué reforzar',
+      ],
+    )}`,
+    ctaText: 'Conocer Leo AI',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
 ]

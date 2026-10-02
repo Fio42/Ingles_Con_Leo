@@ -1243,3 +1243,12 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Opciones por pagina: "¿Como uso Leo AI aqui?" en Gramatica/Vocabulario/Listening/Lectura/Writing/Mixto; diagnostico y Hoy te conviene en progreso/miembros; Reto diario en practica. Sin em dashes en textos visibles.
 - Arreglo: los botones de enlace mostraban flecha doble ("→ →").
 - LeoBot sigue sin IA (botones, sin chat libre). chatbot.js?v=20261002a en las 46 paginas. Probado a 320/375 px como visitante y como miembro simulado: todos los nodos existen, todos los enlaces apuntan a paginas reales, sin desborde ni errores de consola.
+
+2026-10-02 - Correos: Leo AI como argumento de venta y de uso (sin correos nuevos de golpe)
+- upgrade-nudge-emails.ts: helper aiCard() (tarjeta oscura tipo .ai-pitch, estilos en linea, Outlook usa azul solido). Solo en correos donde Leo AI es EL argumento.
+- Cuenta gratis: membership_intro reescrito alrededor de Leo AI (asunto nuevo); limit_reached, active_free_pitch (sigue apagado) con tarjeta; final_onboarding, checkout_abandoned y long_term 2 y 5 lo mencionan en una frase. welcome, abandoned_signup, day1, day3, day5, reactivation_3d sin cambios (no venden a proposito).
+- long_term: correo nuevo AL FINAL (#7, "didn't went" + Leo AI). Quien ya termino la lista lo recibe en su siguiente turno de 21 dias; no hubo envio masivo.
+- Miembros: bienvenida de pago (identica en stripe-webhook, paypal-webhook, mp-webhook y el barrido de upgrade-nudge) con tarjeta "como usar Leo AI" y los nombres reales de los botones (Explicame por que / Revisar mi frase con Leo AI / Analizar mi sesion con Leo AI). member_activation con la misma tarjeta; member_reactivation_10d v0 abre con "Nuevo: Leo AI"; 3d v2 menciona "Explicame mi progreso"; 10d v2 una frase. streak-reminder-email: una linea.
+- Del tope diario de Leo AI no se habla en los correos (ni "ilimitado" ni "tiene limite"; pedido de Leo). Tampoco se dice que es un chat libre.
+- Revisado: 31 correos renderizados a 320/360 px sin desborde, 0 em dashes. Codigo desplegado comparado con el del repo: solo cambian los textos.
+- PENDIENTE: desplegar stripe-webhook, paypal-webhook, rapid-service (= mp-webhook.ts), upgrade-nudge-emails y streak-reminder-email (Leo corre los comandos).

@@ -361,6 +361,16 @@ const HTML_BIENVENIDA = `
       speaking y writing, organizadas para que avances a tu ritmo y sin
       complicaciones.
     </p>
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI · Incluido</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">Tu profesor de apoyo con IA ya está activo</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">Después de contestar un ejercicio, busca los botones con la estrellita ✦:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Explícame por qué</strong>: te explica tu error en español sencillo</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar</td></tr>
+      </table>
+    </div>
     <p style="text-align:center; margin:28px 0;">
       <a href="https://inglesconleo.com/miembros.html"
          style="background-color:#253ECC; color:#ffffff; text-decoration:none;
@@ -370,10 +380,12 @@ const HTML_BIENVENIDA = `
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
       No necesitas estudiar horas. Con unos minutos de práctica constante
-      puedes avanzar muchísimo.
+      puedes avanzar muchísimo, sobre todo si cada error lo conviertes en
+      algo que ya entiendes.
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
-      Empieza por la habilidad que más quieras mejorar y continúa desde ahí.
+      Si no sabes por dónde empezar, entra a tu plan de estudio: está armado
+      con tu nivel y tus puntos débiles.
     </p>
     <p style="color:#333; font-size:15px; line-height:1.6;">
       Si en algún momento tienes una duda o necesitas ayuda, puedes responder

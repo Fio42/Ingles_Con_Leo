@@ -44,6 +44,23 @@ const SURVEY_URL_BASE = 'https://inglesconleo.com/encuesta.html'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// Solo el Cron puede llamar esta función (2026-10-01): manda el header
+// x-internal-secret con la llave 'internal_functions_secret' de Supabase
+// Vault, revisada con public.internal_secret_ok (solo service_role).
+async function internalSecretOk(secret: string | null): Promise<boolean> {
+  if (!secret) return false
+  // Reintenta si la consulta falla (p. ej. "JWT issued at future" al
+  // arrancar con el reloj un poco adelantado). Una llave mala no falla:
+  // devuelve false y se rechaza de inmediato.
+  for (let intento = 1; intento <= 3; intento++) {
+    const { data, error } = await supabase.rpc('internal_secret_ok', { p_secret: secret })
+    if (!error) return data === true
+    console.error(`Error revisando la llave interna (intento ${intento}):`, error)
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1000))
+  }
+  return false
+}
+
 const SURVEY_MIN_DAYS = 15
 const SURVEY_MAX_DAYS = 22 // ventana de seguridad: si el Cron dejó de
                             // correr por unos días, esto evita mandar
@@ -73,6 +90,9 @@ function isGoodSendHour(now: number): boolean {
 }
 
 Deno.serve(async (req: Request) => {
+  if (!(await internalSecretOk(req.headers.get('x-internal-secret')))) {
+    return json({ ok: false, error: 'unauthorized' }, 401)
+  }
   try {
     // Modo manual (uso puntual desde el botón "Test" de Supabase, NO lo
     // usa el Cron): si el cuerpo trae "manual_emails", manda la encuesta

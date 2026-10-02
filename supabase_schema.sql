@@ -860,3 +860,81 @@ alter table public.profiles add column if not exists member_welcome_sent_at time
 update public.profiles
    set member_welcome_sent_at = coalesce(member_since, now())
  where is_member = true and member_welcome_sent_at is null;
+
+-- ============================================================
+-- 2026-10-01: llave interna + bienvenida de cuenta gratis AL INSTANTE.
+-- (Ya aplicado en Supabase.) La llave se genera dentro de Vault y no
+-- aparece en ningún archivo. El Cron y el trigger la mandan en el
+-- header x-internal-secret; upgrade-nudge-emails rechaza (401) lo demás.
+-- ============================================================
+select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'internal_functions_secret', 'Llave para Cron/triggers -> Edge Functions')
+where not exists (select 1 from vault.secrets where name = 'internal_functions_secret');
+
+create or replace function public.internal_secret_ok(p_secret text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(p_secret, '') <> '' and exists (
+    select 1 from vault.decrypted_secrets
+     where name = 'internal_functions_secret' and decrypted_secret = p_secret
+  );
+$$;
+revoke all on function public.internal_secret_ok(text) from public, anon, authenticated;
+grant execute on function public.internal_secret_ok(text) to service_role;
+
+-- Reserva atómica de la bienvenida (lease de 15 min, ver upgrade-nudge-emails.ts).
+alter table public.profiles add column if not exists welcome_claimed_at timestamptz;
+
+-- Los 3 Cron mandan la llave de Vault (antes: 'TU_SECRET_KEY_AQUI').
+select cron.alter_job(j.jobid, command := format($cmd$
+  select net.http_post(
+    url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/%s',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-internal-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'internal_functions_secret')
+    ),
+    body := '{}'::jsonb,
+    timeout_milliseconds := 60000
+  );
+$cmd$, f.slug))
+from cron.job j
+join (values ('inglesconleo-upgrade-nudge-emails','upgrade-nudge-emails'),
+             ('inglesconleo-survey-15d-email','survey-15d-email'),
+             ('inglesconleo-streak-reminder-email','streak-reminder-email')) f(jobname, slug)
+  on f.jobname = j.jobname;
+
+-- Trigger: al crearse el perfil, pide la bienvenida SOLO de esa cuenta.
+-- net.http_post solo deja la petición en cola (no espera respuesta), y
+-- cualquier error se ignora: nunca frena ni rompe el registro.
+create or replace function public.send_welcome_on_profile_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.is_member is not true and new.email is not null then
+    perform net.http_post(
+      url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/upgrade-nudge-emails',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'x-internal-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'internal_functions_secret')
+      ),
+      body := jsonb_build_object('welcome_user_id', new.id),
+      timeout_milliseconds := 30000
+    );
+  end if;
+  return new;
+exception when others then
+  return new; -- nunca bloquear la creación de la cuenta
+end;
+$$;
+revoke all on function public.send_welcome_on_profile_insert() from public, anon, authenticated;
+
+drop trigger if exists profiles_send_welcome on public.profiles;
+create trigger profiles_send_welcome
+  after insert on public.profiles
+  for each row execute function public.send_welcome_on_profile_insert();
