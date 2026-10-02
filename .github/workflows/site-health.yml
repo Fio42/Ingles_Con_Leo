@@ -52,15 +52,41 @@ jobs:
         working-directory: tools/site-health
         run: node audit.js
 
+      # SITE_HEALTH_REPORT.md y history.json son archivos GENERADOS: cada
+      # corrida los reescribe completos a partir del historial anterior.
+      # Por eso un "git pull --rebase" daba conflicto siempre que otra
+      # corrida (o un push manual) tocara los mismos archivos mientras esta
+      # auditaba. En vez de rebasar y resolver a mano, si main avanzó se
+      # parte del main nuevo (con su historial al día), se regenera el
+      # reporte encima con los datos ya recolectados (Lighthouse queda en
+      # lighthouse-raw, que git no toca) y se vuelve a intentar. Así ninguna
+      # corrida se pierde ni se pisa.
       - name: Subir el reporte y el historial actualizados
         run: |
           git config user.name "site-health-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add SITE_HEALTH_REPORT.md tools/site-health/history.json
-          if git diff --cached --quiet; then
-            echo "Sin cambios en el reporte, no hay nada que subir."
-          else
+
+          for attempt in 1 2 3 4 5; do
+            git add SITE_HEALTH_REPORT.md tools/site-health/history.json
+            if git diff --cached --quiet; then
+              echo "Sin cambios en el reporte, no hay nada que subir."
+              exit 0
+            fi
             git commit -m "Site Health: actualizar reporte automático"
-            git pull --rebase origin main
-            git push origin main
-          fi
+
+            git fetch origin main
+            if git merge-base --is-ancestor origin/main HEAD; then
+              # main no avanzó desde el checkout: el push es directo
+              if git push origin HEAD:main; then
+                echo "Reporte subido (intento $attempt)."
+                exit 0
+              fi
+            fi
+
+            echo "main avanzó (intento $attempt): se regenera el reporte sobre el historial más reciente."
+            git reset --hard origin/main
+            (cd tools/site-health && node audit.js)
+          done
+
+          echo "No se pudo subir el reporte tras 5 intentos."
+          exit 1

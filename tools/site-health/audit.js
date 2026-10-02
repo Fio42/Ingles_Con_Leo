@@ -377,6 +377,42 @@ function checkSitemapCoverage(sitemapUrls, visited, localIntent, findings) {
 // ---------------------------------------------------------------
 // 6. Lighthouse (lee los JSON que ya generó run-lighthouse.js)
 // ---------------------------------------------------------------
+// El Meta Pixel (necesario para medir los anuncios) deja la cookie de
+// terceros "fr" de facebook.com. Desde que Chrome endureció ese chequeo,
+// Lighthouse resta ~23 puntos de Best Practices en TODAS las páginas por
+// eso, aunque el sitio no cambió. No es algo que se pueda arreglar sin
+// quitar el pixel, así que se recalcula el puntaje sin esos dos audits
+// (solo si TODAS las cookies/avisos vienen de facebook.com) y se avisa
+// aparte como INFO en vez de dejarlo como crítico en cada corrida.
+const META_PIXEL_AUDITS = ['third-party-cookies', 'inspector-issues'];
+
+function isMetaPixelOnly(audit) {
+  const items = (audit && audit.details && audit.details.items) || [];
+  const urls = [];
+  for (const it of items) {
+    if (it.url) urls.push(it.url);
+    const sub = (it.subItems && it.subItems.items) || [];
+    for (const s of sub) if (s.url) urls.push(s.url);
+  }
+  return urls.length > 0 && urls.every((u) => /^https:\/\/([a-z0-9-]+\.)?facebook\.com\//.test(u));
+}
+
+// Devuelve { score, ignored } con Best Practices sin los audits del Meta Pixel.
+function bestPracticesWithoutMetaPixel(cat, audits) {
+  if (!cat || cat.score == null) return { score: null, ignored: false };
+  const ignoredIds = META_PIXEL_AUDITS.filter((id) => audits[id] && audits[id].score === 0 && isMetaPixelOnly(audits[id]));
+  if (ignoredIds.length === 0) return { score: Math.round(cat.score * 100), ignored: false };
+  let total = 0;
+  let got = 0;
+  for (const ref of cat.auditRefs || []) {
+    const a = audits[ref.id];
+    if (!a || a.score == null || !ref.weight || ignoredIds.includes(ref.id)) continue;
+    total += ref.weight;
+    got += ref.weight * a.score;
+  }
+  return { score: total ? Math.round((got / total) * 100) : Math.round(cat.score * 100), ignored: true };
+}
+
 function loadLighthouseResults() {
   const results = {};
   if (!fs.existsSync(LIGHTHOUSE_DIR)) return results;
@@ -387,12 +423,14 @@ function loadLighthouseResults() {
       const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
       const cats = raw.categories || {};
       const audits = raw.audits || {};
+      const bp = bestPracticesWithoutMetaPixel(cats['best-practices'], audits);
       results[page.url] = {
         label: page.label,
         performance: cats.performance ? Math.round(cats.performance.score * 100) : null,
         seo: cats.seo ? Math.round(cats.seo.score * 100) : null,
         accessibility: cats.accessibility ? Math.round(cats.accessibility.score * 100) : null,
-        bestPractices: cats['best-practices'] ? Math.round(cats['best-practices'].score * 100) : null,
+        bestPractices: bp.score,
+        metaPixelIgnored: bp.ignored,
         lcp: audits['largest-contentful-paint'] ? audits['largest-contentful-paint'].numericValue : null,
         cls: audits['cumulative-layout-shift'] ? audits['cumulative-layout-shift'].numericValue : null,
         tbt: audits['total-blocking-time'] ? audits['total-blocking-time'].numericValue : null,
@@ -427,6 +465,10 @@ function auditLighthouse(lhResults, history, findings) {
     if (r.consoleErrors > 0) {
       findings.push(mk(SEV.WARNING, 'console-errors', url, `${r.consoleErrors} error(es) de consola detectados por Lighthouse.`, 'Puede indicar JS roto que afecta funcionalidad.', 'Abrir la consola del navegador en esta página y revisar.'));
     }
+  }
+  const ignoredPages = Object.entries(lhResults).filter(([, r]) => r.metaPixelIgnored).map(([url]) => url);
+  if (ignoredPages.length) {
+    findings.push(mk(SEV.INFO, 'lighthouse-meta-pixel', BASE_URL, `Best Practices se calculó sin la cookie de terceros del Meta Pixel (${ignoredPages.length} página(s)).`, 'Lighthouse penaliza la cookie "fr" de facebook.com aunque no se puede quitar sin desactivar el pixel de anuncios; se ignora para no marcar críticos falsos.', 'Nada que hacer, salvo que algún día se quite el pixel.'));
   }
   if (Object.keys(lhResults).length === 0) {
     findings.push(mk(SEV.INFO, 'lighthouse', BASE_URL, 'No se encontraron resultados de Lighthouse en esta corrida.', 'El reporte de rendimiento queda incompleto.', 'Ejecutar tools/site-health/run-lighthouse.js antes del audit, o revisar el paso de Lighthouse en el workflow.'));
