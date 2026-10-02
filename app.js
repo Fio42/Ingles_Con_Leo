@@ -6760,19 +6760,22 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
 /* ---------- Tarjeta "Siguiente refuerzo" (home) ----------
    Demostración de cómo se adapta el sistema después de practicar: elige
    al azar uno de los temas reales de GRAMMAR_BANK (lista corta
-   MINI_LESSONS, generada con tools/generar_mini_lecciones.js) y lo pone
-   como "Siguiente refuerzo". No son datos del visitante. Si la lista no
-   carga, se queda el tema que ya trae el HTML. */
+   MINI_LESSONS = [etiqueta, microexplicación], generada con
+   tools/generar_mini_lecciones.js) y lo pone como "Siguiente refuerzo"
+   con su regla corta. No son datos del visitante. Si la lista no carga,
+   se queda el tema que ya trae el HTML. */
 function renderDailyMiniLesson(){
   if(typeof MINI_LESSONS === 'undefined' || !MINI_LESSONS.length) return;
   const enEl = document.querySelector('.hero-v2-card-en');
-  if(!enEl) return;
-  const topic = MINI_LESSONS[Math.floor(Math.random() * MINI_LESSONS.length)];
+  const esEl = document.querySelector('.hero-v2-card-es');
+  if(!enEl || !esEl) return;
+  const lesson = MINI_LESSONS[Math.floor(Math.random() * MINI_LESSONS.length)];
   const strong = document.createElement('strong');
-  strong.textContent = topic;
+  strong.textContent = lesson[0];
   enEl.textContent = 'Siguiente refuerzo:';
   enEl.appendChild(document.createElement('br'));
   enEl.appendChild(strong);
+  esEl.textContent = lesson[1];
 }
 
 /* ============================================================
