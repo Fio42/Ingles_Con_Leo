@@ -31,9 +31,13 @@
    escondemos el flotante para que nunca tape un botón real (ver app.js,
    initLeobotAutoHide). El panel abierto (si el usuario ya lo abrió) se
    deja intacto: solo se oculta el lanzador y el aviso/reopen. */
-body.leobot-away .leobot-fab,
+body.leobot-away .leobot-fab{z-index:200;width:56px;height:56px;pointer-events:none;opacity:.9;}
 body.leobot-away .leobot-reopen,
 body.leobot-away .leobot-greet{display:none !important;}
+/* Con una sesión de práctica en pantalla el robot sigue visible (chico),
+   y se deja espacio al final de la página para que ningún botón quede
+   debajo de él. */
+body.leobot-away{padding-bottom:84px;}
 
 /* Punto de notificación: avisa "tienes algo nuevo" mientras la burbuja de
    saludo está visible, sin ser tan grande como para distraer. */
