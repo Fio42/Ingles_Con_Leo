@@ -1008,11 +1008,11 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 .hero-v2-card-link{display:inline-block;margin-top:8px;font-weight:700;color:var(--blue);font-size:0.7rem;}
 @media(min-width:900px){
-  .hero-v2-card-tag{font-size:0.74rem;padding:4px 10px;margin-bottom:12px;}
-  .hero-v2-card-en{font-size:1.15rem;-webkit-line-clamp:unset;}
-  .hero-v2-card-es{font-size:0.9rem;-webkit-line-clamp:unset;}
+  .hero-v2-card-tag{font-size:0.92rem;padding:5px 12px;margin-bottom:14px;}
+  .hero-v2-card-en{font-size:1.45rem;-webkit-line-clamp:unset;}
+  .hero-v2-card-es{font-size:1.14rem;margin-top:6px;-webkit-line-clamp:unset;}
   .hero-v2-card-explain{padding:12px 14px;font-size:0.86rem;margin-top:14px;line-height:1.5;-webkit-line-clamp:unset;}
-  .hero-v2-card-link{margin-top:14px;font-size:0.88rem;}
+  .hero-v2-card-link{margin-top:16px;font-size:1.04rem;}
 }
 
 @media(max-width:520px){
