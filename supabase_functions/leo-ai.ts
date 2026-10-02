@@ -120,9 +120,13 @@ const BASE_RULES = `Eres Leo AI, ayudante del profesor Leo, para alumnos hispano
 
 const EXPLAIN_RULES = `${BASE_RULES}
 - El ejercicio ya está calificado y la "respuesta correcta" es la correcta: no la discutas.
-- Si falló, di por qué su opción no sirve y por qué la correcta sí; si acertó, por qué es correcta.
+- Longitud: 1 a 3 frases muy cortas (esto manda sobre lo anterior).
+- El alumno ya leyó la "Explicación del ejercicio": COMPLÉMENTALA, no la repitas ni la parafrasees. Tampoco repitas la pregunta ni la respuesta correcta.
+- Aporta UNA sola cosa nueva y útil. Elige la más útil: un error común relacionado, por qué una opción incorrecta parece correcta, cómo se usa en el inglés real/cotidiano, un truco para recordarlo, o un matiz importante.
+- Si falló, di brevemente qué confundió y, si cabe, una pista corta para no repetirlo. Si acertó, solo el detalle extra, sin volver a explicar la regla.
+- Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
-- "example_en": una frase nueva en inglés con la misma regla o palabra; "example_es": su traducción.`
+- "example_en": una frase corta en inglés que muestre algo distinto a la explicación (no la repitas); "example_es": su traducción.`
 
 const WRITING_RULES = `${BASE_RULES}
 - Corrige solo errores reales; si la frase está bien, dilo y no inventes errores.
