@@ -6757,50 +6757,22 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
   renderCurrent();
 }
 
-/* ---------- Mini lección del día (home) ----------
-   Elige un ejemplo al azar de GRAMMAR_BANK cada vez que se carga la
-   página, para que se sienta distinta en cada visita/refresh en vez
-   de repetir siempre la misma. No requiere backend: todo pasa en el
-   navegador. */
-function pickDailyGrammarExample(){
-  /* En el inicio se carga mini-lecciones.js (lista corta ya filtrada,
-     ~14 KB) en vez de todo data.js (~190 KB), para que abra rapido en
-     el celular. Se genera con tools/generar_mini_lecciones.js. */
-  if(typeof MINI_LESSONS !== 'undefined' && MINI_LESSONS.length){
-    return MINI_LESSONS[Math.floor(Math.random() * MINI_LESSONS.length)];
-  }
-  if(typeof GRAMMAR_BANK === 'undefined') return null;
-  const pool = [];
-  Object.keys(GRAMMAR_BANK).forEach(level=>{
-    GRAMMAR_BANK[level].forEach(variant=>{
-      variant.forEach(topic=>{
-        topic.items.forEach(item=>{
-          if(item.examples && item.examples.length){
-            pool.push({ en: item.examples[0].en, es: item.examples[0].es, explain: item.explain });
-          }
-        });
-      });
-    });
-  });
-  if(!pool.length) return null;
-  /* La tarjeta del inicio es compacta (en mobile queda junto a la mano
-     del personaje), así que preferimos ejemplos cortos para que quepan
-     bien. Si por algún motivo no hay ninguno corto, usamos el pool
-     completo como respaldo (nunca se queda sin mini lección). */
-  const shortPool = pool.filter(p => p.en.length <= 45 && p.explain.length <= 90);
-  const finalPool = shortPool.length ? shortPool : pool;
-  const randomIndex = Math.floor(Math.random() * finalPool.length);
-  return finalPool[randomIndex];
-}
+/* ---------- Tarjeta "Siguiente refuerzo" (home) ----------
+   Demostración de cómo se adapta el sistema después de practicar: elige
+   al azar uno de los temas reales de GRAMMAR_BANK (lista corta
+   MINI_LESSONS, generada con tools/generar_mini_lecciones.js) y lo pone
+   como "Siguiente refuerzo". No son datos del visitante. Si la lista no
+   carga, se queda el tema que ya trae el HTML. */
 function renderDailyMiniLesson(){
-  const lesson = pickDailyGrammarExample();
-  if(!lesson) return;
+  if(typeof MINI_LESSONS === 'undefined' || !MINI_LESSONS.length) return;
   const enEl = document.querySelector('.hero-v2-card-en');
-  const esEl = document.querySelector('.hero-v2-card-es');
-  const explainEl = document.querySelector('.hero-v2-card-explain');
-  if(enEl) enEl.textContent = lesson.en;
-  if(esEl) esEl.textContent = lesson.es;
-  if(explainEl) explainEl.textContent = lesson.explain;
+  if(!enEl) return;
+  const topic = MINI_LESSONS[Math.floor(Math.random() * MINI_LESSONS.length)];
+  const strong = document.createElement('strong');
+  strong.textContent = topic;
+  enEl.textContent = 'Siguiente refuerzo:';
+  enEl.appendChild(document.createElement('br'));
+  enEl.appendChild(strong);
 }
 
 /* ============================================================
