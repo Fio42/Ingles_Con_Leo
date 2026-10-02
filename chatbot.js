@@ -18,6 +18,11 @@
           Supabase (tabla leobot_reports) y le avisan a Leo por
           correo (Edge Function leobot-notify), en vez de solo abrir
           WhatsApp.
+   - 2026-10-02: contenido al día con Leo AI (nodo leoAi, botones por
+     página), Tu diagnóstico / "Hoy te conviene", Repaso personal,
+     Reto diario, precios y pagos, nivel Principiante (A0), test de
+     nivel, Lectura, exámenes, clases particulares y buscador de
+     artículos. LeoBot sigue sin IA: Leo AI vive en los ejercicios.
    - Para agregar contenido nuevo en el futuro: agrega un nodo nuevo a
      NODES y enlázalo desde alguna opción existente, o agrega una
      entrada a PAGE_CONTEXT para una página nueva. No hace falta tocar
@@ -107,24 +112,25 @@
      predecibles" que el resto del árbol de nodos.
      ============================================================ */
   var PAGE_CONTEXT = {
-    'index.html': { explain:'Esta es la página de inicio: desde aquí puedes empezar a practicar gratis, ver artículos para aprender inglés, o conocer la membresía.', cta:{ label:'Practicar gratis →', href:'practica.html' } },
-    'articulos.html': { explain:'Aquí están todos los artículos y videos para aprender inglés, organizados por tema. Puedes filtrar por categoría o buscar uno en particular.', cta:null },
-    'practica.html': { explain:'Esta es la práctica gratis: eliges una habilidad y tu nivel, y haces una sesión corta sin necesidad de cuenta. Tu progreso se guarda en este navegador.', cta:{ label:'¿Qué practicar?', to:'practice' } },
-    'practica-miembros.html': { explain:'Desde aquí eliges qué habilidad practicar dentro de tu cuenta: Gramática, Vocabulario, Listening, Writing, Speaking, Lectura o Mixto.', cta:null },
-    'miembros.html': { explain:'Aquí tienes tu panel: racha, nivel, meta semanal, tu plan de estudio recomendado, accesos rápidos a cada habilidad, tus errores frecuentes y el reto diario.', cta:null },
-    'progreso.html': { explain:'Esta página resume tu actividad: ejercicios de la semana, tu precisión reciente, tu racha, y cuánto has cubierto de cada habilidad. Te sirve para ver dónde tienes más margen y volver directo a practicar eso.', cta:{ label:'Ver mi progreso →', href:'progreso.html' } },
-    'plan-estudio.html': { explain:'Tu plan de estudio arma automáticamente una práctica corta combinando tu nivel, tu progreso y tus errores recientes, para que no tengas que decidir qué hacer cada día.', cta:null },
-    'gramatica.html': { explain:'Estás en Gramática: eliges o completas la respuesta correcta y siempre te explico por qué, con ejemplos reales.', cta:null },
-    'vocabulario.html': { explain:'Estás en Vocabulario: cada palabra viene con su traducción y ejemplos reales de uso, no solo la definición.', cta:null },
-    'listening.html': { explain:'Estás en Listening: escuchas un audio corto y respondes sobre lo que entendiste. Después puedes comparar con la transcripción.', cta:null },
-    'writing.html': { explain:'Estás en Writing: escribes una frase y la revisas tú mismo con la guía que te doy, sin corrección automática de IA.', cta:null },
-    'speaking.html': { explain:'Estás en Speaking: escuchas la pronunciación correcta, te grabas diciendo lo mismo, y comparas ambos audios tú mismo.', cta:null },
-    'lectura.html': { explain:'Estás en Lectura: lees un texto corto y respondes preguntas sobre lo que entendiste.', cta:null },
+    'index.html': { explain:'Esta es la página de inicio. Desde aquí puedes practicar gratis sin registrarte, hacer el test de nivel, leer las guías de Aprende inglés o conocer la membresía, que incluye Leo AI, tu profesor de apoyo con IA.', cta:{ label:'Practicar gratis →', href:'practica.html' } },
+    'articulos.html': { explain:'Aquí están todas las guías y videos para aprender inglés, organizados por tema. Puedes filtrar por categoría o usar el buscador de arriba para encontrar un tema en particular (por ejemplo "preposiciones" o "pasado").', cta:null },
+    'practica.html': { explain:'Esta es la práctica gratis: eliges tu nivel y una habilidad, y haces una sesión corta sin necesidad de cuenta. También está el Reto diario. Si creas una cuenta gratis, tu progreso y tu racha quedan guardados.', cta:{ label:'¿Qué practicar?', to:'practice' } },
+    'practica-miembros.html': { explain:'Desde aquí eliges tu nivel y qué habilidad practicar dentro de tu cuenta: Gramática, Vocabulario, Listening, Writing, Speaking, Lectura o Mixto. Cada sesión trae ejercicios que todavía no has hecho, y si sales a la mitad, puedes continuar donde te quedaste.', cta:null },
+    'miembros.html': { explain:'Este es tu panel. Arriba está lo que te conviene hacer hoy (tu Plan de estudio o la práctica que te recomienda tu diagnóstico) y la tarjeta para continuar donde te quedaste. Más abajo: Tu diagnóstico, tu Repaso personal (tus errores frecuentes), el Reto diario, tu racha y tus accesos a cada habilidad, clases y exámenes.', cta:null },
+    'progreso.html': { explain:'Aquí ves tu progreso en orden: un resumen, lo que hoy te conviene practicar, tu diagnóstico (en qué vas bien y qué reforzar), tus habilidades, los temas a reforzar y tu resumen de la semana. Con el botón "Explícame mi progreso", Leo AI te lo explica en palabras simples.', cta:{ label:'¿Qué es Tu diagnóstico?', to:'diagnosis' } },
+    'plan-estudio.html': { explain:'Tu Plan de estudio arma una práctica corta por ti, combinando tu nivel, tu progreso, tus errores recientes y tu punto débil del diagnóstico. Tú solo eliges cuánto tiempo tienes (5 a 25 min).', cta:null },
+    'gramatica.html': { explain:'Estás en Gramática: eliges o completas la respuesta correcta y siempre te explico por qué, con ejemplos reales. Si eres miembro, después de responder puedes tocar "Explícame por qué" para que Leo AI te lo explique a tu medida.', cta:null },
+    'vocabulario.html': { explain:'Estás en Vocabulario: cada palabra viene con su traducción y ejemplos reales de uso, no solo la definición. Si eres miembro, Leo AI te puede explicar cualquier respuesta.', cta:null },
+    'listening.html': { explain:'Estás en Listening: escuchas un audio corto y respondes sobre lo que entendiste. Después puedes ver la transcripción y, si eres miembro, pedirle a Leo AI que te explique la respuesta.', cta:null },
+    'writing.html': { explain:'Estás en Writing: escribes una frase en inglés y la revisas con la guía que te doy. Si eres miembro, también puedes tocar "Revisar mi frase con Leo AI" para recibir una revisión con IA y un consejo para mejorarla.', cta:null },
+    'speaking.html': { explain:'Estás en Speaking: escuchas la pronunciación correcta, te grabas diciendo lo mismo y comparas ambos audios tú mismo.', cta:null },
+    'lectura.html': { explain:'Estás en Lectura: lees un texto corto y respondes preguntas sobre lo que entendiste. Si eres miembro, Leo AI te puede explicar por qué una respuesta es la correcta.', cta:null },
     'mixto.html': { explain:'Mixto combina varias habilidades en una sola sesión, para practicar de forma más parecida a usar inglés de verdad.', cta:null },
-    'errores.html': { explain:'Aquí están los ejercicios que más se te han dificultado. Repasarlos de vez en cuando ayuda más que solo avanzar con contenido nuevo.', cta:null },
+    'errores.html': { explain:'Este es tu Repaso personal: los ejercicios que más se te han dificultado, agrupados por tipo de error. "Repaso rápido" te da una sesión corta con los más importantes, y "Analizar mis errores con Leo AI" te explica qué patrón se repite y qué hacer.', cta:null },
     'juego.html': { explain:'English Rush es un juego rápido para practicar inglés jugando, sin necesidad de cuenta.', cta:null },
     'clases.html': { explain:'Las clases interactivas son lecciones guiadas paso a paso sobre situaciones reales (entrevistas, viajes, trabajo, etc.), no solo ejercicios sueltos.', cta:null },
-    'test-de-nivel-de-ingles.html': { explain:'Este test corto te ayuda a saber en qué nivel estás (de A1 a C1) para que practiques con el nivel correcto.', cta:null },
+    'clases-particulares.html': { explain:'Aquí puedes pedir una clase particular online con Leo (individual, 50 minutos). Se consulta la disponibilidad por WhatsApp o correo.', cta:null },
+    'test-de-nivel-de-ingles.html': { explain:'Este test corto te ayuda a saber en qué nivel estás (de A0 a C1) para que practiques con el nivel correcto.', cta:null },
     'toefl.html': { explain:'Aquí practicas específicamente para el examen TOEFL: Listening, Reading, Speaking con cronómetro y Writing.', cta:null },
     'ielts.html': { explain:'Aquí practicas específicamente para el examen IELTS.', cta:null },
     'toeic.html': { explain:'Aquí practicas específicamente para el examen TOEIC, el que más piden las empresas.', cta:null },
@@ -138,7 +144,7 @@
   function articleExplain(){
     var h1 = document.querySelector('h1');
     var topic = h1 ? h1.textContent.trim() : document.title;
-    return 'Este artículo trata sobre "' + escapeHtmlLite(topic) + '". Puedes leerlo completo, y si quieres practicar lo que aprendiste, busca el enlace de práctica relacionado que aparece en la página.';
+    return 'Este artículo trata sobre "' + escapeHtmlLite(topic) + '". Puedes leerlo completo, y si quieres practicar lo que aprendiste, busca el enlace de práctica relacionado que aparece en la página. Si no encuentras algo, usa el buscador de Aprende inglés.';
   }
 
   function pageContextFor(page){
@@ -230,48 +236,81 @@
      ============================================================ */
   var BASE_ROOT_OPTIONS = [
     { label:'¿Por dónde empiezo?', to:'start' },
+    { label:'¿Qué es Leo AI?', to:'leoAi' },
     { label:'¿Qué nivel elijo?', to:'level' },
-    { label:'¿Qué puedo practicar?', to:'practice' },
     { label:'¿Qué incluye Miembros?', to:'members' },
+    { label:'¿Cuánto cuesta y cómo pago?', to:'pricing' },
+    { label:'¿Qué puedo practicar?', to:'practice' },
     { label:'¿Cómo funciona mi progreso?', to:'progress' },
+    { label:'Clases particulares con Leo', to:'privateClasses' },
     { label:'Ver artículos y videos', to:'articles' }
   ];
 
+  /* Leo AI aparece después de responder en estas habilidades (ver
+     leoAiDefaultLabel en app.js), así que en esas páginas la duda
+     "¿Cómo uso Leo AI aquí?" va entre las primeras. */
+  var LEO_AI_EXERCISE_OPT = { label:'¿Cómo uso Leo AI aquí?', to:'leoAi' };
+
   var PAGE_EXTRA_ROOT = {
+    'index.html': [
+      { label:'¿Qué es Leo AI?', to:'leoAi' },
+      { label:'¿Cuánto cuesta y cómo pago?', to:'pricing' }
+    ],
     'speaking.html': [
       { label:'¿Cómo funciona Speaking?', to:'practice_speaking' },
       { label:'No escucho el audio', to:'audioIssue' }
     ],
     'listening.html': [
       { label:'¿Cómo funciona Listening?', to:'practice_listening' },
+      LEO_AI_EXERCISE_OPT,
       { label:'No escucho el audio', to:'audioIssue' }
     ],
     'writing.html': [
-      { label:'¿Cómo funciona Writing?', to:'practice_writing' }
+      { label:'¿Cómo funciona Writing?', to:'practice_writing' },
+      LEO_AI_EXERCISE_OPT
     ],
     'gramatica.html': [
-      { label:'¿Cómo funciona Gramática?', to:'practice_grammar' }
+      { label:'¿Cómo funciona Gramática?', to:'practice_grammar' },
+      LEO_AI_EXERCISE_OPT
     ],
     'vocabulario.html': [
-      { label:'¿Cómo funciona Vocabulario?', to:'practice_vocab' }
+      { label:'¿Cómo funciona Vocabulario?', to:'practice_vocab' },
+      LEO_AI_EXERCISE_OPT
+    ],
+    'lectura.html': [
+      { label:'¿Cómo funciona Lectura?', to:'practice_reading' },
+      LEO_AI_EXERCISE_OPT
+    ],
+    'mixto.html': [
+      LEO_AI_EXERCISE_OPT
     ],
     'progreso.html': [
-      { label:'¿Cómo funciona mi progreso?', to:'progress' },
+      { label:'¿Qué es Tu diagnóstico?', to:'diagnosis' },
+      { label:'¿Qué es "Hoy te conviene"?', to:'todayPick' },
       { label:'¿Cómo funciona la racha?', to:'streakInfo' }
     ],
     'miembros.html': [
+      { label:'¿Qué hago hoy?', to:'todayPick' },
+      { label:'¿Qué es Leo AI?', to:'leoAi' },
       { label:'¿Cómo continúo mi sesión?', to:'continueSession' },
       { label:'¿Cómo cambio de nivel?', to:'changeLevel' }
     ],
     'plan-estudio.html': [
       { label:'¿Cómo funciona mi plan?', to:'planInfo' }
     ],
+    'errores.html': [
+      { label:'¿Cómo funciona el Repaso personal?', to:'mistakesInfo' },
+      { label:'¿Qué es Leo AI?', to:'leoAi' }
+    ],
     'articulos.html': [
+      { label:'¿Cómo busco un tema?', to:'searchArticles' },
       { label:'Quiero ver videos', to:'videos' },
       { label:'Redes sociales', to:'social' }
     ],
     'practica.html': [
-      { label:'¿Qué nivel elijo?', to:'level' }
+      { label:'¿Qué nivel elijo?', to:'level' },
+      { label:'¿Qué es el Reto diario?', to:'dailyChallenge' },
+      { label:'¿Qué es Leo AI?', to:'leoAi' }
     ]
   };
 
@@ -292,6 +331,14 @@
     return out;
   }
   var FAQ_PRIMARY_COUNT = 4;
+
+  /* Frase extra para las habilidades donde aparece el botón de Leo AI
+     después de responder (solo miembros verificados, ver app.js). */
+  function leoAiExerciseNote(){
+    return isMember()
+      ? '<br><br>Como miembro, después de responder puedes tocar "Explícame por qué" y Leo AI te lo explica a tu medida.'
+      : '<br><br>Los miembros además pueden pedirle a Leo AI que les explique cada respuesta.';
+  }
 
   var NODES = {
     root: {
@@ -337,117 +384,215 @@
     },
 
     start: {
-      text:'Te recomiendo dos pasos: primero elige tu nivel, y luego haz una sesión corta de Gramática o Vocabulario para agarrar el ritmo. No necesitas registrarte para probar.',
+      text:'Te recomiendo dos pasos: primero haz el test de nivel (o elige tu nivel si ya lo sabes), y luego haz una sesión corta de Gramática o Vocabulario para agarrar el ritmo. No necesitas registrarte para probar.',
       options:[
         { label:'Practicar gratis →', href:'practica.html' },
-        { label:'¿Qué nivel elijo?', to:'level' },
+        { label:'Hacer el test de nivel →', href:'test-de-nivel-de-ingles.html' },
         { label:'¿Cómo estudio mejor?', to:'studyTips' }
       ]
     },
 
     level: {
-      text:'Depende de tu experiencia actual:<br><br><strong style="color:var(--green)">Fácil (A1–A2)</strong> — para quien está empezando o todavía usa frases sencillas.<br><strong style="color:var(--amber)">Medio (B1–B2)</strong> — para quien ya entiende bastante y quiere expresarse mejor.<br><strong style="color:var(--coral)">Avanzado (C1+)</strong> — para trabajar matices, precisión y estructuras más complejas.<br><br>Puedes cambiar de nivel cuando quieras, tanto en práctica gratis como en tu cuenta de miembro.',
+      text:'Depende de tu experiencia actual:<br><br><strong>Principiante (A0)</strong>: si nunca has estudiado inglés.<br><strong style="color:var(--green)">Fácil (A1–A2)</strong>: si estás empezando o usas frases sencillas.<br><strong style="color:var(--amber)">Medio (B1–B2)</strong>: si ya entiendes bastante y quieres expresarte mejor.<br><strong style="color:var(--coral)">Avanzado (C1+)</strong>: para trabajar matices, precisión y estructuras más complejas.<br><br>Si no estás seguro, el test de nivel gratis te lo dice en pocos minutos. Puedes cambiar de nivel cuando quieras.',
       options:[
+        { label:'Hacer el test de nivel →', href:'test-de-nivel-de-ingles.html' },
         { label:'Ver práctica →', href:'practica.html' }
       ]
     },
 
     changeLevel: {
-      text:'Dentro de tu panel de Miembros, en la tarjeta "Nivel actual" hay un botón "Ajustar nivel" que te deja cambiarlo cuando quieras.',
+      text:'Dentro de tu panel de Miembros, en la tarjeta "Nivel actual" hay un botón "Ajustar nivel" que te deja cambiarlo cuando quieras. También puedes elegir el nivel al empezar cada práctica.',
       options: function(){ return [membersCta()]; }
     },
 
     practice: {
-      text:'¿Qué quieres practicar?',
+      text:'Puedes practicar 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), más Lectura, Mixto, el Reto diario y el juego English Rush. Los miembros también tienen clases interactivas y preparación para TOEFL, IELTS, TOEIC y Cambridge. ¿Sobre cuál quieres saber más?',
       options:[
         { label:'Gramática', to:'practice_grammar' },
         { label:'Vocabulario', to:'practice_vocab' },
         { label:'Listening', to:'practice_listening' },
         { label:'Writing', to:'practice_writing' },
         { label:'Speaking', to:'practice_speaking' },
-        { label:'Tu progreso', to:'progress' }
+        { label:'Lectura', to:'practice_reading' },
+        { label:'Exámenes (TOEFL, IELTS...)', to:'exams' },
+        { label:'Jugar English Rush →', href:'juego.html' }
       ]
     },
 
     practice_grammar: {
-      text:'Gramática son ejercicios cortos: eliges o completas una respuesta y te explico por qué es correcta, siempre con ejemplos reales — no es solo "bien" o "mal".',
+      text: function(){
+        return 'Gramática son ejercicios cortos: eliges o completas una respuesta y te explico por qué es correcta, siempre con ejemplos reales, no solo "bien" o "mal".' + leoAiExerciseNote();
+      },
       options:[
         { label:'Practicar Gramática →', href:'gramatica.html' }
       ]
     },
 
     practice_vocab: {
-      text:'En Vocabulario ves cada palabra con su traducción y dos ejemplos de uso real, no solo "palabra = traducción". Así entiendes cómo se usa, no solo qué significa.',
+      text: function(){
+        return 'En Vocabulario ves cada palabra con su traducción y dos ejemplos de uso real, no solo "palabra = traducción". Así entiendes cómo se usa, no solo qué significa.' + leoAiExerciseNote();
+      },
       options:[
         { label:'Practicar Vocabulario →', href:'vocabulario.html' }
       ]
     },
 
     practice_listening: {
-      text:'Escuchas un audio corto y respondes una pregunta sobre lo que entendiste. Después te muestro la transcripción y la traducción para que compares.',
+      text: function(){
+        return 'Escuchas un audio corto (algunos son conversaciones con dos voces) y respondes una pregunta sobre lo que entendiste. Después te muestro la transcripción y la traducción para que compares.' + leoAiExerciseNote();
+      },
       options:[
         { label:'Practicar Listening →', href:'listening.html' }
       ]
     },
 
+    practice_reading: {
+      text: function(){
+        return 'En Lectura lees un texto corto y respondes preguntas sobre lo que entendiste. Es ideal para ganar vocabulario en contexto.' + leoAiExerciseNote();
+      },
+      options:[
+        { label:'Practicar Lectura →', href:'lectura.html' }
+      ]
+    },
+
     practice_writing: {
-      text:'Escribes una frase en inglés y la revisas tú mismo con el botón "Revisar mi frase". Te digo si vas bien encaminado o qué ajustar, con un ejemplo — no es corrección automática de IA, es honesto sobre sus límites.',
+      text: function(){
+        return isMember()
+          ? 'Escribes una frase en inglés y la revisas con "Revisar mi frase", que te dice si vas bien encaminado o qué ajustar, con un ejemplo. Además, como miembro tienes "Revisar mi frase con Leo AI": una revisión con IA de tu frase y un consejo concreto para mejorarla.'
+          : 'Escribes una frase en inglés y la revisas con "Revisar mi frase", que te dice si vas bien encaminado o qué ajustar, con un ejemplo. Los miembros también pueden pedirle a Leo AI una revisión con IA de su frase.';
+      },
       options:[
         { label:'Practicar Writing →', href:'writing.html' }
       ]
     },
 
     practice_speaking: {
-      text:'Escuchas la pronunciación correcta, te grabas diciendo la misma frase y comparas ambos audios. No inventamos un puntaje de pronunciación — la idea es que te escuches y compares tú mismo.',
+      text:'Escuchas la pronunciación correcta, te grabas diciendo la misma frase y comparas ambos audios. No inventamos un puntaje de pronunciación: la idea es que te escuches y compares tú mismo.',
       options:[
         { label:'Practicar Speaking →', href:'speaking.html' }
       ]
     },
 
+    exams: {
+      text:'Para miembros hay preparación específica para TOEFL, IELTS, TOEIC y Cambridge (B1 Preliminary, B2 First y C1 Advanced), con ejercicios en el formato real de cada examen.',
+      options: function(){
+        return isMember()
+          ? [{ label:'TOEFL →', href:'toefl.html' }, { label:'IELTS →', href:'ielts.html' }, { label:'TOEIC →', href:'toeic.html' }, { label:'Cambridge →', href:'cambridge.html' }]
+          : [membersCta(), { label:'Leer sobre el TOEFL →', href:'articulo-examen-toefl.html' }];
+      }
+    },
+
+    leoAi: {
+      text: function(){
+        return isMember()
+          ? 'Leo AI es tu profesor de apoyo con IA, ya incluido en tu membresía. Lo encuentras así:<br><br>• Después de responder en Gramática, Vocabulario, Listening, Lectura, Mixto o el Plan: "Explícame por qué".<br>• En Writing: "Revisar mi frase con Leo AI".<br>• Al terminar una sesión: "Analizar mi sesión con Leo AI".<br>• En Mis errores: "Analizar mis errores con Leo AI".<br>• En Mi progreso: "Explícame mi progreso".<br><br>Leo AI nunca cambia tu nota ni tu progreso: solo te explica. Si algún día dice "no disponible", intenta de nuevo en un momento.'
+          : 'Leo AI es el profesor de apoyo con IA de Inglés con Leo, incluido en la membresía. Te explica por qué fallaste cada ejercicio, revisa tus frases de Writing, analiza tus sesiones y tus errores, y te dice qué reforzar según tu progreso. En la práctica gratis no está disponible.';
+      },
+      options: function(){
+        return isMember()
+          ? [{ label:'Ir a practicar →', href:'practica-miembros.html' }, { label:'Ver mi progreso →', href:'progreso.html' }]
+          : [{ label:'Conocer Leo AI →', href:'miembros.html#leo-ai' }, { label:'¿Cuánto cuesta y cómo pago?', to:'pricing' }];
+      }
+    },
+
     progress: {
       text: function(){
         return isMember()
-          ? 'Como ya iniciaste sesión, tu progreso se guarda en tu cuenta: cuánto has cubierto de cada habilidad, tu precisión reciente y tus últimas sesiones. Puedes verlo desde cualquier dispositivo en el que inicies sesión.'
-          : 'Mientras practicas gratis, tu progreso se guarda en este navegador. Si creas una cuenta de miembro, pasa a guardarse en la nube y lo puedes ver desde cualquier dispositivo.';
+          ? 'Tu progreso se guarda en tu cuenta y lo ves desde cualquier dispositivo. En Mi progreso tienes un resumen, "Hoy te conviene" (lo que más te sirve practicar hoy), Tu diagnóstico (en qué vas bien y qué reforzar), tus habilidades, los temas a reforzar y tu resumen de la semana.'
+          : 'Si practicas sin cuenta, tu progreso se guarda en este navegador. Con una cuenta gratis se guardan tu progreso y tu racha. Los miembros además tienen Tu diagnóstico, que les dice en qué van bien y qué reforzar, y Leo AI para explicarles su progreso.';
       },
       options: function(){
-        var opts = [{ label:'Ver mi progreso →', href:'progreso.html' }];
+        var opts = [{ label:'Ver mi progreso →', href:'progreso.html' }, { label:'¿Qué es Tu diagnóstico?', to:'diagnosis' }];
         if(!isMember()) opts.push(membersCta());
         return opts;
       }
     },
 
+    diagnosis: {
+      text:'Tu diagnóstico mira tus respuestas reales y te dice tu fortaleza, tu punto a reforzar y cómo va cada habilidad y tema (Dominado, Mejorando, Vas bien, En práctica o Necesita refuerzo). Necesita unas cuantas respuestas para empezar: antes de eso verás "Todavía estamos conociendo tu progreso". Con "Explícame mi progreso", Leo AI te lo explica en palabras simples.',
+      options: function(){
+        return isMember()
+          ? [{ label:'Ver mi diagnóstico →', href:'progreso.html#diagnostico' }, { label:'¿Qué es "Hoy te conviene"?', to:'todayPick' }]
+          : [membersCta()];
+      }
+    },
+
+    todayPick: {
+      text:'"Hoy te conviene" es la práctica que más te sirve hoy, elegida por tu diagnóstico: repasar errores que se acumularon, reforzar tu punto débil, consolidar algo que estás por dominar o hacer tu Plan de estudio. La ves arriba en tu panel y en Mi progreso, y empieza con un solo clic.',
+      options: function(){
+        return isMember()
+          ? [{ label:'Ir a mi panel →', href:'miembros.html' }, { label:'Ir a mi plan →', href:'plan-estudio.html' }]
+          : [membersCta()];
+      }
+    },
+
     streakInfo: {
-      text:'Tu racha cuenta días seguidos practicando. Si un día se te pasa, tienes un "freeze" automático que perdona UN día sin cortar la racha (se marca con ❄️); si se te pasa un segundo día seguido, ahí sí se corta.',
+      text:'Tu racha cuenta días seguidos practicando. Si un día se te pasa, tienes un "freeze" automático que perdona UN día sin cortar la racha (se marca con ❄️). Si se te pasa un segundo día seguido, ahí sí se corta.',
       options: function(){ return [{ label:'Ver mi progreso →', href:'progreso.html' }]; }
     },
 
     planInfo: {
-      text:'El Plan de estudio elige por ti una práctica corta cada día, combinando tu nivel, tu progreso y tus errores recientes. Tú solo eliges cuánto tiempo tienes (5 a 25 min).',
+      text:'El Plan de estudio elige por ti una práctica corta cada día, combinando tu nivel, tu progreso, tus errores recientes y tu punto débil del diagnóstico (lo verás como "Refuerzo: tema"). Tú solo eliges cuánto tiempo tienes (5 a 25 min).',
       options:[
         { label:'Ir a mi plan →', href:'plan-estudio.html' }
+      ]
+    },
+
+    mistakesInfo: {
+      text:'Tu Repaso personal junta los ejercicios que fallaste y los ordena por prioridad. Cuando aciertas uno varias veces pasa a "recuperado" y luego a "dominado". "Repaso rápido" te da una sesión corta con los más importantes, y Leo AI puede analizar qué patrón se repite en tus errores.',
+      options:[
+        { label:'Hacer un repaso rápido →', href:'errores.html?modo=rapido' },
+        { label:'Ver mis errores →', href:'errores.html' }
+      ]
+    },
+
+    dailyChallenge: {
+      text:'El Reto diario son 5 ejercicios rápidos, distintos cada día. Está en Practicar gratis y en tu panel de Miembros. Es la forma más fácil de no cortar tu racha.',
+      options:[
+        { label:'Hacer el reto →', href:'practica.html' }
       ]
     },
 
     members: {
       text: function(){
         return isMember()
-          ? 'Ya iniciaste sesión como miembro. Tienes práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas, preparación para TOEFL/IELTS/Cambridge, el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube.'
-          : 'El área de miembros tiene práctica ilimitada de las 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), además de Lectura, Mixto, clases interactivas paso a paso, preparación para TOEFL, IELTS y Cambridge (B1 Preliminary, B2 First y C1 Advanced), el juego English Rush, un reto diario, repaso automático de tus errores y tu progreso guardado en la nube. Para entrar, creas una cuenta con tu correo y activas la membresía ($2 USD/mes, vía Stripe, PayPal o Mercado Pago).';
+          ? 'Ya eres miembro. Tienes Leo AI (explica tus errores, revisa tu Writing y analiza tu progreso), Tu diagnóstico y Plan de estudio adaptado a tus puntos débiles, práctica ilimitada de las 5 habilidades más Lectura y Mixto, Repaso personal de tus errores, Reto diario, clases interactivas, preparación para TOEFL, IELTS, TOEIC y Cambridge, y tu progreso guardado en la nube.'
+          : 'La membresía incluye Leo AI (te explica tus errores, revisa tu Writing y analiza tu progreso), Tu diagnóstico y un Plan de estudio adaptado a tus puntos débiles, práctica ilimitada de las 5 habilidades más Lectura y Mixto, repaso de tus errores, Reto diario, clases interactivas, preparación para TOEFL, IELTS, TOEIC y Cambridge, y tu progreso guardado en la nube. Cuesta $2 USD al mes o $20 USD al año, y cancelas cuando quieras.';
       },
       options: function(){
         var opts = [membersCta()];
-        if(!isMember()) opts.push({ label:'Practicar gratis primero', href:'practica.html' });
+        if(!isMember()) opts.push({ label:'¿Cuánto cuesta y cómo pago?', to:'pricing' }, { label:'Practicar gratis primero', href:'practica.html' });
         return opts;
       }
     },
 
+    pricing: {
+      text:'La membresía cuesta $2 USD al mes o $20 USD al año (2 meses gratis). Puedes pagar con tarjeta (Stripe), PayPal o Mercado Pago; el plan anual se paga solo con tarjeta. Con tarjeta el precio se ajusta a tu país. Puedes cancelar cuando quieras.<br><br>También puedes practicar gratis: sin cuenta, o con una cuenta gratis (no pide tarjeta) que guarda tu progreso y tu racha. La práctica gratis tiene un límite de ejercicios por día.',
+      options: function(){
+        return isMember()
+          ? [membersCta()]
+          : [{ label:'Hazte miembro →', href:'miembros.html' }, { label:'Tengo un problema con mi pago', to:'contact' }];
+      }
+    },
+
+    privateClasses: {
+      text:'Leo da clases particulares online: clase individual de 50 minutos por US$25. Consultas la disponibilidad por WhatsApp o correo desde la página de clases particulares.',
+      options:[
+        { label:'Ver clases particulares →', href:'clases-particulares.html' }
+      ]
+    },
+
     articles: {
-      text:'Tenemos artículos cortos y prácticos sobre inglés real, con ejemplos, y videos con explicaciones rápidas.',
+      text:'Tenemos guías cortas y prácticas sobre inglés real (gramática, vocabulario, entrevistas, exámenes), con ejemplos, audios y videos con explicaciones rápidas. Hay un buscador arriba para encontrar un tema.',
       options:[
         { label:'Ver artículos →', href:'articulos.html' },
         { label:'Ver videos →', href:'articulos.html#videos' }
       ]
+    },
+
+    searchArticles: {
+      text:'Usa el buscador de arriba: escribe el tema (por ejemplo "pasado", "preposiciones" o "entrevista") y te muestro solo las guías que coinciden. Con la x lo borras y vuelves a ver todo.',
+      options:[]
     },
 
     videos: {
@@ -465,27 +610,26 @@
     },
 
     audioIssue: {
-      text:'Si un audio dice "Audio próximamente.", es porque ese archivo todavía no está disponible — lo estamos agregando de a poco. No es un error tuyo ni de tu navegador.',
+      text:'Revisa primero que el volumen esté arriba y que el celular no esté en modo silencio. Si un audio dice "Audio próximamente.", es porque ese archivo todavía no está disponible: no es un error tuyo ni de tu navegador. Si ninguno suena, repórtalo y lo reviso.',
       options:[
-        { label:'Practicar Listening →', href:'listening.html' },
-        { label:'Practicar Speaking →', href:'speaking.html' }
+        { label:'Reportar un problema', to:'reportBug' }
       ]
     },
 
     studyTips: {
-      text:'Algunos tips que funcionan bien: practica poco pero seguido (5–10 min al día), repite en voz alta lo que leas, y no te saltes los ejemplos — ahí está la explicación real de por qué algo es correcto.',
+      text:'Algunos tips que funcionan bien: practica poco pero seguido (5 a 10 min al día, el Reto diario es perfecto para eso), repite en voz alta lo que leas, y no te saltes las explicaciones: ahí está el porqué de cada respuesta.',
       options:[
         { label:'Practicar ahora →', href:'practica.html' }
       ]
     },
 
     continueSession: {
-      text:'Cuando entras a Miembros, la tarjeta de arriba de todo te muestra exactamente dónde quedaste y te lleva ahí con un clic.',
+      text:'Si saliste a mitad de una práctica, no se pierde: al volver a esa habilidad (o desde la tarjeta "Continuar" de tu panel) sigues exactamente donde te quedaste.',
       options: function(){ return [membersCta()]; }
     },
 
     reportBug: {
-      text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Se manda junto con información técnica de esta página (URL, navegador, qué estabas practicando si aplica) para poder ayudarte más rápido — nunca datos sensibles.',
+      text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Se manda junto con información técnica de esta página (URL, navegador, qué estabas practicando si aplica) para poder ayudarte más rápido, nunca datos sensibles.',
       form: {
         placeholder:'¿Qué pasó? (ej: "el audio no se reproduce", "no puedo completar el ejercicio")',
         submitLabel:'Enviar reporte',
@@ -497,7 +641,7 @@
     },
 
     contact: {
-      text:'¿Tienes una duda que no alcancé a resolver arriba, o algo que no es exactamente un problema técnico? Cuéntamelo y te respondemos.',
+      text:'¿Tienes una duda que no alcancé a resolver, una pregunta sobre tu pago o algo que no es exactamente un problema técnico? Cuéntamelo y te respondemos.',
       form: {
         placeholder:'Escribe tu mensaje...',
         submitLabel:'Enviar mensaje',
@@ -685,7 +829,10 @@
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'leobot-opt-btn' + (opt.href ? ' link' : '');
-        btn.innerHTML = '<span>' + opt.label + '</span>' + (opt.href ? '<span class="arrow">→</span>' : '');
+        // Los enlaces ya llevan su flecha en .arrow: se quita la del texto
+        // para que no salga "→ →".
+        var label = opt.href ? opt.label.replace(/\s*→\s*$/, '') : opt.label;
+        btn.innerHTML = '<span>' + label + '</span>' + (opt.href ? '<span class="arrow">→</span>' : '');
         btn.addEventListener('click', function(){ handleChoice(opt); });
         optionsEl.appendChild(btn);
       });
@@ -900,7 +1047,9 @@
       'practica.html': '¿Necesitas ayuda con esta práctica? 👋',
       'practica-miembros.html': '¿No sabes qué practicar hoy? 👋',
       'miembros.html': '¿Necesitas ayuda con tu panel? 👋',
-      'plan-estudio.html': 'Puedo explicarte tu plan. 👋'
+      'plan-estudio.html': 'Puedo explicarte tu plan. 👋',
+      'errores.html': '¿Te explico cómo repasar tus errores? 👋',
+      'writing.html': '¿Sabías que Leo AI puede revisar tu frase? 👋'
     };
     function defaultGreetText(){
       return CONTEXTUAL_GREETS[currentPage()] || '¿Necesitas ayuda? 👋';

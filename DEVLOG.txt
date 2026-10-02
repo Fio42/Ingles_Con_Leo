@@ -1224,3 +1224,22 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Diagnóstico: 2 insights visibles, el resto en "Ver diagnóstico completo" (<details>). Temas: 3 primeros (ya ordenados por refuerzo), resto en "Ver todos los temas". Semana: una línea con días/ejercicios/aciertos; "Errores" y "A reforzar" (repetidos del diagnóstico) en "Ver detalles".
 - Texto de aciertos: si los aciertos recientes (u.current, con los que se decide el chip) difieren del total, se muestran ambos. Solo texto.
 - renderDiagnosisSection ahora recibe un objeto con varios contenedores. Archivos: app.js, style.css, ?v= de app.js y style.css en todos los HTML.
+
+2026-10-01 — Bienvenida de cuenta gratis al instante + función protegida con llave
+- Caso: maruzca69@gmail.com se registró 22:17 UTC y la bienvenida salió 22:30 (siguiente pasada del Cron de 30 min). No falló, solo tardó.
+- Seguridad: upgrade-nudge-emails estaba abierta (verify_jwt off y el Cron mandaba 'TU_SECRET_KEY_AQUI'). Ahora exige el header x-internal-secret = llave 'internal_functions_secret' de Supabase Vault (generada dentro de la base, no está en ningún archivo); se valida con public.internal_secret_ok() (solo service_role). Sin llave: 401. Los 3 Cron (upgrade-nudge, survey-15d, streak-reminder) mandan la llave desde Vault.
+- Trigger profiles_send_welcome (after insert en profiles) -> net.http_post {"welcome_user_id"}: la función procesa SOLO esa cuenta (nunca el barrido). Asíncrono (pg_net) y con exception handler: nunca frena ni rompe el registro.
+- Dedupe: welcome_claimed_at (columna nueva) es una reserva atómica con lease de 15 min, condicionada a lifecycle_emails.welcome vacío; solo quien la gana manda. Si Resend falla, se libera y el Cron reintenta. El Cron solo toma welcome en cuentas de 10+ min (WELCOME_CRON_DELAY_MINUTES).
+- Desplegado con npx supabase functions deploy --no-verify-jwt --use-api (la CLI ya tenía sesión en esta PC).
+- Pruebas reales (cuenta amne420+prueba1@gmail.com): registro -> marca de enviada en 0.76 s; correo recibido; 2 eventos repetidos -> 0 envíos; 3 eventos simultáneos sin marca -> exactamente 1; Cron con cuenta < 10 min -> no la toca; llamada sin llave / llave falsa -> 401.
+- Con registro por correo/contraseña la bienvenida puede salir sin nombre ("¡Hola!"): aceptado por Leo.
+- survey-15d-email y streak-reminder-email también exigen la llave (mismo internalSecretOk). Lo desplegado era el mismo código que el repo (solo cambiaban comentarios). Sin llave: 401; survey con llave: 200.
+- Incidente 23:00 UTC: survey-15d-email respondió 401 porque la consulta de la llave falló con "JWT issued at future" (reloj del servidor recién arrancado un poco adelantado), no por llave mala. internalSecretOk ahora reintenta hasta 3 veces (1 s) si la consulta da error; una llave incorrecta se sigue rechazando de inmediato. Redesplegadas las 3; probadas sin llave (401) y con llave (200).
+- Revisión de las demás funciones abiertas: stripe/paypal/resend-webhook verifican firma; mp-webhook reconsulta el pago a la API de Mercado Pago; notify-new-comment solo escribe a Leo; submit-survey y email-unsubscribe usan token por persona. resend-webhook no estaba en el repo: se copió la versión desplegada a supabase_functions/resend-webhook.ts.
+
+2026-10-02 - LeoBot al dia con las novedades (Leo AI, diagnostico, precios)
+- chatbot.js: nodos nuevos leoAi (distinto para miembro y no miembro, dice donde esta cada boton), diagnosis, todayPick, mistakesInfo, dailyChallenge, pricing ($2/mes, $20/año solo tarjeta, Stripe/PayPal/MP, limite gratis sin numero), privateClasses (50 min, US$25), exams, practice_reading, searchArticles.
+- Corregido texto viejo: Writing decia "sin correccion automatica de IA" (ya no es cierto para miembros). Nivel Principiante (A0) y test de nivel agregados. "Explicame esta pagina" actualizado en index, miembros, progreso, plan, errores, articulos, ejercicios y clases-particulares.
+- Opciones por pagina: "¿Como uso Leo AI aqui?" en Gramatica/Vocabulario/Listening/Lectura/Writing/Mixto; diagnostico y Hoy te conviene en progreso/miembros; Reto diario en practica. Sin em dashes en textos visibles.
+- Arreglo: los botones de enlace mostraban flecha doble ("→ →").
+- LeoBot sigue sin IA (botones, sin chat libre). chatbot.js?v=20261002a en las 46 paginas. Probado a 320/375 px como visitante y como miembro simulado: todos los nodos existen, todos los enlaces apuntan a paginas reales, sin desborde ni errores de consola.
