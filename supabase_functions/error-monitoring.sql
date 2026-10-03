@@ -27,13 +27,17 @@
 --                                                    1000, 10000 y con >6 h desde el último
 --   * info                                        -> nunca individual (solo resumen)
 --   * status = 'ignored'                          -> cuenta, nunca avisa
---   * topes: 10 correos/hora y 40/día; el exceso va al resumen diario.
+--   * presupuestos SEPARADOS por origen confiable (p_source, que pone nuestro código):
+--       client 5/hora y 15/día · server 10/hora y 40/día · server_critical 10/hora y 40/día.
+--     El navegador nunca puede gastar los del servidor. El exceso va al resumen diario.
 -- Resumen diario: 9:00 America/Cancun (= 14:00 UTC, Cancún no tiene cambio
 -- de horario), solo si hubo algo.
 --
--- Topes contra abuso: 600 eventos/hora por origen (client/server), 30
--- fingerprints NUEVOS/hora, 5000 filas máximo (lo que pase se agrupa en la
--- fila 'overflow'). El límite por IP (30/hora) lo aplica report-error.
+-- Topes contra abuso, TODOS por origen (client/server): 600 eventos/hora, 30
+-- fingerprints NUEVOS/hora, filas máximas (client 4000, server 1000; lo que pase
+-- se agrupa en 'overflow:<origen>') y espacio de fingerprints propio (un evento
+-- del navegador no puede tocar filas del servidor). El límite por IP (30/hora)
+-- lo aplica report-error, que siempre manda source = 'client'.
 --
 -- MANEJO (Supabase -> SQL Editor):
 --   Ver lo abierto:   select id, severity, kind, section, message, count, last_seen
@@ -199,6 +203,9 @@ declare
   v_regress boolean := false;
   v_reason text := null;
   v_exists boolean;
+  v_budget text;
+  v_hour_limit int;
+  v_day_limit int;
 begin
   if p_source not in ('client', 'server') then return jsonb_build_object('logged', false, 'reason', 'source'); end if;
   if v_fp is null or v_fp !~ '^[0-9a-f]{16,64}$' then return jsonb_build_object('logged', false, 'reason', 'fingerprint'); end if;
@@ -206,6 +213,11 @@ begin
     v_kind := 'other';
   end if;
   if v_sev not in ('info', 'warning', 'error', 'critical') then v_sev := 'error'; end if;
+  -- Lo que viene del navegador (source = 'client') nunca puede ser crítico.
+  if p_source = 'client' and v_sev = 'critical' then v_sev := 'error'; end if;
+  -- Cada origen tiene su propio espacio de fingerprints: un evento del navegador
+  -- jamás puede caer en (ni modificar, ni disparar avisos de) una fila del servidor.
+  v_fp := encode(sha256(convert_to(p_source || ':' || v_fp, 'utf8')), 'hex');
 
   -- Solo valores simples y conocidos en "sample" (nunca texto libre).
   if p_sample is not null and jsonb_typeof(p_sample) = 'object' then
@@ -225,11 +237,13 @@ begin
   end if;
 
   -- Fingerprint nuevo: límite de nuevos por hora y tope de filas. Si se pasa,
-  -- se agrupa en la fila 'overflow' (así nadie puede llenar la tabla).
+  -- se agrupa en la fila 'overflow:<origen>' (así nadie puede llenar la tabla).
+  -- Los topes son POR ORIGEN: llenar los del navegador no toca los del servidor.
   select exists (select 1 from public.app_errors where fingerprint = v_fp) into v_exists;
   if not v_exists then
-    if (select count(*) from public.app_errors) >= 5000 or not public.err_rate_hit('newfp', 30, 3600) then
-      v_fp := 'overflow';
+    if (select count(*) from public.app_errors where source = p_source) >= (case when p_source = 'client' then 4000 else 1000 end)
+       or not public.err_rate_hit('newfp:' || p_source, 30, 3600) then
+      v_fp := 'overflow:' || p_source;
       v_kind := 'other'; v_sev := 'warning'; v_section := ''; v_message := 'Demasiados errores distintos: agrupados aqui';
       v_name := null; v_stack := null; v_code := 'overflow'; v_sample := null;
     end if;
@@ -281,15 +295,24 @@ begin
     end if;
   end if;
 
-  -- Topes globales de correo: 10 por hora y 40 por día. Lo que sobre va al resumen.
+  -- Presupuestos de correo SEPARADOS por origen confiable (p_source lo pone nuestro
+  -- código: report-error siempre manda 'client'; las Edge Functions mandan 'server').
+  --   client          5/hora y 15/día    (cualquiera puede llamar al endpoint público)
+  --   server          10/hora y 40/día   (errores internos: warning y error)
+  --   server_critical 10/hora y 40/día   (pagos, activación de miembros, Leo AI caído...)
+  -- Los tres son independientes: ningún evento del navegador puede gastar los del servidor
+  -- y el ruido del servidor no puede gastar el de los críticos. Lo que sobre va al resumen.
   if v_reason is not null then
-    if public.err_rate_hit('mail_hour', 10, 3600) then
-      if not public.err_rate_hit('mail_day', 40, 86400) then
-        perform public.err_rate_hit('mail_suppressed', 1000000, 86400);
+    v_budget := case when p_source = 'client' then 'client' when r.severity = 'critical' then 'server_critical' else 'server' end;
+    v_hour_limit := case when v_budget = 'client' then 5 else 10 end;
+    v_day_limit := case when v_budget = 'client' then 15 else 40 end;
+    if public.err_rate_hit('mail_hour:' || v_budget, v_hour_limit, 3600) then
+      if not public.err_rate_hit('mail_day:' || v_budget, v_day_limit, 86400) then
+        perform public.err_rate_hit('mail_suppressed:' || v_budget, 1000000, 86400);
         v_reason := null;
       end if;
     else
-      perform public.err_rate_hit('mail_suppressed', 1000000, 86400);
+      perform public.err_rate_hit('mail_suppressed:' || v_budget, 1000000, 86400);
       v_reason := null;
     end if;
   end if;
@@ -345,7 +368,7 @@ as $$
     'distinct_24h', (select count(*) from h),
     'new_24h', (select count(*) from public.app_errors where first_seen >= now() - interval '24 hours'),
     'open_total', (select count(*) from public.app_errors where status = 'open'),
-    'suppressed_alerts', coalesce((select n from public.app_error_rate where bucket = 'mail_suppressed' and window_start > now() - interval '26 hours'), 0),
+    'suppressed_alerts', coalesce((select sum(n) from public.app_error_rate where bucket like 'mail_suppressed:%' and window_start > now() - interval '26 hours'), 0),
     'top', coalesce((select jsonb_agg(to_jsonb(top)) from top), '[]'::jsonb)
   );
 $$;

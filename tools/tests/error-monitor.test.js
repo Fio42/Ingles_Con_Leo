@@ -355,18 +355,17 @@ test('LeoErrors.report: API para errores controlados, también limpia y respeta 
 
 /* ---------------- 4. las 52 páginas cargan el monitor primero ---------------- */
 section('páginas HTML');
-test('las 52 páginas cargan error-monitor.js una vez, en el <head> y antes de supabase-js/backend.js', () => {
+test('las 52 páginas cargan error-monitor.js UNA vez, en el <head> y como el PRIMER script ejecutable (antes de gtag, meta-pixel, inline, app.js, backend.js, supabase-js, Stripe)', () => {
   const pages = fs.readdirSync(root).filter(f => f.endsWith('.html'));
   assert.strictEqual(pages.length, 52);
   for(const p of pages){
     const h = read(p);
     assert.strictEqual((h.match(/error-monitor\.js/g) || []).length, 1, p);
-    const i = h.indexOf('error-monitor.js'), head = h.indexOf('</head>');
-    assert(i > 0 && i < head, p + ': debe estar dentro de <head>');
-    for(const later of ['supabase.js', 'backend.js', 'app.js']){
-      const j = h.indexOf(later);
-      assert(j === -1 || i < j, p + ': antes de ' + later);
-    }
+    const scripts = [...h.matchAll(/<script\b[^>]*>/g)].filter(m => !/ld\+json/.test(m[0]));   // el JSON-LD no ejecuta nada
+    assert(scripts.length > 0, p);
+    assert(/error-monitor\.js\?v=/.test(scripts[0][0]), p + ': el primer script ejecutable debe ser error-monitor.js, no ' + scripts[0][0].slice(0, 80));
+    assert(scripts[0].index < h.indexOf('</head>'), p + ': debe estar dentro de <head>');
+    assert(scripts.slice(1).every(m => !/error-monitor/.test(m[0])), p);
   }
 });
 
@@ -486,6 +485,35 @@ test('SERVIDOR: origen no permitido, método GET, bots, cuerpo grande o JSON rot
 test('SERVIDOR: el origen no permitido no recibe cabecera CORS', async () => {
   const res = await run(req(GOOD, { headers: { origin: 'https://malo.com', 'user-agent': CHROME_UA } }), fakeRpc());
   assert.strictEqual(res.headers.get('access-control-allow-origin'), null);
+});
+test('SUPLANTACIÓN: el endpoint público SIEMPRE manda source=client; no hay forma de pedir server, critical ni tipos de servidor', async () => {
+  const attempts = [
+    Object.assign({}, GOOD, { source: 'server', severity: 'critical', p_source: 'server', p_severity: 'critical' }),
+    Object.assign({}, GOOD, { kind: 'leo_ai', section: 'leo-ai', code: 'exception', source: 'server', severity: 'critical' }),
+    Object.assign({}, GOOD, { kind: 'payment', source: 'server' }),
+    Object.assign({}, GOOD, { kind: 'webhook', section: 'stripe-webhook', source: 'server', severity: 'critical' }),
+    Object.assign({}, GOOD, { kind: 'edge_function', source: 'server' }),
+  ];
+  for(const body of attempts){
+    const db = fakeRpc(); await run(req(body), db);
+    for(const c of db.logs()){
+      assert.strictEqual(c.args.p_source, 'client'); assert.notStrictEqual(c.args.p_severity, 'critical');
+      assert(!['payment', 'webhook', 'edge_function', 'email'].includes(c.args.p_kind));
+    }
+  }
+  const src = read('supabase_functions/report-error.ts');
+  assert.strictEqual((src.match(/p_source:/g) || []).length, 1); assert(/p_source: 'client'/.test(src));
+  assert(!/p_source: (raw|ev|body)/.test(src), 'p_source nunca sale de datos del navegador');
+});
+test('SUPLANTACIÓN: solo las Edge Functions internas mandan source=server (con service_role); el navegador no tiene acceso a la RPC', () => {
+  for(const f of ['leo-ai.ts', 'stripe-webhook.ts', 'paypal-webhook.ts', 'mp-webhook.ts']) assert(/p_source: 'server'/.test(read('supabase_functions/' + f)), f);
+  const sql = read('supabase_functions/error-monitoring.sql');
+  assert(/revoke all on function public\.log_app_error\([^)]*\) from public, anon, authenticated;/.test(sql));
+  assert(/grant execute on function public\.log_app_error\([^)]*\) to service_role;/.test(sql));
+  // ni backend.js ni app.js ni las páginas llaman a la RPC
+  for(const f of ['backend.js', 'app.js', 'error-monitor.js']) assert(!/log_app_error/.test(read(f)), f);
+  // presupuestos de correo separados por origen en la base
+  assert(/mail_hour:' \|\| v_budget/.test(sql) && /'client' then 5 else 10/.test(sql) && /server_critical/.test(sql));
 });
 test('RATE LIMIT por IP: 30 por hora; el 31 se descarta; otra IP no se afecta; la IP no se guarda en claro', async () => {
   const db = fakeRpc();
