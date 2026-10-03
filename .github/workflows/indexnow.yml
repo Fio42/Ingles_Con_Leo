@@ -9,6 +9,8 @@ name: IndexNow ping
 # - "Run workflow" a mano: manda todas las URLs del sitemap.xml.
 # - El job FALLA (rojo) y muestra la respuesta si algun buscador contesta
 #   4xx/5xx. 200 y 202 cuentan como exito.
+# - Excepcion: HTTP 403 de api.indexnow.org (Bing, problema externo conocido)
+#   se muestra como warning amarillo y NO hace fallar el job.
 #
 # Google NO usa IndexNow (solo Bing/Yandex/Seznam/Naver), asi que esto no
 # reemplaza al sitemap.xml ni a Google Search Console.
@@ -53,6 +55,12 @@ jobs:
             echo "$ep -> HTTP $code"; cat resp.txt; echo
             case "$code" in
               200|202) ;;
+              403)
+                if [ "$ep" = "https://api.indexnow.org/indexnow" ]; then
+                  echo "::warning::IndexNow (Bing) responde HTTP 403 en $ep: problema externo conocido, no se marca como fallo"
+                else
+                  echo "::error::IndexNow fallo en $ep con HTTP $code"; fail=1
+                fi ;;
               *) echo "::error::IndexNow fallo en $ep con HTTP $code"; fail=1 ;;
             esac
           done
