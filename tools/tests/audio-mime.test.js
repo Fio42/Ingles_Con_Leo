@@ -52,5 +52,19 @@ test('iPhone/iPad (incluido Chrome en iPhone e iPad como Mac) se detecta; deskto
   assert(!load({ userAgent:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120', maxTouchPoints:0 }).i());
   assert(!load({ userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) Chrome/120 Mobile', maxTouchPoints:5 }).i());
 });
+test('cambridge, clases, ielts y toefl usan la misma lógica (grabador, primer fragmento, webm) y ya no fuerzan webm', () => {
+  const line = "new Blob(chunks, { type: recorder.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm' })";
+  ['cambridge.js', 'clases.js', 'ielts.js', 'toefl.js'].forEach(f => {
+    const s = fs.readFileSync(path.join(__dirname, '..', '..', f), 'utf8');
+    assert.strictEqual(s.split(line).length - 1, 1, f + ': debe usar el tipo real una vez');
+    assert.strictEqual((s.match(/new Blob\(chunks, \{ type:'audio\/webm' \}\)/g) || []).length, 0, f + ': ya no fuerza webm');
+  });
+  // misma expresión, ejecutada con casos reales
+  const pick = (recorder, chunks) => new Function('recorder', 'chunks', 'return ' + line + '.type')(recorder, chunks);
+  assert.strictEqual(pick({ mimeType:'audio/mp4' }, [chunk('audio/mp4')]), 'audio/mp4');
+  assert.strictEqual(pick({ mimeType:'' }, [chunk('audio/mp4')]), 'audio/mp4');
+  assert.strictEqual(pick({ mimeType:'' }, [chunk('')]), 'audio/webm');
+  assert.strictEqual(pick({}, []), 'audio/webm');
+});
 console.log((bad ? bad + ' prueba(s) fallaron, ' : '') + ok + ' pruebas pasaron');
 process.exit(bad ? 1 : 0);

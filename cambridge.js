@@ -615,7 +615,7 @@ function wireCambridgeSpeakingAudio(card, item, canRecord){
       recorder = new MediaRecorder(stream);
       recorder.ondataavailable = e => chunks.push(e.data);
       recorder.onstop = ()=>{
-        const blob = new Blob(chunks, { type:'audio/webm' });
+        const blob = new Blob(chunks, { type: recorder.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm' });
         const url = URL.createObjectURL(blob);
         compareRow.innerHTML = `<div class="compare-col"><div class="compare-label">Tu grabación</div><audio controls src="${url}"></audio></div>`;
         retryBtn.style.display = 'inline-flex';

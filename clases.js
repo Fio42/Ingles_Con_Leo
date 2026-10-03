@@ -607,7 +607,7 @@ function renderStepSpeak(body, state, next){
       recorder = new MediaRecorder(stream);
       recorder.ondataavailable = e => chunks.push(e.data);
       recorder.onstop = ()=>{
-        const blob = new Blob(chunks, { type:'audio/webm' });
+        const blob = new Blob(chunks, { type: recorder.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm' });
         const url = URL.createObjectURL(blob);
         compareRow.innerHTML = `
           <div class="compare-col">
