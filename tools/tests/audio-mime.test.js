@@ -42,7 +42,7 @@ test('el grabador manda sobre un fragmento con otro tipo (no asume mp4 ni webm)'
 });
 test('app.js ya no fuerza audio/webm al armar la grabación (3 lugares usan el helper)', () => {
   assert.strictEqual((src.match(/new Blob\(chunks, \{ type:'audio\/webm' \}\)/g) || []).length, 0);
-  assert.strictEqual((src.match(/recordedAudioBlob\(chunks, recorder\)/g) || []).length, 3);
+  assert.strictEqual((src.match(/const blob = recordedAudioBlob\(chunks, recorder\)/g) || []).length, 3);
 });
 test('iPhone/iPad (incluido Chrome en iPhone e iPad como Mac) se detecta; desktop y Android no', () => {
   assert(load({ userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120 Mobile/15E148 Safari/604.1' }).i());
