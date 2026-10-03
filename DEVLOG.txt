@@ -1340,3 +1340,5 @@ Bugs reales corregidos (cambio minimo):
 Verificado sin cambios: ninguna lista paralela de enlaces por tema (SKILL_ARTICLE y el articulo por familia son de nivel habilidad/familia, a proposito); servidor leo-ai sin cambios (v8 desplegada en Fase 6); 0 llamadas de IA automaticas; rendimiento: computeDiagnosis 4.000 respuestas ~12 ms (+1,7 ms con temas.js), 76 contentForTema 0,7 ms.
 Tests: temas.test.js 106; session-cycle.test.js sigue con su unico fallo previo.
 app.js?v=20261003j, temas.js?v=20261003f.
+
+2026-10-03 Posicionamiento: "sistema que se adapta + Profesor Leo". Cambios en index, miembros, practica, 4 CTAs de articulos, resumen de practica gratis (app.js), componente leo-voz.js + audio/leo/ (ver LEEME.txt).

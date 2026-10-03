@@ -2898,10 +2898,11 @@ function renderFreeDailyLimitReachedBlock(){
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
         <p class="summary-score">Vas muy bien. Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
         <ul class="upgrade-benefits">
-          <li><strong>Leo AI</strong>: explicaciones personalizadas de tus errores y análisis de tu progreso</li>
+          <li>Un sistema que recuerda tus errores y te dice qué practicar después</li>
+          <li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>
           <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
           <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
-          <li>Clases interactivas y repaso automático de tus errores</li>
+          <li>Clases interactivas del método de Leo y repaso automático de tus errores</li>
           <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
         </ul>
         <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México, $37 MXN). Cancela cuando quieras.</p>
@@ -6532,9 +6533,9 @@ function nextLeoAiPitchVariant(wrong){
   return variant;
 }
 const LEO_AI_PITCH_COPY = {
-  errors: { h:'¿No sabes por qué sigues fallando esto?', p:'Con Leo AI, cada error viene con una explicación personalizada al instante. Convierte tus errores en progreso.', cta:'Conocer Leo AI' },
-  progress: { h:'Tus resultados pueden decirte mucho más.', p:'Con la membresía, Leo AI analiza tu progreso, encuentra tus puntos débiles y te ayuda a decidir qué estudiar después.', cta:'Probar la membresía' },
-  writing: { h:'¿Quieres que la IA revise tu respuesta?', p:'Los miembros le piden a Leo AI que revise su frase: te dice qué corregir y por qué, en español sencillo.', cta:'Conocer Leo AI' }
+  errors: { h:'¿No sabes por qué sigues fallando esto?', p:'Como miembro, el sistema guarda tus errores y Leo AI te explica cada uno cuando necesitas ayuda extra, dentro del método de Leo.', cta:'Ver qué incluye' },
+  progress: { h:'Esto es una muestra del sistema.', p:'Como miembro, el sistema recuerda más de tu progreso, conecta tus errores y te dice qué estudiar después, con el método de Leo.', cta:'Descubrir el sistema completo' },
+  writing: { h:'¿Quieres que la IA revise tu respuesta?', p:'Los miembros pueden pedirle a Leo AI que revise su frase: te dice qué corregir y por qué, en español sencillo.', cta:'Ver qué incluye' }
 };
 function leoAiPitchHtml(variant){
   const c = LEO_AI_PITCH_COPY[variant];
@@ -6542,7 +6543,7 @@ function leoAiPitchHtml(variant){
   if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_pitch_shown', { variant });
   return `
     <div class="ai-pitch is-compact" style="margin-top:22px;">
-      <span class="ai-pitch-badge">${LEO_AI_ICON}Leo AI · Miembros</span>
+      <span class="ai-pitch-badge">${LEO_AI_ICON}Leo AI · Apoyo para miembros</span>
       <h3>${c.h}</h3>
       <p>${c.p}</p>
       <a href="miembros.html#leo-ai" class="btn btn-primary" onclick="if(typeof trackLeoEvent==='function')trackLeoEvent('leo_ai_pitch_clicked',{variant:'${variant}'})">${c.cta} →</a>
@@ -6554,6 +6555,15 @@ function leoAiPitchHtml(variant){
 function renderFreeSessionSummary({ title, score, topics, results }){
   const wrong = Array.isArray(results) ? results.filter(r => r && r.isCorrect === false).length : 0;
   const aiVariant = nextLeoAiPitchVariant(wrong);
+  const graded = Array.isArray(results) ? results.filter(r => r && typeof r.isCorrect === 'boolean').length : 0;
+  if(graded){
+    const pct = (graded - wrong) / graded;
+    const vozId = pct >= 0.8 ? 'buen-trabajo' : pct >= 0.5 ? 'vas-mejorando' : 'repasa-antes';
+    setTimeout(() => {
+      if(typeof window.mountLeoVoz !== 'function') return;
+      document.querySelectorAll('.leo-voz[data-leo-voz="resumen"][hidden]').forEach(el => window.mountLeoVoz(el, vozId));
+    }, 0);
+  }
   return `
     <div class="session-summary">
       <h2>${title}</h2>
@@ -6567,11 +6577,12 @@ function renderFreeSessionSummary({ title, score, topics, results }){
         <button class="btn btn-primary" id="freeAgainBtn">Hacer otra sesión</button>
         <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
       </div>
+      <div class="leo-voz" data-leo-voz="resumen" hidden></div>
       ${aiVariant ? leoAiPitchHtml(aiVariant) : `
       <div class="summary-unlock">
-        <p class="summary-unlock-label">¿Quieres llevar tu práctica más lejos?</p>
-        <p class="summary-unlock-copy">Guarda tu progreso, repasa tus errores con Leo AI, completa retos diarios, prepárate para el TOEFL, practica con clases de situaciones reales y más.</p>
-        <a href="miembros.html" class="btn btn-primary btn-block">Conocer la membresía por $2/mes</a>
+        <p class="summary-unlock-label">Esto es una muestra del sistema.</p>
+        <p class="summary-unlock-copy">Como miembro, el sistema recuerda tu progreso, conecta tus errores y te guía con el método de Leo: qué practicar, clases interactivas y Leo AI cuando necesitas ayuda.</p>
+        <a href="miembros.html" class="btn btn-primary btn-block">Descubrir el sistema completo</a>
       </div>`}
     </div>`;
 }
