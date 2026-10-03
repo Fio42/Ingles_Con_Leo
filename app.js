@@ -6557,7 +6557,7 @@ function leoVozActivate(){
     if(typeof window.mountLeoVoz === 'function') return run();
     if(!_leoVozLoading) _leoVozLoading = new Promise(res => {
       const sc = document.createElement('script');
-      sc.src = 'leo-voz.js?v=20261003c'; sc.onload = res; sc.onerror = res;
+      sc.src = 'leo-voz.js?v=20261003d'; sc.onload = res; sc.onerror = res;
       document.head.appendChild(sc);
     });
     _leoVozLoading.then(() => { if(typeof window.mountLeoVoz === 'function') run(); });

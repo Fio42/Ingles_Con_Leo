@@ -48,7 +48,7 @@
     inst.el.classList.toggle('is-speaking', playing);
     inst.btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
     inst.btnIcon.textContent = playing ? '❚❚' : '▶';
-    inst.btnText.textContent = playing ? 'Pausar' : 'Escuchar a Leo';
+    inst.btnText.textContent = playing ? 'Pausar' : 'Escuchar al Profe Leo';
   }
   function stopCurrent(){
     if(!current) return;
@@ -71,7 +71,7 @@
         '<span class="leo-voz-body">' +
           '<span class="leo-voz-label"></span>' +
           '<span class="leo-voz-row">' +
-            '<button type="button" class="leo-voz-btn" aria-pressed="false"><span class="leo-voz-btn-icon" aria-hidden="true">▶</span> <span class="leo-voz-btn-text">Escuchar a Leo</span></button>' +
+            '<button type="button" class="leo-voz-btn" aria-pressed="false"><span class="leo-voz-btn-icon" aria-hidden="true">▶</span> <span class="leo-voz-btn-text">Escuchar al Profe Leo</span></button>' +
             '<span class="leo-voz-vol">' +
               '<button type="button" class="leo-voz-mute" aria-pressed="false" aria-label="Silenciar"></button>' +
               '<input type="range" class="leo-voz-range" min="0" max="100" step="5" aria-label="Volumen del Profe Leo">' +
