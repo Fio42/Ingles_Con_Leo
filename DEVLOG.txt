@@ -1344,3 +1344,5 @@ app.js?v=20261003j, temas.js?v=20261003f.
 2026-10-03 Posicionamiento: "sistema que se adapta + Profesor Leo". Cambios en index, miembros, practica, 4 CTAs de articulos, resumen de practica gratis (app.js), componente leo-voz.js + audio/leo/ (ver LEEME.txt).
 
 2026-10-03 Audios de Leo: 7 mp3 en audio/leo (tools/preparar_audios_leo.py), leo-voz.js con volumen/mute persistente y un solo audio a la vez; conectados en Home, resumen gratis, resumen de sesion de miembros, Hoy te conviene (dashboard y progreso), Plan y Mis errores.
+
+2026-10-03 "Profe Leo" en copy publico; audio de bienvenida compacto en el hero.

@@ -1,9 +1,10 @@
-/* "Leo te acompaña": audio real de Leo, siempre con un toque del alumno (nunca autoplay).
+/* "Profe Leo te acompaña": audio real del Profe Leo, siempre con un toque del alumno (nunca autoplay).
    Uso: <div class="leo-voz" data-leo-voz="bienvenida" hidden></div>
    Busca audio/leo/<id>.mp3. Si no existe, el bloque sigue oculto y la pagina funciona igual.
    - Solo suena un audio de Leo a la vez (al empezar uno se detiene el anterior).
    - Volumen propio de estos audios (no toca el volumen del navegador), guardado en localStorage.
-   - data-leo-voz-avatar="none" oculta el avatar (p. ej. donde ya sale la foto de Leo). */
+   - data-leo-voz-avatar="none" oculta el avatar (p. ej. donde ya sale la foto de Leo).
+   data-leo-voz-label cambia el titulo; la clase is-compact da la version de una fila (hero). */
 (function(){
   var DEFAULT_VOL = 0.7;          // volumen inicial si el alumno nunca lo toco
   var KEY = 'leo_voz_vol';
@@ -68,15 +69,16 @@
       el.innerHTML =
         (noAvatar ? '' : '<span class="leo-voz-avatar" aria-hidden="true"><img src="leo-front.png" alt="" width="40" height="74" loading="lazy" decoding="async"></span>') +
         '<span class="leo-voz-body">' +
-          '<span class="leo-voz-label">Leo te acompaña</span>' +
+          '<span class="leo-voz-label"></span>' +
           '<span class="leo-voz-row">' +
             '<button type="button" class="leo-voz-btn" aria-pressed="false"><span class="leo-voz-btn-icon" aria-hidden="true">▶</span> <span class="leo-voz-btn-text">Escuchar a Leo</span></button>' +
             '<span class="leo-voz-vol">' +
               '<button type="button" class="leo-voz-mute" aria-pressed="false" aria-label="Silenciar"></button>' +
-              '<input type="range" class="leo-voz-range" min="0" max="100" step="5" aria-label="Volumen de Leo">' +
+              '<input type="range" class="leo-voz-range" min="0" max="100" step="5" aria-label="Volumen del Profe Leo">' +
             '</span>' +
           '</span>' +
         '</span>';
+      el.querySelector('.leo-voz-label').textContent = el.getAttribute('data-leo-voz-label') || 'Profe Leo te acompaña';
       el.hidden = false;
       var inst = {
         el: el, audio: null,

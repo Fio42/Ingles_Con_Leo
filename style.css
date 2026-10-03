@@ -1193,6 +1193,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-voz-range{width:64px;height:4px;accent-color:var(--blue);cursor:pointer;margin:0;}
 .leo-voz.is-speaking .leo-voz-avatar{animation:leoVozPulse 1.6s ease-in-out infinite;}
 @keyframes leoVozPulse{0%,100%{box-shadow:0 1px 4px rgba(20,30,80,0.15),0 0 0 0 rgba(53,84,240,0.35);}50%{box-shadow:0 1px 4px rgba(20,30,80,0.15),0 0 0 6px rgba(53,84,240,0);}}
+/* version compacta (hero): una fila, poco alto */
+.leo-voz.is-compact{margin:12px 0 0;padding:6px 12px 6px 8px;gap:10px;border-radius:14px;width:fit-content;}
+.leo-voz.is-compact .leo-voz-avatar{flex-basis:34px;width:34px;height:34px;}
+.leo-voz.is-compact .leo-voz-avatar img{width:30px;}
+.leo-voz.is-compact .leo-voz-body{flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px 10px;}
+.leo-voz.is-compact .leo-voz-label{font-size:0.84rem;color:var(--ink);}
+.leo-voz.is-compact .leo-voz-btn{padding:5px 12px;font-size:0.84rem;}
+.hero-v2 .leo-voz.is-compact[hidden]{display:flex;visibility:hidden;min-height:46px;}
+@media(max-width:639px){.leo-voz.is-compact{width:100%;}}
 @media(prefers-reduced-motion:reduce){.leo-voz.is-speaking .leo-voz-avatar{animation:none;box-shadow:0 0 0 3px rgba(53,84,240,0.35);}}
 @media(max-width:400px){.leo-voz{gap:8px;padding:8px 10px 8px 8px;}.leo-voz-avatar{flex-basis:40px;width:40px;height:40px;}.leo-voz-avatar img{width:36px;}.leo-voz-btn{padding:7px 11px;font-size:0.85rem;}}
 @media(max-width:639px){.leo-voz{width:100%;}.home-trust-copy .leo-voz{justify-content:center;}}

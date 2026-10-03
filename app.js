@@ -2902,7 +2902,7 @@ function renderFreeDailyLimitReachedBlock(){
           <li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>
           <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
           <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
-          <li>Clases interactivas del método de Leo y repaso automático de tus errores</li>
+          <li>Clases interactivas del método del Profe Leo y repaso automático de tus errores</li>
           <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
         </ul>
         <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México, $37 MXN). Cancela cuando quieras.</p>
@@ -6557,7 +6557,7 @@ function leoVozActivate(){
     if(typeof window.mountLeoVoz === 'function') return run();
     if(!_leoVozLoading) _leoVozLoading = new Promise(res => {
       const sc = document.createElement('script');
-      sc.src = 'leo-voz.js?v=20261003b'; sc.onload = res; sc.onerror = res;
+      sc.src = 'leo-voz.js?v=20261003c'; sc.onload = res; sc.onerror = res;
       document.head.appendChild(sc);
     });
     _leoVozLoading.then(() => { if(typeof window.mountLeoVoz === 'function') run(); });
@@ -6586,8 +6586,8 @@ function nextLeoAiPitchVariant(wrong){
   return variant;
 }
 const LEO_AI_PITCH_COPY = {
-  errors: { h:'¿No sabes por qué sigues fallando esto?', p:'Como miembro, el sistema guarda tus errores y Leo AI te explica cada uno cuando necesitas ayuda extra, dentro del método de Leo.', cta:'Ver qué incluye' },
-  progress: { h:'Esto es una muestra del sistema.', p:'Como miembro, el sistema recuerda más de tu progreso, conecta tus errores y te dice qué estudiar después, con el método de Leo.', cta:'Descubrir el sistema completo' },
+  errors: { h:'¿No sabes por qué sigues fallando esto?', p:'Como miembro, el sistema guarda tus errores y Leo AI te explica cada uno cuando necesitas ayuda extra, dentro del método del Profe Leo.', cta:'Ver qué incluye' },
+  progress: { h:'Esto es una muestra del sistema.', p:'Como miembro, el sistema recuerda más de tu progreso, conecta tus errores y te dice qué estudiar después, con el método del Profe Leo.', cta:'Descubrir el sistema completo' },
   writing: { h:'¿Quieres que la IA revise tu respuesta?', p:'Los miembros pueden pedirle a Leo AI que revise su frase: te dice qué corregir y por qué, en español sencillo.', cta:'Ver qué incluye' }
 };
 function leoAiPitchHtml(variant){
@@ -6633,7 +6633,7 @@ function renderFreeSessionSummary({ title, score, topics, results }){
       ${aiVariant ? leoAiPitchHtml(aiVariant) : `
       <div class="summary-unlock">
         <p class="summary-unlock-label">Esto es una muestra del sistema.</p>
-        <p class="summary-unlock-copy">Como miembro, el sistema recuerda tu progreso, conecta tus errores y te guía con el método de Leo: qué practicar, clases interactivas y Leo AI cuando necesitas ayuda.</p>
+        <p class="summary-unlock-copy">Como miembro, el sistema recuerda tu progreso, conecta tus errores y te guía con el método del Profe Leo: qué practicar, clases interactivas y Leo AI cuando necesitas ayuda.</p>
         <a href="miembros.html" class="btn btn-primary btn-block">Descubrir el sistema completo</a>
       </div>`}
     </div>`;
