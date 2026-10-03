@@ -89,7 +89,8 @@ const PROVIDER_TIMEOUT_MS = 10000
 const MAX_OUTPUT_TOKENS = 220
 // "insight" solo COMPLEMENTA lo que la página ya muestra (1-2 frases, un
 // truco corto y, a veces, un tema extra): salida baja a propósito.
-const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : MAX_OUTPUT_TOKENS
+// "writing" también es corto a propósito: una mejora o corrección concreta.
+const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : mode === 'writing' ? 180 : MAX_OUTPUT_TOKENS
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
@@ -129,9 +130,13 @@ const EXPLAIN_RULES = `${BASE_RULES}
 - "example_en": una frase corta en inglés que muestre algo distinto a la explicación (no la repitas); "example_es": su traducción.`
 
 const WRITING_RULES = `${BASE_RULES}
-- Corrige solo errores reales; si la frase está bien, dilo y no inventes errores.
-- Revisa si usó la estructura pedida.
-- "assessment": correct, minor o incorrect. "corrected": su frase con los mínimos cambios (igual si estaba bien). "tip": un consejo corto, o "" si no hace falta.`
+- La página ya calificó la estructura y ya mostró el ejemplo y la regla. NO felicites, NO digas "está bien/correcta" y NO repitas la regla.
+- Longitud: máximo 2 frases cortas en total (esto manda sobre lo anterior).
+- "assessment": correct, minor (casi bien) o incorrect, según la gramática de SU frase.
+- Si es CORRECTA: "corrected" = una alternativa más natural o idiomática (si la suya ya es natural, repite la suya). "explanation" = UNA mejora o matiz útil (por qué suena más natural, un detalle de uso). Si de verdad no hay nada que mejorar, dilo en pocas palabras y da un detalle de uso.
+- Si es INCORRECTA: "corrected" = su frase con los mínimos cambios. "explanation" = qué parte está mal y cómo corregirla, hablando de SU frase.
+- Si es una palabra suelta, texto sin sentido o una frase incompleta: reconócelo en pocas palabras, NO adivines lo que quiso decir, y en "corrected" da un modelo breve (puedes usar el ejemplo de referencia).
+- "tip": un truco de máximo 10 palabras, o "".`
 
 const DIAGNOSIS_RULES = `${BASE_RULES}
 - Te damos el análisis que ya hizo la plataforma: explica con esos números por qué es su punto a reforzar, sin agregar datos.
@@ -270,12 +275,12 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
   if (!skill || !question || !studentAnswer) return null
 
   if (mode === 'writing') {
-    if (studentAnswer.split(' ').length < 2) return null
     const lines = [
       `Nivel del alumno: ${level}`,
       `Consigna del ejercicio: ${question}`,
       `Estructura que se pedía: ${cleanText(b.target, 160) || '(libre)'}`,
     ]
+    if (typeof b.pageOk === 'boolean') lines.push(`La página ya calificó la estructura: ${b.pageOk ? 'cumple lo pedido' : 'no cumple lo pedido'}`)
     const example = cleanText(b.example, 200)
     if (example) lines.push(`Ejemplo de referencia (no es la única respuesta válida): ${example}`)
     lines.push(`Frase del alumno: ${studentAnswer}`)
@@ -313,9 +318,9 @@ export function validateOutput(mode: string, parsed: any, candidates: string[] =
     const v = parsed.assessment !== undefined ? parsed.assessment : parsed.verdict
     const verdict = VERDICTS.includes(v) ? v : null
     const corrected = cleanText(parsed.corrected, 400)
-    const explanation = cleanText(parsed.explanation, 600)
+    const explanation = cleanText(parsed.explanation, 320)
     const rawTips = Array.isArray(parsed.tips) ? parsed.tips : [parsed.tip]
-    const tips = rawTips.map((t: unknown) => cleanText(t, 160)).filter(Boolean).slice(0, 2)
+    const tips = rawTips.map((t: unknown) => cleanText(t, 100)).filter(Boolean).slice(0, 1)
     return verdict && corrected && explanation ? { verdict, corrected, explanation, tips } : null
   }
   if (mode === 'insight') {

@@ -83,7 +83,7 @@ test('encendido y público: lo ven todos los miembros, pero no los demás', ()=>
 
 const c = load(appSrc);
 const T = c.__t;
-const ALLOWED = ['mode','skill','level','topic','exerciseType','question','options','studentAnswer','correctAnswer','isCorrect','baseExplanation','context','target','example','unit'];
+const ALLOWED = ['mode','skill','level','topic','exerciseType','question','options','studentAnswer','correctAnswer','isCorrect','baseExplanation','context','target','example','unit','pageOk'];
 const FORBIDDEN = /"(id|itemId|userId|user_id|email|name|token|access_token|history|sessions)"\s*:/;
 function checkPrivacy(p, name){
   Object.keys(p).forEach(k => assert(ALLOWED.indexOf(k) !== -1, name + ': campo no permitido ' + k));
@@ -121,12 +121,13 @@ test('Vocabulario, Listening y Lectura: respuesta correcta del banco; texto/tran
   [T.V, T.L, T.R].forEach((bank, i)=> flat(bank).forEach(it => assert(T.buildLeoAiPayload({ kind:['vocab','listening','reading'][i], item:it, isCorrect:true, userAnswer:'x' }), 'sin payload: ' + it.id)));
 });
 
-test('Writing: manda consigna, estructura, ejemplo y la frase; con 1 palabra no hay botón', ()=>{
+test('Writing: manda consigna, estructura, ejemplo y la frase; con 1 palabra SÍ hay botón (solo falta si no escribió nada)', ()=>{
   const w = flat(T.W)[0];
   const p = T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'I have a red car' });
   checkPrivacy(p, 'writing');
   assert.strictEqual(p.mode, 'writing'); assert.strictEqual(p.studentAnswer, 'I have a red car');
-  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'car' }), null);
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'car' }).studentAnswer, 'car');
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'   ' }), null);
 });
 
 test('Tu diagnóstico: solo números ya procesados del tema, nunca el historial', ()=>{

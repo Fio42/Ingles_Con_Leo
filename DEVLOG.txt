@@ -1279,3 +1279,10 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - DESPLEGAR leo-ai (comando abajo en el resumen). Compatible en ambos sentidos: servidor viejo + pagina nueva funciona sin tema extra; servidor nuevo + pagina vieja funciona.
 - Pruebas: temas.test.js 39, leo-ai-server.test.js 23 (nuevas: enum cerrado, id inventado descartado, candidatos raros, sin candidatos = sin campos extra, 1 sola llamada), resto sin cambios. session-cycle.test.js sigue con su fallo previo.
 - temas.js ahora tambien en errores, gramatica, mixto y practica-miembros (no en practica gratis). app.js/style.css/temas.js ?v=20261003b.
+
+2026-10-03 - Writing + Leo AI: el boton aparece siempre y solo complementa
+- Causa del boton "a veces si, a veces no": la pagina (buildLeoAiPayload) y el servidor exigian 2+ palabras; con "text", "ee" o una palabra suelta no habia boton (y el servidor habria dado bad_input). Ahora cualquier texto lo muestra; solo falta si el campo esta vacio (nada que revisar). Se prueba con las 214 consignas del banco (correcta, incorrecta, incompleta).
+- La pagina manda ademas pageOk (como califico la estructura, dato nada mas: la nota y el progreso no cambian). Sin llamadas automaticas: 1 llamada solo al pulsar (doble toque ignorado).
+- leo-ai.ts (WRITING_RULES): no felicitar ni repetir la regla; correcta -> una alternativa mas natural/matiz; incorrecta -> que parte esta mal y como corregirla (sobre SU frase); texto suelto/incompleto -> reconocerlo y dar un modelo breve sin adivinar. Salida 180 tokens (antes 220), explicacion max 320 caracteres, 1 truco.
+- Pagina: con veredicto "correct" ya no se pinta "Tu frase esta bien escrita"; la alternativa sale como "Mas natural: ..." (y no se muestra si es igual a la del alumno). app.js?v=20261003c.
+- Pruebas nuevas: tools/tests/writing-ai.test.js (11). leo-ai-server 24, leo-ai 12.

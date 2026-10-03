@@ -2024,10 +2024,13 @@ function buildLeoAiPayload(ctx){
       candidates: cands };
   }
   if(ctx.kind === 'writing'){
+    // Cualquier texto cuenta (también una palabra suelta o algo incompleto: Leo AI lo
+    // reconoce y da un modelo). Solo no hay botón si no escribió nada.
     const answer = leoAiText(ctx.userAnswer, 400);
-    if(answer.split(' ').filter(Boolean).length < 2) return null;
+    if(!answer) return null;
     return { mode:'writing', skill:'writing', level, question: leoAiText(it.prompt, 400),
-      target: leoAiText(it.target, 160), example: it.example ? leoAiText(it.example.en, 200) : '', studentAnswer: answer };
+      target: leoAiText(it.target, 160), example: it.example ? leoAiText(it.example.en, 200) : '', studentAnswer: answer,
+      pageOk: ctx.isOk === true };
   }
   const base = { mode:'explain', level, isCorrect: ctx.isCorrect === true, studentAnswer: leoAiText(ctx.userAnswer, 400) };
   if(ctx.kind === 'grammar'){
@@ -2190,9 +2193,11 @@ function renderLeoAiAnswer(out, payload, res){
     return;
   }
   if(payload.mode === 'writing'){
-    add('div', 'leo-ai-verdict', LEO_AI_WRITING_VERDICT[a.verdict] || '');
-    if(a.verdict !== 'correct' && a.corrected && a.corrected.trim() !== String(payload.studentAnswer).trim()){
-      add('div', 'leo-ai-fixed', a.corrected);
+    // La página ya dijo si la estructura está bien: no se repite "está bien escrita".
+    if(a.verdict !== 'correct') add('div', 'leo-ai-verdict', LEO_AI_WRITING_VERDICT[a.verdict] || '');
+    const norm = t => String(t || '').toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if(a.corrected && norm(a.corrected) !== norm(payload.studentAnswer)){
+      add('div', 'leo-ai-fixed', (a.verdict === 'correct' ? 'Más natural: ' : '') + a.corrected);
     }
     add('p', 'leo-ai-text', a.explanation);
     (Array.isArray(a.tips) ? a.tips : []).slice(0, 2).forEach(t => add('p', 'leo-ai-tip', t));
@@ -2294,7 +2299,7 @@ function runWritingSession({ container, level, onExit }){
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       }
       results.push({ itemId:item.id, isCorrect:isOk });
-      leoAiAttach(fb, { kind:'writing', item, userAnswer:text });
+      leoAiAttach(fb, { kind:'writing', item, userAnswer:text, isOk });
       nextRow.innerHTML = '';
       if(!isOk){
         const retryBtn = document.createElement('button');
@@ -2621,7 +2626,7 @@ function renderMixItemInto(card, entry, onAnswered){
           <div class="example-pair"><div class="example-en">${item.example.en}</div><div class="example-es">${item.example.es}</div></div>
         </div>
         <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
-      leoAiAttach(fb, { kind:'writing', item, userAnswer:input.value });
+      leoAiAttach(fb, { kind:'writing', item, userAnswer:input.value, isOk });
       onAnswered(isOk);
     });
     return;

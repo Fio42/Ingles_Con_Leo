@@ -108,6 +108,18 @@ async function test(name, fn){
     const r2 = await call({ body:WRITING, provider: cfReply(JSON.stringify({ assessment:'correct', corrected:'I has a cat.', explanation:'Bien.', tip:'' })) });
     assert.deepStrictEqual(r2.out.answer.tips, []);
   });
+  await test('Writing: acepta una sola palabra o texto suelto, avisa cómo calificó la página y pide poco (180 tokens)', async()=>{
+    const r = await call({ body:Object.assign({}, WRITING, { studentAnswer:'text', pageOk:false }), provider: cfReply(JSON.stringify({ assessment:'incorrect', corrected:'I have a dog.', explanation:'"text" es una palabra suelta.', tip:'' })) });
+    assert.strictEqual(r.out.ok, true); assert.strictEqual(r.calls.length, 1);
+    const b = r.calls[0].body, all = b.messages.map(m => m.content).join('\n');
+    assert.strictEqual(b.max_completion_tokens, 180);
+    assert(/Frase del alumno: text/.test(all) && /no cumple lo pedido/.test(all));
+    assert(/NO felicites/.test(all) && /NO adivines lo que quiso decir/.test(all), 'las reglas piden complementar, no felicitar');
+    const ok = await call({ body:Object.assign({}, WRITING, { pageOk:true }), provider: cfReply(JSON.stringify({ assessment:'correct', corrected:'I have a dog.', explanation:'x', tip:'' })) });
+    assert(/cumple lo pedido/.test(ok.calls[0].body.messages.map(m => m.content).join('\n')));
+    const empty = await call({ body:Object.assign({}, WRITING, { studentAnswer:'   ' }) });
+    assert.strictEqual(empty.out.reason, 'bad_input'); assert.strictEqual(empty.calls.length, 0);
+  });
   await test('Diagnóstico: solo los números procesados', async()=>{
     const r = await call({ body:DIAG, provider: cfReply(JSON.stringify({ explanation:'Vas en 42%.', tip:'Practica 10 minutos.' })) });
     assert.strictEqual(r.out.ok, true);
