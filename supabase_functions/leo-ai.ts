@@ -94,6 +94,25 @@ const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : mode === 'writ
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// Registro central de errores (ver error-monitoring.sql). A prueba de fallos: nunca lanza ni espera
+// más de 2 s, así que si el registro falla el flujo del usuario sigue exactamente igual. Solo se
+// mandan textos fijos y códigos, nunca datos del alumno; la base los limpia otra vez.
+async function reportServerError(kind: string, section: string, message: string, code: string, severity: string) {
+  let timer: any
+  try {
+    const base = `${kind}|${section}|${code}|${message}`.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '#').replace(/\d+/g, '#').slice(0, 200)
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base))
+    const fp = Array.from(new Uint8Array(buf)).slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('')
+    await Promise.race([
+      Promise.resolve(supabase.rpc('log_app_error', {
+        p_fp: fp, p_kind: kind, p_source: 'server', p_severity: severity, p_section: section, p_message: message,
+        p_error_name: null, p_stack_top: null, p_code: code, p_release: null, p_browser: null, p_platform: null, p_sample: null,
+      })).then(() => {}, () => {}),
+      new Promise((resolve) => { timer = setTimeout(resolve, 2000) }),
+    ])
+  } catch (_) { /* el registro de errores nunca rompe nada */ } finally { clearTimeout(timer) }
+}
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -529,11 +548,17 @@ async function finishRequest(userId: string, requestId: string | null, status: '
 // ai_usage_daily con provider = 'fail:<motivo>' (timeout, network,
 // provider_error, quota, bad_output, daily_limit, busy, retry...) y en los
 // logs de la función. Nunca lanza errores.
+// Fallos anormales que además van al registro central de errores (los esperados: límite diario,
+// tope global, reintentos en curso, no).
+const REPORTABLE_FAILURES: Record<string, string> = { provider_error: 'error', bad_output: 'error', timeout: 'error', network: 'error', quota: 'warning' }
+
 async function logFailure(day: string, reason: string, mode: string, detail = '') {
   console.error('leo_ai_fail', JSON.stringify({ reason, detail, mode }))
   try {
     await supabase.rpc('leo_ai_record', { p_day: day, p_provider: ('fail:' + reason).slice(0, 20), p_input: 0, p_output: 0, p_neurons: 0 })
   } catch (_) { /* solo estadística */ }
+  const severity = REPORTABLE_FAILURES[reason]
+  if (severity) await reportServerError('leo_ai', 'leo-ai', `Leo AI fallo: ${reason} (${mode})${detail ? ' ' + detail : ''}`, reason, severity)
 }
 
 Deno.serve(async (req: Request) => {
@@ -585,7 +610,7 @@ Deno.serve(async (req: Request) => {
         await sleep(PROCESSING_POLL_MS) // otra llamada con este id sigue en curso
       }
       if (!beginErr && begin && typeof begin.day === 'string') today = begin.day
-      if (beginErr && !isMissingFunction(beginErr)) { console.error('leo_ai_begin error:', beginErr.message); return json({ ok: false, reason: 'usage_error' }) }
+      if (beginErr && !isMissingFunction(beginErr)) { console.error('leo_ai_begin error:', beginErr.message); await reportServerError('leo_ai', 'leo-ai', 'Leo AI: fallo al reservar cupo (leo_ai_begin)', 'usage_error', 'critical'); return json({ ok: false, reason: 'usage_error' }) }
       if (!beginErr && begin) {
         if (begin.status === 'completed' && begin.answer && typeof begin.answer === 'object') return json({ ok: true, mode, answer: begin.answer })
         if (begin.status === 'processing') { await logFailure(today, 'in_progress', mode); return json({ ok: false, reason: 'in_progress' }) }
@@ -600,7 +625,7 @@ Deno.serve(async (req: Request) => {
     if (!attempt) {
       if (gate === null) {
         const r = await supabase.rpc('leo_ai_reserve', { p_user: user.id, p_day: today })
-        if (r.error) { console.error('leo_ai_reserve error:', r.error.message); return json({ ok: false, reason: 'usage_error' }) }
+        if (r.error) { console.error('leo_ai_reserve error:', r.error.message); await reportServerError('leo_ai', 'leo-ai', 'Leo AI: fallo al reservar cupo (leo_ai_reserve)', 'usage_error', 'critical'); return json({ ok: false, reason: 'usage_error' }) }
         gate = r.data
       }
       if (gate === 'disabled') return json({ ok: false, reason: 'disabled', final: true })
@@ -631,6 +656,7 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     console.error('leo-ai error:', e)
     if (claim) await finishRequest(claim.userId, claim.requestId, 'failed', null, 'error', claim.attempt) // no dejarlo en 'processing'
+    await reportServerError('leo_ai', 'leo-ai', 'Excepcion no controlada: ' + String((e as Error)?.message ?? e).slice(0, 150), 'exception', 'critical')
     return json({ ok: false, reason: 'error' })
   }
 })

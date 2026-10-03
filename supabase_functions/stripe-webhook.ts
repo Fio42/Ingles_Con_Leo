@@ -53,6 +53,25 @@ const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+// Registro central de errores (ver error-monitoring.sql). A prueba de fallos: nunca lanza ni espera
+// más de 2 s, así que si el registro falla el flujo del usuario sigue exactamente igual. Solo se
+// mandan textos fijos y códigos, nunca datos del alumno; la base los limpia otra vez.
+async function reportServerError(kind: string, section: string, message: string, code: string, severity: string) {
+  let timer: any
+  try {
+    const base = `${kind}|${section}|${code}|${message}`.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '#').replace(/\d+/g, '#').slice(0, 200)
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base))
+    const fp = Array.from(new Uint8Array(buf)).slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('')
+    await Promise.race([
+      Promise.resolve(supabase.rpc('log_app_error', {
+        p_fp: fp, p_kind: kind, p_source: 'server', p_severity: severity, p_section: section, p_message: message,
+        p_error_name: null, p_stack_top: null, p_code: code, p_release: null, p_browser: null, p_platform: null, p_sample: null,
+      })).then(() => {}, () => {}),
+      new Promise((resolve) => { timer = setTimeout(resolve, 2000) }),
+    ])
+  } catch (_) { /* el registro de errores nunca rompe nada */ } finally { clearTimeout(timer) }
+}
+
 // ---- Meta Conversions API: avisa a Meta (Facebook/Instagram Ads) que
 // alguien se volvió miembro de pago DE VERDAD (no un simple clic ni un
 // registro gratis: es el mismo momento en que se manda el correo de
@@ -176,6 +195,7 @@ Deno.serve(async (req: Request) => {
     const isValid = await verifyStripeSignature(rawBody, signatureHeader, STRIPE_WEBHOOK_SECRET)
     if (!isValid) {
       console.error('Firma de Stripe inválida, aviso ignorado.')
+      await reportServerError('webhook', 'stripe-webhook', 'Firma de Stripe invalida', 'bad_signature', 'warning')
       return new Response('invalid signature', { status: 400 })
     }
 
@@ -228,7 +248,10 @@ Deno.serve(async (req: Request) => {
             { id: userId, email: correoDestino, is_member: true, ...(esNuevo ? { member_since: new Date().toISOString() } : {}), stripe_customer_id: customerId },
             { onConflict: 'id' }
           )
-        if (error) console.error('Error activando miembro (Stripe):', error)
+        if (error) {
+          console.error('Error activando miembro (Stripe):', error)
+          await reportServerError('payment', 'stripe-webhook', 'Error activando miembro tras un pago', 'activate_' + (error.code || 'db'), 'critical')
+        }
         if (correoDestino) {
           await ensureMemberWelcome(userId, correoDestino)
         }
@@ -269,7 +292,10 @@ Deno.serve(async (req: Request) => {
           .from('profiles')
           .update(updatePayload)
           .eq('stripe_customer_id', customerId)
-        if (error) console.error('Error actualizando miembro (Stripe):', error)
+        if (error) {
+          console.error('Error actualizando miembro (Stripe):', error)
+          await reportServerError('payment', 'stripe-webhook', 'Error actualizando miembro', 'update_' + (error.code || 'db'), 'error')
+        }
       }
     }
 
@@ -278,6 +304,7 @@ Deno.serve(async (req: Request) => {
     // Devolvemos 200 igual para que Stripe no reintente sin parar;
     // el error queda en los logs de la función para revisar.
     console.error(e)
+    await reportServerError('payment', 'stripe-webhook', 'Excepcion no controlada: ' + String((e as Error)?.message ?? e).slice(0, 150), 'exception', 'critical')
     return new Response('ok', { status: 200 })
   }
 })
