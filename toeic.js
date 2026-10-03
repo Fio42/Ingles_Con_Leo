@@ -408,7 +408,7 @@ function renderToeicSpeakingItem(ctx){
       recorder.ondataavailable = e => chunks.push(e.data);
       recorder.onstop = ()=>{
         if(!chunks.length) return;
-        const url = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+        const url = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm' }));
         compareRow.innerHTML = `<div class="compare-col"><div class="compare-label">Tu respuesta</div><audio controls src="${url}"></audio></div>`;
       };
       recorder.start();
