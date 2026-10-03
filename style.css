@@ -1198,6 +1198,8 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-voz.is-compact{margin:12px 0 0;padding:6px 12px 6px 8px;gap:10px;border-radius:14px;width:fit-content;}
 .leo-voz.is-compact .leo-voz-avatar{flex-basis:34px;width:34px;height:34px;}
 .leo-voz.is-compact .leo-voz-avatar img{width:30px;}
+.leo-voz .leo-voz-avatar.is-photo img{position:static;width:100%;height:100%;object-fit:cover;transform:none;}
+.leo-voz.is-compact .leo-voz-avatar.is-photo{flex-basis:42px;width:42px;height:42px;}
 .leo-voz.is-compact .leo-voz-body{flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px 10px;}
 .leo-voz.is-compact .leo-voz-label{font-size:0.84rem;color:var(--ink);}
 .leo-voz.is-compact .leo-voz-btn{padding:5px 12px;font-size:0.84rem;}

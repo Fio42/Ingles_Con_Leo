@@ -66,8 +66,9 @@
     exists(url).then(function(ok){
       if(!ok) return;
       var noAvatar = el.getAttribute('data-leo-voz-avatar') === 'none';
+      var photo = el.getAttribute('data-leo-voz-avatar') === 'photo';
       el.innerHTML =
-        (noAvatar ? '' : '<span class="leo-voz-avatar" aria-hidden="true"><img src="leo-front.png" alt="" width="40" height="74" loading="lazy" decoding="async"></span>') +
+        (noAvatar ? '' : '<span class="leo-voz-avatar' + (photo ? ' is-photo' : '') + '" aria-hidden="true"><img src="' + (photo ? 'leo-real.webp' : 'leo-front.png') + '" alt="" width="' + (photo ? 96 : 40) + '" height="' + (photo ? 96 : 74) + '" loading="lazy" decoding="async"></span>') +
         '<span class="leo-voz-body">' +
           '<span class="leo-voz-label"></span>' +
           '<span class="leo-voz-row">' +
