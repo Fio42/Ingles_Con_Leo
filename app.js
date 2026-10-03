@@ -3102,6 +3102,8 @@ function computePlanSelection(level, targetCount, opts){
   // Foco elegido desde un enlace ("Practicar Preposiciones", "Reforzar en
   // mi Plan"): usa el mismo refuerzo de abajo con otra familia y más cupos.
   const urlTema = (opts && opts.focusTema && typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[opts.focusTema] : null;
+  // Tema de vocabulario (?tema=vocab-...): se usa si tiene palabras en este nivel; si no, el Plan normal.
+  const forcedVocab = (urlTema && urlTema.skill === 'vocabulary' && temaHasItemsAt(urlTema.id, level)) ? urlTema : null;
   const famId = (opts && opts.focusFamily) || (urlTema && urlTema.family) || null;
   const forcedFamily = (famId && DIAG_FAMILY_BY_ID[famId] && familyHasItemsAt(famId, level))
     ? DIAG_FAMILY_BY_ID[famId] : null;
@@ -3160,24 +3162,38 @@ function computePlanSelection(level, targetCount, opts){
   // la sesión no cambia. Si no hay diagnóstico todavía, todo sigue igual.
   let focus = null;
   try{
-    const target = forcedFamily
-      ? { id: forcedFamily.id, label: forcedFamily.label, temaId: forcedTema ? forcedTema.id : null, temaLabel: forcedTema ? forcedTema.label : null }
-      : (diag && diag.ready && diag.weak && diag.weak.type === 'family' ? { id: diag.weak.id, label: diag.weak.label } : null);
-    // Sin foco en la URL, el Plan sigue al tema más flojo que ya detectó el diagnóstico.
-    if(target && !forcedFamily && diag.weak.focusTema && temaHasItemsAt(diag.weak.focusTema.id, level)){
-      target.temaId = diag.weak.focusTema.id; target.temaLabel = diag.weak.focusTema.label;
+    let focusSkill = 'gramatica';
+    let target;
+    if(forcedVocab){
+      focusSkill = 'vocabulario';
+      target = { id: null, label: forcedVocab.label, temaId: forcedVocab.id, temaLabel: forcedVocab.label };
+    } else {
+      target = forcedFamily
+        ? { id: forcedFamily.id, label: forcedFamily.label, temaId: forcedTema ? forcedTema.id : null, temaLabel: forcedTema ? forcedTema.label : null }
+        : (diag && diag.ready && diag.weak && diag.weak.type === 'family' ? { id: diag.weak.id, label: diag.weak.label } : null);
+      // Sin foco en la URL, el Plan sigue al tema más flojo que ya detectó el diagnóstico.
+      if(target && !forcedFamily && diag.weak.focusTema && temaHasItemsAt(diag.weak.focusTema.id, level)){
+        target.temaId = diag.weak.focusTema.id; target.temaLabel = diag.weak.focusTema.label;
+      }
+      // Vocabulario débil con un tema claro (y sin foco de gramática pedido): el refuerzo es ese tema.
+      if(!target && !(opts && opts.focusFamily) && diag && diag.ready && diag.weak && diag.weak.type === 'skill' && diag.weak.id === 'vocabulario'
+        && diag.weak.focusTema && temaHasItemsAt(diag.weak.focusTema.id, level)){
+        focusSkill = 'vocabulario';
+        target = { id: null, label: diag.weak.focusTema.label, temaId: diag.weak.focusTema.id, temaLabel: diag.weak.focusTema.label };
+      }
     }
     if(target && remaining >= 4){
-      const want = forcedFamily
+      const forced = !!(forcedFamily || forcedVocab);
+      const want = forced
         ? Math.min(6, Math.max(3, Math.round(remaining * 0.5)))
         : Math.min(3, Math.max(2, Math.round(remaining * 0.25)));
-      while((bySkill.gramatica || 0) < want){
-        const donor = skills.filter(sk => sk !== 'gramatica').sort((a,b)=> (bySkill[b]||0) - (bySkill[a]||0))[0];
+      while((bySkill[focusSkill] || 0) < want){
+        const donor = skills.filter(sk => sk !== focusSkill).sort((a,b)=> (bySkill[b]||0) - (bySkill[a]||0))[0];
         if(!donor || !bySkill[donor]) break;
-        bySkill[donor]--; bySkill.gramatica = (bySkill.gramatica || 0) + 1;
+        bySkill[donor]--; bySkill[focusSkill] = (bySkill[focusSkill] || 0) + 1;
       }
-      const count = Math.min(want, bySkill.gramatica || 0);
-      if(count > 0) focus = { familyId: target.id, label: target.temaLabel || target.label, temaId: target.temaId || null, count, chosen: !!forcedFamily };
+      const count = Math.min(want, bySkill[focusSkill] || 0);
+      if(count > 0) focus = { skill: focusSkill, familyId: target.id, label: target.temaLabel || target.label, temaId: target.temaId || null, count, chosen: forced };
     }
   }catch(e){ focus = null; }
 
@@ -3204,11 +3220,14 @@ function buildPlanPool(level, selection){
   const entries = (selection.mistakeCount > 0 ? buildMistakePool(selection.mistakeCount) : [])
     .map(e => Object.assign({ reviewOrigin:true }, e));
   const alreadyIn = new Set(entries.map(e => e.item.id));
-  const focusEntries = selection.focus ? pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId) : [];
+  const focusSkill = (selection.focus && selection.focus.skill) || 'gramatica';
+  const focusEntries = !selection.focus ? []
+    : focusSkill === 'vocabulario' ? pickVocabFocusItems(level, selection.focus.temaId, selection.focus.count, alreadyIn)
+    : pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId);
   focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null; entries.push(e); alreadyIn.add(e.item.id); });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
-    if(sk === 'gramatica') count -= focusEntries.length;
+    if(sk === focusSkill) count -= focusEntries.length;
     if(count <= 0) return;
     // Se piden unos pocos de más para poder saltar los que ya vienen en
     // la sesión (repaso de errores o refuerzo) y no repetir un ejercicio.
@@ -3232,7 +3251,7 @@ function summarizePlanSelection(selection){
   if(selection.focus) groups.push({ label: 'Refuerzo: ' + selection.focus.label, count: selection.focus.count });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
-    if(sk === 'gramatica' && selection.focus) count -= selection.focus.count;
+    if(selection.focus && sk === (selection.focus.skill || 'gramatica')) count -= selection.focus.count;
     if(count > 0) groups.push({ label: SKILL_LABELS[sk], count });
   });
   return groups;
@@ -3653,6 +3672,16 @@ function familyHasItemsAt(familyId, level){
    Un tema es más fino que una familia (ej. "Verbos irregulares" dentro de
    "Pasado simple"). Si temas.js no está cargado en la página, todo lo de
    abajo se apaga y el sitio sigue funcionando por familias, como antes. */
+// Tema de vocabulario de una palabra (por el grupo de su id) y tema de cualquier ejercicio del índice.
+function vocabTemaIdForItem(itemId){
+  if(typeof temaForVocabItem !== 'function') return null;
+  const t = temaForVocabItem(itemId);
+  return t ? t.id : null;
+}
+function diagTemaIdForFound(found){
+  if(!found) return null;
+  return found.kind === 'vocab' ? vocabTemaIdForItem(found.item && found.item.id) : diagTemaIdForTopic(found.topic);
+}
 function diagTemaIdForTopic(topic){
   if(typeof temaForTopic !== 'function') return null;
   const t = temaForTopic(topic);
@@ -3660,6 +3689,10 @@ function diagTemaIdForTopic(topic){
 }
 // ¿Hay ejercicios de ese tema en ese nivel? (para no mandar a un refuerzo vacío).
 function temaHasItemsAt(temaId, level){
+  if(typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[temaId] && TEMA_BY_ID[temaId].skill === 'vocabulary'){
+    if(typeof VOCAB_BANK === 'undefined' || !VOCAB_BANK[level]) return false;
+    return VOCAB_BANK[level].some(variant => variant.some(it => vocabTemaIdForItem(it.id) === temaId));
+  }
   if(typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level] || typeof temaForTopic !== 'function') return false;
   return GRAMMAR_BANK[level].some(variant => variant.some(group=>{
     const t = temaForTopic(group.topic);
@@ -3670,12 +3703,18 @@ function temaHasItemsAt(temaId, level){
 // si existe; si no, la explicación rápida del glosario; si no, nada.
 // { id, label, family, practiceHref, practiceLabel, lesson, quick, article,
 //   articleTitle, articleLabel } o null.
+// Práctica enfocada en un tema desde el Plan: gramática = ?foco=<familia>&tema=; vocabulario = ?tema=.
+function temaPlanHref(t, start){
+  return t.skill === 'vocabulary' ? 'plan-estudio.html?tema=' + encodeURIComponent(t.id) + (start ? '&empezar=1' : '') : planFocusHref(t.family, start, t.id);
+}
 function contentForTema(id){
   if(typeof TEMA_BY_ID === 'undefined') return null;
   const t = TEMA_BY_ID[id];
   if(!t) return null;
   const level = getUserLevel();
-  const practiceHref = !t.family ? 'gramatica.html'
+  const isVocab = t.skill === 'vocabulary';
+  const practiceHref = isVocab ? (temaHasItemsAt(id, level) ? temaPlanHref(t, true) : 'vocabulario.html')
+    : !t.family ? 'gramatica.html'
     : temaHasItemsAt(id, level) ? planFocusHref(t.family, true, id)
     : familyHasItemsAt(t.family, level) ? planFocusHref(t.family, true)
     : 'gramatica.html';
@@ -3684,7 +3723,8 @@ function contentForTema(id){
   const lesson = t.article ? { href: t.article + via, title: ARTICLE_TITLE_BY_HREF[t.article] || t.label } : null;
   const quick = (!lesson && t.glossary) ? { href: '/glosario/' + t.glossary + '/' + via, title: t.label } : null;
   return {
-    id: t.id, label: t.label, family: t.family,
+    id: t.id, label: t.label, family: t.family, skill: isVocab ? 'vocabulario' : 'gramatica',
+    unitKey: isVocab ? 'skill:vocabulario' : (t.family ? 'family:' + t.family : null),
     practiceHref, practiceLabel: `Practicar ${t.label}`,
     lesson, quick,
     article: lesson ? lesson.href : (quick ? quick.href : null),
@@ -4825,7 +4865,7 @@ function collectDiagAttempts(p){
       if(DIAG_SKILLS.indexOf(skill) === -1) return;
       const fam = (skill === 'gramatica' && found) ? diagFamilyForTopic(found.topic) : null;
       out.push({ itemId:r.itemId, ok:r.isCorrect, when, skill, family: fam ? fam.id : null,
-        tema: (skill === 'gramatica' && found) ? diagTemaIdForTopic(found.topic) : null });
+        tema: (skill === 'gramatica' || skill === 'vocabulario') ? diagTemaIdForFound(found) : null });
     });
   });
   out.sort((a,b)=> a.when - b.when);
@@ -4927,7 +4967,7 @@ function diagMistakeSummary(attempts, statsMap, now){
     if(!found) return null;
     const skill = DIAG_KIND_TO_SKILL[found.kind];
     const fam = skill === 'gramatica' ? diagFamilyForTopic(found.topic) : null;
-    return { skill, family: fam ? fam.id : null, tema: (skill === 'gramatica') ? diagTemaIdForTopic(found.topic) : null };
+    return { skill, family: fam ? fam.id : null, tema: (skill === 'gramatica' || skill === 'vocabulario') ? diagTemaIdForFound(found) : null };
   }
   if(statsMap instanceof Map){
     statsMap.forEach(s=>{
@@ -5001,6 +5041,11 @@ function computeDiagnosis(p, statsMap){
     u.state = diagState(u);
     if(type === 'family' && typeof TEMAS !== 'undefined'){
       const ts = diagTemaStats(list.filter(a => a.family === id), mistakes.active.filter(m => m.family === id), now);
+      u.temaStats = ts;
+      u.focusTema = diagFocusTema(ts);
+    } else if(type === 'skill' && id === 'vocabulario' && typeof TEMAS !== 'undefined'){
+      // Dentro de Vocabulario: temas reales (grupos de palabras con un tema común).
+      const ts = diagTemaStats(list.filter(a => a.skill === 'vocabulario'), mistakes.active.filter(m => m.skill === 'vocabulario'), now);
       u.temaStats = ts;
       u.focusTema = diagFocusTema(ts);
     }
@@ -5112,7 +5157,7 @@ function computeDiagnosis(p, statsMap){
   if(diag.weak){
     // Si dentro de la familia hay un tema concreto que falla más, la
     // recomendación es ese tema (práctica y clase del tema). Si no, la familia.
-    const ft = diag.weak.type === 'family' ? diag.weak.focusTema : null;
+    const ft = diag.weak.focusTema || null;       // familia de gramática o Vocabulario
     const tc = ft ? contentForTema(ft.id) : null;
     if(tc){
       push({
@@ -5120,7 +5165,7 @@ function computeDiagnosis(p, statsMap){
         reason: ft.activeMistakes
           ? `Vas en ${ft.current}% y tienes ${ft.activeMistakes} ${ft.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'} en este tema.`
           : `Es el tema donde más fallas dentro de ${diag.weak.label}: ${ft.current}% de aciertos.`,
-        href: temaHasItemsAt(ft.id, getUserLevel()) ? planFocusHref(diag.weak.id, false, ft.id) : diag.weak.href,
+        href: temaHasItemsAt(ft.id, getUserLevel()) ? temaPlanHref(TEMA_BY_ID[ft.id], false) : diag.weak.href,
         cta: 'Reforzar ahora',
         article: tc.article, articleLabel: tc.articleLabel,
         tema: ft.id
@@ -5208,6 +5253,29 @@ function computeWeeklyReport(diag){
    los que la persona falló, luego los que no ha visto, y al final el
    resto; nunca los que respondió bien en los últimos 3 días, ni los que
    ya vienen en la misma sesión como repaso de errores (excludeIds). */
+/* Palabras del tema elegido para el refuerzo del Plan (vocabulario): primero las que
+   falló, luego las que no ha visto; el resto del cupo lo completa el vocabulario
+   normal del nivel (igual que en gramática). */
+function pickVocabFocusItems(level, temaId, n, excludeIds){
+  if(!temaId || !n || typeof VOCAB_BANK === 'undefined' || !VOCAB_BANK[level]) return [];
+  const p = loadProgress();
+  const recentOk = new Set(), everFailed = new Set(), seen = new Set();
+  const cut = Date.now() - 3*86400000;
+  (p.sessions || []).forEach(s=> (s.results || []).forEach(r=>{
+    seen.add(r.itemId);
+    if(r.isCorrect === false) everFailed.add(r.itemId);
+    if(r.isCorrect === true && (s.startedAt || 0) >= cut) recentOk.add(r.itemId);
+  }));
+  const candidates = [];
+  VOCAB_BANK[level].forEach(variant=> variant.forEach(item=>{
+    if(vocabTemaIdForItem(item.id) !== temaId) return;
+    if(recentOk.has(item.id) || (excludeIds && excludeIds.has(item.id))) return;
+    candidates.push(item);
+  }));
+  const rank = item => everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1);
+  return shuffleArray(candidates).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind:'vocab', item, focus:true }));
+}
+
 function pickDiagFocusItems(level, familyId, n, excludeIds, temaId){
   if(!familyId || !n || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return [];
   const p = loadProgress();
@@ -5418,6 +5486,10 @@ function diagSkillsHtml(p, diag){
     if(u){
       const arrow = u.trend === 'up' ? ' <span class="diag-arrow up">↑</span>' : (u.trend === 'down' ? ' <span class="diag-arrow down">↓</span>' : '');
       detail = (u.trend ? `Aciertos: antes ${u.prevAcc}% · ahora ${u.recentAcc}%` : diagAccText(u)) + arrow;
+      // Dentro de Vocabulario: el tema concreto (los botones están en "Hoy te conviene").
+      if(skill === 'vocabulario' && u.focusTema && (u.state === 'refuerzo' || u.state === 'practica')){
+        detail += `<span class="diag-unit-tema">Dentro de Vocabulario, lo que más necesitas reforzar es <b>${temaLabelOf(u.focusTema.id)}</b>.</span>`;
+      }
     }
     return `
       <a href="${SKILL_PAGE[skill]}" class="skill-row-v2">
@@ -5593,12 +5665,12 @@ function temaSessionProgress(temaId, now, diag){
   const index = getDiagItemIndex();
   const c = contentForTema(temaId);
   if(!index || !c) return null;
-  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && diagTemaIdForTopic(f.topic) === temaId; });
+  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && diagTemaIdForFound(f) === temaId; });
   if(mine.length < 2) return null;            // muy pocos para opinar del tema
   const ok = mine.filter(a=>a.ok).length;
   let stat = null;
   if(diag && diag.ready){
-    const u = diag.units.find(x => x.key === 'family:' + c.family);
+    const u = diag.units.find(x => x.key === c.unitKey);
     stat = (u && (u.temaStats || []).find(s => s.id === temaId)) || null;
   }
   // Con suficientes datos manda el mismo criterio del diagnóstico; si no, esta sesión.
@@ -5671,11 +5743,12 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.struggle && ins.improved && ins.struggle.key === ins.improved.key) ins.improved = null;
   // Si lo que más costó es una familia, ¿hay un tema concreto detrás de los fallos?
   ins.struggleTema = null;
-  if(ins.struggle && ins.struggle.key.indexOf('family:') === 0 && typeof TEMAS !== 'undefined'){
+  if(ins.struggle && (ins.struggle.key.indexOf('family:') === 0 || ins.struggle.key === 'skill:vocabulario') && typeof TEMAS !== 'undefined'){
     const fid = ins.struggle.key.slice(7);
-    const wrongHere = now.filter(a => !a.ok && a.family === fid).map(a=>{
+    const inUnitNow = a => ins.struggle.key === 'skill:vocabulario' ? a.skill === 'vocabulario' : a.family === fid;
+    const wrongHere = now.filter(a => !a.ok && inUnitNow(a)).map(a=>{
       const f = index.get(a.itemId);
-      return { tema: f ? diagTemaIdForTopic(f.topic) : null, failCount: everFailed.has(a.itemId) ? 2 : 1 };
+      return { tema: diagTemaIdForFound(f), failCount: everFailed.has(a.itemId) ? 2 : 1 };
     });
     const top = dominantTema(wrongHere);
     if(top && (top.count >= 2 || top.count === wrongHere.length) && contentForTema(top.id)) ins.struggleTema = top.id;
@@ -5941,7 +6014,7 @@ function computeMistakePatterns(statsMap){
     const [type, id] = g.key.split(':');
     g.content = contentForUnit(type, id);
     // Tema que más errores concentra dentro de la familia (registro de temas).
-    const dt = type === 'family' ? dominantTema(g.items) : null;
+    const dt = (type === 'family' || g.key === 'skill:vocabulario') ? dominantTema(g.items) : null;
     g.temaContent = dt ? contentForTema(dt.id) : null;
     // En "Mis errores", repasar una habilidad sin familia = filtro por habilidad.
     const kind = Object.keys(DIAG_KIND_TO_SKILL).find(k => DIAG_KIND_TO_SKILL[k] === id);

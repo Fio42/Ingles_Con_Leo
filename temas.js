@@ -134,10 +134,41 @@ const TEMAS = [
   { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'would-rather',
     topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
   { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:null, topics:[`Subjuntivo formal (It is essential that...)`] },
-  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] }
+  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },
+
+  /* ---- VOCABULARIO (skill:'vocabulary') ----
+     VOCAB_BANK no trae etiquetas por palabra, pero cada grupo de palabras tiene un
+     prefijo de id estable ("v-medio4-1", "v-facil-numeros-3" -> grupo "medio4",
+     "facil-numeros"). Un tema de vocabulario es una lista EXPLICITA de grupos cuyas
+     palabras comparten un tema real (se ve en las propias palabras y explicaciones).
+     Los grupos de palabras generales sin tema común van en VOCAB_GRUPOS_SIN_TEMA:
+     siguen contando para "Vocabulario", pero no para un tema. tools/tests/temas.test.js
+     exige que todo grupo nuevo de data.js se clasifique en uno u otro. */
+  { id:'vocab-confusas', skill:'vocabulary', label:'Palabras que se confunden', family:null, article:null, glossary:null, topics:[],
+    groups:['principiante5', 'facil9', 'medio8', 'medio9', 'avanzado8', 'avanzado9'] },
+  { id:'vocab-numeros', skill:'vocabulary', label:'Números, precios y datos personales', family:null, article:'articulo-numeros-en-ingles.html', glossary:null, topics:[],
+    groups:['principiante-numeros', 'facil-numeros', 'medio-numeros'] },
+  { id:'vocab-trabajo', skill:'vocabulary', label:'Trabajo y negocios', family:null, article:null, glossary:null, topics:[],
+    groups:['medio6', 'medio-m300', 'avz4', 'avz6'] },
+  { id:'vocab-viajes', skill:'vocabulary', label:'Viajes', family:null, article:null, glossary:null, topics:[], groups:['medio4'] },
+  { id:'vocab-compras', skill:'vocabulary', label:'Compras y pagos', family:null, article:null, glossary:null, topics:[], groups:['facil4'] },
+  { id:'vocab-vida-diaria', skill:'vocabulary', label:'Vida diaria y casa', family:null, article:null, glossary:null, topics:[], groups:['facil', 'facil5', 'facil6'] }
+];
+
+// Grupos de VOCAB_BANK sin un tema común (palabras generales o mezcladas).
+const VOCAB_GRUPOS_SIN_TEMA = [
+  'principiante', 'principiante2', 'principiante3', 'principiante4', 'principiante6', 'principiante-m100', 'principiante-m200', 'principiante-m300', 'principiante-m400',
+  'facil2', 'facil3', 'facil7', 'facil8', 'facil10', 'facil-m100', 'facil-m200', 'facil-m300', 'facil-m400',
+  'medio', 'medio2', 'medio3', 'medio5', 'medio7', 'medio10', 'medio-m100', 'medio-m200', 'medio-m400',
+  'avz', 'avz2', 'avz3', 'avz5', 'avanzado7', 'avanzado10', 'avanzado-m100', 'avanzado-m200', 'avanzado-m300', 'avanzado-m400'
 ];
 
 const TEMA_BY_ID = TEMAS.reduce((m, t)=>{ m[t.id] = t; return m; }, {});
 const TEMA_BY_TOPIC = TEMAS.reduce((m, t)=>{ t.topics.forEach(topic=>{ m[topic] = t; }); return m; }, {});
 // Tema de una etiqueta de data.js (o null si todavia no esta en el registro).
 function temaForTopic(topic){ return (topic && TEMA_BY_TOPIC[topic]) || null; }
+
+// Vocabulario: grupo de una palabra ("medio4-3" -> "medio4") y su tema (o null).
+const TEMA_BY_VOCAB_GROUP = TEMAS.reduce((m, t)=>{ (t.groups || []).forEach(g=>{ m[g] = t; }); return m; }, {});
+function vocabGroupOf(itemId){ return String(itemId || '').replace(/^v-/, '').replace(/-\d+$/, ''); }
+function temaForVocabItem(itemId){ return TEMA_BY_VOCAB_GROUP[vocabGroupOf(itemId)] || null; }

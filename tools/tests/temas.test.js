@@ -26,7 +26,7 @@ function makeCtx(withTemas){
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
-  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
+  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
   computeSessionInsight, renderArticleTema, buildLeoAiPayload, leoAiFocusLink, temaLinksHtml, computeWeeklyReport,
   TEMAS: typeof TEMAS === 'undefined' ? null : TEMAS, TEMA_BY_ID: typeof TEMA_BY_ID === 'undefined' ? null : TEMA_BY_ID };`, ctx);
   return ctx.__t;
@@ -566,6 +566,176 @@ test('RECORRIDO: debilidad -> Hoy te conviene -> clase -> practicar tema -> term
   assert(ins.tema && !ins.tema.needsMore && /Ya vas bien/.test(ins.lines[0].text));
   const d2 = T.computeDiagnosis();
   assert(!d2.today || d2.today.title !== today.title, 'la recomendación cambió');
+});
+
+
+/* ================= FASE 4: VOCABULARIO por tema ================= */
+console.log('\nFase 4: vocabulario por tema');
+const VT = T.TEMAS.filter(t => t.skill === 'vocabulary');
+const vocabIdsOf = (temaId, level) => {
+  const out = [];
+  Object.keys(T.V).filter(l => !level || l === level).forEach(l => T.V[l].forEach(v => v.forEach(w => { if(T.TEMA_BY_ID[temaId].groups.includes(T.vocabGroupOf(w.id))) out.push(w.id); })));
+  return out;
+};
+const vocabOther = (temaId, level) => {
+  const mine = new Set(vocabIdsOf(temaId, level)), out = [];
+  T.V[level].forEach(v => v.forEach(w => { const g = T.vocabGroupOf(w.id); if(!mine.has(w.id) && T.VGS.includes(g)) out.push(w.id); }));
+  return out;
+};
+const vsession = (daysAgo, results) => Object.assign(session(daysAgo, results), { skill:'vocabulario' });
+const vres = (ids, n, pct, off) => answers(ids, n, pct, off).map(r => Object.assign(r, { skill:'vocabulario' }));
+function vocabWeakHistory(temaId, days){
+  const d = days || [2, 1];
+  return [ vsession(d[0], vres(vocabIdsOf(temaId, 'facil'), 12, 10)), vsession(d[1], vres(vocabOther(temaId, 'facil'), 8, 90)) ];
+}
+
+test('vocabulario: todo grupo de VOCAB_BANK está en un tema o en la lista "sin tema" (y nada sobra ni se repite)', ()=>{
+  const real = new Set();
+  Object.keys(T.V).forEach(l => T.V[l].forEach(v => v.forEach(w => real.add(T.vocabGroupOf(w.id)))));
+  const seen = new Map();
+  VT.forEach(t => t.groups.forEach(g => { assert(!seen.has(g), `${g} está en ${seen.get(g)} y en ${t.id}`); seen.set(g, t.id); }));
+  T.VGS.forEach(g => { assert(!seen.has(g), `${g} está en un tema Y en la lista sin tema`); seen.set(g, 'sin-tema'); });
+  const missing = [...real].filter(g => !seen.has(g)), extra = [...seen.keys()].filter(g => !real.has(g));
+  assert.deepStrictEqual(missing, [], 'grupos sin clasificar: ' + missing.join(', '));
+  assert.deepStrictEqual(extra, [], 'grupos que no existen en data.js: ' + extra.join(', '));
+});
+test('temas de vocabulario: ids propios, skill, nombre y recursos reales (artículo/glosario si existen)', ()=>{
+  assert(VT.length >= 5);
+  VT.forEach(t=>{
+    assert(/^vocab-[a-z0-9-]+$/.test(t.id) && t.skill === 'vocabulary' && t.label && t.groups.length && t.topics.length === 0, t.id);
+    if(t.article) assert(files.has(t.article), t.id);
+    if(t.glossary) assert(glossaryOk(t.glossary), t.id);
+    const c = T.contentForTema(t.id);
+    assert(c && c.skill === 'vocabulario' && c.unitKey === 'skill:vocabulario', t.id);
+    assert(hrefOk(c.practiceHref), c.practiceHref);
+    if(c.lesson) assert(files.has(c.lesson.href.split('?')[0]));
+  });
+});
+test('compatibilidad: los temas de vocabulario no se mezclan con gramática', ()=>{
+  const gram = T.TEMAS.filter(t => t.skill !== 'vocabulary');
+  assert(gram.length >= 60 && gram.every(t => !t.groups));
+  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g => assert(!T.TEMAS.some(t => t.skill === 'vocabulary' && t.topics.includes(g.topic))))));
+});
+test('vocabulario SIN suficiente evidencia de un tema: solo "Vocabulario", sin tema', ()=>{
+  const compras = vocabIdsOf('vocab-compras', 'facil'), otros = vocabOther('vocab-compras', 'facil');
+  setProgress(T, [ vsession(2, vres(compras, 3, 0)), vsession(1, vres(otros, 14, 40)) ]);   // solo 3 intentos del tema (mínimo 4)
+  const d = readyDiag(T);
+  const u = d.units.find(x => x.key === 'skill:vocabulario');
+  assert(u && !u.focusTema, 'no debería señalar tema con 3 intentos');
+  if(d.today) assert(!d.today.tema);
+  assert(!/Dentro de Vocabulario/.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
+});
+test('vocabulario con tema débil claro: Hoy te conviene (practicar el tema) + detalle en el diagnóstico', ()=>{
+  setProgress(T, vocabWeakHistory('vocab-compras'));
+  const d = readyDiag(T);
+  assert.strictEqual(d.weak.key, 'skill:vocabulario');
+  assert.strictEqual(d.weak.focusTema.id, 'vocab-compras');
+  const a = d.today;
+  assert.strictEqual(a.title, 'Reforzar Compras y pagos');
+  assert.strictEqual(a.tema, 'vocab-compras');
+  assert(/^plan-estudio\.html\?tema=vocab-compras$/.test(a.href), a.href);
+  assert(/^plan-estudio\.html\?tema=vocab-compras&empezar=1$/.test(T.todayStartHref(a)));
+  assert(!a.article, 'Compras no tiene clase ni glosario: solo practicar');
+  checkAction(a);
+  const html = T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d);
+  assert(/Dentro de Vocabulario, lo que más necesitas reforzar es <b>Compras y pagos<\/b>\./.test(html));
+});
+test('tema de vocabulario con clase: practicar + clase real (con contexto)', ()=>{
+  setProgress(T, vocabWeakHistory('vocab-numeros'));
+  const a = readyDiag(T).today;
+  assert.strictEqual(a.title, 'Reforzar Números, precios y datos personales');
+  assert.strictEqual(a.article, 'articulo-numeros-en-ingles.html' + VIA('vocab-numeros'));
+  assert.strictEqual(a.articleLabel, 'Ver la clase');
+  checkAction(a);
+});
+test('práctica enfocada en un tema de vocabulario: las palabras del tema primero y se completa con vocabulario del nivel', ()=>{
+  const sel = T.computePlanSelection('facil', 12, { focusTema:'vocab-compras' });
+  assert.strictEqual(sel.focus.skill, 'vocabulario'); assert.strictEqual(sel.focus.temaId, 'vocab-compras'); assert.strictEqual(sel.focus.label, 'Compras y pagos');
+  const pool = T.buildPlanPool('facil', sel);
+  const total = sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0);
+  assert.strictEqual(pool.length, total, 'la sesión mantiene su duración');
+  const focus = pool.filter(e => e.focus);
+  const mine = new Set(vocabIdsOf('vocab-compras', 'facil'));
+  assert(focus.length >= 3 && focus.every(e => e.kind === 'vocab' && mine.has(e.item.id) && e.focusTema === 'vocab-compras'));
+  assert.strictEqual(new Set(pool.map(e => e.item.id)).size, pool.length, 'sin ejercicios repetidos');
+  const vocabAll = pool.filter(e => e.kind === 'vocab').length;
+  assert(vocabAll >= focus.length);
+});
+test('tema de vocabulario sin palabras en este nivel o inventado: Plan normal (nunca vacío); gramática intacta', ()=>{
+  setProgress(T, []);   // sin historial: solo cuenta lo que pide la URL
+  let sel = T.computePlanSelection('facil', 12, { focusTema:'vocab-viajes' });       // viajes solo tiene palabras de nivel medio
+  assert(!sel.focus || sel.focus.skill !== 'vocabulario');
+  sel = T.computePlanSelection('facil', 12, { focusTema:'vocab-inventado' });
+  assert(!sel.focus || sel.focus.skill !== 'vocabulario');
+  sel = T.computePlanSelection('facil', 12, { focusFamily:'pasado', focusTema:'verbos-irregulares' });
+  assert.strictEqual(sel.focus.skill, 'gramatica'); assert.strictEqual(sel.focus.temaId, 'verbos-irregulares');
+  assert.strictEqual(T.contentForTema('vocab-viajes').practiceHref, 'vocabulario.html', 'sin palabras en el nivel: la página de vocabulario');
+});
+test('el Plan sin foco en la URL sigue al tema de vocabulario que detectó el diagnóstico', ()=>{
+  setProgress(T, vocabWeakHistory('vocab-compras'));
+  const sel = T.computePlanSelection('facil', 12, {});
+  assert.strictEqual(sel.focus.skill, 'vocabulario'); assert.strictEqual(sel.focus.temaId, 'vocab-compras');
+});
+function vocabPlanFor(temaId, history, results){
+  const s = vsession(0, results);
+  setProgress(T, history.concat([s]));
+  return T.computeSessionInsight(results, s.startedAt, 'plan', { focusTema:temaId });
+}
+test('vocabulario: al terminar el tema y SIGUE débil -> seguir practicando; sin recurso no se inventa clase', ()=>{
+  const ins = vocabPlanFor('vocab-compras', vocabWeakHistory('vocab-compras'), vres(vocabIdsOf('vocab-compras', 'facil'), 6, 17));
+  assert(ins.tema && ins.tema.needsMore);
+  assert(/^En Compras y pagos acertaste \d+ de 6\. Todavía conviene reforzarlo\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert.strictEqual(ins.actions[0].title, 'Seguir practicando Compras y pagos');
+  assert(/plan-estudio\.html\?tema=vocab-compras/.test(ins.actions[0].href));
+  assert(ins.actions.slice(1).every(a => !/^articulo-|^\/glosario\//.test(a.href)), JSON.stringify(ins.actions));
+});
+test('vocabulario: tema que MEJORA deja de recomendarse y cambia la recomendación', ()=>{
+  const hist = vocabWeakHistory('vocab-compras', [12, 11]);
+  const ins = vocabPlanFor('vocab-compras', hist, vres(vocabIdsOf('vocab-compras', 'facil'), 14, 100, 2));
+  assert(ins.tema && !ins.tema.needsMore && /^En Compras y pagos acertaste 14 de 14\. Ya vas bien en este tema\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert(ins.actions.every(a => !/Seguir practicando/.test(a.title) && !/vocab-compras/.test(a.href)), JSON.stringify(ins.actions));
+  const d = T.computeDiagnosis();
+  const u = d.units.find(x => x.key === 'skill:vocabulario');
+  const st = (u.temaStats || []).find(s => s.id === 'vocab-compras');
+  assert(st && st.current >= 75 && st.trend === 'up', 'el tema refleja la mejora: ' + (st && st.current));
+  assert(!d.today || d.today.tema !== 'vocab-compras', 'la recomendación cambió');
+});
+test('vocabulario con clase que sigue débil: la segunda acción es la clase real', ()=>{
+  const ins = vocabPlanFor('vocab-numeros', vocabWeakHistory('vocab-numeros'), vres(vocabIdsOf('vocab-numeros', 'facil'), 6, 17));
+  assert(ins.tema && ins.tema.needsMore);
+  assert.strictEqual(ins.actions[1].href, 'articulo-numeros-en-ingles.html' + VIA('vocab-numeros'));
+});
+test('Mis errores con palabras de un tema: "Sobre todo en X" con práctica del tema (+ clase si existe)', ()=>{
+  const compras = vocabIdsOf('vocab-compras', 'facil');
+  setProgress(T, vocabWeakHistory('vocab-compras'));
+  const g = T.computeMistakePatterns(mistakeStats(compras.slice(0, 4))).groups.find(x => x.key === 'skill:vocabulario');
+  assert(g && g.temaContent && g.temaContent.id === 'vocab-compras');
+  eq(linksIn(T.temaLinksHtml(g.temaContent, 'Reforzar en mi Plan')), ['plan-estudio.html?tema=vocab-compras&empezar=1']);
+  const nums = vocabIdsOf('vocab-numeros', 'facil');
+  const g2 = T.computeMistakePatterns(mistakeStats(nums.slice(0, 4))).groups.find(x => x.key === 'skill:vocabulario');
+  eq(linksIn(T.temaLinksHtml(g2.temaContent)), ['plan-estudio.html?tema=vocab-numeros&empezar=1', 'articulo-numeros-en-ingles.html' + VIA('vocab-numeros')]);
+  // palabras generales (sin tema): se queda como antes
+  const gen = vocabOther('vocab-compras', 'facil');
+  const g3 = T.computeMistakePatterns(mistakeStats(gen.slice(0, 4))).groups.find(x => x.key === 'skill:vocabulario');
+  assert(g3 && !g3.temaContent);
+});
+test('Leo AI (vocabulario): recibe el tema que ya decidió la página como "ya mostrado", sin URLs ni llamadas nuevas', ()=>{
+  const compras = vocabIdsOf('vocab-compras', 'facil');
+  setProgress(T, vocabWeakHistory('vocab-compras'));
+  const payload = T.buildLeoAiPayload(T.mistakePatternsAiCtx(T.computeMistakePatterns(mistakeStats(compras.slice(0, 4)))));
+  assert(payload && payload.shown.includes('Compras y pagos'), JSON.stringify(payload.shown));
+  assert(!payload.candidates.some(c => c.id === 'vocab-compras'), 'no se ofrece el tema ya mostrado');
+  payload.candidates.forEach(c => assert(T.TEMA_BY_ID[c.id] && T.TEMA_BY_ID[c.id].label === c.label));
+  noUrls(payload); assert(!('next' in payload));
+  assert.strictEqual(T.leoAiFocusLink(payload, { focus_topic:'vocab-compras', focus_action:'practice' }), null, 'mismo tema que la tarjeta: no se duplica');
+  assert.strictEqual(T.leoAiFocusLink(payload, { focus_topic:'vocab-inventado', focus_action:'practice' }), null);
+});
+test('sin temas.js, vocabulario funciona como antes (sin tema)', ()=>{
+  setProgress(T0, vocabWeakHistory.call(null, 'vocab-compras').map(s => s));
+  const d = T0.computeDiagnosis();
+  const u = d.units.find(x => x.key === 'skill:vocabulario');
+  assert(!u || !u.focusTema);
+  if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
 });
 
 console.log(`\n${passed} pruebas correctas`);
