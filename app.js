@@ -1269,6 +1269,23 @@ function startSpeechRecognitionCapture(onDone){
   try{ recognition.start(); }catch(e){ onDone(null); return null; }
   return recognition;
 }
+// La grabación se arma con el formato que de verdad produjo el navegador
+// (Chrome/Android: webm; Safari/iPhone: mp4). Declararla siempre como webm
+// hacía que el reproductor de iPhone mostrara "Error". Orden: el tipo del
+// grabador, el del primer fragmento y, solo si ambos vienen vacíos, webm.
+function recordedAudioType(chunks, recorder){
+  const fromRecorder = recorder && recorder.mimeType;
+  const fromChunk = chunks && chunks[0] && chunks[0].type;
+  return fromRecorder || fromChunk || 'audio/webm';
+}
+function recordedAudioBlob(chunks, recorder){
+  return new Blob(chunks, { type: recordedAudioType(chunks, recorder) });
+}
+// Cualquier navegador de iPhone/iPad usa el motor de Safari (WebKit), también "Chrome".
+function isIosDevice(){
+  const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  return /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1);
+}
 // Pinta el resultado del análisis en un contenedor vacío que ya exista
 // en la tarjeta (reutiliza las mismas clases de feedback que el resto
 // del sitio, para que se vea igual que una respuesta de gramática/
@@ -1276,7 +1293,9 @@ function startSpeechRecognitionCapture(onDone){
 function renderSpeechScoreBlock(el, targetText, saidText){
   if(!el) return;
   if(saidText === null){
-    el.innerHTML = `<p class="audio-missing-note">Tu navegador no puede analizar la pronunciación automáticamente aquí (funciona mejor en Chrome). Puedes seguir escuchando tu grabación y practicando igual.</p>`;
+    el.innerHTML = isIosDevice()
+      ? `<p class="audio-missing-note">El iPhone no permite analizar la pronunciación automáticamente en ningún navegador (ni Safari ni Chrome). Puedes seguir escuchando tu grabación y practicando igual.</p>`
+      : `<p class="audio-missing-note">Tu navegador no puede analizar la pronunciación automáticamente aquí (funciona mejor en Chrome). Puedes seguir escuchando tu grabación y practicando igual.</p>`;
     return;
   }
   const pct = scoreSpokenText(saidText, targetText);
@@ -2429,7 +2448,7 @@ function runSpeakingSession({ container, level, onExit }){
         recorder = new MediaRecorder(stream);
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = ()=>{
-          const blob = new Blob(chunks, { type:'audio/webm' });
+          const blob = recordedAudioBlob(chunks, recorder);
           const url = URL.createObjectURL(blob);
           compareRow.innerHTML = `
             <div class="compare-col">
@@ -2673,7 +2692,7 @@ function renderMixItemInto(card, entry, onAnswered){
         recorder = new MediaRecorder(stream);
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = ()=>{
-          const blob = new Blob(chunks, { type:'audio/webm' });
+          const blob = recordedAudioBlob(chunks, recorder);
           const url = URL.createObjectURL(blob);
           compareRow.innerHTML = `
             <div class="compare-col">
@@ -7039,7 +7058,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
         recorder = new MediaRecorder(stream);
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = ()=>{
-          const blob = new Blob(chunks, { type:'audio/webm' });
+          const blob = recordedAudioBlob(chunks, recorder);
           const url = URL.createObjectURL(blob);
           compareRow.innerHTML = `
             <div class="compare-col">
