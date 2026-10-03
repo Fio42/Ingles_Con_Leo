@@ -1286,3 +1286,5 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - leo-ai.ts (WRITING_RULES): no felicitar ni repetir la regla; correcta -> una alternativa mas natural/matiz; incorrecta -> que parte esta mal y como corregirla (sobre SU frase); texto suelto/incompleto -> reconocerlo y dar un modelo breve sin adivinar. Salida 180 tokens (antes 220), explicacion max 320 caracteres, 1 truco.
 - Pagina: con veredicto "correct" ya no se pinta "Tu frase esta bien escrita"; la alternativa sale como "Mas natural: ..." (y no se muestra si es igual a la del alumno). app.js?v=20261003c.
 - Pruebas nuevas: tools/tests/writing-ai.test.js (11). leo-ai-server 24, leo-ai 12.
+
+2026-10-03 - Writing: una sola palabra no cuenta como frase. La pagina pide "Escribe una frase completa, no solo una palabra." (sigue sin ser correcta; el boton de Leo AI sigue disponible). Solo cambia evaluateWritingAnswer: las 214 frases de ejemplo del banco son de 2+ palabras, asi que ninguna respuesta valida se ve afectada. app.js?v=20261003d.

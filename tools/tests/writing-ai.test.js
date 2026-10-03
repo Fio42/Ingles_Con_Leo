@@ -84,6 +84,16 @@ const labelOf = btn => find(btn, 'span').textContent;
       assert(r.btn, 'sin botón para "' + t + '"');
     }
   });
+  await test('una sola palabra: la página pide una frase completa (no es correcta) y el botón de Leo AI sigue ahí', async()=>{
+    items.forEach(x=>{
+      const w = x.item.example.en.split(/\s+/)[0];
+      const ev = T.evaluateWritingAnswer(w, x.item);
+      assert.strictEqual(ev.isOk, false, x.item.id);
+      assert(/^Escribe una frase completa, no solo una palabra\. /.test(ev.hint), x.item.id);
+    });
+    assert.strictEqual(T.evaluateWritingAnswer(first.example.en, first).isOk, true, 'una frase completa sigue calificando igual');
+    assert(reviewLikePage(first, 'have').btn);
+  });
   await test('sin escribir nada no hay botón (no hay nada que revisar)', async()=>{
     assert.strictEqual(reviewLikePage(first, '').btn, null);
     assert.strictEqual(reviewLikePage(first, '   ').btn, null);

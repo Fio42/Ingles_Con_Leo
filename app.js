@@ -1925,6 +1925,8 @@ function normalizeApostrophes(text){
 
 function evaluateWritingAnswer(text, item){
   const clean = normalizeApostrophes((text || '').trim().toLowerCase());
+  // Una sola palabra no es una frase: se pide un poco más (nunca cuenta como correcta).
+  if(clean.split(/\s+/).filter(Boolean).length < 2) return { isOk:false, hint:'Escribe una frase completa, no solo una palabra. ' + item.hint };
   if(clean.length < 3) return { isOk:false, hint:item.hint };
   let patternOk = false;
   try{ patternOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ patternOk = false; }
