@@ -1,13 +1,5 @@
-AUDIOS REALES DE LEO
-Pon aqui archivos .mp3 con estos nombres exactos. Si el archivo no existe, el boton "Escuchar a Leo" simplemente no aparece.
-
-bienvenida.mp3        (Home, bloque "Detras del sistema hay un profesor")
-vas-mejorando.mp3     "Bien, vas mejorando."
-sigue-tema.mp3        "Sigue con este tema un poco mas."
-buen-trabajo.mp3      "Buen trabajo."
-puedes-mejorar.mp3    "Aqui todavia puedes mejorar."
-casi-dominas.mp3      "Ya casi lo dominas."
-repasa-antes.mp3      "Te recomiendo repasar esto antes de seguir."
-
-Para usar otro audio en cualquier pagina: <div class="leo-voz" data-leo-voz="nombre" hidden></div>
-y cargar <script src="leo-voz.js" defer></script>. (Solo bienvenida esta conectado por ahora.)
+AUDIOS REALES DE LEO (MP3 web, mono 64 kbps, ~-18 LUFS, tope -2 dBTP)
+bienvenida, vas-mejorando, sigue-tema, buen-trabajo, puedes-mejorar, casi-dominas, repasa-antes (.mp3)
+Si falta un archivo, el boton "Escuchar a Leo" simplemente no aparece.
+Para reprocesar WAV nuevos: python tools/preparar_audios_leo.py <carpeta_con_wavs>
+Cuando se muestra cada uno: ver sessionVoiceId() y leoVozHtml() en app.js.
