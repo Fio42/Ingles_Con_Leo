@@ -5123,7 +5123,7 @@ function renderProgressSummaryCard(container){
         <div class="progress-summary-head">
           <div class="progress-summary-icon">${ICON}</div>
           <div>
-            <div class="progress-summary-eyebrow">Tu diagnóstico</div>
+            <div class="progress-summary-eyebrow">Tu diagnóstico · con IA</div>
             <h2>Aún no tienes actividad</h2>
           </div>
         </div>
@@ -5146,8 +5146,9 @@ function renderProgressSummaryCard(container){
       <div class="progress-summary-head">
         <div class="progress-summary-icon">${ICON}</div>
         <div>
-          <div class="progress-summary-eyebrow">Tu diagnóstico</div>
+          <div class="progress-summary-eyebrow">Tu diagnóstico · con IA</div>
           <h2>Así vas esta semana</h2>
+          <p class="progress-summary-sub">La IA analiza tu progreso y te dice qué conviene reforzar.</p>
         </div>
       </div>
       <div class="progress-summary-stats">
@@ -5165,7 +5166,7 @@ function renderProgressSummaryCard(container){
         </div>
       </div>
       ${body}
-      <a href="progreso.html#diagnostico" class="progress-summary-cta">${diag.ready ? 'Ver tu diagnóstico completo →' : 'Ver progreso completo →'}</a>`;
+      <a href="progreso.html#diagnostico" class="progress-summary-cta">${diag.ready ? 'Ver mi análisis con IA →' : 'Ver progreso completo →'}</a>`;
   }
   diagRenderWithStats(paint);
 }

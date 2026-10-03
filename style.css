@@ -1348,6 +1348,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .progress-summary-icon{width:44px;height:44px;border-radius:50%;background:var(--blue-tint);color:var(--blue-deep);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .progress-summary-icon svg{width:22px;height:22px;}
 .progress-summary-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
+.progress-summary-sub{margin:2px 0 0;font-size:0.82rem;font-weight:600;color:var(--ink-soft);line-height:1.35;}
 .progress-summary-head h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
 .progress-summary-stats{display:flex;gap:28px;flex-wrap:wrap;}
 .progress-summary-stat{display:flex;flex-direction:column;gap:2px;}
