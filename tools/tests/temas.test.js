@@ -26,7 +26,7 @@ function makeCtx(withTemas){
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
-  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
+  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, W:WRITING_BANK, WTB: typeof WRITING_TEMA_BY_ITEM === 'undefined' ? {} : WRITING_TEMA_BY_ITEM, temaForWritingItem: typeof temaForWritingItem === 'undefined' ? null : temaForWritingItem, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
   computeSessionInsight, renderArticleTema, buildLeoAiPayload, leoAiFocusLink, temaLinksHtml, computeWeeklyReport,
   TEMAS: typeof TEMAS === 'undefined' ? null : TEMAS, TEMA_BY_ID: typeof TEMA_BY_ID === 'undefined' ? null : TEMA_BY_ID };`, ctx);
   return ctx.__t;
@@ -901,6 +901,186 @@ test('sin temas.js, listening funciona como antes', ()=>{
   setProgress(T0, lisWeak('listening-numeros'));
   const d = T0.computeDiagnosis();
   const u = d.units.find(x => x.key === 'skill:listening');
+  assert(!u || !u.focusTema);
+  if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
+});
+
+
+/* ================= FASE 6: WRITING por tema (mismo topic_id, otra habilidad) ================= */
+console.log('\nFase 6: writing por tema');
+const wAll = []; Object.keys(T.W).forEach(l => T.W[l].forEach(v => v.forEach(x => wAll.push(Object.assign({ level:l }, x)))));
+const wTema = x => (T.temaForWritingItem(x.id) || {}).id || null;
+const wIds = (temaId, level) => wAll.filter(x => (!level || x.level === level) && wTema(x) === temaId).map(x => x.id);
+const wGeneral = level => wAll.filter(x => x.level === level && !wTema(x)).map(x => x.id);
+const wsession = (daysAgo, results) => Object.assign(session(daysAgo, results), { skill:'writing' });
+const wres = (ids, n, pct, off, extra) => answers(ids, n, pct, off).map(r => Object.assign(r, { skill:'writing' }, extra || null));
+const wWeak = (temaId, days) => { const d = days || [2, 1]; return [ wsession(d[0], wres(wIds(temaId, 'facil'), 10, 10)), wsession(d[1], wres(wGeneral('facil'), 8, 90)) ]; };
+const wUnit = d => d.units.find(x => x.key === 'skill:writing');
+// Criterios claros por "target" de la consigna (si una consigna NUEVA los cumple y no está en la tabla, el test falla).
+const WRULES = [
+  [/used to/i, 'used-to'], [/since \/ for/i, 'since-for'], [/presente continuo/i, 'presente-continuo'], [/reported speech/i, 'estilo-indirecto'],
+  [/cláusula relativa/i, 'relativas'], [/phrasal verb/i, 'phrasal-verbs'], [/hedging/i, 'hedging'], [/subjuntivo formal/i, 'subjuntivo-formal'],
+  [/inversi[oó]n/i, 'inversion-enfasis'], [/voz pasiva/i, 'voz-pasiva'], [/^going to$|am going to/i, 'will-going-to'],
+  [/condicional (1|tipo 3|mixto)/i, 'condicionales'], [/must have|modal de deducci/i, 'modales-perfectos'], [/had \+ participio/i, 'past-perfect'],
+  [/^can't$/i, 'can-cant'], [/have to/i, 'modales-obligacion'], [/question tag/i, 'question-tags'], [/some \/ any/i, 'some-any']
+];
+
+test('writing: la tabla usa temas que existen, ids que existen y respeta los criterios claros (consignas nuevas sin mapear = falla)', ()=>{
+  const real = new Set(wAll.map(x => x.id.replace(/^w-/, '')));
+  Object.keys(T.WTB).forEach(id => { assert(real.has(id), 'id inexistente en la tabla: ' + id); assert(T.TEMA_BY_ID[T.WTB[id]], `${id}: tema inexistente ${T.WTB[id]}`); });
+  const bad = [];
+  wAll.forEach(x=>{
+    const rule = WRULES.find(r => r[0].test(x.target));
+    if(rule && wTema(x) !== rule[1]) bad.push(`${x.id} (${x.target}): debería ser ${rule[1]} y es ${wTema(x)}`);
+  });
+  assert.deepStrictEqual(bad, [], bad.join(' | '));
+  assert(!wAll.some(x => x.target === '...' && /\b(would rather)\b/i.test(x.prompt) && !wTema(x)), 'consigna de would rather sin tema');
+  const mapped = wAll.filter(wTema).length;
+  assert(mapped >= 140 && wAll.length - mapped >= 40, `con tema ${mapped}, generales ${wAll.length - mapped}`);
+});
+test('writing NO crea temas propios: todos los topic_id son los del registro de Gramática/Vocabulario', ()=>{
+  assert(!T.TEMAS.some(t => /^writing-/.test(t.id)));
+  const own = new Set(T.TEMAS.map(t => t.id));
+  Object.values(T.WTB).forEach(id => assert(own.has(id)));
+});
+test('mismo topic_id en Gramática y Writing: cada habilidad guarda y mide lo suyo', ()=>{
+  const gPres = itemsOfTema(T, 'presente-simple', 'facil'), wPres = wIds('presente-simple', 'facil');
+  assert(gPres.length >= 4 && wPres.length >= 2);
+  // Solo falla en Writing -> Gramática no se entera.
+  setProgress(T, [ wsession(2, wres(wPres, 10, 10)), wsession(1, wres(wGeneral('facil'), 8, 90)) ]);
+  let d = readyDiag(T);
+  assert.strictEqual(wUnit(d).focusTema.id, 'presente-simple');
+  assert(!d.units.some(u => u.key === 'family:presente-simple'), 'Writing no crea datos de la familia de Gramática');
+  // Ahora va bien en Gramática pero mal escribiéndolo: las dos lecturas conviven.
+  setProgress(T, [ wsession(2, wres(wPres, 10, 10)), wsession(1, wres(wGeneral('facil'), 8, 90)), session(1, answers(gPres, 12, 100)) ]);
+  d = readyDiag(T);
+  const fam = d.units.find(u => u.key === 'family:presente-simple');
+  assert(fam && fam.acc >= 85, 'Gramática intacta: ' + (fam && fam.acc));
+  assert(!(fam.focusTema), 'Gramática no ve debilidad');
+  assert.strictEqual(wUnit(d).focusTema.id, 'presente-simple');
+  assert(!/También lo fallas en Gramática/.test(d.today.reason), 'no hay señal cruzada si Gramática va bien');
+  // Si también falla en Gramática, se dice (señal cruzada) sin mezclar los porcentajes.
+  setProgress(T, [ wsession(2, wres(wPres, 10, 10)), wsession(1, wres(wGeneral('facil'), 8, 90)), session(1, answers(gPres, 12, 15)) ]);
+  d = readyDiag(T);
+  assert.strictEqual(wUnit(d).key, 'skill:writing');
+  if(d.today.tema === 'presente-simple' && /en Writing/.test(d.today.title)) assert(/También lo fallas en Gramática\./.test(d.today.reason), d.today.reason);
+});
+test('writing SIN suficiente evidencia de un tema, o con respuestas de 0-1 palabra (no cuentan para el tema): solo "Writing"', ()=>{
+  const ids = wIds('comparativos', 'facil');
+  setProgress(T, [ wsession(2, wres(ids, 3, 0)), wsession(1, wres(wGeneral('facil'), 14, 40)) ]);
+  let d = readyDiag(T);
+  assert(wUnit(d) && !wUnit(d).focusTema);
+  assert(!/Dentro de Writing/.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
+  // 12 intentos fallidos pero todos de una palabra/vacío: son de Writing, no del tema.
+  setProgress(T, [ wsession(2, wres(ids, 12, 0, 0, { lowEffort:true })), wsession(1, wres(wGeneral('facil'), 8, 90)) ]);
+  d = readyDiag(T);
+  assert(!wUnit(d).focusTema, 'una palabra suelta no marca el tema como débil');
+});
+test('writing con tema claro: Hoy te conviene (practicar Writing del tema) + detalle en el panel de habilidades', ()=>{
+  setProgress(T, wWeak('comparativos'));
+  const d = readyDiag(T);
+  assert.strictEqual(d.weak.key, 'skill:writing'); assert.strictEqual(wUnit(d).focusTema.id, 'comparativos');
+  const a = d.today;
+  assert.strictEqual(a.title, 'Reforzar Comparativos en Writing'); assert.strictEqual(a.tema, 'comparativos');
+  assert.strictEqual(a.href, 'plan-estudio.html?habilidad=writing&tema=comparativos');
+  assert.strictEqual(T.todayStartHref(a), 'plan-estudio.html?habilidad=writing&tema=comparativos&empezar=1');
+  assert(!a.article, 'Comparativos no tiene clase ni glosario: solo practicar');
+  checkAction(a);
+  assert(/Dentro de Writing, lo que más necesitas reforzar es <b>Comparativos<\/b>\./.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
+});
+test('writing: tema con clase -> practicar + clase real desde temas.js', ()=>{
+  setProgress(T, wWeak('presente-simple'));
+  const a = readyDiag(T).today;
+  assert.strictEqual(a.tema, 'presente-simple');
+  assert.strictEqual(a.article, 'articulo-presente-simple.html' + VIA('presente-simple'));
+  checkAction(a);
+});
+test('writing: respuestas correctas no marcan debilidad', ()=>{
+  const ids = wIds('comparativos', 'facil');
+  setProgress(T, [ wsession(2, wres(ids, 10, 100)), wsession(1, wres(wGeneral('facil'), 8, 100)) ]);
+  const d = readyDiag(T);
+  assert(!wUnit(d).focusTema && !(d.weak && d.weak.key === 'skill:writing'));
+});
+test('práctica enfocada de Writing: consignas del tema primero, se completa con Writing del nivel y nunca queda vacía', ()=>{
+  setProgress(T, []);
+  const sel = T.computePlanSelection('facil', 12, { focusSkill:'writing', focusTema:'comparativos' });
+  assert.strictEqual(sel.focus.skill, 'writing'); assert.strictEqual(sel.focus.temaId, 'comparativos'); assert.strictEqual(sel.focus.label, 'Comparativos');
+  const pool = T.buildPlanPool('facil', sel);
+  assert.strictEqual(pool.length, sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0), 'la sesión mantiene su duración');
+  const mine = new Set(wIds('comparativos', 'facil'));
+  const focus = pool.filter(e => e.focus);
+  assert(focus.length >= 3 && focus.every(e => e.kind === 'writing' && mine.has(e.item.id) && e.focusTema === 'comparativos'));
+  assert.strictEqual(new Set(pool.map(e => e.item.id)).size, pool.length);
+  // Gramática intacta y sin mezclarse: el mismo tema pedido como Gramática sigue siendo Gramática.
+  const g = T.computePlanSelection('facil', 12, { focusFamily:'comparativos', focusTema:'comparativos' });
+  assert.strictEqual(g.focus.skill, 'gramatica');
+  const w2 = T.computePlanSelection('facil', 12, { focusSkill:'writing', focusTema:'comparativos', focusFamily:'comparativos' });
+  assert.strictEqual(w2.focus.skill, 'writing', 'habilidad=writing manda');
+});
+test('Writing con pocos ejercicios del tema en el nivel: usa los que hay y completa; sin ninguno o inventado: Plan normal', ()=>{
+  setProgress(T, []);
+  assert.strictEqual(wIds('question-tags', 'medio').length, 1);
+  let sel = T.computePlanSelection('medio', 12, { focusSkill:'writing', focusTema:'question-tags' });
+  const pool = T.buildPlanPool('medio', sel);
+  assert.strictEqual(pool.length, sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0));
+  assert(pool.filter(e => e.focus).length <= 1);
+  sel = T.computePlanSelection('facil', 12, { focusSkill:'writing', focusTema:'question-tags' });   // sin consignas en este nivel
+  assert(!sel.focus || sel.focus.skill !== 'writing');
+  sel = T.computePlanSelection('facil', 12, { focusSkill:'writing', focusTema:'inventado' });
+  assert(!sel.focus || sel.focus.skill !== 'writing');
+  assert.strictEqual(T.contentForTema('question-tags', 'writing').practiceHref, 'writing.html', 'sin consignas en el nivel: la página de Writing');
+});
+test('el Plan sin foco en la URL sigue al tema de Writing que detectó el diagnóstico', ()=>{
+  setProgress(T, wWeak('comparativos'));
+  const sel = T.computePlanSelection('facil', 12, {});
+  assert.strictEqual(sel.focus.skill, 'writing'); assert.strictEqual(sel.focus.temaId, 'comparativos');
+});
+function wPlanFor(temaId, history, results){
+  const s = wsession(0, results);
+  setProgress(T, history.concat([s]));
+  return T.computeSessionInsight(results, s.startedAt, 'plan', { focusTema:temaId, focusSkill:'writing' });
+}
+test('writing: al terminar el tema y SIGUE débil -> seguir practicando Writing (+ clase si existe)', ()=>{
+  const ins = wPlanFor('presente-simple', wWeak('presente-simple'), wres(wIds('presente-simple', 'facil'), 6, 17));
+  assert(ins.tema && ins.tema.needsMore);
+  assert(/^En Presente simple acertaste \d+ de 6\. Todavía conviene reforzarlo\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert.strictEqual(ins.actions[0].title, 'Seguir practicando Presente simple');
+  assert(/habilidad=writing&tema=presente-simple/.test(ins.actions[0].href), ins.actions[0].href);
+  assert.strictEqual(ins.actions[1].href, 'articulo-presente-simple.html' + VIA('presente-simple'));
+});
+test('writing: tema que MEJORA deja de priorizarse; las respuestas de Gramática del mismo tema no cuentan en este resumen', ()=>{
+  const wp = wIds('comparativos', 'facil'), gp = itemsOfTema(T, 'comparativos');
+  const results = wres(wp, 14, 100, 2).concat(answers(gp, 6, 0));          // fallos de Gramática mezclados en la sesión
+  const ins = wPlanFor('comparativos', wWeak('comparativos', [12, 11]), results);
+  assert(ins.tema && !ins.tema.needsMore && /^En Comparativos acertaste 14 de 14\. Ya vas bien en este tema\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert(ins.actions.every(a => !/Seguir practicando/.test(a.title) && !/habilidad=writing&tema=comparativos/.test(a.href)), JSON.stringify(ins.actions));
+  const d = T.computeDiagnosis();
+  const st = (wUnit(d).temaStats || []).find(s => s.id === 'comparativos');
+  assert(st && st.current >= 75 && st.trend === 'up', 'mejora en Writing: ' + (st && st.current));
+  assert(!d.today || d.today.tema !== 'comparativos' || !/Writing/.test(d.today.title));
+});
+test('Mis errores: errores de Writing de un tema -> "Sobre todo en X" con práctica de Writing; consignas generales -> como antes', ()=>{
+  const ids = wIds('comparativos', 'facil');
+  setProgress(T, wWeak('comparativos'));
+  const g = T.computeMistakePatterns(mistakeStats(ids.slice(0, 4))).groups.find(x => x.key === 'skill:writing');
+  assert(g && g.temaContent && g.temaContent.id === 'comparativos');
+  eq(linksIn(T.temaLinksHtml(g.temaContent)), ['plan-estudio.html?habilidad=writing&tema=comparativos&empezar=1']);
+  const g2 = T.computeMistakePatterns(mistakeStats(wGeneral('facil').slice(0, 4))).groups.find(x => x.key === 'skill:writing');
+  assert(g2 && !g2.temaContent);
+});
+test('Leo AI (Writing): el tema viaja como contexto corto solo si la consigna lo tiene; protecciones intactas', ()=>{
+  const mapped = wAll.find(x => x.level === 'facil' && wTema(x) === 'comparativos'), general = wAll.find(x => x.level === 'facil' && !wTema(x));
+  const p1 = T.buildLeoAiPayload({ kind:'writing', item:mapped, userAnswer:'My car is bigger than yours', isOk:true });
+  assert.strictEqual(p1.topic, 'Comparativos'); assert(JSON.stringify(p1).length < 800);
+  const p2 = T.buildLeoAiPayload({ kind:'writing', item:general, userAnswer:'I like pizza a lot', isOk:true });
+  assert.strictEqual(p2.topic, '');
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:mapped, userAnswer:'car', isOk:false }), null, 'una palabra: sin IA');
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:mapped, userAnswer:'   ', isOk:false }), null, 'vacío: sin IA');
+});
+test('sin temas.js, Writing funciona como antes', ()=>{
+  setProgress(T0, wWeak('comparativos'));
+  const d = T0.computeDiagnosis();
+  const u = d.units.find(x => x.key === 'skill:writing');
   assert(!u || !u.focusTema);
   if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
 });

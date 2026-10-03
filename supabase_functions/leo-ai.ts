@@ -285,6 +285,8 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
       `Consigna del ejercicio: ${question}`,
       `Estructura que se pedía: ${cleanText(b.target, 160) || '(libre)'}`,
     ]
+    const wTopic = cleanText(b.topic, 60)
+    if (wTopic) lines.push(`Tema que practica la consigna (solo contexto, no lo menciones): ${wTopic}`)
     if (typeof b.pageOk === 'boolean') lines.push(`La página ya calificó la estructura: ${b.pageOk ? 'cumple lo pedido' : 'no cumple lo pedido'}`)
     const example = cleanText(b.example, 200)
     if (example) lines.push(`Ejemplo de referencia (no es la única respuesta válida): ${example}`)

@@ -2032,7 +2032,7 @@ function buildLeoAiPayload(ctx){
     if(answer.split(' ').filter(Boolean).length < 2) return null;
     return { mode:'writing', skill:'writing', level, question: leoAiText(it.prompt, 400),
       target: leoAiText(it.target, 160), example: it.example ? leoAiText(it.example.en, 200) : '', studentAnswer: answer,
-      pageOk: ctx.isOk === true };
+      pageOk: ctx.isOk === true, topic: (typeof temaLabelOf === 'function' && writingTemaIdForItem(it.id)) ? leoAiText(temaLabelOf(writingTemaIdForItem(it.id)), 60) : '' };
   }
   const base = { mode:'explain', level, isCorrect: ctx.isCorrect === true, studentAnswer: leoAiText(ctx.userAnswer, 400) };
   if(ctx.kind === 'grammar'){
@@ -2300,7 +2300,7 @@ function runWritingSession({ container, level, onExit }){
           </div>
           <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       }
-      results.push({ itemId:item.id, isCorrect:isOk });
+      results.push(writingLowEffort(text) ? { itemId:item.id, isCorrect:isOk, lowEffort:true } : { itemId:item.id, isCorrect:isOk });
       leoAiAttach(fb, { kind:'writing', item, userAnswer:text, isOk });
       nextRow.innerHTML = '';
       if(!isOk){
@@ -2629,7 +2629,7 @@ function renderMixItemInto(card, entry, onAnswered){
         </div>
         <ul class="checklist">${item.checklist.map(c=>`<li>${c}</li>`).join('')}</ul>`;
       leoAiAttach(fb, { kind:'writing', item, userAnswer:input.value, isOk });
-      onAnswered(isOk);
+      onAnswered(isOk, writingLowEffort(input.value) ? { lowEffort:true } : null);
     });
     return;
   }
@@ -2955,8 +2955,8 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
-    renderMixItemInto(card, entry, (isCorrect)=>{
-      results.push({ itemId: entry.item.id, isCorrect });
+    renderMixItemInto(card, entry, (isCorrect, extra)=>{
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         if(isFree) bumpFreeDailyExerciseCount();
         idx++;
@@ -3103,8 +3103,10 @@ function computePlanSelection(level, targetCount, opts){
   // mi Plan"): usa el mismo refuerzo de abajo con otra familia y más cupos.
   const urlTema = (opts && opts.focusTema && typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[opts.focusTema] : null;
   // Tema de vocabulario (?tema=vocab-...): se usa si tiene palabras en este nivel; si no, el Plan normal.
-  const forcedVocab = (urlTema && TEMA_SKILL_KEY[urlTema.skill] && temaHasItemsAt(urlTema.id, level)) ? urlTema : null;   // vocabulario o listening
-  const famId = (opts && opts.focusFamily) || (urlTema && urlTema.family) || null;
+  // ?habilidad=writing&tema=<cualquier tema>: consignas de Writing de ese tema (no toca Gramática).
+  const forcedWriting = (opts && opts.focusSkill === 'writing' && urlTema && temaHasItemsAt(urlTema.id, level, 'writing')) ? urlTema : null;
+  const forcedVocab = (!forcedWriting && !(opts && opts.focusSkill) && urlTema && TEMA_SKILL_KEY[urlTema.skill] && temaHasItemsAt(urlTema.id, level)) ? urlTema : null;   // vocabulario o listening
+  const famId = (forcedWriting || (opts && opts.focusSkill)) ? null : ((opts && opts.focusFamily) || (urlTema && urlTema.family) || null);
   const forcedFamily = (famId && DIAG_FAMILY_BY_ID[famId] && familyHasItemsAt(famId, level))
     ? DIAG_FAMILY_BY_ID[famId] : null;
   // El tema solo vale si pertenece a esa familia y tiene ejercicios en este nivel.
@@ -3164,7 +3166,10 @@ function computePlanSelection(level, targetCount, opts){
   try{
     let focusSkill = 'gramatica';
     let target;
-    if(forcedVocab){
+    if(forcedWriting){
+      focusSkill = 'writing';
+      target = { id: null, label: forcedWriting.label, temaId: forcedWriting.id, temaLabel: forcedWriting.label };
+    } else if(forcedVocab){
       focusSkill = TEMA_SKILL_KEY[forcedVocab.skill];
       target = { id: null, label: forcedVocab.label, temaId: forcedVocab.id, temaLabel: forcedVocab.label };
     } else {
@@ -3176,14 +3181,14 @@ function computePlanSelection(level, targetCount, opts){
         target.temaId = diag.weak.focusTema.id; target.temaLabel = diag.weak.focusTema.label;
       }
       // Vocabulario débil con un tema claro (y sin foco de gramática pedido): el refuerzo es ese tema.
-      if(!target && !(opts && opts.focusFamily) && diag && diag.ready && diag.weak && diag.weak.type === 'skill' && (diag.weak.id === 'vocabulario' || diag.weak.id === 'listening')
-        && diag.weak.focusTema && temaHasItemsAt(diag.weak.focusTema.id, level)){
+      if(!target && !(opts && opts.focusFamily) && diag && diag.ready && diag.weak && diag.weak.type === 'skill' && (diag.weak.id === 'vocabulario' || diag.weak.id === 'listening' || diag.weak.id === 'writing')
+        && diag.weak.focusTema && temaHasItemsAt(diag.weak.focusTema.id, level, diag.weak.id === 'writing' ? 'writing' : undefined)){
         focusSkill = diag.weak.id;
         target = { id: null, label: diag.weak.focusTema.label, temaId: diag.weak.focusTema.id, temaLabel: diag.weak.focusTema.label };
       }
     }
     if(target && remaining >= 4){
-      const forced = !!(forcedFamily || forcedVocab);
+      const forced = !!(forcedFamily || forcedVocab || forcedWriting);
       const want = forced
         ? Math.min(6, Math.max(3, Math.round(remaining * 0.5)))
         : Math.min(3, Math.max(2, Math.round(remaining * 0.25)));
@@ -3363,7 +3368,7 @@ function renderPlanIntro(container, opts){
   const level = getUserLevel();
   let currentLen = getPlanLength();
   let currentDiff = getPlanDifficulty();
-  const selOpts = { focusFamily: opts.focusFamily, focusTema: opts.focusTema };
+  const selOpts = { focusFamily: opts.focusFamily, focusTema: opts.focusTema, focusSkill: opts.focusSkill };
   let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items, selOpts);
   let diffPanelOpen = false;
 
@@ -3475,8 +3480,8 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
-    renderMixItemInto(card, entry, (isCorrect)=>{
-      results.push({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] });
+    renderMixItemInto(card, entry, (isCorrect, extra)=>{
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -3494,7 +3499,10 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     if(focusEntry) topics.unshift(focusEntry.focusLabel);
     recordSession({ skill:'plan', level, topics, results, startedAt });
     container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
-    appendSessionInsight(container, results, startedAt, 'plan', { focusTema: (activePool.find(e => e.focus && e.focusTema) || {}).focusTema || null });
+    {
+      const fe = activePool.find(e => e.focus && e.focusTema) || {};
+      appendSessionInsight(container, results, startedAt, 'plan', { focusTema: fe.focusTema || null, focusSkill: fe.kind === 'writing' ? 'writing' : null });
+    }
     const anotherBtn = container.querySelector('#planAnotherBtn');
     if(anotherBtn){
       anotherBtn.addEventListener('click', ()=>{
@@ -3683,8 +3691,16 @@ function listeningTemaIdForItem(itemId){
   const t = temaForListeningItem(itemId);
   return t ? t.id : null;
 }
+function writingTemaIdForItem(itemId){
+  if(typeof temaForWritingItem !== 'function') return null;
+  const t = temaForWritingItem(itemId);
+  return t ? t.id : null;
+}
+// Una respuesta de una palabra o vacía no dice nada del tema (la página ya pide "una frase completa").
+const writingLowEffort = text => String(text || '').trim().split(/\s+/).filter(Boolean).length < 2;
 function diagTemaIdForFound(found){
   if(!found) return null;
+  if(found.kind === 'writing') return writingTemaIdForItem(found.item && found.item.id);
   if(found.kind === 'vocab') return vocabTemaIdForItem(found.item && found.item.id);
   if(found.kind === 'listening') return listeningTemaIdForItem(found.item && found.item.id);
   return diagTemaIdForTopic(found.topic);
@@ -3697,7 +3713,11 @@ function diagTemaIdForTopic(topic){
   return t ? t.id : null;
 }
 // ¿Hay ejercicios de ese tema en ese nivel? (para no mandar a un refuerzo vacío).
-function temaHasItemsAt(temaId, level){
+function temaHasItemsAt(temaId, level, skill){
+  if(skill === 'writing'){
+    if(typeof WRITING_BANK === 'undefined' || !WRITING_BANK[level]) return false;
+    return WRITING_BANK[level].some(variant => variant.some(it => writingTemaIdForItem(it.id) === temaId));
+  }
   const tt = (typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[temaId] : null;
   if(tt && TEMA_SKILL_KEY[tt.skill]){
     const isVocab = tt.skill === 'vocabulary';
@@ -3717,16 +3737,20 @@ function temaHasItemsAt(temaId, level){
 // { id, label, family, practiceHref, practiceLabel, lesson, quick, article,
 //   articleTitle, articleLabel } o null.
 // Práctica enfocada en un tema desde el Plan: gramática = ?foco=<familia>&tema=; vocabulario = ?tema=.
-function temaPlanHref(t, start){
+function temaPlanHref(t, start, skill){
+  if(skill === 'writing') return 'plan-estudio.html?habilidad=writing&tema=' + encodeURIComponent(t.id) + (start ? '&empezar=1' : '');
   return TEMA_SKILL_KEY[t.skill] ? 'plan-estudio.html?tema=' + encodeURIComponent(t.id) + (start ? '&empezar=1' : '') : planFocusHref(t.family, start, t.id);
 }
-function contentForTema(id){
+function contentForTema(id, onlySkill){
   if(typeof TEMA_BY_ID === 'undefined') return null;
   const t = TEMA_BY_ID[id];
   if(!t) return null;
   const level = getUserLevel();
-  const skillKey = TEMA_SKILL_KEY[t.skill] || null;      // 'vocabulario' | 'listening' | null (gramática)
-  const practiceHref = skillKey ? (temaHasItemsAt(id, level) ? temaPlanHref(t, true) : SKILL_PAGE[skillKey])
+  // Práctica de ESTE tema pero en Writing (mismo topic_id, otra habilidad).
+  const asWriting = onlySkill === 'writing';
+  const skillKey = asWriting ? 'writing' : (TEMA_SKILL_KEY[t.skill] || null);      // 'vocabulario' | 'listening' | 'writing' | null (gramática)
+  const practiceHref = asWriting ? (temaHasItemsAt(id, level, 'writing') ? temaPlanHref(t, true, 'writing') : SKILL_PAGE.writing)
+    : skillKey ? (temaHasItemsAt(id, level) ? temaPlanHref(t, true) : SKILL_PAGE[skillKey])
     : !t.family ? 'gramatica.html'
     : temaHasItemsAt(id, level) ? planFocusHref(t.family, true, id)
     : familyHasItemsAt(t.family, level) ? planFocusHref(t.family, true)
@@ -4029,8 +4053,8 @@ async function runMistakesSessionCore({ container, mode, skillFilter }){
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
-    renderMixItemInto(card, entry, (isCorrect)=>{
-      results.push({ itemId: entry.item.id, isCorrect });
+    renderMixItemInto(card, entry, (isCorrect, extra)=>{
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -4191,8 +4215,8 @@ function runDailyChallengeSession({ container, isFree, level }){
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
-    renderMixItemInto(card, entry, (isCorrect)=>{
-      results.push({ itemId: entry.item.id, isCorrect });
+    renderMixItemInto(card, entry, (isCorrect, extra)=>{
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -4878,7 +4902,7 @@ function collectDiagAttempts(p){
       if(DIAG_SKILLS.indexOf(skill) === -1) return;
       const fam = (skill === 'gramatica' && found) ? diagFamilyForTopic(found.topic) : null;
       out.push({ itemId:r.itemId, ok:r.isCorrect, when, skill, family: fam ? fam.id : null,
-        tema: (skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening') ? diagTemaIdForFound(found) : null });
+        tema: (r.lowEffort ? null : ((skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening' || skill === 'writing') ? diagTemaIdForFound(found) : null)) });
     });
   });
   out.sort((a,b)=> a.when - b.when);
@@ -4980,7 +5004,7 @@ function diagMistakeSummary(attempts, statsMap, now){
     if(!found) return null;
     const skill = DIAG_KIND_TO_SKILL[found.kind];
     const fam = skill === 'gramatica' ? diagFamilyForTopic(found.topic) : null;
-    return { skill, family: fam ? fam.id : null, tema: (skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening') ? diagTemaIdForFound(found) : null };
+    return { skill, family: fam ? fam.id : null, tema: (skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening' || skill === 'writing') ? diagTemaIdForFound(found) : null };
   }
   if(statsMap instanceof Map){
     statsMap.forEach(s=>{
@@ -5056,8 +5080,10 @@ function computeDiagnosis(p, statsMap){
       const ts = diagTemaStats(list.filter(a => a.family === id), mistakes.active.filter(m => m.family === id), now);
       u.temaStats = ts;
       u.focusTema = diagFocusTema(ts);
-    } else if(type === 'skill' && (id === 'vocabulario' || id === 'listening') && typeof TEMAS !== 'undefined'){
-      // Dentro de Vocabulario / Listening: temas reales explícitos de temas.js.
+    } else if(type === 'skill' && (id === 'vocabulario' || id === 'listening' || id === 'writing') && typeof TEMAS !== 'undefined'){
+      // Dentro de Vocabulario / Listening / Writing: temas reales explícitos de temas.js
+      // (en Writing, el mismo topic_id que en Gramática pero con sus propias respuestas).
+      
       const ts = diagTemaStats(list.filter(a => a.skill === id), mistakes.active.filter(m => m.skill === id), now);
       u.temaStats = ts;
       u.focusTema = diagFocusTema(ts);
@@ -5171,14 +5197,22 @@ function computeDiagnosis(p, statsMap){
     // Si dentro de la familia hay un tema concreto que falla más, la
     // recomendación es ese tema (práctica y clase del tema). Si no, la familia.
     const ft = diag.weak.focusTema || null;       // familia de gramática o Vocabulario
-    const tc = ft ? contentForTema(ft.id) : null;
+    const wr = diag.weak.type === 'skill' && diag.weak.id === 'writing' ? 'writing' : undefined;
+    const tc = ft ? contentForTema(ft.id, wr) : null;
     if(tc){
+      // Señal cruzada (sin mezclar métricas): si el mismo tema también va mal en Gramática, se dice.
+      let cross = '';
+      if(wr){
+        const gu = diag.units.find(x => x.key === 'family:' + (TEMA_BY_ID[ft.id] || {}).family);
+        const gs = gu && (gu.temaStats || []).find(s => s.id === ft.id);
+        if(gs && !gs.dominated && (gs.current < DIAG.WEAK_BELOW || gs.activeMistakes >= 1)) cross = ' También lo fallas en Gramática.';
+      }
       push({
-        title: `Reforzar ${tc.label}`,
-        reason: ft.activeMistakes
+        title: wr ? `Reforzar ${tc.label} en Writing` : `Reforzar ${tc.label}`,
+        reason: (ft.activeMistakes
           ? `Vas en ${ft.current}% y tienes ${ft.activeMistakes} ${ft.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'} en este tema.`
-          : `Es el tema donde más fallas dentro de ${diag.weak.label}: ${ft.current}% de aciertos.`,
-        href: temaHasItemsAt(ft.id, getUserLevel()) ? temaPlanHref(TEMA_BY_ID[ft.id], false) : diag.weak.href,
+          : `Es el tema donde más fallas dentro de ${diag.weak.label}: ${ft.current}% de aciertos.`) + cross,
+        href: temaHasItemsAt(ft.id, getUserLevel(), wr) ? temaPlanHref(TEMA_BY_ID[ft.id], false, wr) : diag.weak.href,
         cta: 'Reforzar ahora',
         article: tc.article, articleLabel: tc.articleLabel,
         tema: ft.id
@@ -5270,9 +5304,11 @@ function computeWeeklyReport(diag){
    primero los que falló, luego los que no ha visto; el resto del cupo lo completa
    la habilidad normal del nivel (igual que en gramática). */
 function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
-  const bank = skill === 'vocabulario' ? (typeof VOCAB_BANK === 'undefined' ? null : VOCAB_BANK) : (skill === 'listening' && typeof LISTENING_BANK !== 'undefined' ? LISTENING_BANK : null);
+  const bank = skill === 'vocabulario' ? (typeof VOCAB_BANK === 'undefined' ? null : VOCAB_BANK)
+    : skill === 'listening' ? (typeof LISTENING_BANK === 'undefined' ? null : LISTENING_BANK)
+    : skill === 'writing' ? (typeof WRITING_BANK === 'undefined' ? null : WRITING_BANK) : null;
   if(!temaId || !n || !bank || !bank[level]) return [];
-  const idOf = skill === 'vocabulario' ? vocabTemaIdForItem : listeningTemaIdForItem;
+  const idOf = skill === 'vocabulario' ? vocabTemaIdForItem : skill === 'listening' ? listeningTemaIdForItem : writingTemaIdForItem;
   const p = loadProgress();
   const recentOk = new Set(), everFailed = new Set(), seen = new Set();
   const cut = Date.now() - 3*86400000;
@@ -5675,12 +5711,14 @@ function getTodayPick(diag){
 /* Cómo le fue en el tema que acaba de practicar y si todavía necesita refuerzo.
    Solo datos propios: respuestas de esta sesión + lo que ya calcula el
    diagnóstico por tema (diagTemaStats). Sin IA ni tablas nuevas. */
-function temaSessionProgress(temaId, now, diag){
+function temaSessionProgress(temaId, now, diag, onlySkill){
   if(typeof TEMA_BY_ID === 'undefined') return null;
   const index = getDiagItemIndex();
-  const c = contentForTema(temaId);
+  const c = contentForTema(temaId, onlySkill);
   if(!index || !c) return null;
-  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && diagTemaIdForFound(f) === temaId; });
+  // Solo cuentan ejercicios de la misma habilidad del tema (Gramática y Writing no se mezclan).
+  const kindWanted = onlySkill === 'writing' ? 'writing' : ({ vocabulario:'vocab', listening:'listening' }[c.skill] || 'grammar');
+  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && f.kind === kindWanted && diagTemaIdForFound(f) === temaId; });
   if(mine.length < 2) return null;            // muy pocos para opinar del tema
   const ok = mine.filter(a=>a.ok).length;
   let stat = null;
@@ -5758,7 +5796,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.struggle && ins.improved && ins.struggle.key === ins.improved.key) ins.improved = null;
   // Si lo que más costó es una familia, ¿hay un tema concreto detrás de los fallos?
   ins.struggleTema = null;
-  if(ins.struggle && (ins.struggle.key.indexOf('family:') === 0 || ins.struggle.key === 'skill:vocabulario' || ins.struggle.key === 'skill:listening') && typeof TEMAS !== 'undefined'){
+  if(ins.struggle && (ins.struggle.key.indexOf('family:') === 0 || ins.struggle.key === 'skill:vocabulario' || ins.struggle.key === 'skill:listening' || ins.struggle.key === 'skill:writing') && typeof TEMAS !== 'undefined'){
     const fid = ins.struggle.key.slice(7);
     const inUnitNow = a => ins.struggle.key.indexOf('skill:') === 0 ? a.skill === ins.struggle.key.slice(6) : a.family === fid;
     const wrongHere = now.filter(a => !a.ok && inUnitNow(a)).map(a=>{
@@ -5766,7 +5804,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
       return { tema: diagTemaIdForFound(f), failCount: everFailed.has(a.itemId) ? 2 : 1 };
     });
     const top = dominantTema(wrongHere);
-    if(top && (top.count >= 2 || top.count === wrongHere.length) && contentForTema(top.id)) ins.struggleTema = top.id;
+    if(top && (top.count >= 2 || top.count === wrongHere.length) && contentForTema(top.id, ins.struggle.key === 'skill:writing' ? 'writing' : undefined)) ins.struggleTema = top.id;
   }
   const dropped = ins.struggle && ins.struggle.prevN >= SESSION_INSIGHT.UNIT_MIN_PREV && ins.struggle.n >= SESSION_INSIGHT.UNIT_MIN_NOW
     && ins.struggle.prevAcc - ins.struggle.acc >= SESSION_INSIGHT.DELTA;
@@ -5808,7 +5846,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
     ins.lines.push({ tone:'good', text:`${correct} de ${now.length} correctas (${ins.acc}%).` });
   }
   // Práctica enfocada en un tema (Plan con ?tema=): cómo le fue en ESE tema.
-  ins.tema = (opts && opts.focusTema) ? temaSessionProgress(opts.focusTema, now, diag) : null;
+  ins.tema = (opts && opts.focusTema) ? temaSessionProgress(opts.focusTema, now, diag, opts.focusSkill) : null;
   if(ins.tema){
     const tp = ins.tema;
     ins.lines.unshift({ tone: tp.needsMore ? 'warn' : 'good', text: tp.needsMore
@@ -5829,7 +5867,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
     if(ins.tema.content.article) push(`${ins.tema.content.articleLabel}: ${ins.tema.label}`, ins.tema.content.article);
   } else if(ins.struggle){
     const [type, id] = ins.struggle.key.split(':');
-    const tc = ins.struggleTema ? contentForTema(ins.struggleTema) : null;
+    const tc = ins.struggleTema ? contentForTema(ins.struggleTema, ins.struggle.key === 'skill:writing' ? 'writing' : undefined) : null;
     const c = tc || contentForUnit(type, id);
     if(c){
       push(c.practiceLabel, c.practiceHref, true);
@@ -6029,8 +6067,8 @@ function computeMistakePatterns(statsMap){
     const [type, id] = g.key.split(':');
     g.content = contentForUnit(type, id);
     // Tema que más errores concentra dentro de la familia (registro de temas).
-    const dt = (type === 'family' || g.key === 'skill:vocabulario' || g.key === 'skill:listening') ? dominantTema(g.items) : null;
-    g.temaContent = dt ? contentForTema(dt.id) : null;
+    const dt = (type === 'family' || g.key === 'skill:vocabulario' || g.key === 'skill:listening' || g.key === 'skill:writing') ? dominantTema(g.items) : null;
+    g.temaContent = dt ? contentForTema(dt.id, g.key === 'skill:writing' ? 'writing' : undefined) : null;
     // En "Mis errores", repasar una habilidad sin familia = filtro por habilidad.
     const kind = Object.keys(DIAG_KIND_TO_SKILL).find(k => DIAG_KIND_TO_SKILL[k] === id);
     g.reviewHref = type === 'skill' && ['grammar','vocab','listening','writing'].indexOf(kind) !== -1 ? 'errores.html?skill=' + kind : null;

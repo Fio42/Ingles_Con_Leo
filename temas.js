@@ -212,6 +212,58 @@ const TEMA_BY_VOCAB_GROUP = TEMAS.reduce((m, t)=>{ (t.groups || []).forEach(g=>{
 function vocabGroupOf(itemId){ return String(itemId || '').replace(/^v-/, '').replace(/-\d+$/, ''); }
 function temaForVocabItem(itemId){ return TEMA_BY_VOCAB_GROUP[vocabGroupOf(itemId)] || null; }
 
+/* ---- WRITING ----
+   Cada consigna de Writing pide practicar algo concreto (su "target" y su texto). Esta tabla
+   dice, por id (sin el prefijo "w-"), QUÉ TEMA YA EXISTENTE del registro practica esa consigna;
+   se usa el MISMO topic_id que en Gramática/Vocabulario (Writing no tiene temas propios).
+   El rendimiento se separa por habilidad (las respuestas de Writing llevan skill "writing"),
+   así que "presente simple" en Gramática y "presente simple" en Writing son señales distintas
+   del mismo tema. Las consignas abiertas o ambiguas NO están aquí: son Writing general.
+   Solo cuenta lo que la consigna pide, nunca lo que escribió el alumno. */
+const WRITING_TEMA_BY_ITEM = {
+  'principiante-1':'verbo-have', 'principiante-2':'to-be-presente', 'principiante-3':'verbo-have', 'principiante2-1':'to-be-presente',
+  'principiante2-2':'verbo-have', 'principiante2-4':'to-be-presente', 'principiante3-1':'basicos-ingles', 'principiante3-2':'can-cant',
+  'principiante3-3':'posesivos', 'principiante4-1':'borrow-vs-lend', 'principiante4-2':'good-vs-well', 'principiante6-1':'basicos-ingles',
+  'principiante6-2':'basicos-ingles', 'principiante-m300-3':'verbos-irregulares', 'principiante-m300-6':'presente-simple',
+  'principiante5-1':'this-that', 'principiante5-2':'do-does', 'principiante5-3':'borrow-vs-lend', 'principiante5-4':'bring-vs-take',
+  'principiante5-5':'vocab-confusas', 'principiante-m100-1':'verbo-have', 'principiante-m100-3':'to-be-presente',
+  'principiante-m100-4':'presente-simple', 'principiante-m100-5':'presente-simple', 'principiante-m200-4':'to-be-presente',
+  'principiante-m200-6':'can-cant', 'facil2-1':'will-going-to', 'facil2-2':'presente-simple', 'facil2-3':'verbo-have', 'facil2-4':'can-cant',
+  'facil3-1':'to-be-presente', 'facil3-2':'comparativos', 'facil3-3':'do-does', 'facil4-1':'modales-obligacion', 'facil4-2':'question-words',
+  'facil4-4':'much-many', 'facil5-1':'can-cant', 'facil5-2':'presente-continuo', 'facil5-3':'posesivos', 'facil5-4':'question-words',
+  'facil6-1':'comparativos', 'facil6-2':'was-were', 'facil6-3':'some-any', 'facil6-4':'will-going-to', 'facil7-1':'pasado-regulares',
+  'facil7-2':'do-does', 'facil7-3':'will-going-to', 'facil7-4':'comparativos', 'facil8-1':'secuenciadores', 'facil8-2':'comparativos',
+  'facil8-3':'borrow-vs-lend', 'facil10-1':'presente-simple', 'facil10-2':'will-going-to', 'facil10-3':'comparativos',
+  'facil10-5':'modales-obligacion', 'facil-m300-5':'comparativos', 'facil9-1':'some-any', 'facil9-2':'much-many', 'facil9-3':'colocaciones',
+  'facil9-4':'vocab-confusas', 'facil9-5':'vocab-confusas', 'facil-m100-1':'verbos-irregulares', 'facil-m100-4':'much-many',
+  'facil-m100-5':'pronombres', 'facil-m200-2':'comparativos', 'facil-m200-3':'will-going-to', 'facil-m200-4':'do-does',
+  'facil-m200-5':'presente-simple', 'medio-1':'used-to', 'medio-2':'past-perfect', 'medio-3':'conectores-contraste', 'medio-4':'comparativos',
+  'medio2-1':'present-perfect-vs-past', 'medio2-2':'since-for', 'medio2-3':'gerundios-infinitivos', 'medio2-4':'estilo-indirecto',
+  'medio3-1':'condicionales', 'medio3-2':'relativas', 'medio3-4':'present-perfect-vs-past', 'medio4-1':'will-going-to',
+  'medio4-2':'modales-obligacion', 'medio4-3':'comparativos', 'medio4-4':'gerundios-infinitivos', 'medio5-1':'will-going-to',
+  'medio5-2':'gerundios-infinitivos', 'medio5-3':'relativas', 'medio5-4':'phrasal-verbs', 'medio6-1':'modales-obligacion', 'medio6-2':'comparativos',
+  'medio6-4':'estilo-indirecto', 'medio7-1':'modales-posibilidad', 'medio7-2':'much-many', 'medio7-3':'voz-pasiva', 'medio7-4':'phrasal-verbs',
+  'medio8-1':'affect-vs-effect', 'medio8-2':'affect-vs-effect', 'medio10-2':'condicionales', 'medio10-3':'present-perfect-vs-past',
+  'medio10-5':'used-to', 'medio10-6':'modales-obligacion', 'medio-m300-2':'causativos', 'medio-m300-3':'modales-perfectos',
+  'medio9-1':'actually-currently', 'medio9-2':'conectores-contraste', 'medio9-3':'vocab-confusas', 'medio9-4':'vocab-confusas',
+  'medio9-5':'vocab-confusas', 'medio-m100-1':'question-tags', 'medio-m200-1':'past-perfect', 'medio-m200-2':'condicionales',
+  'medio-m200-3':'voz-pasiva', 'avz-1':'condicionales', 'avz-2':'conectores-contraste', 'avz-3':'inversion-enfasis', 'avz-4':'voz-pasiva',
+  'avz2-1':'condicionales', 'avz2-2':'conectores-avanzados', 'avz2-3':'relativas', 'avz2-4':'conectores-contraste', 'avz3-1':'inversion-enfasis',
+  'avz3-2':'inversion-enfasis', 'avz3-4':'modales-perfectos', 'avz4-1':'inversion-enfasis', 'avz4-2':'hedging', 'avz4-3':'voz-pasiva',
+  'avz5-1':'subjuntivo-formal', 'avz5-2':'colocaciones', 'avz5-3':'estilo-indirecto', 'avz5-4':'hedging', 'avz6-1':'hedging', 'avz6-2':'hedging',
+  'avz6-3':'estilo-indirecto', 'avz6-4':'voz-pasiva', 'avanzado7-1':'matices-formales', 'avanzado7-2':'inversion-enfasis',
+  'avanzado7-3':'conectores-avanzados', 'avanzado7-4':'hedging', 'avanzado8-1':'vocab-confusas', 'avanzado8-2':'vocab-confusas',
+  'avanzado8-3':'vocab-confusas', 'avanzado8-4':'vocab-confusas', 'avanzado10-1':'condicionales', 'avanzado10-2':'conectores-contraste',
+  'avanzado10-3':'voz-pasiva', 'avanzado10-5':'conectores-contraste', 'avanzado10-6':'modales-perfectos', 'avanzado-m300-2':'modales-perfectos',
+  'avanzado9-1':'who-whom', 'avanzado9-2':'conectores-contraste', 'avanzado9-3':'conectores-contraste', 'avanzado9-4':'vocab-confusas',
+  'avanzado9-5':'vocab-confusas', 'avanzado-m100-1':'voz-pasiva', 'avanzado-m100-2':'inversion-enfasis', 'avanzado-m100-4':'inversion-enfasis',
+  'avanzado-m100-5':'conectores-avanzados', 'avanzado-m200-1':'inversion-enfasis', 'avanzado-m200-2':'condicionales'
+};
+function temaForWritingItem(itemId){
+  const id = WRITING_TEMA_BY_ITEM[String(itemId || '').replace(/^w-/, '')];
+  return id ? (TEMA_BY_ID[id] || null) : null;
+}
+
 // Listening: lista explícita de ids (guardados sin el prefijo "l-") -> tema (o null = general).
 const TEMA_BY_LISTENING_ITEM = TEMAS.reduce((m, t)=>{ (t.items || []).forEach(i=>{ m[i] = t; }); return m; }, {});
 function temaForListeningItem(itemId){ return TEMA_BY_LISTENING_ITEM[String(itemId || '').replace(/^l-/, '')] || null; }

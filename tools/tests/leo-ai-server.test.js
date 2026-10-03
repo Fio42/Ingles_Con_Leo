@@ -131,6 +131,16 @@ async function test(name, fn){
     const exp = await call({ body:Object.assign({}, EXPLAIN, { studentAnswer:'go' }), provider: cfReply() });
     assert.strictEqual(exp.out.ok, true, 'las demás modalidades no cambian (explain con una palabra sigue valiendo)');
   });
+  await test('Writing: el tema de la consigna viaja como contexto corto (solo si existe) y no cambia llamadas ni límites', async()=>{
+    const r = await call({ body:Object.assign({}, WRITING, { studentAnswer:'My car is bigger', topic:'Comparativos' }), provider: cfReply(JSON.stringify({ assessment:'correct', corrected:'My car is bigger than yours.', explanation:'x', tip:'' })) });
+    const all = r.calls[0].body.messages.map(m => m.content).join(String.fromCharCode(10));
+    assert(all.includes('Tema que practica la consigna (solo contexto, no lo menciones): Comparativos'));
+    assert.strictEqual(r.calls.length, 1); assert.strictEqual(r.calls[0].body.max_completion_tokens, 180);
+    const r2 = await call({ body:Object.assign({}, WRITING, { studentAnswer:'My car is bigger' }), provider: cfReply(JSON.stringify({ assessment:'correct', corrected:'x y', explanation:'x', tip:'' })) });
+    assert(!r2.calls[0].body.messages.map(m => m.content).join(' ').includes('Tema que practica'));
+    const r3 = await call({ body:Object.assign({}, WRITING, { studentAnswer:'text', topic:'Comparativos' }) });
+    assert.strictEqual(r3.out.reason, 'insufficient_text'); assert.strictEqual(r3.calls.length, 0);
+  });
   await test('Diagnóstico: solo los números procesados', async()=>{
     const r = await call({ body:DIAG, provider: cfReply(JSON.stringify({ explanation:'Vas en 42%.', tip:'Practica 10 minutos.' })) });
     assert.strictEqual(r.out.ok, true);
