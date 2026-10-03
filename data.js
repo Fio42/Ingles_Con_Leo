@@ -3335,9 +3335,9 @@ const VOCAB_BANK = {
       { id:'v-principiante-3', word:'House', translation:'Casa · donde vives',
         examples:[{en:"My house is big.", es:"Mi casa es grande."},{en:"This is my house.", es:"Esta es mi casa."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"donde vives\"?", options:["house","school","car"], correct:0, explain:"“House” es casa." } },
-      { id:'v-principiante-4', word:'Water', translation:'Agua · lo que tomas cuando tienes sed',
+      { id:'v-principiante-4', word:'Water', translation:'Agua · líquido transparente que tomas cuando tienes sed',
         examples:[{en:"I drink water every day.", es:"Tomo agua todos los días."},{en:"The water is cold.", es:"El agua está fría."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que tomas cuando tienes sed\"?", options:["water","milk","bread"], correct:0, explain:"“Water” es agua." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"líquido transparente que tomas cuando tienes sed\"?", options:["water","milk","bread"], correct:0, explain:"“Water” es agua." } },
       { id:'v-principiante-5', word:'Book', translation:'Libro · lo que lees',
         examples:[{en:"I have two books.", es:"Tengo dos libros."},{en:"This book is good.", es:"Este libro es bueno."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"lo que lees\"?", options:["book","pen","table"], correct:0, explain:"“Book” es libro." } },
@@ -3361,9 +3361,9 @@ const VOCAB_BANK = {
       { id:'v-principiante2-3', word:'Father', translation:'Padre · tu papá',
         examples:[{en:"This is my father.", es:"Este es mi papá."},{en:"My father works a lot.", es:"Mi papá trabaja mucho."}],
         quiz:{ prompt:"¿Qué palabra significa \"papa\"?", options:["Father","Mother","Brother"], correct:0, explain:"“Father” es papá." } },
-      { id:'v-principiante2-4', word:'Red', translation:'Rojo · color de una manzana o un tomate',
+      { id:'v-principiante2-4', word:'Red', translation:'Rojo · color de un tomate maduro',
         examples:[{en:"The apple is red.", es:"La manzana es roja."},{en:"I like the red car.", es:"Me gusta el carro rojo."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"color de una manzana o un tomate\"?", options:["red","blue","yellow"], correct:0, explain:"“Red” es rojo." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"color de un tomate maduro\"?", options:["red","blue","yellow"], correct:0, explain:"“Red” es rojo." } },
       { id:'v-principiante2-5', word:'Blue', translation:'Azul · color del cielo',
         examples:[{en:"The sky is blue.", es:"El cielo es azul."},{en:"My shirt is blue.", es:"Mi camisa es azul."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"color del cielo\"?", options:["blue","green","red"], correct:0, explain:"“Blue” es azul." } },
@@ -3382,19 +3382,19 @@ const VOCAB_BANK = {
     [
       { id:'v-principiante3-1', word:'Sun', translation:'Sol · la estrella que da luz de día',
         examples:[{en:"The sun is very bright.", es:"El sol es muy brillante."},{en:"We see the sun during the day.", es:"Vemos el sol durante el día."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"la estrella que da luz de día\"?", options:["sun","moon","star"], correct:0, explain:"“Sun” es el sol." } },
-      { id:'v-principiante3-2', word:'Moon', translation:'Luna · lo que vemos en el cielo de noche',
+        quiz:{ prompt:"¿Qué palabra significa esto: \"la estrella que da luz de día\"?", options:["sun","moon","cloud"], correct:0, explain:"“Sun” es el sol." } },
+      { id:'v-principiante3-2', word:'Moon', translation:'Luna · lo que brilla grande en el cielo de noche y cambia de forma',
         examples:[{en:"The moon is beautiful tonight.", es:"La luna está hermosa esta noche."},{en:"We can see the moon at night.", es:"Podemos ver la luna de noche."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que vemos en el cielo de noche\"?", options:["moon","sun","cloud"], correct:0, explain:"“Moon” es la luna." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que brilla grande en el cielo de noche y cambia de forma\"?", options:["moon","sun","cloud"], correct:0, explain:"“Moon” es la luna." } },
       { id:'v-principiante3-3', word:'Bird', translation:'Pájaro · animal que vuela y canta',
         examples:[{en:"The bird is singing.", es:"El pájaro está cantando."},{en:"I see a small bird.", es:"Veo un pájaro pequeño."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"animal que vuela y canta\"?", options:["bird","fish","cat"], correct:0, explain:"“Bird” es pájaro." } },
       { id:'v-principiante3-4', word:'Milk', translation:'Leche · lo que tomas en el desayuno, blanco',
         examples:[{en:"I drink milk every morning.", es:"Tomo leche todas las mañanas."},{en:"The milk is cold.", es:"La leche está fría."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"lo que tomas en el desayuno, blanco\"?", options:["milk","water","juice"], correct:0, explain:"“Milk” es leche." } },
-      { id:'v-principiante3-5', word:'Bread', translation:'Pan · lo que comes con mantequilla',
+      { id:'v-principiante3-5', word:'Bread', translation:'Pan · lo que se hace con harina y se hornea',
         examples:[{en:"I eat bread for breakfast.", es:"Como pan en el desayuno."},{en:"The bread is fresh.", es:"El pan está fresco."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que comes con mantequilla\"?", options:["bread","cheese","rice"], correct:0, explain:"“Bread” es pan." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"lo que se hace con harina y se hornea\"?", options:["bread","cheese","rice"], correct:0, explain:"“Bread” es pan." } },
       { id:'v-principiante3-6', word:'Big', translation:'Grande · lo opuesto de pequeño',
         examples:[{en:"The house is big.", es:"La casa es grande."},{en:"My dog is big.", es:"Mi perro es grande."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"lo opuesto de pequeño\"?", options:["big","small","tall"], correct:0, explain:"“Big” es grande." } },
@@ -3498,11 +3498,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"usar los ojos para mirar algo\"?",
-   "options": [
-    "see",
-    "sea",
-    "look"
-   ],
+   "options": ["see","sea","hear"],
    "correct": 0,
    "explain": "“See” es ver."
   }
@@ -3510,7 +3506,7 @@ const VOCAB_BANK = {
  {
   "id": "v-principiante4-5",
   "word": "Rain",
-  "translation": "Lluvia · agua que cae del cielo",
+  "translation": "Lluvia · gotas de agua que caen de las nubes",
   "examples": [
    {
     "en": "I like the rain.",
@@ -3522,7 +3518,7 @@ const VOCAB_BANK = {
    }
   ],
   "quiz": {
-   "prompt": "¿Qué palabra significa esto: \"agua que cae del cielo\"?",
+   "prompt": "¿Qué palabra significa esto: \"gotas de agua que caen de las nubes\"?",
    "options": [
     "rain",
     "snow",
@@ -3618,21 +3614,21 @@ const VOCAB_BANK = {
       { id:'v-principiante6-3', word:'Shirt', translation:'Camisa · ropa para el torso',
         examples:[{en:"He is wearing a blue shirt.", es:"Él lleva una camisa azul."},{en:"My shirt is clean.", es:"Mi camisa está limpia."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"ropa para el torso\"?", options:["shirt","shoe","pants"], correct:0, explain:"“Shirt” es camisa." } },
-      { id:'v-principiante6-4', word:'Rain', translation:'Lluvia · agua que cae del cielo',
+      { id:'v-principiante6-4', word:'Rain', translation:'Lluvia · gotas de agua que caen de las nubes',
         examples:[{en:"I hear the rain outside.", es:"Escucho la lluvia afuera."},{en:"It's going to rain today.", es:"Va a llover hoy."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"agua que cae del cielo\"?", options:["rain","snow","wind"], correct:0, explain:"“Rain” es lluvia." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"gotas de agua que caen de las nubes\"?", options:["rain","snow","wind"], correct:0, explain:"“Rain” es lluvia." } },
       { id:'v-principiante6-5', word:'Door', translation:'Puerta · por donde entras a un lugar',
         examples:[{en:"Close the door, please.", es:"Cierra la puerta, por favor."},{en:"The door is open.", es:"La puerta está abierta."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"por donde entras a un lugar\"?", options:["door","window","wall"], correct:0, explain:"“Door” es puerta." } },
-      { id:'v-principiante6-6', word:'Window', translation:'Ventana · por donde entra la luz',
+      { id:'v-principiante6-6', word:'Window', translation:'Ventana · vidrio en la pared por donde miras afuera',
         examples:[{en:"Open the window.", es:"Abre la ventana."},{en:"The window is big.", es:"La ventana es grande."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"por donde entra la luz\"?", options:["window","door","roof"], correct:0, explain:"“Window” es ventana." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"vidrio en la pared por donde miras afuera\"?", options:["window","door","roof"], correct:0, explain:"“Window” es ventana." } },
       { id:'v-principiante6-7', word:'Apple', translation:'Manzana · fruta roja o verde',
         examples:[{en:"She eats an apple after lunch.", es:"Ella come una manzana después del almuerzo."},{en:"The apple is sweet.", es:"La manzana es dulce."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"fruta roja o verde\"?", options:["apple","orange","banana"], correct:0, explain:"“Apple” es manzana." } },
       { id:'v-principiante6-8', word:'Orange', translation:'Naranja · fruta cítrica',
         examples:[{en:"I like orange juice.", es:"Me gusta el jugo de naranja."},{en:"The orange is on the table.", es:"La naranja está en la mesa."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"fruta cítrica\"?", options:["orange","apple","lemon"], correct:0, explain:"“Orange” es naranja." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"fruta cítrica\"?", options:["orange","apple","banana"], correct:0, explain:"“Orange” es naranja." } },
       { id:'v-principiante6-9', word:'Banana', translation:'Plátano · fruta amarilla',
         examples:[{en:"The monkey eats a banana.", es:"El mono come un plátano."},{en:"I want a banana.", es:"Quiero un plátano."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"fruta amarilla\"?", options:["banana","apple","grape"], correct:0, explain:"“Banana” es plátano." } },
@@ -3684,9 +3680,9 @@ const VOCAB_BANK = {
       { id:'v-facil-5', word:'Weekend', translation:'Fin de semana · sábado y domingo',
         examples:[{en:"We go hiking every weekend.", es:"Vamos de caminata cada fin de semana."},{en:"See you this weekend!", es:"¡Nos vemos este fin de semana!"}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"sábado y domingo\"?", options:["weekend","Monday","minute"], correct:0, explain:"“Weekend” = sábado y domingo." } },
-      { id:'v-facil-6', word:'Friend', translation:'Amigo · alguien cercano a ti',
+      { id:'v-facil-6', word:'Friend', translation:'Amigo · alguien con quien tienes confianza y cariño',
         examples:[{en:"He is my best friend.", es:"Él es mi mejor amigo."},{en:"I made new friends at school.", es:"Hice nuevos amigos en la escuela."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"alguien cercano a ti\"?", options:["friend","stranger","teacher"], correct:0, explain:"“Friend” es alguien cercano, no un desconocido." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"alguien con quien tienes confianza y cariño\"?", options:["friend","stranger","teacher"], correct:0, explain:"“Friend” es alguien cercano, no un desconocido." } },
       { id:'v-facil-7', word:'Early', translation:'Temprano · antes de la hora usual',
         examples:[{en:"I woke up early today.", es:"Hoy me desperté temprano."},{en:"She arrived early for the meeting.", es:"Ella llegó temprano a la reunión."}],
         quiz:{ prompt:"¿Qué significa \"early\"?", options:["Tarde","Temprano","Nunca"], correct:1, explain:"“Early” significa antes de la hora esperada; lo opuesto es “late”." } },
@@ -3759,9 +3755,9 @@ const VOCAB_BANK = {
       { id:'v-facil4-4', word:'Cash', translation:'Cash · dinero en efectivo',
         examples:[{en:"Do you accept cash?", es:"¿Aceptan efectivo?"},{en:"I only have cash, no card.", es:"Solo tengo efectivo, no tarjeta."}],
         quiz:{ prompt:"¿Cuál oración usa \"cash\" correctamente?", options:["Do you accept cash?","Do you accept cash of?","Do you cash accept?"], correct:0, explain:"“Cash” va después del verbo “accept”: “accept cash”." } },
-      { id:'v-facil4-5', word:'Change', translation:'Change · el dinero que te devuelven al pagar',
+      { id:'v-facil4-5', word:'Change', translation:'Change · el dinero que te devuelven cuando pagas con un billete más grande',
         examples:[{en:"Here's your change.", es:"Aquí está tu cambio."},{en:"Keep the change.", es:"Quédate con el cambio."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"el dinero que te devuelven al pagar\"?", options:["change","discount","refund"], correct:0, explain:"“Change” es el cambio o vuelto que te dan." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"el dinero que te devuelven cuando pagas con un billete más grande\"?", options:["change","discount","refund"], correct:0, explain:"“Change” es el cambio o vuelto que te dan." } },
       { id:'v-facil4-6', word:'Size', translation:'Size · talla o tamaño',
         examples:[{en:"What size do you wear?", es:"¿Qué talla usas?"},{en:"This shirt is the wrong size.", es:"Esta camisa es la talla equivocada."}],
         quiz:{ prompt:"¿Qué significa \"size\"?", options:["Color","Talla o tamaño","Precio"], correct:1, explain:"“Size” significa talla o tamaño." } },
@@ -3779,12 +3775,12 @@ const VOCAB_BANK = {
       { id:'v-facil5-2', word:'Sleepy', translation:'Somnoliento · con ganas de dormir',
         examples:[{en:"I feel sleepy after lunch.", es:"Me da sueño después de almorzar."},{en:"The baby looks sleepy.", es:"El bebé se ve con sueño."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"con ganas de dormir\"?", options:["sleepy","angry","bored"], correct:0, explain:"“Sleepy” describe tener sueño o ganas de dormir." } },
-      { id:'v-facil5-3', word:'Umbrella', translation:'Paraguas · objeto para protegerte de la lluvia',
+      { id:'v-facil5-3', word:'Umbrella', translation:'Paraguas · objeto que abres sobre tu cabeza cuando llueve',
         examples:[{en:"Don't forget your umbrella, it's raining.", es:"No olvides tu paraguas, está lloviendo."},{en:"I left my umbrella at the office.", es:"Dejé mi paraguas en la oficina."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"objeto para protegerte de la lluvia\"?", options:["umbrella","jacket","boots"], correct:0, explain:"“Umbrella” es el paraguas, no la ropa que usas." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"objeto que abres sobre tu cabeza cuando llueve\"?", options:["umbrella","jacket","boots"], correct:0, explain:"“Umbrella” es el paraguas, no la ropa que usas." } },
       { id:'v-facil5-4', word:'Appointment', translation:'Cita · hora reservada para algo, como con el doctor',
         examples:[{en:"I have a doctor's appointment at three.", es:"Tengo una cita con el doctor a las tres."},{en:"Can I reschedule my appointment?", es:"¿Puedo cambiar la hora de mi cita?"}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"hora reservada con el doctor\"?", options:["appointment","invitation","reservation"], correct:0, explain:"“Appointment” es una cita reservada, como con un doctor o dentista." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"hora reservada con el doctor\"?", options:["appointment","invitation","holiday"], correct:0, explain:"“Appointment” es una cita reservada, como con un doctor o dentista." } },
       { id:'v-facil5-5', word:'Roommate', translation:'Compañero de cuarto · persona con quien compartes casa',
         examples:[{en:"My roommate is very quiet.", es:"Mi compañero de cuarto es muy callado."},{en:"We split the rent with our roommates.", es:"Dividimos la renta con nuestros compañeros de cuarto."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"persona con quien compartes casa\"?", options:["roommate","neighbor","stranger"], correct:0, explain:"“Roommate” vive contigo; “neighbor” vive cerca pero en otra casa." } },
@@ -3813,7 +3809,7 @@ const VOCAB_BANK = {
         quiz:{ prompt:"¿Qué palabra significa esto: \"tareas de la casa como limpiar\"?", options:["chores","homework","errands"], correct:0, explain:"“Chores” son tareas domésticas, distintas de “homework” (tarea escolar)." } },
       { id:'v-facil6-5', word:'Alarm clock', translation:'Despertador · aparato que suena para despertarte',
         examples:[{en:"My alarm clock didn't go off this morning.", es:"Mi despertador no sonó esta mañana."},{en:"I set my alarm clock for six.", es:"Puse mi despertador a las seis."}],
-        quiz:{ prompt:"¿Qué frase significa esto: \"aparato que suena para despertarte\"?", options:["alarm clock","phone","watch"], correct:0, explain:"“Alarm clock” es el aparato específico para despertarte." } },
+        quiz:{ prompt:"¿Qué frase significa esto: \"aparato que suena para despertarte\"?", options:["alarm clock","mirror","lamp"], correct:0, explain:"“Alarm clock” es el aparato específico para despertarte." } },
       { id:'v-facil6-6', word:'Traffic jam', translation:'Embotellamiento · muchos carros parados en la calle',
         examples:[{en:"We were stuck in a traffic jam for an hour.", es:"Estuvimos atascados en un embotellamiento por una hora."},{en:"There's always a traffic jam at rush hour.", es:"Siempre hay embotellamiento en la hora pico."}],
         quiz:{ prompt:"¿Qué frase significa esto: \"muchos carros parados en la calle\"?", options:["traffic jam","parking lot","highway"], correct:0, explain:"“Traffic jam” describe el tráfico detenido o muy lento." } },
@@ -4067,7 +4063,7 @@ const VOCAB_BANK = {
         quiz:{ prompt:"¿Qué palabra significa esto: \"lugar donde comes fuera de casa\"?", options:["restaurant","hotel","store"], correct:0, explain:"“Restaurant” es restaurante." } },
       { id:'v-facil10-4', word:'Vacation', translation:'Vacaciones · tiempo libre para descansar o viajar',
         examples:[{en:"We are on vacation.", es:"Estamos de vacaciones."},{en:"I need a vacation.", es:"Necesito unas vacaciones."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"tiempo libre para descansar o viajar\"?", options:["vacation","weekend","holiday season"], correct:0, explain:"“Vacation” son vacaciones." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"tiempo libre para descansar o viajar\"?", options:["vacation","homework","office"], correct:0, explain:"“Vacation” son vacaciones." } },
       { id:'v-facil10-5', word:'Supermarket', translation:'Supermercado · tienda grande de comida',
         examples:[{en:"I buy food at the supermarket.", es:"Compro comida en el supermercado."},{en:"The supermarket is close to my house.", es:"El supermercado está cerca de mi casa."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"tienda grande de comida\"?", options:["supermarket","restaurant","pharmacy"], correct:0, explain:"“Supermarket” es supermercado." } },
@@ -4079,10 +4075,10 @@ const VOCAB_BANK = {
         quiz:{ prompt:"¿Qué palabra significa esto: \"documento para viajar a otro país\"?", options:["passport","ticket","suitcase"], correct:0, explain:"“Passport” es pasaporte." } },
       { id:'v-facil10-8', word:'Schedule', translation:'Horario · plan de las cosas que vas a hacer',
         examples:[{en:"What's your schedule today?", es:"¿Cuál es tu horario hoy?"},{en:"My schedule is busy this week.", es:"Mi horario está ocupado esta semana."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"plan de las cosas que vas a hacer\"?", options:["schedule","calendar","clock"], correct:0, explain:"“Schedule” es horario." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"plan de las cosas que vas a hacer\"?", options:["schedule","clock","weather"], correct:0, explain:"“Schedule” es horario." } },
       { id:'v-facil10-9', word:'Interview', translation:'Entrevista · conversación para conseguir trabajo',
         examples:[{en:"I have a job interview tomorrow.", es:"Tengo una entrevista de trabajo mañana."},{en:"The interview went well.", es:"La entrevista salió bien."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"conversación para conseguir trabajo\"?", options:["interview","meeting","conversation"], correct:0, explain:"“Interview” es entrevista." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"conversación para conseguir trabajo\"?", options:["interview","meeting","resume"], correct:0, explain:"“Interview” es entrevista." } },
       { id:'v-facil10-10', word:'Furniture', translation:'Muebles · mesas, sillas, camas, etc.',
         examples:[{en:"We bought new furniture.", es:"Compramos muebles nuevos."},{en:"The furniture is very old.", es:"Los muebles son muy viejos."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"mesas, sillas, camas, etc.\"?", options:["furniture","furniture store","house"], correct:0, explain:"“Furniture” son los muebles." } }
@@ -4147,7 +4143,7 @@ const VOCAB_BANK = {
         quiz:{ prompt:"¿Qué palabra significa esto: \"incómodo o extraño en una situación social\"?", options:["awkward","comfortable","reliable"], correct:0, explain:"“Awkward” describe una situación incómoda." } },
       { id:'v-medio2-4', word:'Struggle', translation:'Struggle · esforzarte mucho para lograr algo difícil',
         examples:[{en:"She struggled to finish the marathon.", es:"Ella luchó para terminar el maratón."},{en:"Many families struggle to pay rent.", es:"Muchas familias luchan para pagar la renta."}],
-        quiz:{ prompt:"¿Qué palabra significa esto: \"esforzarte mucho para lograr algo difícil\"?", options:["struggle","achieve","postpone"], correct:0, explain:"“Struggle” es luchar o esforzarse contra una dificultad." } },
+        quiz:{ prompt:"¿Qué palabra significa esto: \"esforzarte mucho para lograr algo difícil\"?", options:["struggle","relax","postpone"], correct:0, explain:"“Struggle” es luchar o esforzarse contra una dificultad." } },
       { id:'v-medio2-5', word:'Worthwhile', translation:'Worthwhile · que vale la pena el esfuerzo',
         examples:[{en:"The trip was worthwhile despite the cost.", es:"El viaje valió la pena a pesar del costo."},{en:"It's worthwhile to learn a new language.", es:"Vale la pena aprender un nuevo idioma."}],
         quiz:{ prompt:"¿Qué palabra significa esto: \"que vale la pena el esfuerzo\"?", options:["worthwhile","boring","awkward"], correct:0, explain:"“Worthwhile” significa que vale la pena." } },
@@ -4311,11 +4307,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"influir en algo\" (verbo)?",
-   "options": [
-    "affect",
-    "effect",
-    "impact"
-   ],
+   "options": ["affect","effect","after"],
    "correct": 0,
    "explain": "“Affect” es el verbo influir."
   }
@@ -4386,11 +4378,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"no tener algo más\"?",
-   "options": [
-    "lose",
-    "loose",
-    "miss"
-   ],
+   "options": ["lose","loose","find"],
    "correct": 0,
    "explain": "“Lose” es perder."
   }
@@ -4411,11 +4399,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"condición del cielo\"?",
-   "options": [
-    "weather",
-    "whether",
-    "climate"
-   ],
+   "options": ["weather","whether","season"],
    "correct": 0,
    "explain": "“Weather” es el clima."
   }
@@ -4746,11 +4730,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"el más importante\" o \"director de escuela\"?",
-   "options": [
-    "principal",
-    "principle",
-    "primary only"
-   ],
+   "options": ["principal","principle","prince"],
    "correct": 0,
    "explain": "“Principal” es principal o director."
   }
@@ -4771,11 +4751,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"una regla o creencia fundamental\"?",
-   "options": [
-    "principle",
-    "principal",
-    "rule only"
-   ],
+   "options": ["principle","principal","prince"],
    "correct": 0,
    "explain": "“Principle” es un principio (regla, creencia)."
   }
@@ -4821,11 +4797,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"más\" en un sentido abstracto?",
-   "options": [
-    "further",
-    "farther",
-    "additional only"
-   ],
+   "options": ["further","farther","father"],
    "correct": 0,
    "explain": "“Further” es para ideas abstractas."
   }
@@ -4921,11 +4893,7 @@ const VOCAB_BANK = {
   ],
   "quiz": {
    "prompt": "¿Qué palabra significa esto: \"que no es legal\"?",
-   "options": [
-    "illicit",
-    "elicit",
-    "illegal only"
-   ],
+   "options": ["illicit","elicit","legal"],
    "correct": 0,
    "explain": "“Illicit” significa ilícito, ilegal."
   }
