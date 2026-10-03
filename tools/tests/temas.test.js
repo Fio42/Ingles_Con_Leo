@@ -26,7 +26,7 @@ function makeCtx(withTemas){
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
-  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
+  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
   computeSessionInsight, renderArticleTema, buildLeoAiPayload, leoAiFocusLink, temaLinksHtml, computeWeeklyReport,
   TEMAS: typeof TEMAS === 'undefined' ? null : TEMAS, TEMA_BY_ID: typeof TEMA_BY_ID === 'undefined' ? null : TEMA_BY_ID };`, ctx);
   return ctx.__t;
@@ -734,6 +734,173 @@ test('sin temas.js, vocabulario funciona como antes (sin tema)', ()=>{
   setProgress(T0, vocabWeakHistory.call(null, 'vocab-compras').map(s => s));
   const d = T0.computeDiagnosis();
   const u = d.units.find(x => x.key === 'skill:vocabulario');
+  assert(!u || !u.focusTema);
+  if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
+});
+
+
+/* ================= FASE 5: LISTENING por tema ================= */
+console.log('\nFase 5: listening por tema');
+const LT = T.TEMAS.filter(t => t.skill === 'listening');
+// Criterio explícito de cada tema (el mismo que documenta temas.js), por prioridad.
+const LNUMQ = /^(how many|how much|what time|how old|how long|what year|what('s| is) the (total|price|number|address|phone number|email( address)?|confirmation code))/i;
+const LRULES = [
+  ['listening-numeros', x => /numeros$/.test(x.id.replace(/^l-/, '').replace(/-\d+$/, '')) || LNUMQ.test(x.question)],
+  ['listening-conversaciones', x => x.transcript.includes('—')],
+  ['listening-condicionales', x => /\b(if|unless)\b|\bwould have\b/i.test(x.transcript) || /^(Had|Were it|Should)\b/.test(x.transcript)],
+  ['listening-contraste', x => /\b(not|never|n't|but|except|although|though|despite|nevertheless|whereas|however|even though|instead)\b/i.test(x.transcript) || /^Not (only|until)\b/.test(x.transcript)]
+];
+const lisAll = []; Object.keys(T.L).forEach(l => T.L[l].forEach(v => v.forEach(x => lisAll.push(Object.assign({ level:l }, x)))));
+const lisIds = (temaId, level) => lisAll.filter(x => (!level || x.level === level) && (T.temaForListeningItem(x.id) || {}).id === temaId).map(x => x.id);
+const lisGeneral = level => lisAll.filter(x => x.level === level && !T.temaForListeningItem(x.id)).map(x => x.id);
+const lsession = (daysAgo, results) => Object.assign(session(daysAgo, results), { skill:'listening' });
+const lres = (ids, n, pct, off) => answers(ids, n, pct, off).map(r => Object.assign(r, { skill:'listening' }));
+const lisWeak = (temaId, days) => { const d = days || [2, 1]; return [ lsession(d[0], lres(lisIds(temaId, 'facil'), 10, 10)), lsession(d[1], lres(lisGeneral('facil'), 8, 90)) ]; };
+
+test('listening: la tabla coincide EXACTAMENTE con los criterios (ningún ejercicio nuevo se queda sin clasificar ni sobra un id)', ()=>{
+  const wrong = [];
+  lisAll.forEach(x=>{
+    const rule = LRULES.find(r => r[1](x));
+    const want = rule ? rule[0] : null;
+    const got = (T.temaForListeningItem(x.id) || {}).id || null;
+    if(want !== got) wrong.push(`${x.id}: criterio=${want} tabla=${got}`);
+  });
+  assert.deepStrictEqual(wrong, [], wrong.join(' | '));
+  const real = new Set(lisAll.map(x => x.id.replace(/^l-/, '')));
+  LT.forEach(t => t.items.forEach(i => assert(real.has(i), `${t.id}: el id ${i} ya no existe en data.js`)));
+  const all = LT.reduce((a, t) => a.concat(t.items), []);
+  assert.strictEqual(new Set(all).size, all.length, 'un ejercicio está en dos temas');
+  const classified = lisAll.filter(x => T.temaForListeningItem(x.id)).length;
+  assert(classified >= 70 && lisAll.length - classified >= 100, `conectados ${classified}, generales ${lisAll.length - classified}`);
+});
+test('temas de listening: ids, skill, nombre, recursos reales y práctica válida; niveles con ejercicios', ()=>{
+  assert.strictEqual(LT.length, 4);
+  LT.forEach(t=>{
+    assert(/^listening-[a-z-]+$/.test(t.id) && t.label && t.items.length >= 8 && t.topics.length === 0 && !t.family, t.id);
+    if(t.article) assert(files.has(t.article), t.id);
+    if(t.glossary) assert(glossaryOk(t.glossary), t.id);
+    const c = T.contentForTema(t.id);
+    assert(c && c.skill === 'listening' && c.unitKey === 'skill:listening', t.id);
+    assert(hrefOk(c.practiceHref), c.practiceHref);
+    if(c.lesson) assert(files.has(c.lesson.href.split('?')[0]));
+    ['principiante', 'facil', 'medio', 'avanzado'].forEach(l => assert.strictEqual(T.temaHasItemsAt(t.id, l), lisIds(t.id, l).length > 0, t.id + ' ' + l));
+  });
+});
+test('compatibilidad: gramática y vocabulario no se mezclan con listening', ()=>{
+  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g => assert(!LT.some(t => t.topics.includes(g.topic))))));
+  Object.keys(T.V).forEach(l => T.V[l].forEach(v => v.forEach(w => assert(!T.temaForListeningItem(w.id)))));
+  assert(LT.every(t => !t.groups));
+});
+test('listening SIN suficiente evidencia de un tema: solo "Listening"', ()=>{
+  const nums = lisIds('listening-numeros', 'facil');
+  setProgress(T, [ lsession(2, lres(nums, 3, 0)), lsession(1, lres(lisGeneral('facil'), 14, 40)) ]);   // 3 intentos del tema (mínimo 4)
+  const d = readyDiag(T);
+  const u = d.units.find(x => x.key === 'skill:listening');
+  assert(u && !u.focusTema);
+  if(d.today) assert(!d.today.tema);
+  assert(!/Dentro de Listening/.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
+});
+test('listening con tema claro: Hoy te conviene (practicar el tema + clase) y detalle en el diagnóstico', ()=>{
+  setProgress(T, lisWeak('listening-numeros'));
+  const d = readyDiag(T);
+  assert.strictEqual(d.weak.key, 'skill:listening'); assert.strictEqual(d.weak.focusTema.id, 'listening-numeros');
+  const a = d.today;
+  assert.strictEqual(a.title, 'Reforzar Números, horas y precios'); assert.strictEqual(a.tema, 'listening-numeros');
+  assert.strictEqual(a.href, 'plan-estudio.html?tema=listening-numeros');
+  assert.strictEqual(T.todayStartHref(a), 'plan-estudio.html?tema=listening-numeros&empezar=1');
+  assert.strictEqual(a.article, 'articulo-numeros-en-ingles.html' + VIA('listening-numeros'));
+  checkAction(a);
+  assert(/Dentro de Listening, lo que más necesitas reforzar es <b>Números, horas y precios<\/b>\./.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
+});
+test('listening: tema con glosario -> explicación rápida; tema sin recurso -> solo practicar', ()=>{
+  const gl = lisIds('listening-contraste', 'facil');
+  setProgress(T, [ lsession(2, lres(gl, 10, 10)), lsession(1, lres(lisGeneral('facil'), 8, 90)) ]);
+  let a = readyDiag(T).today;
+  assert.strictEqual(a.tema, 'listening-contraste'); assert.strictEqual(a.article, '/glosario/although/' + VIA('listening-contraste')); assert.strictEqual(a.articleLabel, 'Ver explicación rápida');
+  checkAction(a);
+  const cv = lisIds('listening-conversaciones', 'facil');
+  setProgress(T, [ lsession(2, lres(cv, 10, 10)), lsession(1, lres(lisGeneral('facil'), 8, 90)) ]);
+  a = readyDiag(T).today;
+  assert.strictEqual(a.tema, 'listening-conversaciones'); assert(!a.article, 'sin recurso: nada inventado');
+  checkAction(a);
+});
+test('práctica enfocada en un tema de listening: sus ejercicios primero y se completa con Listening del nivel', ()=>{
+  setProgress(T, []);
+  const sel = T.computePlanSelection('facil', 12, { focusTema:'listening-numeros' });
+  assert.strictEqual(sel.focus.skill, 'listening'); assert.strictEqual(sel.focus.temaId, 'listening-numeros'); assert.strictEqual(sel.focus.label, 'Números, horas y precios');
+  const pool = T.buildPlanPool('facil', sel);
+  assert.strictEqual(pool.length, sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0), 'la sesión mantiene su duración');
+  const mine = new Set(lisIds('listening-numeros', 'facil'));
+  const focus = pool.filter(e => e.focus);
+  assert(focus.length >= 3 && focus.every(e => e.kind === 'listening' && mine.has(e.item.id) && e.focusTema === 'listening-numeros'));
+  assert.strictEqual(new Set(pool.map(e => e.item.id)).size, pool.length);
+});
+test('tema con pocos ejercicios en su nivel: usa los que hay y completa; sin ninguno en el nivel o inventado: Plan normal (nunca vacío)', ()=>{
+  setProgress(T, []);
+  assert.strictEqual(lisIds('listening-conversaciones', 'principiante').length, 1);
+  let sel = T.computePlanSelection('principiante', 12, { focusTema:'listening-conversaciones' });
+  const pool = T.buildPlanPool('principiante', sel);
+  assert.strictEqual(pool.length, sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0));
+  assert(pool.filter(e => e.focus).length <= 1 && pool.length >= 8);
+  assert.strictEqual(T.temaHasItemsAt('listening-condicionales', 'principiante'), false);
+  sel = T.computePlanSelection('principiante', 12, { focusTema:'listening-condicionales' });
+  assert(!sel.focus || sel.focus.skill !== 'listening');
+  sel = T.computePlanSelection('facil', 12, { focusTema:'listening-inventado' });
+  assert(!sel.focus || sel.focus.skill !== 'listening');
+  sel = T.computePlanSelection('facil', 12, { focusFamily:'pasado', focusTema:'verbos-irregulares' });
+  assert.strictEqual(sel.focus.skill, 'gramatica');
+  sel = T.computePlanSelection('facil', 12, { focusTema:'vocab-compras' });
+  assert.strictEqual(sel.focus.skill, 'vocabulario');
+});
+test('el Plan sin foco en la URL sigue al tema de listening que detectó el diagnóstico', ()=>{
+  setProgress(T, lisWeak('listening-numeros'));
+  const sel = T.computePlanSelection('facil', 12, {});
+  assert.strictEqual(sel.focus.skill, 'listening'); assert.strictEqual(sel.focus.temaId, 'listening-numeros');
+});
+function lisPlanFor(temaId, history, results){
+  const s = lsession(0, results);
+  setProgress(T, history.concat([s]));
+  return T.computeSessionInsight(results, s.startedAt, 'plan', { focusTema:temaId });
+}
+test('listening: al terminar el tema y SIGUE débil -> seguir practicando + la clase real', ()=>{
+  const ins = lisPlanFor('listening-numeros', lisWeak('listening-numeros'), lres(lisIds('listening-numeros', 'facil'), 6, 17));
+  assert(ins.tema && ins.tema.needsMore);
+  assert(/^En Números, horas y precios acertaste \d+ de 6\. Todavía conviene reforzarlo\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert.strictEqual(ins.actions[0].title, 'Seguir practicando Números, horas y precios');
+  assert(/plan-estudio\.html\?tema=listening-numeros/.test(ins.actions[0].href));
+  assert.strictEqual(ins.actions[1].href, 'articulo-numeros-en-ingles.html' + VIA('listening-numeros'));
+});
+test('listening: tema que MEJORA deja de priorizarse y cambia la recomendación', ()=>{
+  const ins = lisPlanFor('listening-numeros', lisWeak('listening-numeros', [12, 11]), lres(lisIds('listening-numeros', 'facil'), 14, 100, 2));
+  assert(ins.tema && !ins.tema.needsMore && /^En Números, horas y precios acertaste 14 de 14\. Ya vas bien en este tema\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert(ins.actions.every(a => !/Seguir practicando/.test(a.title) && !/listening-numeros/.test(a.href) && !/numeros-en-ingles/.test(a.href)), JSON.stringify(ins.actions));
+  const d = T.computeDiagnosis();
+  const st = (d.units.find(x => x.key === 'skill:listening').temaStats || []).find(s => s.id === 'listening-numeros');
+  assert(st && st.current >= 75 && st.trend === 'up', 'mejora medida: ' + (st && st.current));
+  assert(!d.today || d.today.tema !== 'listening-numeros');
+});
+test('Mis errores: errores de Listening de un tema -> "Sobre todo en X"; ejercicios generales -> como antes', ()=>{
+  const nums = lisIds('listening-numeros', 'facil');
+  setProgress(T, lisWeak('listening-numeros'));
+  const g = T.computeMistakePatterns(mistakeStats(nums.slice(0, 4))).groups.find(x => x.key === 'skill:listening');
+  assert(g && g.temaContent && g.temaContent.id === 'listening-numeros');
+  eq(linksIn(T.temaLinksHtml(g.temaContent)), ['plan-estudio.html?tema=listening-numeros&empezar=1', 'articulo-numeros-en-ingles.html' + VIA('listening-numeros')]);
+  const g2 = T.computeMistakePatterns(mistakeStats(lisGeneral('facil').slice(0, 4))).groups.find(x => x.key === 'skill:listening');
+  assert(g2 && !g2.temaContent);
+});
+test('Leo AI (listening): el tema ya mostrado no se repite, sin URLs ni tokens extra en el payload', ()=>{
+  const nums = lisIds('listening-numeros', 'facil');
+  setProgress(T, lisWeak('listening-numeros'));
+  const payload = T.buildLeoAiPayload(T.mistakePatternsAiCtx(T.computeMistakePatterns(mistakeStats(nums.slice(0, 4)))));
+  assert(payload.shown.includes('Números, horas y precios'));
+  assert(!payload.candidates.some(c => c.id === 'listening-numeros'));
+  noUrls(payload); assert(payload.facts.length <= 5 && payload.examples.length <= 3);
+  assert.strictEqual(T.leoAiFocusLink(payload, { focus_topic:'listening-numeros', focus_action:'practice' }), null);
+});
+test('sin temas.js, listening funciona como antes', ()=>{
+  setProgress(T0, lisWeak('listening-numeros'));
+  const d = T0.computeDiagnosis();
+  const u = d.units.find(x => x.key === 'skill:listening');
   assert(!u || !u.focusTema);
   if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
 });

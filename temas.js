@@ -152,7 +152,46 @@ const TEMAS = [
     groups:['medio6', 'medio-m300', 'avz4', 'avz6'] },
   { id:'vocab-viajes', skill:'vocabulary', label:'Viajes', family:null, article:null, glossary:null, topics:[], groups:['medio4'] },
   { id:'vocab-compras', skill:'vocabulary', label:'Compras y pagos', family:null, article:null, glossary:null, topics:[], groups:['facil4'] },
-  { id:'vocab-vida-diaria', skill:'vocabulary', label:'Vida diaria y casa', family:null, article:null, glossary:null, topics:[], groups:['facil', 'facil5', 'facil6'] }
+  { id:'vocab-vida-diaria', skill:'vocabulary', label:'Vida diaria y casa', family:null, article:null, glossary:null, topics:[], groups:['facil', 'facil5', 'facil6'] },
+
+  /* ---- LISTENING (skill:'listening') ----
+     Cada ejercicio de Listening es UNA frase (o un mini diálogo) + una pregunta, sin
+     etiquetas. Los temas son patrones auditivos que se distinguen de forma fiable por
+     datos que ya tiene el ejercicio (la pregunta, el transcript), y la lista de abajo
+     es EXPLICITA (ids sin el prefijo "l-"). Criterio de cada tema, por prioridad:
+       1. listening-numeros          la pregunta pide un dato numérico (How many/much, What time,
+                                     How old/long, What year, el número/dirección/código...) o el
+                                     grupo es "*-numeros"
+       2. listening-conversaciones   el transcript es un diálogo (turnos con "—")
+       3. listening-condicionales    if / unless / would have, o empieza con Had / Were it / Should
+       4. listening-contraste        not / never / n't / but / except / although / though / despite /
+                                     nevertheless / whereas / however / instead, o "Not only/until"
+     Todo ejercicio que no cumple ninguno queda SIN TEMA a propósito (lo general).
+     tools/tests/temas.test.js aplica estos mismos criterios y falla si un ejercicio nuevo
+     cumple uno y falta en la lista (o si algún id ya no existe). */
+  { id:'listening-numeros', skill:'listening', label:'Números, horas y precios', family:null, article:'articulo-numeros-en-ingles.html', glossary:null, topics:[],
+    items:[
+    'principiante-3', 'principiante3-3', 'principiante4-2', 'principiante6-2', 'principiante9-3', 'principiante-m300-5', 'principiante-m200-4',
+    'principiante-numeros-1', 'principiante-numeros-2', 'principiante-numeros-3', 'principiante-m400-1', 'principiante-m400-3', 'facil-1',
+    'facil7-1', 'facil7-3', 'facil14-3', 'facil-m200-4', 'facil-numeros-1', 'facil-numeros-2', 'facil-numeros-3', 'medio4-2', 'medio-numeros-1',
+    'medio-numeros-2', 'medio-numeros-3', 'avanzado-numeros-1', 'avanzado-numeros-2', 'avanzado-numeros-3'
+    ] },
+  { id:'listening-conversaciones', skill:'listening', label:'Conversaciones entre dos personas', family:null, article:null, glossary:null, topics:[],
+    items:[
+    'principiante-m400-4', 'facil-m300-5', 'facil-m400-4', 'facil-m400-5', 'medio-m300-3', 'medio-m400-4', 'medio-m400-5', 'avanzado-m300-2',
+    'avanzado-m400-4', 'avanzado-m400-5'
+    ] },
+  { id:'listening-condicionales', skill:'listening', label:'Condicionales y frases con "would have"', family:null, article:null, glossary:null, topics:[],
+    items:[
+    'facil-m200-2', 'medio-3', 'medio3-1', 'medio4-3', 'medio5-1', 'medio6-3', 'medio8-1', 'medio11-3', 'medio-m200-3', 'medio-m400-2', 'avz-1',
+    'avz4-3', 'avz5-2', 'avz6-3', 'avz7-3', 'avanzado-m200-2', 'avanzado-m400-1'
+    ] },
+  { id:'listening-contraste', skill:'listening', label:'Negaciones y contrastes (not, but, although)', family:null, article:null, glossary:'although', topics:[],
+    items:[
+    'principiante8-4', 'facil-2', 'facil2-1', 'facil5-1', 'facil5-3', 'facil7-2', 'facil12-3', 'facil-m200-3', 'medio3-2', 'medio4-1', 'medio6-1',
+    'medio7-3', 'medio11-1', 'medio10-2', 'medio-m200-1', 'medio-m400-3', 'avz-3', 'avz2-1', 'avz4-1', 'avz6-4', 'avz7-1', 'avanzado11-2',
+    'avanzado10-2', 'avanzado-m100-4', 'avanzado-m200-1', 'avanzado-m400-3'
+    ] }
 ];
 
 // Grupos de VOCAB_BANK sin un tema común (palabras generales o mezcladas).
@@ -172,3 +211,7 @@ function temaForTopic(topic){ return (topic && TEMA_BY_TOPIC[topic]) || null; }
 const TEMA_BY_VOCAB_GROUP = TEMAS.reduce((m, t)=>{ (t.groups || []).forEach(g=>{ m[g] = t; }); return m; }, {});
 function vocabGroupOf(itemId){ return String(itemId || '').replace(/^v-/, '').replace(/-\d+$/, ''); }
 function temaForVocabItem(itemId){ return TEMA_BY_VOCAB_GROUP[vocabGroupOf(itemId)] || null; }
+
+// Listening: lista explícita de ids (guardados sin el prefijo "l-") -> tema (o null = general).
+const TEMA_BY_LISTENING_ITEM = TEMAS.reduce((m, t)=>{ (t.items || []).forEach(i=>{ m[i] = t; }); return m; }, {});
+function temaForListeningItem(itemId){ return TEMA_BY_LISTENING_ITEM[String(itemId || '').replace(/^l-/, '')] || null; }
