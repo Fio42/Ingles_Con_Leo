@@ -1290,3 +1290,5 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 2026-10-03 - Writing: una sola palabra no cuenta como frase. La pagina pide "Escribe una frase completa, no solo una palabra." (sigue sin ser correcta; el boton de Leo AI sigue disponible). Solo cambia evaluateWritingAnswer: las 214 frases de ejemplo del banco son de 2+ palabras, asi que ninguna respuesta valida se ve afectada. app.js?v=20261003d.
 
 2026-10-03 - Writing: vacio o una sola palabra = incorrecto + "Escribe una frase completa, no solo una palabra." y SIN boton de Leo AI (lo resuelve la pagina, ahorra tokens). El boton solo con 2+ palabras. Corrige lo del mismo dia que lo ofrecia con una palabra. Servidor sin cambios. app.js?v=20261003e.
+
+2026-10-03 - leo-ai (v7): Writing con vacio o menos de 2 palabras reales -> insufficient_text (HTTP 400) ANTES de reservar cupo y de llamar al modelo (0 tokens, no suma al tope diario). Defensa por si alguien se salta la pagina.

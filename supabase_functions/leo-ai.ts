@@ -211,6 +211,11 @@ function cleanText(v: unknown, max: number): string {
   return v.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, max)
 }
 
+// Palabras reales: trozos con al menos una letra o número (no "...", "--", ni vacío).
+export function realWords(v: unknown): number {
+  return cleanText(v, 400).split(' ').filter(w => /[\p{L}\p{N}]/u.test(w)).length
+}
+
 function cleanInt(v: unknown, min: number, max: number): number | null {
   const n = typeof v === 'number' ? v : NaN
   if (!Number.isFinite(n)) return null
@@ -515,6 +520,9 @@ Deno.serve(async (req: Request) => {
     // 2) Qué se pide, con los datos mínimos y recortados.
     const body = await req.json().catch(() => null)
     const mode = body && MODES.includes(body.mode) ? body.mode : null
+    // Writing: sin al menos 2 palabras reales no se revisa nada. Se rechaza ANTES de
+    // reservar cupo y de llamar al modelo (0 tokens), aunque alguien se salte la página.
+    if (mode === 'writing' && realWords(body.studentAnswer) < 2) return json({ ok: false, reason: 'insufficient_text' }, 400)
     const prompt = mode ? buildPrompt(mode, body) : null
     if (!mode || !prompt) return json({ ok: false, reason: 'bad_input' }, 400)
 
