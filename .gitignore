@@ -20,3 +20,8 @@ _to_delete/
 # tools/site-health/history.json, esos sí se suben).
 tools/site-health/lighthouse-raw/
 .claude/
+
+# Temporales locales del CLI de Supabase y de Python
+supabase/.temp/
+__pycache__/
+*.pyc
