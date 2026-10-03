@@ -121,13 +121,14 @@ test('Vocabulario, Listening y Lectura: respuesta correcta del banco; texto/tran
   [T.V, T.L, T.R].forEach((bank, i)=> flat(bank).forEach(it => assert(T.buildLeoAiPayload({ kind:['vocab','listening','reading'][i], item:it, isCorrect:true, userAnswer:'x' }), 'sin payload: ' + it.id)));
 });
 
-test('Writing: manda consigna, estructura, ejemplo y la frase; con 1 palabra SÍ hay botón (solo falta si no escribió nada)', ()=>{
+test('Writing: manda consigna, estructura, ejemplo y la frase; con 0 o 1 palabra no hay botón (lo resuelve la página)', ()=>{
   const w = flat(T.W)[0];
   const p = T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'I have a red car' });
   checkPrivacy(p, 'writing');
   assert.strictEqual(p.mode, 'writing'); assert.strictEqual(p.studentAnswer, 'I have a red car');
-  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'car' }).studentAnswer, 'car');
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'car' }), null);
   assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'   ' }), null);
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'writing', item:w, userAnswer:'asdf qwer' }).studentAnswer, 'asdf qwer');
 });
 
 test('Tu diagnóstico: solo números ya procesados del tema, nunca el historial', ()=>{

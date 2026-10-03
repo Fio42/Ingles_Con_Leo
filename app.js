@@ -2026,10 +2026,10 @@ function buildLeoAiPayload(ctx){
       candidates: cands };
   }
   if(ctx.kind === 'writing'){
-    // Cualquier texto cuenta (también una palabra suelta o algo incompleto: Leo AI lo
-    // reconoce y da un modelo). Solo no hay botón si no escribió nada.
+    // Vacío o una sola palabra: la página ya lo resuelve ("Escribe una frase completa")
+    // y no hace falta gastar IA. El botón es solo para frases reales de 2+ palabras.
     const answer = leoAiText(ctx.userAnswer, 400);
-    if(!answer) return null;
+    if(answer.split(' ').filter(Boolean).length < 2) return null;
     return { mode:'writing', skill:'writing', level, question: leoAiText(it.prompt, 400),
       target: leoAiText(it.target, 160), example: it.example ? leoAiText(it.example.en, 200) : '', studentAnswer: answer,
       pageOk: ctx.isOk === true };

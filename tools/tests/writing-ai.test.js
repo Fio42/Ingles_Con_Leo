@@ -78,13 +78,23 @@ const labelOf = btn => find(btn, 'span').textContent;
     assert.strictEqual(r.ev.isOk, false);
     assert(r.btn && labelOf(r.btn) === 'Revisar mi frase con Leo AI');
   });
-  await test('frase INCOMPLETA o sin sentido ("text", "ee", una palabra): aparece el botón', async()=>{
-    for(const t of ['text', 'ee', 'a', 'car', 'asdf']){
+  await test('frase de 2+ palabras aunque sea incompleta o sin sentido: aparece el botón', async()=>{
+    for(const t of ['text ee', 'I have', 'asdf qwer zxcv']){
       const r = reviewLikePage(first, t);
       assert(r.btn, 'sin botón para "' + t + '"');
     }
   });
-  await test('una sola palabra: la página pide una frase completa (no es correcta) y el botón de Leo AI sigue ahí', async()=>{
+  await test('vacío o una sola palabra ("text", "ee"): marca incorrecto, pide una frase completa y NO ofrece IA', async()=>{
+    asked = [];
+    for(const t of ['', '   ', 'text', 'ee', 'a', 'car', 'have']){
+      const r = reviewLikePage(first, t);
+      assert.strictEqual(r.ev.isOk, false, '"' + t + '" no puede ser correcto');
+      assert(/^Escribe una frase completa, no solo una palabra\. /.test(r.ev.hint), '"' + t + '": ' + r.ev.hint);
+      assert.strictEqual(r.btn, null, 'no debe haber botón de IA para "' + t + '"');
+    }
+    await wait(); assert.strictEqual(asked.length, 0);
+  });
+  await test('una sola palabra: la página pide una frase completa (no es correcta) en las 214 consignas', async()=>{
     items.forEach(x=>{
       const w = x.item.example.en.split(/\s+/)[0];
       const ev = T.evaluateWritingAnswer(w, x.item);
@@ -92,35 +102,31 @@ const labelOf = btn => find(btn, 'span').textContent;
       assert(/^Escribe una frase completa, no solo una palabra\. /.test(ev.hint), x.item.id);
     });
     assert.strictEqual(T.evaluateWritingAnswer(first.example.en, first).isOk, true, 'una frase completa sigue calificando igual');
-    assert(reviewLikePage(first, 'have').btn);
-  });
-  await test('sin escribir nada no hay botón (no hay nada que revisar)', async()=>{
-    assert.strictEqual(reviewLikePage(first, '').btn, null);
-    assert.strictEqual(reviewLikePage(first, '   ').btn, null);
+    assert.strictEqual(reviewLikePage(first, 'have').btn, null);
   });
   await test('ejercicio de vocabulario dentro de Writing', async()=>{
     const v = items.find(x => /palabra|vocab|word/i.test(x.item.prompt)) || items.find(x => x.level === 'facil');
-    const ok = reviewLikePage(v.item, v.item.example.en), bad = reviewLikePage(v.item, 'text');
+    const ok = reviewLikePage(v.item, v.item.example.en), bad = reviewLikePage(v.item, 'text word');
     assert(ok.btn && bad.btn);
   });
   await test('estructura gramatical avanzada', async()=>{
     const adv = items.filter(x => x.level === 'avanzado');
     assert(adv.length > 10);
-    adv.slice(0, 40).forEach(x => { assert(reviewLikePage(x.item, x.item.example.en).btn, x.item.id); assert(reviewLikePage(x.item, 'ee').btn, x.item.id); });
+    adv.slice(0, 40).forEach(x => { assert(reviewLikePage(x.item, x.item.example.en).btn, x.item.id); assert(reviewLikePage(x.item, 'ee oo').btn, x.item.id); });
   });
   await test('TODOS los ejercicios de Writing del banco (correcta, incorrecta e incompleta)', async()=>{
     let n = 0;
-    items.forEach(x => ['correcta', 'wrong words here', 'ee'].forEach((kind, k)=>{
+    items.forEach(x => ['correcta', 'wrong words here', 'ee oo'].forEach((kind, k)=>{
       const text = k === 0 ? x.item.example.en : kind;
       assert(reviewLikePage(x.item, text).btn, x.item.id + ' / ' + text); n++;
     }));
     assert(n >= 600);
   });
   await test('la calificación de la página no cambia por Leo AI (isOk viaja solo como dato)', async()=>{
-    const ev1 = T.evaluateWritingAnswer(first.example.en, first), ev2 = T.evaluateWritingAnswer('text', first);
+    const ev1 = T.evaluateWritingAnswer(first.example.en, first), ev2 = T.evaluateWritingAnswer('text ee', first);
     assert.strictEqual(ev1.isOk, true); assert.strictEqual(ev2.isOk, false);
-    const p = T.buildLeoAiPayload({ kind:'writing', item:first, userAnswer:'text', isOk:false });
-    assert.strictEqual(p.pageOk, false); assert.strictEqual(p.studentAnswer, 'text');
+    const p = T.buildLeoAiPayload({ kind:'writing', item:first, userAnswer:'text ee', isOk:false });
+    assert.strictEqual(p.pageOk, false); assert.strictEqual(p.studentAnswer, 'text ee');
     assert(JSON.stringify(p).length < 700, 'payload corto: ' + JSON.stringify(p).length);
   });
   await test('una sola llamada al pulsar (doble toque ignorado) y respuesta CORRECTA sin felicitación repetida', async()=>{
