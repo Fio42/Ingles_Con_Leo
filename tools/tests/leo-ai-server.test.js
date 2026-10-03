@@ -145,30 +145,63 @@ async function test(name, fn){
   });
   const INSIGHT = { mode:'insight', scope:'session', level:'facil',
     facts:['Ejercicios: 12, correctos: 8 (67%)', 'Sigues fallando con Preposiciones: 3 errores hoy.', 'Corregiste 2 ejercicios que antes habías fallado.'],
-    examples:['In / On / At: I was born ___ 1990. → in'], next:'Practicar Preposiciones' };
+    examples:['In / On / At: I was born ___ 1990. → in'], shown:['Preposiciones'], candidates:[{ id:'in-on-at', label:'In, on y at' }, { id:'by-until', label:'By y until' }] };
   await test('insight (sesión/errores/progreso): un solo pedido compacto, sin thinking y con formato fijo', async()=>{
     const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Hoy acertaste 8 de 12.', tip:'Practica preposiciones hoy.' })) });
     assert.strictEqual(r.out.ok, true); assert.strictEqual(r.out.answer.tip, 'Practica preposiciones hoy.');
     assert.strictEqual(r.calls.length, 1);
     const b = r.calls[0].body;
     assert.deepStrictEqual(b.chat_template_kwargs, { enable_thinking:false });
-    assert.strictEqual(b.max_completion_tokens, 300);
+    assert.strictEqual(b.max_completion_tokens, 200, 'salida baja: solo complementa');
     assert.strictEqual(b.response_format.json_schema.name, 'leo_ai_insight');
     const user = b.messages.map(m => m.content).join('\n');
-    assert(/Análisis de la sesión/.test(user) && /- Sigues fallando con Preposiciones/.test(user) && /Siguiente paso: Practicar Preposiciones/.test(user));
-    assert(user.length < 2200, 'prompt compacto (' + user.length + ' caracteres)');
+    assert(/Análisis de la sesión/.test(user) && /- Sigues fallando con Preposiciones/.test(user));
+    assert(!/Siguiente paso/.test(user), 'ya no se le pide repetir el siguiente paso de la página');
+    assert(/La página ya le muestra \(no lo repitas\): Preposiciones/.test(user));
+    assert(/NO lo repitas/.test(user), 'las reglas piden no repetir lo que ya muestra la página');
+    assert(user.length < 2400, 'prompt compacto (' + user.length + ' caracteres)');
   });
-  await test('insight: recorta a 10 datos y 4 ejemplos; scope desconocido o menos de 2 datos -> bad_input sin llamar', async()=>{
+  await test('insight: recorta a 5 datos y 3 ejemplos; scope desconocido o menos de 2 datos -> bad_input sin llamar', async()=>{
     const many = Object.assign({}, INSIGHT, { scope:'mistakes', facts: Array.from({ length:20 }, (_, i)=> 'dato ' + i), examples: Array.from({ length:9 }, (_, i)=> 'ej ' + i) });
     let r = await call({ body:many, provider: cfReply(JSON.stringify({ explanation:'x', tip:'y' })) });
     const user = r.calls[0].body.messages.map(m => m.content).join('\n');
-    assert(/dato 9/.test(user) && !/dato 10/.test(user)); assert(/ej 3/.test(user) && !/ej 4/.test(user));
+    assert(/dato 4/.test(user) && !/dato 5/.test(user)); assert(/ej 2/.test(user) && !/ej 3/.test(user));
     r = await call({ body:Object.assign({}, INSIGHT, { scope:'otra' }) }); assert.strictEqual(r.out.reason, 'bad_input'); assert.strictEqual(r.calls.length, 0);
     r = await call({ body:Object.assign({}, INSIGHT, { facts:['solo uno'] }) }); assert.strictEqual(r.out.reason, 'bad_input'); assert.strictEqual(r.calls.length, 0);
   });
-  await test('insight: respuesta sin consejo se descarta (bad_output)', async()=>{
-    const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Hola', tip:'' })) });
+  await test('insight: sin explicación se descarta (bad_output); el consejo ya es opcional', async()=>{
+    let r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'', tip:'x' })) });
     assert.strictEqual(r.out.reason, 'bad_output');
+    r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Mezclas on con in.', tip:'', focus_topic:'none', focus_action:'none' })) });
+    assert.strictEqual(r.out.ok, true); assert.strictEqual(r.out.answer.tip, ''); assert(!('focus_topic' in r.out.answer));
+  });
+  await test('insight: el tema extra es un enum cerrado con los ids que mandó la página (+ none)', async()=>{
+    const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'x', tip:'', focus_topic:'by-until', focus_action:'lesson' })) });
+    const sch = r.calls[0].body.response_format.json_schema.schema;
+    assert.deepStrictEqual(sch.properties.focus_topic.enum, ['in-on-at', 'by-until', 'none']);
+    assert.deepStrictEqual(sch.properties.focus_action.enum, ['lesson', 'practice', 'none']);
+    const user = r.calls[0].body.messages.map(m => m.content).join('\n');
+    assert(/in-on-at = In, on y at; by-until = By y until/.test(user));
+    assert.deepStrictEqual({ t:r.out.answer.focus_topic, a:r.out.answer.focus_action }, { t:'by-until', a:'lesson' });
+  });
+  await test('insight: un topic_id inventado o fuera de la lista se descarta (la respuesta sigue valiendo)', async()=>{
+    for(const bad of ['verbos-irregulares', 'http://malo.com', 'IN-ON-AT', 'in-on-at; DROP']){
+      const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'Mezclas on con in.', tip:'', focus_topic:bad, focus_action:'lesson' })) });
+      assert.strictEqual(r.out.ok, true, bad); assert(!('focus_topic' in r.out.answer) && !('focus_action' in r.out.answer), bad);
+    }
+  });
+  await test('insight: candidatos con formato raro se ignoran; máximo 3; sin candidatos no se piden campos extra', async()=>{
+    const body = Object.assign({}, INSIGHT, { candidates:[{ id:'a-1', label:'A' }, { id:'MALO ID', label:'x' }, { id:'b-2' }, { id:'c-3', label:'C' }, { id:'d-4', label:'D' }, { id:'e-5', label:'E' }] });
+    let r = await call({ body, provider: cfReply(JSON.stringify({ explanation:'x', tip:'' })) });
+    assert.deepStrictEqual(r.calls[0].body.response_format.json_schema.schema.properties.focus_topic.enum, ['a-1', 'c-3', 'd-4', 'none']);
+    r = await call({ body:Object.assign({}, INSIGHT, { candidates:[] }), provider: cfReply(JSON.stringify({ explanation:'x', tip:'y', focus_topic:'in-on-at' })) });
+    const props = r.calls[0].body.response_format.json_schema.schema.properties;
+    assert(!props.focus_topic && !props.focus_action, 'sin candidatos no se piden esos campos');
+    assert(!('focus_topic' in r.out.answer));
+  });
+  await test('insight: el servidor sigue haciendo UNA sola llamada al proveedor', async()=>{
+    const r = await call({ body:INSIGHT, provider: cfReply(JSON.stringify({ explanation:'x', tip:'y', focus_topic:'in-on-at', focus_action:'practice' })) });
+    assert.strictEqual(r.calls.length, 1);
   });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);

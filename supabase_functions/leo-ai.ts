@@ -87,9 +87,9 @@ const PROVIDER_TIMEOUT_MS = 10000
 // 220 deja margen y corta rápido si el modelo se traba (le pasó una vez
 // con 350: se quedó rellenando espacios y gastó el doble).
 const MAX_OUTPUT_TOKENS = 220
-// "insight" explica varias cosas a la vez (3-4 frases + consejo): un poco
-// más de margen para que no se corte, sigue siendo una sola llamada.
-const maxOutputFor = (mode: string) => mode === 'insight' ? 300 : MAX_OUTPUT_TOKENS
+// "insight" solo COMPLEMENTA lo que la página ya muestra (1-2 frases, un
+// truco corto y, a veces, un tema extra): salida baja a propósito.
+const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : MAX_OUTPUT_TOKENS
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
@@ -138,10 +138,11 @@ const DIAGNOSIS_RULES = `${BASE_RULES}
 - "tip": un consejo práctico para esta semana (1 frase).`
 
 const INSIGHT_RULES = `${BASE_RULES}
-- Te damos un análisis que YA hizo la plataforma. Explica en 3 o 4 frases qué pasó y qué significa para el alumno.
-- Si los ejemplos muestran un patrón (por ejemplo, falla cuando hay que usar pasado, o la -s con he/she/it), nómbralo con palabras simples. Si no hay un patrón claro, no lo inventes.
-- No agregues números, temas ni ejercicios que no estén en los datos.
-- "tip": una frase con lo que conviene hacer ahora, de acuerdo con el "Siguiente paso".`
+- La página YA le mostró al alumno lo principal: el tema, sus números, qué practicar y la clase. NO lo repitas, ni lo resumas, ni digas "te conviene practicar X".
+- Aporta UNA sola cosa nueva y útil, deducida de los ejercicios que falló: por qué probablemente se equivoca, qué confunde, un truco para recordarlo o un matiz de uso. Máximo 2 frases cortas. Si no hay patrón claro, da un truco o matiz del tema sin inventar datos del alumno.
+- Sin introducciones ("Claro", "Muy bien", "Según tus resultados").
+- "tip": un truco corto (máx. 12 palabras) o "".
+- "focus_topic" (si existe en el formato): elige un id de la lista SOLO si es claramente un prerrequisito o la causa real del problema; si no, "none". Nunca inventes ids. "focus_action": "lesson" si conviene leer antes, "practice" si conviene practicar, "none" si no hay tema.`
 
 // Formato de respuesta (JSON Schema estándar).
 // Siempre se manda (sin él, Gemma inventa los nombres de los campos).
@@ -177,6 +178,25 @@ export const SCHEMAS: Record<string, any> = {
 }
 SCHEMAS.insight = SCHEMAS.diagnosis
 
+// Formato del análisis: con temas candidatos, "focus_topic" es un enum cerrado
+// (los ids que mandó la página + "none"): el modelo no puede devolver otro.
+// Sin candidatos no se piden esos campos (menos tokens).
+const FOCUS_ACTIONS = ['lesson', 'practice', 'none']
+export function insightSchema(candidates: string[]) {
+  if (!candidates.length) return SCHEMAS.diagnosis
+  return {
+    type: 'object',
+    properties: {
+      explanation: { type: 'string' },
+      tip: { type: 'string' },
+      focus_topic: { type: 'string', enum: [...candidates, 'none'] },
+      focus_action: { type: 'string', enum: FOCUS_ACTIONS },
+    },
+    required: ['explanation', 'tip', 'focus_topic', 'focus_action'],
+    additionalProperties: false,
+  }
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
 }
@@ -194,22 +214,32 @@ function cleanInt(v: unknown, min: number, max: number): number | null {
 
 // Arma el texto para el modelo SOLO con campos conocidos y recortados.
 // Devuelve null si faltan datos mínimos (no se llama al proveedor).
-export function buildPrompt(mode: string, b: any): { rules: string; text: string } | null {
+export function buildPrompt(mode: string, b: any): { rules: string; text: string; candidates?: string[] } | null {
   const level = LEVELS[cleanText(b.level, 20)] || 'no indicado'
   if (mode === 'insight') {
     const scope = INSIGHT_SCOPES[cleanText(b.scope, 20)]
-    const facts = Array.isArray(b.facts) ? b.facts.map((f: unknown) => cleanText(f, 180)).filter(Boolean).slice(0, 10) : []
+    const facts = Array.isArray(b.facts) ? b.facts.map((f: unknown) => cleanText(f, 140)).filter(Boolean).slice(0, 5) : []
     if (!scope || facts.length < 2) return null
     const lines = [scope + '.', `Nivel del alumno: ${level}`, 'Datos:']
     facts.forEach((f: string) => lines.push('- ' + f))
-    const examples = Array.isArray(b.examples) ? b.examples.map((e: unknown) => cleanText(e, 260)).filter(Boolean).slice(0, 4) : []
+    const examples = Array.isArray(b.examples) ? b.examples.map((e: unknown) => cleanText(e, 200)).filter(Boolean).slice(0, 3) : []
     if (examples.length) {
       lines.push('Ejercicios que falló (pregunta -> respuesta correcta):')
       examples.forEach((e: string) => lines.push('- ' + e))
     }
-    const next = cleanText(b.next, 120)
-    if (next) lines.push(`Siguiente paso: ${next}`)
-    return { rules: INSIGHT_RULES, text: lines.join('\n') }
+    // Lo que la página ya le muestra (no repetir) y los únicos temas sugeribles.
+    const shown = Array.isArray(b.shown) ? b.shown.map((x: unknown) => cleanText(x, 80)).filter(Boolean).slice(0, 3) : []
+    if (shown.length) lines.push(`La página ya le muestra (no lo repitas): ${shown.join('; ')}`)
+    const cands: { id: string; label: string }[] = []
+    if (Array.isArray(b.candidates)) {
+      for (const c of b.candidates) {
+        const id = c && typeof c.id === 'string' ? c.id.trim() : ''
+        const label = cleanText(c && c.label, 60)
+        if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id) && id.length <= 40 && label && cands.length < 3 && !cands.some(x => x.id === id)) cands.push({ id, label })
+      }
+    }
+    if (cands.length) lines.push('Temas que puedes sugerir (id = nombre): ' + cands.map(c => `${c.id} = ${c.label}`).join('; '))
+    return { rules: INSIGHT_RULES, text: lines.join('\n'), candidates: cands.map(c => c.id) }
   }
   if (mode === 'diagnosis') {
     const u = b.unit || {}
@@ -275,7 +305,7 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
 }
 
 // Valida la respuesta del modelo según el modo. null = descartar.
-export function validateOutput(mode: string, parsed: any) {
+export function validateOutput(mode: string, parsed: any, candidates: string[] = []) {
   if (!parsed || typeof parsed !== 'object') return null
   if (mode === 'writing') {
     // Se devuelve a la página con el mismo formato de siempre
@@ -288,8 +318,21 @@ export function validateOutput(mode: string, parsed: any) {
     const tips = rawTips.map((t: unknown) => cleanText(t, 160)).filter(Boolean).slice(0, 2)
     return verdict && corrected && explanation ? { verdict, corrected, explanation, tips } : null
   }
-  if (mode === 'diagnosis' || mode === 'insight') {
-    const explanation = cleanText(parsed.explanation, mode === 'insight' ? 800 : 600)
+  if (mode === 'insight') {
+    // Solo complementa: el consejo es opcional y el tema extra solo vale si es
+    // uno de los ids que la página ofreció (si no, se descarta en silencio).
+    const explanation = cleanText(parsed.explanation, 320)
+    if (!explanation) return null
+    const out: Record<string, string> = { explanation, tip: cleanText(parsed.tip, 120) }
+    const topic = cleanText(parsed.focus_topic, 40)
+    if (topic && topic !== 'none' && candidates.includes(topic)) {
+      out.focus_topic = topic
+      out.focus_action = parsed.focus_action === 'lesson' ? 'lesson' : 'practice'
+    }
+    return out
+  }
+  if (mode === 'diagnosis') {
+    const explanation = cleanText(parsed.explanation, 600)
     const tip = cleanText(parsed.tip, 240)
     return explanation && tip ? { explanation, tip } : null
   }
@@ -336,7 +379,7 @@ export function estimateNeurons(usage: { input: number; output: number }) {
   return (usage.input * CF_NEURONS_PER_M.input + usage.output * CF_NEURONS_PER_M.output) / 1e6
 }
 
-export async function callCloudflare(mode: string, rules: string, text: string): Promise<ProviderResult> {
+export async function callCloudflare(mode: string, rules: string, text: string, schema?: any): Promise<ProviderResult> {
   const account = env('CLOUDFLARE_ACCOUNT_ID'), token = env('CLOUDFLARE_API_TOKEN')
   if (!account || !token) return { ok: false, reason: 'not_configured' }
   const model = env('CLOUDFLARE_AI_MODEL') || '@cf/google/gemma-4-26b-a4b-it'
@@ -348,7 +391,7 @@ export async function callCloudflare(mode: string, rules: string, text: string):
       max_completion_tokens: maxOutputFor(mode),
       temperature: 0.2,
       chat_template_kwargs: { enable_thinking: false }, // SIEMPRE: sin razonamiento extra
-      response_format: { type: 'json_schema', json_schema: { name: 'leo_ai_' + mode, schema: SCHEMAS[mode] } },
+      response_format: { type: 'json_schema', json_schema: { name: 'leo_ai_' + mode, schema: schema || SCHEMAS[mode] } },
     }),
   })
   if (res === 'timeout' || res === 'network') return { ok: false, reason: res }
@@ -366,7 +409,7 @@ export async function callCloudflare(mode: string, rules: string, text: string):
   return { ok: true, raw, usage: { input: u.prompt_tokens || 0, output: u.completion_tokens || 0 }, provider: 'cloudflare' }
 }
 
-export async function callGroq(mode: string, rules: string, text: string): Promise<ProviderResult> {
+export async function callGroq(mode: string, rules: string, text: string, _schema?: any): Promise<ProviderResult> {
   const key = env('GROQ_API_KEY')
   if (!key) return { ok: false, reason: 'not_configured' }
   const res = await withTimeout('https://api.groq.com/openai/v1/chat/completions', {
@@ -388,7 +431,7 @@ export async function callGroq(mode: string, rules: string, text: string): Promi
 }
 
 // SOLO pruebas privadas del admin (ver isAdminRequest). Nunca alumnos.
-export async function callGemini(mode: string, rules: string, text: string): Promise<ProviderResult> {
+export async function callGemini(mode: string, rules: string, text: string, schema?: any): Promise<ProviderResult> {
   const key = env('GEMINI_API_KEY')
   if (!key) return { ok: false, reason: 'not_configured' }
   const model = env('GEMINI_MODEL') || 'gemini-3.5-flash-lite'
@@ -398,7 +441,7 @@ export async function callGemini(mode: string, rules: string, text: string): Pro
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: rules }] },
       contents: [{ role: 'user', parts: [{ text }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 1024, responseMimeType: 'application/json', responseJsonSchema: SCHEMAS[mode] },
+      generationConfig: { temperature: 0.2, maxOutputTokens: 1024, responseMimeType: 'application/json', responseJsonSchema: schema || SCHEMAS[mode] },
     }),
   })
   if (res === 'timeout' || res === 'network') return { ok: false, reason: res }
@@ -410,7 +453,7 @@ export async function callGemini(mode: string, rules: string, text: string): Pro
   return { ok: true, raw, usage: { input: u.promptTokenCount || 0, output: u.candidatesTokenCount || 0 }, provider: 'gemini' }
 }
 
-const PROVIDERS: Record<string, (m: string, r: string, t: string) => Promise<ProviderResult>> = {
+const PROVIDERS: Record<string, (m: string, r: string, t: string, schema?: any) => Promise<ProviderResult>> = {
   cloudflare: callCloudflare, groq: callGroq, gemini: callGemini,
 }
 
@@ -488,13 +531,13 @@ Deno.serve(async (req: Request) => {
     // 5) Llamar al proveedor (y, si se configuró, al siguiente de la lista).
     let lastReason = 'provider_error'
     for (const name of chain) {
-      const r = await PROVIDERS[name](mode, prompt.rules, prompt.text)
+      const r = await PROVIDERS[name](mode, prompt.rules, prompt.text, mode === 'insight' ? insightSchema(prompt.candidates || []) : undefined)
       if (r.ok === false) { lastReason = r.reason; continue }
       // Solo cantidades: nunca el contenido.
       const neurons = name === 'cloudflare' ? estimateNeurons(r.usage) : 0
       await supabase.rpc('leo_ai_record', { p_day: today, p_provider: name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
         .then(() => {}, () => {})
-      const answer = validateOutput(mode, parseJsonLoose(r.raw))
+      const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [])
       if (answer) return json({ ok: true, mode, answer })
       lastReason = 'bad_output'
     }

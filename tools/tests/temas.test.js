@@ -26,12 +26,14 @@ function makeCtx(withTemas){
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
-  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, ARTICLE_BY_TOPIC,
+  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
+  computeSessionInsight, buildLeoAiPayload, leoAiFocusLink, temaLinksHtml, computeWeeklyReport,
   TEMAS: typeof TEMAS === 'undefined' ? null : TEMAS, TEMA_BY_ID: typeof TEMA_BY_ID === 'undefined' ? null : TEMA_BY_ID };`, ctx);
   return ctx.__t;
 }
 const T = makeCtx(true);
 let passed = 0;
+const eq = (a, b, m) => assert.deepStrictEqual(JSON.parse(JSON.stringify(a)), b, m); // los objetos del navegador simulado vienen de otro contexto
 function test(name, fn){ try{ fn(); passed++; console.log('  ok  ' + name); }catch(e){ console.error('FALLA ' + name + '\n  ' + (e && e.message)); process.exitCode = 1; } }
 
 const files = new Set(fs.readdirSync(root));
@@ -68,12 +70,6 @@ test('enlaces reales: artículos y glosario existen', ()=>{
   T.TEMAS.forEach(t=>{
     if(t.article) assert(files.has(t.article), `${t.id}: no existe ${t.article}`);
     if(t.glossary) assert(glossaryOk(t.glossary), `${t.id}: no existe /glosario/${t.glossary}/`);
-  });
-});
-test('no contradice los artículos que ya tenía ARTICLE_BY_TOPIC', ()=>{
-  Object.keys(T.ARTICLE_BY_TOPIC).forEach(topic=>{
-    const t = T.TEMAS.find(x => x.topics.includes(topic));
-    assert(t && t.article === T.ARTICLE_BY_TOPIC[topic], `${topic}: ${t && t.article} vs ${T.ARTICLE_BY_TOPIC[topic]}`);
   });
 });
 test('contentForTema: sin enlaces falsos y un solo enlace secundario', ()=>{
@@ -239,6 +235,160 @@ test('sin el registro todo funciona por familias, sin errores', ()=>{
   const sel = T0.computePlanSelection('facil', 12, { focusFamily:'pasado', focusTema:'verbos-irregulares' });
   assert.strictEqual(sel.focus.temaId, null);
   assert.strictEqual(sel.focus.familyId, 'pasado');
+});
+
+
+/* ================= FASE 2: diagnóstico, Mis errores y Leo AI ================= */
+console.log('\nFase 2: una sola fuente, Leo AI solo complementa');
+function weakIrrDiag(){ setProgress(T, weakIrregularHistory()); return readyDiag(T); }
+const familyUnit = (d, fid) => d.units.find(u => u.key === 'family:' + fid);
+const linksIn = html => (html.match(/<a [^>]*href="[^"]+"/g) || []).map(a => a.match(/href="([^"]+)"/)[1]);
+
+test('prerrequisitos del registro: existen, sin ciclos ni auto-referencias', ()=>{
+  T.TEMAS.forEach(t => (t.prereq || []).forEach(id=>{
+    assert(T.TEMA_BY_ID[id], `${t.id}: prereq inexistente ${id}`);
+    assert(id !== t.id, t.id + ' se pide a sí mismo');
+  }));
+  const visit = (id, path)=>{ assert(!path.includes(id), 'ciclo de prerrequisitos: ' + path.concat(id).join(' > ')); ((T.TEMA_BY_ID[id].prereq) || []).forEach(p => visit(p, path.concat(id))); };
+  T.TEMAS.forEach(t => visit(t.id, []));
+});
+test('Mis errores usa el registro (articleForTopic) y no perdió ningún artículo anterior', ()=>{
+  const antes = { 'Preguntas con Do/Does en presente simple':'articulo-do-vs-does.html', 'Do / Does':'articulo-do-vs-does.html', 'Presente simple y "to be"':'articulo-presente-simple.html',
+    'Verbo "to be": am / is / are':'articulo-verbo-to-be.html', '"To be" en pasado: was / were':'articulo-verbo-to-be.html', 'Pasado simple con verbos regulares (-ed)':'articulo-pasado-simple.html',
+    'Present Perfect vs Past Simple':'articulo-presente-perfecto.html', 'Phrasal verbs comunes (look for / give up / find out)':'articulo-phrasal-verbs.html',
+    'Los números (1-10)':'articulo-numeros-en-ingles.html', 'Números parecidos que confunden (13 vs 30, 14 vs 40...)':'articulo-numeros-en-ingles.html', 'In / On / At':'articulo-in-on-at.html' };
+  Object.keys(antes).forEach(t => assert.strictEqual(T.articleForTopic(t), antes[t], t));
+  assert.strictEqual(T.articleForTopic('Etiqueta que no existe'), null);
+  assert.strictEqual(T.articleForTopic('Pasado simple con verbos irregulares'), 'articulo-verbos-irregulares.html');
+});
+test('diagnóstico con evidencia de tema: "Dentro de X..." + máx. 2 acciones (practicar + clase)', ()=>{
+  const d = weakIrrDiag();
+  const html = T.diagUnitRowHtml(familyUnit(d, 'pasado'));
+  assert(/Dentro de Pasado simple, lo que más necesitas reforzar es <b>Verbos irregulares en pasado<\/b>/.test(html), html);
+  const links = linksIn(html);
+  assert.deepStrictEqual(links, ['plan-estudio.html?foco=pasado&tema=verbos-irregulares&empezar=1', 'articulo-verbos-irregulares.html']);
+  links.forEach(h => assert(hrefOk(h), h));
+  assert(/Ver la clase/.test(html));
+});
+test('diagnóstico: si el tema ya es el de "Hoy te conviene" no se repite el enlace', ()=>{
+  const d = weakIrrDiag();
+  const html = T.diagUnitRowHtml(familyUnit(d, 'pasado'), 'verbos-irregulares');
+  assert(/lo que más necesitas reforzar es/.test(html)); assert.deepStrictEqual(linksIn(html), []);
+});
+test('diagnóstico con tema sin clase pero con glosario: practicar + explicación rápida', ()=>{
+  const its = itemsOfTema(T, 'its-vs-its', 'facil');
+  const conf = itemsOfFamily(T, 'confusiones', 'facil').filter(i => !its.includes(i));
+  setProgress(T, [ session(2, answers(its, 10, 10)), session(1, answers(conf, 10, 90)) ]);
+  const html = T.diagUnitRowHtml(familyUnit(readyDiag(T), 'confusiones'));
+  const links = linksIn(html);
+  assert.strictEqual(links.length, 2); assert.strictEqual(links[1], '/glosario/its-vs-it-s/'); assert(/Ver explicación rápida/.test(html));
+});
+test('diagnóstico con tema sin clase ni glosario: solo practicar', ()=>{
+  const qw = itemsOfTema(T, 'question-words', 'facil');
+  const bases = itemsOfFamily(T, 'bases', 'facil').filter(i => !qw.includes(i));
+  setProgress(T, [ session(2, answers(qw, 10, 10)), session(1, answers(bases, 10, 90)) ]);
+  assert.strictEqual(linksIn(T.diagUnitRowHtml(familyUnit(readyDiag(T), 'bases'))).length, 1);
+});
+test('diagnóstico SIN datos suficientes de un tema: solo la familia, como antes', ()=>{
+  const pas = itemsOfFamily(T, 'pasado', 'facil');
+  setProgress(T, [ session(2, pas.map(id => ({ itemId:id, isCorrect:false })).slice(0, 3)), session(1, answers(itemsOfFamily(T, 'presente-simple', 'facil'), 12, 90)) ]);
+  const d = T.computeDiagnosis();
+  const u = familyUnit(d, 'pasado');
+  if(u){ assert(!u.focusTema, 'no debería señalar tema con tan poca evidencia'); assert(!/Dentro de/.test(T.diagUnitRowHtml(u))); }
+  if(d.today) assert(!d.today.tema);
+});
+test('diagnóstico: una familia que va bien no muestra la línea del tema', ()=>{
+  setProgress(T, [ session(2, answers(itemsOfFamily(T, 'pasado', 'facil'), 12, 95)), session(1, answers(itemsOfFamily(T, 'pasado', 'facil'), 12, 95, 2)) ]);
+  const d = readyDiag(T);
+  assert(!/Dentro de/.test(T.diagUnitRowHtml(familyUnit(d, 'pasado'))));
+});
+
+// ---- Mis errores
+function mistakeStats(ids, fails){ const m = new Map(); ids.forEach(id => m.set(id, { item_id:id, status:'active', fail_count:fails || 2 })); return m; }
+test('Mis errores con topic_id válido: práctica del tema + clase, usando el registro', ()=>{
+  setProgress(T, weakIrregularHistory());
+  const pat = T.computeMistakePatterns(mistakeStats(irr.slice(0, 3)));
+  const g = pat.groups[0];
+  assert.strictEqual(g.key, 'family:pasado');
+  assert.strictEqual(g.temaContent.id, 'verbos-irregulares');
+  assert.deepStrictEqual(linksIn(T.temaLinksHtml(g.temaContent, 'Reforzar en mi Plan')), ['plan-estudio.html?foco=pasado&tema=verbos-irregulares&empezar=1', 'articulo-verbos-irregulares.html']);
+});
+test('Mis errores con tema sin recurso extra: solo práctica', ()=>{
+  const qw = itemsOfTema(T, 'question-words', 'facil');
+  setProgress(T, [ session(1, answers(qw, 6, 0)) ]);
+  const g = T.computeMistakePatterns(mistakeStats(qw.slice(0, 3))).groups[0];
+  assert.strictEqual(g.temaContent.id, 'question-words');
+  assert.strictEqual(linksIn(T.temaLinksHtml(g.temaContent)).length, 1);
+});
+
+// ---- Leo AI
+const noUrls = o => { const j = JSON.stringify(o); assert(!/https?:|\.html|\/glosario|plan-estudio/.test(j), 'el payload no debe llevar URLs: ' + j); };
+test('Leo AI (errores): manda lo ya mostrado + máx. 3 temas válidos, sin "next", sin URLs, sin repetir el tema de la tarjeta', ()=>{
+  setProgress(T, weakIrregularHistory());
+  const ctx = T.mistakePatternsAiCtx(T.computeMistakePatterns(mistakeStats(irr.slice(0, 3))));
+  const payload = T.buildLeoAiPayload(ctx);
+  assert.strictEqual(payload.mode, 'insight'); assert(!('next' in payload));
+  assert(payload.shown.includes('Verbos irregulares en pasado'));
+  assert(payload.candidates.length >= 1 && payload.candidates.length <= 3);
+  assert(!payload.candidates.some(c => c.id === 'verbos-irregulares'), 'no ofrece el tema que la página ya muestra');
+  assert(payload.candidates.some(c => c.id === 'pasado-regulares'), 'ofrece el prerrequisito');
+  payload.candidates.forEach(c => { assert(T.TEMA_BY_ID[c.id] && T.TEMA_BY_ID[c.id].label === c.label); });
+  noUrls(payload);
+  assert(payload.facts.length <= 5 && payload.examples.length <= 3);
+});
+test('Leo AI: un candidato desconocido que llegue en el contexto nunca se manda', ()=>{
+  const payload = T.buildLeoAiPayload({ kind:'insight', scope:'mistakes', facts:['a','b'], candidates:['inventado', 'pasado-regulares', '<script>'], shown:[] });
+  eq(payload.candidates.map(c => c.id), ['pasado-regulares']);
+});
+test('Leo AI (progreso): lo ya mostrado es el tema de "Hoy te conviene" y no hay "next"', ()=>{
+  const d = weakIrrDiag();
+  const payload = T.buildLeoAiPayload(T.progressAiCtx(d, T.computeWeeklyReport(d)));
+  eq(payload.shown, ['Verbos irregulares en pasado']);
+  assert(!('next' in payload)); noUrls(payload);
+  assert(JSON.stringify(payload).length < 1100, 'payload compacto: ' + JSON.stringify(payload).length);
+});
+const PAY = { candidates:[{ id:'pasado-regulares', label:'Pasado simple (verbos regulares)' }, { id:'question-words', label:'Palabras de pregunta (what, where, when, who)' }], shown:['Verbos irregulares en pasado'] };
+test('Leo AI devuelve un topic_id inventado: no se muestra ningún enlace', ()=>{
+  ['verbos-irregulares-2', 'http://x.com', '', 'none', undefined, 'in-on-at'].forEach(id => assert.strictEqual(T.leoAiFocusLink(PAY, { focus_topic:id, focus_action:'lesson' }), null, String(id)));
+});
+test('Leo AI devuelve el MISMO tema que ya muestra la tarjeta: no se duplica', ()=>{
+  assert.strictEqual(T.leoAiFocusLink(PAY, { focus_topic:'verbos-irregulares', focus_action:'practice' }), null);
+  const pay2 = { candidates:[{ id:'verbos-irregulares', label:'Verbos irregulares en pasado' }], shown:['Verbos irregulares en pasado'] };
+  assert.strictEqual(T.leoAiFocusLink(pay2, { focus_topic:'verbos-irregulares', focus_action:'practice' }), null, 'aunque estuviera en la lista, el nombre mostrado manda');
+});
+test('Leo AI sugiere un tema válido: el enlace sale del registro (clase o práctica)', ()=>{
+  let f = T.leoAiFocusLink(PAY, { focus_topic:'pasado-regulares', focus_action:'lesson' });
+  eq(f, { href:'articulo-pasado-simple.html', text:'Ver la clase: Pasado simple (verbos regulares)' }); assert(hrefOk(f.href));
+  f = T.leoAiFocusLink(PAY, { focus_topic:'pasado-regulares', focus_action:'practice' });
+  assert.strictEqual(f.text, 'Practicar Pasado simple (verbos regulares)'); assert(/^plan-estudio\.html\?foco=pasado&tema=pasado-regulares/.test(f.href));
+  f = T.leoAiFocusLink(PAY, { focus_topic:'question-words', focus_action:'lesson' });
+  assert(/^Practicar /.test(f.text) && hrefOk(f.href), 'pide lesson pero no hay clase: practicar, nunca un enlace inventado');
+});
+test('Leo AI: los mismos datos dan el mismo payload (misma clave de caché, 0 llamadas nuevas)', ()=>{
+  setProgress(T, weakIrregularHistory());
+  const mk = () => T.buildLeoAiPayload(T.mistakePatternsAiCtx(T.computeMistakePatterns(mistakeStats(irr.slice(0, 3)))));
+  assert.strictEqual(JSON.stringify(mk()), JSON.stringify(mk()));
+});
+test('sesión: si los fallos son de un tema, las acciones del final salen del registro', ()=>{
+  const results = answers(irr.slice(0, 3), 6, 0).concat(answers(reg, 4, 100));
+  const s = session(0, results);
+  setProgress(T, weakIrregularHistory([12, 11]).concat([s]));
+  const ins = T.computeSessionInsight(results, s.startedAt, 'gramatica');
+  assert.strictEqual(ins.struggleTema, 'verbos-irregulares');
+  const hrefs = ins.actions.map(a => a.href);
+  assert(hrefs.some(h => /tema=verbos-irregulares/.test(h)) && hrefs.includes('articulo-verbos-irregulares.html'), hrefs.join(' | '));
+  ins.actions.forEach(a => assert(hrefOk(a.href), a.href));
+  const ctx = T.sessionInsightAiCtx(ins);
+  if(ctx) eq(ctx.shown, ['Verbos irregulares en pasado']);
+});
+test('sin temas.js: Leo AI y Mis errores funcionan como antes (sin candidatos, sin enlaces de tema)', ()=>{
+  setProgress(T0, weakIrregularHistory());
+  const pat = T0.computeMistakePatterns(mistakeStats(irr.slice(0, 3)));
+  assert(pat.groups[0] && !pat.groups[0].temaContent);
+  const payload = T0.buildLeoAiPayload(T0.mistakePatternsAiCtx(pat));
+  eq(payload.candidates, []);
+  assert.strictEqual(T0.leoAiFocusLink(payload, { focus_topic:'pasado-regulares', focus_action:'lesson' }), null);
+  assert.strictEqual(T0.articleForTopic('In / On / At'), null);
 });
 
 console.log(`\n${passed} pruebas correctas`);

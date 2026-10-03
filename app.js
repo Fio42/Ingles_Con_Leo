@@ -2009,11 +2009,19 @@ function buildLeoAiPayload(ctx){
     // frases cortas con números y, como mucho, 4 ejercicios de ejemplo.
     // Nunca el historial ni las respuestas una por una.
     const scopes = ['session','mistakes','progress'];
-    const facts = (Array.isArray(ctx.facts) ? ctx.facts : []).map(f => leoAiText(f, 180)).filter(Boolean).slice(0, 10);
+    const facts = (Array.isArray(ctx.facts) ? ctx.facts : []).map(f => leoAiText(f, 140)).filter(Boolean).slice(0, 5);
     if(scopes.indexOf(ctx.scope) === -1 || facts.length < 2) return null;
-    return { mode:'insight', scope: ctx.scope, level, facts,
-      examples: (Array.isArray(ctx.examples) ? ctx.examples : []).map(e => leoAiText(e, 260)).filter(Boolean).slice(0, 4),
-      next: leoAiText(ctx.next, 120) };
+    // Lo ya mostrado en la página (no se repite) y los únicos temas que Leo AI
+    // puede sugerir (ids del registro con su nombre; nunca URLs).
+    const cands = [];
+    (Array.isArray(ctx.candidates) ? ctx.candidates : []).forEach(id=>{
+      const label = (typeof temaLabelOf === 'function') ? temaLabelOf(id) : '';
+      if(label && cands.length < 3 && !cands.some(c => c.id === id)) cands.push({ id: String(id), label: leoAiText(label, 60) });
+    });
+    return { mode:'insight', scope: ctx.scope, level, facts: facts.slice(0, 5),
+      examples: (Array.isArray(ctx.examples) ? ctx.examples : []).map(e => leoAiText(e, 200)).filter(Boolean).slice(0, 3),
+      shown: (Array.isArray(ctx.shown) ? ctx.shown : []).map(x => leoAiText(x, 80)).filter(Boolean).slice(0, 3),
+      candidates: cands };
   }
   if(ctx.kind === 'writing'){
     const answer = leoAiText(ctx.userAnswer, 400);
@@ -2153,6 +2161,23 @@ function leoAiAttach(host, ctx){
   }
 }
 
+/* El tema extra que sugiere Leo AI solo cuenta si es uno de los ids que la
+   página le ofreció y existe en el registro. El enlace sale SIEMPRE del
+   registro (contentForTema), nunca del modelo. Si coincide con lo que la página
+   ya muestra, o no hay recurso, no se muestra nada. */
+function leoAiFocusLink(payload, a){
+  try{
+    const id = a && a.focus_topic;
+    if(!id || id === 'none') return null;
+    const offered = (payload.candidates || []).some(c => c.id === id);
+    const c = offered ? contentForTema(id) : null;
+    if(!c) return null;
+    if((payload.shown || []).indexOf(c.label) !== -1) return null;
+    if(a.focus_action === 'lesson' && c.article) return { href: c.article, text: `${c.articleLabel}: ${c.label}` };
+    return { href: c.practiceHref, text: `Practicar ${c.label}` };
+  }catch(e){ return null; }
+}
+
 function renderLeoAiAnswer(out, payload, res){
   out.innerHTML = '';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
@@ -2174,6 +2199,8 @@ function renderLeoAiAnswer(out, payload, res){
   } else if(payload.mode === 'diagnosis' || payload.mode === 'insight'){
     add('p', 'leo-ai-text', a.explanation);
     if(a.tip) add('p', 'leo-ai-tip', a.tip);
+    const f = leoAiFocusLink(payload, a);
+    if(f){ const link = add('a', 'leo-ai-focus', f.text); link.href = f.href; }
   } else {
     add('p', 'leo-ai-text', a.explanation);
     if(a.example_en){
@@ -3484,7 +3511,7 @@ function getMistakesItemIndex(){
     GRAMMAR_BANK[level].forEach(variant=>{
       // Gramática sí trae "topic" por grupo de items (ej. "Preguntas con
       // Do/Does en presente simple"). Se guarda en el índice para poder
-      // detectar patrones y sugerir un artículo real (ver ARTICLE_BY_TOPIC).
+      // detectar patrones y sugerir un artículo real (ver articleForTopic).
       variant.forEach(topicGroup=> topicGroup.items.forEach(item=> index.set(item.id, { kind:'grammar', item, topic: topicGroup.topic || null })));
     });
     // Vocabulario/listening/writing no traen un "topic" individual hoy.
@@ -3575,19 +3602,13 @@ const MISTAKE_PRIORITY = {
 // data.js y artículos que sí existen. No se inventan URLs ni se agregan
 // temas nuevos: si un concepto no está aquí, simplemente no se sugiere
 // artículo (mejor no sugerir que sugerir mal).
-const ARTICLE_BY_TOPIC = {
-  'Preguntas con Do/Does en presente simple': 'articulo-do-vs-does.html',
-  'Do / Does': 'articulo-do-vs-does.html',
-  'Presente simple y "to be"': 'articulo-presente-simple.html',
-  'Verbo "to be": am / is / are': 'articulo-verbo-to-be.html',
-  '"To be" en pasado: was / were': 'articulo-verbo-to-be.html',
-  'Pasado simple con verbos regulares (-ed)': 'articulo-pasado-simple.html',
-  'Present Perfect vs Past Simple': 'articulo-presente-perfecto.html',
-  'Phrasal verbs comunes (look for / give up / find out)': 'articulo-phrasal-verbs.html',
-  'Los números (1-10)': 'articulo-numeros-en-ingles.html',
-  'Números parecidos que confunden (13 vs 30, 14 vs 40...)': 'articulo-numeros-en-ingles.html',
-  'In / On / At': 'articulo-in-on-at.html'
-};
+// Artículo (clase) real de una etiqueta de ejercicio: SIEMPRE desde el registro
+// de temas (temas.js). Sin registro o sin clase, null: mejor no sugerir que sugerir mal.
+function articleForTopic(topic){
+  if(typeof temaForTopic !== 'function') return null;
+  const t = temaForTopic(topic);
+  return t && t.article ? t.article : null;
+}
 const ARTICLE_TITLE_BY_HREF = {
   'articulo-do-vs-does.html': 'Do vs Does',
   'articulo-presente-simple.html': 'Presente simple',
@@ -3661,6 +3682,20 @@ function contentForTema(id){
     articleTitle: lesson ? lesson.title : (quick ? quick.title : null),
     articleLabel: lesson ? 'Ver la clase' : (quick ? 'Ver explicación rápida' : null)
   };
+}
+
+// Las dos únicas acciones que se muestran de un tema: practicar + (clase o,
+// si no hay clase, explicación rápida). Texto de la segunda: "Ver la clase" /
+// "Ver explicación rápida". Todo sale de contentForTema (registro).
+function temaLinksHtml(c, practiceText){
+  if(!c) return '';
+  return `<a href="${c.practiceHref}">${practiceText || 'Practicar'}</a>` + (c.article ? `<a href="${c.article}">${c.articleLabel}</a>` : '');
+}
+// Tema con más errores dentro de una lista de { tema, failCount }.
+function dominantTema(list){
+  const by = new Map();
+  list.forEach(m=>{ if(!m.tema) return; const e = by.get(m.tema) || { id:m.tema, count:0, repeated:0 }; e.count++; if(m.failCount >= 2) e.repeated++; by.set(m.tema, e); });
+  return Array.from(by.values()).sort((a,b)=> (b.count - a.count) || (b.repeated - a.repeated))[0] || null;
 }
 
 // { label, practiceHref, practiceLabel, article, articleTitle } o null.
@@ -3910,7 +3945,7 @@ async function runMistakesSessionCore({ container, mode, skillFilter }){
   // reanudar), solo gramática, y solo si ese error ya se repitió más
   // de una vez (no se sugiere un artículo por un fallo aislado).
   const articleHref = (!useSaved && topStat && topStat.kind === 'grammar' && topStat.fail_count >= 2 && topStat.topic)
-    ? ARTICLE_BY_TOPIC[topStat.topic] : null;
+    ? articleForTopic(topStat.topic) : null;
   const articleBanner = articleHref
     ? `<div class="mistakes-article-hint">Tu prioridad: <b>${ARTICLE_TITLE_BY_HREF[articleHref] || topStat.topic}</b>. <a href="${articleHref}">¿Quieres repasarlo primero? →</a></div>`
     : '';
@@ -5288,7 +5323,16 @@ function diagAccText(u){
     : `${u.acc}% de aciertos en ${u.n} ejercicios`;
 }
 
-function diagUnitRowHtml(u){
+function diagUnitRowHtml(u, skipTemaId){
+  // "Dentro de X, lo que más necesitas reforzar es Y": solo si hay datos
+  // suficientes del tema; el enlace se omite si ya es el de "Hoy te conviene".
+  let temaLine = '';
+  const ft = u.focusTema;
+  if(ft && u.state && (u.state === 'refuerzo' || u.state === 'practica')){
+    const c = contentForTema(ft.id);
+    if(c) temaLine = `<span class="diag-unit-tema">Dentro de ${u.label}, lo que más necesitas reforzar es <b>${c.label}</b>.</span>` +
+      (ft.id === skipTemaId ? '' : `<span class="mistake-pattern-links">${temaLinksHtml(c, 'Practicar')}</span>`);
+  }
   const detail = u.trend
     ? `Antes ${u.prevAcc}% · ahora ${u.recentAcc}%`
     : diagAccText(u);
@@ -5298,6 +5342,7 @@ function diagUnitRowHtml(u){
       <div class="diag-unit-main">
         <span class="diag-unit-name">${u.label}</span>
         <span class="diag-unit-detail">${detail}${arrow}</span>
+        ${temaLine}
       </div>
       <span class="diag-chip state-${u.state}">${DIAG_STATE_LABELS[u.state]}</span>
     </li>`;
@@ -5443,8 +5488,8 @@ function renderDiagnosisSection(els){
       const top = familyRows.slice(0, DIAG_TOPICS_VISIBLE), rest = familyRows.slice(DIAG_TOPICS_VISIBLE);
       els.topics.innerHTML = familyRows.length ? `
         <div class="diag-card">
-          <ul class="diag-units">${top.map(diagUnitRowHtml).join('')}</ul>
-          ${rest.length ? diagMoreHtml(`Ver todos los temas (${familyRows.length})`, `<ul class="diag-units">${rest.map(diagUnitRowHtml).join('')}</ul>`) : ''}
+          <ul class="diag-units">${top.map(u => diagUnitRowHtml(u, diag.today && diag.today.tema)).join('')}</ul>
+          ${rest.length ? diagMoreHtml(`Ver todos los temas (${familyRows.length})`, `<ul class="diag-units">${rest.map(u => diagUnitRowHtml(u, diag.today && diag.today.tema)).join('')}</ul>`) : ''}
           <p class="diag-muted diag-foot">Solo mostramos temas con al menos ${DIAG.MIN_UNIT} ejercicios respondidos, para no sacar conclusiones con muy pocos datos.</p>
         </div>` : '';
     }
@@ -5594,6 +5639,17 @@ function computeSessionInsight(results, startedAt, sessionSkill){
     .filter(u => !(hasFamilyStruggle && u.key === 'skill:gramatica'))
     .sort((a,b)=> (b.wrong - a.wrong) || (b.repeatedWrong - a.repeatedWrong) || famFirst(a,b))[0] || null;
   if(ins.struggle && ins.improved && ins.struggle.key === ins.improved.key) ins.improved = null;
+  // Si lo que más costó es una familia, ¿hay un tema concreto detrás de los fallos?
+  ins.struggleTema = null;
+  if(ins.struggle && ins.struggle.key.indexOf('family:') === 0 && typeof TEMAS !== 'undefined'){
+    const fid = ins.struggle.key.slice(7);
+    const wrongHere = now.filter(a => !a.ok && a.family === fid).map(a=>{
+      const f = index.get(a.itemId);
+      return { tema: f ? diagTemaIdForTopic(f.topic) : null, failCount: everFailed.has(a.itemId) ? 2 : 1 };
+    });
+    const top = dominantTema(wrongHere);
+    if(top && (top.count >= 2 || top.count === wrongHere.length) && contentForTema(top.id)) ins.struggleTema = top.id;
+  }
   const dropped = ins.struggle && ins.struggle.prevN >= SESSION_INSIGHT.UNIT_MIN_PREV && ins.struggle.n >= SESSION_INSIGHT.UNIT_MIN_NOW
     && ins.struggle.prevAcc - ins.struggle.acc >= SESSION_INSIGHT.DELTA;
 
@@ -5643,10 +5699,12 @@ function computeSessionInsight(results, startedAt, sessionSkill){
   };
   if(ins.struggle){
     const [type, id] = ins.struggle.key.split(':');
-    const c = contentForUnit(type, id);
+    const tc = ins.struggleTema ? contentForTema(ins.struggleTema) : null;
+    const c = tc || contentForUnit(type, id);
     if(c){
       push(c.practiceLabel, c.practiceHref, true);
-      if(c.article) push(`Leer la explicación de ${c.articleTitle}`, c.article);
+      if(tc){ if(tc.article) push(`${tc.articleLabel}: ${tc.label}`, tc.article); }
+      else if(c.article) push(`Leer la explicación de ${c.articleTitle}`, c.article);
     }
   }
   if(ins.correct < ins.n && (ins.n - ins.correct >= 2 || ins.repeated)) push('Hacer un repaso rápido', 'errores.html?modo=rapido', !ins.actions.length);
@@ -5685,6 +5743,27 @@ function leoAiExamples(ids, max){
   return out;
 }
 
+/* Temas que Leo AI PUEDE sugerir además de lo que la página ya muestra:
+   ids del registro (máx. 3): primero los prerrequisitos de los temas en foco
+   y luego otros temas flojos del diagnóstico. Nunca incluye los ya mostrados. */
+function leoAiTemaPool(mainIds, shownIds){
+  if(typeof TEMAS === 'undefined') return [];
+  const skip = new Set((shownIds || []).concat(mainIds || []));
+  const out = [];
+  const add = id => { if(id && !skip.has(id) && out.indexOf(id) === -1 && out.length < 3 && contentForTema(id)) out.push(id); };
+  (mainIds || []).forEach(id => ((TEMA_BY_ID[id] && TEMA_BY_ID[id].prereq) || []).forEach(add));
+  try{
+    const diag = computeDiagnosis();
+    if(diag && diag.ready){
+      const all = [];
+      diag.units.forEach(u => (u.temaStats || []).forEach(s => { if(!s.dominated && (s.current < DIAG.WEAK_BELOW || s.activeMistakes >= 1)) all.push(s); }));
+      all.sort((a,b)=> b.score - a.score).forEach(s => add(s.id));
+    }
+  }catch(e){}
+  return out;
+}
+const temaLabelOf = id => (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[id]) ? TEMA_BY_ID[id].label : '';
+
 function sessionInsightAiCtx(ins){
   if(ins.n < SESSION_INSIGHT.AI_MIN_GRADED || (ins.correct === ins.n && !ins.improved)) return null;
   const facts = [`Ejercicios: ${ins.n}, correctos: ${ins.correct} (${ins.acc}%)`].concat(ins.lines.map(l => l.text));
@@ -5699,8 +5778,10 @@ function sessionInsightAiCtx(ins){
       const fam = diagFamilyForTopic(f.topic); return !!fam && fam.id === id; };
     ids = ids.filter(inUnit).concat(ids.filter(x => !inUnit(x)));
   }
+  const main = ins.struggleTema ? [ins.struggleTema] : [];
   return { kind:'insight', scope:'session', facts, examples: leoAiExamples(ids, 3),
-    next: ins.actions[0] ? ins.actions[0].title : '', label:'Analizar mi sesión con Leo AI' };
+    shown: ins.struggle ? [ins.struggleTema ? temaLabelOf(ins.struggleTema) : ins.struggle.label] : [],
+    candidates: leoAiTemaPool(main, main), label:'Analizar mi sesión con Leo AI' };
 }
 
 function sessionInsightHtml(ins){
@@ -5756,6 +5837,9 @@ function computeMistakePatterns(statsMap){
     g.items.sort((a,b)=> b.failCount - a.failCount);
     const [type, id] = g.key.split(':');
     g.content = contentForUnit(type, id);
+    // Tema que más errores concentra dentro de la familia (registro de temas).
+    const dt = type === 'family' ? dominantTema(g.items) : null;
+    g.temaContent = dt ? contentForTema(dt.id) : null;
     // En "Mis errores", repasar una habilidad sin familia = filtro por habilidad.
     const kind = Object.keys(DIAG_KIND_TO_SKILL).find(k => DIAG_KIND_TO_SKILL[k] === id);
     g.reviewHref = type === 'skill' && ['grammar','vocab','listening','writing'].indexOf(kind) !== -1 ? 'errores.html?skill=' + kind : null;
@@ -5776,9 +5860,10 @@ function mistakePatternsAiCtx(pat){
   // Ejemplos: los más fallados de los grupos principales, alternando grupos.
   const ids = [];
   for(let i = 0; i < 3 && ids.length < 6; i++) pat.groups.forEach(g => { if(g.items[i]) ids.push(g.items[i].itemId); });
-  const top = pat.groups[0];
-  return { kind:'insight', scope:'mistakes', facts, examples: leoAiExamples(ids, 4),
-    next: top && top.content ? top.content.practiceLabel : 'Hacer un repaso rápido', label:'Analizar mis errores con Leo AI' };
+  const shownIds = pat.groups.map(g => g.temaContent ? g.temaContent.id : null).filter(Boolean);
+  return { kind:'insight', scope:'mistakes', facts, examples: leoAiExamples(ids, 3),
+    shown: pat.groups.map(g => g.temaContent ? g.temaContent.label : g.label),
+    candidates: leoAiTemaPool(shownIds.slice(0, 1), shownIds), label:'Analizar mis errores con Leo AI' };
 }
 
 /* Tarjeta "Tus patrones de error" en errores.html (arriba del repaso). */
@@ -5804,9 +5889,12 @@ async function renderMistakePatterns(container){
               <div class="diag-unit-main">
                 <span class="diag-unit-name">${g.label}</span>
                 <span class="diag-unit-detail">${g.count} ${g.count === 1 ? 'error' : 'errores'}${g.repeated ? ` · ${g.repeated} ${g.repeated === 1 ? 'repetido' : 'repetidos'}` : ''}</span>
+                ${g.temaContent ? `<span class="diag-unit-tema">Sobre todo en <b>${g.temaContent.label}</b>.</span>` : ''}
                 <span class="mistake-pattern-links">
-                  ${g.content ? `<a href="${g.key.indexOf('family:') === 0 ? g.content.practiceHref : (g.reviewHref || g.content.practiceHref)}">${g.key.indexOf('family:') === 0 ? 'Reforzar en mi Plan' : 'Repasar estos errores'}</a>` : ''}
-                  ${g.content && g.content.article ? `<a href="${g.content.article}">Leer la explicación</a>` : ''}
+                  ${g.temaContent
+                    ? temaLinksHtml(g.temaContent, 'Reforzar en mi Plan')
+                    : `${g.content ? `<a href="${g.key.indexOf('family:') === 0 ? g.content.practiceHref : (g.reviewHref || g.content.practiceHref)}">${g.key.indexOf('family:') === 0 ? 'Reforzar en mi Plan' : 'Repasar estos errores'}</a>` : ''}
+                  ${g.content && g.content.article ? `<a href="${g.content.article}">Leer la explicación</a>` : ''}`}
                 </span>
               </div>
             </li>`).join('')}
@@ -5831,8 +5919,11 @@ function progressAiCtx(diag, week){
   if(diag.mastered.length) facts.push(`Ya domina: ${diag.mastered.slice(0, 3).map(u => u.label).join(', ')}`);
   if(diag.recoveredWeek) facts.push(`Errores recuperados esta semana: ${diag.recoveredWeek}`);
   facts.push(`Siguiente objetivo: ${week.goal}`);
-  return { kind:'insight', scope:'progress', facts: facts.slice(0, 10), examples: [],
-    next: diag.today ? diag.today.title : '', label:'Explícame mi progreso' };
+  const mainTema = diag.today && diag.today.tema ? diag.today.tema : (diag.weak && diag.weak.focusTema ? diag.weak.focusTema.id : null);
+  const main = mainTema ? [mainTema] : [];
+  return { kind:'insight', scope:'progress', facts: facts.slice(0, 5), examples: [],
+    shown: [mainTema ? temaLabelOf(mainTema) : (diag.today ? diag.today.title : '')].filter(Boolean),
+    candidates: leoAiTemaPool(main, main), label:'Explícame mi progreso' };
 }
 
 /* Panel de miembros: la tarjeta principal "Recomendado" pasa a decir qué
