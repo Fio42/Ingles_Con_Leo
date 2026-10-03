@@ -39,6 +39,24 @@
     });
   });
 
+  /* Miembros: "Practicar este tema". La pista la deja backend.js al verificar la cuenta
+     (solo para mostrar; las paginas de miembros siempre verifican de verdad). */
+  try{
+    var hint = JSON.parse(localStorage.getItem('leo_member_hint') || 'null');
+    if(hint && hint.m === 1 && Date.now() - hint.t < 7 * 86400000){
+      var box = document.querySelector('.gl-tema');
+      if(box){
+        box.hidden = false;
+        var free = document.querySelector('.article-cta');   // "practicar gratis" no aplica a miembros
+        if(free) free.style.display = 'none';
+        var qs = new URLSearchParams(location.search);
+        if(qs.get('via') === 'rec' && qs.get('tema') === box.getAttribute('data-tema')){
+          var ctx = box.querySelector('.gl-tema-context'); if(ctx) ctx.hidden = false;
+        }
+      }
+    }
+  }catch(e){}
+
   /* Buscador + filtros + A-Z (solo en el indice) */
   var list = document.getElementById('gl-list');
   if(!list) return;

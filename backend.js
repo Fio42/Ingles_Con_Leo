@@ -158,6 +158,7 @@ const LeoBackend = (function(){
   }
 
   async function signOut(){
+    try{ localStorage.removeItem('leo_member_hint'); }catch(e){}
     const sb = getClient();
     if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
   }
@@ -199,14 +200,24 @@ const LeoBackend = (function(){
     }
   }
 
+  /* Pista local (no da acceso a nada: el servidor y las páginas de miembros
+     siempre verifican). Sirve para que páginas ligeras, como el glosario,
+     muestren "Practicar este tema" solo a quien ya es miembro, sin cargar todo. */
+  function setMemberHint(isMember){
+    try{
+      if(isMember) localStorage.setItem('leo_member_hint', JSON.stringify({ m:1, t:Date.now() }));
+      else localStorage.removeItem('leo_member_hint');
+    }catch(e){}
+  }
   async function getMemberProfile(){
     const sb = getClient();
     if(!sb) return null;
     const session = await getSession();
-    if(!session) return null;
+    if(!session){ setMemberHint(false); return null; }
     try{
       const { data, error } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
       if(error) return null;
+      setMemberHint(!!(data && data.is_member));
       touchLastSeen(sb, session.user.id);
       // Si la cuenta todavía no tiene nombre en Supabase pero en este
       // navegador sí lo escribió (onboarding o "cambiar nombre"), se

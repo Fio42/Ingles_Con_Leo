@@ -68,3 +68,9 @@ a.gl-term:hover{text-decoration:underline;}
 .gl-back{margin-top:24px;}
 .mnav-item{text-decoration:none;}
 @media(max-width:480px){.gl-line{max-width:100%;}}
+/* Miembros: practicar el tema desde el glosario */
+.gl-tema{margin:26px 0 0;background:var(--blue-tint);border-radius:var(--radius-lg);padding:18px 20px;}
+.gl-tema[hidden],.gl-tema-context[hidden]{display:none;}
+.gl-tema-context{margin:0 0 10px;color:var(--ink);font-size:0.98rem;}
+.gl-tema-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;}
+.gl-tema .btn{width:fit-content;max-width:100%;}

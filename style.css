@@ -2238,3 +2238,13 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-ai-focus{display:inline-block;margin-top:6px;font-size:0.88rem;font-weight:700;color:var(--blue);text-decoration:none;}
 .leo-ai-focus:hover{text-decoration:underline;}
 .leo-ai-focus::after{content:" →";}
+
+/* Clases: bloque para miembros "Practicar este tema" (temas.js) */
+.tema-cta{margin-top:30px;background:var(--blue-tint);border-radius:var(--radius-lg);padding:20px 22px;display:flex;flex-direction:column;gap:8px;}
+.tema-cta-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.2rem;color:var(--ink);}
+.article-body .tema-cta p{margin:0;color:var(--ink-soft);font-size:0.98rem;}
+.tema-cta-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:4px;}
+.tema-cta .btn{width:fit-content;max-width:100%;}
+.tema-cta-back{color:var(--blue);font-weight:700;font-size:0.92rem;text-decoration:none;}
+.tema-cta-back:hover{text-decoration:underline;}
+.article-body .tema-context{margin:-10px 0 18px;padding:10px 14px;background:var(--paper-dim);border-radius:var(--radius-md);font-size:0.95rem;color:var(--ink-soft);}

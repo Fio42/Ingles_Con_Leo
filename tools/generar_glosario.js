@@ -27,6 +27,17 @@ const VOICE_A = 'en-US-AvaMultilingualNeural';
 const VOICE_B = 'en-US-AndrewMultilingualNeural';
 
 const terms = require('./glosario/terminos.js');
+
+/* Registro de temas (temas.js, raíz del sitio): una entrada del glosario que es la
+   explicación rápida de un tema ofrece "Practicar este tema" a los miembros.
+   Nada se escribe a mano: la relación sale del campo glossary de cada tema. */
+const TEMAS = (function(){
+  const ctx = {}; vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'temas.js'), 'utf8') + ';this.__T = TEMAS;', ctx);
+  return ctx.__T;
+})();
+const temaByGlossary = {};
+TEMAS.forEach(t => { if (t.glossary && t.family && !temaByGlossary[t.glossary]) temaByGlossary[t.glossary] = t; });
 const extras = require('./glosario/extras.js');
 
 /* ---------- utilidades ---------- */
@@ -256,6 +267,11 @@ function termPage(t) {
   }
   if (arts.length) {
     body.push(`<div class="gl-fullclass"><div class="gl-fullclass-label">Clase completa</div>${arts.map(a => `<p><a class="inline-link" href="${a.href}">${esc(a.title)}</a></p>`).join('')}<a class="gl-more" href="${arts[0].href}">Ver la clase completa →</a></div>`);
+  }
+  const tema = temaByGlossary[t.slug];
+  if (tema) {
+    const lessonDup = !tema.article || arts.some(a => a.href === '/' + tema.article);
+    body.push(`<div class="gl-tema" data-tema="${tema.id}" hidden><p class="gl-tema-context" hidden>Llegaste aquí para reforzar <b>${esc(tema.label)}</b>.</p><div class="gl-tema-actions"><a class="btn btn-primary" href="/plan-estudio.html?foco=${tema.family}&amp;tema=${tema.id}&amp;empezar=1">Practicar este tema →</a>${lessonDup ? '' : `<a class="gl-more" href="/${tema.article}?tema=${tema.id}&amp;via=rec">Ver clase completa →</a>`}</div></div>`);
   }
   body.push(`<div class="article-cta"><h3>¿Quieres practicarlo?</h3><p style="color:var(--ink-soft);">Ejercicios cortos y gratis, sin registrarte.</p><a href="${practice}" class="btn btn-primary" style="width:fit-content;">Practicar gratis →</a></div>`);
   if (rel.length) {

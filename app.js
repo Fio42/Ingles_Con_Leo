@@ -3205,7 +3205,7 @@ function buildPlanPool(level, selection){
     .map(e => Object.assign({ reviewOrigin:true }, e));
   const alreadyIn = new Set(entries.map(e => e.item.id));
   const focusEntries = selection.focus ? pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId) : [];
-  focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; entries.push(e); alreadyIn.add(e.item.id); });
+  focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null; entries.push(e); alreadyIn.add(e.item.id); });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
     if(sk === 'gramatica') count -= focusEntries.length;
@@ -3475,7 +3475,7 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     if(focusEntry) topics.unshift(focusEntry.focusLabel);
     recordSession({ skill:'plan', level, topics, results, startedAt });
     container.innerHTML = renderPlanSessionSummary({ correct, graded: graded.length, total, topics });
-    appendSessionInsight(container, results, startedAt, 'plan');
+    appendSessionInsight(container, results, startedAt, 'plan', { focusTema: (activePool.find(e => e.focus && e.focusTema) || {}).focusTema || null });
     const anotherBtn = container.querySelector('#planAnotherBtn');
     if(anotherBtn){
       anotherBtn.addEventListener('click', ()=>{
@@ -3679,8 +3679,10 @@ function contentForTema(id){
     : temaHasItemsAt(id, level) ? planFocusHref(t.family, true, id)
     : familyHasItemsAt(t.family, level) ? planFocusHref(t.family, true)
     : 'gramatica.html';
-  const lesson = t.article ? { href: t.article, title: ARTICLE_TITLE_BY_HREF[t.article] || t.label } : null;
-  const quick = (!lesson && t.glossary) ? { href: '/glosario/' + t.glossary + '/', title: t.label } : null;
+  // ?tema=&via=rec: la clase o el glosario saben que el sistema lo recomendó (y para qué tema).
+  const via = '?tema=' + encodeURIComponent(t.id) + '&via=rec';
+  const lesson = t.article ? { href: t.article + via, title: ARTICLE_TITLE_BY_HREF[t.article] || t.label } : null;
+  const quick = (!lesson && t.glossary) ? { href: '/glosario/' + t.glossary + '/' + via, title: t.label } : null;
   return {
     id: t.id, label: t.label, family: t.family,
     practiceHref, practiceLabel: `Practicar ${t.label}`,
@@ -5583,7 +5585,28 @@ function getTodayPick(diag){
    recordSession (el historial ya la incluye; se separa por startedAt).
    Devuelve null si no hay suficientes respuestas calificadas de los
    bancos de data.js (Speaking, exámenes, sesiones de 1-2 ejercicios). */
-function computeSessionInsight(results, startedAt, sessionSkill){
+/* Cómo le fue en el tema que acaba de practicar y si todavía necesita refuerzo.
+   Solo datos propios: respuestas de esta sesión + lo que ya calcula el
+   diagnóstico por tema (diagTemaStats). Sin IA ni tablas nuevas. */
+function temaSessionProgress(temaId, now, diag){
+  if(typeof TEMA_BY_ID === 'undefined') return null;
+  const index = getDiagItemIndex();
+  const c = contentForTema(temaId);
+  if(!index || !c) return null;
+  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && diagTemaIdForTopic(f.topic) === temaId; });
+  if(mine.length < 2) return null;            // muy pocos para opinar del tema
+  const ok = mine.filter(a=>a.ok).length;
+  let stat = null;
+  if(diag && diag.ready){
+    const u = diag.units.find(x => x.key === 'family:' + c.family);
+    stat = (u && (u.temaStats || []).find(s => s.id === temaId)) || null;
+  }
+  // Con suficientes datos manda el mismo criterio del diagnóstico; si no, esta sesión.
+  const needsMore = stat ? (!stat.dominated && (stat.current < DIAG.WEAK_BELOW || stat.activeMistakes >= 1)) : (ok / mine.length < 0.8);
+  return { id: temaId, label: c.label, n: mine.length, ok, needsMore, content: c };
+}
+
+function computeSessionInsight(results, startedAt, sessionSkill, opts){
   const index = getDiagItemIndex();
   if(!index || !Array.isArray(results)) return null;
   const now = [];
@@ -5696,6 +5719,14 @@ function computeSessionInsight(results, startedAt, sessionSkill){
   if(!ins.lines.length){
     ins.lines.push({ tone:'good', text:`${correct} de ${now.length} correctas (${ins.acc}%).` });
   }
+  // Práctica enfocada en un tema (Plan con ?tema=): cómo le fue en ESE tema.
+  ins.tema = (opts && opts.focusTema) ? temaSessionProgress(opts.focusTema, now, diag) : null;
+  if(ins.tema){
+    const tp = ins.tema;
+    ins.lines.unshift({ tone: tp.needsMore ? 'warn' : 'good', text: tp.needsMore
+      ? `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Todavía conviene reforzarlo.`
+      : `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Ya vas bien en este tema.` });
+  }
   ins.lines = ins.lines.slice(0, 3);
 
   // Lo mejor para hacer ahora (máximo 3, sin repetir destino).
@@ -5704,7 +5735,11 @@ function computeSessionInsight(results, startedAt, sessionSkill){
     if(ins.actions.length >= 3 || !href || seen.has(href)) return;
     seen.add(href); ins.actions.push({ title, href, main: !!main });
   };
-  if(ins.struggle){
+  if(ins.tema && ins.tema.needsMore){
+    // Sigue débil: continuar con el tema y, si existe, su clase o explicación rápida.
+    push(`Seguir practicando ${ins.tema.label}`, ins.tema.content.practiceHref, true);
+    if(ins.tema.content.article) push(`${ins.tema.content.articleLabel}: ${ins.tema.label}`, ins.tema.content.article);
+  } else if(ins.struggle){
     const [type, id] = ins.struggle.key.split(':');
     const tc = ins.struggleTema ? contentForTema(ins.struggleTema) : null;
     const c = tc || contentForUnit(type, id);
@@ -5717,7 +5752,8 @@ function computeSessionInsight(results, startedAt, sessionSkill){
   if(ins.correct < ins.n && (ins.n - ins.correct >= 2 || ins.repeated)) push('Hacer un repaso rápido', 'errores.html?modo=rapido', !ins.actions.length);
   const today = getTodayPick(diag);
   const todayHref = todayStartHref(today);
-  if(!(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
+  const sameTema = ins.tema && today && today.tema === ins.tema.id;      // ya está arriba como "seguir practicando"
+  if(!sameTema && !(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
     push(today.title, todayHref, !ins.actions.length);
   }
   return ins;
@@ -5771,6 +5807,65 @@ function leoAiTemaPool(mainIds, shownIds){
 }
 const temaLabelOf = id => (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[id]) ? TEMA_BY_ID[id].label : '';
 
+/* ---------- Clases (artículos): "Practicar este tema →" para miembros ----------
+   El tema sale de temas.js (el que tiene este archivo como clase). Si el sistema
+   mandó al alumno aquí (?tema=&via=rec) se le recuerda por qué y se le ofrece
+   volver a su Plan. Para quien no es miembro la clase queda exactamente igual. */
+function temaPracticeHref(t){ return planFocusHref(t.family, true, t.id); }
+function pickArticleTema(candidates){
+  if(candidates.length === 1) return candidates[0];
+  try{
+    if(typeof computeDiagnosis === 'function' && typeof GRAMMAR_BANK !== 'undefined'){
+      const d = computeDiagnosis();
+      if(d && d.ready){
+        const all = [];
+        d.units.forEach(u => (u.temaStats || []).forEach(s => { if(candidates.some(t => t.id === s.id) && !s.dominated) all.push(s); }));
+        all.sort((a,b)=> b.score - a.score);
+        if(all[0]) return candidates.find(t => t.id === all[0].id);
+      }
+    }
+  }catch(e){}
+  return candidates[0];
+}
+function renderArticleTema(file, params, body){
+  const here = TEMAS.filter(t => t.article === file && t.family);
+  if(!here.length || !body || body.querySelector('.tema-cta')) return false;
+  const asked = params.get('tema');
+  const fromRec = here.find(t => t.id === asked) || null;
+  const tema = fromRec || pickArticleTema(here);
+  const viaRec = !!fromRec && params.get('via') === 'rec';
+  const block = document.createElement('div');
+  block.className = 'tema-cta';
+  block.innerHTML = `<div class="tema-cta-title">¿Listo para practicarlo?</div>
+    <p>Ejercicios de <b>${tema.label}</b> en tu Plan de estudio.</p>
+    <div class="tema-cta-actions"><a class="btn btn-primary" href="${temaPracticeHref(tema)}">Practicar este tema →</a>${viaRec ? '<a class="tema-cta-back" href="plan-estudio.html">Volver a mi Plan</a>' : ''}</div>`;
+  const free = body.querySelector('.article-cta');   // la invitación a "practicar gratis" no aplica a miembros
+  if(free){ free.parentNode.insertBefore(block, free); free.hidden = true; free.style.display = 'none'; }
+  else body.appendChild(block);
+  if(viaRec){
+    const ctx = document.createElement('p');
+    ctx.className = 'tema-context';
+    ctx.innerHTML = `Llegaste aquí para reforzar <b>${tema.label}</b>.`;
+    const meta = body.querySelector('.article-meta');
+    if(meta) meta.parentNode.insertBefore(ctx, meta.nextSibling); else body.insertBefore(ctx, body.firstChild);
+  }
+  return true;
+}
+function initArticleTema(){
+  try{
+    if(typeof TEMAS === 'undefined' || typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+    const file = location.pathname.split('/').pop() || '';
+    if(!TEMAS.some(t => t.article === file && t.family)) return;
+    const body = document.querySelector('.article-body');
+    if(!body) return;
+    LeoBackend.getMemberProfile().then(profile=>{
+      if(profile && profile.is_member) renderArticleTema(file, new URLSearchParams(location.search), body);
+    }).catch(()=>{});
+  }catch(e){}
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initArticleTema);
+else initArticleTema();
+
 function sessionInsightAiCtx(ins){
   if(ins.n < SESSION_INSIGHT.AI_MIN_GRADED || (ins.correct === ins.n && !ins.improved)) return null;
   const facts = [`Ejercicios: ${ins.n}, correctos: ${ins.correct} (${ins.acc}%)`].concat(ins.lines.map(l => l.text));
@@ -5785,9 +5880,10 @@ function sessionInsightAiCtx(ins){
       const fam = diagFamilyForTopic(f.topic); return !!fam && fam.id === id; };
     ids = ids.filter(inUnit).concat(ids.filter(x => !inUnit(x)));
   }
-  const main = ins.struggleTema ? [ins.struggleTema] : [];
+  const mainTema = ins.tema ? ins.tema.id : ins.struggleTema;
+  const main = mainTema ? [mainTema] : [];
   return { kind:'insight', scope:'session', facts, examples: leoAiExamples(ids, 3),
-    shown: ins.struggle ? [ins.struggleTema ? temaLabelOf(ins.struggleTema) : ins.struggle.label] : [],
+    shown: ins.tema ? [ins.tema.label] : (ins.struggle ? [ins.struggleTema ? temaLabelOf(ins.struggleTema) : ins.struggle.label] : []),
     candidates: leoAiTemaPool(main, main), label:'Analizar mi sesión con Leo AI' };
 }
 
@@ -5808,11 +5904,11 @@ function sessionInsightHtml(ins){
 /* Pone el análisis dentro de la pantalla final de la sesión (justo antes
    de los botones). Nunca rompe la pantalla final: si algo falla, no
    aparece nada y todo sigue igual que antes. */
-function appendSessionInsight(container, results, startedAt, sessionSkill){
+function appendSessionInsight(container, results, startedAt, sessionSkill, opts){
   try{
     const summary = container && container.querySelector('.session-summary');
     if(!summary) return;
-    const ins = computeSessionInsight(results, startedAt, sessionSkill);
+    const ins = computeSessionInsight(results, startedAt, sessionSkill, opts);
     if(!ins) return;
     const holder = document.createElement('div');
     holder.innerHTML = sessionInsightHtml(ins);
