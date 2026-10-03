@@ -1,0 +1,140 @@
+/* ============================================================
+   REGISTRO CENTRAL DE TEMAS DE GRAMATICA (Fase 1)
+   Una sola fuente para responder "que recurso corresponde a este tema".
+
+   - topics:   las etiquetas EXACTAS de GRAMMAR_BANK (data.js). La tabla
+               etiqueta -> tema es explicita (sin regex). Todo topic nuevo en
+               data.js debe agregarse aqui: tools/tests/temas.test.js lo exige.
+   - family:   id de DIAG_GRAMMAR_FAMILIES (app.js), el nivel superior del
+               diagnostico. null = el tema todavia no pertenece a ninguna
+               familia (no entra al diagnostico, igual que hoy).
+   - article:  clase completa (archivo .html en la raiz) o null.
+   - glossary: slug de /glosario/<slug>/ (explicacion rapida) o null.
+   Si un tema no tiene article, no se muestra "Ver clase". Si no tiene
+   tampoco glossary, no se muestra ningun enlace. Nunca se aproxima.
+   ============================================================ */
+const TEMAS = [
+  /* ---- bases ---- */
+  { id:'numeros-basicos', label:'Los números en inglés', family:'bases', article:'articulo-numeros-en-ingles.html', glossary:null,
+    topics:[`Los números (1-10)`, `Números parecidos que confunden (13 vs 30, 14 vs 40...)`] },
+  { id:'basicos-ingles', label:'Plural, colores, días y respuestas básicas', family:'bases', article:null, glossary:null,
+    topics:[`Los colores`, `Los días de la semana`, `Plural: agregar "-s"`, `Yes / No básico`, `Preguntas simples: "What is this?"`] },
+  { id:'question-words', label:'Palabras de pregunta (what, where, when, who)', family:'bases', article:null, glossary:null,
+    topics:[`Question words (What / Where / When / Who)`] },
+  /* ---- comparativos ---- */
+  { id:'comparativos', label:'Comparativos', family:'comparativos', article:null, glossary:null,
+    topics:[`Comparativos (-er / more ... than)`, `Comparativos de igualdad (as...as)`] },
+  /* ---- condicionales ---- */
+  { id:'condicionales', label:'Condicionales', family:'condicionales', article:null, glossary:null,
+    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`, `Condicionales, comparativos y presente perfecto`] },
+  { id:'wish', label:'Wish e if only', family:'condicionales', article:null, glossary:null,
+    topics:[`Wish / If only`, `Wish, estilo indirecto y pasado perfecto`] },
+  /* ---- conectores ---- */
+  { id:'conectores-contraste', label:'Although, despite y even though', family:'conectores', article:null, glossary:'although',
+    topics:[`Despite / Although / Instead of`, `Despite vs In spite of vs Even though`] },
+  { id:'secuenciadores', label:'Secuenciadores (first, then, finally)', family:'conectores', article:null, glossary:null,
+    topics:[`Secuenciadores (first, then, after that, finally)`] },
+  { id:'conectores-avanzados', label:'Conectores avanzados', family:'conectores', article:null, glossary:'however',
+    topics:[`Conectores avanzados`] },
+  /* ---- palabras que se confunden ---- */
+  { id:'its-vs-its', label:`Its vs it's`, family:'confusiones', article:null, glossary:'its-vs-it-s', topics:[`Its vs It's`] },
+  { id:'then-vs-than', label:'Then vs than', family:'confusiones', article:null, glossary:'then-vs-than', topics:[`Then vs Than`] },
+  { id:'your-vs-youre', label:`Your vs you're`, family:'confusiones', article:null, glossary:'your-vs-youre', topics:[`"Your" vs "You're"`] },
+  { id:'there-their-theyre', label:`There, their y they're`, family:'confusiones', article:null, glossary:'their-there-theyre', topics:[`There / Their / They're`] },
+  { id:'to-too-two', label:'To, too y two', family:'confusiones', article:null, glossary:null, topics:[`"To" vs "Too" vs "Two"`] },
+  { id:'lose-vs-loose', label:'Lose vs loose', family:'confusiones', article:null, glossary:'lose-vs-loose', topics:[`"Lose" vs "Loose"`] },
+  { id:'good-vs-well', label:'Good vs well', family:'confusiones', article:null, glossary:'good-vs-well', topics:[`Good vs Well`] },
+  { id:'say-vs-tell', label:'Say vs tell', family:'confusiones', article:null, glossary:'say-vs-tell', topics:[`"Say" vs "Tell"`] },
+  { id:'borrow-vs-lend', label:'Borrow vs lend', family:'confusiones', article:null, glossary:'borrow-vs-lend', topics:[`Borrow vs Lend (prestar)`] },
+  { id:'bring-vs-take', label:'Bring vs take', family:'confusiones', article:null, glossary:'bring-vs-take', topics:[`Bring vs Take`] },
+  { id:'affect-vs-effect', label:'Affect vs effect', family:'confusiones', article:null, glossary:'affect-vs-effect', topics:[`Affect vs Effect`] },
+  { id:'as-vs-like', label:'As vs like', family:'confusiones', article:null, glossary:'as-vs-like', topics:[`As vs Like`] },
+  { id:'actually-currently', label:'Actually y currently', family:'confusiones', article:null, glossary:'actually', topics:[`Actually / Currently`] },
+  { id:'palabras-parecidas', label:'Palabras que se parecen (advice, lay, further, quiet)', family:'confusiones', article:null, glossary:null,
+    topics:[`"Advice" vs "Advise"`, `"Lay" vs "Lie"`, `Farther vs Further`, `Quiet vs Quite vs Quit`] },
+  { id:'matices-formales', label:'Matices: formal, natural y -ed vs -ing', family:'confusiones', article:null, glossary:null,
+    topics:[`Formal vs natural / matices`, `Participios como adjetivos (-ed vs -ing)`] },
+  /* ---- presente continuo ---- */
+  { id:'presente-continuo', label:'Presente continuo', family:'continuo', article:null, glossary:null, topics:[`Presente continuo (I am ___ing)`] },
+  /* ---- cuantificadores ---- */
+  { id:'much-many', label:'Much y many', family:'cuantificadores', article:null, glossary:'much-vs-many',
+    topics:[`Much / Many`, `Cuantificadores (a lot of / much / many / few / little)`] },
+  { id:'fewer-vs-less', label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`] },
+  { id:'little-few', label:'A little, little, a few y few', family:'cuantificadores', article:null, glossary:null, topics:[`A little / Little / A few / Few`] },
+  { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:null, topics:[`Some / Any`] },
+  { id:'contables-incontables', label:'Sustantivos contables e incontables', family:'cuantificadores', article:null, glossary:null, topics:[`Sustantivos contables e incontables`] },
+  /* ---- demostrativos ---- */
+  { id:'a-an', label:'A y an', family:'demostrativos', article:null, glossary:'a-vs-an', topics:[`A / An`] },
+  { id:'this-that', label:'This, that, these y those', family:'demostrativos', article:null, glossary:null,
+    topics:[`"This is..." (esto es...)`, `This / These`, `This / That / These / Those`] },
+  /* ---- futuro / indirecto ---- */
+  { id:'will-going-to', label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`] },
+  { id:'estilo-indirecto', label:'Estilo indirecto (reported speech)', family:'indirecto', article:null, glossary:null,
+    topics:[`Reported Speech`, `Discurso indirecto con matices`] },
+  /* ---- modales ---- */
+  { id:'can-cant', label:'Can y can\'t', family:'modales', article:null, glossary:null, topics:[`Can / Can't (habilidad)`] },
+  { id:'modales-obligacion', label:'Must, have to y should', family:'modales', article:null, glossary:null,
+    topics:[`Verbos modales de obligación (must / have to / should)`] },
+  { id:'modales-posibilidad', label:'May, might y could', family:'modales', article:null, glossary:null,
+    topics:[`Verbos modales de posibilidad (may / might / could)`] },
+  { id:'modales-perfectos', label:'Should have y must have', family:'modales', article:null, glossary:'should-have',
+    topics:[`Modales perfectos (must have been / should have gone)`] },
+  /* ---- pasado ---- */
+  { id:'pasado-regulares', label:'Pasado simple (verbos regulares)', family:'pasado', article:'articulo-pasado-simple.html', glossary:null,
+    topics:[`Pasado simple con verbos regulares (-ed)`] },
+  { id:'verbos-irregulares', label:'Verbos irregulares en pasado', family:'pasado', article:'articulo-verbos-irregulares.html', glossary:null,
+    topics:[`Pasado simple con verbos irregulares`] },
+  { id:'used-to', label:'Used to', family:'pasado', article:null, glossary:'used-to', topics:[`"Used to"`] },
+  /* ---- pasiva ---- */
+  { id:'voz-pasiva', label:'Voz pasiva', family:'pasiva', article:null, glossary:null,
+    topics:[`Voz pasiva (presente y pasado simple)`, `Voz pasiva con modales (should be / must have been)`] },
+  { id:'causativos', label:'Verbos causativos (have something done)', family:'pasiva', article:null, glossary:null, topics:[`Verbos causativos (have something done)`] },
+  /* ---- perfecto ---- */
+  { id:'present-perfect-vs-past', label:'Presente perfecto vs pasado simple', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:null,
+    topics:[`Present Perfect vs Past Simple`] },
+  { id:'since-for', label:'Since y for', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:'since-vs-for', topics:[`Since / For`] },
+  { id:'past-perfect', label:'Pasado perfecto (past perfect)', family:'perfecto', article:null, glossary:null, topics:[`Past Perfect`] },
+  /* ---- preposiciones ---- */
+  { id:'in-on-at', label:'In, on y at', family:'preposiciones', article:'articulo-in-on-at.html', glossary:null, topics:[`In / On / At`] },
+  { id:'by-until', label:'By y until', family:'preposiciones', article:null, glossary:null, topics:[`By vs Until`, `By vs Until (en el trabajo)`] },
+  { id:'preposiciones-movimiento', label:'Preposiciones de movimiento (to, into, from)', family:'preposiciones', article:null, glossary:null,
+    topics:[`Preposiciones de movimiento (to / into / from)`] },
+  { id:'preposiciones-sutiles', label:'Preposiciones sutiles (beside, besides...)', family:'preposiciones', article:null, glossary:null,
+    topics:[`Preposiciones sutiles`, `"Beside" vs "Besides"`] },
+  /* ---- presente simple ---- */
+  { id:'presente-simple', label:'Presente simple', family:'presente-simple', article:'articulo-presente-simple.html', glossary:null,
+    topics:[`Presente simple y "to be"`, `Adverbios de frecuencia (always / usually / sometimes / never)`] },
+  { id:'do-does', label:'Do y does', family:'presente-simple', article:'articulo-do-vs-does.html', glossary:null,
+    topics:[`Do / Does`, `Preguntas con Do/Does en presente simple`] },
+  /* ---- pronombres ---- */
+  { id:'pronombres', label:'Pronombres (sujeto y objeto)', family:'pronombres', article:null, glossary:null,
+    topics:[`He / She / It (pronombres)`, `Pronombres objeto (me / you / him / her / it / us / them)`] },
+  { id:'posesivos', label:'Posesivos (my, your, his, her...)', family:'pronombres', article:null, glossary:null,
+    topics:[`Adjetivos posesivos simples (my / your)`, `His / Her (posesivos simples)`, `Posesivos (my / your / his / her / our / their)`] },
+  /* ---- relativas ---- */
+  { id:'relativas', label:'Cláusulas relativas', family:'relativas', article:null, glossary:null,
+    topics:[`Cláusulas relativas (who / which / that)`, `Cláusulas relativas reducidas`] },
+  { id:'who-whom', label:'Who y whom', family:'relativas', article:null, glossary:null, topics:[`Who vs Whom`, `Who / Whom`] },
+  /* ---- to be ---- */
+  { id:'to-be-presente', label:'Verbo to be (am, is, are)', family:'to-be', article:'articulo-verbo-to-be.html', glossary:null,
+    topics:[`Is / Are (singular y plural)`, `Verbo "to be": am / is / are`, `Verbo to be, have y there is/are`] },
+  { id:'was-were', label:'Was y were', family:'to-be', article:'articulo-verbo-to-be.html', glossary:'was-vs-were', topics:[`"To be" en pasado: was / were`] },
+  /* ---- verbos ---- */
+  { id:'phrasal-verbs', label:'Phrasal verbs', family:'verbos', article:'articulo-phrasal-verbs.html', glossary:'look-for',
+    topics:[`Phrasal verbs comunes (look for / give up / find out)`] },
+  { id:'gerundios-infinitivos', label:'Gerundios e infinitivos', family:'verbos', article:null, glossary:null,
+    topics:[`Gerundios vs infinitivos (like doing / want to do)`] },
+  { id:'verbo-have', label:'Verbo have', family:'verbos', article:null, glossary:null, topics:[`Verbo "have" (tengo / tienes / tiene)`] },
+  { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
+  /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
+  { id:'question-tags', label:'Question tags', family:null, article:null, glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
+  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'would-rather',
+    topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
+  { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:null, topics:[`Subjuntivo formal (It is essential that...)`] },
+  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] }
+];
+
+const TEMA_BY_ID = TEMAS.reduce((m, t)=>{ m[t.id] = t; return m; }, {});
+const TEMA_BY_TOPIC = TEMAS.reduce((m, t)=>{ t.topics.forEach(topic=>{ m[topic] = t; }); return m; }, {});
+// Tema de una etiqueta de data.js (o null si todavia no esta en el registro).
+function temaForTopic(topic){ return (topic && TEMA_BY_TOPIC[topic]) || null; }

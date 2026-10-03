@@ -159,7 +159,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20260930m400"></script>
-<script src="app.js?v=20261001g"></script>
+<script src="temas.js?v=20261003a"></script>
+<script src="app.js?v=20261003a"></script>
 <script src="backend.js?v=20261001b"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -189,11 +190,11 @@
 </script>
 <script>
   guardMemberPage(function(){
-    // ?foco=<familia> (Practicar Preposiciones, Reforzar en mi Plan) y
+    // ?foco=<familia>&tema=<tema> (Practicar Preposiciones, Reforzar en mi Plan) y
     // ?empezar=1 (Empezar lo que me toca hoy). Se leen una vez y se
     // limpian de la dirección para que "Hacer otra sesión" sea normal.
     const params = new URLSearchParams(location.search);
-    const opts = { focusFamily: params.get('foco') || undefined, autoStart: params.get('empezar') === '1' };
+    const opts = { focusFamily: params.get('foco') || undefined, focusTema: params.get('tema') || undefined, autoStart: params.get('empezar') === '1' };
     if(location.search && history.replaceState) history.replaceState(null, '', location.pathname);
     renderPlanIntro(document.getElementById('planArea'), opts);
   });
