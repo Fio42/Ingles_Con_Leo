@@ -1,0 +1,268 @@
+[
+ {
+  "term": "although",
+  "kind": "frases",
+  "file": "audio/glosario/although.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Although it was cold, we went to the beach. I like him, although he talks a lot. Although she studied, she failed the test."
+ },
+ {
+  "term": "already",
+  "kind": "frases",
+  "file": "audio/glosario/already.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have already eaten. She already knows the answer. Is it ten o'clock already?"
+ },
+ {
+  "term": "get",
+  "kind": "frases",
+  "file": "audio/glosario/get.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I got a message from Leo. What time do you get home? It's getting dark."
+ },
+ {
+  "term": "would-rather",
+  "kind": "frases",
+  "file": "audio/glosario/would-rather.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'd rather stay home tonight. She'd rather not go. I'd rather walk than take the bus."
+ },
+ {
+  "term": "would-rather",
+  "kind": "dialogo",
+  "file": "audio/glosario/would-rather-dialogo.mp3",
+  "voice": "en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural",
+  "text": "— Do you want to go out tonight?\n— I'd rather stay home. I'm tired.\n— Would you rather watch a movie or order pizza?\n— I'd rather do both."
+ },
+ {
+  "term": "used-to",
+  "kind": "frases",
+  "file": "audio/glosario/used-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I used to play soccer every weekend. We didn't use to have a car. I'm used to the cold."
+ },
+ {
+  "term": "should-have",
+  "kind": "frases",
+  "file": "audio/glosario/should-have.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I should have studied more. You shouldn't have said that. We should have left earlier."
+ },
+ {
+  "term": "should-have",
+  "kind": "dialogo",
+  "file": "audio/glosario/should-have-dialogo.mp3",
+  "voice": "en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural",
+  "text": "— I missed the bus again.\n— You should have left earlier.\n— I know. I should have set an alarm.\n— Next time, you will."
+ },
+ {
+  "term": "look-for",
+  "kind": "frases",
+  "file": "audio/glosario/look-for.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm looking for my keys. She is looking for a new job. What are you looking for?"
+ },
+ {
+  "term": "give-up",
+  "kind": "frases",
+  "file": "audio/glosario/give-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Don't give up. You're almost there. He gave up smoking last year. I give up! What's the answer?"
+ },
+ {
+  "term": "find-out",
+  "kind": "frases",
+  "file": "audio/glosario/find-out.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I need to find out what time it starts. She found out that he was lying. Let me find out and I'll call you back."
+ },
+ {
+  "term": "look-forward-to",
+  "kind": "frases",
+  "file": "audio/glosario/look-forward-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm looking forward to the weekend. We look forward to seeing you. She is looking forward to her trip."
+ },
+ {
+  "term": "however",
+  "kind": "frases",
+  "file": "audio/glosario/however.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The hotel was nice. However, it was far from the center. I wanted to go; however, I had to work."
+ },
+ {
+  "term": "actually",
+  "kind": "frases",
+  "file": "audio/glosario/actually.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Actually, I'm from Colombia, not Mexico. I actually liked the movie. I'm currently studying English."
+ },
+ {
+  "term": "even-though",
+  "kind": "frases",
+  "file": "audio/glosario/even-though.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Even though he was tired, he kept working. I went to work even though I was sick. Even if it rains, we'll go."
+ },
+ {
+  "term": "instead-of",
+  "kind": "frases",
+  "file": "audio/glosario/instead-of.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Let's walk instead of taking the bus. I'll have water instead of soda. I didn't call her. I wrote to her instead."
+ },
+ {
+  "term": "yet",
+  "kind": "frases",
+  "file": "audio/glosario/yet.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I haven't seen that movie yet. Has she called yet? Not yet."
+ },
+ {
+  "term": "still",
+  "kind": "frases",
+  "file": "audio/glosario/still.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I still love pizza. Are you still working? He still doesn't know."
+ },
+ {
+  "term": "enough",
+  "kind": "frases",
+  "file": "audio/glosario/enough.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We have enough time. She isn't old enough to drive. Is it big enough?"
+ },
+ {
+  "term": "since-vs-for",
+  "kind": "frases",
+  "file": "audio/glosario/since-vs-for.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have lived here since 2020. I have lived here for five years. She has worked here since June."
+ },
+ {
+  "term": "make-vs-do",
+  "kind": "frases",
+  "file": "audio/glosario/make-vs-do.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I made breakfast for everyone. I did my homework after dinner. She made a mistake."
+ },
+ {
+  "term": "hear-vs-listen",
+  "kind": "frases",
+  "file": "audio/glosario/hear-vs-listen.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I can hear the neighbors. Please listen to me. I heard a noise outside."
+ },
+ {
+  "term": "person-vs-people",
+  "kind": "frases",
+  "file": "audio/glosario/person-vs-people.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is a nice person. Many people speak English. Three people are waiting outside."
+ },
+ {
+  "term": "was-vs-were",
+  "kind": "frases",
+  "file": "audio/glosario/was-vs-were.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I was at home yesterday. They were very tired. Were you at the party?"
+ },
+ {
+  "term": "much-vs-many",
+  "kind": "frases",
+  "file": "audio/glosario/much-vs-many.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "How many people are coming? I don't have much time. There aren't many chairs."
+ },
+ {
+  "term": "a-vs-an",
+  "kind": "frases",
+  "file": "audio/glosario/a-vs-an.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is an engineer. I need an umbrella. He goes to a university in Texas."
+ },
+ {
+  "term": "say-vs-tell",
+  "kind": "frases",
+  "file": "audio/glosario/say-vs-tell.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She said she was tired. She told me she was tired. Tell me the truth."
+ },
+ {
+  "term": "borrow-vs-lend",
+  "kind": "frases",
+  "file": "audio/glosario/borrow-vs-lend.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Can I borrow your charger? Could you lend me ten dollars? I lent her my book."
+ },
+ {
+  "term": "bring-vs-take",
+  "kind": "frases",
+  "file": "audio/glosario/bring-vs-take.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Please bring your passport tomorrow. I take my son to school every day. Can you bring me a glass of water?"
+ },
+ {
+  "term": "affect-vs-effect",
+  "kind": "frases",
+  "file": "audio/glosario/affect-vs-effect.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The rain affected our plans. The medicine had a good effect. Stress can affect your sleep."
+ },
+ {
+  "term": "fewer-vs-less",
+  "kind": "frases",
+  "file": "audio/glosario/fewer-vs-less.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have fewer problems now. Drink less coffee. There are fewer people today."
+ },
+ {
+  "term": "its-vs-it-s",
+  "kind": "frases",
+  "file": "audio/glosario/its-vs-it-s.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It's a beautiful day. The cat licked its paw. It's been a long week."
+ },
+ {
+  "term": "then-vs-than",
+  "kind": "frases",
+  "file": "audio/glosario/then-vs-than.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is taller than me. Finish your homework, then you can play. If you're tired, then rest."
+ },
+ {
+  "term": "their-there-theyre",
+  "kind": "frases",
+  "file": "audio/glosario/their-there-theyre.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Their house is big. Put it over there. They're my friends."
+ },
+ {
+  "term": "your-vs-youre",
+  "kind": "frases",
+  "file": "audio/glosario/your-vs-youre.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Your phone is ringing. You're late. You're welcome."
+ },
+ {
+  "term": "lose-vs-loose",
+  "kind": "frases",
+  "file": "audio/glosario/lose-vs-loose.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I don't want to lose my job. This shirt is too loose. We lost the game."
+ },
+ {
+  "term": "good-vs-well",
+  "kind": "frases",
+  "file": "audio/glosario/good-vs-well.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He is a good player. He plays well. I'm not feeling well."
+ },
+ {
+  "term": "as-vs-like",
+  "kind": "frases",
+  "file": "audio/glosario/as-vs-like.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He runs like the wind. I work as a nurse. Do it as I showed you."
+ }
+]

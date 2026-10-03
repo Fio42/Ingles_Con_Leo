@@ -1252,3 +1252,12 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Del tope diario de Leo AI no se habla en los correos (ni "ilimitado" ni "tiene limite"; pedido de Leo). Tampoco se dice que es un chat libre.
 - Revisado: 31 correos renderizados a 320/360 px sin desborde, 0 em dashes. Codigo desplegado comparado con el del repo: solo cambian los textos.
 - PENDIENTE: desplegar stripe-webhook, paypal-webhook, rapid-service (= mp-webhook.ts), upgrade-nudge-emails y streak-reminder-email (Leo corre los comandos).
+
+2026-10-02 - GLOSARIO DE INGLES (SEO): /glosario-ingles/ + 36 paginas /glosario/<slug>/
+- Arquitectura: datos en tools/glosario/terminos.js (36 entradas con pagina propia) y extras.js (9 entradas que solo enlazan a una clase/articulo). tools/generar_glosario.js genera glosario-ingles/index.html, glosario/<slug>/index.html, las lineas /glosario del sitemap.xml, tools/glosario/audio_manifest.json e indexnow_urls.json. Tambien mete en el indice las palabras de VOCAB_BANK (data.js) sin pagina propia (indice 403 entradas). Agregar una palabra = copiar una entrada en terminos.js y correr `node tools/generar_glosario.js`.
+- Anti-canibalizacion: do vs does, in on at, presente simple/perfecto, pasado simple, to be, phrasal verbs, verbos irregulares y numeros NO tienen pagina propia; el glosario da la respuesta corta y enlaza al articulo (art / art2).
+- Paginas ligeras: no cargan app.js ni supabase (glosario/glosario.js + glosario.css, rutas absolutas /...). Sin LeoBot (chatbot.js usa el nombre del archivo; en /glosario/x/ lo confundiria con la home).
+- CTA "Practicar gratis" -> /practica.html?skill=grammar|vocabulary|listening (la practica no tiene filtro por tema).
+- Audio: tools/generar_audio_glosario.py (--all, --term slug, --list, --force; no regenera lo que existe; 1 voz Ava para frases, 2 voces Ava/Andrew para conversaciones; errores en tools/glosario/audio_errores.log). Al terminar vuelve a correr el generador de paginas. El boton Escuchar solo aparece si el mp3 existe. Generados de prueba: would-rather (frases + conversacion).
+- IndexNow: tools/indexnow.js (llave 41c1350951c5e79e95e8a4d0b5c84112.txt ya estaba en la raiz). Correr despues del push.
+- Enlaces desde articulos: phrasal-verbs, errores-comunes, presente-perfecto, verbo-to-be, pasado-simple, correo-formal; articulos.html (bajo el titulo) y footer de index y articulos.
