@@ -1346,3 +1346,5 @@ app.js?v=20261003j, temas.js?v=20261003f.
 2026-10-03 Audios de Leo: 7 mp3 en audio/leo (tools/preparar_audios_leo.py), leo-voz.js con volumen/mute persistente y un solo audio a la vez; conectados en Home, resumen gratis, resumen de sesion de miembros, Hoy te conviene (dashboard y progreso), Plan y Mis errores.
 
 2026-10-03 "Profe Leo" en copy publico; audio de bienvenida compacto en el hero.
+
+2026-10-03 Leo AI: idempotencia por request_id (tabla leo_ai_requests, funciones leo_ai_begin/leo_ai_finish; 1 pulsacion = 1 explicacion, max 2 intentos reales al proveedor, respuesta guardada 24 h, lease de 45 s). Limite por miembro/dia = 100 (proteccion contra abuso). Dia siempre UTC calculado en SQL. Fallos registrados como ai_usage_daily provider=fail:<motivo>. Prompt de Writing prioriza consigna y explica errores concretos. REQUIERE aplicar el bloque nuevo de supabase_functions/leo-ai.sql y redesplegar leo-ai.

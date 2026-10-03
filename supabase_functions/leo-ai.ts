@@ -45,7 +45,7 @@
 //   Apagado de emergencia sin tocar la base: secreto LEO_AI_ENABLED=false.
 //
 // COSTO $0 (topes en leo_ai_config, revisados ANTES de llamar):
-//   - Por alumno: user_daily_limit (hoy 100; ver DEVLOG: hay que bajarlo
+//   - Por alumno: user_daily_limit (hoy 100: protección contra abuso, no un tope de estudio; ver DEVLOG: se puede bajarlo
 //     cuando crezca la cantidad de miembros activos).
 //   - Global: global_daily_limit (hoy 1.500) y neuron_budget (hoy 8.000
 //     de los 10.000 gratis). Al llegar, Leo AI responde "no disponible"
@@ -90,7 +90,7 @@ const MAX_OUTPUT_TOKENS = 220
 // "insight" solo COMPLEMENTA lo que la página ya muestra (1-2 frases, un
 // truco corto y, a veces, un tema extra): salida baja a propósito.
 // "writing" también es corto a propósito: una mejora o corrección concreta.
-const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : mode === 'writing' ? 180 : MAX_OUTPUT_TOKENS
+const maxOutputFor = (mode: string) => mode === 'insight' ? 200 : mode === 'writing' ? 220 : MAX_OUTPUT_TOKENS
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
@@ -131,10 +131,10 @@ const EXPLAIN_RULES = `${BASE_RULES}
 
 const WRITING_RULES = `${BASE_RULES}
 - La página ya calificó la estructura y ya mostró el ejemplo y la regla. NO felicites, NO digas "está bien/correcta" y NO repitas la regla.
-- Longitud: máximo 2 frases cortas en total (esto manda sobre lo anterior).
+- Longitud: máximo 2 frases cortas si es correcta; si es incorrecta, hasta 3 frases cortas (esto manda sobre lo anterior).
 - "assessment": correct, minor (casi bien) o incorrect, según la gramática de SU frase.
 - Si es CORRECTA: "corrected" = una alternativa más natural o idiomática (si la suya ya es natural, repite la suya). "explanation" = UNA mejora o matiz útil (por qué suena más natural, un detalle de uso). Si de verdad no hay nada que mejorar, dilo en pocas palabras y da un detalle de uso.
-- Si es INCORRECTA: "corrected" = su frase con los mínimos cambios. "explanation" = qué parte está mal y cómo corregirla, hablando de SU frase.
+- Si es INCORRECTA: prioriza lo que la consigna pide (la idea y la estructura del ejercicio). "corrected" = la frase correcta que cumple la consigna y la estructura pedida, lo más parecida posible a lo que escribió y terminando como la consigna pide (ej.: consigna "vas todos los días" y "I going to the school" -> "I go to school every day."). "explanation" = detecta los errores CONCRETOS de SU frase y explica cada uno en una frase corta, máximo 3 (tiempo verbal o verbo que falta, artículo de más o de menos, concordancia, preposición, orden, ortografía, parte de la consigna que falta). Ej.: "Falta el presente simple: I go, no I going. School va sin the. Termina con every day." Revisa SIEMPRE la gramática completa de su frase.
 - Si es una palabra suelta, texto sin sentido o una frase incompleta: reconócelo en pocas palabras, NO adivines lo que quiso decir, y en "corrected" da un modelo breve (puedes usar el ejemplo de referencia).
 - "tip": un truco de máximo 10 palabras, o "".`
 
@@ -325,7 +325,7 @@ export function validateOutput(mode: string, parsed: any, candidates: string[] =
     const v = parsed.assessment !== undefined ? parsed.assessment : parsed.verdict
     const verdict = VERDICTS.includes(v) ? v : null
     const corrected = cleanText(parsed.corrected, 400)
-    const explanation = cleanText(parsed.explanation, 320)
+    const explanation = cleanText(parsed.explanation, 380)
     const rawTips = Array.isArray(parsed.tips) ? parsed.tips : [parsed.tip]
     const tips = rawTips.map((t: unknown) => cleanText(t, 100)).filter(Boolean).slice(0, 1)
     return verdict && corrected && explanation ? { verdict, corrected, explanation, tips } : null
@@ -369,7 +369,7 @@ export function parseJsonLoose(raw: unknown): any {
    Cada uno devuelve { ok:true, raw, usage:{ input, output }, provider }
    o { ok:false, reason }. Nunca lanzan errores hacia afuera. */
 type ProviderOk = { ok: true; raw: unknown; usage: { input: number; output: number }; provider: string }
-type ProviderFail = { ok: false; reason: string }
+type ProviderFail = { ok: false; reason: string; detail?: string }
 type ProviderResult = ProviderOk | ProviderFail
 
 async function withTimeout(url: string, init: RequestInit): Promise<Response | 'timeout' | 'network'> {
@@ -412,7 +412,7 @@ export async function callCloudflare(mode: string, rules: string, text: string, 
     // 429 o "daily free allocation" -> cuota del día agotada.
     const msg = JSON.stringify(data && data.errors || '')
     const quota = res.status === 429 || /allocation|quota|limit|4006/i.test(msg)
-    return { ok: false, reason: quota ? 'quota' : 'provider_error' }
+    return { ok: false, reason: quota ? 'quota' : 'provider_error', detail: 'http_' + res.status }
   }
   const r = data.result || {}
   const choice = Array.isArray(r.choices) ? r.choices[0] : null
@@ -437,7 +437,7 @@ export async function callGroq(mode: string, rules: string, text: string, _schem
   })
   if (res === 'timeout' || res === 'network') return { ok: false, reason: res }
   const data = await res.json().catch(() => null)
-  if (!res.ok || !data) return { ok: false, reason: res.status === 429 ? 'quota' : 'provider_error' }
+  if (!res.ok || !data) return { ok: false, reason: res.status === 429 ? 'quota' : 'provider_error', detail: 'http_' + res.status }
   const u = data.usage || {}
   return { ok: true, raw: data.choices?.[0]?.message?.content ?? null, usage: { input: u.prompt_tokens || 0, output: u.completion_tokens || 0 }, provider: 'groq' }
 }
@@ -458,7 +458,7 @@ export async function callGemini(mode: string, rules: string, text: string, sche
   })
   if (res === 'timeout' || res === 'network') return { ok: false, reason: res }
   const data = await res.json().catch(() => null)
-  if (!res.ok || !data) return { ok: false, reason: res.status === 429 ? 'quota' : 'provider_error' }
+  if (!res.ok || !data) return { ok: false, reason: res.status === 429 ? 'quota' : 'provider_error', detail: 'http_' + res.status }
   const parts = data?.candidates?.[0]?.content?.parts
   const raw = Array.isArray(parts) ? parts.filter((p: any) => p && typeof p.text === 'string' && !p.thought).map((p: any) => p.text).join('') : null
   const u = data.usageMetadata || {}
@@ -505,11 +505,43 @@ function isAdminRequest(req: Request): boolean {
   return adminKey.length >= 24 && given === adminKey
 }
 
+// Constantes de idempotencia: cuánto espera un reintento a que termine la
+// primera llamada (8 x 1 s) antes de responder 'in_progress'.
+const PROCESSING_WAIT_POLLS = 9
+const PROCESSING_POLL_MS = 1000
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+// La función SQL nueva aún no existe (el SQL no se aplicó todavía).
+function isMissingFunction(err: any): boolean {
+  const msg = String(err && err.message || '')
+  return !!err && (err.code === 'PGRST202' || err.code === '42883' || /could not find the function|does not exist/i.test(msg))
+}
+
+// Cierra el intento en la base (respuesta ya validada o motivo del fallo).
+// Nunca lanza errores: si falla, el 'processing' se recupera solo a los 45 s.
+async function finishRequest(userId: string, requestId: string | null, status: 'completed' | 'failed', answer: unknown, reason: string, attempt: number) {
+  try {
+    await supabase.rpc('leo_ai_finish', { p_user: userId, p_request: requestId, p_status: status, p_answer: answer, p_reason: reason, p_attempt: attempt })
+  } catch (_) { /* se recupera por tiempo */ }
+}
+
+// Cuenta el tipo REAL de fallo (solo el motivo, nunca textos): queda en
+// ai_usage_daily con provider = 'fail:<motivo>' (timeout, network,
+// provider_error, quota, bad_output, daily_limit, busy, retry...) y en los
+// logs de la función. Nunca lanza errores.
+async function logFailure(day: string, reason: string, mode: string, detail = '') {
+  console.error('leo_ai_fail', JSON.stringify({ reason, detail, mode }))
+  try {
+    await supabase.rpc('leo_ai_record', { p_day: day, p_provider: ('fail:' + reason).slice(0, 20), p_input: 0, p_output: 0, p_neurons: 0 })
+  } catch (_) { /* solo estadística */ }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS })
   if (req.method !== 'POST') return json({ ok: false, reason: 'method' }, 405)
   if (EMERGENCY_OFF) return json({ ok: false, reason: 'disabled' })
 
+  let claim: { userId: string; requestId: string; attempt: number } | null = null
   try {
     // 1) Quién llama: sesión válida y miembro activo.
     const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
@@ -535,30 +567,70 @@ Deno.serve(async (req: Request) => {
     // 4) Encendido, probadores y topes (por alumno y global) ANTES de
     //    llamar, todo en una sola consulta atómica (leo_ai_reserve). Si
     //    la tabla no existe o falla, no se llama a nadie.
-    const today = new Date().toISOString().slice(0, 10)
-    const { data: gate, error: gateErr } = await supabase.rpc('leo_ai_reserve', { p_user: user.id, p_day: today })
-    if (gateErr) { console.error('leo_ai_reserve error:', gateErr.message); return json({ ok: false, reason: 'usage_error' }) }
-    if (gate === 'disabled') return json({ ok: false, reason: 'disabled' })
-    if (gate === 'not_allowed') return json({ ok: false, reason: 'not_allowed' }, 403)
-    if (gate === 'user_limit') return json({ ok: false, reason: 'daily_limit' })
-    if (gate !== 'ok') return json({ ok: false, reason: 'busy' }) // tope global del sitio
+    // Día UTC calculado aquí (nunca el que mande el navegador). Con request_id
+    // la base lo calcula por su cuenta (leo_ai_begin) y el resultado manda.
+    let today = new Date().toISOString().slice(0, 10)
+    const requestId = typeof body.request_id === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body.request_id) ? body.request_id : null
+    let attempt = 0 // >0 solo con idempotencia por request_id
+    let gate: unknown = null
+    if (requestId) {
+      // Un request_id = una pulsación = una explicación: el límite se descuenta
+      // una vez, el proveedor se llama máximo 2 veces y, si ya terminó, se
+      // devuelve la misma respuesta guardada. Si "leo_ai_begin" aún no existe
+      // en la base (SQL sin aplicar), se usa la reserva de siempre.
+      let begin: any = null, beginErr: any = null
+      for (let i = 0; i < PROCESSING_WAIT_POLLS; i++) {
+        ;({ data: begin, error: beginErr } = await supabase.rpc('leo_ai_begin', { p_user: user.id, p_request: requestId }))
+        if (beginErr || !begin || begin.status !== 'processing') break
+        await sleep(PROCESSING_POLL_MS) // otra llamada con este id sigue en curso
+      }
+      if (!beginErr && begin && typeof begin.day === 'string') today = begin.day
+      if (beginErr && !isMissingFunction(beginErr)) { console.error('leo_ai_begin error:', beginErr.message); return json({ ok: false, reason: 'usage_error' }) }
+      if (!beginErr && begin) {
+        if (begin.status === 'completed' && begin.answer && typeof begin.answer === 'object') return json({ ok: true, mode, answer: begin.answer })
+        if (begin.status === 'processing') { await logFailure(today, 'in_progress', mode); return json({ ok: false, reason: 'in_progress' }) }
+        if (begin.status === 'failed_final') {
+          await logFailure(today, 'retries_exhausted', mode, String(begin.reason || ''))
+          return json({ ok: false, reason: typeof begin.reason === 'string' && begin.reason ? begin.reason : 'error', final: true })
+        }
+        if (begin.status === 'go') { attempt = Number(begin.attempt) || 1; claim = { userId: user.id, requestId, attempt } }
+        else gate = begin.status // disabled | not_allowed | user_limit | global_limit | neuron_budget
+      }
+    }
+    if (!attempt) {
+      if (gate === null) {
+        const r = await supabase.rpc('leo_ai_reserve', { p_user: user.id, p_day: today })
+        if (r.error) { console.error('leo_ai_reserve error:', r.error.message); return json({ ok: false, reason: 'usage_error' }) }
+        gate = r.data
+      }
+      if (gate === 'disabled') return json({ ok: false, reason: 'disabled', final: true })
+      if (gate === 'not_allowed') return json({ ok: false, reason: 'not_allowed', final: true }, 403)
+      if (gate === 'user_limit') { await logFailure(today, 'daily_limit', mode); return json({ ok: false, reason: 'daily_limit', final: true }) }
+      if (gate !== 'ok') { await logFailure(today, 'busy', mode); return json({ ok: false, reason: 'busy', final: true }) } // tope global del sitio
+    }
 
     // 5) Llamar al proveedor (y, si se configuró, al siguiente de la lista).
-    let lastReason = 'provider_error'
+    let lastReason = 'provider_error', lastDetail = ''
     for (const name of chain) {
       const r = await PROVIDERS[name](mode, prompt.rules, prompt.text, mode === 'insight' ? insightSchema(prompt.candidates || []) : undefined)
-      if (r.ok === false) { lastReason = r.reason; continue }
+      if (r.ok === false) { lastReason = r.reason; lastDetail = r.detail || ''; continue }
       // Solo cantidades: nunca el contenido.
       const neurons = name === 'cloudflare' ? estimateNeurons(r.usage) : 0
       await supabase.rpc('leo_ai_record', { p_day: today, p_provider: name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
         .then(() => {}, () => {})
       const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [])
-      if (answer) return json({ ok: true, mode, answer })
+      if (answer) {
+        if (attempt) await finishRequest(user.id, requestId, 'completed', answer, '', attempt)
+        return json({ ok: true, mode, answer })
+      }
       lastReason = 'bad_output'
     }
+    if (attempt) await finishRequest(user.id, requestId, 'failed', null, lastReason, attempt)
+    await logFailure(today, lastReason, mode, lastDetail)
     return json({ ok: false, reason: lastReason })
   } catch (e) {
     console.error('leo-ai error:', e)
+    if (claim) await finishRequest(claim.userId, claim.requestId, 'failed', null, 'error', claim.attempt) // no dejarlo en 'processing'
     return json({ ok: false, reason: 'error' })
   }
 })
