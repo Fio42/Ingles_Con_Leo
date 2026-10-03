@@ -1325,3 +1325,18 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Hoy te conviene ("Reforzar X en Writing"), panel de habilidades, Mis errores y fin de sesion usan el mismo mecanismo que Vocabulario/Listening. Max 2 acciones; clase/glosario salen de temas.js.
 - Leo AI: sin llamadas nuevas. Unica adicion: la llamada de Writing que ya existia manda "topic" (nombre del tema de la consigna, ~5 tokens) y el servidor lo pone como contexto "no lo menciones". leo-ai redesplegada. Protecciones (vacio/1 palabra) intactas.
 - Tests: temas.test.js 95, leo-ai-server 26. app.js?v=20261003i, temas.js?v=20261003e.
+
+2026-10-03 - AUDITORIA FINAL de Fases 1-6 (cierre de la arquitectura conectada)
+Bugs reales corregidos (cambio minimo):
+- Gramatica: dos etiquetas de REPASO MEZCLADO ("Condicionales, comparativos y presente perfecto", "Wish, estilo indirecto y pasado perfecto") marcaban un tema que no practican. Ahora estan en GRAMMAR_TOPICS_SIN_TEMA (siguen en su familia del diagnostico, sin tema). Test nuevo.
+- Vocabulario: el grupo avz6 (solo 4 de 8 palabras de negocios) salio de "Trabajo y negocios" (queda general). 128 palabras con tema (antes 136).
+- Listening: avz-3 (la pregunta es el significado de "ubiquitous", no el contraste) salio de "Negaciones y contrastes" (LISTENING_EXCLUIDOS). 79 conectados / 144 generales.
+- Writing: 6 consignas cuyo objetivo no es claramente el tema (The ___ is ___ colores, My house is ___, de donde eres, I am a ___, We ate ___, whereas/while) volvieron a general. 152 con tema / 62 generales.
+- Evidencia: un tema necesita 2+ ejercicios DISTINTOS (antes un ejercicio repetido 4 veces ya contaba como tema).
+- Mezcla entre habilidades: "Hoy te conviene" ahora guarda temaSkill; (a) el diagnostico de Gramatica ya no oculta sus botones por un tema de Writing/otra habilidad con el mismo id; (b) el resumen de Writing mejorado ya no tapa la siguiente recomendacion de Gramatica del mismo tema; (c) Leo AI no sugiere temas que vienen de las estadisticas de Writing (su practica es otra habilidad).
+- Resumen de sesion: las respuestas de 0-1 palabra (lowEffort) no cuentan en el "En X acertaste n de m".
+- Clases: una clase compartida (numeros-en-ingles) ahora respeta el tema de vocabulario/listening que la recomendo (contexto y practica de SU habilidad); antes ofrecia la practica de gramatica. initArticleTema no hace consultas a visitantes sin cuenta guardada.
+- writing.html carga temas.js (sin eso el tema no aparecia al terminar Writing).
+Verificado sin cambios: ninguna lista paralela de enlaces por tema (SKILL_ARTICLE y el articulo por familia son de nivel habilidad/familia, a proposito); servidor leo-ai sin cambios (v8 desplegada en Fase 6); 0 llamadas de IA automaticas; rendimiento: computeDiagnosis 4.000 respuestas ~12 ms (+1,7 ms con temas.js), 76 contentForTema 0,7 ms.
+Tests: temas.test.js 106; session-cycle.test.js sigue con su unico fallo previo.
+app.js?v=20261003j, temas.js?v=20261003f.

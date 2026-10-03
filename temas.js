@@ -29,9 +29,9 @@ const TEMAS = [
     topics:[`Comparativos (-er / more ... than)`, `Comparativos de igualdad (as...as)`] },
   /* ---- condicionales ---- */
   { id:'condicionales', prereq:['will-going-to'], label:'Condicionales', family:'condicionales', article:null, glossary:null,
-    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`, `Condicionales, comparativos y presente perfecto`] },
+    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`] },
   { id:'wish', prereq:['condicionales'], label:'Wish e if only', family:'condicionales', article:null, glossary:null,
-    topics:[`Wish / If only`, `Wish, estilo indirecto y pasado perfecto`] },
+    topics:[`Wish / If only`] },
   /* ---- conectores ---- */
   { id:'conectores-contraste', label:'Although, despite y even though', family:'conectores', article:null, glossary:'although',
     topics:[`Despite / Although / Instead of`, `Despite vs In spite of vs Even though`] },
@@ -149,7 +149,7 @@ const TEMAS = [
   { id:'vocab-numeros', skill:'vocabulary', label:'Números, precios y datos personales', family:null, article:'articulo-numeros-en-ingles.html', glossary:null, topics:[],
     groups:['principiante-numeros', 'facil-numeros', 'medio-numeros'] },
   { id:'vocab-trabajo', skill:'vocabulary', label:'Trabajo y negocios', family:null, article:null, glossary:null, topics:[],
-    groups:['medio6', 'medio-m300', 'avz4', 'avz6'] },
+    groups:['medio6', 'medio-m300', 'avz4'] },
   { id:'vocab-viajes', skill:'vocabulary', label:'Viajes', family:null, article:null, glossary:null, topics:[], groups:['medio4'] },
   { id:'vocab-compras', skill:'vocabulary', label:'Compras y pagos', family:null, article:null, glossary:null, topics:[], groups:['facil4'] },
   { id:'vocab-vida-diaria', skill:'vocabulary', label:'Vida diaria y casa', family:null, article:null, glossary:null, topics:[], groups:['facil', 'facil5', 'facil6'] },
@@ -189,7 +189,7 @@ const TEMAS = [
   { id:'listening-contraste', skill:'listening', label:'Negaciones y contrastes (not, but, although)', family:null, article:null, glossary:'although', topics:[],
     items:[
     'principiante8-4', 'facil-2', 'facil2-1', 'facil5-1', 'facil5-3', 'facil7-2', 'facil12-3', 'facil-m200-3', 'medio3-2', 'medio4-1', 'medio6-1',
-    'medio7-3', 'medio11-1', 'medio10-2', 'medio-m200-1', 'medio-m400-3', 'avz-3', 'avz2-1', 'avz4-1', 'avz6-4', 'avz7-1', 'avanzado11-2',
+    'medio7-3', 'medio11-1', 'medio10-2', 'medio-m200-1', 'medio-m400-3', 'avz2-1', 'avz4-1', 'avz6-4', 'avz7-1', 'avanzado11-2',
     'avanzado10-2', 'avanzado-m100-4', 'avanzado-m200-1', 'avanzado-m400-3'
     ] }
 ];
@@ -199,7 +199,16 @@ const VOCAB_GRUPOS_SIN_TEMA = [
   'principiante', 'principiante2', 'principiante3', 'principiante4', 'principiante6', 'principiante-m100', 'principiante-m200', 'principiante-m300', 'principiante-m400',
   'facil2', 'facil3', 'facil7', 'facil8', 'facil10', 'facil-m100', 'facil-m200', 'facil-m300', 'facil-m400',
   'medio', 'medio2', 'medio3', 'medio5', 'medio7', 'medio10', 'medio-m100', 'medio-m200', 'medio-m400',
-  'avz', 'avz2', 'avz3', 'avz5', 'avanzado7', 'avanzado10', 'avanzado-m100', 'avanzado-m200', 'avanzado-m300', 'avanzado-m400'
+  'avz', 'avz2', 'avz3', 'avz5', 'avz6', 'avanzado7', 'avanzado10', 'avanzado-m100', 'avanzado-m200', 'avanzado-m300', 'avanzado-m400'
+];
+
+/* Etiquetas de Gramática que son repasos MEZCLADOS de varios temas (sus ejercicios no
+   practican un solo tema): siguen contando para su familia del diagnóstico, pero no marcan
+   ningún tema (se evita una señal falsa). Los tests exigen que toda etiqueta de data.js
+   esté en un tema o en esta lista. */
+const GRAMMAR_TOPICS_SIN_TEMA = [
+  `Condicionales, comparativos y presente perfecto`,
+  `Wish, estilo indirecto y pasado perfecto`
 ];
 
 const TEMA_BY_ID = TEMAS.reduce((m, t)=>{ m[t.id] = t; return m; }, {});
@@ -221,14 +230,11 @@ function temaForVocabItem(itemId){ return TEMA_BY_VOCAB_GROUP[vocabGroupOf(itemI
    del mismo tema. Las consignas abiertas o ambiguas NO están aquí: son Writing general.
    Solo cuenta lo que la consigna pide, nunca lo que escribió el alumno. */
 const WRITING_TEMA_BY_ITEM = {
-  'principiante-1':'verbo-have', 'principiante-2':'to-be-presente', 'principiante-3':'verbo-have', 'principiante2-1':'to-be-presente',
-  'principiante2-2':'verbo-have', 'principiante2-4':'to-be-presente', 'principiante3-1':'basicos-ingles', 'principiante3-2':'can-cant',
+  'principiante-1':'verbo-have', 'principiante-3':'verbo-have',   'principiante2-2':'verbo-have', 'principiante2-4':'to-be-presente', 'principiante3-1':'basicos-ingles', 'principiante3-2':'can-cant',
   'principiante3-3':'posesivos', 'principiante4-1':'borrow-vs-lend', 'principiante4-2':'good-vs-well', 'principiante6-1':'basicos-ingles',
-  'principiante6-2':'basicos-ingles', 'principiante-m300-3':'verbos-irregulares', 'principiante-m300-6':'presente-simple',
+  'principiante6-2':'basicos-ingles', 'principiante-m300-6':'presente-simple',
   'principiante5-1':'this-that', 'principiante5-2':'do-does', 'principiante5-3':'borrow-vs-lend', 'principiante5-4':'bring-vs-take',
-  'principiante5-5':'vocab-confusas', 'principiante-m100-1':'verbo-have', 'principiante-m100-3':'to-be-presente',
-  'principiante-m100-4':'presente-simple', 'principiante-m100-5':'presente-simple', 'principiante-m200-4':'to-be-presente',
-  'principiante-m200-6':'can-cant', 'facil2-1':'will-going-to', 'facil2-2':'presente-simple', 'facil2-3':'verbo-have', 'facil2-4':'can-cant',
+  'principiante5-5':'vocab-confusas', 'principiante-m100-1':'verbo-have',   'principiante-m100-4':'presente-simple', 'principiante-m100-5':'presente-simple',   'principiante-m200-6':'can-cant', 'facil2-1':'will-going-to', 'facil2-2':'presente-simple', 'facil2-3':'verbo-have', 'facil2-4':'can-cant',
   'facil3-1':'to-be-presente', 'facil3-2':'comparativos', 'facil3-3':'do-does', 'facil4-1':'modales-obligacion', 'facil4-2':'question-words',
   'facil4-4':'much-many', 'facil5-1':'can-cant', 'facil5-2':'presente-continuo', 'facil5-3':'posesivos', 'facil5-4':'question-words',
   'facil6-1':'comparativos', 'facil6-2':'was-were', 'facil6-3':'some-any', 'facil6-4':'will-going-to', 'facil7-1':'pasado-regulares',
@@ -255,7 +261,7 @@ const WRITING_TEMA_BY_ITEM = {
   'avanzado7-3':'conectores-avanzados', 'avanzado7-4':'hedging', 'avanzado8-1':'vocab-confusas', 'avanzado8-2':'vocab-confusas',
   'avanzado8-3':'vocab-confusas', 'avanzado8-4':'vocab-confusas', 'avanzado10-1':'condicionales', 'avanzado10-2':'conectores-contraste',
   'avanzado10-3':'voz-pasiva', 'avanzado10-5':'conectores-contraste', 'avanzado10-6':'modales-perfectos', 'avanzado-m300-2':'modales-perfectos',
-  'avanzado9-1':'who-whom', 'avanzado9-2':'conectores-contraste', 'avanzado9-3':'conectores-contraste', 'avanzado9-4':'vocab-confusas',
+  'avanzado9-1':'who-whom', 'avanzado9-2':'conectores-contraste', 'avanzado9-4':'vocab-confusas',
   'avanzado9-5':'vocab-confusas', 'avanzado-m100-1':'voz-pasiva', 'avanzado-m100-2':'inversion-enfasis', 'avanzado-m100-4':'inversion-enfasis',
   'avanzado-m100-5':'conectores-avanzados', 'avanzado-m200-1':'inversion-enfasis', 'avanzado-m200-2':'condicionales'
 };
@@ -263,6 +269,11 @@ function temaForWritingItem(itemId){
   const id = WRITING_TEMA_BY_ITEM[String(itemId || '').replace(/^w-/, '')];
   return id ? (TEMA_BY_ID[id] || null) : null;
 }
+
+// Ejercicios de Listening que cumplen un criterio por texto pero NO practican ese patrón
+// (revisados a mano) -> quedan generales. avz-3: la pregunta es sobre el significado de
+// "ubiquitous", no sobre el contraste.
+const LISTENING_EXCLUIDOS = ['avz-3'];
 
 // Listening: lista explícita de ids (guardados sin el prefijo "l-") -> tema (o null = general).
 const TEMA_BY_LISTENING_ITEM = TEMAS.reduce((m, t)=>{ (t.items || []).forEach(i=>{ m[i] = t; }); return m; }, {});

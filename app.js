@@ -4921,6 +4921,7 @@ function diagTemaStats(list, activeOwn, now){
   by.forEach((l, id)=>{
     if(l.length < DIAG.MIN_TEMA) return;
     const s = diagUnitStats(l, now);
+    if(s.items < 2) return;       // el mismo ejercicio repetido no es evidencia de un tema
     const own = activeOwn.filter(m => m.tema === id);
     s.id = id;
     s.label = TEMA_BY_ID[id] ? TEMA_BY_ID[id].label : id;
@@ -5215,7 +5216,7 @@ function computeDiagnosis(p, statsMap){
         href: temaHasItemsAt(ft.id, getUserLevel(), wr) ? temaPlanHref(TEMA_BY_ID[ft.id], false, wr) : diag.weak.href,
         cta: 'Reforzar ahora',
         article: tc.article, articleLabel: tc.articleLabel,
-        tema: ft.id
+        tema: ft.id, temaSkill: tc.skill
       }, diag.weak.key);
     } else {
       push({
@@ -5451,6 +5452,11 @@ function diagAccText(u){
     : `${u.acc}% de aciertos en ${u.n} ejercicios`;
 }
 
+// Tema de Gramática que ya muestra "Hoy te conviene" (un tema de otra habilidad no cuenta: sus botones son otros).
+function todayGrammarTema(diag){
+  const t = diag && diag.today;
+  return t && t.tema && (!t.temaSkill || t.temaSkill === 'gramatica') ? t.tema : null;
+}
 function diagUnitRowHtml(u, skipTemaId){
   // "Dentro de X, lo que más necesitas reforzar es Y": solo si hay datos
   // suficientes del tema; el enlace se omite si ya es el de "Hoy te conviene".
@@ -5620,8 +5626,8 @@ function renderDiagnosisSection(els){
       const top = familyRows.slice(0, DIAG_TOPICS_VISIBLE), rest = familyRows.slice(DIAG_TOPICS_VISIBLE);
       els.topics.innerHTML = familyRows.length ? `
         <div class="diag-card">
-          <ul class="diag-units">${top.map(u => diagUnitRowHtml(u, diag.today && diag.today.tema)).join('')}</ul>
-          ${rest.length ? diagMoreHtml(`Ver todos los temas (${familyRows.length})`, `<ul class="diag-units">${rest.map(u => diagUnitRowHtml(u, diag.today && diag.today.tema)).join('')}</ul>`) : ''}
+          <ul class="diag-units">${top.map(u => diagUnitRowHtml(u, todayGrammarTema(diag))).join('')}</ul>
+          ${rest.length ? diagMoreHtml(`Ver todos los temas (${familyRows.length})`, `<ul class="diag-units">${rest.map(u => diagUnitRowHtml(u, todayGrammarTema(diag))).join('')}</ul>`) : ''}
           <p class="diag-muted diag-foot">Solo mostramos temas con al menos ${DIAG.MIN_UNIT} ejercicios respondidos, para no sacar conclusiones con muy pocos datos.</p>
         </div>` : '';
     }
@@ -5718,7 +5724,7 @@ function temaSessionProgress(temaId, now, diag, onlySkill){
   if(!index || !c) return null;
   // Solo cuentan ejercicios de la misma habilidad del tema (Gramática y Writing no se mezclan).
   const kindWanted = onlySkill === 'writing' ? 'writing' : ({ vocabulario:'vocab', listening:'listening' }[c.skill] || 'grammar');
-  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !!f && f.kind === kindWanted && diagTemaIdForFound(f) === temaId; });
+  const mine = now.filter(a=>{ const f = index.get(a.itemId); return !a.lowEffort && !!f && f.kind === kindWanted && diagTemaIdForFound(f) === temaId; });
   if(mine.length < 2) return null;            // muy pocos para opinar del tema
   const ok = mine.filter(a=>a.ok).length;
   let stat = null;
@@ -5742,7 +5748,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
     const skill = r.skill || DIAG_KIND_TO_SKILL[found.kind];
     if(DIAG_SKILLS.indexOf(skill) === -1) return;
     const fam = skill === 'gramatica' ? diagFamilyForTopic(found.topic) : null;
-    now.push({ itemId:r.itemId, ok:r.isCorrect, skill, family: fam ? fam.id : null });
+    now.push({ itemId:r.itemId, ok:r.isCorrect, skill, family: fam ? fam.id : null, lowEffort: !!r.lowEffort });
   });
   if(now.length < SESSION_INSIGHT.MIN_GRADED) return null;
 
@@ -5878,7 +5884,7 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.correct < ins.n && (ins.n - ins.correct >= 2 || ins.repeated)) push('Hacer un repaso rápido', 'errores.html?modo=rapido', !ins.actions.length);
   const today = getTodayPick(diag);
   const todayHref = todayStartHref(today);
-  const sameTema = ins.tema && today && today.tema === ins.tema.id;      // ya está arriba como "seguir practicando"
+  const sameTema = ins.tema && today && today.tema === ins.tema.id && (today.temaSkill || 'gramatica') === ins.tema.content.skill;      // ya está arriba como "seguir practicando"
   if(!sameTema && !(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
     push(today.title, todayHref, !ins.actions.length);
   }
@@ -5925,7 +5931,7 @@ function leoAiTemaPool(mainIds, shownIds){
     const diag = computeDiagnosis();
     if(diag && diag.ready){
       const all = [];
-      diag.units.forEach(u => (u.temaStats || []).forEach(s => { if(!s.dominated && (s.current < DIAG.WEAK_BELOW || s.activeMistakes >= 1)) all.push(s); }));
+      diag.units.forEach(u => { if(u.key === 'skill:writing') return; (u.temaStats || []).forEach(s => { if(!s.dominated && (s.current < DIAG.WEAK_BELOW || s.activeMistakes >= 1)) all.push(s); }); });
       all.sort((a,b)=> b.score - a.score).forEach(s => add(s.id));
     }
   }catch(e){}
@@ -5937,7 +5943,7 @@ const temaLabelOf = id => (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[id]) 
    El tema sale de temas.js (el que tiene este archivo como clase). Si el sistema
    mandó al alumno aquí (?tema=&via=rec) se le recuerda por qué y se le ofrece
    volver a su Plan. Para quien no es miembro la clase queda exactamente igual. */
-function temaPracticeHref(t){ return planFocusHref(t.family, true, t.id); }
+function temaPracticeHref(t){ return temaPlanHref(t, true); }
 function pickArticleTema(candidates){
   if(candidates.length === 1) return candidates[0];
   try{
@@ -5954,7 +5960,7 @@ function pickArticleTema(candidates){
   return candidates[0];
 }
 function renderArticleTema(file, params, body){
-  const here = TEMAS.filter(t => t.article === file && t.family);
+  const here = TEMAS.filter(t => t.article === file && (t.family || TEMA_SKILL_KEY[t.skill]));
   if(!here.length || !body || body.querySelector('.tema-cta')) return false;
   const asked = params.get('tema');
   const fromRec = here.find(t => t.id === asked) || null;
@@ -5977,11 +5983,20 @@ function renderArticleTema(file, params, body){
   }
   return true;
 }
+// ¿Hay una sesión de cuenta guardada en este navegador? (solo para no hacer trabajo de más a los
+// visitantes; la membresía real se verifica con LeoBackend.getMemberProfile).
+function hasLocalAccountHint(){
+  try{
+    if(localStorage.getItem('leo_member_hint')) return true;
+    for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i) || ''; if(/^sb-.*-auth-token$/.test(k)) return true; }
+  }catch(e){}
+  return false;
+}
 function initArticleTema(){
   try{
-    if(typeof TEMAS === 'undefined' || typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
+    if(typeof TEMAS === 'undefined' || typeof LeoBackend === 'undefined' || !hasLocalAccountHint() || !LeoBackend.isConfigured()) return;
     const file = location.pathname.split('/').pop() || '';
-    if(!TEMAS.some(t => t.article === file && t.family)) return;
+    if(!TEMAS.some(t => t.article === file && (t.family || TEMA_SKILL_KEY[t.skill]))) return;
     const body = document.querySelector('.article-body');
     if(!body) return;
     LeoBackend.getMemberProfile().then(profile=>{

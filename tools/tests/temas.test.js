@@ -26,7 +26,7 @@ function makeCtx(withTemas){
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
-  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, W:WRITING_BANK, WTB: typeof WRITING_TEMA_BY_ITEM === 'undefined' ? {} : WRITING_TEMA_BY_ITEM, temaForWritingItem: typeof temaForWritingItem === 'undefined' ? null : temaForWritingItem, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
+  diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, hasLocalAccountHint, todayGrammarTema: typeof todayGrammarTema === 'undefined' ? null : todayGrammarTema, leoAiTemaPool, GTS: typeof GRAMMAR_TOPICS_SIN_TEMA === 'undefined' ? [] : GRAMMAR_TOPICS_SIN_TEMA, LEX: typeof LISTENING_EXCLUIDOS === 'undefined' ? [] : LISTENING_EXCLUIDOS, temaForTopic: typeof temaForTopic === 'undefined' ? null : temaForTopic, W:WRITING_BANK, WTB: typeof WRITING_TEMA_BY_ITEM === 'undefined' ? {} : WRITING_TEMA_BY_ITEM, temaForWritingItem: typeof temaForWritingItem === 'undefined' ? null : temaForWritingItem, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
   computeSessionInsight, renderArticleTema, buildLeoAiPayload, leoAiFocusLink, temaLinksHtml, computeWeeklyReport,
   TEMAS: typeof TEMAS === 'undefined' ? null : TEMAS, TEMA_BY_ID: typeof TEMA_BY_ID === 'undefined' ? null : TEMA_BY_ID };`, ctx);
   return ctx.__t;
@@ -43,8 +43,14 @@ const glossaryOk = slug => fs.existsSync(path.join(root, 'glosario', slug, 'inde
 console.log('Registro de temas');
 test('cada etiqueta de GRAMMAR_BANK tiene tema (tabla explícita)', ()=>{
   const missing = new Set();
-  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g=>{ if(!T.TEMAS.some(t => t.topics.includes(g.topic))) missing.add(g.topic); })));
+  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g=>{ if(!T.TEMAS.some(t => t.topics.includes(g.topic)) && !T.GTS.includes(g.topic)) missing.add(g.topic); })));
   assert.deepStrictEqual([...missing], [], 'Etiquetas sin tema: ' + [...missing].join(' | '));
+});
+test('repasos mezclados: existen en data.js, no están en ningún tema y siguen en su familia del diagnóstico', ()=>{
+  const real = new Set();
+  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g => real.add(g.topic))));
+  assert(T.GTS.length >= 2);
+  T.GTS.forEach(topic => { assert(real.has(topic), topic); assert(!T.TEMAS.some(t => t.topics.includes(topic)), topic + ' está en un tema'); assert(T.diagFamilyForTopic(topic), topic + ' perdió su familia'); assert.strictEqual(T.temaForTopic(topic), null); });
 });
 test('ninguna etiqueta está en dos temas y todas existen en data.js', ()=>{
   const real = new Set();
@@ -761,7 +767,7 @@ test('listening: la tabla coincide EXACTAMENTE con los criterios (ningún ejerci
   const wrong = [];
   lisAll.forEach(x=>{
     const rule = LRULES.find(r => r[1](x));
-    const want = rule ? rule[0] : null;
+    const want = (rule && !T.LEX.includes(x.id.replace(/^l-/, ''))) ? rule[0] : null;
     const got = (T.temaForListeningItem(x.id) || {}).id || null;
     if(want !== got) wrong.push(`${x.id}: criterio=${want} tabla=${got}`);
   });
@@ -1083,6 +1089,119 @@ test('sin temas.js, Writing funciona como antes', ()=>{
   const u = d.units.find(x => x.key === 'skill:writing');
   assert(!u || !u.focusTema);
   if(d.today) assert(!d.today.tema && !/tema=/.test(d.today.href));
+});
+
+
+/* ================= AUDITORÍA FINAL: regresiones de integración entre fases ================= */
+console.log('\nAuditoría: integración entre habilidades');
+test('evidencia: el MISMO ejercicio repetido no cuenta como tema (hacen falta 2+ ejercicios distintos)', ()=>{
+  const irr1 = irr.slice(0, 1);
+  setProgress(T, [ session(2, answers(irr1, 8, 0)), session(1, answers(reg, 10, 90)) ]);
+  const d = T.computeDiagnosis();
+  const u = d.units.find(x => x.key === 'family:pasado');
+  assert(u && !(u.temaStats || []).some(s => s.id === 'verbos-irregulares'), 'un solo ejercicio fallado 8 veces no es un tema débil');
+});
+test('"Hoy te conviene" recuerda de qué habilidad es el tema y el diagnóstico de Gramática no esconde botones por un tema de otra habilidad', ()=>{
+  assert.strictEqual(T.todayGrammarTema({ today:{ tema:'x', temaSkill:'writing' } }), null);
+  assert.strictEqual(T.todayGrammarTema({ today:{ tema:'x', temaSkill:'gramatica' } }), 'x');
+  assert.strictEqual(T.todayGrammarTema({ today:{ tema:'x' } }), 'x');
+  setProgress(T, wWeak('comparativos'));
+  const a = readyDiag(T).today;
+  assert.strictEqual(a.temaSkill, 'writing');
+  setProgress(T, weakIrregularHistory());
+  assert.strictEqual(readyDiag(T).today.temaSkill, 'gramatica');
+  setProgress(T, vocabWeakHistory('vocab-compras'));
+  assert.strictEqual(readyDiag(T).today.temaSkill, 'vocabulario');
+  setProgress(T, lisWeak('listening-numeros'));
+  assert.strictEqual(readyDiag(T).today.temaSkill, 'listening');
+});
+test('resumen de Writing mejorado: si Gramática del MISMO tema sigue débil, esa sigue siendo la siguiente recomendación', ()=>{
+  const gp = itemsOfTema(T, 'presente-simple', 'facil'), wp = wIds('presente-simple', 'facil');
+  const hist = [ session(1, answers(gp, 12, 10)), wsession(12, wres(wp, 10, 10)), wsession(11, wres(wGeneral('facil'), 8, 90)) ];
+  const results = wres(wp, 14, 100, 1);
+  const s = wsession(0, results);
+  setProgress(T, hist.concat([s]));
+  const ins = T.computeSessionInsight(results, s.startedAt, 'plan', { focusTema:'presente-simple', focusSkill:'writing' });
+  assert(ins.tema && !ins.tema.needsMore, 'Writing de ese tema mejoró');
+  assert(ins.actions.some(a => /foco=presente-simple&tema=presente-simple/.test(a.href)), 'la siguiente necesidad (Gramática) no se debe tapar: ' + JSON.stringify(ins.actions.map(a => a.href)));
+});
+test('Leo AI no sugiere temas que salen de las estadísticas de Writing (su práctica es otra habilidad)', ()=>{
+  setProgress(T, wWeak('comparativos'));
+  assert(!T.leoAiTemaPool([], []).includes('comparativos'));
+});
+test('respuestas de 0-1 palabra no cuentan en el resultado del tema de la sesión', ()=>{
+  const ids = wIds('comparativos', 'facil');
+  const results = wres(ids, 3, 100).concat(wres(ids, 5, 0, 0, { lowEffort:true }));
+  const s = wsession(0, results);
+  setProgress(T, wWeak('comparativos', [12, 11]).concat([s]));
+  const ins = T.computeSessionInsight(results, s.startedAt, 'plan', { focusTema:'comparativos', focusSkill:'writing' });
+  assert(ins.tema && ins.tema.n === 3 && ins.tema.ok === 3, JSON.stringify(ins.tema && { n: ins.tema.n, ok: ins.tema.ok }));
+});
+test('clase compartida con temas de vocabulario/listening: el contexto y la práctica son de la habilidad que la recomendó', ()=>{
+  let { body } = fakeBody();
+  assert.strictEqual(T.renderArticleTema('articulo-numeros-en-ingles.html', params('tema=vocab-numeros&via=rec'), body), true);
+  assert.strictEqual(body.querySelector('.tema-context').innerHTML, 'Llegaste aquí para reforzar <b>Números, precios y datos personales</b>.');
+  assert(body.querySelector('.tema-cta').innerHTML.includes('href="plan-estudio.html?tema=vocab-numeros&empezar=1"'));
+  ({ body } = fakeBody());
+  T.renderArticleTema('articulo-numeros-en-ingles.html', params('tema=listening-numeros&via=rec'), body);
+  assert(body.querySelector('.tema-cta').innerHTML.includes('href="plan-estudio.html?tema=listening-numeros&empezar=1"'));
+  ({ body } = fakeBody());
+  T.renderArticleTema('articulo-numeros-en-ingles.html', params('tema=numeros-basicos&via=rec'), body);
+  assert(body.querySelector('.tema-cta').innerHTML.includes('foco=bases&tema=numeros-basicos'));
+});
+test('Plan: combinaciones de parámetros nunca mezclan habilidades ni dejan una sesión rota', ()=>{
+  setProgress(T, []);
+  const total = sel => sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0);
+  const cases = [
+    [{ focusFamily:'pasado', focusTema:'verbos-irregulares' }, 'gramatica'],
+    [{ focusTema:'verbos-irregulares' }, 'gramatica'],
+    [{ focusTema:'vocab-compras' }, 'vocabulario'],
+    [{ focusTema:'listening-numeros' }, 'listening'],
+    [{ focusSkill:'writing', focusTema:'comparativos' }, 'writing'],
+    [{ focusSkill:'writing', focusTema:'comparativos', focusFamily:'pasado' }, 'writing'],
+    [{ focusSkill:'writing', focusTema:'vocab-compras' }, null],          // ese tema no tiene consignas de Writing
+    [{ focusSkill:'writing', focusTema:'listening-numeros' }, null],
+    [{ focusFamily:'pasado', focusTema:'comparativos' }, 'gramatica'],     // tema de otra familia: queda la familia
+    [{ focusFamily:'inventada', focusTema:'inventado' }, null],
+    [{}, null]
+  ];
+  cases.forEach(([o, want])=>{
+    const sel = T.computePlanSelection('facil', 12, o);
+    const got = sel.focus ? sel.focus.skill : null;
+    assert.strictEqual(got, want, JSON.stringify(o) + ' -> ' + got);
+    const pool = T.buildPlanPool('facil', sel);
+    assert.strictEqual(pool.length, total(sel), 'duración intacta ' + JSON.stringify(o));
+    assert.strictEqual(new Set(pool.map(e => e.item.id)).size, pool.length);
+    if(want === 'gramatica') assert(pool.filter(e => e.focus).every(e => e.kind === 'grammar'));
+    if(want === 'writing') assert(pool.filter(e => e.focus).every(e => e.kind === 'writing'));
+  });
+});
+test('la página de cada habilidad que muestra resumen carga el registro (si no, el tema no aparece al terminar)', ()=>{
+  ['gramatica', 'vocabulario', 'listening', 'writing', 'mixto', 'plan-estudio', 'practica-miembros', 'errores', 'progreso', 'miembros'].forEach(f=>{
+    assert(/<script src="temas\.js\?v=/.test(fs.readFileSync(path.join(root, f + '.html'), 'utf8')), f + '.html sin temas.js');
+  });
+  // la práctica gratis NO carga el registro (no debe cambiar)
+  assert(!/temas\.js/.test(fs.readFileSync(path.join(root, 'practica.html'), 'utf8')));
+  // ninguna página lo carga dos veces
+  fs.readdirSync(root).filter(f => f.endsWith('.html')).forEach(f => assert(((fs.readFileSync(path.join(root, f), 'utf8').match(/temas\.js\?v=/g)) || []).length <= 1, f));
+});
+test('un artículo leído NO cambia ninguna señal: la recomendación sale solo de respuestas', ()=>{
+  setProgress(T, weakIrregularHistory());
+  const before = JSON.stringify(T.computeDiagnosis().actions);
+  const { body } = fakeBody();
+  T.renderArticleTema('articulo-verbos-irregulares.html', params('tema=verbos-irregulares&via=rec'), body);
+  assert.strictEqual(JSON.stringify(T.computeDiagnosis().actions), before);
+});
+
+test('clases: los visitantes sin cuenta guardada no hacen ninguna consulta (la pista local solo ahorra trabajo, no da acceso)', ()=>{
+  delete store['leo_member_hint'];
+  assert.strictEqual(T.hasLocalAccountHint(), false);
+  store['leo_member_hint'] = JSON.stringify({ m:1, t:Date.now() });
+  assert.strictEqual(T.hasLocalAccountHint(), true);
+  delete store['leo_member_hint'];
+  const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert(/hasLocalAccountHint\(\) \|\| !LeoBackend\.isConfigured|!hasLocalAccountHint\(\)/.test(app));
+  assert(/getMemberProfile\(\)\.then\(profile=>\{\s*if\(profile && profile\.is_member\) renderArticleTema/.test(app), 'el botón solo se pinta si el servidor confirma is_member');
 });
 
 console.log(`\n${passed} pruebas correctas`);
