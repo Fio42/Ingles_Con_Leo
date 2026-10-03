@@ -506,13 +506,36 @@ const LeoBackend = (function(){
      'network', 'bad_output', etc.). Solo manda el payload que ya armó
      app.js (datos del ejercicio, sin nada personal); el token de sesión
      va únicamente a NUESTRO servidor para comprobar que es miembro. */
+  /* Un fallo pasajero (señal del celular, arranque en frío del servidor,
+     el modelo tarda o responde mal una vez) se reintenta UNA vez antes de
+     rendirse. Los motivos definitivos (límite diario, sin sesión, etc.) no. */
+  const LEO_AI_RETRY_REASONS = { timeout:1, network:1, provider_error:1, bad_output:1, error:1, in_progress:1 };
   async function askLeoAI(payload){
+    // Misma request_id en todos los intentos de ESTA pulsación: el servidor la
+    // trata como una sola explicación (no descuenta de nuevo, no repite la
+    // llamada al modelo si ya terminó y limita los intentos reales a 2).
+    let rid = '';
+    try{ rid = (crypto.randomUUID && crypto.randomUUID()) || ''; }catch(e){}
+    if(!rid) rid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+    const body = Object.assign({}, payload || {}, { request_id: rid });
+    let res = null;
+    for(let i = 0; i < 3; i++){
+      res = await askLeoAIOnce(body);
+      if(!res || res.ok || res.final) break;
+      if(!(LEO_AI_RETRY_REASONS[res.reason] || /^http_5/.test(res.reason || ''))) break;
+      try{ console.warn('[Leo AI] fallo:', res.reason, i < 2 ? '(reintentando)' : ''); }catch(e){}
+      if(i < 2) await new Promise(r => setTimeout(r, res.reason === 'in_progress' ? 1500 : 400));
+    }
+    if(res && !res.ok){ try{ console.warn('[Leo AI] fallo final:', res.reason); }catch(e){} }
+    return res;
+  }
+  async function askLeoAIOnce(payload){
     if(!isConfigured()) return { ok:false, reason:'not_configured' };
     let session = null;
     try{ session = await getSession(); }catch(e){ session = null; }
     if(!session) return { ok:false, reason:'no_session' };
     const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timer = ctrl ? setTimeout(()=> ctrl.abort(), 12000) : null;
+    const timer = ctrl ? setTimeout(()=> ctrl.abort(), 18000) : null;
     try{
       const res = await fetch(SUPABASE_URL + '/functions/v1/leo-ai', {
         method: 'POST',
@@ -523,7 +546,7 @@ const LeoBackend = (function(){
       let data = null;
       try{ data = await res.json(); }catch(e){ data = null; }
       if(data && data.ok && data.answer && typeof data.answer === 'object') return { ok:true, answer: data.answer };
-      return { ok:false, reason: (data && typeof data.reason === 'string') ? data.reason : ('http_' + res.status) };
+      return { ok:false, reason: (data && typeof data.reason === 'string') ? data.reason : ('http_' + res.status), final: !!(data && data.final) };
     }catch(e){
       return { ok:false, reason: (e && e.name === 'AbortError') ? 'timeout' : 'network' };
     }finally{

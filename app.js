@@ -2076,7 +2076,7 @@ const LEO_AI_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><pa
 const LEO_AI_WRITING_VERDICT = { correct:'Tu frase está bien escrita', minor:'Casi perfecta: un detalle por pulir', incorrect:'Hay algo que corregir' };
 const LEO_AI_FAIL_TEXT = {
   daily_limit: 'Ya usaste tus explicaciones de Leo AI de hoy. Mañana tendrás más.',
-  default: 'Leo AI no está disponible en este momento. La explicación de arriba sigue siendo válida.'
+  default: 'Leo AI no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo en un momento. La explicación de arriba sigue siendo válida.'
 };
 const _leoAiCache = new Map();
 // Los análisis (modo "insight") se guardan también en el navegador: si el
