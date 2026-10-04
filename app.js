@@ -1329,7 +1329,13 @@ async function fixRecordedAudioDuration(audio, blob){
     });
     if(!buf || !buf.length || !audio.isConnected) return;
     audio.src = URL.createObjectURL(audioBufferToWavBlob(buf));
-  }catch(e){ /* se queda la grabación original */ }
+  }catch(e){
+    // Si el reproductor ya marcó error (ej. iPhone) y no hubo conversión,
+    // se avisa en vez de dejar un reproductor roto.
+    if(audio.isConnected && audio.error){
+      audio.insertAdjacentHTML('afterend', '<p class="audio-missing-note">No se pudo reproducir esta grabación en tu dispositivo. Inténtalo otra vez.</p>');
+    }
+  }
   finally{ if(ctx && ctx.close) ctx.close().catch(()=>{}); }
 }
 // Cualquier navegador de iPhone/iPad usa el motor de Safari (WebKit), también "Chrome".
