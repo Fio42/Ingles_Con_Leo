@@ -43,6 +43,13 @@
   .article-search-empty{background:var(--paper-dim);border-radius:var(--radius-lg);padding:22px;color:var(--ink-soft);}
   .article-search-empty[hidden]{display:none;}
   .article-search-empty a{color:var(--blue);font-weight:600;}
+  .glossary-promo{max-width:560px;box-sizing:border-box;margin:14px 0 16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);color:var(--ink);text-decoration:none;transition:border-color .15s ease,box-shadow .15s ease;}
+  .glossary-promo:hover{border-color:var(--blue);}
+  .glossary-promo:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px var(--blue-tint);}
+  .glossary-promo-title{display:block;font-family:'Baloo 2',sans-serif;font-size:1.05rem;font-weight:700;line-height:1.2;}
+  .glossary-promo-copy{display:block;margin-top:2px;color:var(--ink-soft);font-size:0.88rem;line-height:1.35;}
+  .glossary-promo-cta{flex-shrink:0;color:var(--blue);font-size:0.9rem;font-weight:700;white-space:nowrap;}
+  @media(max-width:480px){.glossary-promo{align-items:flex-start;gap:10px;padding:12px 14px;}.glossary-promo-cta{font-size:0.86rem;}}
 </style>
 <!-- Google tag (gtag.js) -->
 <script src="error-monitor.js?v=20261003o"></script>
@@ -91,7 +98,10 @@
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Aprende inglés</h1>
       <p class="lead">Explicaciones cortas y directas. Sin relleno, sin academia.</p>
-      <p style="margin-top:8px;"><a href="/glosario-ingles/" style="color:var(--blue);font-weight:600;">¿Una palabra o una duda rápida? Prueba el glosario de inglés →</a></p>
+      <a class="glossary-promo" href="/glosario-ingles/">
+        <span><span class="glossary-promo-title">Glosario de inglés</span><span class="glossary-promo-copy">500+ palabras con significado, pronunciación y audio</span></span>
+        <span class="glossary-promo-cta">Explorar glosario →</span>
+      </a>
       <div class="article-search" role="search">
         <span class="article-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
         <input type="search" id="articleSearch" placeholder="¿Qué quieres aprender?" aria-label="Buscar artículos" autocomplete="off" enterkeyhint="search" data-article-search>
