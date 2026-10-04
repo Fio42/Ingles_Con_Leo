@@ -1,56 +1,66 @@
-# SITE HEALTH — 2026-10-03
+# SITE HEALTH — 2026-10-04
 
-🔴 Críticos: 0
+🔴 Críticos: 2
 🟠 Importantes: 7
-🟡 Mejoras: 1
+🟡 Mejoras: 0
 🟢 Páginas sin problemas: 28 de 34
 
 ## Las 3 cosas que más conviene revisar
 
+🔴 https://inglesconleo.com/articulo-verbo-to-be.html 🆕 NUEVO
+Lighthouse Performance bajó de 83 a 70 desde la última corrida.
+Impacto: Es una regresión real, algo que se agregó o cambió empeoró el sitio.
+Acción: Revisar qué cambió en esta página desde la corrida anterior.
+
+🔴 https://inglesconleo.com/articulo-presente-simple.html 🆕 NUEVO
+Lighthouse Performance bajó de 78 a 66 desde la última corrida.
+Impacto: Es una regresión real, algo que se agregó o cambió empeoró el sitio.
+Acción: Revisar qué cambió en esta página desde la corrida anterior.
+
 🟠 https://inglesconleo.com/ 🆕 NUEVO
-Lighthouse Performance = 63/100.
-Impacto: Hay margen claro de mejora.
-Acción: Revisar el detalle del reporte de Lighthouse para esta página.
-
-🟠 https://inglesconleo.com/practica.html 🆕 NUEVO
-Lighthouse Performance = 63/100.
-Impacto: Hay margen claro de mejora.
-Acción: Revisar el detalle del reporte de Lighthouse para esta página.
-
-🟠 https://inglesconleo.com/articulos.html 🆕 NUEVO
-Lighthouse Performance = 78/100.
+Lighthouse Performance = 57/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
 ## Críticos + Importantes (todos)
 
+🔴 https://inglesconleo.com/articulo-verbo-to-be.html 🆕 NUEVO
+Lighthouse Performance bajó de 83 a 70 desde la última corrida.
+Impacto: Es una regresión real, algo que se agregó o cambió empeoró el sitio.
+Acción: Revisar qué cambió en esta página desde la corrida anterior.
+
+🔴 https://inglesconleo.com/articulo-presente-simple.html 🆕 NUEVO
+Lighthouse Performance bajó de 78 a 66 desde la última corrida.
+Impacto: Es una regresión real, algo que se agregó o cambió empeoró el sitio.
+Acción: Revisar qué cambió en esta página desde la corrida anterior.
+
 🟠 https://inglesconleo.com/ 🆕 NUEVO
-Lighthouse Performance = 63/100.
+Lighthouse Performance = 57/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
 🟠 https://inglesconleo.com/practica.html 🆕 NUEVO
-Lighthouse Performance = 63/100.
+Lighthouse Performance = 58/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
-🟠 https://inglesconleo.com/articulos.html 🆕 NUEVO
-Lighthouse Performance = 78/100.
+🟠 https://inglesconleo.com/articulo-verbo-to-be.html 🆕 NUEVO
+Lighthouse Performance = 70/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
 🟠 https://inglesconleo.com/articulo-presente-simple.html 🆕 NUEVO
-Lighthouse Performance = 78/100.
-Impacto: Hay margen claro de mejora.
-Acción: Revisar el detalle del reporte de Lighthouse para esta página.
-
-🟠 https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html 🆕 NUEVO
-Lighthouse Performance = 74/100.
+Lighthouse Performance = 66/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
 🟠 https://inglesconleo.com/miembros.html 🆕 NUEVO
-Lighthouse Performance = 75/100.
+Lighthouse Performance = 68/100.
+Impacto: Hay margen claro de mejora.
+Acción: Revisar el detalle del reporte de Lighthouse para esta página.
+
+🟠 https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html
+Lighthouse Performance = 74/100.
 Impacto: Hay margen claro de mejora.
 Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 
@@ -63,11 +73,7 @@ Acción: Revisar el detalle del reporte de Lighthouse para esta página.
 <details>
 <summary>🟡 Mejoras recomendables (click para expandir)</summary>
 
-🟡 https://inglesconleo.com/ 🆕 NUEVO
-1 error(es) de consola detectados por Lighthouse.
-Impacto: Puede indicar JS roto que afecta funcionalidad.
-Acción: Abrir la consola del navegador en esta página y revisar.
-
+Ninguna.
 </details>
 
 <details>
@@ -84,13 +90,13 @@ Acción: Nada que hacer, salvo que algún día se quite el pixel.
 
 | Página | Performance | SEO | Accesibilidad | Best Practices | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| Home | 63/100 | 100/100 | 97/100 | 95/100 | 3812ms | 0.036 | 816ms |
-| Práctica (gratis) | 63/100 | 100/100 | 92/100 | 100/100 | 5134ms | 0.000 | 710ms |
-| Artículos (índice) | 78/100 | 100/100 | 92/100 | 100/100 | 2919ms | 0.019 | 491ms |
-| Artículo: verbo to be | 83/100 | 100/100 | 97/100 | 100/100 | 2229ms | 0.012 | 594ms |
-| Artículo: presente simple | 78/100 | 100/100 | 97/100 | 100/100 | 2680ms | 0.117 | 566ms |
-| Artículo: cómo aprender desde cero | 74/100 | 100/100 | 97/100 | 100/100 | 2530ms | 0.002 | 1070ms |
-| Miembros (landing de pago) | 75/100 | 100/100 | 95/100 | 77/100 | 2199ms | 0.083 | 976ms |
+| Home | 57/100 | 100/100 | 97/100 | 100/100 | 3839ms | 0.176 | 737ms |
+| Práctica (gratis) | 58/100 | 100/100 | 92/100 | 100/100 | 5212ms | 0.000 | 748ms |
+| Artículos (índice) | 80/100 | 100/100 | 92/100 | 100/100 | 2647ms | 0.019 | 625ms |
+| Artículo: verbo to be | 70/100 | 100/100 | 97/100 | 100/100 | 3418ms | 0.012 | 654ms |
+| Artículo: presente simple | 66/100 | 100/100 | 97/100 | 100/100 | 3406ms | 0.152 | 598ms |
+| Artículo: cómo aprender desde cero | 74/100 | 100/100 | 97/100 | 100/100 | 2770ms | 0.002 | 943ms |
+| Miembros (landing de pago) | 68/100 | 100/100 | 95/100 | 77/100 | 3284ms | 0.083 | 1052ms |
 
 ---
 Auditado: 120 URLs visitadas, 34 páginas públicas conocidas. Generado automáticamente por tools/site-health/audit.js, no editar a mano (se sobreescribe en cada corrida).
