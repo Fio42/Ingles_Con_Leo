@@ -1,6 +1,12 @@
 DEVLOG — Inglés con Leo
 (Registro breve de cambios grandes hecho con Claude. Actualizar al final de cada tarea grande, sin gastar muchas líneas.)
 
+2026-10-04 — Glosario: primera tanda SEO de pronunciación (100 fichas)
+- Se añadieron 100 términos completos de alta prioridad (contracciones, pronunciación difícil, TH/W/V, verbos irregulares, phrasal verbs y falsos amigos) en `tools/glosario/terminos.js`. La arquitectura existente los genera como fichas propias con `DefinedTerm`, canonical, título/descripción únicos, enlaces relacionados, índice y sitemap. Resultado: 136 fichas propias, 503 entradas del índice y 136 URLs de glosario en sitemap (antes: 36 / 403 / 36).
+- La búsqueda del glosario ahora normaliza mayúsculas, acentos, apóstrofes rectos/tipográficos, guiones y puntuación. Ejemplo: `mustn't`, `mustn’t`, `mustnt` y `MUSTN'T` encuentran la misma ficha.
+- El manifiesto de audio tiene 138 pistas: las 38 anteriores se mantienen y hay 100 nuevas pendientes. Voz de frases: `en-US-AvaMultilingualNeural`; los dos diálogos existentes mantienen Ava + Andrew. No se precarga audio: sigue solicitándose al pulsar Escuchar.
+- Prueba reutilizable: `node tools/tests/glossary.test.js`. Valida campos, duplicados, relaciones, páginas/SEO, enlaces del índice, sitemap, manifiesto y contracciones. Antes de publicar los audios, ejecutar desde la raíz: `python tools/generar_audio_glosario.py --all`; el script salta archivos existentes y vuelve a generar el HTML al terminar.
+
 2026-09-07 — LeoBot v2 (rediseño visual)
 - Rediseño visual completo de LeoBot: launcher y panel más grandes, robot con silueta continua y logo real en el pecho, mejor jerarquía (header, mensajes, botones de opción).
 - Lógica/árbol de nodos (NODES) sin cambios. Archivos: chatbot.css, chatbot.js.

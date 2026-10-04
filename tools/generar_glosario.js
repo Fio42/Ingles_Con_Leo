@@ -45,7 +45,12 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&a
 const md = s => esc(s).replace(/_([^_]+)_/g, '<em>$1</em>');
 const plain = s => String(s).replace(/_([^_]+)_/g, '$1');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+/* Misma clave que usa el buscador: evita duplicados que solo cambian por
+   acentos, guiones o apostrofes. */
+const norm = s => String(s).toLowerCase().normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[\u2018\u2019\u02bc\uff07']/g, '')
+  .replace(/[^a-z0-9]+/g, '');
 const jsonLd = o => `<script type="application/ld+json">\n${JSON.stringify(o, null, 2)}\n</script>`;
 const trunc = (s, n) => s.length <= n ? s : s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…';
 function write(rel, content) {

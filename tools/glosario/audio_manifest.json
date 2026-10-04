@@ -264,5 +264,705 @@
   "file": "audio/glosario/as-vs-like.mp3",
   "voice": "en-US-AvaMultilingualNeural",
   "text": "He runs like the wind. I work as a nurse. Do it as I showed you."
+ },
+ {
+  "term": "mustnt",
+  "kind": "frases",
+  "file": "audio/glosario/mustnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You mustn't use your phone in class. You mustn't tell anyone."
+ },
+ {
+  "term": "shouldnt",
+  "kind": "frases",
+  "file": "audio/glosario/shouldnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You shouldn't skip breakfast. She shouldn't drive when she's tired."
+ },
+ {
+  "term": "wouldnt",
+  "kind": "frases",
+  "file": "audio/glosario/wouldnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wouldn't buy it without checking first. He wouldn't answer my question."
+ },
+ {
+  "term": "couldnt",
+  "kind": "frases",
+  "file": "audio/glosario/couldnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I couldn't find my keys. We couldn't hear the teacher."
+ },
+ {
+  "term": "werent",
+  "kind": "frases",
+  "file": "audio/glosario/werent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They weren't at home. We weren't late."
+ },
+ {
+  "term": "wasnt",
+  "kind": "frases",
+  "file": "audio/glosario/wasnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wasn't hungry. The movie wasn't long."
+ },
+ {
+  "term": "doesnt",
+  "kind": "frases",
+  "file": "audio/glosario/doesnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She doesn't speak French. It doesn't matter."
+ },
+ {
+  "term": "didnt",
+  "kind": "frases",
+  "file": "audio/glosario/didnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I didn't call him yesterday. They didn't understand the question."
+ },
+ {
+  "term": "isnt",
+  "kind": "frases",
+  "file": "audio/glosario/isnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This isn't my bag. He isn't ready yet."
+ },
+ {
+  "term": "arent",
+  "kind": "frases",
+  "file": "audio/glosario/arent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We aren't busy today. They aren't from Spain."
+ },
+ {
+  "term": "havent",
+  "kind": "frases",
+  "file": "audio/glosario/havent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I haven't seen that show. They haven't arrived yet."
+ },
+ {
+  "term": "hasnt",
+  "kind": "frases",
+  "file": "audio/glosario/hasnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He hasn't finished his homework. The bus hasn't arrived."
+ },
+ {
+  "term": "hadnt",
+  "kind": "frases",
+  "file": "audio/glosario/hadnt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I hadn't eaten before the meeting. She hadn't met him before."
+ },
+ {
+  "term": "wont",
+  "kind": "frases",
+  "file": "audio/glosario/wont.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I won't be late again. This won't take long."
+ },
+ {
+  "term": "cant",
+  "kind": "frases",
+  "file": "audio/glosario/cant.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I can't open this jar. You can't park here."
+ },
+ {
+  "term": "ive",
+  "kind": "frases",
+  "file": "audio/glosario/ive.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I've lived here for years. I've got your message."
+ },
+ {
+  "term": "id-contraction",
+  "kind": "frases",
+  "file": "audio/glosario/id-contraction.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'd like a glass of water. I'd never seen snow before."
+ },
+ {
+  "term": "ill-contraction",
+  "kind": "frases",
+  "file": "audio/glosario/ill-contraction.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'll send it tonight. I'll help you with that."
+ },
+ {
+  "term": "youre",
+  "kind": "frases",
+  "file": "audio/glosario/youre.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You're doing great. You're my best friend."
+ },
+ {
+  "term": "theyre",
+  "kind": "frases",
+  "file": "audio/glosario/theyre.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They're waiting outside. They're very kind."
+ },
+ {
+  "term": "were-contraction",
+  "kind": "frases",
+  "file": "audio/glosario/were-contraction.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We're going home now. We're happy to help."
+ },
+ {
+  "term": "though",
+  "kind": "frases",
+  "file": "audio/glosario/though.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Though it was late, we kept talking. I don't know him well, though."
+ },
+ {
+  "term": "thought",
+  "kind": "frases",
+  "file": "audio/glosario/thought.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I thought you were at work. That thought made me smile."
+ },
+ {
+  "term": "through",
+  "kind": "frases",
+  "file": "audio/glosario/through.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We walked through the tunnel. I read through the email."
+ },
+ {
+  "term": "throughout",
+  "kind": "frases",
+  "file": "audio/glosario/throughout.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It rained throughout the day. The same rule applies throughout the book."
+ },
+ {
+  "term": "tough",
+  "kind": "frases",
+  "file": "audio/glosario/tough.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This exam is tough. It was a tough week."
+ },
+ {
+  "term": "rough",
+  "kind": "frases",
+  "file": "audio/glosario/rough.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The road is rough. I had a rough day."
+ },
+ {
+  "term": "salmon",
+  "kind": "frases",
+  "file": "audio/glosario/salmon.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We had salmon for dinner. Salmon is rich in protein."
+ },
+ {
+  "term": "vegetable",
+  "kind": "frases",
+  "file": "audio/glosario/vegetable.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Try to eat more vegetables. A carrot is a vegetable."
+ },
+ {
+  "term": "wednesday",
+  "kind": "frases",
+  "file": "audio/glosario/wednesday.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The meeting is on Wednesday. I work from home every Wednesday."
+ },
+ {
+  "term": "february",
+  "kind": "frases",
+  "file": "audio/glosario/february.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My birthday is in February. February has twenty-eight days."
+ },
+ {
+  "term": "clothes",
+  "kind": "frases",
+  "file": "audio/glosario/clothes.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My clothes are still wet. She bought new clothes."
+ },
+ {
+  "term": "world",
+  "kind": "frases",
+  "file": "audio/glosario/world.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "English is spoken around the world. The world is changing quickly."
+ },
+ {
+  "term": "girl",
+  "kind": "frases",
+  "file": "audio/glosario/girl.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The girl is reading a book. She was a shy girl."
+ },
+ {
+  "term": "almond",
+  "kind": "frases",
+  "file": "audio/glosario/almond.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I added almonds to my salad. Almond milk is popular."
+ },
+ {
+  "term": "word",
+  "kind": "frases",
+  "file": "audio/glosario/word.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I don't know that word. Write the word here."
+ },
+ {
+  "term": "were",
+  "kind": "frases",
+  "file": "audio/glosario/were.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We were tired after the trip. If I were you, I'd wait."
+ },
+ {
+  "term": "would",
+  "kind": "frases",
+  "file": "audio/glosario/would.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I would choose the blue one. Would you like some coffee?"
+ },
+ {
+  "term": "could",
+  "kind": "frases",
+  "file": "audio/glosario/could.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She could read at four. Could you speak more slowly?"
+ },
+ {
+  "term": "should",
+  "kind": "frases",
+  "file": "audio/glosario/should.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You should drink more water. The train should arrive soon."
+ },
+ {
+  "term": "stomach",
+  "kind": "frases",
+  "file": "audio/glosario/stomach.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My stomach hurts. I have a sensitive stomach."
+ },
+ {
+  "term": "usually",
+  "kind": "frases",
+  "file": "audio/glosario/usually.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I usually have coffee in the morning. He's usually on time."
+ },
+ {
+  "term": "probably",
+  "kind": "frases",
+  "file": "audio/glosario/probably.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It will probably rain later. She's probably at home."
+ },
+ {
+  "term": "literally",
+  "kind": "frases",
+  "file": "audio/glosario/literally.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I literally missed the last bus. Don't take it literally."
+ },
+ {
+  "term": "particularly",
+  "kind": "frases",
+  "file": "audio/glosario/particularly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I particularly like this song. It's particularly useful for beginners."
+ },
+ {
+  "term": "rural",
+  "kind": "frases",
+  "file": "audio/glosario/rural.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She grew up in a rural area. Rural roads can be narrow."
+ },
+ {
+  "term": "squirrel",
+  "kind": "frases",
+  "file": "audio/glosario/squirrel.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "A squirrel ran up the tree. We saw squirrels in the park."
+ },
+ {
+  "term": "queue",
+  "kind": "frases",
+  "file": "audio/glosario/queue.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We waited in a long queue. There was a queue outside."
+ },
+ {
+  "term": "choir",
+  "kind": "frases",
+  "file": "audio/glosario/choir.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She sings in the school choir. The choir sounded beautiful."
+ },
+ {
+  "term": "colonel",
+  "kind": "frases",
+  "file": "audio/glosario/colonel.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The colonel spoke to the team. Colonel Harris arrived early."
+ },
+ {
+  "term": "genre",
+  "kind": "frases",
+  "file": "audio/glosario/genre.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "What genre of music do you like? Comedy is my favorite genre."
+ },
+ {
+  "term": "yacht",
+  "kind": "frases",
+  "file": "audio/glosario/yacht.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They rented a yacht for the day. The yacht is in the harbor."
+ },
+ {
+  "term": "heir",
+  "kind": "frases",
+  "file": "audio/glosario/heir.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He is the heir to the family business. She became the heir to the estate."
+ },
+ {
+  "term": "honest",
+  "kind": "frases",
+  "file": "audio/glosario/honest.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Be honest with me. She's an honest person."
+ },
+ {
+  "term": "hour",
+  "kind": "frases",
+  "file": "audio/glosario/hour.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The class lasts an hour. I'll be there in an hour."
+ },
+ {
+  "term": "island",
+  "kind": "frases",
+  "file": "audio/glosario/island.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They live on a small island. The island has beautiful beaches."
+ },
+ {
+  "term": "debt",
+  "kind": "frases",
+  "file": "audio/glosario/debt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He is trying to pay off his debt. Don't get into debt."
+ },
+ {
+  "term": "doubt",
+  "kind": "frases",
+  "file": "audio/glosario/doubt.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I doubt that he knows. There is no doubt about it."
+ },
+ {
+  "term": "sword",
+  "kind": "frases",
+  "file": "audio/glosario/sword.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The knight carried a sword. The sword was very old."
+ },
+ {
+  "term": "answer",
+  "kind": "frases",
+  "file": "audio/glosario/answer.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Do you know the answer? Please answer my email."
+ },
+ {
+  "term": "busy",
+  "kind": "frases",
+  "file": "audio/glosario/busy.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm busy this afternoon. The restaurant is busy tonight."
+ },
+ {
+  "term": "business",
+  "kind": "frases",
+  "file": "audio/glosario/business.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She owns a small business. Business is slow this month."
+ },
+ {
+  "term": "women",
+  "kind": "frases",
+  "file": "audio/glosario/women.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The women are waiting outside. Women and men joined the class."
+ },
+ {
+  "term": "think",
+  "kind": "frases",
+  "file": "audio/glosario/think.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I think you're right. Think about your answer."
+ },
+ {
+  "term": "this",
+  "kind": "frases",
+  "file": "audio/glosario/this.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This is my new phone. I need this document."
+ },
+ {
+  "term": "three",
+  "kind": "frases",
+  "file": "audio/glosario/three.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have three sisters. The meeting starts at three."
+ },
+ {
+  "term": "those",
+  "kind": "frases",
+  "file": "audio/glosario/those.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Those are my keys. I like those pictures."
+ },
+ {
+  "term": "scissors",
+  "kind": "frases",
+  "file": "audio/glosario/scissors.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "These scissors are sharp. I need a pair of scissors."
+ },
+ {
+  "term": "aisle",
+  "kind": "frases",
+  "file": "audio/glosario/aisle.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The milk is in aisle five. I prefer an aisle seat."
+ },
+ {
+  "term": "with",
+  "kind": "frases",
+  "file": "audio/glosario/with.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm here with my brother. Write with a pen."
+ },
+ {
+  "term": "without",
+  "kind": "frases",
+  "file": "audio/glosario/without.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I can't live without music. She left without saying goodbye."
+ },
+ {
+  "term": "very",
+  "kind": "frases",
+  "file": "audio/glosario/very.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This coffee is very hot. She speaks very clearly."
+ },
+ {
+  "term": "voice",
+  "kind": "frases",
+  "file": "audio/glosario/voice.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I recognize your voice. Speak in a clear voice."
+ },
+ {
+  "term": "vowel",
+  "kind": "frases",
+  "file": "audio/glosario/vowel.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "A is a vowel. This word starts with a vowel sound."
+ },
+ {
+  "term": "view",
+  "kind": "frases",
+  "file": "audio/glosario/view.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The room has a great view. In my view, it's too expensive."
+ },
+ {
+  "term": "live",
+  "kind": "frases",
+  "file": "audio/glosario/live.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I live near the station. We watched live music."
+ },
+ {
+  "term": "leave",
+  "kind": "frases",
+  "file": "audio/glosario/leave.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We need to leave now. Leave your shoes by the door."
+ },
+ {
+  "term": "read",
+  "kind": "frases",
+  "file": "audio/glosario/read.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I read before bed. She read the email yesterday."
+ },
+ {
+  "term": "bought",
+  "kind": "frases",
+  "file": "audio/glosario/bought.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I bought this jacket online. They bought a new car."
+ },
+ {
+  "term": "brought",
+  "kind": "frases",
+  "file": "audio/glosario/brought.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She brought some snacks. I brought my laptop to class."
+ },
+ {
+  "term": "caught",
+  "kind": "frases",
+  "file": "audio/glosario/caught.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He caught the ball. I caught the last train."
+ },
+ {
+  "term": "taught",
+  "kind": "frases",
+  "file": "audio/glosario/taught.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My mother taught me to cook. He taught English for years."
+ },
+ {
+  "term": "wake-up",
+  "kind": "frases",
+  "file": "audio/glosario/wake-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wake up early on Mondays. Please wake me up at six."
+ },
+ {
+  "term": "get-up",
+  "kind": "frases",
+  "file": "audio/glosario/get-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I get up at seven every day. He got up from his chair."
+ },
+ {
+  "term": "turn-on",
+  "kind": "frases",
+  "file": "audio/glosario/turn-on.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Turn on the lights, please. Can you turn it on?"
+ },
+ {
+  "term": "turn-off",
+  "kind": "frases",
+  "file": "audio/glosario/turn-off.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Turn off the TV before bed. Don't forget to turn it off."
+ },
+ {
+  "term": "pick-up",
+  "kind": "frases",
+  "file": "audio/glosario/pick-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'll pick you up at eight. Pick up your bag."
+ },
+ {
+  "term": "put-on",
+  "kind": "frases",
+  "file": "audio/glosario/put-on.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Put on your jacket. She put on some music."
+ },
+ {
+  "term": "take-off",
+  "kind": "frases",
+  "file": "audio/glosario/take-off.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Take off your shoes here. The plane took off on time."
+ },
+ {
+  "term": "look-after",
+  "kind": "frases",
+  "file": "audio/glosario/look-after.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Can you look after my dog? She looks after her younger brother."
+ },
+ {
+  "term": "run-out-of",
+  "kind": "frases",
+  "file": "audio/glosario/run-out-of.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We've run out of milk. Don't run out of time."
+ },
+ {
+  "term": "eventually",
+  "kind": "frases",
+  "file": "audio/glosario/eventually.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Eventually, the rain stopped. She eventually found a new job."
+ },
+ {
+  "term": "chaos",
+  "kind": "frases",
+  "file": "audio/glosario/chaos.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The office was in chaos. Traffic caused chaos downtown."
+ },
+ {
+  "term": "subtle",
+  "kind": "frases",
+  "file": "audio/glosario/subtle.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "There is a subtle difference. Her perfume has a subtle smell."
+ },
+ {
+  "term": "whistle",
+  "kind": "frases",
+  "file": "audio/glosario/whistle.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He can whistle very loudly. The referee blew the whistle."
+ },
+ {
+  "term": "realize",
+  "kind": "frases",
+  "file": "audio/glosario/realize.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I didn't realize it was so late. She realized her mistake."
+ },
+ {
+  "term": "notice",
+  "kind": "frases",
+  "file": "audio/glosario/notice.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Did you notice the difference? I didn't notice the sign."
+ },
+ {
+  "term": "pretend",
+  "kind": "frases",
+  "file": "audio/glosario/pretend.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The child pretended to be a doctor. Don't pretend that nothing happened."
+ },
+ {
+  "term": "resume",
+  "kind": "frases",
+  "file": "audio/glosario/resume.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The meeting will resume at two. Send your resume by email."
+ },
+ {
+  "term": "record",
+  "kind": "frases",
+  "file": "audio/glosario/record.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Please record the lesson. She broke the school record."
  }
 ]

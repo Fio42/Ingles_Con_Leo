@@ -71,7 +71,15 @@
   var active = 'todo';
   var total = rows.length;
 
-  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+  /* La puntuacion no cambia la palabra buscada: mustn't, mustn’t y mustnt
+     deben llevar a la misma entrada. Conservamos solo letras y numeros para
+     que espacios, guiones y apostrofes no hagan la busqueda fragil. */
+  function norm(s){
+    return String(s).toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/[\u2018\u2019\u02bc\uff07']/g,'')
+      .replace(/[^a-z0-9]+/g,'');
+  }
 
   function apply(){
     var q = norm(input.value.trim());
