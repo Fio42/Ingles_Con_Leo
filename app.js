@@ -1269,6 +1269,19 @@ function startSpeechRecognitionCapture(onDone){
   try{ recognition.start(); }catch(e){ onDone(null); return null; }
   return recognition;
 }
+// Pide el micrófono para una nueva grabación. En el móvil el micrófono
+// puede seguir ocupado un instante por la grabación/reconocimiento
+// anterior, y getUserMedia falla justo en el segundo intento. Se corta el
+// reconocimiento previo y se reintenta una vez tras una breve espera.
+async function acquireMicStream(prevRecognition){
+  if(prevRecognition){ try{ prevRecognition.abort(); }catch(e){} }
+  try{
+    return await navigator.mediaDevices.getUserMedia({ audio:true });
+  }catch(err){
+    await new Promise(r=> setTimeout(r, 500));
+    return await navigator.mediaDevices.getUserMedia({ audio:true });
+  }
+}
 // La grabación se arma con el formato que de verdad produjo el navegador
 // (Chrome/Android: webm; Safari/iPhone: mp4). Declararla siempre como webm
 // hacía que el reproductor de iPhone mostrara "Error". Orden: el tipo del
@@ -1280,6 +1293,44 @@ function recordedAudioType(chunks, recorder){
 }
 function recordedAudioBlob(chunks, recorder){
   return new Blob(chunks, { type: recordedAudioType(chunks, recorder) });
+}
+// Los webm de MediaRecorder no traen la duración en el archivo y el
+// reproductor muestra valores absurdos (ej. 3:32:48 para 2 segundos).
+// Se decodifica la grabación y se reemplaza por un WAV, que sí lleva la
+// duración correcta en cualquier navegador. Si algo falla, se deja la
+// grabación original tal cual.
+function audioBufferToWavBlob(buf){
+  const ch = Math.min(buf.numberOfChannels, 2), len = buf.length, rate = buf.sampleRate;
+  const out = new DataView(new ArrayBuffer(44 + len*ch*2));
+  const str = (o,t)=>{ for(let i=0;i<t.length;i++) out.setUint8(o+i, t.charCodeAt(i)); };
+  str(0,'RIFF'); out.setUint32(4, 36+len*ch*2, true); str(8,'WAVE'); str(12,'fmt ');
+  out.setUint32(16,16,true); out.setUint16(20,1,true); out.setUint16(22,ch,true);
+  out.setUint32(24,rate,true); out.setUint32(28,rate*ch*2,true); out.setUint16(32,ch*2,true); out.setUint16(34,16,true);
+  str(36,'data'); out.setUint32(40, len*ch*2, true);
+  const data = []; for(let c=0;c<ch;c++) data.push(buf.getChannelData(c));
+  let o = 44;
+  for(let i=0;i<len;i++) for(let c=0;c<ch;c++){
+    const v = Math.max(-1, Math.min(1, data[c][i]));
+    out.setInt16(o, v<0 ? v*0x8000 : v*0x7FFF, true); o += 2;
+  }
+  return new Blob([out], { type:'audio/wav' });
+}
+async function fixRecordedAudioDuration(audio, blob){
+  if(!audio || !blob) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return;
+  let ctx;
+  try{
+    ctx = new AC();
+    const ab = await blob.arrayBuffer();
+    const buf = await new Promise((res, rej)=>{
+      const p = ctx.decodeAudioData(ab, res, rej);
+      if(p && p.catch) p.catch(rej);
+    });
+    if(!buf || !buf.length || !audio.isConnected) return;
+    audio.src = URL.createObjectURL(audioBufferToWavBlob(buf));
+  }catch(e){ /* se queda la grabación original */ }
+  finally{ if(ctx && ctx.close) ctx.close().catch(()=>{}); }
 }
 // Cualquier navegador de iPhone/iPad usa el motor de Safari (WebKit), también "Chrome".
 function isIosDevice(){
@@ -2439,7 +2490,7 @@ function runSpeakingSession({ container, level, onExit }){
         scoreBlock.innerHTML = '';
         scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
-          stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+          stream = await acquireMicStream(recognition);
         }catch(err){
           compareRow.innerHTML = `<p class="audio-missing-note">No pudimos acceder al micrófono. Revisa los permisos del navegador.</p>`;
           return;
@@ -2460,6 +2511,7 @@ function runSpeakingSession({ container, level, onExit }){
               <audio controls src="${url}"></audio>
             </div>`;
           compareRow.querySelector('#origBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+          fixRecordedAudioDuration(compareRow.querySelector('audio'), blob);
           retryBtn.style.display = 'inline-flex';
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
@@ -2683,7 +2735,7 @@ function renderMixItemInto(card, entry, onAnswered){
         scoreBlock.innerHTML = '';
         scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
-          stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+          stream = await acquireMicStream(recognition);
         }catch(err){
           compareRow.innerHTML = `<p class="audio-missing-note">No pudimos acceder al micrófono. Revisa los permisos del navegador.</p>`;
           return;
@@ -2704,6 +2756,7 @@ function renderMixItemInto(card, entry, onAnswered){
               <audio controls src="${url}"></audio>
             </div>`;
           compareRow.querySelector('#origBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+          fixRecordedAudioDuration(compareRow.querySelector('audio'), blob);
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
           if(recIndicator) recIndicator.hidden = true;
@@ -7049,7 +7102,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
         scoreBlock.innerHTML = '';
         scoreBlock.classList.remove('feedback','show','ok','bad');
         try{
-          stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+          stream = await acquireMicStream(recognition);
         }catch(err){
           compareRow.innerHTML = `<p class="audio-missing-note">No pudimos acceder al micrófono. Revisa los permisos del navegador.</p>`;
           return;
@@ -7070,6 +7123,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
               <audio controls src="${url}"></audio>
             </div>`;
           compareRow.querySelector('#origBtn').addEventListener('click', ()=> playAudioFile(item.audioFile, card));
+          fixRecordedAudioDuration(compareRow.querySelector('audio'), blob);
           retryBtn.style.display = 'inline-flex';
           stream.getTracks().forEach(t=>t.stop());
           recordBtn.innerHTML = `${MIC_ICON} Grabar de nuevo`;
