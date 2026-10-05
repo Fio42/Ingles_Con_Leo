@@ -10,10 +10,10 @@ const src = fs.readFileSync(path.join(root, 'supabase_functions', 'leo-ai.ts'), 
   .replace("import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'", '');
 const js = ts.transpileModule(src, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
 
-// Token con forma real de Supabase (la firma la verifica la puerta de
-// Supabase con verify_jwt, por eso aquí la parte de firma es de mentira).
+// Token con forma real de Supabase. La firma 'firma-valida' es la única que el
+// auth.getClaims() simulado acepta (cualquier otra = token manipulado).
 const b64u = o => Buffer.from(JSON.stringify(o)).toString('base64').replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
-const jwt = claims => b64u({ alg:'HS256', typ:'JWT' }) + '.' + b64u(claims) + '.firma';
+const jwt = (claims, sig) => b64u({ alg:'HS256', typ:'JWT' }) + '.' + b64u(claims) + '.' + (sig || 'firma-valida');
 const MEMBER_TOKEN = jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600*24*365*10, email:'alumno@mail.com' });
 const CF_OK = { CLOUDFLARE_ACCOUNT_ID: 'acc', CLOUDFLARE_API_TOKEN: 'cf-token-secreto' };
 /* Base falsa que replica leo_ai_begin / leo_ai_finish / leo_ai_reserve de
@@ -67,7 +67,14 @@ async function call(o){
   const ctx = { console:{ error(){}, log(){} }, atob, JSON, Date: FakeDate, Math, Promise, setTimeout: fastTimeout, clearTimeout, AbortController, Response, Array, String, Object, Number, parseInt, exports:{}, require,
     Deno:{ env:{ get:k=> envAll[k] }, serve:h=>{ handler = h; } },
     createClient: ()=>({
-      auth:{ getUser: async()=>{ throw new Error('no debe usarse auth.getUser (exige sesión viva)'); } },
+      auth:{ getUser: async()=>{ throw new Error('no debe usarse auth.getUser (exige sesión viva)'); },
+        getClaims: async(t)=>{ // simula la verificación de firma + vencimiento de Supabase
+          const parts = String(t).split('.');
+          if(parts.length !== 3 || parts[2] !== 'firma-valida') return { data:null, error:{ message:'invalid JWT' } };
+          let c; try{ c = JSON.parse(Buffer.from(parts[1].replace(/-/g,'+').replace(/_/g,'/'), 'base64').toString()); }catch(e){ return { data:null, error:{ message:'invalid JWT' } }; }
+          if(c.exp * 1000 < Date.now()) return { data:null, error:{ message:'expired' } };
+          return { data:{ claims:c }, error:null };
+        } },
       from: ()=>({ select:()=>({ eq:()=>({ maybeSingle: async()=>({ data:{ is_member: o.member !== false } }) }) }) }),
       rpc: async (fn, args)=>{
         if(fn === 'leo_ai_reserve'){ reserveArgs.push(args); if(db && !o.reserve) return { data: db.reserve(args.p_user, args.p_day), error:null }; return o.reserve || { data:'ok', error:null }; }
@@ -114,6 +121,8 @@ async function test(name, fn){
   await test('sin sesión -> 401, no miembro -> 403, sin llamadas', async()=>{
     let r = await call({ user:null }); assert.strictEqual(r.status, 401); assert.strictEqual(r.calls.length, 0);
     r = await call({ user:null, badToken: jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) - 10 }) }); assert.strictEqual(r.status, 401, 'token vencido');
+    r = await call({ user:null, badToken: jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600 }, 'firma-falsa') }); assert.strictEqual(r.status, 401, 'token manipulado (firma falsa)'); assert.strictEqual(r.calls.length, 0);
+    r = await call({ user:null, badToken: b64u({ alg:'none', typ:'JWT' }) + '.' + b64u({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600 }) + '.' }); assert.strictEqual(r.status, 401, 'token sin firma (alg none)');
     r = await call({ user:null, badToken: jwt({ sub:'x', role:'anon', exp: Math.floor(Date.now()/1000) + 3600 }) }); assert.strictEqual(r.status, 401, 'token de visitante (anon)');
     r = await call({ member:false }); assert.strictEqual(r.status, 403); assert.strictEqual(r.calls.length, 0);
   });

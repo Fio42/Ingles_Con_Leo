@@ -494,22 +494,19 @@ export function publicProviderChain(): string[] {
   return list.filter((p, i) => PROVIDERS[p] && p !== 'gemini' && list.indexOf(p) === i)
 }
 
-// Quién llama, leído del token. IMPORTANTE: esta función se despliega con
-// verify_jwt activado, así que la puerta de Supabase YA verificó la firma
-// del token antes de llegar aquí; acá solo se lee el usuario y se revisa
-// que no esté vencido. Es la misma validación que usa el resto del sitio
-// (la base de datos acepta el token mientras sea válido). Antes se usaba
-// auth.getUser(), que además exige que la sesión siga viva en el servidor
-// de autenticación: si el miembro había iniciado sesión en otro
-// dispositivo, Leo AI le fallaba ("Session not found") aunque el resto
-// del sitio le funcionara.
-export function userIdFromVerifiedToken(token: string): string | null {
+// Quién llama. La firma del token se verifica aquí mismo con auth.getClaims():
+// con las llaves asimétricas del proyecto (ES256) valida la firma contra las
+// llaves públicas (JWKS) y la fecha de vencimiento SIN consultar la sesión en
+// el servidor de autenticación. Así no se pierde el arreglo de "Session not
+// found" (miembros con sesión abierta en otro dispositivo; por eso no se usa
+// auth.getUser()) y la función ya no depende solo de verify_jwt: aunque
+// alguien la redespliegue sin esa puerta, un token falso se rechaza.
+export async function userIdFromVerifiedToken(token: string): Promise<string | null> {
   try {
-    const part = token.split('.')[1]
-    if (!part) return null
-    const b64 = part.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((part.length + 3) % 4)
-    const claims = JSON.parse(atob(b64))
-    if (!claims || typeof claims.sub !== 'string' || !claims.sub) return null
+    const { data, error } = await supabase.auth.getClaims(token)
+    if (error || !data || !data.claims) return null
+    const claims = data.claims as Record<string, unknown>
+    if (typeof claims.sub !== 'string' || !claims.sub) return null
     if (claims.role !== 'authenticated') return null
     if (typeof claims.exp !== 'number' || claims.exp * 1000 < Date.now()) return null
     return claims.sub
@@ -570,7 +567,7 @@ Deno.serve(async (req: Request) => {
   try {
     // 1) Quién llama: sesión válida y miembro activo.
     const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
-    const userId = token ? userIdFromVerifiedToken(token) : null
+    const userId = token ? await userIdFromVerifiedToken(token) : null
     if (!userId) return json({ ok: false, reason: 'no_session' }, 401)
     const user = { id: userId }
     const { data: profile } = await supabase.from('profiles').select('is_member').eq('id', user.id).maybeSingle()
