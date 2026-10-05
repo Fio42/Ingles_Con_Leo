@@ -6624,7 +6624,7 @@ function renderProgressPage(root){
    (una sola vez, solo si hace falta) y muestra el botón únicamente si existe
    audio/leo/<id>.mp3. Nunca autoplay. Máximo un mensaje por pantalla. */
 function leoVozHtml(id){
-  return id ? `<div class="leo-voz" data-leo-voz="${id}" hidden></div>` : '';
+  return id ? `<div class="leo-voz" data-leo-voz="${id}"${id === 'repasa-antes' ? ' data-leo-voz-avatar="photo"' : ''} hidden></div>` : '';
 }
 let _leoVozLoading = null;
 function leoVozActivate(){
