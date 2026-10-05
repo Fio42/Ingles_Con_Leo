@@ -964,5 +964,1405 @@
   "file": "audio/glosario/record.mp3",
   "voice": "en-US-AvaMultilingualNeural",
   "text": "Please record the lesson. She broke the school record."
+ },
+ {
+  "term": "accept-vs-except",
+  "kind": "frases",
+  "file": "audio/glosario/accept-vs-except.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I accept your apology, except for one thing."
+ },
+ {
+  "term": "advice-vs-advise",
+  "kind": "frases",
+  "file": "audio/glosario/advice-vs-advise.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She gave me advice and advised me to wait."
+ },
+ {
+  "term": "all-vs-every",
+  "kind": "frases",
+  "file": "audio/glosario/all-vs-every.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Every student in the class read all the pages."
+ },
+ {
+  "term": "alone-vs-lonely",
+  "kind": "frases",
+  "file": "audio/glosario/alone-vs-lonely.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He is alone at home, but he is not lonely."
+ },
+ {
+  "term": "among-vs-between",
+  "kind": "frases",
+  "file": "audio/glosario/among-vs-between.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Choose between tea and coffee; share the snacks among everyone."
+ },
+ {
+  "term": "amount-vs-number",
+  "kind": "frases",
+  "file": "audio/glosario/amount-vs-number.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The number of guests and the amount of food changed."
+ },
+ {
+  "term": "any-vs-some",
+  "kind": "frases",
+  "file": "audio/glosario/any-vs-some.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Would you like some coffee? I do not have any milk."
+ },
+ {
+  "term": "apart-vs-a-part",
+  "kind": "frases",
+  "file": "audio/glosario/apart-vs-a-part.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The houses are far apart, but this room is a part of the house."
+ },
+ {
+  "term": "assure-vs-ensure-vs-insure",
+  "kind": "frases",
+  "file": "audio/glosario/assure-vs-ensure-vs-insure.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I assure you we will ensure the car is insured."
+ },
+ {
+  "term": "attend-vs-assist",
+  "kind": "frases",
+  "file": "audio/glosario/attend-vs-assist.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I attended the meeting and assisted the new employee."
+ },
+ {
+  "term": "awake-vs-wake-up",
+  "kind": "frases",
+  "file": "audio/glosario/awake-vs-wake-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I was awake when the alarm woke me up."
+ },
+ {
+  "term": "aware-vs-conscious",
+  "kind": "frases",
+  "file": "audio/glosario/aware-vs-conscious.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She was aware of the noise and conscious after the fall."
+ },
+ {
+  "term": "bad-vs-badly",
+  "kind": "frases",
+  "file": "audio/glosario/bad-vs-badly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The movie was bad, and he sang badly."
+ },
+ {
+  "term": "bath-vs-bathe",
+  "kind": "frases",
+  "file": "audio/glosario/bath-vs-bathe.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The baby needs a bath, so I will bathe her."
+ },
+ {
+  "term": "been-vs-gone",
+  "kind": "frases",
+  "file": "audio/glosario/been-vs-gone.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Ana has been to Miami, but Carlos has gone there."
+ },
+ {
+  "term": "beside-vs-besides",
+  "kind": "frases",
+  "file": "audio/glosario/beside-vs-besides.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Sit beside me; besides, there is an empty chair."
+ },
+ {
+  "term": "bored-vs-boring",
+  "kind": "frases",
+  "file": "audio/glosario/bored-vs-boring.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I am bored because this movie is boring."
+ },
+ {
+  "term": "bought-vs-brought",
+  "kind": "frases",
+  "file": "audio/glosario/bought-vs-brought.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She bought flowers and brought them to the party."
+ },
+ {
+  "term": "breath-vs-breathe",
+  "kind": "frases",
+  "file": "audio/glosario/breath-vs-breathe.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Take a deep breath and breathe slowly."
+ },
+ {
+  "term": "bring-vs-take-away",
+  "kind": "frases",
+  "file": "audio/glosario/bring-vs-take-away.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Bring your passport here, then take it away with you."
+ },
+ {
+  "term": "can-vs-may",
+  "kind": "frases",
+  "file": "audio/glosario/can-vs-may.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Can I leave now? You may leave after the test."
+ },
+ {
+  "term": "capital-vs-capitol",
+  "kind": "frases",
+  "file": "audio/glosario/capital-vs-capitol.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Bogotá is a capital; the U.S. Capitol is in Washington."
+ },
+ {
+  "term": "career-vs-carrier",
+  "kind": "frases",
+  "file": "audio/glosario/career-vs-carrier.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her career began after she joined the carrier company."
+ },
+ {
+  "term": "cemetery-vs-symmetry",
+  "kind": "frases",
+  "file": "audio/glosario/cemetery-vs-symmetry.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The cemetery gate has perfect symmetry."
+ },
+ {
+  "term": "chance-vs-opportunity",
+  "kind": "frases",
+  "file": "audio/glosario/chance-vs-opportunity.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This is your chance to take a great opportunity."
+ },
+ {
+  "term": "classic-vs-classical",
+  "kind": "frases",
+  "file": "audio/glosario/classic-vs-classical.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It is a classic film with classical music."
+ },
+ {
+  "term": "come-vs-go",
+  "kind": "frases",
+  "file": "audio/glosario/come-vs-go.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Come to my house, then we can go to the park."
+ },
+ {
+  "term": "complement-vs-compliment",
+  "kind": "frases",
+  "file": "audio/glosario/complement-vs-compliment.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The blue tie complements your suit; thank you for the compliment."
+ },
+ {
+  "term": "compliment-vs-complement",
+  "kind": "frases",
+  "file": "audio/glosario/compliment-vs-complement.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her compliment made him smile; the sauce is a perfect complement."
+ },
+ {
+  "term": "conscience-vs-conscious",
+  "kind": "frases",
+  "file": "audio/glosario/conscience-vs-conscious.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My conscience is clear, and I am conscious of the problem."
+ },
+ {
+  "term": "continual-vs-continuous",
+  "kind": "frases",
+  "file": "audio/glosario/continual-vs-continuous.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The continual calls interrupted the continuous music."
+ },
+ {
+  "term": "credible-vs-credulous",
+  "kind": "frases",
+  "file": "audio/glosario/credible-vs-credulous.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The story sounds credible, but he is very credulous."
+ },
+ {
+  "term": "customer-vs-client",
+  "kind": "frases",
+  "file": "audio/glosario/customer-vs-client.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The customer bought shoes; the lawyer met her client."
+ },
+ {
+  "term": "data-vs-datum",
+  "kind": "frases",
+  "file": "audio/glosario/data-vs-datum.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The data comes from one important datum."
+ },
+ {
+  "term": "dead-vs-died",
+  "kind": "frases",
+  "file": "audio/glosario/dead-vs-died.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her grandfather died last year; he is dead now."
+ },
+ {
+  "term": "decent-vs-descent",
+  "kind": "frases",
+  "file": "audio/glosario/decent-vs-descent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We had a decent meal before the plane began its descent."
+ },
+ {
+  "term": "definitely-vs-defiantly",
+  "kind": "frases",
+  "file": "audio/glosario/definitely-vs-defiantly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I will definitely go, she said defiantly."
+ },
+ {
+  "term": "deny-vs-refuse",
+  "kind": "frases",
+  "file": "audio/glosario/deny-vs-refuse.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He denied the accusation and refused to sign."
+ },
+ {
+  "term": "desert-vs-dessert",
+  "kind": "frases",
+  "file": "audio/glosario/desert-vs-dessert.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We crossed the desert and ate dessert later."
+ },
+ {
+  "term": "despite-vs-although",
+  "kind": "frases",
+  "file": "audio/glosario/despite-vs-although.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Despite the rain, we left although it was wet."
+ },
+ {
+  "term": "device-vs-devise",
+  "kind": "frases",
+  "file": "audio/glosario/device-vs-devise.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They devised a plan using a new device."
+ },
+ {
+  "term": "discover-vs-invent",
+  "kind": "frases",
+  "file": "audio/glosario/discover-vs-invent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Scientists discovered the planet but invented the tool."
+ },
+ {
+  "term": "doubt-vs-suspect",
+  "kind": "frases",
+  "file": "audio/glosario/doubt-vs-suspect.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I doubt his story, but I suspect he is scared."
+ },
+ {
+  "term": "economic-vs-economical",
+  "kind": "frases",
+  "file": "audio/glosario/economic-vs-economical.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The economic report recommends an economical solution."
+ },
+ {
+  "term": "effective-vs-efficient",
+  "kind": "frases",
+  "file": "audio/glosario/effective-vs-efficient.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The treatment is effective and the process is efficient."
+ },
+ {
+  "term": "elder-vs-older",
+  "kind": "frases",
+  "file": "audio/glosario/elder-vs-older.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My elder sister has an older car."
+ },
+ {
+  "term": "emigrate-vs-immigrate",
+  "kind": "frases",
+  "file": "audio/glosario/emigrate-vs-immigrate.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They emigrated from Colombia and immigrated to Canada."
+ },
+ {
+  "term": "eminent-vs-imminent",
+  "kind": "frases",
+  "file": "audio/glosario/eminent-vs-imminent.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The eminent doctor warned that a storm was imminent."
+ },
+ {
+  "term": "especially-vs-specially",
+  "kind": "frases",
+  "file": "audio/glosario/especially-vs-specially.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I especially like this bag, made specially for travel."
+ },
+ {
+  "term": "event-vs-eventually",
+  "kind": "frases",
+  "file": "audio/glosario/event-vs-eventually.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The event ended, and we eventually went home."
+ },
+ {
+  "term": "everyday-vs-every-day",
+  "kind": "frases",
+  "file": "audio/glosario/everyday-vs-every-day.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "These are everyday shoes, and I wear them every day."
+ },
+ {
+  "term": "excited-vs-exciting",
+  "kind": "frases",
+  "file": "audio/glosario/excited-vs-exciting.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We are excited about the exciting trip."
+ },
+ {
+  "term": "experience-vs-experiment",
+  "kind": "frases",
+  "file": "audio/glosario/experience-vs-experiment.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her experience helped with the science experiment."
+ },
+ {
+  "term": "farther-vs-further",
+  "kind": "frases",
+  "file": "audio/glosario/farther-vs-further.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The store is farther away; for further details, call us."
+ },
+ {
+  "term": "feel-vs-feel-like",
+  "kind": "frases",
+  "file": "audio/glosario/feel-vs-feel-like.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I feel tired, but I feel like going out."
+ },
+ {
+  "term": "finally-vs-at-last",
+  "kind": "frases",
+  "file": "audio/glosario/finally-vs-at-last.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Finally, add salt. At last, the bus arrived."
+ },
+ {
+  "term": "finish-vs-end",
+  "kind": "frases",
+  "file": "audio/glosario/finish-vs-end.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Finish your homework before the movie ends."
+ },
+ {
+  "term": "floor-vs-ground",
+  "kind": "frases",
+  "file": "audio/glosario/floor-vs-ground.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The keys are on the floor, not on the ground outside."
+ },
+ {
+  "term": "food-vs-meal",
+  "kind": "frases",
+  "file": "audio/glosario/food-vs-meal.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The food was great at our evening meal."
+ },
+ {
+  "term": "fun-vs-funny",
+  "kind": "frases",
+  "file": "audio/glosario/fun-vs-funny.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The game is fun, and your joke is funny."
+ },
+ {
+  "term": "furniture-vs-furnitures",
+  "kind": "frases",
+  "file": "audio/glosario/furniture-vs-furnitures.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We bought two pieces of furniture, not two furnitures."
+ },
+ {
+  "term": "further-vs-farther",
+  "kind": "frases",
+  "file": "audio/glosario/further-vs-farther.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "For further help, walk farther down this street."
+ },
+ {
+  "term": "gather-vs-collect",
+  "kind": "frases",
+  "file": "audio/glosario/gather-vs-collect.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We gathered ideas and collected the tickets."
+ },
+ {
+  "term": "get-to-vs-arrive",
+  "kind": "frases",
+  "file": "audio/glosario/get-to-vs-arrive.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We got to the hotel and arrived in Miami at noon."
+ },
+ {
+  "term": "go-on-vs-keep-on",
+  "kind": "frases",
+  "file": "audio/glosario/go-on-vs-keep-on.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Go on with your story and keep on practicing."
+ },
+ {
+  "term": "good-vs-nice",
+  "kind": "frases",
+  "file": "audio/glosario/good-vs-nice.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is nice, and she does good work."
+ },
+ {
+  "term": "grow-vs-grow-up",
+  "kind": "frases",
+  "file": "audio/glosario/grow-vs-grow-up.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Plants grow fast, and children grow up quickly."
+ },
+ {
+  "term": "habit-vs-custom",
+  "kind": "frases",
+  "file": "audio/glosario/habit-vs-custom.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Drinking coffee is my habit; festivals are a local custom."
+ },
+ {
+  "term": "hard-vs-hardly",
+  "kind": "frases",
+  "file": "audio/glosario/hard-vs-hardly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She works hard and hardly ever complains."
+ },
+ {
+  "term": "have-vs-have-got",
+  "kind": "frases",
+  "file": "audio/glosario/have-vs-have-got.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have a car, and I have got a bike too."
+ },
+ {
+  "term": "hear-vs-listen-to",
+  "kind": "frases",
+  "file": "audio/glosario/hear-vs-listen-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I heard a noise, so I listened to the radio."
+ },
+ {
+  "term": "historic-vs-historical",
+  "kind": "frases",
+  "file": "audio/glosario/historic-vs-historical.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It was a historic day at the historical museum."
+ },
+ {
+  "term": "home-vs-house",
+  "kind": "frases",
+  "file": "audio/glosario/home-vs-house.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Their house is big, but my home is small and warm."
+ },
+ {
+  "term": "how-much-vs-how-many",
+  "kind": "frases",
+  "file": "audio/glosario/how-much-vs-how-many.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "How much water and how many bottles do we need?"
+ },
+ {
+  "term": "housework-vs-homework",
+  "kind": "frases",
+  "file": "audio/glosario/housework-vs-homework.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I did my homework before the housework."
+ },
+ {
+  "term": "human-vs-humane",
+  "kind": "frases",
+  "file": "audio/glosario/human-vs-humane.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Every human deserves humane treatment."
+ },
+ {
+  "term": "imagine-vs-think",
+  "kind": "frases",
+  "file": "audio/glosario/imagine-vs-think.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I think it will rain; imagine a sunny beach instead."
+ },
+ {
+  "term": "imply-vs-infer",
+  "kind": "frases",
+  "file": "audio/glosario/imply-vs-infer.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her tone implied anger, so I inferred she was upset."
+ },
+ {
+  "term": "in-time-vs-on-time",
+  "kind": "frases",
+  "file": "audio/glosario/in-time-vs-on-time.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We arrived on time and got seats in time."
+ },
+ {
+  "term": "incident-vs-accident",
+  "kind": "frases",
+  "file": "audio/glosario/incident-vs-accident.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The accident was a serious incident at work."
+ },
+ {
+  "term": "inquire-vs-enquire",
+  "kind": "frases",
+  "file": "audio/glosario/inquire-vs-enquire.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Please inquire about prices before you enquire by email."
+ },
+ {
+  "term": "intelligent-vs-smart",
+  "kind": "frases",
+  "file": "audio/glosario/intelligent-vs-smart.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is intelligent and wears a smart jacket."
+ },
+ {
+  "term": "interesting-vs-interested",
+  "kind": "frases",
+  "file": "audio/glosario/interesting-vs-interested.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The class is interesting, so students are interested."
+ },
+ {
+  "term": "job-vs-work",
+  "kind": "frases",
+  "file": "audio/glosario/job-vs-work.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She has a new job, but she has a lot of work."
+ },
+ {
+  "term": "journey-vs-trip-vs-travel",
+  "kind": "frases",
+  "file": "audio/glosario/journey-vs-trip-vs-travel.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The trip was fun, and the journey took hours of travel."
+ },
+ {
+  "term": "later-vs-latter",
+  "kind": "frases",
+  "file": "audio/glosario/later-vs-latter.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Call me later; of tea and coffee, I prefer the latter."
+ },
+ {
+  "term": "lay-vs-lie",
+  "kind": "frases",
+  "file": "audio/glosario/lay-vs-lie.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Lay the book down, then lie on the sofa."
+ },
+ {
+  "term": "learn-vs-teach",
+  "kind": "frases",
+  "file": "audio/glosario/learn-vs-teach.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I learn English, and Leo teaches English."
+ },
+ {
+  "term": "least-vs-less",
+  "kind": "frases",
+  "file": "audio/glosario/least-vs-less.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Use less sugar; this recipe uses the least sugar."
+ },
+ {
+  "term": "lend-vs-borrow",
+  "kind": "frases",
+  "file": "audio/glosario/lend-vs-borrow.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Can you lend me your pen? I need to borrow one."
+ },
+ {
+  "term": "library-vs-bookstore",
+  "kind": "frases",
+  "file": "audio/glosario/library-vs-bookstore.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I borrowed a book from the library, not the bookstore."
+ },
+ {
+  "term": "little-vs-a-little",
+  "kind": "frases",
+  "file": "audio/glosario/little-vs-a-little.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We have little time, but a little hope."
+ },
+ {
+  "term": "look-vs-see-vs-watch",
+  "kind": "frases",
+  "file": "audio/glosario/look-vs-see-vs-watch.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Look at the sky, see the bird, and watch it fly."
+ },
+ {
+  "term": "lose-vs-miss",
+  "kind": "frases",
+  "file": "audio/glosario/lose-vs-miss.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Do not lose your keys or miss the bus."
+ },
+ {
+  "term": "luggage-vs-baggage",
+  "kind": "frases",
+  "file": "audio/glosario/luggage-vs-baggage.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Our baggage and luggage are already checked in."
+ },
+ {
+  "term": "make-vs-let",
+  "kind": "frases",
+  "file": "audio/glosario/make-vs-let.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My boss made me stay, but let me leave early later."
+ },
+ {
+  "term": "maybe-vs-may-be",
+  "kind": "frases",
+  "file": "audio/glosario/maybe-vs-may-be.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Maybe he may be late today."
+ },
+ {
+  "term": "medicine-vs-medication",
+  "kind": "frases",
+  "file": "audio/glosario/medicine-vs-medication.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This medicine includes medication for pain."
+ },
+ {
+  "term": "memory-vs-reminder",
+  "kind": "frases",
+  "file": "audio/glosario/memory-vs-reminder.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The photo is a memory and my alarm is a reminder."
+ },
+ {
+  "term": "miss-vs-lose",
+  "kind": "frases",
+  "file": "audio/glosario/miss-vs-lose.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I missed the train and lost my ticket."
+ },
+ {
+  "term": "money-vs-cash",
+  "kind": "frases",
+  "file": "audio/glosario/money-vs-cash.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have money in the bank but no cash today."
+ },
+ {
+  "term": "most-vs-almost",
+  "kind": "frases",
+  "file": "audio/glosario/most-vs-almost.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Most people are almost ready."
+ },
+ {
+  "term": "motivate-vs-encourage",
+  "kind": "frases",
+  "file": "audio/glosario/motivate-vs-encourage.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Her coach encouraged her and motivated the team."
+ },
+ {
+  "term": "nature-vs-nurture",
+  "kind": "frases",
+  "file": "audio/glosario/nature-vs-nurture.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Personality comes from nature and nurture."
+ },
+ {
+  "term": "near-vs-nearly",
+  "kind": "frases",
+  "file": "audio/glosario/near-vs-nearly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The store is near, and we are nearly there."
+ },
+ {
+  "term": "news-vs-new",
+  "kind": "frases",
+  "file": "audio/glosario/news-vs-new.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The news is new to me."
+ },
+ {
+  "term": "no-vs-not",
+  "kind": "frases",
+  "file": "audio/glosario/no-vs-not.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "There is no milk, and I am not hungry."
+ },
+ {
+  "term": "notice-vs-realize",
+  "kind": "frases",
+  "file": "audio/glosario/notice-vs-realize.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I noticed the sign and realized I was lost."
+ },
+ {
+  "term": "off-vs-of",
+  "kind": "frases",
+  "file": "audio/glosario/off-vs-of.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Turn off the light and take one of these books."
+ },
+ {
+  "term": "opportunity-vs-possibility",
+  "kind": "frases",
+  "file": "audio/glosario/opportunity-vs-possibility.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "There is a possibility of rain, but an opportunity to travel."
+ },
+ {
+  "term": "other-vs-another",
+  "kind": "frases",
+  "file": "audio/glosario/other-vs-another.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Can I have another cookie? The other cookies are gone."
+ },
+ {
+  "term": "parents-vs-relatives",
+  "kind": "frases",
+  "file": "audio/glosario/parents-vs-relatives.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My parents and other relatives came to dinner."
+ },
+ {
+  "term": "pass-vs-past",
+  "kind": "frases",
+  "file": "audio/glosario/pass-vs-past.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I passed the test last month, in the past."
+ },
+ {
+  "term": "patience-vs-patients",
+  "kind": "frases",
+  "file": "audio/glosario/patience-vs-patients.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The nurse needs patience with her patients."
+ },
+ {
+  "term": "perhaps-vs-maybe",
+  "kind": "frases",
+  "file": "audio/glosario/perhaps-vs-maybe.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Perhaps, maybe we can meet tomorrow."
+ },
+ {
+  "term": "permission-vs-permit",
+  "kind": "frases",
+  "file": "audio/glosario/permission-vs-permit.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You need permission to park; the city may permit it."
+ },
+ {
+  "term": "personal-vs-personnel",
+  "kind": "frases",
+  "file": "audio/glosario/personal-vs-personnel.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Keep personal files away from company personnel."
+ },
+ {
+  "term": "place-vs-room",
+  "kind": "frases",
+  "file": "audio/glosario/place-vs-room.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This is a nice place, but there is no room inside."
+ },
+ {
+  "term": "play-vs-game",
+  "kind": "frases",
+  "file": "audio/glosario/play-vs-game.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We play a game after class."
+ },
+ {
+  "term": "police-vs-politics",
+  "kind": "frases",
+  "file": "audio/glosario/police-vs-politics.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The police do not discuss politics at work."
+ },
+ {
+  "term": "politic-vs-political",
+  "kind": "frases",
+  "file": "audio/glosario/politic-vs-political.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Political debate is common; silence was politic."
+ },
+ {
+  "term": "possibility-vs-probability",
+  "kind": "frases",
+  "file": "audio/glosario/possibility-vs-probability.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Rain is a possibility, but the probability is low."
+ },
+ {
+  "term": "practice-vs-practise",
+  "kind": "frases",
+  "file": "audio/glosario/practice-vs-practise.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I practice every day at football practice."
+ },
+ {
+  "term": "principal-vs-principle",
+  "kind": "frases",
+  "file": "audio/glosario/principal-vs-principle.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The principal explained the school principle."
+ },
+ {
+  "term": "quiet-vs-quietly",
+  "kind": "frases",
+  "file": "audio/glosario/quiet-vs-quietly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The room is quiet, so please speak quietly."
+ },
+ {
+  "term": "raise-vs-rise",
+  "kind": "frases",
+  "file": "audio/glosario/raise-vs-rise.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Raise your hand when the sun rises."
+ },
+ {
+  "term": "remember-vs-remind",
+  "kind": "frases",
+  "file": "audio/glosario/remember-vs-remind.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Remember the meeting and remind me at noon."
+ },
+ {
+  "term": "rent-vs-hire",
+  "kind": "frases",
+  "file": "audio/glosario/rent-vs-hire.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We rent an apartment and hire a guide."
+ },
+ {
+  "term": "reply-vs-answer",
+  "kind": "frases",
+  "file": "audio/glosario/reply-vs-answer.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Please reply to my email and answer the phone."
+ },
+ {
+  "term": "remember-vs-recall",
+  "kind": "frases",
+  "file": "audio/glosario/remember-vs-recall.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I remember her name, but cannot recall the date."
+ },
+ {
+  "term": "rob-vs-steal",
+  "kind": "frases",
+  "file": "audio/glosario/rob-vs-steal.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They robbed the bank and stole money."
+ },
+ {
+  "term": "sensible-vs-sensitive",
+  "kind": "frases",
+  "file": "audio/glosario/sensible-vs-sensitive.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It is sensible to be sensitive to allergies."
+ },
+ {
+  "term": "serial-vs-cereal",
+  "kind": "frases",
+  "file": "audio/glosario/serial-vs-cereal.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Check the serial number before eating cereal."
+ },
+ {
+  "term": "shade-vs-shadow",
+  "kind": "frases",
+  "file": "audio/glosario/shade-vs-shadow.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We sat in the shade and saw our shadows."
+ },
+ {
+  "term": "sick-vs-ill",
+  "kind": "frases",
+  "file": "audio/glosario/sick-vs-ill.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She feels sick, so she called in ill."
+ },
+ {
+  "term": "sometime-vs-sometimes-vs-some-time",
+  "kind": "frases",
+  "file": "audio/glosario/sometime-vs-sometimes-vs-some-time.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Let us meet sometime; I sometimes need some time alone."
+ },
+ {
+  "term": "speak-vs-talk",
+  "kind": "frases",
+  "file": "audio/glosario/speak-vs-talk.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She speaks English and talks with clients daily."
+ },
+ {
+  "term": "stationary-vs-stationery",
+  "kind": "frases",
+  "file": "audio/glosario/stationary-vs-stationery.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The car stayed stationary beside the stationery store."
+ },
+ {
+  "term": "steal-vs-rob",
+  "kind": "frases",
+  "file": "audio/glosario/steal-vs-rob.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Someone stole my phone and robbed the store."
+ },
+ {
+  "term": "story-vs-history",
+  "kind": "frases",
+  "file": "audio/glosario/story-vs-history.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The story teaches history through one family."
+ },
+ {
+  "term": "study-vs-learn",
+  "kind": "frases",
+  "file": "audio/glosario/study-vs-learn.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I study grammar to learn English."
+ },
+ {
+  "term": "success-vs-achievement",
+  "kind": "frases",
+  "file": "audio/glosario/success-vs-achievement.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Graduation is an achievement and a personal success."
+ },
+ {
+  "term": "suggest-vs-recommend",
+  "kind": "frases",
+  "file": "audio/glosario/suggest-vs-recommend.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I suggest lunch; I recommend the fish."
+ },
+ {
+  "term": "sympathetic-vs-friendly",
+  "kind": "frases",
+  "file": "audio/glosario/sympathetic-vs-friendly.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Our friendly neighbor was sympathetic about the loss."
+ },
+ {
+  "term": "take-vs-carry",
+  "kind": "frases",
+  "file": "audio/glosario/take-vs-carry.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Take this box upstairs; it is easy to carry."
+ },
+ {
+  "term": "task-vs-chore",
+  "kind": "frases",
+  "file": "audio/glosario/task-vs-chore.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Sending the report is a task; washing dishes is a chore."
+ },
+ {
+  "term": "teach-vs-study",
+  "kind": "frases",
+  "file": "audio/glosario/teach-vs-study.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They teach English while I study it."
+ },
+ {
+  "term": "temper-vs-temperature",
+  "kind": "frases",
+  "file": "audio/glosario/temper-vs-temperature.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "His temper changed when the temperature rose."
+ },
+ {
+  "term": "than-vs-then",
+  "kind": "frases",
+  "file": "audio/glosario/than-vs-then.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She is taller than me; then we went home."
+ },
+ {
+  "term": "theft-vs-robbery",
+  "kind": "frases",
+  "file": "audio/glosario/theft-vs-robbery.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The theft was reported, but the robbery involved a weapon."
+ },
+ {
+  "term": "there-vs-their",
+  "kind": "frases",
+  "file": "audio/glosario/there-vs-their.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Their bags are over there."
+ },
+ {
+  "term": "these-vs-those",
+  "kind": "frases",
+  "file": "audio/glosario/these-vs-those.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "These shoes are mine; those shoes are yours."
+ },
+ {
+  "term": "thing-vs-stuff",
+  "kind": "frases",
+  "file": "audio/glosario/thing-vs-stuff.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Put those things with your stuff."
+ },
+ {
+  "term": "time-vs-weather",
+  "kind": "frases",
+  "file": "audio/glosario/time-vs-weather.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "What time is it, and how is the weather?"
+ },
+ {
+  "term": "to-vs-too-vs-two",
+  "kind": "frases",
+  "file": "audio/glosario/to-vs-too-vs-two.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I want to go too, with two friends."
+ },
+ {
+  "term": "travel-vs-trip",
+  "kind": "frases",
+  "file": "audio/glosario/travel-vs-trip.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I love travel, and our trip starts Friday."
+ },
+ {
+  "term": "urban-vs-urbane",
+  "kind": "frases",
+  "file": "audio/glosario/urban-vs-urbane.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Urban life made him urbane and confident."
+ },
+ {
+  "term": "valuable-vs-invaluable",
+  "kind": "frases",
+  "file": "audio/glosario/valuable-vs-invaluable.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The painting is valuable, but her advice is invaluable."
+ },
+ {
+  "term": "vacation-vs-holiday",
+  "kind": "frases",
+  "file": "audio/glosario/vacation-vs-holiday.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We take a vacation on a holiday weekend."
+ },
+ {
+  "term": "various-vs-several",
+  "kind": "frases",
+  "file": "audio/glosario/various-vs-several.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Several students chose various topics."
+ },
+ {
+  "term": "visa-vs-visa-card",
+  "kind": "frases",
+  "file": "audio/glosario/visa-vs-visa-card.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My visa expires soon, but my Visa card works."
+ },
+ {
+  "term": "wait-vs-expect",
+  "kind": "frases",
+  "file": "audio/glosario/wait-vs-expect.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Wait here; I expect the bus soon."
+ },
+ {
+  "term": "wake-vs-awake",
+  "kind": "frases",
+  "file": "audio/glosario/wake-vs-awake.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Wake me at six if I am not awake."
+ },
+ {
+  "term": "wear-vs-dress",
+  "kind": "frases",
+  "file": "audio/glosario/wear-vs-dress.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wear a coat and dress the child warmly."
+ },
+ {
+  "term": "win-vs-earn",
+  "kind": "frases",
+  "file": "audio/glosario/win-vs-earn.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She won a prize and earned a bonus."
+ },
+ {
+  "term": "work-vs-job",
+  "kind": "frases",
+  "file": "audio/glosario/work-vs-job.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have work to do at my new job."
+ },
+ {
+  "term": "worth-vs-worthy",
+  "kind": "frases",
+  "file": "audio/glosario/worth-vs-worthy.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This book is worth reading and worthy of attention."
+ },
+ {
+  "term": "write-vs-type",
+  "kind": "frases",
+  "file": "audio/glosario/write-vs-type.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Write your name, then type the email."
+ },
+ {
+  "term": "yet-vs-still",
+  "kind": "frases",
+  "file": "audio/glosario/yet-vs-still.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have not finished yet; I am still working."
+ },
+ {
+  "term": "young-vs-youngster",
+  "kind": "frases",
+  "file": "audio/glosario/young-vs-youngster.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The young youngster asked many questions."
+ },
+ {
+  "term": "used-to-vs-be-used-to",
+  "kind": "frases",
+  "file": "audio/glosario/used-to-vs-be-used-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I used to wake late, but I am used to waking early."
+ },
+ {
+  "term": "would-like-vs-like",
+  "kind": "frases",
+  "file": "audio/glosario/would-like-vs-like.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I like tea, but I would like coffee now."
+ },
+ {
+  "term": "must-vs-have-to",
+  "kind": "frases",
+  "file": "audio/glosario/must-vs-have-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I must call her; I have to wear a uniform at work."
+ },
+ {
+  "term": "mustnt-vs-dont-have-to",
+  "kind": "frases",
+  "file": "audio/glosario/mustnt-vs-dont-have-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "You must not smoke, but you do not have to stay."
+ },
+ {
+  "term": "say-vs-tell-a-person",
+  "kind": "frases",
+  "file": "audio/glosario/say-vs-tell-a-person.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She said hello and told me the news."
+ },
+ {
+  "term": "speak-to-vs-speak-with",
+  "kind": "frases",
+  "file": "audio/glosario/speak-to-vs-speak-with.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I need to speak with you, not just speak to you."
+ },
+ {
+  "term": "marry-vs-get-married",
+  "kind": "frases",
+  "file": "audio/glosario/marry-vs-get-married.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They got married after he married his college friend."
+ },
+ {
+  "term": "graduate-vs-graduation",
+  "kind": "frases",
+  "file": "audio/glosario/graduate-vs-graduation.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She will graduate at graduation in June."
+ },
+ {
+  "term": "college-vs-university",
+  "kind": "frases",
+  "file": "audio/glosario/college-vs-university.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "He attends college within a large university."
+ },
+ {
+  "term": "school-vs-college",
+  "kind": "frases",
+  "file": "audio/glosario/school-vs-college.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My school ends before I start college."
+ },
+ {
+  "term": "professor-vs-teacher",
+  "kind": "frases",
+  "file": "audio/glosario/professor-vs-teacher.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My teacher became a university professor."
+ },
+ {
+  "term": "class-vs-lesson",
+  "kind": "frases",
+  "file": "audio/glosario/class-vs-lesson.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Our class has a new lesson today."
+ },
+ {
+  "term": "course-vs-career",
+  "kind": "frases",
+  "file": "audio/glosario/course-vs-career.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This course can help your career."
+ },
+ {
+  "term": "exam-vs-test",
+  "kind": "frases",
+  "file": "audio/glosario/exam-vs-test.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The final exam is a difficult test."
+ },
+ {
+  "term": "mark-vs-grade",
+  "kind": "frases",
+  "file": "audio/glosario/mark-vs-grade.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My grade was high, the same as my British mark."
+ },
+ {
+  "term": "note-vs-notice",
+  "kind": "frases",
+  "file": "audio/glosario/note-vs-notice.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Take a note when you notice a change."
+ },
+ {
+  "term": "paper-vs-article",
+  "kind": "frases",
+  "file": "audio/glosario/paper-vs-article.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wrote a paper about an article online."
+ },
+ {
+  "term": "research-vs-study",
+  "kind": "frases",
+  "file": "audio/glosario/research-vs-study.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The research includes a study of language learners."
+ },
+ {
+  "term": "learn-by-heart-vs-memorize",
+  "kind": "frases",
+  "file": "audio/glosario/learn-by-heart-vs-memorize.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Memorize these verbs, or learn them by heart."
+ },
+ {
+  "term": "ask-vs-request",
+  "kind": "frases",
+  "file": "audio/glosario/ask-vs-request.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Ask for help or request a formal appointment."
+ },
+ {
+  "term": "demand-vs-request",
+  "kind": "frases",
+  "file": "audio/glosario/demand-vs-request.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They demanded payment but requested a receipt politely."
+ },
+ {
+  "term": "help-vs-support",
+  "kind": "frases",
+  "file": "audio/glosario/help-vs-support.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Thank you for helping me and supporting my plan."
+ },
+ {
+  "term": "allow-vs-permit",
+  "kind": "frases",
+  "file": "audio/glosario/allow-vs-permit.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "They allow pets, but the city permit is required."
+ },
+ {
+  "term": "forbid-vs-prohibit",
+  "kind": "frases",
+  "file": "audio/glosario/forbid-vs-prohibit.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "My parents forbid it; the sign prohibits it."
+ },
+ {
+  "term": "need-vs-need-to",
+  "kind": "frases",
+  "file": "audio/glosario/need-vs-need-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I need water, and I need to rest."
+ },
+ {
+  "term": "want-vs-need",
+  "kind": "frases",
+  "file": "audio/glosario/want-vs-need.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I want a new phone, but I need sleep."
+ },
+ {
+  "term": "hope-vs-wish",
+  "kind": "frases",
+  "file": "audio/glosario/hope-vs-wish.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I hope it rains; I wish I were on vacation."
+ },
+ {
+  "term": "expect-vs-wait",
+  "kind": "frases",
+  "file": "audio/glosario/expect-vs-wait.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I expect her at six, so I will wait here."
+ },
+ {
+  "term": "try-vs-test",
+  "kind": "frases",
+  "file": "audio/glosario/try-vs-test.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Try this app, then test its speed."
+ },
+ {
+  "term": "check-vs-control",
+  "kind": "frases",
+  "file": "audio/glosario/check-vs-control.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Check the answer before you control the machine."
  }
 ]

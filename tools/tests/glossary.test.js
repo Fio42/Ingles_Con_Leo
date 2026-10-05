@@ -73,7 +73,10 @@ test('el índice incluye todas las fichas y no duplica IDs', () => {
   for (const term of terms) assert(index.includes(`href="/glosario/${term.slug}/"`), 'falta enlace de ' + term.slug);
   const ids = matchAll(index, /<li class="gl-row"[^>]* id="([^"]+)"/g);
   assert.deepStrictEqual(dupes(ids), []);
-  assert.strictEqual(matchAll(index, /class="gl-row"/g).length, 503, 'total de filas inesperado');
+  // La base histórica tenía 136 fichas propias y 503 filas. Cada ficha nueva
+  // debe añadir exactamente una fila al índice sin romper los duplicados.
+  const expectedRows = 503 + (terms.length - 136);
+  assert.strictEqual(matchAll(index, /class="gl-row"/g).length, expectedRows, 'total de filas inesperado');
 });
 test('el sitemap conserva y representa exactamente las URLs del glosario', () => {
   const urls = matchAll(sitemap, /<loc>(https:\/\/inglesconleo\.com\/(?:glosario-ingles\/|glosario\/[^<]+\/))<\/loc>/g);

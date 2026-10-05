@@ -144,8 +144,8 @@
   "h": "a4417c8848"
  },
  "index": {
-  "d": "2026-10-04",
-  "h": "59471a2775"
+  "d": "2026-10-05",
+  "h": "8a02d4f8b9"
  },
  "p:mustnt": {
   "d": "2026-10-04",
@@ -582,5 +582,805 @@
  "p:whistle": {
   "d": "2026-10-04",
   "h": "ed28ef2c5e"
+ },
+ "p:accept-vs-except": {
+  "d": "2026-10-05",
+  "h": "bd6eda6a9a"
+ },
+ "p:advice-vs-advise": {
+  "d": "2026-10-05",
+  "h": "812fc7aa12"
+ },
+ "p:all-vs-every": {
+  "d": "2026-10-05",
+  "h": "d0904a9251"
+ },
+ "p:alone-vs-lonely": {
+  "d": "2026-10-05",
+  "h": "7249b9535e"
+ },
+ "p:among-vs-between": {
+  "d": "2026-10-05",
+  "h": "6513ef8c76"
+ },
+ "p:amount-vs-number": {
+  "d": "2026-10-05",
+  "h": "66dabfcd07"
+ },
+ "p:any-vs-some": {
+  "d": "2026-10-05",
+  "h": "c8e32eed83"
+ },
+ "p:apart-vs-a-part": {
+  "d": "2026-10-05",
+  "h": "153ff358e4"
+ },
+ "p:assure-vs-ensure-vs-insure": {
+  "d": "2026-10-05",
+  "h": "ba62f5e428"
+ },
+ "p:attend-vs-assist": {
+  "d": "2026-10-05",
+  "h": "fc92f688b0"
+ },
+ "p:awake-vs-wake-up": {
+  "d": "2026-10-05",
+  "h": "53674c272f"
+ },
+ "p:aware-vs-conscious": {
+  "d": "2026-10-05",
+  "h": "5575f9723a"
+ },
+ "p:bad-vs-badly": {
+  "d": "2026-10-05",
+  "h": "f0f8a2faf9"
+ },
+ "p:bath-vs-bathe": {
+  "d": "2026-10-05",
+  "h": "1853b35a52"
+ },
+ "p:been-vs-gone": {
+  "d": "2026-10-05",
+  "h": "c19473abf6"
+ },
+ "p:beside-vs-besides": {
+  "d": "2026-10-05",
+  "h": "02253f12b8"
+ },
+ "p:bored-vs-boring": {
+  "d": "2026-10-05",
+  "h": "3f4e578b21"
+ },
+ "p:bought-vs-brought": {
+  "d": "2026-10-05",
+  "h": "bf1b45c6d3"
+ },
+ "p:breath-vs-breathe": {
+  "d": "2026-10-05",
+  "h": "b9b9776684"
+ },
+ "p:bring-vs-take-away": {
+  "d": "2026-10-05",
+  "h": "8adc8e9c05"
+ },
+ "p:can-vs-may": {
+  "d": "2026-10-05",
+  "h": "80596a1b8d"
+ },
+ "p:capital-vs-capitol": {
+  "d": "2026-10-05",
+  "h": "81af3e4a5c"
+ },
+ "p:career-vs-carrier": {
+  "d": "2026-10-05",
+  "h": "6cb22ae948"
+ },
+ "p:cemetery-vs-symmetry": {
+  "d": "2026-10-05",
+  "h": "cfd0831b53"
+ },
+ "p:chance-vs-opportunity": {
+  "d": "2026-10-05",
+  "h": "870044892c"
+ },
+ "p:classic-vs-classical": {
+  "d": "2026-10-05",
+  "h": "2126f06b43"
+ },
+ "p:come-vs-go": {
+  "d": "2026-10-05",
+  "h": "84e1ee466f"
+ },
+ "p:complement-vs-compliment": {
+  "d": "2026-10-05",
+  "h": "e4ed21f90e"
+ },
+ "p:compliment-vs-complement": {
+  "d": "2026-10-05",
+  "h": "b6b407327d"
+ },
+ "p:conscience-vs-conscious": {
+  "d": "2026-10-05",
+  "h": "8a3dbf924f"
+ },
+ "p:continual-vs-continuous": {
+  "d": "2026-10-05",
+  "h": "9a9bccfb37"
+ },
+ "p:credible-vs-credulous": {
+  "d": "2026-10-05",
+  "h": "16f10145dc"
+ },
+ "p:customer-vs-client": {
+  "d": "2026-10-05",
+  "h": "76d5b3e217"
+ },
+ "p:data-vs-datum": {
+  "d": "2026-10-05",
+  "h": "cdd4492ec2"
+ },
+ "p:dead-vs-died": {
+  "d": "2026-10-05",
+  "h": "0b1fbd071e"
+ },
+ "p:decent-vs-descent": {
+  "d": "2026-10-05",
+  "h": "8934a6b676"
+ },
+ "p:definitely-vs-defiantly": {
+  "d": "2026-10-05",
+  "h": "5c45969f11"
+ },
+ "p:deny-vs-refuse": {
+  "d": "2026-10-05",
+  "h": "35b25fc271"
+ },
+ "p:desert-vs-dessert": {
+  "d": "2026-10-05",
+  "h": "b90b88c170"
+ },
+ "p:despite-vs-although": {
+  "d": "2026-10-05",
+  "h": "a232641ac5"
+ },
+ "p:device-vs-devise": {
+  "d": "2026-10-05",
+  "h": "de1b5bfd64"
+ },
+ "p:discover-vs-invent": {
+  "d": "2026-10-05",
+  "h": "f6d0d9d8ef"
+ },
+ "p:doubt-vs-suspect": {
+  "d": "2026-10-05",
+  "h": "6810301ca9"
+ },
+ "p:economic-vs-economical": {
+  "d": "2026-10-05",
+  "h": "08b5257dbf"
+ },
+ "p:effective-vs-efficient": {
+  "d": "2026-10-05",
+  "h": "696704e3c0"
+ },
+ "p:elder-vs-older": {
+  "d": "2026-10-05",
+  "h": "818eacdf28"
+ },
+ "p:emigrate-vs-immigrate": {
+  "d": "2026-10-05",
+  "h": "a9e7079ae7"
+ },
+ "p:eminent-vs-imminent": {
+  "d": "2026-10-05",
+  "h": "10751b85fa"
+ },
+ "p:especially-vs-specially": {
+  "d": "2026-10-05",
+  "h": "c24311d878"
+ },
+ "p:event-vs-eventually": {
+  "d": "2026-10-05",
+  "h": "dcc8469877"
+ },
+ "p:everyday-vs-every-day": {
+  "d": "2026-10-05",
+  "h": "d308d39808"
+ },
+ "p:excited-vs-exciting": {
+  "d": "2026-10-05",
+  "h": "ebabff20b8"
+ },
+ "p:experience-vs-experiment": {
+  "d": "2026-10-05",
+  "h": "bfb60b5db0"
+ },
+ "p:farther-vs-further": {
+  "d": "2026-10-05",
+  "h": "d99789fc6f"
+ },
+ "p:feel-vs-feel-like": {
+  "d": "2026-10-05",
+  "h": "f836e5dffe"
+ },
+ "p:finally-vs-at-last": {
+  "d": "2026-10-05",
+  "h": "d6419c3abc"
+ },
+ "p:finish-vs-end": {
+  "d": "2026-10-05",
+  "h": "56c632937e"
+ },
+ "p:floor-vs-ground": {
+  "d": "2026-10-05",
+  "h": "bb6a474e83"
+ },
+ "p:food-vs-meal": {
+  "d": "2026-10-05",
+  "h": "02e386cbba"
+ },
+ "p:fun-vs-funny": {
+  "d": "2026-10-05",
+  "h": "6fd0cfaa27"
+ },
+ "p:furniture-vs-furnitures": {
+  "d": "2026-10-05",
+  "h": "ce47ac48f3"
+ },
+ "p:further-vs-farther": {
+  "d": "2026-10-05",
+  "h": "33ea90f45a"
+ },
+ "p:gather-vs-collect": {
+  "d": "2026-10-05",
+  "h": "5f27fb8829"
+ },
+ "p:get-to-vs-arrive": {
+  "d": "2026-10-05",
+  "h": "34833928a5"
+ },
+ "p:go-on-vs-keep-on": {
+  "d": "2026-10-05",
+  "h": "daa42e2d72"
+ },
+ "p:good-vs-nice": {
+  "d": "2026-10-05",
+  "h": "3008b76dfe"
+ },
+ "p:grow-vs-grow-up": {
+  "d": "2026-10-05",
+  "h": "3c706a4aba"
+ },
+ "p:habit-vs-custom": {
+  "d": "2026-10-05",
+  "h": "3efbeffa88"
+ },
+ "p:hard-vs-hardly": {
+  "d": "2026-10-05",
+  "h": "5d3ef17dfa"
+ },
+ "p:have-vs-have-got": {
+  "d": "2026-10-05",
+  "h": "73f70398f9"
+ },
+ "p:hear-vs-listen-to": {
+  "d": "2026-10-05",
+  "h": "f0e49f0391"
+ },
+ "p:historic-vs-historical": {
+  "d": "2026-10-05",
+  "h": "1f916ecc05"
+ },
+ "p:home-vs-house": {
+  "d": "2026-10-05",
+  "h": "9382a80fa9"
+ },
+ "p:how-much-vs-how-many": {
+  "d": "2026-10-05",
+  "h": "1fa6836f5b"
+ },
+ "p:housework-vs-homework": {
+  "d": "2026-10-05",
+  "h": "b227b6e6ac"
+ },
+ "p:human-vs-humane": {
+  "d": "2026-10-05",
+  "h": "c8147414c4"
+ },
+ "p:imagine-vs-think": {
+  "d": "2026-10-05",
+  "h": "f118519329"
+ },
+ "p:imply-vs-infer": {
+  "d": "2026-10-05",
+  "h": "080a109cb2"
+ },
+ "p:in-time-vs-on-time": {
+  "d": "2026-10-05",
+  "h": "66b07aeab2"
+ },
+ "p:incident-vs-accident": {
+  "d": "2026-10-05",
+  "h": "a13c722869"
+ },
+ "p:inquire-vs-enquire": {
+  "d": "2026-10-05",
+  "h": "cc1c7f96a6"
+ },
+ "p:intelligent-vs-smart": {
+  "d": "2026-10-05",
+  "h": "389b259b82"
+ },
+ "p:interesting-vs-interested": {
+  "d": "2026-10-05",
+  "h": "db924b8213"
+ },
+ "p:job-vs-work": {
+  "d": "2026-10-05",
+  "h": "9e6e88bb10"
+ },
+ "p:journey-vs-trip-vs-travel": {
+  "d": "2026-10-05",
+  "h": "52e804d174"
+ },
+ "p:later-vs-latter": {
+  "d": "2026-10-05",
+  "h": "56b59911b1"
+ },
+ "p:lay-vs-lie": {
+  "d": "2026-10-05",
+  "h": "349f305ad4"
+ },
+ "p:learn-vs-teach": {
+  "d": "2026-10-05",
+  "h": "87f273908e"
+ },
+ "p:least-vs-less": {
+  "d": "2026-10-05",
+  "h": "4f673e4c72"
+ },
+ "p:lend-vs-borrow": {
+  "d": "2026-10-05",
+  "h": "dbb25ae0a9"
+ },
+ "p:library-vs-bookstore": {
+  "d": "2026-10-05",
+  "h": "8090219942"
+ },
+ "p:little-vs-a-little": {
+  "d": "2026-10-05",
+  "h": "0a5bafa021"
+ },
+ "p:look-vs-see-vs-watch": {
+  "d": "2026-10-05",
+  "h": "e6e384b36f"
+ },
+ "p:lose-vs-miss": {
+  "d": "2026-10-05",
+  "h": "df41f4bc04"
+ },
+ "p:luggage-vs-baggage": {
+  "d": "2026-10-05",
+  "h": "dd71e4215e"
+ },
+ "p:make-vs-let": {
+  "d": "2026-10-05",
+  "h": "fa8a97c472"
+ },
+ "p:maybe-vs-may-be": {
+  "d": "2026-10-05",
+  "h": "a1c5e39804"
+ },
+ "p:medicine-vs-medication": {
+  "d": "2026-10-05",
+  "h": "f4610ab0f1"
+ },
+ "p:memory-vs-reminder": {
+  "d": "2026-10-05",
+  "h": "43ae61ebf7"
+ },
+ "p:miss-vs-lose": {
+  "d": "2026-10-05",
+  "h": "2a7747477b"
+ },
+ "p:money-vs-cash": {
+  "d": "2026-10-05",
+  "h": "45b7e47287"
+ },
+ "p:most-vs-almost": {
+  "d": "2026-10-05",
+  "h": "d0b8f80aed"
+ },
+ "p:motivate-vs-encourage": {
+  "d": "2026-10-05",
+  "h": "734e201ba3"
+ },
+ "p:nature-vs-nurture": {
+  "d": "2026-10-05",
+  "h": "da66b05dfc"
+ },
+ "p:near-vs-nearly": {
+  "d": "2026-10-05",
+  "h": "85a7e4a57b"
+ },
+ "p:news-vs-new": {
+  "d": "2026-10-05",
+  "h": "943d813078"
+ },
+ "p:no-vs-not": {
+  "d": "2026-10-05",
+  "h": "d10083a485"
+ },
+ "p:notice-vs-realize": {
+  "d": "2026-10-05",
+  "h": "fc1c26d55c"
+ },
+ "p:off-vs-of": {
+  "d": "2026-10-05",
+  "h": "bd34535a49"
+ },
+ "p:opportunity-vs-possibility": {
+  "d": "2026-10-05",
+  "h": "b6d5ae019b"
+ },
+ "p:other-vs-another": {
+  "d": "2026-10-05",
+  "h": "37d91a3942"
+ },
+ "p:parents-vs-relatives": {
+  "d": "2026-10-05",
+  "h": "60823ffb51"
+ },
+ "p:pass-vs-past": {
+  "d": "2026-10-05",
+  "h": "515c7a494a"
+ },
+ "p:patience-vs-patients": {
+  "d": "2026-10-05",
+  "h": "68072db54d"
+ },
+ "p:perhaps-vs-maybe": {
+  "d": "2026-10-05",
+  "h": "57ebdda222"
+ },
+ "p:permission-vs-permit": {
+  "d": "2026-10-05",
+  "h": "c12505e94b"
+ },
+ "p:personal-vs-personnel": {
+  "d": "2026-10-05",
+  "h": "fb279cebf4"
+ },
+ "p:place-vs-room": {
+  "d": "2026-10-05",
+  "h": "8c051a9391"
+ },
+ "p:play-vs-game": {
+  "d": "2026-10-05",
+  "h": "1c55dee963"
+ },
+ "p:police-vs-politics": {
+  "d": "2026-10-05",
+  "h": "ae8aa8f05c"
+ },
+ "p:politic-vs-political": {
+  "d": "2026-10-05",
+  "h": "71d8f7d5ee"
+ },
+ "p:possibility-vs-probability": {
+  "d": "2026-10-05",
+  "h": "d8d4307316"
+ },
+ "p:practice-vs-practise": {
+  "d": "2026-10-05",
+  "h": "f92d11bc3c"
+ },
+ "p:principal-vs-principle": {
+  "d": "2026-10-05",
+  "h": "5b3f109e97"
+ },
+ "p:quiet-vs-quietly": {
+  "d": "2026-10-05",
+  "h": "732d510908"
+ },
+ "p:raise-vs-rise": {
+  "d": "2026-10-05",
+  "h": "2633ae7910"
+ },
+ "p:remember-vs-remind": {
+  "d": "2026-10-05",
+  "h": "e25f5e1b76"
+ },
+ "p:rent-vs-hire": {
+  "d": "2026-10-05",
+  "h": "bc30636732"
+ },
+ "p:reply-vs-answer": {
+  "d": "2026-10-05",
+  "h": "45c2cbc0c0"
+ },
+ "p:remember-vs-recall": {
+  "d": "2026-10-05",
+  "h": "aea7fc210a"
+ },
+ "p:rob-vs-steal": {
+  "d": "2026-10-05",
+  "h": "d8d55120d1"
+ },
+ "p:sensible-vs-sensitive": {
+  "d": "2026-10-05",
+  "h": "7bbd01c65d"
+ },
+ "p:serial-vs-cereal": {
+  "d": "2026-10-05",
+  "h": "5d71378b80"
+ },
+ "p:shade-vs-shadow": {
+  "d": "2026-10-05",
+  "h": "41003b5fae"
+ },
+ "p:sick-vs-ill": {
+  "d": "2026-10-05",
+  "h": "60cfd9a69e"
+ },
+ "p:sometime-vs-sometimes-vs-some-time": {
+  "d": "2026-10-05",
+  "h": "4a6437eca4"
+ },
+ "p:speak-vs-talk": {
+  "d": "2026-10-05",
+  "h": "2a0433ca44"
+ },
+ "p:stationary-vs-stationery": {
+  "d": "2026-10-05",
+  "h": "a926c2208d"
+ },
+ "p:steal-vs-rob": {
+  "d": "2026-10-05",
+  "h": "da0070faa4"
+ },
+ "p:story-vs-history": {
+  "d": "2026-10-05",
+  "h": "b5fa5ae61e"
+ },
+ "p:study-vs-learn": {
+  "d": "2026-10-05",
+  "h": "33f8e0799e"
+ },
+ "p:success-vs-achievement": {
+  "d": "2026-10-05",
+  "h": "4aa7277c37"
+ },
+ "p:suggest-vs-recommend": {
+  "d": "2026-10-05",
+  "h": "420dc0dad9"
+ },
+ "p:sympathetic-vs-friendly": {
+  "d": "2026-10-05",
+  "h": "819f544186"
+ },
+ "p:take-vs-carry": {
+  "d": "2026-10-05",
+  "h": "21a4324ccc"
+ },
+ "p:task-vs-chore": {
+  "d": "2026-10-05",
+  "h": "9150b42f43"
+ },
+ "p:teach-vs-study": {
+  "d": "2026-10-05",
+  "h": "e13658f76a"
+ },
+ "p:temper-vs-temperature": {
+  "d": "2026-10-05",
+  "h": "bf103a756c"
+ },
+ "p:than-vs-then": {
+  "d": "2026-10-05",
+  "h": "0157a05af0"
+ },
+ "p:theft-vs-robbery": {
+  "d": "2026-10-05",
+  "h": "a011008505"
+ },
+ "p:there-vs-their": {
+  "d": "2026-10-05",
+  "h": "0065673d23"
+ },
+ "p:these-vs-those": {
+  "d": "2026-10-05",
+  "h": "4addb6b215"
+ },
+ "p:thing-vs-stuff": {
+  "d": "2026-10-05",
+  "h": "575476b941"
+ },
+ "p:time-vs-weather": {
+  "d": "2026-10-05",
+  "h": "bbc3e6e74e"
+ },
+ "p:to-vs-too-vs-two": {
+  "d": "2026-10-05",
+  "h": "c9574ca25c"
+ },
+ "p:travel-vs-trip": {
+  "d": "2026-10-05",
+  "h": "682e63feef"
+ },
+ "p:urban-vs-urbane": {
+  "d": "2026-10-05",
+  "h": "7b49941c37"
+ },
+ "p:valuable-vs-invaluable": {
+  "d": "2026-10-05",
+  "h": "46bbb6a220"
+ },
+ "p:vacation-vs-holiday": {
+  "d": "2026-10-05",
+  "h": "00836cdaa6"
+ },
+ "p:various-vs-several": {
+  "d": "2026-10-05",
+  "h": "df1528b2c6"
+ },
+ "p:visa-vs-visa-card": {
+  "d": "2026-10-05",
+  "h": "758cc9fbcd"
+ },
+ "p:wait-vs-expect": {
+  "d": "2026-10-05",
+  "h": "24d582bdfb"
+ },
+ "p:wake-vs-awake": {
+  "d": "2026-10-05",
+  "h": "66dac4951d"
+ },
+ "p:wear-vs-dress": {
+  "d": "2026-10-05",
+  "h": "e48e0ef072"
+ },
+ "p:win-vs-earn": {
+  "d": "2026-10-05",
+  "h": "ff74cec7e2"
+ },
+ "p:work-vs-job": {
+  "d": "2026-10-05",
+  "h": "c42dfe91c5"
+ },
+ "p:worth-vs-worthy": {
+  "d": "2026-10-05",
+  "h": "b70e774894"
+ },
+ "p:write-vs-type": {
+  "d": "2026-10-05",
+  "h": "a963df3f11"
+ },
+ "p:yet-vs-still": {
+  "d": "2026-10-05",
+  "h": "070a19ac18"
+ },
+ "p:young-vs-youngster": {
+  "d": "2026-10-05",
+  "h": "eb1604043b"
+ },
+ "p:used-to-vs-be-used-to": {
+  "d": "2026-10-05",
+  "h": "48a0ed0a6c"
+ },
+ "p:would-like-vs-like": {
+  "d": "2026-10-05",
+  "h": "d8c46b60d2"
+ },
+ "p:must-vs-have-to": {
+  "d": "2026-10-05",
+  "h": "e9faeb95c4"
+ },
+ "p:mustnt-vs-dont-have-to": {
+  "d": "2026-10-05",
+  "h": "0a0d0b779e"
+ },
+ "p:say-vs-tell-a-person": {
+  "d": "2026-10-05",
+  "h": "cdce2156a6"
+ },
+ "p:speak-to-vs-speak-with": {
+  "d": "2026-10-05",
+  "h": "57aabdc3aa"
+ },
+ "p:marry-vs-get-married": {
+  "d": "2026-10-05",
+  "h": "23bf8478f5"
+ },
+ "p:graduate-vs-graduation": {
+  "d": "2026-10-05",
+  "h": "5223b7f51d"
+ },
+ "p:college-vs-university": {
+  "d": "2026-10-05",
+  "h": "fd8fdd6419"
+ },
+ "p:school-vs-college": {
+  "d": "2026-10-05",
+  "h": "dfb5f97667"
+ },
+ "p:professor-vs-teacher": {
+  "d": "2026-10-05",
+  "h": "6de978230d"
+ },
+ "p:class-vs-lesson": {
+  "d": "2026-10-05",
+  "h": "b59853a68c"
+ },
+ "p:course-vs-career": {
+  "d": "2026-10-05",
+  "h": "db9c2d2020"
+ },
+ "p:exam-vs-test": {
+  "d": "2026-10-05",
+  "h": "c24a34914f"
+ },
+ "p:mark-vs-grade": {
+  "d": "2026-10-05",
+  "h": "cc8373ce45"
+ },
+ "p:note-vs-notice": {
+  "d": "2026-10-05",
+  "h": "68f8dd041d"
+ },
+ "p:paper-vs-article": {
+  "d": "2026-10-05",
+  "h": "468e3b50fc"
+ },
+ "p:research-vs-study": {
+  "d": "2026-10-05",
+  "h": "cfecdb5924"
+ },
+ "p:learn-by-heart-vs-memorize": {
+  "d": "2026-10-05",
+  "h": "971750b73b"
+ },
+ "p:ask-vs-request": {
+  "d": "2026-10-05",
+  "h": "798296669b"
+ },
+ "p:demand-vs-request": {
+  "d": "2026-10-05",
+  "h": "d83bbe8ee5"
+ },
+ "p:help-vs-support": {
+  "d": "2026-10-05",
+  "h": "2bf10ef1e1"
+ },
+ "p:allow-vs-permit": {
+  "d": "2026-10-05",
+  "h": "3a2e227e17"
+ },
+ "p:forbid-vs-prohibit": {
+  "d": "2026-10-05",
+  "h": "8ce19be645"
+ },
+ "p:need-vs-need-to": {
+  "d": "2026-10-05",
+  "h": "6e5e07d259"
+ },
+ "p:want-vs-need": {
+  "d": "2026-10-05",
+  "h": "a79b8101a6"
+ },
+ "p:hope-vs-wish": {
+  "d": "2026-10-05",
+  "h": "274b3fc6ff"
+ },
+ "p:expect-vs-wait": {
+  "d": "2026-10-05",
+  "h": "043aeab550"
+ },
+ "p:try-vs-test": {
+  "d": "2026-10-05",
+  "h": "bd00beee89"
+ },
+ "p:check-vs-control": {
+  "d": "2026-10-05",
+  "h": "b2226d8fa2"
  }
 }

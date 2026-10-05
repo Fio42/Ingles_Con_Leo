@@ -797,4 +797,4 @@ module.exports = [
   resp:`Grabar o registro. La sílaba fuerte cambia según sea verbo o sustantivo.`, pron:'ri-KÓRD (verbo) / RÉ-kord (sustantivo)',
   uso:[`Como verbo: _record a video_. Como sustantivo: _keep a record_. El cambio de acento distingue los dos usos.`],
   ej:[[`Please record the lesson.`,`Por favor graba la lección.`],[`She broke the school record.`,`Ella rompió el récord de la escuela.`]], prac:'vocabulary', rel:['resume','voice','live'] }
-];
+].concat(require('./confusiones-200.js'));
