@@ -13,6 +13,24 @@
    - prereq:   (opcional) ids de temas que conviene dominar antes. Leo AI solo
                puede sugerir un tema de esta lista o de los que el sitio ya
                detecto como flojos; nunca escribe enlaces.
+   - micros:   (opcional) microtemas del tema. Un microtema es UNA regla con UN error
+               tipico. Cada ejercicio de data.js lo referencia con `micro:'<id>'` y es la
+               unica relacion que se escribe a mano: los ejercicios de un microtema son
+               los que apuntan a el, y su tema y su familia salen de donde vive. Campos:
+                 id        estable y unico (kebab-case). Con progreso asociado NO se
+                           renombra: tools/tests/micro-ids.lock.json lo vigila.
+                 label     como lo ve el alumno.
+                 prereq    (opcional) otros microtemas DEL MISMO TEMA que conviene antes.
+                 lesson    (opcional) { article, anchor }: la parte de la clase que lo
+                           explica. Sin esto se usa la clase/glosario del tema.
+                 glossary  (opcional) slug de /glosario/. Sin esto, el del tema.
+                 active    true = microtema listo para recomendar: tiene que cumplir
+                           >=6 ejercicios de practica, >=3 de comprobacion y un recurso
+                           (lo exige tools/tests/micros.test.js). Sin active el microtema
+                           solo esta DECLARADO: todo sigue comportandose como antes.
+   - merges:   (opcional) ids de temas ANTIGUOS que este tema absorbe. Los antiguos siguen
+               existiendo tal cual (sus ids viven en enlaces, Writing y Listening); solo
+               dicen que sus ejercicios pueden pertenecer a microtemas de este tema.
    Si un tema no tiene article, no se muestra "Ver clase". Si no tiene
    tampoco glossary, no se muestra ningun enlace. Nunca se aproxima.
    ============================================================ */
@@ -29,7 +47,13 @@ const TEMAS = [
     topics:[`Comparativos (-er / more ... than)`, `Comparativos de igualdad (as...as)`] },
   /* ---- condicionales ---- */
   { id:'condicionales', prereq:['will-going-to'], label:'Condicionales', family:'condicionales', article:null, glossary:null,
-    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`] },
+    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`],
+    micros:[
+      { id:'cond-1-probable', label:'Condicional 1: algo probable' },
+      { id:'cond-2-imaginario', prereq:['cond-1-probable'], label:'Condicional 2: algo imaginario' },
+      { id:'cond-3-pasado-irreal', prereq:['cond-2-imaginario'], label:'Condicional 3: el pasado que ya no se puede cambiar' },
+      { id:'cond-mixto', prereq:['cond-3-pasado-irreal'], label:'Condicionales mixtos' }
+    ] },
   { id:'wish', prereq:['condicionales'], label:'Wish e if only', family:'condicionales', article:null, glossary:null,
     topics:[`Wish / If only`] },
   /* ---- conectores ---- */
@@ -60,6 +84,19 @@ const TEMAS = [
   /* ---- presente continuo ---- */
   { id:'presente-continuo', prereq:['to-be-presente'], label:'Presente continuo', family:'continuo', article:null, glossary:null, topics:[`Presente continuo (I am ___ing)`] },
   /* ---- cuantificadores ---- */
+  /* Tema paraguas: reune los temas solapados de cuantificadores a nivel de microtema SIN tocar
+     los ids antiguos (siguen en enlaces, Writing, Listening e historial). Sus topics quedan en
+     los temas antiguos; aqui no se repiten. */
+  { id:'cuantificadores', merges:['contables-incontables', 'much-many', 'little-few', 'some-any', 'fewer-vs-less'],
+    label:'Cuantificadores', family:'cuantificadores', article:null, glossary:null, topics:[],
+    micros:[
+      { id:'much-many-contable-incontable', glossary:'much-vs-many', label:'Much y many: contable o incontable' },
+      { id:'a-lot-of', prereq:['much-many-contable-incontable'], label:'A lot of: sirve para los dos' },
+      { id:'some-any-afirm-neg', label:'Some y any: frases afirmativas y negativas' },
+      { id:'some-any-pregunta-oferta', prereq:['some-any-afirm-neg'], label:'Some y any: preguntas y ofrecimientos' },
+      { id:'little-few-matiz', prereq:['much-many-contable-incontable'], label:'A little, little, a few y few' },
+      { id:'fewer-less', prereq:['much-many-contable-incontable'], glossary:'fewer-vs-less', label:'Fewer y less' }
+    ] },
   { id:'much-many', prereq:['contables-incontables'], label:'Much y many', family:'cuantificadores', article:null, glossary:'much-vs-many',
     topics:[`Much / Many`, `Cuantificadores (a lot of / much / many / few / little)`] },
   { id:'fewer-vs-less', prereq:['contables-incontables'], label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`] },
@@ -71,7 +108,13 @@ const TEMAS = [
   { id:'this-that', label:'This, that, these y those', family:'demostrativos', article:null, glossary:null,
     topics:[`"This is..." (esto es...)`, `This / These`, `This / That / These / Those`] },
   /* ---- futuro / indirecto ---- */
-  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`] },
+  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`],
+    micros:[
+      { id:'will-decision-espontanea', label:'Will: decisiones en el momento' },
+      { id:'going-to-plan-decidido', label:'Going to: planes ya decididos' },
+      { id:'going-to-evidencia', label:'Going to: lo que se ve venir' },
+      { id:'will-forma-verbo-base', label:'Will + verbo base (sin "to")' }
+    ] },
   { id:'estilo-indirecto', prereq:['pasado-regulares'], label:'Estilo indirecto (reported speech)', family:'indirecto', article:null, glossary:null,
     topics:[`Reported Speech`, `Discurso indirecto con matices`] },
   /* ---- modales ---- */
@@ -204,14 +247,30 @@ const VOCAB_GRUPOS_SIN_TEMA = [
 
 /* Etiquetas de Gramática que son repasos MEZCLADOS de varios temas (sus ejercicios no
    practican un solo tema): siguen contando para su familia del diagnóstico, pero no marcan
-   ningún tema (se evita una señal falsa). Los tests exigen que toda etiqueta de data.js
-   esté en un tema o en esta lista. */
-const GRAMMAR_TOPICS_SIN_TEMA = [
-  `Condicionales, comparativos y presente perfecto`,
-  `Wish, estilo indirecto y pasado perfecto`
-];
+   ningún tema (se evita una señal falsa). Hoy está VACÍA a propósito: los dos repasos
+   mezclados que existían se repartieron en bloques de un solo tema y data-quality.test.js
+   exige que todo bloque de data.js pertenezca a un tema. No agregar etiquetas aquí: corregir
+   el bloque. */
+const GRAMMAR_TOPICS_SIN_TEMA = [];
 
 const TEMA_BY_ID = TEMAS.reduce((m, t)=>{ m[t.id] = t; return m; }, {});
+
+/* ---- Microtemas (indices derivados: nada se escribe dos veces) ---- */
+const MICROS = [];   // { ...microtema, tema: <id del tema donde vive> }
+TEMAS.forEach(t => (t.micros || []).forEach(m => MICROS.push(Object.assign({}, m, { tema: t.id }))));
+const MICRO_BY_ID = MICROS.reduce((m, x)=>{ m[x.id] = x; return m; }, {});
+// Tema antiguo -> tema que lo absorbio ("merges"). Los ids antiguos se conservan.
+const TEMA_MERGED_INTO = TEMAS.reduce((m, t)=>{ (t.merges || []).forEach(id=>{ m[id] = t.id; }); return m; }, {});
+function canonicalTemaId(id){ return TEMA_MERGED_INTO[id] || id; }
+// Recurso de un microtema: el suyo, o el del tema donde vive (nunca se inventa uno).
+function microResources(microId){
+  const m = MICRO_BY_ID[microId];
+  if(!m) return null;
+  const t = TEMA_BY_ID[m.tema];
+  const lesson = m.lesson || (t.article ? { article: t.article } : null);
+  const glossary = m.glossary || t.glossary || null;
+  return { lesson, glossary };
+}
 const TEMA_BY_TOPIC = TEMAS.reduce((m, t)=>{ t.topics.forEach(topic=>{ m[topic] = t; }); return m; }, {});
 // Tema de una etiqueta de data.js (o null si todavia no esta en el registro).
 function temaForTopic(topic){ return (topic && TEMA_BY_TOPIC[topic]) || null; }

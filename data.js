@@ -851,28 +851,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Some / Any',
         items: [
-          { id:'g-facil-some-1', translation:"No tengo nada de dinero.", type:'choice', prompt:"I don't have ___ money.",
+          { id:'g-facil-some-1', micro:'some-any-afirm-neg', translation:"No tengo nada de dinero.", type:'choice', prompt:"I don't have ___ money.",
             options:["some","any","much"], correct:1,
             explain:"En negaciones usamos “any”, no “some”.",
             examples:[
               {en:"I don't have any money.", es:"No tengo nada de dinero."},
               {en:"There isn't any milk.", es:"No hay nada de leche."}
             ]},
-          { id:'g-facil-some-2', translation:"¿Me puedes dar un poco de agua?", type:'fill', sentence:["Can","I","have","___","water","?"], blankIndex:3,
+          { id:'g-facil-some-2', micro:'some-any-pregunta-oferta', translation:"¿Me puedes dar un poco de agua?", type:'fill', sentence:["Can","I","have","___","water","?"], blankIndex:3,
             bank:["some","any","many"], correct:"some",
             explain:"En ofrecimientos y peticiones usamos “some”, aunque sea una pregunta.",
             examples:[
               {en:"Can I have some water?", es:"¿Me das un poco de agua?"},
               {en:"Would you like some coffee?", es:"¿Quieres café?"}
             ]},
-          { id:'g-facil-some-3', translation:"¿Tienes alguna pregunta?", type:'choice', prompt:"Do you have ___ questions?",
+          { id:'g-facil-some-3', micro:'some-any-pregunta-oferta', translation:"¿Tienes alguna pregunta?", type:'choice', prompt:"Do you have ___ questions?",
             options:["some","any","much"], correct:1,
             explain:"En preguntas normales usamos “any”.",
             examples:[
               {en:"Do you have any questions?", es:"¿Tienes alguna pregunta?"},
               {en:"Is there any bread left?", es:"¿Queda algo de pan?"}
             ]},
-          { id:'g-facil-some-4', translation:"No queda nada de azúcar.", type:'error', wrong:"There isn't some sugar left.", wrongWord:"some",
+          { id:'g-facil-some-4', micro:'some-any-afirm-neg', translation:"No queda nada de azúcar.", type:'error', wrong:"There isn't some sugar left.", wrongWord:"some",
             right:"There isn't any sugar left.", rightWord:"any",
             explain:"Con negaciones usamos “any”, no “some”.",
             examples:[
@@ -1526,14 +1526,14 @@ const GRAMMAR_BANK = {
       {
         topic: 'Sustantivos contables e incontables',
         items: [
-          { id:'g-facil-m300-1', translation:"¿Cuánta agua necesitas?", type:'choice', prompt:"How ___ water do you need?",
+          { id:'g-facil-m300-1', micro:'much-many-contable-incontable', translation:"¿Cuánta agua necesitas?", type:'choice', prompt:"How ___ water do you need?",
             options:["many","much","a"], correct:1,
             explain:"'Water' es incontable, así que usamos 'much', no 'many'.",
             examples:[
               {en:"How much rice is left?", es:"¿Cuánto arroz queda?"},
               {en:"There isn't much time.", es:"No queda mucho tiempo."}
             ]},
-          { id:'g-facil-m300-2', translation:"Hay muchas manzanas en la mesa.", type:'fill',
+          { id:'g-facil-m300-2', micro:'much-many-contable-incontable', translation:"Hay muchas manzanas en la mesa.", type:'fill',
             sentence:["There","are","___","apples","on","the","table","."], blankIndex:2,
             bank:["many","much","little"], correct:"many",
             explain:"'Apples' es contable y está en plural, así que usamos 'many'.",
@@ -1541,7 +1541,7 @@ const GRAMMAR_BANK = {
               {en:"There are many books here.", es:"Hay muchos libros aquí."},
               {en:"How many chairs do we need?", es:"¿Cuántas sillas necesitamos?"}
             ]},
-          { id:'g-facil-m300-3', translation:"No tengo mucha información.", type:'error',
+          { id:'g-facil-m300-3', micro:'much-many-contable-incontable', translation:"No tengo mucha información.", type:'error',
             wrong:"I don't have many information.", wrongWord:"many",
             right:"I don't have much information.", rightWord:"much",
             explain:"'Information' es un sustantivo incontable, así que usamos 'much', no 'many'.",
@@ -1549,7 +1549,7 @@ const GRAMMAR_BANK = {
               {en:"She gave me much advice.", es:"Ella me dio mucho consejo."},
               {en:"We don't have much furniture.", es:"No tenemos mucho mobiliario (en este ejemplo)."}
             ]},
-          { id:'g-facil-m300-4', translation:"Solo tengo un poco de dinero.", type:'choice', prompt:"I only have a ___ of money.",
+          { id:'g-facil-m300-4', micro:'little-few-matiz', translation:"Solo tengo un poco de dinero.", type:'choice', prompt:"I only have a ___ of money.",
             options:["few","little","many"], correct:1,
             explain:"'Money' es incontable, entonces decimos 'a little', no 'a few'.",
             examples:[
@@ -1736,28 +1736,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Conditionals (tipo 1 y 2)',
         items: [
-          { id:'g-medio-cond12-1', type:'choice', prompt:"If it rains, we ___ home.",
+          { id:'g-medio-cond12-1', micro:'cond-1-probable', type:'choice', prompt:"If it rains, we ___ home.",
             options:["stay","will stay","would stay"], correct:1,
             explain:"Condicional tipo 1: “if” + presente, “will” + verbo base, para algo probable.",
             examples:[
               {en:"If it rains, we will stay home.", es:"Si llueve, nos quedaremos en casa."},
               {en:"If I have time, I will call you.", es:"Si tengo tiempo, te llamaré."}
             ]},
-          { id:'g-medio-cond12-2', type:'fill', sentence:["If","I","won","the","lottery,","I","___","travel","the","world","."], blankIndex:6,
+          { id:'g-medio-cond12-2', micro:'cond-2-imaginario', type:'fill', sentence:["If","I","won","the","lottery,","I","___","travel","the","world","."], blankIndex:6,
             bank:["would","will","had"], correct:"would",
             explain:"Condicional tipo 2: “if” + pasado, “would” + verbo base, para algo imaginario o poco probable.",
             examples:[
               {en:"If I won the lottery, I would travel the world.", es:"Si ganara la lotería, viajaría por el mundo."},
               {en:"If I were you, I would apologize.", es:"Si yo fuera tú, me disculparía."}
             ]},
-          { id:'g-medio-cond12-3', type:'choice', prompt:"If I ___ you, I would apologize.",
+          { id:'g-medio-cond12-3', micro:'cond-2-imaginario', type:'choice', prompt:"If I ___ you, I would apologize.",
             options:["am","was","were"], correct:2,
             explain:"En condicional tipo 2, con “I/he/she/it” usamos “were” en vez de “was” (más correcto).",
             examples:[
               {en:"If I were you, I would apologize.", es:"Si yo fuera tú, me disculparía."},
               {en:"If she were here, she would help.", es:"Si ella estuviera aquí, ayudaría."}
             ]},
-          { id:'g-medio-cond12-4', type:'error', wrong:"If I have more time, I would travel more.", wrongWord:"have",
+          { id:'g-medio-cond12-4', micro:'cond-2-imaginario', type:'error', wrong:"If I have more time, I would travel more.", wrongWord:"have",
             right:"If I had more time, I would travel more.", rightWord:"had",
             explain:"Condicional tipo 2 necesita pasado (“had”) en la parte del “if”, no presente.",
             examples:[
@@ -1872,28 +1872,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Will vs Going to (futuro)',
         items: [
-          { id:'g-medio5-fut-1', type:'choice', prompt:"I've already decided that I ___ start my own business next year.",
+          { id:'g-medio5-fut-1', micro:'going-to-plan-decidido', type:'choice', prompt:"I've already decided that I ___ start my own business next year.",
             options:["will","am going to","would"], correct:1,
             explain:"Usamos “going to” para planes ya decididos, no “will” (más para decisiones espontáneas).",
             examples:[
               {en:"I am going to start my own business next year.", es:"Voy a empezar mi propio negocio el próximo año."},
               {en:"We are going to move to a new city.", es:"Nos vamos a mudar a una nueva ciudad."}
             ]},
-          { id:'g-medio5-fut-2', type:'fill', sentence:["Look","at","those","clouds","It","___","rain","soon","."], blankIndex:5,
+          { id:'g-medio5-fut-2', micro:'going-to-evidencia', type:'fill', sentence:["Look","at","those","clouds","It","___","rain","soon","."], blankIndex:5,
             bank:["is going to","will","would"], correct:"is going to",
             explain:"Cuando hay evidencia visible de que algo va a pasar, usamos “going to”, no “will”.",
             examples:[
               {en:"Look at those clouds. It is going to rain soon.", es:"Mira esas nubes. Va a llover pronto."},
               {en:"She is going to fall, look at her feet!", es:"Ella se va a caer, ¡mira sus pies!"}
             ]},
-          { id:'g-medio5-fut-3', type:'choice', prompt:"A: \"The phone is ringing.\" B: \"I ___ get it!\"",
+          { id:'g-medio5-fut-3', micro:'will-decision-espontanea', type:'choice', prompt:"A: \"The phone is ringing.\" B: \"I ___ get it!\"",
             options:["am going to","will","was going to"], correct:1,
             explain:"Para decisiones espontáneas, tomadas en el momento, usamos “will”.",
             examples:[
               {en:"I will get it!", es:"¡Yo contesto!"},
               {en:"I will help you with that.", es:"Te ayudaré con eso."}
             ]},
-          { id:'g-medio5-fut-4', type:'error', wrong:"I think it will to rain tomorrow.", wrongWord:"to",
+          { id:'g-medio5-fut-4', micro:'will-forma-verbo-base', type:'error', wrong:"I think it will to rain tomorrow.", wrongWord:"to",
             right:"I think it will rain tomorrow.", rightWord:"",
             explain:"Después de “will” va el verbo base sin “to”: sobra la palabra “to”.",
             examples:[
@@ -2043,28 +2043,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Cuantificadores (a lot of / much / many / few / little)',
         items: [
-          { id:'g-medio7-quant-1', translation:"¿Cómo dices \"mucho tráfico\" en inglés?", type:'choice', prompt:"How do you say \"mucho tráfico\" in English?",
+          { id:'g-medio7-quant-1', micro:'much-many-contable-incontable', translation:"¿Cómo dices \"mucho tráfico\" en inglés?", type:'choice', prompt:"How do you say \"mucho tráfico\" in English?",
             options:["A lot of traffic","Many traffic","Few traffic"], correct:0,
             explain:"“Traffic” es incontable, así que usamos “a lot of” o “much”, no “many”.",
             examples:[
               {en:"There is a lot of traffic today.", es:"Hay mucho tráfico hoy."},
               {en:"We don't have much traffic here.", es:"No tenemos mucho tráfico aquí."}
             ]},
-          { id:'g-medio7-quant-2', translation:"No tenemos muchos amigos en esta ciudad.", type:'fill', sentence:["We","don't","have","___","friends","in","this","city","."], blankIndex:3,
+          { id:'g-medio7-quant-2', micro:'much-many-contable-incontable', translation:"No tenemos muchos amigos en esta ciudad.", type:'fill', sentence:["We","don't","have","___","friends","in","this","city","."], blankIndex:3,
             bank:["many","much","little"], correct:"many",
             explain:"“Friends” es contable, así que usamos “many”.",
             examples:[
               {en:"We don't have many friends in this city.", es:"No tenemos muchos amigos en esta ciudad."},
               {en:"He has many hobbies.", es:"Él tiene muchos pasatiempos."}
             ]},
-          { id:'g-medio7-quant-3', translation:"¿Cuál oración usa correctamente \"a few\"?", type:'choice', prompt:"Which sentence correctly uses \"a few\"?",
+          { id:'g-medio7-quant-3', micro:'little-few-matiz', translation:"¿Cuál oración usa correctamente \"a few\"?", type:'choice', prompt:"Which sentence correctly uses \"a few\"?",
             options:["I have a few questions.","I have a few money.","I have a few water."], correct:0,
             explain:"“A few” se usa con sustantivos contables como “questions”.",
             examples:[
               {en:"I have a few questions.", es:"Tengo unas cuantas preguntas."},
               {en:"She has a few close friends.", es:"Ella tiene unos pocos amigos cercanos."}
             ]},
-          { id:'g-medio7-quant-4', translation:"Tenemos poco tiempo.", type:'error', wrong:"We have few time.", wrongWord:"few",
+          { id:'g-medio7-quant-4', micro:'little-few-matiz', translation:"Tenemos poco tiempo.", type:'error', wrong:"We have few time.", wrongWord:"few",
             right:"We have little time.", rightWord:"little",
             explain:"“Time” es incontable, así que usamos “little”, no “few”.",
             examples:[
@@ -2340,7 +2340,7 @@ const GRAMMAR_BANK = {
       {
         topic: "\"Fewer\" vs \"Less\"",
         items: [
-          { id:'g-medio10-5',
+          { id:'g-medio10-5', micro:'fewer-less',
             translation:"Tengo menos libros que tú.",
             type:'choice',
             prompt:"I have ___ books than you.",
@@ -2351,7 +2351,7 @@ const GRAMMAR_BANK = {
               {en:"I have fewer books than you.", es:"Tengo menos libros que tú."},
               {en:"There are fewer students this year.", es:"Hay menos estudiantes este año."}
             ]},
-          { id:'g-medio10-6',
+          { id:'g-medio10-6', micro:'fewer-less',
             translation:"Deberíamos comer menos azúcar.",
             type:'choice',
             prompt:"We should eat ___ sugar.",
@@ -2362,7 +2362,7 @@ const GRAMMAR_BANK = {
               {en:"We should eat less sugar.", es:"Deberíamos comer menos azúcar."},
               {en:"I have less time now.", es:"Tengo menos tiempo ahora."}
             ]},
-          { id:'g-medio10-7',
+          { id:'g-medio10-7', micro:'fewer-less',
             translation:"Hay menos personas que el año pasado.",
             type:'error',
             wrong:"There are less people than last year.",
@@ -2472,33 +2472,26 @@ const GRAMMAR_BANK = {
       {
         topic: 'Condicional tipo 3',
         items: [
-          { id:'g-avz-c3-1', type:'choice', prompt:"Had I known, I ___ differently.",
+          { id:'g-avz-c3-1', micro:'cond-3-pasado-irreal', type:'choice', prompt:"Had I known, I ___ differently.",
             options:["would act","would have acted","will act"], correct:1,
             explain:"Condicional tipo 3: “had I known” (pasado hipotético) pide “would have + participio”.",
             examples:[
               {en:"If I had studied more, I would have passed the exam.", es:"Si hubiera estudiado más, habría aprobado el examen."},
               {en:"She would have called if she had known.", es:"Ella habría llamado si hubiera sabido."}
             ]},
-          { id:'g-avz-c3-2', type:'choice', prompt:"If she ___ earlier, she wouldn't have missed the flight.",
+          { id:'g-avz-c3-2', micro:'cond-3-pasado-irreal', type:'choice', prompt:"If she ___ earlier, she wouldn't have missed the flight.",
             options:["left","had left","leaves"], correct:1,
             explain:"Condicional 3: “if” + pasado perfecto, “would have” + participio en la otra parte.",
             examples:[
               {en:"If we had left earlier, we wouldn't have missed the flight.", es:"Si hubiéramos salido antes, no habríamos perdido el vuelo."},
               {en:"He would have won if he had trained harder.", es:"Él habría ganado si hubiera entrenado más duro."}
             ]},
-          { id:'g-avz-c3-3', type:'fill', sentence:["If","I","___","known","about","the","delay,","I","would","have","left","earlier","."], blankIndex:2,
+          { id:'g-avz-c3-3', micro:'cond-3-pasado-irreal', type:'fill', sentence:["If","I","___","known","about","the","delay,","I","would","have","left","earlier","."], blankIndex:2,
             bank:["had","have","has"], correct:"had",
             explain:"La parte con “if” lleva “had” + participio en el condicional tipo 3.",
             examples:[
               {en:"If I had known, I would have told you.", es:"Si lo hubiera sabido, te habría dicho."},
               {en:"She would have helped if she had known.", es:"Ella habría ayudado si hubiera sabido."}
-            ]},
-          { id:'g-avz-c3-4', type:'error', wrong:"Despite of the rain, we went out.", wrongWord:"of",
-            right:"Despite the rain, we went out.", rightWord:"",
-            explain:"“Despite” nunca lleva “of” después; “in spite of” sí lo lleva.",
-            examples:[
-              {en:"Despite the rain, we went out.", es:"A pesar de la lluvia, salimos."},
-              {en:"In spite of the traffic, we arrived on time.", es:"A pesar del tráfico, llegamos a tiempo."}
             ]}
         ]
       },
@@ -2567,6 +2560,14 @@ const GRAMMAR_BANK = {
             examples:[
               {en:"Although it was raining, we went out.", es:"Aunque estaba lloviendo, salimos."},
               {en:"Despite the rain, we went out.", es:"A pesar de la lluvia, salimos."}
+            ]},
+          /* Estaba por error en "Condicional tipo 3". Mismo id y contenido: solo cambió de tema. */
+          { id:'g-avz-c3-4', type:'error', wrong:"Despite of the rain, we went out.", wrongWord:"of",
+            right:"Despite the rain, we went out.", rightWord:"",
+            explain:"“Despite” nunca lleva “of” después; “in spite of” sí lo lleva.",
+            examples:[
+              {en:"Despite the rain, we went out.", es:"A pesar de la lluvia, salimos."},
+              {en:"In spite of the traffic, we arrived on time.", es:"A pesar del tráfico, llegamos a tiempo."}
             ]}
         ]
       },
@@ -2709,28 +2710,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Condicionales mixtos',
         items: [
-          { id:'g-avz4-mix-1', type:'choice', prompt:"If I had studied medicine, I ___ a doctor now.",
+          { id:'g-avz4-mix-1', micro:'cond-mixto', type:'choice', prompt:"If I had studied medicine, I ___ a doctor now.",
             options:["would be","would have been","will be"], correct:0,
             explain:"Condicional mixto: condición en el pasado (“had studied”) con resultado en el presente (“would be”).",
             examples:[
               {en:"If I had studied medicine, I would be a doctor now.", es:"Si hubiera estudiado medicina, ahora sería doctor."},
               {en:"If she had taken that job, she would live in Madrid now.", es:"Si hubiera tomado ese trabajo, ahora viviría en Madrid."}
             ]},
-          { id:'g-avz4-mix-2', type:'choice', prompt:"If she weren't so busy, she ___ to the party last night.",
+          { id:'g-avz4-mix-2', micro:'cond-mixto', type:'choice', prompt:"If she weren't so busy, she ___ to the party last night.",
             options:["would have gone","would go","will go"], correct:0,
             explain:"Condicional mixto: condición en el presente (“weren't busy”) con resultado en el pasado (“would have gone”).",
             examples:[
               {en:"If she weren't so busy, she would have gone to the party last night.", es:"Si no estuviera tan ocupada, habría ido a la fiesta anoche."},
               {en:"If he weren't so shy, he would have said something.", es:"Si no fuera tan tímido, habría dicho algo."}
             ]},
-          { id:'g-avz4-mix-3', type:'fill', sentence:["If","I","were","you,","I","___","have","accepted","the","offer","."], blankIndex:5,
+          { id:'g-avz4-mix-3', micro:'cond-mixto', type:'fill', sentence:["If","I","were","you,","I","___","have","accepted","the","offer","."], blankIndex:5,
             bank:["would","will","had"], correct:"would",
             explain:"“Would have” + participio expresa el resultado hipotético en el pasado.",
             examples:[
               {en:"If I were you, I would have accepted the offer.", es:"Si yo fuera tú, habría aceptado la oferta."},
               {en:"If I were rich, I would have bought that house.", es:"Si fuera rico, habría comprado esa casa."}
             ]},
-          { id:'g-avz4-mix-4', type:'error', wrong:"If I was rich, I would have bought that house years ago.", wrongWord:"was",
+          { id:'g-avz4-mix-4', micro:'cond-mixto', type:'error', wrong:"If I was rich, I would have bought that house years ago.", wrongWord:"was",
             right:"If I were rich, I would have bought that house years ago.", rightWord:"were",
             explain:"En condicionales hipotéticos, usamos “were” (no “was”) con “I/he/she”, especialmente en registro formal.",
             examples:[
@@ -3305,7 +3306,7 @@ const GRAMMAR_BANK = {
               {en:"We should have booked earlier.", es:"Deberíamos haber reservado antes."}
             ]},
           { id:'g-avanzado-m300-3', translation:"No pudo haber sabido la respuesta.", type:'fill',
-            sentence:["She","can't","have","___","the","answer","."], blankIndex:4,
+            sentence:["She","can't","have","___","the","answer","."], blankIndex:3,
             bank:["known","know","knew"], correct:"known",
             explain:"'Can't have + participio' expresa que algo es imposible que haya ocurrido.",
             examples:[
@@ -3317,6 +3318,18 @@ const GRAMMAR_BANK = {
     ]
   ]
 };
+
+/* ---------------------------------------------------------
+   GRAMÁTICA — BANCO DE COMPROBACIÓN (separado a propósito de GRAMMAR_BANK)
+   Lista plana de ejercicios con el mismo formato que los de GRAMMAR_BANK
+   (choice / fill / error) más `micro:'<id>'` (obligatorio, id de un microtema de
+   temas.js). Miden si el alumno GENERALIZA un microtema, así que nunca pueden haber
+   salido como práctica normal: ningún motor de sesión lee este banco (ni el Plan, ni
+   Mis errores, ni el reto, ni el mixto). Solo los sirve pickCheckItems() (app.js), y
+   solo los que ese alumno no ha visto antes. Vacío hasta que se creen los de los
+   pilotos. Las reglas las vigila tools/tests/micros.test.js.
+   --------------------------------------------------------- */
+const GRAMMAR_CHECK_BANK = [];
 
 /* ---------------------------------------------------------
    VOCABULARIO — siempre con contexto (2 ejemplos + mini quiz).
@@ -10145,7 +10158,7 @@ GRAMMAR_BANK.facil.push([
     topic: "Some / Any",
     items: [
       {
-        id: "g-facil9-someany-1",
+        id: "g-facil9-someany-1", micro:"some-any-afirm-neg",
         translation: "Tengo algo de dinero.",
         type: "choice",
         prompt: "Which is correct in a positive sentence?",
@@ -10158,21 +10171,21 @@ GRAMMAR_BANK.facil.push([
         ]
       },
       {
-        id: "g-facil9-someany-2",
-        translation: "¿Tienes alguna pregunta?",
+        id: "g-facil9-someany-2", micro:"some-any-pregunta-oferta",
+        translation: "¿Hay leche en el refrigerador?",
         type: "fill",
-        sentence: ["Do", "you", "have", "___", "questions", "?"],
-        blankIndex: 3,
+        sentence: ["Is", "there", "___", "milk", "in", "the", "fridge", "?"],
+        blankIndex: 2,
         bank: ["any", "some", "much"],
         correct: "any",
         explain: "En preguntas normalmente usamos “any”.",
         examples: [
-          { en: "Do you have any questions?", es: "¿Tienes alguna pregunta?" },
+          { en: "Is there any milk in the fridge?", es: "¿Hay leche en el refrigerador?" },
           { en: "I have some questions.", es: "Tengo algunas preguntas." }
         ]
       },
       {
-        id: "g-facil9-someany-3",
+        id: "g-facil9-someany-3", micro:"some-any-afirm-neg",
         translation: "No tengo nada de tiempo.",
         type: "choice",
         prompt: "Which is correct in a negative sentence?",
@@ -10185,7 +10198,7 @@ GRAMMAR_BANK.facil.push([
         ]
       },
       {
-        id: "g-facil9-someany-4",
+        id: "g-facil9-someany-4", micro:"some-any-afirm-neg",
         translation: "Tengo algunas manzanas.",
         type: "error",
         wrong: "I have any apples.",
@@ -10204,7 +10217,7 @@ GRAMMAR_BANK.facil.push([
     topic: "Much / Many",
     items: [
       {
-        id: "g-facil9-muchmany-1",
+        id: "g-facil9-muchmany-1", micro:"much-many-contable-incontable",
         translation: "Tengo muchos libros.",
         type: "choice",
         prompt: "Which is correct with a countable noun (books)?",
@@ -10217,7 +10230,7 @@ GRAMMAR_BANK.facil.push([
         ]
       },
       {
-        id: "g-facil9-muchmany-2",
+        id: "g-facil9-muchmany-2", micro:"much-many-contable-incontable",
         translation: "No tengo mucho tiempo.",
         type: "fill",
         sentence: ["I", "don't", "have", "___", "time", "."],
@@ -10231,7 +10244,7 @@ GRAMMAR_BANK.facil.push([
         ]
       },
       {
-        id: "g-facil9-muchmany-3",
+        id: "g-facil9-muchmany-3", micro:"a-lot-of",
         translation: "¿Cuál funciona con cosas que se pueden contar y también con las que no?",
         type: "choice",
         prompt: "Which expression works with both countable and uncountable nouns?",
@@ -10244,7 +10257,7 @@ GRAMMAR_BANK.facil.push([
         ]
       },
       {
-        id: "g-facil9-muchmany-4",
+        id: "g-facil9-muchmany-4", micro:"much-many-contable-incontable",
         translation: "Ella tiene muchos amigos.",
         type: "error",
         wrong: "She has much friends.",
@@ -13181,14 +13194,16 @@ GRAMMAR_BANK.principiante.push(
 [
       { topic:'Verbo "to be": am / is / are',
         items:[
-          { id:'g-principiante-m200-tobe-1', translation:"Yo soy estudiante.", type:'choice', prompt:"I ___ a student.",
+          /* tobe-1 y tobe-2 repetían palabra por palabra a g-principiante6-7 y g-principiante6-5.
+             Mismo concepto y misma respuesta (am / is), oración distinta. */
+          { id:'g-principiante-m200-tobe-1', translation:"Yo soy profesor.", type:'choice', prompt:"I ___ a teacher.",
             options:["am","is","are"], correct:0,
             explain:"Con \u201cI\u201d siempre se usa \u201cam\u201d.",
             examples:[
-              {en:"I am a student.", es:"Yo soy estudiante."},
+              {en:"I am a teacher.", es:"Yo soy profesor."},
               {en:"I am happy.", es:"Yo estoy feliz."}
             ]},
-          { id:'g-principiante-m200-tobe-2', translation:"Ella es mi hermana.", type:'choice', prompt:"She ___ my sister.",
+          { id:'g-principiante-m200-tobe-2', translation:"Él es mi hermano.", type:'choice', prompt:"He ___ my brother.",
             options:["is","am","are"], correct:0,
             explain:"Con \u201che / she / it\u201d se usa \u201cis\u201d.",
             examples:[
@@ -13278,28 +13293,28 @@ GRAMMAR_BANK.facil.push(
         ]},
       { topic:'A little / Little / A few / Few',
         items:[
-          { id:'g-facil-m200-littlefew-1', translation:"Tengo un poco de dinero, así que puedo comprar el almuerzo.", type:'choice', prompt:"I have ___ money, so I can buy lunch.",
+          { id:'g-facil-m200-littlefew-1', micro:'little-few-matiz', translation:"Tengo un poco de dinero, así que puedo comprar el almuerzo.", type:'choice', prompt:"I have ___ money, so I can buy lunch.",
             options:["a little","little","a few"], correct:0,
             explain:"\u201cA little\u201d significa un poco (positivo, sí tienes algo).",
             examples:[
               {en:"I have a little money, so I can buy lunch.", es:"Tengo un poco de dinero, así que puedo comprar el almuerzo."},
               {en:"She has a little time to help.", es:"Ella tiene un poco de tiempo para ayudar."}
             ]},
-          { id:'g-facil-m200-littlefew-2', translation:"Tengo muy poco dinero, no puedo comprar nada.", type:'choice', prompt:"I have ___ money, I can't buy anything.",
+          { id:'g-facil-m200-littlefew-2', micro:'little-few-matiz', translation:"Tengo muy poco dinero, no puedo comprar nada.", type:'choice', prompt:"I have ___ money, I can't buy anything.",
             options:["little","a little","a few"], correct:0,
             explain:"\u201cLittle\u201d (sin \u201ca\u201d) significa casi nada (negativo).",
             examples:[
               {en:"I have little money, I can't buy anything.", es:"Tengo muy poco dinero, no puedo comprar nada."},
               {en:"We have little time left.", es:"Nos queda muy poco tiempo."}
             ]},
-          { id:'g-facil-m200-littlefew-3', translation:"Tengo algunos amigos aquí, podemos salir.", type:'choice', prompt:"I have ___ friends here, we can hang out.",
+          { id:'g-facil-m200-littlefew-3', micro:'little-few-matiz', translation:"Tengo algunos amigos aquí, podemos salir.", type:'choice', prompt:"I have ___ friends here, we can hang out.",
             options:["a few","few","a little"], correct:0,
             explain:"\u201cA few\u201d significa algunos (positivo, con sustantivos contables).",
             examples:[
               {en:"I have a few friends here, we can hang out.", es:"Tengo algunos amigos aquí, podemos salir."},
               {en:"There are a few apples left.", es:"Quedan algunas manzanas."}
             ]},
-          { id:'g-facil-m200-littlefew-4', translation:"Tengo muy pocos amigos aquí, me siento solo.", type:'choice', prompt:"I have ___ friends here, I feel lonely.",
+          { id:'g-facil-m200-littlefew-4', micro:'little-few-matiz', translation:"Tengo muy pocos amigos aquí, me siento solo.", type:'choice', prompt:"I have ___ friends here, I feel lonely.",
             options:["few","a few","little"], correct:0,
             explain:"\u201cFew\u201d (sin \u201ca\u201d) significa casi ninguno (negativo).",
             examples:[
@@ -14002,20 +14017,29 @@ SPEAKING_BANK.facil.push([
   { id:'s-facil-m400-2', sentence:"I usually go to bed before eleven.", translation:"Normalmente me acuesto antes de las once.", audioFile:'audio/miembros400/s-facil-m400-2.mp3' },
   { id:'s-facil-m400-3', sentence:"She has been studying English for two years.", translation:"Ella ha estado estudiando inglés por dos años.", audioFile:'audio/miembros400/s-facil-m400-3.mp3' }
 ]);
-GRAMMAR_BANK.facil.push([{ topic:"Condicionales, comparativos y presente perfecto", items:[
-  { id:'g-facil-m400-1', translation:"Si llueve mañana, nos quedaremos en casa.", type:'choice', prompt:"If it rains tomorrow, we ___ at home.",
-    options:["stay","will stay","stayed"], correct:1,
-    explain:"En el primer condicional: if + presente, will + verbo.",
-    examples:[{en:"If you study, you will pass.",es:"Si estudias, aprobarás."},{en:"If he calls, I will answer.",es:"Si él llama, contestaré."}] },
-  { id:'g-facil-m400-2', translation:"Él es más alto que su hermano.", type:'choice', prompt:"He is taller ___ his brother.",
-    options:["than","that","then"], correct:0,
-    explain:"Para comparar usamos 'than'.",
-    examples:[{en:"She is older than me.",es:"Ella es mayor que yo."},{en:"This bag is cheaper than that one.",es:"Esta bolsa es más barata que esa."}] },
-  { id:'g-facil-m400-3', translation:"Vivo aquí desde 2019.", type:'choice', prompt:"I have lived here ___ 2019.",
-    options:["for","from","since"], correct:2,
-    explain:"'Since' se usa con un punto en el tiempo (2019); 'for' con duración.",
-    examples:[{en:"I have worked here since May.",es:"Trabajo aquí desde mayo."},{en:"We have known him since 2015.",es:"Lo conocemos desde 2015."}] }
-]}]);
+/* Antes era un solo bloque mixto ("Condicionales, comparativos y presente perfecto")
+   que no pertenecía a ningún tema del registro. Cada ítem va ahora en el bloque de su
+   propio tema (mismos ids y contenido). */
+GRAMMAR_BANK.facil.push([
+  { topic:"Conditionals (tipo 1 y 2)", items:[
+    { id:'g-facil-m400-1', micro:'cond-1-probable', translation:"Si llueve mañana, nos quedaremos en casa.", type:'choice', prompt:"If it rains tomorrow, we ___ at home.",
+      options:["stay","will stay","stayed"], correct:1,
+      explain:"En el primer condicional: if + presente, will + verbo.",
+      examples:[{en:"If you study, you will pass.",es:"Si estudias, aprobarás."},{en:"If he calls, I will answer.",es:"Si él llama, contestaré."}] }
+  ]},
+  { topic:"Comparativos (-er / more ... than)", items:[
+    { id:'g-facil-m400-2', translation:"Él es más alto que su hermano.", type:'choice', prompt:"He is taller ___ his brother.",
+      options:["than","that","then"], correct:0,
+      explain:"Para comparar usamos 'than'.",
+      examples:[{en:"She is older than me.",es:"Ella es mayor que yo."},{en:"This bag is cheaper than that one.",es:"Esta bolsa es más barata que esa."}] }
+  ]},
+  { topic:"Since / For", items:[
+    { id:'g-facil-m400-3', translation:"Vivo aquí desde 2019.", type:'choice', prompt:"I have lived here ___ 2019.",
+      options:["for","from","since"], correct:2,
+      explain:"'Since' se usa con un punto en el tiempo (2019); 'for' con duración.",
+      examples:[{en:"I have worked here since May.",es:"Trabajo aquí desde mayo."},{en:"We have known him since 2015.",es:"Lo conocemos desde 2015."}] }
+  ]}
+]);
 LISTENING_BANK.medio.push([
   { id:'l-medio-m400-1', audioFile:'audio/miembros400/l-medio-m400-1.mp3',
     transcript:"The meeting has been moved to Thursday because the manager is traveling.", translation:"La reunión se movió al jueves porque el gerente está de viaje.",
@@ -14060,20 +14084,30 @@ SPEAKING_BANK.medio.push([
   { id:'s-medio-m400-2', sentence:"She suggested that we meet after lunch.", translation:"Ella sugirió que nos reuniéramos después del almuerzo.", audioFile:'audio/miembros400/s-medio-m400-2.mp3' },
   { id:'s-medio-m400-3', sentence:"Despite the rain, the match went ahead as planned.", translation:"A pesar de la lluvia, el partido siguió según lo planeado.", audioFile:'audio/miembros400/s-medio-m400-3.mp3' }
 ]);
-GRAMMAR_BANK.medio.push([{ topic:"Wish, estilo indirecto y pasado perfecto", items:[
-  { id:'g-medio-m400-1', translation:"Ojalá tuviera más tiempo libre.", type:'choice', prompt:"I wish I ___ more free time.",
-    options:["have","had","would have"], correct:1,
-    explain:"Para deseos irreales en el presente usamos wish + pasado.",
-    examples:[{en:"I wish I knew the answer.",es:"Ojalá supiera la respuesta."},{en:"She wishes she lived closer.",es:"Ella desea vivir más cerca."}] },
-  { id:'g-medio-m400-2', translation:"Ella me preguntó si podía ayudarla.", type:'choice', prompt:"She asked me ___ I could help her.",
-    options:["if","what","which"], correct:0,
-    explain:"En preguntas sí/no en estilo indirecto usamos 'if'.",
-    examples:[{en:"He asked if I was ready.",es:"Él preguntó si yo estaba listo."},{en:"I wonder if it will rain.",es:"Me pregunto si lloverá."}] },
-  { id:'g-medio-m400-3', translation:"Cuando llegamos, la película ya había empezado.", type:'choice', prompt:"By the time we arrived, the movie ___.",
-    options:["started","has started","had started"], correct:2,
-    explain:"Acción anterior a otra en el pasado: pasado perfecto (had + participio).",
-    examples:[{en:"By the time I called, she had left.",es:"Cuando llamé, ella ya se había ido."},{en:"They had eaten before we came.",es:"Habían comido antes de que llegáramos."}] }
-]}]);
+/* Antes era un solo bloque mixto ("Wish, estilo indirecto y pasado perfecto") sin tema
+   en el registro. Cada ítem va ahora en el bloque de su propio tema (mismos ids).
+   g-medio-m400-3 repetía palabra por palabra a g-medio-pp-1: mismo concepto y misma
+   respuesta (had + participio), oración distinta. */
+GRAMMAR_BANK.medio.push([
+  { topic:"Wish / If only", items:[
+    { id:'g-medio-m400-1', translation:"Ojalá tuviera más tiempo libre.", type:'choice', prompt:"I wish I ___ more free time.",
+      options:["have","had","would have"], correct:1,
+      explain:"Para deseos irreales en el presente usamos wish + pasado.",
+      examples:[{en:"I wish I knew the answer.",es:"Ojalá supiera la respuesta."},{en:"She wishes she lived closer.",es:"Ella desea vivir más cerca."}] }
+  ]},
+  { topic:"Reported Speech", items:[
+    { id:'g-medio-m400-2', translation:"Ella me preguntó si podía ayudarla.", type:'choice', prompt:"She asked me ___ I could help her.",
+      options:["if","what","which"], correct:0,
+      explain:"En preguntas sí/no en estilo indirecto usamos 'if'.",
+      examples:[{en:"He asked if I was ready.",es:"Él preguntó si yo estaba listo."},{en:"I wonder if it will rain.",es:"Me pregunto si lloverá."}] }
+  ]},
+  { topic:"Past Perfect", items:[
+    { id:'g-medio-m400-3', translation:"Cuando llegué a la estación, el tren ya se había ido.", type:'choice', prompt:"When I got to the station, the train ___.",
+      options:["left","has left","had left"], correct:2,
+      explain:"Acción anterior a otra en el pasado: pasado perfecto (had + participio).",
+      examples:[{en:"By the time I called, she had left.",es:"Cuando llamé, ella ya se había ido."},{en:"They had eaten before we came.",es:"Habían comido antes de que llegáramos."}] }
+  ]}
+]);
 LISTENING_BANK.avanzado.push([
   { id:'l-avanzado-m400-1', audioFile:'audio/miembros400/l-avanzado-m400-1.mp3',
     transcript:"Had I known about the delay, I would have booked an earlier flight.", translation:"Si hubiera sabido del retraso, habría reservado un vuelo más temprano.",

@@ -560,18 +560,197 @@ function saveProgressRaw(p){
   try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }catch(e){}
 }
 
+/* ------------------------------------------------------------
+   REGISTRO DE LA CONFUSIÓN (aditivo, privado, sin tablas nuevas)
+   Además de {itemId, isCorrect}, cada respuesta CALIFICADA de gramática guarda
+   (solo si se conoce; nada se inventa) para poder saber no solo QUÉ falló sino
+   QUÉ confusión concreta lo produjo y si la recomendación sirvió:
+     m  microId del ejercicio (item.micro), cuando ya lo tiene
+     p  la opción que eligió (texto del propio ejercicio, máx. 40 caracteres)
+     t  nº de intento al responder (solo si > 1: "Volver a intentar")
+     w  la PRIMERA opción equivocada cuando hubo reintento (el reintento
+        reemplaza el fallo en results, así que sin esto la confusión se perdía)
+     f  1 = primera vez que esta cuenta/navegador ve ese ejercicio
+     o  origen de la práctica: rec (?via=rec), tema, foco o hoy (?empezar=1)
+   Los campos que ya leían todos los cálculos (itemId, isCorrect) no cambian, así que
+   el diagnóstico, el repaso y el resumen siguen igual. Solo viajan datos del
+   ejercicio: ninguna escritura libre del alumno ni dato personal.
+   ------------------------------------------------------------ */
+const ANSWER_LOG = new Map();   // itemId -> { pick, t, w, ok } de lo respondido en esta página
+const ANSWER_PICK_MAX = 40;
+let RETRY_ITEM_ID = null;       // ejercicio que se está reintentando justo ahora
+
+function noteGrammarAnswer(container, item, isCorrect, pick){
+  try{
+    if(!item || !item.id) return;
+    const retry = RETRY_ITEM_ID === item.id;
+    RETRY_ITEM_ID = null;
+    const prev = retry ? ANSWER_LOG.get(item.id) : null;
+    const entry = { pick: String(pick == null ? '' : pick).slice(0, ANSWER_PICK_MAX), t: prev ? prev.t + 1 : 1, ok: isCorrect === true };
+    if(prev){
+      const wrong = prev.w || (prev.ok === false ? prev.pick : '');
+      if(wrong) entry.w = wrong;
+    }
+    ANSWER_LOG.set(item.id, entry);
+    if(container && container.dataset) container.dataset.answeredItem = item.id;
+  }catch(e){}
+}
+// Se llama al pulsar "Volver a intentar": la próxima respuesta a ese ejercicio es un reintento.
+function markGrammarRetry(container){
+  RETRY_ITEM_ID = (container && container.dataset && container.dataset.answeredItem) || null;
+}
+function practiceOrigin(){
+  try{
+    const q = new URLSearchParams(location.search);
+    if(q.get('via') === 'rec') return 'rec';
+    if(q.get('tema')) return 'tema';
+    if(q.get('foco')) return 'foco';
+    if(q.get('empezar')) return 'hoy';
+  }catch(e){}
+  return null;
+}
+// Devuelve results con los campos extra (copias; los originales no se tocan).
+function instrumentResults(results, seenBefore){
+  if(!Array.isArray(results) || !results.length) return results || [];
+  const origin = practiceOrigin();
+  let index = null;
+  try{ index = getMistakesItemIndex(); }catch(e){}
+  const seen = new Set(seenBefore || []);
+  const out = results.map(r=>{
+    const log = r && ANSWER_LOG.get(r.itemId);
+    const first = r && r.itemId && !seen.has(r.itemId);
+    if(r && r.itemId) seen.add(r.itemId);
+    const graded = !!r && (r.isCorrect === true || r.isCorrect === false);
+    const micro = graded ? microOfItem(r.itemId, index) : null;   // sale del ejercicio, no depende de la página
+    if(!log || !graded || log.ok !== r.isCorrect) return (micro && !r.m) ? Object.assign({}, r, { m: micro }) : r;
+    const extra = {};
+    if(micro) extra.m = micro;
+    if(log.pick) extra.p = log.pick;
+    if(log.t > 1) extra.t = log.t;
+    if(log.w) extra.w = log.w;
+    if(first) extra.f = 1;
+    if(origin) extra.o = origin;
+    return Object.assign({}, r, extra);
+  });
+  results.forEach(r=>{ if(r && r.itemId) ANSWER_LOG.delete(r.itemId); });
+  return out;
+}
+
+/* ------------------------------------------------------------
+   MICROTEMAS: práctica vs comprobación, y señales agregadas por microtema
+   Práctica = GRAMMAR_BANK (ejercicios con `micro`). Comprobación = GRAMMAR_CHECK_BANK,
+   un banco APARTE que ningún motor de sesión lee: así un ejercicio de comprobación no puede
+   salir antes de tiempo como práctica normal. pickCheckItems() solo entrega los que ese
+   alumno no ha visto como comprobación. Para saberlo NO se recorre el historial: se lleva
+   un conjunto pequeño (leo_check_seen_v1) que crece solo con ejercicios de comprobación.
+   Las señales por microtema (leo_micro_stats_v1) se actualizan al guardar cada sesión
+   (cuesta lo que pesa la sesión, no el historial) y decidir una recomendación es leer UN
+   objeto por microtema. Nada de esto toca mistake_stats, el diagnóstico ni "dominado".
+   ------------------------------------------------------------ */
+const CHECK_SEEN_KEY = 'leo_check_seen_v1';
+const MICRO_STATS_KEY = 'leo_micro_stats_v1';
+const MICRO_STATS_MAX_ITEMS = 24;   // ejercicios distintos que se recuerdan por microtema
+const MICRO_STATS_MAX_DAYS = 8;     // días con fallos que se recuerdan por microtema
+let _checkIndex = null;
+function checkIndex(){
+  if(_checkIndex) return _checkIndex;
+  const byId = new Map(), byMicro = new Map();
+  const practice = (typeof getMistakesItemIndex === 'function') ? getMistakesItemIndex() : new Map();
+  (typeof GRAMMAR_CHECK_BANK !== 'undefined' ? GRAMMAR_CHECK_BANK : []).forEach(it=>{
+    if(!it || !it.id || !it.micro || practice.has(it.id)) return;   // si un id ya es práctica, JAMÁS se sirve como comprobación
+    byId.set(it.id, it);
+    if(!byMicro.has(it.micro)) byMicro.set(it.micro, []);
+    byMicro.get(it.micro).push(it);
+  });
+  _checkIndex = { byId, byMicro };
+  return _checkIndex;
+}
+function isCheckItem(itemId){ return checkIndex().byId.has(itemId); }
+function microOfItem(itemId, index){
+  const found = index && index.get(itemId);
+  if(found && found.kind === 'grammar' && found.item && found.item.micro) return found.item.micro;
+  const ck = checkIndex().byId.get(itemId);
+  return ck ? ck.micro : null;
+}
+function readJsonKey(key, fallback){
+  try{ const v = JSON.parse(localStorage.getItem(key)); return (v && typeof v === 'object') ? v : fallback; }catch(e){ return fallback; }
+}
+// Ejercicios de comprobación ya vistos por este alumno. Si el conjunto no existe (otro
+// dispositivo), se reconstruye UNA vez solo con las sesiones de comprobación (skill 'check').
+function checkSeenSet(){
+  const saved = readJsonKey(CHECK_SEEN_KEY, null);
+  if(saved) return saved;
+  const seen = {};
+  try{ loadProgress().sessions.forEach(s => { if(s && s.skill === 'check') (s.results || []).forEach(r => { if(r && r.itemId) seen[r.itemId] = 1; }); }); }catch(e){}
+  try{ localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen)); }catch(e){}
+  return seen;
+}
+function markChecksConsumed(results){
+  try{
+    const ids = (results || []).filter(r => r && r.itemId && isCheckItem(r.itemId)).map(r => r.itemId);
+    if(!ids.length) return;
+    const seen = checkSeenSet();
+    ids.forEach(id => { seen[id] = 1; });
+    localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));
+  }catch(e){}
+}
+// n ejercicios de comprobación NUEVOS para este alumno, o null si no hay suficientes
+// (en ese caso no se debe afirmar nada: mejor no comprobar que repetir un ejercicio visto).
+function pickCheckItems(microId, n){
+  const items = checkIndex().byMicro.get(microId) || [];
+  const seen = checkSeenSet();
+  const fresh = items.filter(it => !seen[it.id]);
+  if(!n || fresh.length < n) return null;
+  for(let i = fresh.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = fresh[i]; fresh[i] = fresh[j]; fresh[j] = t; }
+  return fresh.slice(0, n);
+}
+// Señales por microtema: { a, w, wi:{itemId:fallos}, wd:[fechas con fallos], last, ck:{a, ok} }.
+// "Fallo" = el primer intento salió mal (también cuando acertó al reintentar: results.w).
+function updateMicroStats(results, date){
+  try{
+    const touched = (results || []).filter(r => r && r.m && (r.isCorrect === true || r.isCorrect === false));
+    if(!touched.length) return;
+    const all = readJsonKey(MICRO_STATS_KEY, {});
+    touched.forEach(r=>{
+      const s = all[r.m] || (all[r.m] = { a:0, w:0, wi:{}, wd:[], last:null, ck:{ a:0, ok:0 } });
+      s.last = date;
+      if(isCheckItem(r.itemId)){ s.ck.a++; if(r.isCorrect) s.ck.ok++; return; }   // la comprobación se lleva aparte
+      s.a++;
+      if(r.isCorrect === false || r.w){
+        s.w++;
+        if(s.wi[r.itemId] || Object.keys(s.wi).length < MICRO_STATS_MAX_ITEMS) s.wi[r.itemId] = (s.wi[r.itemId] || 0) + 1;
+        if(s.wd.indexOf(date) === -1) s.wd = s.wd.concat(date).slice(-MICRO_STATS_MAX_DAYS);
+      }
+    });
+    localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+// Regla de debilidad: errores en ejercicios DISTINTOS (>=3, o >=2 en días distintos). Repetir el
+// mismo ejercicio no es debilidad del microtema: es un ejercicio mal entendido o mal leído.
+function microWeakness(stat){
+  const ids = stat && stat.wi ? Object.keys(stat.wi) : [];
+  const days = stat && stat.wd ? stat.wd.length : 0;
+  if(ids.length >= 3 || (ids.length >= 2 && days >= 2)) return { weak:true, reason:'varios-ejercicios' };
+  if(ids.length === 1 && stat.wi[ids[0]] >= 2) return { weak:false, reason:'mismo-ejercicio' };
+  return { weak:false, reason:null };
+}
+
 /* Llamado por cada motor de sesión al terminar una sesión. */
 function recordSession({ skill, level, topics, results, startedAt }){
   const p = loadProgress();
   const now = Date.now();
+  const seenBefore = new Set();
+  p.sessions.forEach(s => (s.results || []).forEach(r => { if(r && r.itemId) seenBefore.add(r.itemId); }));
   const session = {
     skill, level,
     topics: topics || [],
     date: localDateStr(new Date(now)),
     startedAt: startedAt || now,
     durationMs: Math.max(0, now - (startedAt || now)),
-    results: results || []
+    results: instrumentResults(results, seenBefore)
   };
+  markChecksConsumed(session.results);
+  updateMicroStats(session.results, session.date);
   p.sessions.push(session);
   p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
   saveProgressRaw(p);
@@ -1407,7 +1586,7 @@ function showRetryOrNextButtons(container, isCorrect, onRetry, onNext, nextLabel
     row.innerHTML = `
       <button class="btn btn-ghost btn-sm retry-btn">↺ Volver a intentar</button>
       <button class="btn btn-primary btn-sm next-btn">${label}</button>`;
-    row.querySelector('.retry-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); onRetry(); });
+    row.querySelector('.retry-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); markGrammarRetry(container); onRetry(); });
     row.querySelector('.next-btn').addEventListener('click', ()=>{ stopActiveAudioFile(); onNext(); });
   } else {
     row.innerHTML = `<button class="btn btn-primary btn-sm next-btn">${label}</button>`;
@@ -1585,6 +1764,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
         });
         renderFeedback(container, isCorrect, item.explain, item.examples);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:opt }, aiOpts));
+        noteGrammarAnswer(container, item, isCorrect, opt);
         onAnswered(isCorrect);
       });
       list.appendChild(b);
@@ -1626,6 +1806,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
         slot.style.background = isCorrect ? '#E7F7EE' : '#FDEBE8';
         renderFeedback(container, isCorrect, item.explain, item.examples);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:word }, aiOpts));
+        noteGrammarAnswer(container, item, isCorrect, word);
         onAnswered(isCorrect);
       });
       bank.appendChild(chip);
@@ -1689,6 +1870,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
 
         renderFeedback(container, isCorrect, item.explain, item.examples);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:cleanTokens[pickedIdx] }, aiOpts));
+        noteGrammarAnswer(container, item, isCorrect, cleanTokens[pickedIdx]);
         onAnswered(isCorrect);
       });
     });
@@ -3647,6 +3829,7 @@ function computeMistakeIds(){
   p.sessions.forEach(s=>{
     (s.results || []).forEach(r=>{
       if(r.isCorrect !== true && r.isCorrect !== false) return; // sin calificar, se ignora
+      if(isCheckItem(r.itemId)) return;   // la comprobación nunca entra a "Mis errores"
       latest.set(r.itemId, { isCorrect: r.isCorrect, when: s.startedAt || 0 });
     });
   });

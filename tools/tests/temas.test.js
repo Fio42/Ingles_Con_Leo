@@ -46,11 +46,8 @@ test('cada etiqueta de GRAMMAR_BANK tiene tema (tabla explícita)', ()=>{
   Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g=>{ if(!T.TEMAS.some(t => t.topics.includes(g.topic)) && !T.GTS.includes(g.topic)) missing.add(g.topic); })));
   assert.deepStrictEqual([...missing], [], 'Etiquetas sin tema: ' + [...missing].join(' | '));
 });
-test('repasos mezclados: existen en data.js, no están en ningún tema y siguen en su familia del diagnóstico', ()=>{
-  const real = new Set();
-  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g => real.add(g.topic))));
-  assert(T.GTS.length >= 2);
-  T.GTS.forEach(topic => { assert(real.has(topic), topic); assert(!T.TEMAS.some(t => t.topics.includes(topic)), topic + ' está en un tema'); assert(T.diagFamilyForTopic(topic), topic + ' perdió su familia'); assert.strictEqual(T.temaForTopic(topic), null); });
+test('repasos mezclados: ya no quedan etiquetas sin tema (cada bloque de data.js es de un solo tema)', ()=>{
+  assert.deepStrictEqual([...T.GTS], []);
 });
 test('ninguna etiqueta está en dos temas y todas existen en data.js', ()=>{
   const real = new Set();
@@ -1202,6 +1199,29 @@ test('clases: los visitantes sin cuenta guardada no hacen ninguna consulta (la p
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   assert(/hasLocalAccountHint\(\) \|\| !LeoBackend\.isConfigured|!hasLocalAccountHint\(\)/.test(app));
   assert(/getMemberProfile\(\)\.then\(profile=>\{\s*if\(profile && profile\.is_member\) renderArticleTema/.test(app), 'el botón solo se pinta si el servidor confirma is_member');
+});
+
+/* ---------- tema paraguas (cuantificadores): no tiene topics propios ---------- */
+console.log('\nTema paraguas');
+test('"cuantificadores" (paraguas sin topics) nunca se recomienda ni queda como práctica vacía', ()=>{
+  const ids = itemsOfFamily(T, 'cuantificadores', 'facil');
+  assert(ids.length >= 8);
+  setProgress(T, [session(3, answers(ids, 12, 20)), session(2, answers(ids, 12, 20, 3)), session(1, answers(ids, 12, 20, 6))]);
+  const d = readyDiag(T);
+  assert.strictEqual(d.weak.id, 'cuantificadores');                      // la FAMILIA sí se detecta, como siempre
+  const temaIds = [];
+  d.units.forEach(u => (u.temaStats || []).forEach(s => temaIds.push(s.id)));
+  if(d.weak.focusTema) temaIds.push(d.weak.focusTema.id);
+  assert(temaIds.length > 0 && !temaIds.includes('cuantificadores'), 'el diagnóstico apunta a temas reales: ' + temaIds.join(','));
+  assert(!/tema=cuantificadores(?![-\w])/.test(JSON.stringify(d)), 'ningún enlace del diagnóstico usa el paraguas como tema');
+  checkAction(d.today);
+  // aunque alguien escriba ?tema=cuantificadores en la URL: cae a la familia, con ejercicios reales
+  assert.strictEqual(T.temaHasItemsAt('cuantificadores', 'facil'), false);
+  const sel = T.computePlanSelection('facil', 9, { focusFamily:'cuantificadores', focusTema:'cuantificadores' });
+  const pool = T.buildPlanPool('facil', sel);
+  assert(pool.length > 0 && pool.every(e => e.item && e.item.id), 'el Plan quedó vacío o roto');
+  const c = T.contentForTema('cuantificadores');
+  assert(c && /foco=cuantificadores/.test(c.practiceHref) && !c.lesson && !c.quick);
 });
 
 console.log(`\n${passed} pruebas correctas`);
