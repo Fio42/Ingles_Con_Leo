@@ -5,9 +5,12 @@
   "type": "commonjs",
   "scripts": {
     "audit": "node audit.js",
-    "lighthouse": "node run-lighthouse.js"
+    "lighthouse": "node run-lighthouse.js",
+    "glossary": "node glossary-audit.js",
+    "glossary:gsc": "node gsc-glossary-inspect.js"
   },
   "dependencies": {
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.0.0",
+    "googleapis": "^144.0.0"
   }
 }

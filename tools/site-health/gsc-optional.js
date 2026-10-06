@@ -19,7 +19,8 @@
         (Service Account) y descargar su archivo JSON de credenciales.
      2. En Google Search Console (search.google.com/search-console),
         agregar el email de esa cuenta de servicio como usuario con
-        permiso de lectura sobre la propiedad inglesconleo.com.
+        permiso Full user sobre la propiedad inglesconleo.com. No usar
+        Owner: este acceso de lectura no necesita privilegios administrativos.
      3. En GitHub, en el repo -> Settings -> Secrets and variables ->
         Actions, crear un secret llamado GSC_SERVICE_ACCOUNT_JSON con
         el contenido completo de ese archivo JSON (nunca subirlo al

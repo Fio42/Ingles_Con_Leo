@@ -19,6 +19,13 @@ _to_delete/
 # intermedio; lo que importa queda resumido en SITE_HEALTH_REPORT.md y
 # tools/site-health/history.json, esos sí se suben).
 tools/site-health/lighthouse-raw/
+tools/site-health/reports/GLOSSARY_AUDIT_REPORT.json
+tools/site-health/reports/GLOSSARY_AUDIT_REPORT.md
+tools/site-health/reports/GSC_GLOSSARY_REPORT.json
+tools/site-health/reports/GSC_GLOSSARY_REPORT.md
+# Credenciales locales de Google Search Console. En CI usar únicamente
+# GSC_SERVICE_ACCOUNT_JSON como secret, nunca un archivo del repositorio.
+tools/site-health/gsc-service-account.json
 .claude/
 
 # Temporales locales del CLI de Supabase y de Python
