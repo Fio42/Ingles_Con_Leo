@@ -38,9 +38,9 @@ test('migración gradual: ningún microtema real está activo todavía y el rest
   assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'will-going-to']);
 });
 
-test('los ejercicios sin micro siguen siendo los de siempre (solo 43 declaran micro)', () => {
+test('los ejercicios sin micro siguen siendo los de siempre (solo 63 declaran micro: 43 existentes + 20 del piloto Futuro)', () => {
   const tagged = real.practice.filter(r => r.item.micro);
-  assert.strictEqual(tagged.length, 43);
+  assert.strictEqual(tagged.length, 63);
   assert.ok(real.practice.length - tagged.length > 300);
 });
 
@@ -84,16 +84,21 @@ test('condicionales: la cadena de prerrequisitos entre microtemas es lineal', ()
   assert.deepStrictEqual(plain(m['cond-mixto'].prereq), ['cond-3-pasado-irreal']);
 });
 
-test('futuro: cada microtema nace de un ejercicio que ya existía (sin crear contenido)', () => {
+test('futuro: los 4 ejercicios originales conservan su microtema y cada uno completa 6 de práctica', () => {
   const stats = lib.microStats(real);
-  ['will-decision-espontanea', 'going-to-plan-decidido', 'going-to-evidencia', 'will-forma-verbo-base'].forEach(id => {
-    assert.strictEqual(stats[id].practice.length, 1, id);
+  const original = { 'will-decision-espontanea':'g-medio5-fut-3', 'going-to-plan-decidido':'g-medio5-fut-1', 'going-to-evidencia':'g-medio5-fut-2', 'will-forma-verbo-base':'g-medio5-fut-4' };
+  Object.keys(original).forEach(id => {
+    assert.strictEqual(stats[id].practice.length, 6, id);
+    assert.ok(stats[id].practice.some(r => r.item.id === original[id]), id + ' perdió su ejercicio original');
   });
 });
 
-test('el banco de comprobación existe, está aparte y vacío hasta crear el contenido de los pilotos', () => {
+test('el banco de comprobación está aparte y solo tiene los 12 del piloto Futuro (3 por microtema)', () => {
   assert.ok(Array.isArray(real.check));
-  assert.strictEqual(real.check.length, 0);
+  assert.strictEqual(real.check.length, 12);
+  const per = {};
+  real.check.forEach(c => { per[c.micro] = (per[c.micro] || 0) + 1; });
+  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':3, 'going-to-plan-decidido':3, 'going-to-evidencia':3, 'will-forma-verbo-base':3 });
 });
 
 test('temas.js (runtime) y el validador resuelven igual el recurso de cada microtema', () => {
@@ -102,7 +107,7 @@ test('temas.js (runtime) y el validador resuelven igual el recurso de cada micro
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8') + '\n' + fs.readFileSync(path.join(root, 'temas.js'), 'utf8')
     + '\n;this.__r = { microResources, canonicalTemaId, ids: MICROS.map(m => m.id) };', ctx);
-  ctx.__r.ids.forEach(id => assert.deepStrictEqual(JSON.parse(JSON.stringify(ctx.__r.microResources(id))), lib.resourcesOf(real, id), id));
+  ctx.__r.ids.forEach(id => assert.deepStrictEqual(plain(ctx.__r.microResources(id)), plain(lib.resourcesOf(real, id)), id));
   assert.strictEqual(ctx.__r.microResources('no-existe'), null);
   assert.strictEqual(ctx.__r.canonicalTemaId('some-any'), 'cuantificadores');
   assert.strictEqual(ctx.__r.canonicalTemaId('condicionales'), 'condicionales');
@@ -167,6 +172,16 @@ test('declarado: prereq inexistente, de otro tema, a sí mismo y ciclos', () => 
   ];
   const e = lib.validate(make({ TEMAS: T }));
   has(e, 'prereq inexistente zzz'); has(e, 'es de otro tema'); has(e, 'ciclo de prerrequisitos');
+});
+test('declarado: si la clase declara una sección (anchor), el archivo debe tenerla', () => {
+  const T = JSON.parse(JSON.stringify(T0)); T[0].micros[0].lesson = { article:'clase.html', anchor:'seccion-x' };
+  has(lib.validate(make({ TEMAS: T, articleHas: (f, a) => a === 'otra' })), 'no tiene la sección id="seccion-x"');
+  ok(lib.validate(make({ TEMAS: T, articleHas: (f, a) => a === 'seccion-x' })));
+});
+test('declarado: la comprobación no puede repetir palabra por palabra ningún ejercicio de práctica', () => {
+  const G = withPractice(2, 'm-uno'); const c = checks(1, 'm-uno');
+  c[0] = item('c0', 'choice', 'practice sentence number 1 alpha1', 'm-uno');
+  has(lib.validate(make({ G, CHECK: c, lock: lockOf(['m-uno']) })), 'repite palabra por palabra a la práctica p1');
 });
 test('declarado: la clase y el glosario que declara deben existir', () => {
   const T = JSON.parse(JSON.stringify(T0)); T[0].micros[0].lesson = { article:'no-existe.html' }; T[0].micros[0].glossary = 'no-glos';

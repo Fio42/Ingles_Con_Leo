@@ -179,10 +179,11 @@ const failOn = (id, startedAt, date) => {
   T.recordSession({ skill:'gramatica', level:'medio', topics:[], results:[{ itemId:id, isCorrect:false }], startedAt });
 };
 function withCheckItems(ids, micro, fn){
+  const real = T.GRAMMAR_CHECK_BANK.splice(0);   // el banco real (piloto Futuro) se aparta para probar con ejercicios sintéticos
   const added = ids.map(id => ({ id, micro, type:'choice', prompt:'Check ' + id, options:['a','b'], correct:0, explain:'e', examples:[{ en:'x', es:'y' }] }));
   added.forEach(x => T.GRAMMAR_CHECK_BANK.push(x));
   T.resetIndex();
-  try{ fn(added); } finally { T.GRAMMAR_CHECK_BANK.length = 0; T.resetIndex(); }
+  try{ fn(added); } finally { T.GRAMMAR_CHECK_BANK.length = 0; real.forEach(x => T.GRAMMAR_CHECK_BANK.push(x)); T.resetIndex(); }
 }
 
 test('señales por microtema: se agregan al guardar la sesión (sin recorrer el historial)', () => {

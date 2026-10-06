@@ -14166,3 +14166,164 @@ GRAMMAR_BANK.avanzado.push([{ topic:"Inversión, would rather y it's high time",
     explain:"'It's high time' va seguido de pasado simple.",
     examples:[{en:"It's time you went to bed.",es:"Ya es hora de que te acuestes."},{en:"It's high time they apologized.",es:"Ya es hora de que se disculpen."}] }
 ]}]);
+
+// ============================================================
+// PILOTO FUTURO (will / going to): 20 ejercicios de práctica y 12 de comprobación.
+// Cada microtema tiene su propio bloque de 5 (con el tema "(futuro)" que el diagnóstico
+// ya reconoce) dentro de variantes de Gramática medio que YA son solo de miembros
+// (MEMBERS_ONLY_VARIANT_INDEX): así no cambia lo que ven los usuarios gratis y ningún tema
+// llega a tener decenas de ejercicios en un solo grupo, que desordenaría el mazo barajado
+// y la duración de las sesiones. Los ids de microtema viven en temas.js; ninguno está activo.
+// ============================================================
+GRAMMAR_BANK.medio[6].push({
+  topic:"Will: decisiones en el momento (futuro)",
+  items:[
+    { id:'g-medio-fut-willdec-1', micro:'will-decision-espontanea', translation:"Camarero: \"¿Están listos para ordenar?\" Tú (lo decides ahora mismo): \"Sí, tomaré la sopa, por favor.\"", type:'choice', prompt:"Waiter: \"Are you ready to order?\" You (you decide right now): \"Yes, I ___ the soup, please.\"",
+      options:["am going to have","will have","had"], correct:1,
+      explain:"Decides justo al hablar, sin un plan previo: usamos “will” (I’ll have…).",
+      examples:[{en:"I'll have the chicken, please.",es:"Tomaré el pollo, por favor."},{en:"I'll take the blue one.",es:"Me llevo el azul."}] },
+    { id:'g-medio-fut-willdec-2', micro:'will-decision-espontanea', translation:"Hace mucho calor aquí. Voy a abrir la ventana.", type:'fill', sentence:["It","is","very","hot","in","here",".","I","___","open","the","window","."], blankIndex:8,
+      bank:["will","am going to","would"], correct:"will",
+      explain:"Reaccionas a algo que acabas de notar y decides en ese momento: “will”.",
+      examples:[{en:"It's hot. I'll open the window.",es:"Hace calor. Abriré la ventana."},{en:"I'm tired. I'll go to bed early.",es:"Estoy cansado. Me iré a dormir temprano."}] },
+    { id:'g-medio-fut-willdec-3', micro:'will-decision-espontanea', translation:"A: \"No puedo abrir este frasco.\" B: \"Dámelo. Yo lo abro por ti.\"", type:'choice', prompt:"A: \"I can't open this jar.\" B: \"Give it to me. I ___ it for you.\"",
+      options:["will open","am going to open","opened"], correct:0,
+      explain:"Cuando ofreces ayuda en el momento, usamos “will”.",
+      examples:[{en:"I'll carry your bag.",es:"Yo cargo tu bolso."},{en:"Don't worry, I'll call a taxi.",es:"No te preocupes, llamaré un taxi."}] },
+    { id:'g-medio-fut-willdec-4', micro:'will-decision-espontanea', translation:"A: \"La reunión es a las 3, no a las 2.\" B: \"¡Ah, gracias! Entonces almorzaré primero.\"", type:'choice', prompt:"A: \"The meeting is at 3, not at 2.\" B: \"Oh, thanks! Then I ___ lunch first.\"",
+      options:["am going to have","will have","was having"], correct:1,
+      explain:"Recibes información nueva y decides al instante: “will”.",
+      examples:[{en:"Oh, the store is closed. I'll go tomorrow.",es:"Ah, la tienda está cerrada. Iré mañana."},{en:"It's raining? Then I'll take an umbrella.",es:"¿Está lloviendo? Entonces llevaré un paraguas."}] },
+    { id:'g-medio-fut-willdec-5', micro:'will-decision-espontanea', translation:"¡Gracias por el dato! Probaré ese restaurante mañana.", type:'fill', sentence:["Thanks","for","the","tip","!","I","___","try","that","restaurant","tomorrow","."], blankIndex:6,
+      bank:["will","am going to","would"], correct:"will",
+      explain:"Lo decides al oír la sugerencia, en el momento de hablar: “will”.",
+      examples:[{en:"Great idea! I'll try it.",es:"¡Buena idea! Lo probaré."},{en:"Thanks for telling me. I'll check it now.",es:"Gracias por avisarme. Lo reviso ahora."}] }
+  ]
+});
+GRAMMAR_BANK.medio[8].push({
+  topic:"Going to: planes ya decididos (futuro)",
+  items:[
+    { id:'g-medio-fut-gtplan-1', micro:'going-to-plan-decidido', translation:"A: \"¿Por qué compraste tanta pintura?\" B: \"Porque voy a pintar toda la casa este fin de semana. Ya lo planeé.\"", type:'choice', prompt:"A: \"Why did you buy so much paint?\" B: \"Because I ___ paint the whole house this weekend. I already planned it.\"",
+      options:["will","am going to","would"], correct:1,
+      explain:"Es un plan que ya estaba decidido antes de hablar: “going to”.",
+      examples:[{en:"I'm going to paint the kitchen on Saturday.",es:"Voy a pintar la cocina el sábado."},{en:"They are going to sell their car.",es:"Ellos van a vender su carro."}] },
+    { id:'g-medio-fut-gtplan-2', micro:'going-to-plan-decidido', translation:"Reservamos los boletos ayer. Vamos a visitar México en julio.", type:'fill', sentence:["We","booked","the","tickets","yesterday",".","We","___","visit","Mexico","in","July","."], blankIndex:7,
+      bank:["are going to","is going to","will"], correct:"are going to",
+      explain:"El plan ya está hecho (reservaron los boletos). Con “we” usamos “are going to”.",
+      examples:[{en:"We are going to visit my aunt.",es:"Vamos a visitar a mi tía."},{en:"We are going to leave at six.",es:"Vamos a salir a las seis."}] },
+    { id:'g-medio-fut-gtplan-3', micro:'going-to-plan-decidido', translation:"A: \"¿Tienes planes para el sábado?\" B: \"¡Sí! Mi hermana y yo vamos a ver una película. Ya tenemos los boletos.\"", type:'choice', prompt:"A: \"Do you have plans for Saturday?\" B: \"Yes! My sister and I ___ see a movie. We already have the tickets.\"",
+      options:["are going to","will","was going to"], correct:0,
+      explain:"Ya hay un plan y hasta boletos: usamos “going to”.",
+      examples:[{en:"I am going to see a movie tonight.",es:"Voy a ver una película esta noche."},{en:"She is going to meet her friends.",es:"Ella va a ver a sus amigos."}] },
+    { id:'g-medio-fut-gtplan-4', micro:'going-to-plan-decidido', translation:"A: \"¿Qué vas a hacer después de graduarte?\" B: \"Voy a estudiar medicina. Apliqué el mes pasado.\"", type:'choice', prompt:"A: \"What ___ you going to do after you graduate?\" B: \"I'm going to study medicine. I applied last month.\"",
+      options:["will","are","do"], correct:1,
+      explain:"Para preguntar por un plan usamos am / is / are + sujeto + going to: “What are you going to do?”.",
+      examples:[{en:"What are you going to wear tonight?",es:"¿Qué te vas a poner esta noche?"},{en:"Where are they going to live?",es:"¿Dónde van a vivir ellos?"}] },
+    { id:'g-medio-fut-gtplan-5', micro:'going-to-plan-decidido', translation:"He ahorrado dinero por meses. Voy a comprar una laptop nueva.", type:'fill', sentence:["I","have","saved","money","for","months",".","I","___","buy","a","new","laptop","."], blankIndex:8,
+      bank:["am going to","will","would"], correct:"am going to",
+      explain:"Llevas meses preparándolo: es una decisión tomada antes, así que “going to”.",
+      examples:[{en:"I'm going to buy a new phone.",es:"Voy a comprar un teléfono nuevo."},{en:"She's going to start a diet on Monday.",es:"Ella va a empezar una dieta el lunes."}] }
+  ]
+});
+GRAMMAR_BANK.medio[9].push({
+  topic:"Going to: lo que se ve venir (futuro)",
+  items:[
+    { id:'g-medio-fut-gtevid-1', micro:'going-to-evidencia', translation:"¡Mira! Ese carro va muy rápido y la calle está mojada. ¡Se va a estrellar!", type:'choice', prompt:"Look! That car is driving very fast and the road is wet. It ___ crash!",
+      options:["is going to","will","would"], correct:0,
+      explain:"Estás viendo la evidencia ahora mismo: “going to”.",
+      examples:[{en:"Be careful! You are going to slip.",es:"¡Cuidado! Te vas a resbalar."},{en:"Look at him run. He is going to win.",es:"Míralo correr. Va a ganar."}] },
+    { id:'g-medio-fut-gtevid-2', micro:'going-to-evidencia', translation:"Ella carga demasiados libros y no ve nada. Se le van a caer.", type:'fill', sentence:["She","is","carrying","too","many","books","and","she","can't","see",".","She","___","drop","them","."], blankIndex:12,
+      bank:["is going to","will","would"], correct:"is going to",
+      explain:"Lo que ves (demasiados libros, sin visibilidad) anuncia lo que va a pasar: “going to”.",
+      examples:[{en:"She is going to be late.",es:"Ella va a llegar tarde."},{en:"Watch out! That box is going to fall.",es:"¡Ojo! Esa caja se va a caer."}] },
+    { id:'g-medio-fut-gtevid-3', micro:'going-to-evidencia', translation:"El bebé llora, se frota los ojos y bosteza. Se va a dormir pronto.", type:'choice', prompt:"The baby is crying, rubbing his eyes and yawning. He ___ fall asleep soon.",
+      options:["is going to","will","would"], correct:0,
+      explain:"Las señales que ves ahora (bosteza, se frota los ojos) hacen la predicción: “going to”.",
+      examples:[{en:"He's yawning. He's going to sleep.",es:"Está bostezando. Se va a dormir."},{en:"She's very pale. She is going to faint.",es:"Está muy pálida. Se va a desmayar."}] },
+    { id:'g-medio-fut-gtevid-4', micro:'going-to-evidencia', translation:"El vaso está en la orilla de la mesa. ¡Se va a caer!", type:'fill', sentence:["The","glass","is","on","the","edge","of","the","table",".","It","___","fall","!"], blankIndex:11,
+      bank:["is going to","will","would"], correct:"is going to",
+      explain:"Ves el vaso en el borde: la evidencia está delante de ti, así que “going to”.",
+      examples:[{en:"The glass is going to break.",es:"El vaso se va a romper."},{en:"The bus is going to leave.",es:"El autobús se va a ir."}] },
+    { id:'g-medio-fut-gtevid-5', micro:'going-to-evidencia', translation:"La corredora va muy por delante de todos y la meta está muy cerca. Va a ganar la carrera.", type:'choice', prompt:"The runner is far ahead of everyone and the finish line is very close. She ___ win the race.",
+      options:["is going to","will","would"], correct:0,
+      explain:"Lo que ves ahora (ventaja enorme, meta cerca) respalda la predicción: “going to”.",
+      examples:[{en:"She is going to win the race.",es:"Ella va a ganar la carrera."},{en:"We are going to arrive first.",es:"Vamos a llegar primero."}] }
+  ]
+});
+GRAMMAR_BANK.medio[10].push({
+  topic:"Will + verbo base (futuro)",
+  items:[
+    { id:'g-medio-fut-willform-1', micro:'will-forma-verbo-base', translation:"Ella te llamará mañana.", type:'error', wrong:"She will calls you tomorrow.", wrongWord:"calls",
+      right:"She will call you tomorrow.", rightWord:"call",
+      explain:"Después de “will” el verbo va en forma base, sin -s.",
+      examples:[{en:"She will call you tomorrow.",es:"Ella te llamará mañana."},{en:"He will help us.",es:"Él nos ayudará."}] },
+    { id:'g-medio-fut-willform-2', micro:'will-forma-verbo-base', translation:"Creo que él aprobará el examen.", type:'choice', prompt:"I think he ___ the exam.",
+      options:["will pass","will passes","will to pass"], correct:0,
+      explain:"Will + verbo base: sin -s y sin “to”.",
+      examples:[{en:"I think he will pass the exam.",es:"Creo que él aprobará el examen."},{en:"They will arrive soon.",es:"Ellos llegarán pronto."}] },
+    { id:'g-medio-fut-willform-3', micro:'will-forma-verbo-base', translation:"Te llamaremos mañana.", type:'fill', sentence:["We","will","___","you","tomorrow","."], blankIndex:2,
+      bank:["call","calling","to call"], correct:"call",
+      explain:"Después de “will” va el verbo base: “call”, no “calling” ni “to call”.",
+      examples:[{en:"We will call you tomorrow.",es:"Te llamaremos mañana."},{en:"I will send it tonight.",es:"Lo enviaré esta noche."}] },
+    { id:'g-medio-fut-willform-4', micro:'will-forma-verbo-base', translation:"Él no vendrá a la reunión.", type:'error', wrong:"He won't comes to the meeting.", wrongWord:"comes",
+      right:"He won't come to the meeting.", rightWord:"come",
+      explain:"Después de “won’t” también va el verbo base, sin -s.",
+      examples:[{en:"He won't come to the meeting.",es:"Él no vendrá a la reunión."},{en:"She won't tell anyone.",es:"Ella no se lo dirá a nadie."}] },
+    { id:'g-medio-fut-willform-5', micro:'will-forma-verbo-base', translation:"No estarán aquí antes del mediodía, así que empecemos sin ellos.", type:'choice', prompt:"They ___ here before noon, so let's start without them.",
+      options:["won't be","won't to be","won't being"], correct:0,
+      explain:"La negación es won’t + verbo base: “won’t be”.",
+      examples:[{en:"It won't be easy.",es:"No será fácil."},{en:"We won't be late.",es:"No llegaremos tarde."}] }
+  ]
+});
+
+// Comprobación del piloto Futuro: banco aparte (nunca sale como práctica). 3 por microtema.
+GRAMMAR_CHECK_BANK.push(
+    { id:'g-chk-will-dec-1', micro:'will-decision-espontanea', translation:"Cliente: \"¿Cuánto cuesta esta chaqueta?\" Vendedor: \"80 dólares.\" Cliente (lo decide en este momento): \"Bien, me la llevo.\"", type:'choice', prompt:"Customer: \"How much is this jacket?\" Seller: \"It's $80.\" Customer (deciding at this moment): \"OK, I ___ it.\"",
+      options:["will take","am going to take","took"], correct:0,
+      explain:"Decides en el momento de hablar: “will” (I’ll take it).",
+      examples:[{en:"I'll take it.",es:"Me lo llevo."},{en:"I'll pay by card.",es:"Pagaré con tarjeta."}] },
+    { id:'g-chk-will-dec-2', micro:'will-decision-espontanea', translation:"Ya no queda azúcar. No te preocupes, se la pido al vecino.", type:'fill', sentence:["There","is","no","sugar","left",".","Don't","worry",",","I","___","ask","the","neighbor","."], blankIndex:10,
+      bank:["will","am going to","would"], correct:"will",
+      explain:"Surge el problema y decides la solución al instante: “will”.",
+      examples:[{en:"There's no milk. I'll buy some.",es:"No hay leche. Compraré."},{en:"Don't worry, I'll fix it.",es:"No te preocupes, yo lo arreglo."}] },
+    { id:'g-chk-will-dec-3', micro:'will-decision-espontanea', translation:"A: \"Tengo mucha hambre.\" B: \"Espera aquí. Te preparo un sándwich.\"", type:'choice', prompt:"A: \"I'm really hungry.\" B: \"Wait here. I ___ a sandwich for you.\"",
+      options:["am going to make","will make","was making"], correct:1,
+      explain:"Es un ofrecimiento espontáneo: “will”.",
+      examples:[{en:"I'll make you a sandwich.",es:"Te preparo un sándwich."},{en:"I'll get you some water.",es:"Te traigo agua."}] },
+    { id:'g-chk-gt-plan-1', micro:'going-to-plan-decidido', translation:"\"¿Por qué estudias tanto?\" \"Porque voy a presentar el TOEFL el próximo mes. Ya me inscribí.\"", type:'choice', prompt:"\"Why are you studying so hard?\" \"Because I ___ take the TOEFL exam next month. I already registered.\"",
+      options:["am going to","will","would"], correct:0,
+      explain:"Ya te inscribiste: el plan estaba decidido antes. “Going to”.",
+      examples:[{en:"I'm going to take the exam in May.",es:"Voy a presentar el examen en mayo."},{en:"He is going to apply for a visa.",es:"Él va a solicitar una visa."}] },
+    { id:'g-chk-gt-plan-2', micro:'going-to-plan-decidido', translation:"Mis papás compraron una casa la semana pasada. Se van a mudar en junio.", type:'fill', sentence:["My","parents","bought","a","house","last","week",".","They","___","move","in","June","."], blankIndex:9,
+      bank:["are going to","is going to","will"], correct:"are going to",
+      explain:"La compra ya se hizo: el plan está decidido. Con “they” usamos “are going to”.",
+      examples:[{en:"They are going to move in June.",es:"Se van a mudar en junio."},{en:"My parents are going to travel.",es:"Mis papás van a viajar."}] },
+    { id:'g-chk-gt-plan-3', micro:'going-to-plan-decidido', translation:"Tom ya lo decidió: va a ser piloto.", type:'choice', prompt:"Tom has made up his mind: he ___ become a pilot.",
+      options:["is going to","will","would"], correct:0,
+      explain:"“Ya lo decidió” indica una intención previa: “going to”.",
+      examples:[{en:"He is going to become a pilot.",es:"Él va a ser piloto."},{en:"She is going to open a café.",es:"Ella va a abrir una cafetería."}] },
+    { id:'g-chk-gt-evid-1', micro:'going-to-evidencia', translation:"El hombre está parado en el techo sin cuerda y el viento es muy fuerte. ¡Se va a caer!", type:'choice', prompt:"The man is standing on the roof without a rope and the wind is very strong. He ___ fall!",
+      options:["is going to","will","would"], correct:0,
+      explain:"Ves la situación peligrosa ahora mismo: “going to”.",
+      examples:[{en:"He is going to fall.",es:"Se va a caer."},{en:"The roof is going to collapse.",es:"El techo se va a derrumbar."}] },
+    { id:'g-chk-gt-evid-2', micro:'going-to-evidencia', translation:"Se ve muy pálida. ¡Se va a desmayar!", type:'fill', sentence:["She","looks","very","pale",".","She","___","faint","!"], blankIndex:6,
+      bank:["is going to","will","would"], correct:"is going to",
+      explain:"Lo que ves (se ve muy pálida) hace la predicción: “going to”.",
+      examples:[{en:"She is going to faint.",es:"Se va a desmayar."},{en:"He looks sick. He is going to stay home.",es:"Se ve enfermo. Se va a quedar en casa."}] },
+    { id:'g-chk-gt-evid-3', micro:'going-to-evidencia', translation:"Mira el marcador: tenemos 3 goles, ellos ninguno y quedan solo cinco minutos. Vamos a ganar.", type:'choice', prompt:"Look at the scoreboard: we have 3 goals, they have none, and there are only five minutes left. We ___ win.",
+      options:["are going to","is going to","was going to"], correct:0,
+      explain:"El marcador es la evidencia actual. Con “we” usamos “are going to”.",
+      examples:[{en:"We are going to win.",es:"Vamos a ganar."},{en:"They are going to lose.",es:"Van a perder."}] },
+    { id:'g-chk-will-form-1', micro:'will-forma-verbo-base', translation:"Mi hermano trabajará en un banco el próximo año.", type:'error', wrong:"My brother will works at a bank next year.", wrongWord:"works",
+      right:"My brother will work at a bank next year.", rightWord:"work",
+      explain:"Después de “will” va el verbo base, sin -s.",
+      examples:[{en:"My brother will work at a bank.",es:"Mi hermano trabajará en un banco."},{en:"She will study law.",es:"Ella estudiará derecho."}] },
+    { id:'g-chk-will-form-2', micro:'will-forma-verbo-base', translation:"Creo que la película será muy interesante.", type:'choice', prompt:"I think the movie ___ very interesting.",
+      options:["will be","will to be","will being"], correct:0,
+      explain:"Will + verbo base: “will be”.",
+      examples:[{en:"It will be fun.",es:"Será divertido."},{en:"The test will be easy.",es:"El examen será fácil."}] },
+    { id:'g-chk-will-form-3', micro:'will-forma-verbo-base', translation:"La tienda no abrirá el domingo.", type:'fill', sentence:["The","store","won't","___","on","Sunday","."], blankIndex:3,
+      bank:["open","opens","to open"], correct:"open",
+      explain:"Después de “won’t” va el verbo base: “open”.",
+      examples:[{en:"The store won't open today.",es:"La tienda no abrirá hoy."},{en:"They won't close early.",es:"No cerrarán temprano."}] }
+);

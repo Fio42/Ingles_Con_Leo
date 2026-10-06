@@ -108,12 +108,12 @@ const TEMAS = [
   { id:'this-that', label:'This, that, these y those', family:'demostrativos', article:null, glossary:null,
     topics:[`"This is..." (esto es...)`, `This / These`, `This / That / These / Those`] },
   /* ---- futuro / indirecto ---- */
-  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`],
+  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`, `Will: decisiones en el momento (futuro)`, `Going to: planes ya decididos (futuro)`, `Going to: lo que se ve venir (futuro)`, `Will + verbo base (futuro)`],
     micros:[
-      { id:'will-decision-espontanea', label:'Will: decisiones en el momento' },
-      { id:'going-to-plan-decidido', label:'Going to: planes ya decididos' },
-      { id:'going-to-evidencia', label:'Going to: lo que se ve venir' },
-      { id:'will-forma-verbo-base', label:'Will + verbo base (sin "to")' }
+      { id:'will-decision-espontanea', label:'Will: decisiones en el momento', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'will-decision-espontanea' } },
+      { id:'going-to-plan-decidido', label:'Going to: planes ya decididos', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'going-to-plan-decidido' } },
+      { id:'going-to-evidencia', label:'Going to: lo que se ve venir', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'going-to-evidencia' } },
+      { id:'will-forma-verbo-base', label:'Will + verbo base (sin "to")', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'will-forma-verbo-base' } }
     ] },
   { id:'estilo-indirecto', prereq:['pasado-regulares'], label:'Estilo indirecto (reported speech)', family:'indirecto', article:null, glossary:null,
     topics:[`Reported Speech`, `Discurso indirecto con matices`] },

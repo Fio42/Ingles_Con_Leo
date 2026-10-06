@@ -31,11 +31,12 @@ function loadSite(root){
   const glossaryOk = slug => fs.existsSync(path.join(root, 'glosario', slug, 'index.html'));
   let lock = { ids: [] };
   try{ lock = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'tests', 'micro-ids.lock.json'), 'utf8')); }catch(e){}
-  return buildSite({ TEMAS: ctx.__s.TEMAS, G: ctx.__s.G, CHECK: ctx.__s.CHECK, files, glossaryOk, lock });
+  const articleHas = (file, anchor) => { try{ return fs.readFileSync(path.join(root, file), 'utf8').indexOf('id="' + anchor + '"') !== -1; }catch(e){ return false; } };
+  return buildSite({ TEMAS: ctx.__s.TEMAS, G: ctx.__s.G, CHECK: ctx.__s.CHECK, files, glossaryOk, articleHas, lock });
 }
 
 // Arma los índices a partir de datos (también sirve para casos de prueba pequeños).
-function buildSite({ TEMAS, G, CHECK, files, glossaryOk, lock }){
+function buildSite({ TEMAS, G, CHECK, files, glossaryOk, articleHas, lock }){
   const temaById = {}, temaByTopic = {}, microById = {}, mergedInto = {};
   TEMAS.forEach(t => { temaById[t.id] = t; (t.topics || []).forEach(tp => { temaByTopic[tp] = t; }); });
   const dupMicroIds = [];
@@ -48,7 +49,7 @@ function buildSite({ TEMAS, G, CHECK, files, glossaryOk, lock }){
   Object.keys(G || {}).forEach(level => G[level].forEach(variant => variant.forEach(block => block.items.forEach(item => {
     practice.push({ level, topic: block.topic, item });
   }))));
-  return { TEMAS, temaById, temaByTopic, microById, mergedInto, dupMicroIds, practice, check: CHECK || [], files: files || new Set(), glossaryOk: glossaryOk || (() => true), lock: lock || { ids: [] } };
+  return { TEMAS, temaById, temaByTopic, microById, mergedInto, dupMicroIds, practice, check: CHECK || [], files: files || new Set(), glossaryOk: glossaryOk || (() => true), articleHas: articleHas || (() => true), lock: lock || { ids: [] } };
 }
 
 const canonical = (site, id) => site.mergedInto[id] || id;
@@ -93,6 +94,7 @@ function validate(site){
     visit(id, []);
     if(m.lesson){
       if(!m.lesson.article || !site.files.has(m.lesson.article)) err(id + ': la clase ' + (m.lesson.article || '(vacía)') + ' no existe');
+      else if(m.lesson.anchor && !site.articleHas(m.lesson.article, m.lesson.anchor)) err(id + ': la clase ' + m.lesson.article + ' no tiene la sección id="' + m.lesson.anchor + '"');
     }
     if(m.glossary && !site.glossaryOk(m.glossary)) err(id + ': no existe /glosario/' + m.glossary + '/');
   });
@@ -125,6 +127,10 @@ function validate(site){
     if(['choice', 'fill', 'error'].indexOf(it.type) === -1) err(it.id + ': tipo inválido ' + it.type);
     if(!it.explain) err(it.id + ': sin explain');
   });
+  // la comprobación no puede repetir palabra por palabra NINGÚN ejercicio de práctica (de cualquier microtema)
+  const practiceTexts = {};
+  site.practice.forEach(({ item }) => { practiceTexts[textOf(item)] = item.id; });
+  site.check.forEach(it => { if(it && it.id && it.type){ const hit = practiceTexts[textOf(it)]; if(hit) err(it.id + ': repite palabra por palabra a la práctica ' + hit); } });
   const checkIds = site.check.map(c => c && c.id);
   checkIds.forEach((id, i) => { if(id && checkIds.indexOf(id) !== i) err(id + ': id de comprobación repetido'); });
 

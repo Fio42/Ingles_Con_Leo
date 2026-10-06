@@ -15,8 +15,8 @@ const root = path.join(__dirname, '..', '..');
 const ctx = { console };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8') + '\n' + fs.readFileSync(path.join(root, 'temas.js'), 'utf8')
-  + '\n;this.__d = { G:GRAMMAR_BANK, TEMAS };', ctx);
-const { G, TEMAS } = ctx.__d;
+  + '\n;this.__d = { G:GRAMMAR_BANK, TEMAS, CHECK:GRAMMAR_CHECK_BANK };', ctx);
+const { G, TEMAS, CHECK } = ctx.__d;
 
 const temaByTopic = {};
 TEMAS.forEach(t => (t.topics || []).forEach(tp => { (temaByTopic[tp] = temaByTopic[tp] || []).push(t.id); }));
@@ -57,9 +57,9 @@ test('ningún ejercicio repite palabra por palabra a otro del mismo tipo de preg
   assert.deepStrictEqual(dup, [], 'duplicados: ' + dup.join(' ; '));
 });
 
-test('cada ejercicio es válido (respuesta presente, hueco, error dentro de la frase)', () => {
+test('cada ejercicio (práctica y comprobación) es válido: respuesta presente, hueco, error dentro de la frase', () => {
   const bad = [];
-  rows.forEach(({ item: it }) => {
+  rows.map(r => ({ item: r.item })).concat(CHECK.map(item => ({ item }))).forEach(({ item: it }) => {
     const id = it.id;
     if(!it.explain) bad.push(id + ': sin explain');
     if(!Array.isArray(it.examples) || !it.examples.length) bad.push(id + ': sin ejemplos');
