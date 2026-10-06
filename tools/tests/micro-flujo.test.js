@@ -187,6 +187,41 @@ test('si no quedan 3 comprobaciones inéditas no se ofrece: queda el refuerzo', 
   const st = T.microCheckStart('going-to-evidencia');
   assert.strictEqual(st.items, null); assert.strictEqual(st.reason, 'sin-ineditos');   // se maneja sin romper nada
 });
+test('un ?comprobar= manual NO se salta el flujo: no sirve ejercicios, no marca nada como visto y no toca la señal', () => {
+  activate(); otherHistory();
+  const noToca = () => {
+    const snap = () => JSON.stringify([store[T.MICRO_STATS_KEY] || null, Object.keys(JSON.parse(store[T.CHECK_SEEN_KEY] || '{}'))]);   // señales y ids vistos (el conjunto vacío no cuenta)
+    const before = snap();
+    const st = T.microCheckStart('going-to-evidencia');
+    assert.strictEqual(st.items, null); assert.strictEqual(st.reason, 'no-toca');
+    assert.strictEqual(snap(), before, 'cambió algo guardado');
+    assert.strictEqual(T.checkAvailable('going-to-evidencia'), true);                 // las 3 siguen inéditas
+  };
+  noToca();                                                                            // nunca fue débil
+  day(1); makeWeak(); noToca();                                                        // débil, pero sin práctica posterior
+  day(2); practiceAfter(4); noToca();                                                  // 4 < 5 respuestas
+  day(3); practiceAfter(2);                                                            // ahora SÍ toca
+  assert.strictEqual(microActions()[0].microState, 'listo-comprobar');
+  assert.strictEqual(T.microCheckStart('going-to-evidencia').items.length, 3);
+  const r = doCheck(3);                                                                // y tras recuperarse ya no se puede repetir a mano
+  assert.strictEqual(r.outcome, 'recuperado');
+  const again = T.microCheckStart('going-to-evidencia');
+  assert.strictEqual(again.items, null);
+  assert.ok(again.reason === 'sin-ineditos' || again.reason === 'no-toca');
+  assert.strictEqual(T.microFlowState('going-to-evidencia', ev()).state, 'recuperado');
+});
+test('una comprobación ya iniciada legítimamente se retoma aunque el estado cambie a mitad', () => {
+  toCheck();
+  const st = T.microCheckStart('going-to-evidencia');
+  T.saveInflightSession('check', 'going-to-evidencia', { itemIds: st.items.map(i => i.id), idx:1, results:[{ itemId: st.items[0].id, isCorrect:true }], startedAt: CLOCK });
+  // a mitad de la comprobación el estado ya no es "listo" (p. ej. se marcó la primera como vista)
+  const seen = {}; seen[st.items[0].id] = 1; store[T.CHECK_SEEN_KEY] = JSON.stringify(seen);
+  assert.strictEqual(T.checkAvailable('going-to-evidencia'), false);
+  const again = T.microCheckStart('going-to-evidencia');
+  assert.strictEqual(again.resumed, true); assert.strictEqual(again.items.length, 3);
+  const fin = T.microCheckFinish('going-to-evidencia', st.items.map(it => ({ itemId: it.id, isCorrect:true })), CLOCK);
+  assert.strictEqual(fin.outcome, 'recuperado');
+});
 test('un microtema inactivo nunca ofrece comprobación ni refuerzo', () => {
   otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6);
   assert.ok(ev().wk);                                  // la señal se guarda igual (queda lista para cuando se active)

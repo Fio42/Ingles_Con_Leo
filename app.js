@@ -3929,7 +3929,7 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
    microtema (ver applyCheckOutcome). Se puede retomar a medias (leo_inflight_check_<microtema>).
    ============================================================ */
 // Prepara la comprobación: la retoma si quedó a medias; si no, elige CHECK_SIZE ejercicios inéditos.
-// items = null cuando no se puede (microtema inactivo o sin suficientes inéditos).
+// items = null cuando no se puede: inactivo, sin suficientes inéditos, o todavía no toca (reason 'no-toca').
 function microCheckStart(microId){
   const saved = loadInflightSession('check', microId);
   if(saved && Array.isArray(saved.itemIds) && typeof saved.idx === 'number' && saved.idx < saved.itemIds.length){
@@ -3937,6 +3937,11 @@ function microCheckStart(microId){
     if(items.length === saved.itemIds.length) return { items, resumed:true, idx:saved.idx, results:saved.results || [], startedAt:saved.startedAt || Date.now() };
   }
   if(!microIsActive(microId)) return { items:null, reason:'inactivo' };
+  if(!checkAvailable(microId)) return { items:null, reason:'sin-ineditos' };
+  // Solo se puede EMPEZAR una comprobación cuando el flujo la ofrece (listo-comprobar). Un enlace escrito a mano o
+  // viejo no la salta: no se sirve nada, no se marca nada como visto y no se toca la señal del microtema.
+  const stat = readJsonKey(MICRO_STATS_KEY, {})[microId];
+  if(microFlowState(microId, stat).state !== 'listo-comprobar') return { items:null, reason:'no-toca' };
   const items = pickCheckItems(microId, MICRO_FLOW.CHECK_SIZE);
   if(!items) return { items:null, reason:'sin-ineditos' };
   return { items, resumed:false, idx:0, results:[], startedAt:Date.now() };
@@ -3977,7 +3982,7 @@ function renderMicroCheckSummary(m, res){
       <div class="summary-actions"><a href="miembros.html" class="btn btn-ghost">Volver al dashboard</a></div>
     </div>`;
 }
-function renderMicroCheckUnavailable(container, m){
+function renderMicroCheckUnavailable(container, m, reason){
   const lesson = m ? microLessonHref(m) : null;
   const links = [];
   if(m && lesson) links.push({ title:`Ver la clase: ${m.label}`, href:lesson });
@@ -3986,7 +3991,7 @@ function renderMicroCheckUnavailable(container, m){
     <div class="session-shell">
       <div class="session-summary">
         <h2>Por ahora no hay comprobación nueva</h2>
-        <p class="summary-score">${m ? `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.` : 'Esa comprobación no está disponible.'} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
+        <p class="summary-score">${!m ? 'Esa comprobación no está disponible.' : reason === 'no-toca' ? `Todavía no toca comprobar <b>${m.label}</b>.` : `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.`} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
         <div class="sess-insight">${microCheckLinksHtml(links)}</div>
       </div>
     </div>`;
@@ -3996,7 +4001,7 @@ function renderMicroCheck(container, microId){
   stopActiveAudioFile();
   const m = (typeof MICRO_BY_ID !== 'undefined') ? MICRO_BY_ID[microId] : null;
   const start = m ? microCheckStart(microId) : { items:null };
-  if(!start.items){ renderMicroCheckUnavailable(container, m); return; }
+  if(!start.items){ renderMicroCheckUnavailable(container, m, start.reason); return; }
   const level = getUserLevel();
   const items = start.items, total = items.length, startedAt = start.startedAt;
   const results = start.results.slice();
