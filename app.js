@@ -508,8 +508,9 @@ function dedupeProgressSessions(p){
   });
   if(!changed) return false;
   p.sessions = Array.from(unique.values()).sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
-  if(p.sessions.length){
-    const last = p.sessions[p.sessions.length - 1];
+  const lastReal = p.sessions.filter(x => x.skill !== 'check').pop();
+  if(lastReal){
+    const last = lastReal;
     p.lastActivity = { skill:last.skill, level:last.level, topic:(last.topics&&last.topics[0])||null, date:last.date };
   }
   return true;
@@ -536,8 +537,9 @@ function migrateProgressDatesIfNeeded(p){
       changed = true;
     }
   });
-  if(changed && p.sessions && p.sessions.length){
-    const last = p.sessions[p.sessions.length - 1];
+  const lastReal2 = (p.sessions || []).filter(x => x.skill !== 'check').pop();
+  if(changed && lastReal2){
+    const last = lastReal2;
     p.lastActivity = { skill: last.skill, level: last.level, topic: (last.topics && last.topics[0]) || null, date: last.date };
   }
   if(changed) saveProgressRaw(p);
@@ -602,6 +604,7 @@ function markGrammarRetry(container){
 function practiceOrigin(){
   try{
     const q = new URLSearchParams(location.search);
+    if(q.get('micro')) return 'micro';
     if(q.get('via') === 'rec') return 'rec';
     if(q.get('tema')) return 'tema';
     if(q.get('foco')) return 'foco';
@@ -609,10 +612,19 @@ function practiceOrigin(){
   }catch(e){}
   return null;
 }
+// La página del Plan lee la dirección y la LIMPIA antes de armar la sesión. Esto guarda, una sola vez al cargar app.js,
+// lo que traía (micro / comprobar / origen) y se entrega UNA vez, para que "Hacer otra sesión" sea una sesión normal.
+const PAGE_PLAN_PARAMS = (function(){
+  const out = { micro:null, comprobar:null, origin:null };
+  try{ const q = new URLSearchParams(location.search); out.micro = q.get('micro') || null; out.comprobar = q.get('comprobar') || null; out.origin = practiceOrigin(); }catch(e){}
+  return out;
+})();
+function takePagePlanParams(){ const p = { micro:PAGE_PLAN_PARAMS.micro, comprobar:PAGE_PLAN_PARAMS.comprobar }; PAGE_PLAN_PARAMS.micro = null; PAGE_PLAN_PARAMS.comprobar = null; return p; }
+function takePageOrigin(){ const o = PAGE_PLAN_PARAMS.origin; PAGE_PLAN_PARAMS.origin = null; return o; }
 // Devuelve results con los campos extra (copias; los originales no se tocan).
 function instrumentResults(results, seenBefore){
   if(!Array.isArray(results) || !results.length) return results || [];
-  const origin = practiceOrigin();
+  const origin = takePageOrigin() || practiceOrigin();
   let index = null;
   try{ index = getMistakesItemIndex(); }catch(e){}
   const seen = new Set(seenBefore || []);
@@ -704,23 +716,78 @@ function pickCheckItems(microId, n){
   for(let i = fresh.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); const t = fresh[i]; fresh[i] = fresh[j]; fresh[j] = t; }
   return fresh.slice(0, n);
 }
-// Señales por microtema: { a, w, wi:{itemId:fallos}, wd:[fechas con fallos], last, ck:{a, ok} }.
+// Señales por microtema (todas LOCALES por dispositivo):
+//   a, w, wi, wd, last   práctica: intentos, fallos del primer intento, ejercicios y días con fallos
+//   wk                   fecha en que se detectó la debilidad (null = sin alerta)
+//   pr, pc               respuestas de práctica DESDE wk, y cuántas salieron bien al primer intento
+//   ck                   comprobación: respuestas y aciertos acumulados
+//   lc                   última comprobación completa { d: fecha, n, ok }
 // "Fallo" = el primer intento salió mal (también cuando acertó al reintentar: results.w).
+//
+// REGLAS DEL FLUJO (deterministas; la debilidad reutiliza microWeakness, no hay otro criterio):
+//   DÉBIL           >=3 ejercicios distintos con fallo, o >=2 distintos en días distintos. Repetir el mismo
+//                   ejercicio no cuenta. Al detectarla se guarda wk.
+//   PRÁCTICA        con wk y el microtema ACTIVO se recomienda reforzarlo: Plan con foco en ese microtema y su
+//                   sección de la clase. Desaparece cuando la alerta se cierra (ver abajo).
+//   COMPROBACIÓN    se ofrece con wk, pr >= CHECK_AFTER_PRACTICE, sin comprobación desde wk y con CHECK_SIZE
+//                   ejercicios inéditos. Es un enlace ("Hoy te conviene" y fin de sesión), nunca una ventana.
+//   RESULTADO       3/3 recuperado: se cierra la alerta y se borra la evidencia. 2/3 mejora parcial: se cierra
+//                   la alerta SIN marcarlo recuperado. 0-1/3: sigue débil (la alerta continúa).
+//   DEJA DE OFRECERSE  la comprobación, al responderla o si no quedan inéditas. El refuerzo, al cerrarse la
+//                   alerta o, si no hay comprobación posible (o ya se hizo), tras AUTOCLEAR_MIN respuestas con
+//                   >=AUTOCLEAR_ACC% de aciertos al primer intento.
+// Nada de esto toca mistake_stats, el diagnóstico global ni "dominado".
+const MICRO_FLOW = { CHECK_SIZE: 3, CHECK_AFTER_PRACTICE: 5, AUTOCLEAR_MIN: 6, AUTOCLEAR_ACC: 80 };
+function newMicroStat(){ return { a:0, w:0, wi:{}, wd:[], last:null, ck:{ a:0, ok:0 }, wk:null, pr:0, pc:0, lc:null }; }
+// ¿Quedan CHECK_SIZE comprobaciones que este alumno no ha visto? (sin barajar: solo cuenta)
+function checkAvailable(microId){
+  const items = checkIndex().byMicro.get(microId) || [];
+  const seen = checkSeenSet();
+  return items.filter(it => !seen[it.id]).length >= MICRO_FLOW.CHECK_SIZE;
+}
+function microCheckedSinceWeak(s){ return !!(s && s.wk && s.lc && s.lc.d >= s.wk); }
+function clearMicroWeakness(s){ s.wk = null; s.wi = {}; s.wd = []; s.pr = 0; s.pc = 0; }
+function applyCheckOutcome(s, t, date){
+  s.lc = { d: date, n: t.n, ok: t.ok };
+  if(t.ok >= t.n - 1){ clearMicroWeakness(s); return; }   // 3/3 recuperado; 2/3 mejora parcial
+  if(!s.wk) s.wk = date;                                   // 0-1/3: sigue débil aunque no hubiera evidencia previa
+  s.pr = 0; s.pc = 0;
+}
+function microAutoClear(s, microId){
+  if(!s.wk || s.pr < MICRO_FLOW.AUTOCLEAR_MIN || s.pc * 100 < MICRO_FLOW.AUTOCLEAR_ACC * s.pr) return false;
+  return microCheckedSinceWeak(s) || !checkAvailable(microId);
+}
 function updateMicroStats(results, date){
   try{
     const touched = (results || []).filter(r => r && r.m && (r.isCorrect === true || r.isCorrect === false));
     if(!touched.length) return;
     const all = readJsonKey(MICRO_STATS_KEY, {});
+    const hadWeak = {}, checkTally = {};
     touched.forEach(r=>{
-      const s = all[r.m] || (all[r.m] = { a:0, w:0, wi:{}, wd:[], last:null, ck:{ a:0, ok:0 } });
+      const s = all[r.m] || (all[r.m] = newMicroStat());
+      if(s.wk === undefined){ s.wk = null; s.pr = 0; s.pc = 0; s.lc = null; }   // señales guardadas antes del flujo
+      if(!(r.m in hadWeak)) hadWeak[r.m] = !!s.wk;
       s.last = date;
-      if(isCheckItem(r.itemId)){ s.ck.a++; if(r.isCorrect) s.ck.ok++; return; }   // la comprobación se lleva aparte
+      if(isCheckItem(r.itemId)){                                                  // la comprobación se lleva aparte
+        s.ck.a++; if(r.isCorrect) s.ck.ok++;
+        const t = checkTally[r.m] || (checkTally[r.m] = { n:0, ok:0 });
+        t.n++; if(r.isCorrect) t.ok++;
+        return;
+      }
       s.a++;
-      if(r.isCorrect === false || r.w){
+      const firstFail = r.isCorrect === false || !!r.w;
+      if(firstFail){
         s.w++;
         if(s.wi[r.itemId] || Object.keys(s.wi).length < MICRO_STATS_MAX_ITEMS) s.wi[r.itemId] = (s.wi[r.itemId] || 0) + 1;
         if(s.wd.indexOf(date) === -1) s.wd = s.wd.concat(date).slice(-MICRO_STATS_MAX_DAYS);
       }
+      if(hadWeak[r.m]){ s.pr++; if(!firstFail) s.pc++; }
+    });
+    Object.keys(hadWeak).forEach(m=>{
+      const s = all[m], t = checkTally[m];
+      if(t && t.n >= MICRO_FLOW.CHECK_SIZE) applyCheckOutcome(s, t, date);
+      else if(!hadWeak[m] && !s.wk && microWeakness(s).weak){ s.wk = date; s.pr = 0; s.pc = 0; }
+      else if(hadWeak[m] && microAutoClear(s, m)) clearMicroWeakness(s);
     });
     localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
   }catch(e){}
@@ -733,6 +800,73 @@ function microWeakness(stat){
   if(ids.length >= 3 || (ids.length >= 2 && days >= 2)) return { weak:true, reason:'varios-ejercicios' };
   if(ids.length === 1 && stat.wi[ids[0]] >= 2) return { weak:false, reason:'mismo-ejercicio' };
   return { weak:false, reason:null };
+}
+
+// Estado de un microtema para decidir qué ofrecer: sin-datos | sin-alerta | recuperado | mejorando |
+// debil | listo-comprobar | debil-comprobado.
+function microFlowState(microId, s){
+  if(!s) return { state:'sin-datos' };
+  if(!s.wk){
+    if(s.lc && s.lc.ok >= s.lc.n) return { state:'recuperado' };
+    if(s.lc && s.lc.ok === s.lc.n - 1) return { state:'mejorando' };
+    return { state:'sin-alerta' };
+  }
+  if(!microCheckedSinceWeak(s) && s.pr >= MICRO_FLOW.CHECK_AFTER_PRACTICE && checkAvailable(microId)) return { state:'listo-comprobar' };
+  return { state: microCheckedSinceWeak(s) ? 'debil-comprobado' : 'debil' };
+}
+// Solo los microtemas declarados `active:true` en temas.js generan recomendaciones. Los demás se comportan como siempre.
+function microIsActive(microId){ return typeof MICRO_BY_ID !== 'undefined' && !!MICRO_BY_ID[microId] && MICRO_BY_ID[microId].active === true; }
+let _microLevelIndex = null;
+function microHasItemsAt(microId, level){
+  if(!_microLevelIndex){
+    _microLevelIndex = {};
+    LEVELS.forEach(lv => {
+      const set = new Set();
+      (GRAMMAR_BANK[lv] || []).forEach(v => v.forEach(b => b.items.forEach(i => { if(i.micro) set.add(i.micro); })));
+      _microLevelIndex[lv] = set;
+    });
+  }
+  return !!(_microLevelIndex[level] && _microLevelIndex[level].has(microId));
+}
+// Enlace a la sección EXACTA de la clase para ese microtema (o null si no tiene clase).
+function microLessonHref(m){
+  const res = (typeof microResources === 'function') ? microResources(m.id) : null;
+  if(!res || !res.lesson || !res.lesson.article) return null;
+  return res.lesson.article + '?tema=' + encodeURIComponent(m.tema) + '&via=rec' + (res.lesson.anchor ? '#' + res.lesson.anchor : '');
+}
+function microPracticeHref(m, start){
+  const tema = (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[m.tema]) || {};
+  return planFocusHref(tema.family, !!start, m.tema) + '&micro=' + encodeURIComponent(m.id);
+}
+// Acción lista para "Hoy te conviene" y el fin de sesión; nombra el concepto exacto, no la familia.
+function microAction(m, s, state){
+  const nWrong = s && s.wi ? Object.keys(s.wi).length : 0;
+  const lesson = microLessonHref(m);
+  const base = { micro: m.id, tema: m.tema, microState: state, evidence: nWrong, article: lesson, articleLabel: lesson ? 'Ver la clase' : undefined };
+  if(state === 'listo-comprobar'){
+    return Object.assign(base, { title: `Comprobar: ${m.label}`, reason: `Ya practicaste esto. Son ${MICRO_FLOW.CHECK_SIZE} ejercicios nuevos para ver si ya lo dominas.`,
+      href: 'plan-estudio.html?comprobar=' + encodeURIComponent(m.id), cta: 'Comprobar', voice: 'casi-dominas' });
+  }
+  const checked = microCheckedSinceWeak(s);
+  return Object.assign(base, { title: `Reforzar ${m.label}`,
+    reason: checked ? `En la comprobación acertaste ${s.lc.ok} de ${s.lc.n}. Repasa la explicación y sigue practicando este punto.`
+      : nWrong >= 3 ? `Fallaste ${nWrong} ejercicios distintos de este punto.` : 'Fallaste ejercicios distintos de este punto en días diferentes.',
+    href: microPracticeHref(m, false), cta: 'Reforzar ahora', voice: 'sigue-tema' });
+}
+// Recomendaciones por microtema (solo ACTIVOS, con ejercicios en el nivel del alumno). Primero la comprobación lista,
+// luego la que acumula más ejercicios distintos con fallo. `only` (Set de ids) limita a los tocados en una sesión.
+function microDiagActions(level, only){
+  if(typeof MICROS === 'undefined') return [];
+  const all = readJsonKey(MICRO_STATS_KEY, {});
+  const out = [];
+  MICROS.forEach(m=>{
+    if(!m.active || (only && !only.has(m.id)) || !microHasItemsAt(m.id, level)) return;
+    const s = all[m.id], st = microFlowState(m.id, s);
+    if(st.state !== 'listo-comprobar' && st.state !== 'debil' && st.state !== 'debil-comprobado') return;
+    out.push(microAction(m, s, st.state));
+  });
+  const rank = a => a.microState === 'listo-comprobar' ? 0 : 1;
+  return out.sort((a, b) => (rank(a) - rank(b)) || (b.evidence - a.evidence));
 }
 
 /* Llamado por cada motor de sesión al terminar una sesión. */
@@ -752,7 +886,7 @@ function recordSession({ skill, level, topics, results, startedAt }){
   markChecksConsumed(session.results);
   updateMicroStats(session.results, session.date);
   p.sessions.push(session);
-  p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
+  if(skill !== 'check') p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
   saveProgressRaw(p);
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
     LeoBackend.pushSession(session);
@@ -808,7 +942,7 @@ function computeWeeklyStats(){
   const week = sessionsInLastDays(p, 7);
   const exercises = week.reduce((n,s)=> n + (s.results ? s.results.length : 0), 0);
   const graded = [];
-  week.forEach(s => (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }));
+  week.forEach(s => { if(s.skill === 'check') return; (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }); });
   const correct = graded.filter(r=>r.isCorrect).length;
   const accuracy = graded.length ? Math.round(correct / graded.length * 100) : null;
   const days = new Set(week.map(s=>s.date)).size;
@@ -897,9 +1031,9 @@ const SKILL_PAGE = { gramatica:'gramatica.html', vocabulario:'vocabulario.html',
 // quedaste" y "Tu actividad reciente". Por eso viven en objetos aparte
 // en vez de agregarse a SKILL_LABELS (que también se usa para listar
 // las 5 habilidades principales con Object.keys()).
-const DISPLAY_SKILL_LABELS = Object.assign({ plan:'Plan de estudio', clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing', 'toeic-listening':'TOEIC Listening', 'toeic-reading':'TOEIC Reading', 'toeic-speaking':'TOEIC Speaking', 'toeic-writing':'TOEIC Writing' }, SKILL_LABELS);
-const DISPLAY_SKILL_COLORS = Object.assign({ plan:'#253ECC', clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E', 'toeic-listening':'#253ECC', 'toeic-reading':'#253ECC', 'toeic-speaking':'#253ECC', 'toeic-writing':'#253ECC' }, SKILL_COLORS);
-const DISPLAY_SKILL_PAGE = Object.assign({ clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html', 'toeic-listening':'toeic.html', 'toeic-reading':'toeic.html', 'toeic-speaking':'toeic.html', 'toeic-writing':'toeic.html' }, SKILL_PAGE);
+const DISPLAY_SKILL_LABELS = Object.assign({ check:'Comprobación', plan:'Plan de estudio', clases:'Clases interactivas', errores:'Repaso de errores', 'reto-diario':'Reto diario', juego:'English Rush', 'cambridge-reading':'Cambridge Reading', 'cambridge-listening':'Cambridge Listening', 'cambridge-writing':'Cambridge Writing', 'cambridge-speaking':'Cambridge Speaking', 'toefl-reading':'TOEFL Reading', 'toefl-listening':'TOEFL Listening', 'toefl-speaking':'TOEFL Speaking', 'toefl-writing':'TOEFL Writing', 'ielts-reading':'IELTS Reading', 'ielts-listening':'IELTS Listening', 'ielts-speaking':'IELTS Speaking', 'ielts-writing':'IELTS Writing', 'toeic-listening':'TOEIC Listening', 'toeic-reading':'TOEIC Reading', 'toeic-speaking':'TOEIC Speaking', 'toeic-writing':'TOEIC Writing' }, SKILL_LABELS);
+const DISPLAY_SKILL_COLORS = Object.assign({ check:'#253ECC', plan:'#253ECC', clases:'#253ECC', errores:'#DC2626', 'reto-diario':'#F5A524', juego:'#DB2777', 'cambridge-reading':'#B45309', 'cambridge-listening':'#B45309', 'cambridge-writing':'#B45309', 'cambridge-speaking':'#B45309', 'toefl-reading':'#6D28D9', 'toefl-listening':'#6D28D9', 'toefl-speaking':'#6D28D9', 'toefl-writing':'#6D28D9', 'ielts-reading':'#0F766E', 'ielts-listening':'#0F766E', 'ielts-speaking':'#0F766E', 'ielts-writing':'#0F766E', 'toeic-listening':'#253ECC', 'toeic-reading':'#253ECC', 'toeic-speaking':'#253ECC', 'toeic-writing':'#253ECC' }, SKILL_COLORS);
+const DISPLAY_SKILL_PAGE = Object.assign({ check:'plan-estudio.html', clases:'clases.html', errores:'errores.html', 'reto-diario':'miembros.html', juego:'juego.html', 'cambridge-reading':'cambridge.html', 'cambridge-listening':'cambridge.html', 'cambridge-writing':'cambridge.html', 'cambridge-speaking':'cambridge.html', 'toefl-reading':'toefl.html', 'toefl-listening':'toefl.html', 'toefl-speaking':'toefl.html', 'toefl-writing':'toefl.html', 'ielts-reading':'ielts.html', 'ielts-listening':'ielts.html', 'ielts-speaking':'ielts.html', 'ielts-writing':'ielts.html', 'toeic-listening':'toeic.html', 'toeic-reading':'toeic.html', 'toeic-speaking':'toeic.html', 'toeic-writing':'toeic.html' }, SKILL_PAGE);
 
 // Mixto no tiene su propio banco: combina ítems reales de los otros 5.
 // Usamos un tamaño nominal (8 ítems por sesión, igual a MIX_COUNTS) solo
@@ -3360,6 +3494,9 @@ function daysSinceDateStr(dateStr){
    que haga falta. */
 function computePlanSelection(level, targetCount, opts){
   const p = loadProgress();
+  // ?micro=<id>: el foco es ese microtema (solo si está activo y tiene ejercicios en este nivel); implica su tema y familia.
+  const microFocus = (opts && opts.focusMicro && microIsActive(opts.focusMicro) && microHasItemsAt(opts.focusMicro, level)) ? MICRO_BY_ID[opts.focusMicro] : null;
+  if(microFocus){ const mt = TEMA_BY_ID[microFocus.tema] || {}; opts = Object.assign({}, opts, { focusTema: microFocus.tema, focusFamily: mt.family }); }
   // Foco elegido desde un enlace ("Practicar Preposiciones", "Reforzar en
   // mi Plan"): usa el mismo refuerzo de abajo con otra familia y más cupos.
   const urlTema = (opts && opts.focusTema && typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[opts.focusTema] : null;
@@ -3448,7 +3585,7 @@ function computePlanSelection(level, targetCount, opts){
         target = { id: null, label: diag.weak.focusTema.label, temaId: diag.weak.focusTema.id, temaLabel: diag.weak.focusTema.label };
       }
     }
-    if(target && remaining >= 4){
+    if(target && (remaining >= 4 || (microFocus && remaining >= 3))){
       const forced = !!(forcedFamily || forcedVocab || forcedWriting);
       const want = forced
         ? Math.min(6, Math.max(3, Math.round(remaining * 0.5)))
@@ -3459,7 +3596,7 @@ function computePlanSelection(level, targetCount, opts){
         bySkill[donor]--; bySkill[focusSkill] = (bySkill[focusSkill] || 0) + 1;
       }
       const count = Math.min(want, bySkill[focusSkill] || 0);
-      if(count > 0) focus = { skill: focusSkill, familyId: target.id, label: target.temaLabel || target.label, temaId: target.temaId || null, count, chosen: forced };
+      if(count > 0) focus = { skill: focusSkill, familyId: target.id, label: (microFocus && focusSkill === 'gramatica') ? microFocus.label : (target.temaLabel || target.label), temaId: target.temaId || null, microId: (microFocus && focusSkill === 'gramatica') ? microFocus.id : null, count, chosen: forced };
     }
   }catch(e){ focus = null; }
 
@@ -3489,7 +3626,7 @@ function buildPlanPool(level, selection){
   const focusSkill = (selection.focus && selection.focus.skill) || 'gramatica';
   const focusEntries = !selection.focus ? []
     : focusSkill !== 'gramatica' ? pickSkillFocusItems(focusSkill, level, selection.focus.temaId, selection.focus.count, alreadyIn)
-    : pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId);
+    : pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId, selection.focus.microId);
   focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null; entries.push(e); alreadyIn.add(e.item.id); });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
@@ -3625,11 +3762,14 @@ function renderPlanDifficultySelector(container, selected, onChange){
 //   autoStart    empezar sin pasar por la vista previa (?empezar=1)
 function renderPlanIntro(container, opts){
   if(!container) return;
-  opts = opts || {};
+  opts = Object.assign({}, opts);
+  const pageParams = takePagePlanParams();
+  if(pageParams.comprobar && microIsActive(pageParams.comprobar)){ renderMicroCheck(container, pageParams.comprobar); return; }
+  if(!opts.focusMicro && pageParams.micro) opts.focusMicro = pageParams.micro;
   const level = getUserLevel();
   let currentLen = getPlanLength();
   let currentDiff = getPlanDifficulty();
-  const selOpts = { focusFamily: opts.focusFamily, focusTema: opts.focusTema, focusSkill: opts.focusSkill };
+  const selOpts = { focusFamily: opts.focusFamily, focusTema: opts.focusTema, focusSkill: opts.focusSkill, focusMicro: opts.focusMicro };
   let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items, selOpts);
   let diffPanelOpen = false;
 
@@ -3776,6 +3916,130 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
   }
 
   renderItem();
+}
+
+/* ============================================================
+   COMPROBACIÓN DE UN MICROTEMA (solo Miembros, dentro de la página del Plan)
+   ------------------------------------------------------------
+   Se llega con plan-estudio.html?comprobar=<microtema> (enlace de "Hoy te conviene" y del fin de sesión,
+   cuando microDiagActions decide que toca). Es un flujo APARTE de la práctica: no usa corta/media/larga,
+   sirve solo ejercicios de GRAMMAR_CHECK_BANK que el alumno no ha visto, no admite "Volver a intentar"
+   (mide si generaliza) y se guarda como una sesión skill:'check'. Esa sesión no entra a "Mis errores" ni a
+   mistake_stats, no cambia "Continúa donde te quedaste" ni la precisión semanal, y solo mueve la señal del
+   microtema (ver applyCheckOutcome). Se puede retomar a medias (leo_inflight_check_<microtema>).
+   ============================================================ */
+// Prepara la comprobación: la retoma si quedó a medias; si no, elige CHECK_SIZE ejercicios inéditos.
+// items = null cuando no se puede (microtema inactivo o sin suficientes inéditos).
+function microCheckStart(microId){
+  const saved = loadInflightSession('check', microId);
+  if(saved && Array.isArray(saved.itemIds) && typeof saved.idx === 'number' && saved.idx < saved.itemIds.length){
+    const items = saved.itemIds.map(id => checkIndex().byId.get(id)).filter(Boolean);
+    if(items.length === saved.itemIds.length) return { items, resumed:true, idx:saved.idx, results:saved.results || [], startedAt:saved.startedAt || Date.now() };
+  }
+  if(!microIsActive(microId)) return { items:null, reason:'inactivo' };
+  const items = pickCheckItems(microId, MICRO_FLOW.CHECK_SIZE);
+  if(!items) return { items:null, reason:'sin-ineditos' };
+  return { items, resumed:false, idx:0, results:[], startedAt:Date.now() };
+}
+// Guarda la comprobación terminada (una sesión skill:'check') y devuelve el resultado.
+function microCheckFinish(microId, results, startedAt){
+  const m = MICRO_BY_ID[microId];
+  recordSession({ skill:'check', level:getUserLevel(), topics:[m.label], results, startedAt });
+  clearInflightSession('check', microId);
+  const ok = results.filter(r => r.isCorrect === true).length, n = results.length;
+  return { ok, n, outcome: ok >= n ? 'recuperado' : (ok === n - 1 ? 'mejorando' : 'sigue-debil') };
+}
+function microCheckLinksHtml(links){
+  return `<div class="sess-next">${links.map(a=>`<a href="${a.href}" class="sess-next-link${a.main ? ' is-main' : ''}"><span>${a.title}</span><span aria-hidden="true">→</span></a>`).join('')}</div>`;
+}
+function renderMicroCheckSummary(m, res){
+  const lesson = microLessonHref(m);
+  const head = { recuperado:'¡Lo dominas!', mejorando:'Vas mejorando', 'sigue-debil':'Todavía cuesta' }[res.outcome];
+  const msg = {
+    recuperado: `Acertaste ${res.ok} de ${res.n}. Ya tienes claro <b>${m.label}</b>.`,
+    mejorando: `Acertaste ${res.ok} de ${res.n}. Mejoraste, pero todavía no lo damos por dominado. Repasa la explicación y practica un poco más.`,
+    'sigue-debil': `Acertaste ${res.ok} de ${res.n}. Este punto todavía no está firme. Lee la explicación y sigue practicándolo.`
+  }[res.outcome];
+  const links = [];
+  if(res.outcome === 'recuperado'){
+    links.push({ title:'Volver a mi plan', href:'plan-estudio.html', main:true });
+  } else {
+    if(lesson) links.push({ title:`Ver la clase: ${m.label}`, href:lesson, main: res.outcome === 'sigue-debil' });
+    links.push({ title:`Seguir practicando ${m.label}`, href:microPracticeHref(m, true), main: res.outcome === 'mejorando' || !lesson });
+  }
+  return `
+    <div class="session-summary">
+      <div class="examples-label">Comprobación: ${m.label}</div>
+      <h2>${head}</h2>
+      <p class="summary-score">${msg}</p>
+      <p style="color:var(--ink-faint);font-size:0.85rem;">Esta comprobación no cuenta como práctica normal ni como error.</p>
+      <div class="sess-insight">${microCheckLinksHtml(links)}</div>
+      <div class="summary-actions"><a href="miembros.html" class="btn btn-ghost">Volver al dashboard</a></div>
+    </div>`;
+}
+function renderMicroCheckUnavailable(container, m){
+  const lesson = m ? microLessonHref(m) : null;
+  const links = [];
+  if(m && lesson) links.push({ title:`Ver la clase: ${m.label}`, href:lesson });
+  links.push({ title: m ? `Seguir practicando ${m.label}` : 'Ir a mi plan', href: m && microIsActive(m.id) ? microPracticeHref(m, true) : 'plan-estudio.html', main:true });
+  container.innerHTML = `
+    <div class="session-shell">
+      <div class="session-summary">
+        <h2>Por ahora no hay comprobación nueva</h2>
+        <p class="summary-score">${m ? `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.` : 'Esa comprobación no está disponible.'} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
+        <div class="sess-insight">${microCheckLinksHtml(links)}</div>
+      </div>
+    </div>`;
+}
+function renderMicroCheck(container, microId){
+  if(!container) return;
+  stopActiveAudioFile();
+  const m = (typeof MICRO_BY_ID !== 'undefined') ? MICRO_BY_ID[microId] : null;
+  const start = m ? microCheckStart(microId) : { items:null };
+  if(!start.items){ renderMicroCheckUnavailable(container, m); return; }
+  const level = getUserLevel();
+  const items = start.items, total = items.length, startedAt = start.startedAt;
+  const results = start.results.slice();
+  let idx = start.idx;
+
+  function renderItem(){
+    const item = items[idx];
+    saveInflightSession('check', microId, { itemIds: items.map(i => i.id), idx, results, startedAt });
+    const wrap = document.createElement('div');
+    wrap.innerHTML = sessionHeaderHtml('Comprobación', level, idx + 1, total);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    wrap.appendChild(card);
+    container.innerHTML = '';
+    container.appendChild(wrap);
+    renderGrammarItemInto(card, item, (isCorrect)=>{
+      markChecksConsumed([{ itemId:item.id }]);                  // visto: no vuelve a salir aunque no la termine
+      results.push({ itemId:item.id, isCorrect });
+      showNextButton(card, idx + 1 < total ? 'Siguiente →' : 'Ver resultado →', ()=>{
+        idx++;
+        if(idx < total) renderItem(); else finish();
+      });
+    });
+  }
+  function finish(){
+    const res = microCheckFinish(microId, results, startedAt);
+    container.innerHTML = renderMicroCheckSummary(m, res);
+  }
+  if(start.resumed){ renderItem(); return; }
+  container.innerHTML = `
+    <div class="session-shell">
+      <div class="session-summary">
+        <div class="examples-label">Comprobación corta</div>
+        <h2>¿Ya dominas ${m.label}?</h2>
+        <p class="summary-score">Son ${total} ejercicios nuevos, distintos de los que practicaste. Sin repetir intentos: sirve para ver si de verdad lo entendiste.</p>
+        <p style="color:var(--ink-faint);font-size:0.85rem;">No cuenta como práctica normal ni como error.</p>
+        <div class="summary-actions">
+          <button type="button" class="btn btn-primary" id="microCheckStart">Empezar comprobación →</button>
+          <a href="plan-estudio.html" class="btn btn-ghost">Ahora no</a>
+        </div>
+      </div>
+    </div>`;
+  container.querySelector('#microCheckStart').addEventListener('click', renderItem);
 }
 
 /* ============================================================
@@ -5458,7 +5722,10 @@ function computeDiagnosis(p, statsMap){
   if(diag.activeMistakes >= 10 || (repeatedTotal >= 3 && (!diag.weak || diag.repeated[0].key !== diag.weak.key))){
     push(mistakesAction, 'mistakes');
   }
-  if(diag.weak){
+  // Microtemas ACTIVOS con refuerzo o comprobación pendiente: la recomendación nombra el concepto exacto.
+  const microCovered = new Set();
+  try{ microDiagActions(getUserLevel()).slice(0, 2).forEach(a => { push(a, 'micro:' + a.micro); microCovered.add(a.tema); }); }catch(e){}
+  if(diag.weak && !(diag.weak.focusTema && microCovered.has(diag.weak.focusTema.id))){
     // Si dentro de la familia hay un tema concreto que falla más, la
     // recomendación es ese tema (práctica y clase del tema). Si no, la familia.
     const ft = diag.weak.focusTema || null;       // familia de gramática o Vocabulario
@@ -5592,7 +5859,7 @@ function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
   return shuffleArray(candidates).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind: PLAN_SKILL_TO_KIND[skill], item, focus:true }));
 }
 
-function pickDiagFocusItems(level, familyId, n, excludeIds, temaId){
+function pickDiagFocusItems(level, familyId, n, excludeIds, temaId, microId){
   if(!familyId || !n || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return [];
   const p = loadProgress();
   const recentOk = new Set(), everFailed = new Set(), seen = new Set();
@@ -5611,7 +5878,7 @@ function pickDiagFocusItems(level, familyId, n, excludeIds, temaId){
     group.items.forEach(item=>{ if(!recentOk.has(item.id) && !(excludeIds && excludeIds.has(item.id))){ candidates.push(item); if(inTema) temaItems.add(item.id); } });
   }));
   // Primero los ejercicios del tema elegido; el resto de la familia solo completa el cupo.
-  const rank = item => (temaItems.has(item.id) ? 0 : 10) + (everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1));
+  const rank = item => (microId && item.micro === microId ? -10 : 0) + (temaItems.has(item.id) ? 0 : 10) + (everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1));
   return shuffleArray(candidates)
     .sort((a,b)=> rank(a) - rank(b))
     .slice(0, n)
@@ -6144,6 +6411,19 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
       ? `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Todavía conviene reforzarlo.`
       : `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Ya vas bien en este tema.` });
   }
+  // Microtemas ACTIVOS tocados en esta sesión con refuerzo o comprobación pendiente (la señal ya se guardó en recordSession).
+  let microActs = [];
+  try{
+    const mIndex = getMistakesItemIndex(), touchedMicros = new Set();
+    results.forEach(r => { const mm = r && microOfItem(r.itemId, mIndex); if(mm) touchedMicros.add(mm); });
+    if(touchedMicros.size) microActs = microDiagActions(getUserLevel(), touchedMicros);
+  }catch(e){ microActs = []; }
+  if(microActs.length){
+    const ma = microActs[0], mm = MICRO_BY_ID[ma.micro];
+    ins.lines.unshift({ tone: ma.microState === 'listo-comprobar' ? 'good' : 'warn', text: ma.microState === 'listo-comprobar'
+      ? `Ya practicaste ${mm.label}. Puedes comprobar si ya lo dominas.`
+      : `En ${mm.label} fallaste ejercicios distintos: es un punto concreto para reforzar.` });
+  }
   ins.lines = ins.lines.slice(0, 3);
   ins.voice = sessionVoiceId(ins, diag, new Set(list.map(u => u.key)));
 
@@ -6153,7 +6433,15 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
     if(ins.actions.length >= 3 || !href || seen.has(href)) return;
     seen.add(href); ins.actions.push({ title, href, main: !!main });
   };
-  if(ins.tema && ins.tema.needsMore){
+  const microTemaCovered = microActs.length ? microActs[0].tema : null;
+  if(microActs.length){
+    const ma = microActs[0];
+    push(ma.title, ma.href, true);
+    if(ma.article) push(`${ma.articleLabel}: ${MICRO_BY_ID[ma.micro].label}`, ma.article);
+  }
+  if(microTemaCovered && ((ins.tema && ins.tema.id === microTemaCovered) || ins.struggleTema === microTemaCovered)){
+    // el tema ya está cubierto por la recomendación del microtema: no se repite en genérico
+  } else if(ins.tema && ins.tema.needsMore){
     // Sigue débil: continuar con el tema y, si existe, su clase o explicación rápida.
     push(`Seguir practicando ${ins.tema.label}`, ins.tema.content.practiceHref, true);
     if(ins.tema.content.article) push(`${ins.tema.content.articleLabel}: ${ins.tema.label}`, ins.tema.content.article);
@@ -6170,7 +6458,8 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.correct < ins.n && (ins.n - ins.correct >= 2 || ins.repeated)) push('Hacer un repaso rápido', 'errores.html?modo=rapido', !ins.actions.length);
   const today = getTodayPick(diag);
   const todayHref = todayStartHref(today);
-  const sameTema = ins.tema && today && today.tema === ins.tema.id && (today.temaSkill || 'gramatica') === ins.tema.content.skill;      // ya está arriba como "seguir practicando"
+  const sameTema = (ins.tema && today && today.tema === ins.tema.id && (today.temaSkill || 'gramatica') === ins.tema.content.skill)      // ya está arriba como "seguir practicando"
+    || (today && today.micro && microActs.some(a => a.micro === today.micro));                                                                  // o como recomendación del microtema
   if(!sameTema && !(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
     push(today.title, todayHref, !ins.actions.length);
   }
@@ -6508,7 +6797,7 @@ function computeWeeklyStatsWithDelta(){
   function summarize(list){
     const exercises = list.reduce((n,s)=> n + (s.results ? s.results.length : 0), 0);
     const graded = [];
-    list.forEach(s => (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }));
+    list.forEach(s => { if(s.skill === 'check') return; (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }); });
     const correct = graded.filter(r=>r.isCorrect).length;
     const accuracy = graded.length ? Math.round(correct / graded.length * 100) : null;
     const minutes = Math.round(list.reduce((n,s)=> n + (s.durationMs||0), 0) / 60000);
