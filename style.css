@@ -1,3 +1,6 @@
+/* Fuentes de respaldo con metricas ajustadas a Inter: evitan el salto de layout (CLS) cuando carga la fuente real */
+@font-face{font-family:'Inter Fallback';src:local('Arial');size-adjust:107.4%;ascent-override:90.2%;descent-override:22.5%;line-gap-override:0%;}
+@font-face{font-family:'Baloo Fallback';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:500 800;size-adjust:94.1%;ascent-override:114.5%;descent-override:55.7%;line-gap-override:0%;}
 :root{
   --paper:#FBF8F2;
   --paper-dim:#F3EFE6;
@@ -35,14 +38,14 @@ body{
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font-family:'Inter',sans-serif;
+  font-family:'Inter','Inter Fallback',sans-serif;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
   padding-bottom:74px;
 }
 @media(min-width:900px){body{padding-bottom:0;}}
 h1,h2,h3,.display{
-  font-family:'Baloo 2',sans-serif;
+  font-family:'Baloo 2','Baloo Fallback',sans-serif;
   font-weight:700;
   line-height:1.14;
   margin:0;
