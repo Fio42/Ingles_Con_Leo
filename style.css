@@ -2072,6 +2072,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-guides .article-grid{margin-top:8px;}
 .home-guides-more{margin-top:22px;text-align:center;}
 .home-guides-more a{font-weight:700;color:var(--blue);}
+.home-testimonials{padding:56px 0;}
+.home-testimonials .section-head{margin-bottom:28px;}
+.home-testimonials-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+.home-testimonial{margin:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px;min-width:0;box-shadow:0 4px 14px rgba(18,30,70,0.05);}
+.home-testimonial-person{display:flex;align-items:center;gap:14px;margin-bottom:16px;color:var(--ink);font-family:'Baloo 2','Baloo Fallback',sans-serif;font-size:1.2rem;line-height:1.2;}
+.home-testimonial-person img{width:64px;height:64px;flex:0 0 64px;border-radius:50%;object-fit:cover;}
+.home-testimonial blockquote{margin:0;color:var(--ink-soft);font-size:1rem;line-height:1.6;}
+.home-testimonials-cta{margin:26px 0 0;text-align:center;}
+@media(min-width:760px){.home-testimonials-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.home-testimonial{display:flex;flex-direction:column;}.home-testimonial blockquote{font-size:0.97rem;}}
 .home-plans{padding:56px 0;background:var(--paper-dim);}
 .home-plans-grid{display:grid;gap:18px;grid-template-columns:1fr;max-width:820px;}
 @media(min-width:760px){.home-plans-grid{grid-template-columns:1fr 1fr;}}
