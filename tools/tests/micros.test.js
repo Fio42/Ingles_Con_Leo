@@ -32,8 +32,9 @@ test('los 3 pilotos están declarados con sus microtemas', () => {
   assert.deepStrictEqual(ids('cuantificadores'), ['much-many-contable-incontable', 'a-lot-of', 'some-any-afirm-neg', 'some-any-pregunta-oferta', 'little-few-matiz', 'fewer-less']);
 });
 
-test('migración gradual: ningún microtema real está activo todavía y el resto de temas no cambió', () => {
-  assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)), []);
+test('migración gradual: solo los 4 microtemas de Futuro están activos (Condicionales y Cuantificadores no) y el resto de temas no cambió', () => {
+  assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)).sort(),
+    ['going-to-evidencia', 'going-to-plan-decidido', 'will-decision-espontanea', 'will-forma-verbo-base']);
   const withMicros = plain(real.TEMAS.filter(t => (t.micros || []).length).map(t => t.id).sort());
   assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'will-going-to']);
 });
