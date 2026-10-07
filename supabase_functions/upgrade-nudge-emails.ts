@@ -327,16 +327,19 @@ const EXPIRABLE_SCHEDULE: { key: EmailKeyScheduled; skipAfterDays: number }[] = 
 ]
 
 // Comportamiento:
-const ABANDONED_SIGNUP_MIN_MINUTES = 30
-const ABANDONED_SIGNUP_MAX_MINUTES = 180
+const ABANDONED_SIGNUP_MIN_HOURS = 24
+const ABANDONED_SIGNUP_MAX_HOURS = 72
 const INACTIVE_USER_DAYS = 3
 const INACTIVE_REACTIVATION_COOLDOWN_DAYS = 10
-const LIMIT_REACHED_MIN_HOURS = 3
-const LIMIT_REACHED_MAX_HOURS = 36
+const LIMIT_REACHED_MIN_HOURS = 0.5
+const LIMIT_REACHED_MAX_HOURS = 1.5
 const LIMIT_REACHED_COOLDOWN_DAYS = 7
-const CHECKOUT_ABANDONED_MIN_HOURS = 20
-const CHECKOUT_ABANDONED_MAX_HOURS = 96
+const LIMIT_RESET_MIN_HOURS = 24
+const LIMIT_RESET_MAX_HOURS = 28
+const CHECKOUT_ABANDONED_MIN_HOURS = 2
+const CHECKOUT_ABANDONED_MAX_HOURS = 4
 const CHECKOUT_ABANDONED_COOLDOWN_DAYS = 14
+const REACTIVATION_DAY14_INACTIVE_DAYS = 10
 const ACTIVE_FREE_USER_MIN_DAYS_SINCE_SIGNUP = 10
 const ACTIVE_FREE_USER_LAST_SEEN_MAX_DAYS = 2
 const ACTIVE_FREE_USER_COOLDOWN_DAYS = 14
@@ -442,6 +445,8 @@ const MAX_PER_RUN = 300
 // aplique. (Ver la nota larga arriba del archivo.)
 const PRIORITY_ORDER = [
   'limit_reached',
+  'checkout_abandoned',
+  'limit_reset',
   'abandoned_signup',
   'reactivation_3d',
   'welcome',
@@ -452,7 +457,6 @@ const PRIORITY_ORDER = [
   'reactivation_day14',
   'final_onboarding',
   'long_term',
-  'checkout_abandoned',
   'active_free_pitch',
   // Los siguientes 3 son para MIEMBROS (is_member=true), no para
   // cuentas gratis: viven en esta misma lista solo para que el modo
@@ -488,6 +492,7 @@ type Profile = {
   checkout_started_at: string | null
   free_daily_count: number | null
   free_daily_date: string | null
+  free_last_practice_at: string | null
   free_first_exercise_at: string | null
   free_daily_limit_reached_at: string | null
   lifecycle_emails: Record<string, string> | null
@@ -566,7 +571,7 @@ Deno.serve(async (req: Request) => {
       const { data: chunk, error: e } = await supabase
         .from('profiles')
         .select(
-          'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+          'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_last_practice_at, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
         )
         .eq('is_member', false)
         .not('email', 'is', null)
@@ -592,7 +597,7 @@ Deno.serve(async (req: Request) => {
     const { data: recentProfiles } = await supabase
       .from('profiles')
       .select(
-        'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+        'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_last_practice_at, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
       )
       .eq('is_member', false)
       .not('email', 'is', null)
@@ -842,10 +847,37 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
     }
   }
 
+  // Checkout empezado pero todavía sin conversión. Es una señal de intención
+  // alta, así que queda inmediatamente después del límite. Como este bucle
+  // solo considera cuentas gratis y sendIfStillEligible vuelve a comprobar
+  // is_member justo antes de enviar, nunca se manda a quien ya pagó.
+  if (p.checkout_started_at) {
+    const hrs = hoursSince(p.checkout_started_at, now)
+    const lastSent = lifecycle['checkout_abandoned']
+    const cooldownOk = !lastSent || daysSince(lastSent, now) >= CHECKOUT_ABANDONED_COOLDOWN_DAYS
+    if (hrs >= CHECKOUT_ABANDONED_MIN_HOURS && hrs <= CHECKOUT_ABANDONED_MAX_HOURS && cooldownOk) {
+      return 'checkout_abandoned'
+    }
+  }
+
+  // Al día siguiente del límite, recordar que la práctica gratis ya volvió
+  // a estar disponible, SOLO si no hubo práctica posterior al límite.
+  // free_last_practice_at es UTC y se escribe junto al contador gratis; no
+  // usamos free_daily_date, porque esa fecha viene del huso local del navegador.
+  if (p.free_daily_limit_reached_at && p.free_last_practice_at) {
+    const hrs = hoursSince(p.free_daily_limit_reached_at, now)
+    const lastSent = lifecycle['limit_reset']
+    const isFreshEpisode = !lastSent || new Date(p.free_daily_limit_reached_at).getTime() > new Date(lastSent).getTime()
+    const hasPracticedSinceLimit = new Date(p.free_last_practice_at).getTime() > new Date(p.free_daily_limit_reached_at).getTime()
+    if (hrs >= LIMIT_RESET_MIN_HOURS && hrs <= LIMIT_RESET_MAX_HOURS && isFreshEpisode && !hasPracticedSinceLimit) {
+      return 'limit_reset'
+    }
+  }
+
   // 2) Reactivación por abandono.
   //    2a) Creó cuenta y nunca hizo ni un ejercicio.
   if (!p.free_first_exercise_at && !lifecycle['abandoned_signup']) {
-    if (ageMinutes >= ABANDONED_SIGNUP_MIN_MINUTES && ageMinutes <= ABANDONED_SIGNUP_MAX_MINUTES) {
+    if (ageHours >= ABANDONED_SIGNUP_MIN_HOURS && ageHours <= ABANDONED_SIGNUP_MAX_HOURS) {
       return 'abandoned_signup'
     }
   }
@@ -855,8 +887,9 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
   //    con cualquier visita estando logueado (abrir progreso.html, un
   //    artículo, etc.), así que abrir una página sin practicar ya NO
   //    cuenta como "seguir activo" ni resetea la inactividad.
-  if (p.free_first_exercise_at && p.free_daily_date) {
-    const lastPracticeMs = new Date(p.free_daily_date + 'T00:00:00Z').getTime()
+  const lastFreePracticeMs = freeLastPracticeMs(p)
+  if (p.free_first_exercise_at && lastFreePracticeMs !== null) {
+    const lastPracticeMs = lastFreePracticeMs
     const inactiveDays = (now - lastPracticeMs) / 86400000
     const lastSent = lifecycle['reactivation_3d']
     const cooldownOk = !lastSent || daysSince(lastSent, now) >= INACTIVE_REACTIVATION_COOLDOWN_DAYS
@@ -913,8 +946,11 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
       return 'membership_intro'
     }
   }
-  if (!lifecycle['reactivation_day14'] && ageDays >= REACTIVATION_EMAIL_MIN_DAY) {
-    return 'reactivation_day14'
+  if (!lifecycle['reactivation_day14'] && p.free_first_exercise_at && lastFreePracticeMs !== null && ageDays >= REACTIVATION_EMAIL_MIN_DAY) {
+    const inactiveDays = (now - lastFreePracticeMs) / 86400000
+    if (inactiveDays >= REACTIVATION_DAY14_INACTIVE_DAYS) {
+      return 'reactivation_day14'
+    }
   }
   if (!lifecycle['final_onboarding'] && ageDays >= FINAL_ONBOARDING_MIN_DAY) {
     return 'final_onboarding'
@@ -945,14 +981,6 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
 
   // 4) Promoción de membresía "porque sí" (prioridad más baja: solo
   // se manda si nada de lo anterior aplicó).
-  if (p.checkout_started_at) {
-    const hrs = hoursSince(p.checkout_started_at, now)
-    const lastSent = lifecycle['checkout_abandoned']
-    const cooldownOk = !lastSent || daysSince(lastSent, now) >= CHECKOUT_ABANDONED_COOLDOWN_DAYS
-    if (hrs >= CHECKOUT_ABANDONED_MIN_HOURS && hrs <= CHECKOUT_ABANDONED_MAX_HOURS && cooldownOk) {
-      return 'checkout_abandoned'
-    }
-  }
   // Desactivado por ahora (ver ACTIVE_FREE_PITCH_ENABLED arriba):
   // se deja la lógica lista pero no se manda nada de este tipo hasta
   // que se decida activar promociones recurrentes.
@@ -973,6 +1001,16 @@ function hoursSince(iso: string, now: number): number {
 }
 function daysSince(iso: string, now: number): number {
   return (now - new Date(iso).getTime()) / 86400000
+}
+
+// Las cuentas nuevas escriben free_last_practice_at en cada ejercicio. El
+// fallback por fecha mantiene reactivación para cuentas antiguas hasta que
+// vuelvan a practicar; NUNCA se usa para limit_reset, que necesita precisión
+// de timestamp para evitar un correo incorrecto.
+function freeLastPracticeMs(p: Profile): number | null {
+  if (p.free_last_practice_at) return new Date(p.free_last_practice_at).getTime()
+  if (p.free_daily_date) return new Date(p.free_daily_date + 'T00:00:00Z').getTime()
+  return null
 }
 
 // ---------------- Decidir el correo (si acaso) de un MIEMBRO inactivo ----------------
@@ -1607,34 +1645,55 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
         'Analiza tu sesión y te dice qué te conviene practicar después',
       ],
     )}`,
-    ctaText: 'Seguir sin límite',
+    ctaText: 'Ver opciones para seguir hoy',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Si prefieres esperar a mañana, perfecto: aquí te esperan tus ejercicios.',
   },
-  checkout_abandoned: {
-    subject: '¿Se atoró algo con tu pago?',
-    preheader: 'A veces la tarjeta falla. Aquí van otras opciones que sí funcionan.',
+  limit_reset: {
+    subject: 'Tus 10 ejercicios gratis ya están listos 🙌',
+    preheader: 'Hoy puedes volver a practicar sin pagar nada.',
     greeting: '¡Hola! 👋',
-    title: 'Tu membresía quedó a medias',
+    title: 'Hoy tienes 10 ejercicios gratis de nuevo',
+    titleWithName: '{name}, hoy tienes 10 ejercicios gratis de nuevo',
     bodyHtml: `
     <p style="${P}">
-      Empezaste a activar tu membresía, pero el pago no se completó. Pasa
-      seguido, y casi siempre tiene solución rápida:
+      Ayer completaste tus 10 ejercicios gratis. Hoy ya se renovaron, así que
+      puedes seguir practicando desde donde quieras.
     </p>
     <div style="${BOX}">
-      <strong>¿Te rechazaron la tarjeta?</strong> Prueba con Mercado Pago o PayPal.
-      Están en la misma pantalla de pago.<br><br>
-      <strong>¿Tienes dudas?</strong> Responde este correo o
+      Con unos minutos basta. Elige gramática, vocabulario, listening, writing
+      o speaking y haz un ejercicio para mantener el ritmo.
+    </div>
+    <p style="${P}">
+      Tu cuenta gratis sigue funcionando igual; no necesitas activar nada para
+      usar los ejercicios de hoy.
+    </p>`,
+    ctaText: 'Practicar mis 10 ejercicios de hoy',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  checkout_abandoned: {
+    subject: '¿Quieres terminar de activar tu membresía?',
+    preheader: 'Tu membresía sigue lista cuando quieras continuar.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu membresía está lista para continuar',
+    bodyHtml: `
+    <p style="${P}">
+      Vimos que empezaste el proceso para activar tu membresía. Si quieres
+      continuarlo, puedes volver a la misma pantalla cuando te venga bien.
+    </p>
+    <div style="${BOX}">
+      Puedes elegir la opción de pago que prefieras. Si tienes una duda,
+      responde este correo o
       <a href="https://wa.me/529994996520" style="${LINK}">escríbenos por WhatsApp</a>
-      y te ayudamos.<br><br>
-      <strong>¿Te preocupa quedarte amarrado?</strong> Cancelas cuando quieras.
+      y te ayudamos. Cancelas cuando quieras.
     </div>
     <p style="${P}">
       Te recuerdo lo que se activa al terminar: práctica sin límite diario,
       tu plan de estudio y <strong>Leo AI</strong>, que te explica cada error,
       revisa tus frases de Writing y te dice qué reforzar. Todo por $2 USD al mes.
     </p>`,
-    ctaText: 'Terminar de activar',
+    ctaText: 'Continuar activación',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
   },

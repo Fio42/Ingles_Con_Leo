@@ -167,7 +167,8 @@ test('no toca el progreso local, mistake_stats, microtemas ni last_practice_at',
   assert.strictEqual(B.loadProgress().sessions.length, 0, 'leo_progress sigue vacío');
   assert.strictEqual(B.store.leo_micro_stats_v1, undefined, 'sin señales de microtemas');
   assert.strictEqual(CLOUD.rpc.length, 0, 'no se llama a apply_mistake_results');
-  assert.ok(!CLOUD.profileUpdates.some(u => /last_practice_at/.test(u)), 'last_practice_at es solo de miembros');
+  assert.ok(!CLOUD.profileUpdates.some(u => /(^|,)last_practice_at(,|$)/.test(u)), 'last_practice_at es solo de miembros');
+  assert.ok(CLOUD.profileUpdates.some(u => /free_last_practice_at/.test(u)), 'la práctica gratis autenticada deja timestamp UTC en la misma actualización del contador');
 });
 
 test('LÍMITE DIARIO: al llegar a 10 la sesión se corta y se guarda lo respondido hasta ahí', async () => {

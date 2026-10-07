@@ -542,8 +542,13 @@ alter table public.profiles add column if not exists lifecycle_emails jsonb not 
 alter table public.profiles add column if not exists last_marketing_email_at timestamptz;
 alter table public.profiles add column if not exists free_first_exercise_at timestamptz;
 alter table public.profiles add column if not exists free_daily_limit_reached_at timestamptz;
+-- Timestamp UTC de la última respuesta de una cuenta gratis autenticada.
+-- Se escribe en la MISMA actualización que free_daily_count/free_daily_date;
+-- no añade llamadas desde el navegador y permite detectar si retomó después
+-- de un límite diario sin inferirlo de una fecha local.
+alter table public.profiles add column if not exists free_last_practice_at timestamptz;
 
-grant update (free_first_exercise_at, free_daily_limit_reached_at) on public.profiles to authenticated;
+grant update (free_first_exercise_at, free_daily_limit_reached_at, free_last_practice_at) on public.profiles to authenticated;
 
 -- (lifecycle_emails y last_marketing_email_at NO se agregan a ese
 -- GRANT: nada más los toca la Edge Function con la service_role key,

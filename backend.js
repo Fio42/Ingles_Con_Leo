@@ -335,7 +335,15 @@ const LeoBackend = (function(){
     if(!sb) return;
     const session = await getSession();
     if(!session) return;
-    const payload = { free_daily_count: count, free_daily_date: dateStr };
+    // Esta misma escritura ya ocurre con cada ejercicio gratis real. El
+    // timestamp permite a los correos distinguir con precisión si volvió a
+    // practicar después de llegar al límite, sin depender de la fecha local
+    // del navegador ni hacer una llamada adicional.
+    const payload = {
+      free_daily_count: count,
+      free_daily_date: dateStr,
+      free_last_practice_at: new Date().toISOString()
+    };
     // Estas dos columnas son "solo se ponen una vez" (la primera vez
     // que aplican): las usan los correos automáticos para saber si ya
     // practicó alguna vez y en qué momento tocó su límite diario. Ver
