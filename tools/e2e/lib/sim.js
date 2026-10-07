@@ -7,7 +7,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = process.env.E2E_ROOT || path.join(__dirname, '..', '..', '..');
 const noop = () => {};
-const WRITABLE = ['level', 'onboarded_at', 'display_name', 'last_seen_at', 'last_practice_at'];
+const WRITABLE = ['level', 'level_source', 'onboarded_at', 'display_name', 'last_seen_at', 'last_practice_at'];
 
 function createCloud(){
   return { profile: { id:'qa', is_member:true, level:'medio', onboarded_at:new Date(Date.now() - 86400000).toISOString(), display_name:'QA' },
@@ -31,7 +31,8 @@ function fakeClient(cloud, loggedIn){
         if(st.op === 'select') return { data: st.single ? Object.assign({}, cloud.profile) : [Object.assign({}, cloud.profile)], error:null };
         const bad = Object.keys(st.payload).filter(k => WRITABLE.indexOf(k) === -1);
         if(bad.length) return { data:null, error:{ message:'permission denied ' + bad[0] } };
-        if(st.isNull.some(k => cloud.profile[k] !== null)) return { data:null, error:null };
+        if(st.isNull.some(k => cloud.profile[k] !== null && cloud.profile[k] !== undefined)) return { data:null, error:null };
+        if(st.eq.level !== undefined && st.eq.level !== cloud.profile.level) return { data:null, error:null };
         cloud.updates.push(Object.keys(st.payload).sort().join(','));
         Object.assign(cloud.profile, st.payload);
         return { data:null, error:null };

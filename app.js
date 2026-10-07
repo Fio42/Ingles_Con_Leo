@@ -37,15 +37,41 @@ function getUserLevel(){
   const p = getProfile();
   return (p && LEVELS.includes(p.level)) ? p.level : 'facil';
 }
-function setUserLevel(level){
+/* ORIGEN DEL NIVEL (profiles.level_source en la nube, `src` en leo_profile): cómo llegó la cuenta a su nivel.
+     self       lo eligió (onboarding o cambio de nivel)
+     skipped    pulsó "Saltar": Fácil es solo un nivel PROVISIONAL para que todo funcione, no una elección
+     suggested  aceptó una sugerencia de nivel del sistema (todavía no existe esa pantalla)
+     history    recuperado del historial de práctica
+     test       resultado del test de nivel
+   Sin dato (NULL / sin `src`) = cuenta o perfil anterior a esta marca: no se sabe y no se inventa. */
+const LEVEL_SOURCES = ['self', 'skipped', 'suggested', 'history', 'test'];
+function isValidLevelSource(s){ return typeof s === 'string' && LEVEL_SOURCES.indexOf(s) !== -1; }
+// Origen del nivel guardado en ESTE navegador. Los perfiles anteriores solo dejaron dos pistas: skipped:true (saltó el
+// onboarding; vale mientras siga en Fácil, porque cambiar de nivel después no borraba esa marca) e inferred:true (historial).
+function profileLevelSource(p){
+  if(!p) return null;
+  if(isValidLevelSource(p.src)) return p.src;
+  if(p.skipped === true && p.level === 'facil') return 'skipped';
+  if(p.inferred === true) return 'history';
+  return null;
+}
+function getUserLevelSource(){ return profileLevelSource(getProfile()); }
+// `source` solo se pasa cuando el nivel no viene de una elección directa (p. ej. 'test'). Las páginas llaman a
+// setUserLevel(nivel actual) al empezar cada sesión: mismo nivel y sin `source` no cambia nada (quien saltó sigue 'skipped').
+function setUserLevel(level, source){
   const p = getProfile() || { name:'', createdAt: Date.now() };
-  if(p.level === level) return;
+  const explicit = isValidLevelSource(source) ? source : null;
+  if(p.level === level && (!explicit || explicit === profileLevelSource(p))) return;
   p.level = level;
+  // Invitado que solo elige nivel: el perfil local queda con la forma de siempre (sin origen). Con cuenta, elegir es 'self'.
+  const src = explicit || (hasLocalAccountHint() ? 'self' : null);
+  if(src) p.src = src; else delete p.src;
+  delete p.skipped; delete p.inferred;
   // Con sesión iniciada el cambio queda "pendiente" hasta que la nube lo confirme: si no hay red, el
   // siguiente arranque lo sube en vez de dejar que el nivel viejo de la nube lo pise.
   if(hasLocalAccountHint()) p.lp = Date.now(); else delete p.lp;
   saveProfile(p);
-  pushProfileToCloud({ level }, level);
+  pushProfileToCloud(src ? { level, level_source: src } : { level }, level);
 }
 
 /* ---------- NIVEL Y ONBOARDING EN LA NUBE ----------
@@ -94,21 +120,37 @@ async function reconcileProfileWithCloud(row){
   const local = getProfile();
   const localLevel = local && isValidLevel(local.level) ? local.level : null;
   const cloudLevel = isValidLevel(row.level) ? row.level : null;
+  const localSrc = profileLevelSource(local);
+  let cloudSrc = isValidLevelSource(row.level_source) ? row.level_source : null;
   const cloudName = typeof row.display_name === 'string' ? row.display_name.trim() : '';
   const name = cloudName || (local && local.name) || '';
   if(row.onboarded_at && cloudLevel){
-    if(local && local.lp && localLevel && localLevel !== cloudLevel){    // cambio de nivel local aún sin subir: gana el más reciente
-      await pushProfileToCloud({ level: localLevel }, localLevel);
+    // Cambio hecho aquí que aún no se pudo subir (otro nivel, o el mismo con otro origen, p. ej. el test): gana el más reciente.
+    if(local && local.lp && localLevel && (localLevel !== cloudLevel || (localSrc && localSrc !== cloudSrc))){
+      await pushProfileToCloud(Object.assign({ level: localLevel }, localSrc ? { level_source: localSrc } : null), localLevel);
       return 'local-pendiente';
     }
+    // Cuenta anterior a level_source (nube sin origen) y ESTE navegador conserva la pista de un perfil viejo (saltó el
+    // onboarding, o nivel recuperado del historial) con el mismo nivel que la nube: se sube una sola vez. El UPDATE va
+    // condicionado en la base (origen todavía vacío Y mismo nivel), así que nunca pisa un origen ya guardado.
+    if(!cloudSrc && local && !isValidLevelSource(local.src) && (localSrc === 'skipped' || localSrc === 'history') && localLevel === cloudLevel){
+      const r = await pushProfileToCloud({ level_source: localSrc, onlyIfSourceUnset: true, expectLevel: cloudLevel });
+      if(r === 'ok') cloudSrc = localSrc;
+    }
     const next = { name, level: cloudLevel, createdAt: (local && local.createdAt) || Date.parse(row.onboarded_at) || Date.now() };
-    const changed = !local || local.level !== next.level || (local.name || '') !== next.name || !!local.lp || local.inferred;
+    if(cloudSrc) next.src = cloudSrc;                                   // la nube manda también en el origen
+    else if(local && !isValidLevelSource(local.src) && localSrc && localLevel === cloudLevel){   // pista vieja que aún no se pudo subir: se conserva
+      if(local.skipped === true) next.skipped = true;
+      if(local.inferred === true) next.inferred = true;
+    }
+    const changed = !local || local.level !== next.level || (local.name || '') !== next.name || !!local.lp
+      || (local.src || null) !== (next.src || null) || !!local.skipped !== !!next.skipped || !!local.inferred !== !!next.inferred;
     if(changed){ saveProfile(next); if(!local || local.level !== next.level) profileSyncedEvent(); }
     return 'nube';
   }
   if(localLevel){                                                         // inicializa la nube una sola vez con el perfil de este navegador
     const when = new Date(local.createdAt || Date.now());
-    await pushProfileToCloud({ level: localLevel, onboarded_at: (isNaN(when) ? new Date() : when).toISOString() }, localLevel);
+    await pushProfileToCloud(Object.assign({ level: localLevel, onboarded_at: (isNaN(when) ? new Date() : when).toISOString() }, localSrc ? { level_source: localSrc } : null), localLevel);
     return 'local-a-nube';
   }
   let h = profileLevelFromLocalHistory();
@@ -117,9 +159,9 @@ async function reconcileProfileWithCloud(row){
     if(h === 'fail'){ PROFILE_SYNC_UNCERTAIN = true; return 'sin-red'; }
   }
   if(isValidLevel(h)){
-    saveProfile({ name, level: h, createdAt: Date.now(), inferred: true });
+    saveProfile({ name, level: h, createdAt: Date.now(), src: 'history' });
     profileSyncedEvent();
-    await pushProfileToCloud({ level: h, onboarded_at: new Date().toISOString() }, h);
+    await pushProfileToCloud({ level: h, onboarded_at: new Date().toISOString(), level_source: 'history' }, h);
     return 'historial';
   }
   return 'ninguna';                                                       // ninguna señal fiable: el onboarding se muestra (una vez)
@@ -419,10 +461,12 @@ function initOnboarding(onSaved){
 
   function finish(profile, explicitLevel){
     if(explicitLevel && hasLocalAccountHint()) profile.lp = Date.now();   // nivel elegido: queda pendiente hasta que la nube lo confirme
+    // El origen distingue a quien ELIGIÓ su nivel ('self') de quien saltó ('skipped': Fácil es solo provisional).
+    profile.src = explicitLevel ? 'self' : 'skipped';
     saveProfile(profile);
     if(profile.name) saveNameToCloud(profile.name);
     // Completar O saltar cuenta como onboarding hecho: la nube lo recuerda (onboarded_at) y otros navegadores no lo repiten.
-    pushProfileToCloud({ level: profile.level, onboarded_at: new Date().toISOString() }, explicitLevel ? profile.level : null);
+    pushProfileToCloud({ level: profile.level, onboarded_at: new Date().toISOString(), level_source: profile.src }, explicitLevel ? profile.level : null);
     overlay.remove();
     if(typeof onSaved === 'function') onSaved(profile);
   }

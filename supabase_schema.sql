@@ -1035,3 +1035,28 @@ create trigger progress_sessions_guard_trg before insert on public.progress_sess
 -- El navegador solo necesita leer e insertar SUS filas.
 revoke all on public.progress_sessions from anon;
 revoke update, delete, truncate, references, trigger on public.progress_sessions from authenticated;
+
+-- ============================================================
+-- ORIGEN DEL NIVEL: profiles.level_source
+-- Migración: profiles_level_source (2026-10-07).
+--
+-- Cómo llegó la cuenta a su nivel (ver LEVEL_SOURCES en app.js):
+--   self       lo eligió (onboarding o cambio de nivel)
+--   skipped    pulsó "Saltar" en el onboarding: Fácil queda solo como nivel PROVISIONAL, no como elección
+--   suggested  aceptó una sugerencia de nivel del sistema
+--   history    recuperado del historial de práctica
+--   test       resultado del test de nivel
+--   NULL       cuenta anterior a esta columna: no se sabe (no se rellena ni se inventa)
+-- Aditivo: una columna opcional, su lista de valores y permiso para que cada cuenta escriba SOLO esa columna
+-- de SU fila (la policy de profiles no cambia: auth.uid() = id). No toca ninguna fila existente.
+-- Pruebas: tools/tests/onboarding-nube.test.js.
+-- ============================================================
+alter table public.profiles add column if not exists level_source text;
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'profiles_level_source_check' and conrelid = 'public.profiles'::regclass) then
+    alter table public.profiles add constraint profiles_level_source_check
+      check (level_source is null or level_source in ('self', 'skipped', 'suggested', 'history', 'test'));
+  end if;
+end $$;
+grant update (level_source) on public.profiles to authenticated;

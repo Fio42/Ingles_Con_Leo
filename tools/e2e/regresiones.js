@@ -48,7 +48,7 @@ const git = f => cp.execSync('git show ' + BASE + ':' + f, { cwd: root, maxBuffe
     const down = createCloud(); const C = makeDevice(down, {}); C.store.leo_profile = JSON.stringify({ name:'x', level:'medio', createdAt:1 }); down.down = true;
     await C.LeoBackend.getMemberProfile();
     check('Onboarding/nivel', 'sin red no se resetea el nivel ni se escribe en la nube', C.getUserLevel() === 'medio' && down.updates.length === 0, '');
-    check('Onboarding/nivel', 'solo se escriben las columnas level/onboarded_at (y las de siempre)', cloud.updates.every(u => /^(level|level,onboarded_at|last_seen_at|display_name)$/.test(u)), cloud.updates.join(' | '));
+    check('Onboarding/nivel', 'solo se escriben las columnas level/level_source/onboarded_at (y las de siempre)', cloud.updates.every(u => /^(level|level,level_source|level_source|level,onboarded_at|level,level_source,onboarded_at|last_seen_at|display_name)$/.test(u)), cloud.updates.join(' | '));
   }
 
   /* ---------- Microtemas inactivos ---------- */

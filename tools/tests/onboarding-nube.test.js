@@ -13,9 +13,10 @@ const root = path.join(__dirname, '..', '..');
 const noop = () => {};
 
 const CLOUD = { profile: null, sessions: [], down: false, sessionsDown: false, calls: [], updates: [] };
-const WRITABLE = ['level', 'onboarded_at', 'display_name', 'last_seen_at', 'last_practice_at'];   // columnas con GRANT UPDATE
+const WRITABLE = ['level', 'level_source', 'onboarded_at', 'display_name', 'last_seen_at', 'last_practice_at'];   // columnas con GRANT UPDATE
 const LEVELS_OK = ['principiante', 'facil', 'medio', 'avanzado'];
-function resetCloud(){ CLOUD.profile = { id:'u1', is_member:false, level:null, onboarded_at:null, display_name:null }; CLOUD.sessions = []; CLOUD.down = false; CLOUD.sessionsDown = false; CLOUD.calls = []; CLOUD.updates = []; }
+const SOURCES_OK = ['self', 'skipped', 'suggested', 'history', 'test'];   // check de profiles.level_source
+function resetCloud(){ CLOUD.profile = { id:'u1', is_member:false, level:null, level_source:null, onboarded_at:null, display_name:null }; CLOUD.sessions = []; CLOUD.down = false; CLOUD.sessionsDown = false; CLOUD.failSource = false; CLOUD.calls = []; CLOUD.updates = []; }
 
 function fakeClient(loggedIn){
   const SESSION = loggedIn ? { user:{ id:'u1' }, access_token:'t' } : null;
@@ -36,8 +37,11 @@ function fakeClient(loggedIn){
           const bad = Object.keys(st.payload).filter(k => WRITABLE.indexOf(k) === -1);
           if(bad.length) return { data:null, error:{ message:'permission denied for column ' + bad[0] } };
           if(st.payload.level !== undefined && LEVELS_OK.indexOf(st.payload.level) === -1) return { data:null, error:{ message:'check violation' } };
+          if(st.payload.level_source !== undefined && SOURCES_OK.indexOf(st.payload.level_source) === -1) return { data:null, error:{ message:'check violation' } };
           if(st.eq.id !== CLOUD.profile.id) return { data:null, error:null };                              // RLS: solo su fila
+          if(st.eq.level !== undefined && st.eq.level !== CLOUD.profile.level) return { data:null, error:null };   // .eq('level', x) sin coincidencias
           if(st.isNull.some(k => CLOUD.profile[k] !== null)) return { data:null, error:null };            // .is(k, null) sin coincidencias
+          if(CLOUD.failSource && st.payload.level_source !== undefined) return { data:null, error:{ message:'network' } };
           CLOUD.updates.push(Object.keys(st.payload).sort().join(','));
           Object.assign(CLOUD.profile, st.payload);
           return { data:null, error:null };
@@ -90,7 +94,7 @@ function makeBrowser(opts){
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'backend.js'), 'utf8') + '\n;this.__LeoBackend = LeoBackend;', ctx);
   ctx.LeoBackend = ctx.__LeoBackend;
-  vm.runInContext(';this.__t = { getProfile, getUserLevel, setUserLevel, initOnboarding, recordSession, loadProgress, reconcileProfileWithCloud, isValidLevel };', ctx);
+  vm.runInContext(';this.__t = { getProfile, getUserLevel, getUserLevelSource, setUserLevel, initOnboarding, recordSession, loadProgress, reconcileProfileWithCloud, isValidLevel };', ctx);
   const t = ctx.__t;
   t.ctx = ctx; t.store = store; t.shown = shown; t.handlers = handlers; t.LeoBackend = ctx.LeoBackend;
   t.profile = () => JSON.parse(store.leo_profile || 'null');
@@ -139,6 +143,192 @@ test('"Saltar": la nube lo recuerda y el segundo navegador tampoco lo repite', a
   await B.LeoBackend.getMemberProfile();
   B.initOnboarding();
   assert.strictEqual(B.shown.length, 0);
+});
+
+/* ---------- ORIGEN DEL NIVEL (profiles.level_source) ---------- */
+test('ORIGEN: elegir nivel en el onboarding queda como "self" y el segundo navegador lo lee de la nube', async () => {
+  const A = makeBrowser({ loggedIn:true, level:'medio', name:'Ana' });
+  await A.LeoBackend.getMemberProfile();
+  A.initOnboarding(); A.handlers['#onbSubmit'](); await A.settle();
+  assert.strictEqual(CLOUD.profile.level, 'medio'); assert.strictEqual(CLOUD.profile.level_source, 'self');
+  assert.strictEqual(A.getUserLevelSource(), 'self');
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  assert.strictEqual(B.getUserLevel(), 'medio'); assert.strictEqual(B.getUserLevelSource(), 'self');
+});
+
+test('ORIGEN: "Saltar" queda como "skipped" (Fácil provisional, no una elección) también en el segundo navegador, sin repetir onboarding', async () => {
+  const A = makeBrowser({ loggedIn:true });
+  await A.LeoBackend.getMemberProfile();
+  A.initOnboarding(); A.handlers['#onbSkip']({ preventDefault: noop }); await A.settle();
+  assert.strictEqual(CLOUD.profile.level, 'facil'); assert.strictEqual(CLOUD.profile.level_source, 'skipped');
+  assert.ok(CLOUD.profile.onboarded_at);
+  assert.strictEqual(A.getUserLevel(), 'facil'); assert.strictEqual(A.getUserLevelSource(), 'skipped');
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  B.initOnboarding();
+  assert.strictEqual(B.shown.length, 0, 'no se repite el onboarding');
+  assert.strictEqual(B.getUserLevel(), 'facil'); assert.strictEqual(B.getUserLevelSource(), 'skipped');
+  // empezar sesiones (las páginas llaman setUserLevel con el nivel actual) no lo convierte en una elección
+  B.setUserLevel('facil'); B.setUserLevel('facil'); await B.settle();
+  assert.strictEqual(CLOUD.profile.level_source, 'skipped');
+  assert.strictEqual(B.getUserLevelSource(), 'skipped');
+});
+
+test('ORIGEN: quien saltó y luego cambia de nivel pasa a "self"; el otro navegador lo adopta', async () => {
+  const A = makeBrowser({ loggedIn:true });
+  await A.LeoBackend.getMemberProfile();
+  A.initOnboarding(); A.handlers['#onbSkip']({ preventDefault: noop }); await A.settle();
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  B.setUserLevel('medio'); await B.settle();
+  assert.strictEqual(CLOUD.profile.level, 'medio'); assert.strictEqual(CLOUD.profile.level_source, 'self');
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(A.getUserLevel(), 'medio'); assert.strictEqual(A.getUserLevelSource(), 'self');
+  assert.ok(!A.profile().skipped, 'la marca vieja de "saltó" no sobrevive');
+});
+
+test('ORIGEN: el test de nivel queda como "test", aunque el nivel sea el mismo que ya tenía', async () => {
+  const A = makeBrowser({ loggedIn:true });
+  await A.LeoBackend.getMemberProfile();
+  A.initOnboarding(); A.handlers['#onbSkip']({ preventDefault: noop }); await A.settle();
+  A.setUserLevel('facil', 'test'); await A.settle();                               // el test dijo Fácil
+  assert.strictEqual(CLOUD.profile.level, 'facil'); assert.strictEqual(CLOUD.profile.level_source, 'test');
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  assert.strictEqual(B.getUserLevelSource(), 'test');
+  B.setUserLevel('avanzado', 'suggested'); await B.settle();                       // sugerencia aceptada (pantalla futura)
+  assert.strictEqual(CLOUD.profile.level_source, 'suggested');
+  B.setUserLevel('avanzado', 'cualquier-cosa'); await B.settle();                  // origen inválido: se ignora
+  assert.strictEqual(CLOUD.profile.level_source, 'suggested');
+});
+
+test('ORIGEN: nivel recuperado del historial queda como "history"', async () => {
+  CLOUD.sessions = [{ skill:'plan', level:'medio', started_at: 3000 }];
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level, 'medio'); assert.strictEqual(CLOUD.profile.level_source, 'history');
+  const C = makeBrowser({ loggedIn:true });
+  await C.LeoBackend.getMemberProfile();
+  assert.strictEqual(C.getUserLevelSource(), 'history');
+});
+
+test('ORIGEN, cuentas actuales: nube con nivel y sin origen se queda sin origen (no se inventa "self")', async () => {
+  CLOUD.profile.level = 'medio'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const A = makeBrowser({ loggedIn:true });
+  A.store.leo_profile = JSON.stringify({ name:'Leo', level:'medio', createdAt: 1 });
+  await A.LeoBackend.getMemberProfile(); await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, null);
+  assert.strictEqual(A.getUserLevelSource(), null);
+  assert.strictEqual(CLOUD.updates.filter(u => /level/.test(u)).length, 0, 'ninguna escritura');
+  A.initOnboarding();
+  assert.strictEqual(A.shown.length, 0);
+});
+
+test('MIGRACIÓN: un navegador viejo que recuerda que saltó (skipped:true, Fácil) lo sube UNA vez; otro navegador lo ve', async () => {
+  CLOUD.profile.level = 'facil'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);      // cuenta de antes de level_source
+  const A = makeBrowser({ loggedIn:true });
+  A.store.leo_profile = JSON.stringify({ name:'', level:'facil', skipped:true, createdAt: 1 });
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, 'skipped');
+  assert.strictEqual(CLOUD.profile.level, 'facil');
+  assert.strictEqual(A.getUserLevelSource(), 'skipped');
+  const n = CLOUD.updates.filter(u => /level_source/.test(u)).length;
+  await A.LeoBackend.getMemberProfile(); await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.updates.filter(u => /level_source/.test(u)).length, n, 'no se vuelve a escribir');
+  const B = makeBrowser({ loggedIn:true });
+  await B.LeoBackend.getMemberProfile();
+  B.initOnboarding();
+  assert.strictEqual(B.shown.length, 0);
+  assert.strictEqual(B.getUserLevelSource(), 'skipped');
+});
+
+test('MIGRACIÓN segura: la pista vieja de "saltó" NO pisa un origen ya guardado ni un nivel distinto en la nube', async () => {
+  // a) la nube ya dice que eligió Fácil en otro navegador
+  CLOUD.profile.level = 'facil'; CLOUD.profile.level_source = 'self'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const A = makeBrowser({ loggedIn:true });
+  A.store.leo_profile = JSON.stringify({ name:'', level:'facil', skipped:true, createdAt: 1 });
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, 'self');
+  assert.strictEqual(A.getUserLevelSource(), 'self', 'la nube manda');
+  assert.ok(!A.profile().skipped);
+  // b) saltó aquí, pero en otro navegador ya cambió a Medio (cuenta sin origen): no se marca skipped
+  resetCloud();
+  CLOUD.profile.level = 'medio'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const B = makeBrowser({ loggedIn:true });
+  B.store.leo_profile = JSON.stringify({ name:'', level:'facil', skipped:true, createdAt: 1 });
+  await B.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, null);
+  assert.strictEqual(B.getUserLevel(), 'medio'); assert.strictEqual(B.getUserLevelSource(), null);
+  // c) saltó y después cambió de nivel en ESTE navegador viejo (la marca skipped quedó pegada): no cuenta como saltó
+  resetCloud();
+  CLOUD.profile.level = 'avanzado'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const C = makeBrowser({ loggedIn:true });
+  C.store.leo_profile = JSON.stringify({ name:'', level:'avanzado', skipped:true, createdAt: 1 });
+  await C.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, null);
+  assert.strictEqual(C.getUserLevelSource(), null);
+  // d) la base condiciona el UPDATE: aunque dos navegadores viejos lo intenten a la vez, el segundo no pisa
+  resetCloud();
+  CLOUD.profile.level = 'facil'; CLOUD.profile.level_source = 'test'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const D = makeBrowser({ loggedIn:true });
+  assert.strictEqual(await D.LeoBackend.saveProfileToCloud({ level_source:'skipped', onlyIfSourceUnset:true, expectLevel:'facil' }), 'ok');
+  assert.strictEqual(CLOUD.profile.level_source, 'test', 'UPDATE condicionado sin coincidencias');
+  assert.strictEqual(await D.LeoBackend.saveProfileToCloud({ level_source:'inventado' }), 'fail', 'la nube rechaza orígenes inválidos');
+});
+
+test('MIGRACIÓN sin red: la pista vieja se conserva y se sube cuando vuelve la red', async () => {
+  CLOUD.profile.level = 'facil'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const A = makeBrowser({ loggedIn:true });
+  A.store.leo_profile = JSON.stringify({ name:'', level:'facil', skipped:true, createdAt: 1 });
+  CLOUD.failSource = true;                    // la lectura funciona, la escritura del origen falla
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, null);
+  assert.strictEqual(A.getUserLevelSource(), 'skipped', 'no se pierde la evidencia local');
+  CLOUD.failSource = false;
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, 'skipped');
+});
+
+test('"Saltar" sin red: al volver la red la nube queda con Fácil provisional y origen skipped (una sola vez)', async () => {
+  const A = makeBrowser({ loggedIn:true });
+  await A.LeoBackend.getMemberProfile();
+  A.initOnboarding();
+  CLOUD.down = true;
+  A.handlers['#onbSkip']({ preventDefault: noop }); await A.settle();
+  assert.strictEqual(CLOUD.profile.level, null);
+  CLOUD.down = false;
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level, 'facil'); assert.strictEqual(CLOUD.profile.level_source, 'skipped'); assert.ok(CLOUD.profile.onboarded_at);
+  A.initOnboarding();
+  assert.strictEqual(A.shown.length, 1, 'no se vuelve a mostrar (solo el de antes)');
+});
+
+test('origen pendiente sin red (mismo nivel, test hecho sin conexión): no lo pisa la nube y se sube después', async () => {
+  CLOUD.profile.level = 'medio'; CLOUD.profile.level_source = 'self'; CLOUD.profile.onboarded_at = iso(Date.now() - 5000);
+  const A = makeBrowser({ loggedIn:true });
+  await A.LeoBackend.getMemberProfile();
+  CLOUD.down = true;
+  A.setUserLevel('medio', 'test'); await A.settle();
+  assert.strictEqual(CLOUD.profile.level_source, 'self');
+  CLOUD.down = false;
+  await A.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level_source, 'test'); assert.strictEqual(CLOUD.profile.level, 'medio');
+  assert.ok(!A.profile().lp);
+});
+
+test('INVITADO: el test de nivel guarda "test" solo en su navegador; al crear la cuenta sube con ese origen', async () => {
+  const G = makeBrowser({ loggedIn:false });
+  G.setUserLevel('medio', 'test');
+  await G.settle();
+  assert.strictEqual(CLOUD.calls.length, 0, 'invitado: ninguna llamada a la nube');
+  assert.strictEqual(G.getUserLevelSource(), 'test');
+  const U = makeBrowser({ loggedIn:true });                                       // crea su cuenta en ese mismo navegador
+  U.store.leo_profile = G.store.leo_profile;
+  await U.LeoBackend.getMemberProfile();
+  assert.strictEqual(CLOUD.profile.level, 'medio'); assert.strictEqual(CLOUD.profile.level_source, 'test');
+  U.initOnboarding();
+  assert.strictEqual(U.shown.length, 0);
 });
 
 test('cuenta existente con perfil local viejo y nube vacía: inicializa la nube una sola vez (sin pisar la fecha)', async () => {
@@ -250,7 +440,7 @@ test('seguridad: solo se escriben level y onboarded_at, nunca is_member u otras 
   await A.LeoBackend.getMemberProfile();
   A.initOnboarding(); A.handlers['#onbSubmit'](); await A.settle();
   A.setUserLevel('avanzado'); await A.settle();
-  CLOUD.updates.filter(u => u !== 'last_seen_at' && u !== 'display_name').forEach(u => assert.ok(u === 'level,onboarded_at' || u === 'level', 'columna inesperada: ' + u));   // last_seen_at y display_name ya se escribían antes
+  CLOUD.updates.filter(u => u !== 'last_seen_at' && u !== 'display_name').forEach(u => assert.ok(u === 'level,level_source,onboarded_at' || u === 'level,level_source', 'columna inesperada: ' + u));   // last_seen_at y display_name ya se escribían antes
   assert.strictEqual(CLOUD.profile.is_member, false);
   const first = CLOUD.profile.onboarded_at;
   assert.strictEqual(await A.LeoBackend.saveProfileToCloud({ level:'facil', onboarded_at: '2000-01-01T00:00:00.000Z' }), 'ok');

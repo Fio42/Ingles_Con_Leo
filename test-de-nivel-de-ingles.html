@@ -234,8 +234,8 @@
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="app.js?v=20261007b"></script>
-<script src="backend.js?v=20261007a"></script>
+<script src="app.js?v=20261007c"></script>
+<script src="backend.js?v=20261007b"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga
@@ -418,7 +418,7 @@
     // Guarda el nivel en el perfil del sitio, para que la práctica
     // gratis y la de miembros arranquen en el nivel correcto.
     try{
-      if(typeof setUserLevel === 'function') setUserLevel(info.site);   // guarda el nivel también en la nube (cuenta iniciada)
+      if(typeof setUserLevel === 'function') setUserLevel(info.site, 'test');   // guarda el nivel también en la nube (cuenta iniciada)
       var p = (typeof getProfile === 'function' && getProfile()) || { name:'', createdAt: Date.now() };
       p.level = info.site; p.levelTest = r.level; p.levelTestAt = Date.now();
       if(typeof saveProfile === 'function') saveProfile(p);

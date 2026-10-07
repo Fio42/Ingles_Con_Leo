@@ -237,7 +237,7 @@ const LeoBackend = (function(){
     }catch(e){ return null; }
   }
 
-  /* Escribe level y/u onboarded_at en SU fila de profiles (permiso solo de esas columnas, ver
+  /* Escribe level, level_source y/u onboarded_at en SU fila de profiles (permiso solo de esas columnas, ver
      supabase_schema.sql). { onboarded_at } solo se escribe si la nube aún no lo tiene, así dos
      dispositivos nunca se pisan la fecha. Devuelve 'ok', 'skip' (sin sesión o sin nube) o 'fail'
      (red/permiso): quien llama decide qué hacer; aquí nunca lanza error. */
@@ -250,9 +250,14 @@ const LeoBackend = (function(){
       const payload = {};
       if(fields && typeof fields.level === 'string') payload.level = fields.level;
       if(fields && fields.onboarded_at) payload.onboarded_at = fields.onboarded_at;
+      // level_source: cómo llegó la cuenta a su nivel (self | skipped | suggested | history | test). Ver LEVEL_SOURCES en app.js.
+      if(fields && typeof fields.level_source === 'string') payload.level_source = fields.level_source;
       if(!Object.keys(payload).length) return 'skip';
       let q = sb.from('profiles').update(payload).eq('id', session.user.id);
       if(payload.onboarded_at) q = q.is('onboarded_at', null);
+      // Migración de una pista vieja de este navegador: solo si la nube aún no tiene origen y sigue en ese mismo nivel.
+      if(fields.onlyIfSourceUnset) q = q.is('level_source', null);
+      if(fields.expectLevel) q = q.eq('level', fields.expectLevel);
       const { error } = await q;
       return error ? 'fail' : 'ok';
     }catch(e){ return 'fail'; }
