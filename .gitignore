@@ -32,3 +32,7 @@ tools/site-health/gsc-service-account.json
 supabase/.temp/
 __pycache__/
 *.pyc
+
+# QA E2E: sesion autenticada local de la cuenta de prueba (NUNCA subir: usuario, contrasena, cookies, tokens, storageState)
+tools/e2e/.auth/
+*.storageState.json

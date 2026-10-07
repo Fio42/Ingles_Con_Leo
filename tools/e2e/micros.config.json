@@ -1,0 +1,5 @@
+{
+  "_nota": "Opcional. Nivel, ejercicios, checks y URL de foco se derivan de temas.js + data.js; aqui solo se declaran excepciones por microtema.",
+  "defaults": { "failsRequired": 3 },
+  "micros": {}
+}
