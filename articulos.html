@@ -52,7 +52,7 @@
   @media(max-width:480px){.glossary-promo{align-items:flex-start;gap:10px;padding:12px 14px;}.glossary-promo-cta{font-size:0.86rem;}}
 </style>
 <!-- Google tag (gtag.js) -->
-<script src="error-monitor.js?v=20261003o"></script>
+<script src="error-monitor.js?v=20261007e"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script src="meta-pixel.js"></script>
 <script>
@@ -706,6 +706,15 @@
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
     s.src = 'chatbot.js?v=20261002a';
+    s.setAttribute('data-retry', '1');
+    s.onerror = function(){
+      /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
+      setTimeout(function(){
+        var r = document.createElement('script');
+        r.src = 'chatbot.js?v=20261002a&r=1';
+        document.body.appendChild(r);
+      }, 2500);
+    };
     document.body.appendChild(s);
   }
   function scheduleChatbot(){

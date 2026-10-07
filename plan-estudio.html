@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
 <!-- Google tag (gtag.js) -->
-<script src="error-monitor.js?v=20261003o"></script>
+<script src="error-monitor.js?v=20261007e"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script src="meta-pixel.js"></script>
 <script>
@@ -179,6 +179,15 @@
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
     s.src = 'chatbot.js?v=20261002a';
+    s.setAttribute('data-retry', '1');
+    s.onerror = function(){
+      /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
+      setTimeout(function(){
+        var r = document.createElement('script');
+        r.src = 'chatbot.js?v=20261002a&r=1';
+        document.body.appendChild(r);
+      }, 2500);
+    };
     document.body.appendChild(s);
   }
   function scheduleChatbot(){

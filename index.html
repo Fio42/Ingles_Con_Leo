@@ -62,7 +62,7 @@
      3 s como maximo, o antes si la persona toca la pagina), y al
      cargar procesan la cola completa. Asi no compiten con el primer
      pintado de la Home. Mismo ID de GA y de Pixel que meta-pixel.js. -->
-<script src="error-monitor.js?v=20261003o"></script>
+<script src="error-monitor.js?v=20261007e"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -620,6 +620,15 @@
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
     s.src = 'chatbot.js?v=20261002a';
+    s.setAttribute('data-retry', '1');
+    s.onerror = function(){
+      /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
+      setTimeout(function(){
+        var r = document.createElement('script');
+        r.src = 'chatbot.js?v=20261002a&r=1';
+        document.body.appendChild(r);
+      }, 2500);
+    };
     document.body.appendChild(s);
   }
   function scheduleChatbot(){

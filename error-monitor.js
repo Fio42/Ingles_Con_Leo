@@ -224,6 +224,10 @@
     }
 
     /* ---------- Errores de JavaScript y recursos rotos ---------- */
+    var leavingPage = false;
+    window.addEventListener('pagehide', function(){ leavingPage = true; }, true);
+    window.addEventListener('beforeunload', function(){ leavingPage = true; }, true);
+    window.addEventListener('pageshow', function(){ leavingPage = false; }, true);
     window.addEventListener('error', function(e){
       try{
         if(busy || disabled || !e) return;
@@ -234,6 +238,13 @@
           if(tag === 'LINK' && !/stylesheet/i.test(String(t.rel || ''))) return;
           var src = t.currentSrc || t.src || t.href || '';
           if(!src || !sameHost(src) || nav.onLine === false) return;   // solo archivos propios y con conexión
+          /* Si la persona se está yendo de la página (tocó un enlace, cerró el navegador
+             de TikTok/Instagram, bloqueó el celular), el navegador cancela las descargas
+             en curso y eso dispara este mismo error: no es una falla real del sitio. */
+          if(leavingPage || document.visibilityState === 'hidden') return;
+          /* Scripts que la propia página ya va a reintentar (data-retry): solo se
+             reporta si el reintento también falla. */
+          if(t.getAttribute && t.getAttribute('data-retry') === '1') return;
           var path = new URL(src, loc.href).pathname;
           if(path.indexOf(SELF_FILE) !== -1) return;
           enqueue(makeEvent('resource', 'Resource failed: ' + tag.toLowerCase() + ' ' + path, null, null, 'load'));
