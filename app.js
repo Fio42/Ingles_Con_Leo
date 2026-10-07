@@ -3836,6 +3836,100 @@ function daysSinceDateStr(dateStr){
   return Math.max(0, Math.round((today - d) / 86400000));
 }
 
+/* ============================================================
+   RUTA INICIAL (cold start del Plan de estudio, solo Miembros)
+   usuario nuevo -> primeras sesiones de Plan con gramática ordenada por nivel (START_ROUTE en temas.js)
+   -> evidencia -> Plan adaptativo normal.
+   Es un FALLBACK, no una barrera: solo decide la gramática cuando todavía no hay nada más específico que
+   recomendar. En cuanto aparece una recomendación concreta (errores, diagnóstico, microtema, tema o foco), esa
+   gana de inmediato y el Plan es el de siempre; no hace falta terminar la ruta para recibir personalización.
+   No guarda NADA nuevo: todo se reconstruye del historial que ya se sincroniza (progress.sessions).
+   ENTRA  solo si TODO se cumple:
+     - la cuenta no tiene NINGUNA sesión anterior a START_ROUTE_LAUNCH_MS (un miembro con una sola sesión previa
+       al lanzamiento jamás entra; una cuenta antigua que nunca practicó sí: en la práctica es nueva);
+     - menos de START_ROUTE_MAX_ANSWERS respuestas calificadas desde que empezó;
+     - le queda algún tema de la ruta de su nivel por ver (visto = START_ROUTE_SEEN ejercicios distintos respondidos);
+     - el Plan es el normal: sin enlace de microtema / tema / foco y con dificultad "A tu nivel";
+     - no hay una recomendación más específica (startRouteYields);
+     - el historial de la nube se confirmó en ESTA carga de página (un navegador nuevo de un miembro antiguo
+       empieza vacío: sin confirmar no se asume que es nuevo).
+   AVANZA la sesión toma los 2 primeros temas no vistos de la ruta de SU nivel actual.
+   SALE   con lo primero: vio los 6 temas de su nivel o llegó a 18 respuestas calificadas.
+   Una sesión de Plan ya empezada nunca cambia: runPlanSessionCore retoma su pool guardado tal cual.
+   No toca el diagnóstico, el nivel, Lectura, la práctica gratis ni Supabase.
+   ============================================================ */
+const START_ROUTE_LAUNCH_MS = Date.UTC(2026, 9, 7, 15, 0, 0);   // 2026-10-07 15:00 UTC (10:00 a. m. Bogotá): lanzamiento de la ruta
+const START_ROUTE_MAX_ANSWERS = 18;   // respuestas calificadas (de cualquier práctica) con las que ya se sale
+const START_ROUTE_SEEN = 2;           // ejercicios distintos respondidos para dar un tema de la ruta por visto
+const START_ROUTE_PER_TOPIC = 2;      // ejercicios por tema en una sesión Normal o Completa (1 en la Rápida)
+const START_ROUTE_ERRORS_MAX = 2;     // cupos de repaso de errores, y solo desde la segunda sesión de Plan
+let _startRouteSynced = false;        // ¿se confirmó el historial de la nube en esta carga de página?
+let _startRouteSyncing = null;
+function startRouteTopics(level){
+  const r = (typeof START_ROUTE !== 'undefined' && START_ROUTE) ? START_ROUTE[level] : null;
+  return Array.isArray(r) ? r.reduce((all, pair) => all.concat(pair), []) : [];
+}
+// Ejercicios de un tema de la ruta en ese nivel (etiqueta exacta del bloque de GRAMMAR_BANK).
+function startRouteItems(level, topic){
+  const out = [];
+  if(typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return out;
+  GRAMMAR_BANK[level].forEach(variant => variant.forEach(group => { if(group.topic === topic) group.items.forEach(item => out.push(Object.assign({ topic: group.topic }, item))); }));
+  return out;
+}
+/* Estado de la ruta para ese nivel, o null si la cuenta no está (o ya no está) en cold start.
+   Solo mira el historial; las condiciones de "Plan normal" y de sincronización las pone quien llama. */
+function startRouteState(level, p){
+  try{
+    const topics = startRouteTopics(level);
+    if(!topics.length) return null;
+    p = p || loadProgress();
+    const sessions = (p && p.sessions) || [];
+    // Cualquier sesión anterior al lanzamiento (o sin fecha fiable): usuario existente, nunca entra.
+    if(sessions.some(s => !s || !(s.startedAt >= START_ROUTE_LAUNCH_MS))) return null;
+    let graded = 0, plans = 0;
+    const answered = new Set();
+    sessions.forEach(s => {
+      if(s.skill === 'plan') plans++;
+      (s.results || []).forEach(r => { if(r && (r.isCorrect === true || r.isCorrect === false)){ graded++; if(r.itemId) answered.add(r.itemId); } });
+    });
+    if(graded >= START_ROUTE_MAX_ANSWERS) return null;
+    const pending = topics.filter(t => startRouteItems(level, t).filter(i => answered.has(i.id)).length < START_ROUTE_SEEN);
+    if(!pending.length) return null;
+    return { topics: pending.slice(0, 2), seen: topics.length - pending.length, total: topics.length, firstSession: plans === 0 };
+  }catch(e){ return null; }
+}
+/* ¿Hay algo más específico que recomendar? Entonces la ruta se aparta y el Plan es el de siempre:
+   - un microtema activo con refuerzo o comprobación pendiente;
+   - o el diagnóstico ya tiene una recomendación concreta para hoy (punto débil, errores acumulados, algo que
+     bajó, algo por consolidar o por retomar), es decir, cualquier cosa que no sea "haz tu plan de hoy". */
+function startRouteYields(level, p){
+  try{ if(microDiagActions(level).length) return true; }catch(e){}
+  try{
+    const d = computeDiagnosis(p);
+    return !!(d && d.ready && d.today && d.today.href !== 'plan-estudio.html');
+  }catch(e){ return false; }
+}
+// Confirma el historial de la nube UNA vez por carga de página (misma espera máxima que la comprobación).
+function ensureStartRouteSync(){
+  if(_startRouteSynced) return Promise.resolve(true);
+  if(!_startRouteSyncing){
+    _startRouteSyncing = syncBeforeCheck().then(r => { _startRouteSynced = (r === 'ok' || r === 'skip'); return _startRouteSynced; }, () => false);
+  }
+  return _startRouteSyncing;
+}
+// Ejercicios de gramática de la sesión: `perTopic` de cada tema, primero los que la cuenta no ha visto.
+function pickStartRouteItems(level, topics, perTopic, excludeIds){
+  const seen = new Set();
+  (loadProgress().sessions || []).forEach(s => (s.results || []).forEach(r => { if(r && r.itemId) seen.add(r.itemId); }));
+  const out = [];
+  (topics || []).forEach(topic => {
+    const items = shuffleArray(startRouteItems(level, topic).filter(i => !(excludeIds && excludeIds.has(i.id))));
+    items.sort((a, b) => (seen.has(a.id) ? 1 : 0) - (seen.has(b.id) ? 1 : 0));
+    items.slice(0, perTopic).forEach(item => out.push({ kind:'grammar', item, focus:true, startRoute:true }));
+  });
+  return out;
+}
+
 /* Decide CUANTOS ejercicios de repaso de errores y de cada habilidad
    real va a tener la sesion (sin armar los items todavia: eso lo hace
    buildPlanPool). Se separa en dos pasos para poder mostrar la vista
@@ -3865,7 +3959,13 @@ function computePlanSelection(level, targetCount, opts){
   // siempre al menos 2 lugares para el resto), reutilizando tal cual
   // buildMistakePool() de "Mis errores" (no filtra por nivel, igual
   // que esa pantalla ya hace hoy: repasa el error tal como se dio).
-  const errorBudget = Math.max(0, Math.min(targetCount - 2, Math.round(targetCount * 0.3)));
+  // Ruta inicial: solo en el Plan normal (sin foco pedido) y cuando quien llama ya confirmó nube y dificultad.
+  let startRoute = (opts && opts.startRoute && !microFocus && !urlTema && !(opts.focusFamily || opts.focusTema || opts.focusSkill || opts.focusMicro))
+    ? startRouteState(level, p) : null;
+  if(startRoute && startRouteYields(level, p)) startRoute = null;   // fallback: una recomendación más específica gana
+  let errorBudget = Math.max(0, Math.min(targetCount - 2, Math.round(targetCount * 0.3)));
+  // En la ruta el repaso de errores entra desde la segunda sesión de Plan y ocupa como máximo 2 cupos.
+  if(startRoute) errorBudget = startRoute.firstSession ? 0 : Math.min(errorBudget, START_ROUTE_ERRORS_MAX);
   const mistakeCandidates = errorBudget > 0 ? buildMistakePool(errorBudget) : [];
   const mistakeCount = mistakeCandidates.length;
   const remaining = Math.max(0, targetCount - mistakeCount);
@@ -3912,6 +4012,25 @@ function computePlanSelection(level, targetCount, opts){
   // Gramática quitándolos de la habilidad con más cupos, así el total de
   // la sesión no cambia. Si no hay diagnóstico todavía, todo sigue igual.
   let focus = null;
+  if(startRoute){
+    // Gramática = exactamente los ejercicios de la ruta; el resto de la sesión se reparte entre las otras habilidades.
+    const perTopic = targetCount >= 9 ? START_ROUTE_PER_TOPIC : 1;
+    const want = Math.min(remaining, perTopic * startRoute.topics.length);
+    const others = skills.filter(sk => sk !== 'gramatica');
+    while((bySkill.gramatica || 0) < want){
+      const donor = others.slice().sort((a,b)=> (bySkill[b]||0) - (bySkill[a]||0))[0];
+      if(!donor || !bySkill[donor]) break;
+      bySkill[donor]--; bySkill.gramatica = (bySkill.gramatica || 0) + 1;
+    }
+    while((bySkill.gramatica || 0) > want){
+      const taker = others.slice().sort((a,b)=> (bySkill[a]||0) - (bySkill[b]||0))[0];
+      bySkill.gramatica--; bySkill[taker] = (bySkill[taker] || 0) + 1;
+    }
+    focus = { skill:'gramatica', familyId:null, temaId:null, microId:null, chosen:false, count: bySkill.gramatica || 0,
+      label: 'Ruta inicial',
+      startRoute: { seen: startRoute.seen, total: startRoute.total, topics: startRoute.topics.slice(), perTopic } };
+    return { mistakeCount, bySkill, focus };
+  }
   try{
     let focusSkill = 'gramatica';
     let target;
@@ -3976,6 +4095,7 @@ function buildPlanPool(level, selection){
   const alreadyIn = new Set(entries.map(e => e.item.id));
   const focusSkill = (selection.focus && selection.focus.skill) || 'gramatica';
   const focusEntries = !selection.focus ? []
+    : selection.focus.startRoute ? pickStartRouteItems(level, selection.focus.startRoute.topics, selection.focus.startRoute.perTopic, alreadyIn)
     : focusSkill !== 'gramatica' ? pickSkillFocusItems(focusSkill, level, selection.focus.temaId, selection.focus.count, alreadyIn)
     : pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId, selection.focus.microId);
   focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null; entries.push(e); alreadyIn.add(e.item.id); });
@@ -4002,7 +4122,7 @@ function buildPlanPool(level, selection){
 function summarizePlanSelection(selection){
   const groups = [];
   if(selection.mistakeCount > 0) groups.push({ label:'Repaso de errores', count: selection.mistakeCount });
-  if(selection.focus) groups.push({ label: 'Refuerzo: ' + selection.focus.label, count: selection.focus.count });
+  if(selection.focus) groups.push({ label: selection.focus.startRoute ? 'Gramática esencial de tu nivel' : 'Refuerzo: ' + selection.focus.label, count: selection.focus.count });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
     if(selection.focus && sk === (selection.focus.skill || 'gramatica')) count -= selection.focus.count;
@@ -4121,8 +4241,13 @@ function renderPlanIntro(container, opts){
   let currentLen = getPlanLength();
   let currentDiff = getPlanDifficulty();
   const selOpts = { focusFamily: opts.focusFamily, focusTema: opts.focusTema, focusSkill: opts.focusSkill, focusMicro: opts.focusMicro };
-  let currentSelection = computePlanSelection(level, PLAN_LENGTHS[currentLen].items, selOpts);
+  // Ruta inicial: solo en el Plan normal (sin foco), con dificultad "A tu nivel" y con el historial de la nube confirmado.
+  const plainPlan = !(selOpts.focusFamily || selOpts.focusTema || selOpts.focusSkill || selOpts.focusMicro);
+  const select = () => computePlanSelection(level, PLAN_LENGTHS[currentLen].items,
+    Object.assign({}, selOpts, { startRoute: plainPlan && _startRouteSynced && currentDiff === 'recommended' }));
+  let currentSelection = select();
   let diffPanelOpen = false;
+  let started = false;
 
   function paint(){
     const groups = summarizePlanSelection(currentSelection);
@@ -4141,25 +4266,28 @@ function renderPlanIntro(container, opts){
         </div>
         <div class="lengths" id="planDifficultySelector" style="margin:${diffPanelOpen ? '12px 0 24px' : '0'};${diffPanelOpen ? '' : 'display:none;'}"></div>
         <div class="examples-label">Tu sesión de hoy</div>
-        ${currentSelection.focus ? (currentSelection.focus.chosen
+        ${currentSelection.focus ? (currentSelection.focus.startRoute
+          ? `<p class="plan-focus-note"><b>Tu ruta inicial.</b> Empezamos por lo esencial de tu nivel${currentSelection.focus.startRoute.seen ? ` (ya viste ${currentSelection.focus.startRoute.seen} de ${currentSelection.focus.startRoute.total} temas)` : ''}. En cuanto veamos qué te conviene reforzar, el Plan se adapta a ti.</p>`
+          : currentSelection.focus.chosen
           ? `<p class="plan-focus-note">Hoy tu sesión se enfoca en <b>${currentSelection.focus.label}</b>, junto con tus errores pendientes.</p>`
           : `<p class="plan-focus-note">Incluye refuerzo de <b>${currentSelection.focus.label}</b>, tu punto a reforzar según <a href="progreso.html#diagnostico">tu diagnóstico</a>.</p>`) : ''}
         <ul class="plan-preview-list">
           ${groups.length ? groups.map(g=>`<li><span>${g.label}</span><b>${g.count} ${g.count===1?'ejercicio':'ejercicios'}</b></li>`).join('') : '<li><span>Sesión equilibrada para tu nivel</span></li>'}
         </ul>
-        ${currentSelection.focus ? leoVozHtml('sigue-tema') : ''}
+        ${currentSelection.focus && !currentSelection.focus.startRoute ? leoVozHtml('sigue-tema') : ''}
         <button class="btn btn-primary btn-block" id="planStartBtn">Empezar mi sesión →</button>
       </div>`;
-    if(currentSelection.focus) leoVozActivate();
+    if(currentSelection.focus && !currentSelection.focus.startRoute) leoVozActivate();
     renderPlanLengthSelector(document.getElementById('planLengthSelector'), currentLen, (newLen)=>{
       currentLen = newLen;
       setPlanLength(newLen);
-      currentSelection = computePlanSelection(level, PLAN_LENGTHS[newLen].items, selOpts);
+      currentSelection = select();
       paint();
     });
     renderPlanDifficultySelector(document.getElementById('planDifficultySelector'), currentDiff, (newDiff)=>{
       currentDiff = newDiff;
       setPlanDifficulty(newDiff);
+      currentSelection = select();   // otra dificultad = otro banco: la ruta inicial solo va con "A tu nivel"
       paint();
     });
     container.querySelector('#planDiffToggle').addEventListener('click', ()=>{
@@ -4169,13 +4297,28 @@ function renderPlanIntro(container, opts){
     container.querySelector('#planStartBtn').addEventListener('click', start);
   }
   function start(){
+    started = true;
     const contentLevel = resolvePlanContentLevel(level, currentDiff);
     const pool = buildPlanPool(contentLevel, currentSelection);
     runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
   }
+  // ¿Podría tocarle la ruta inicial y aún no se confirmó el historial de la nube? (Con una sesión de Plan a medias
+  // no se pregunta nada: se retoma tal cual.)
+  let hasInflight = false;
+  try{ const sv = loadInflightSession('plan', level); hasInflight = !!(sv && Array.isArray(sv.pool) && typeof sv.idx === 'number' && sv.idx < sv.pool.length); }catch(e){}
+  const routePending = plainPlan && !_startRouteSynced && !hasInflight && currentDiff === 'recommended' && !!startRouteState(level);
   // Con ?empezar=1 se arranca directo (o se retoma la sesión a medias,
   // como siempre hace runPlanSessionCore).
-  if(opts.autoStart) start(); else paint();
+  if(opts.autoStart && !routePending){ start(); return; }
+  if(!opts.autoStart) paint();
+  else container.innerHTML = '<div class="session-shell"><p class="plan-intro-hint">Preparando tu sesión...</p></div>';
+  if(routePending){
+    ensureStartRouteSync().then(()=>{
+      if(started) return;                      // ya empezó con el Plan de siempre: no se le cambia nada
+      currentSelection = select();
+      if(opts.autoStart) start(); else paint();
+    });
+  }
 }
 
 /* Pantalla final de Plan de estudio: mismas clases visuales que

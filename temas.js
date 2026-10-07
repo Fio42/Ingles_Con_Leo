@@ -337,3 +337,33 @@ const LISTENING_EXCLUIDOS = ['avz-3'];
 // Listening: lista explícita de ids (guardados sin el prefijo "l-") -> tema (o null = general).
 const TEMA_BY_LISTENING_ITEM = TEMAS.reduce((m, t)=>{ (t.items || []).forEach(i=>{ m[i] = t; }); return m; }, {});
 function temaForListeningItem(itemId){ return TEMA_BY_LISTENING_ITEM[String(itemId || '').replace(/^l-/, '')] || null; }
+
+/* ============================================================
+   RUTA INICIAL (cold start del Plan de estudio, solo Miembros)
+   Las 3 primeras sesiones de Plan de una cuenta SIN historial anterior al lanzamiento no eligen la gramática al
+   azar: siguen este orden, 2 temas por sesión. Cada entrada es la etiqueta EXACTA de un bloque de GRAMMAR_BANK
+   en ese nivel (tools/tests/ruta-inicial.test.js lo exige, y que estén en variantes abiertas con >= 3 ejercicios).
+   Quién entra, cómo avanza y cuándo sale: startRouteState() en app.js. Aquí solo van los datos.
+   ============================================================ */
+const START_ROUTE = {
+  principiante: [
+    [`Verbo "to be": am / is / are`, `"This is..." (esto es...)`],
+    [`Verbo "have" (tengo / tienes / tiene)`, `Plural: agregar "-s"`],
+    [`Preguntas simples: "What is this?"`, `Yes / No básico`]
+  ],
+  facil: [
+    [`Presente simple y "to be"`, `A / An`],
+    [`In / On / At`, `Can / Can't (habilidad)`],
+    [`Presente continuo (I am ___ing)`, `Pasado simple con verbos irregulares`]
+  ],
+  medio: [
+    [`Present Perfect vs Past Simple`, `Will vs Going to (futuro)`],
+    [`Conditionals (tipo 1 y 2)`, `Verbos modales de obligación (must / have to / should)`],
+    [`Cláusulas relativas (who / which / that)`, `Gerundios vs infinitivos (like doing / want to do)`]
+  ],
+  avanzado: [
+    [`Conectores avanzados`, `Wish / If only`],
+    [`Condicional tipo 3`, `Voz pasiva con modales (should be / must have been)`],
+    [`Condicionales mixtos`, `Cláusulas relativas reducidas`]
+  ]
+};
