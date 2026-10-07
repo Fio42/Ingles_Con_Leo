@@ -3470,8 +3470,127 @@ function bumpFreeDailyExerciseCount(){
   if(_leoAccessTier === 'free') bumpFreeAcctExerciseCount();
   else bumpLocalDailyCount();
 }
+/* ---- Sesiones de PRÁCTICA GRATIS de una CUENTA (no miembro) -> progress_sessions ----
+   Solo cuentas gratis con sesión iniciada (_leoAccessTier === 'free'). Un invitado nunca entra aquí: todas las
+   funciones salen sin hacer nada si no hay cuenta, así que lo que hizo antes de registrarse no se sube.
+   No toca el progreso local (leo_progress), mistake_stats, las señales de microtemas ni el contador 5/10:
+   solo junta las respuestas de la sesión en curso y las manda como UNA fila (misma forma que las de Miembros:
+   itemId, isCorrect y, en gramática, m/p/t/w). El servidor marca la fila con tier 'free'.
+   El borrador vive en localStorage y se guarda en cada respuesta: la sesión se sube al terminar, al toparse con el
+   límite diario o, si se cerró la pestaña a medias, la próxima vez que abra la práctica en este navegador.
+   Si la subida falla se reintenta en la siguiente carga; la base rechaza una sesión repetida (misma cuenta,
+   inicio y habilidad), así que reintentar no duplica. */
+const FREE_PENDING_KEY = 'leo_free_pending_v1';
+const FREE_PENDING_MAX = 8;                      // sesiones en espera que se recuerdan por navegador
+const FREE_PENDING_MAX_AGE_MS = 14 * 86400000;   // una sesión que no se pudo subir en 14 días se descarta
+const FREE_PENDING_MAX_TRIES = 5;
+const _freeBegun = {};                           // skill -> momento en que empezó la sesión en pantalla
+let _freeFlushing = false, _freeFlushAgain = false;
+function freeAcctId(){ return (_leoAccessTier === 'free' && _leoAccessProfile && _leoAccessProfile.id) || null; }
+function readFreePending(){
+  try{ const v = JSON.parse(localStorage.getItem(FREE_PENDING_KEY)); return Array.isArray(v) ? v.filter(d => d && d.uid && d.skill && Array.isArray(d.results)) : []; }catch(e){ return []; }
+}
+function writeFreePending(list){
+  try{
+    if(list.length) localStorage.setItem(FREE_PENDING_KEY, JSON.stringify(list.slice(-FREE_PENDING_MAX)));
+    else localStorage.removeItem(FREE_PENDING_KEY);
+  }catch(e){}
+}
+// Cierra los borradores abiertos (de una habilidad, o todos menos `except`) y devuelve si cambió algo.
+function closeFreeDrafts(list, skill, except){
+  let changed = false;
+  list.forEach(d => { if(d.open && (!skill || d.skill === skill) && d.skill !== except){ d.open = false; changed = true; } });
+  return changed;
+}
+// Al entrar a una sesión gratis: lo que hubiera quedado abierto de esa habilidad ya no sigue (se sube tal cual).
+function freeSessionBegin(skill){
+  try{
+    if(!freeAcctId()) return;
+    _freeBegun[skill] = Date.now();
+    const list = readFreePending();
+    if(closeFreeDrafts(list, skill)) writeFreePending(list);
+    flushFreeSessions();
+  }catch(e){}
+}
+// Una respuesta ya confirmada (el alumno pulsó "Siguiente"): se agrega al borrador de esa sesión.
+function freeSessionAnswer(skill, level, topics, result){
+  try{
+    const uid = freeAcctId();
+    if(!uid || !result || !result.itemId) return;
+    const list = readFreePending();
+    let d = list.find(x => x.open && x.uid === uid && x.skill === skill && x.level === level);
+    if(!d){
+      closeFreeDrafts(list, skill);
+      const now = Date.now();
+      d = { uid, skill, level, topics: (topics || []).slice(0, 12), startedAt: _freeBegun[skill] || now, endedAt: now, results: [], open: true, tries: 0 };
+      delete _freeBegun[skill];
+      while(list.some(x => x.uid === uid && x.skill === skill && x.startedAt === d.startedAt)) d.startedAt++;   // nunca dos sesiones con el mismo inicio
+      list.push(d);
+    }
+    // Misma instrumentación que Miembros. Sin `f` ("primera vez"): aquí no hay historial local con qué saberlo.
+    const r = Object.assign({}, instrumentResults([result], null)[0]);
+    delete r.f;
+    d.results.push(r);
+    d.endedAt = Date.now();
+    writeFreePending(list);
+  }catch(e){}
+}
+// Fin de la sesión (resumen o límite diario): se cierra y se sube. Sin `skill` cierra todas menos el reto diario.
+function freeSessionEnd(skill){
+  try{
+    if(!freeAcctId()) return;
+    const list = readFreePending();
+    if(closeFreeDrafts(list, skill || null, skill ? undefined : 'reto-diario')) writeFreePending(list);
+    flushFreeSessions();
+  }catch(e){}
+}
+// Al abrir la práctica: una sesión que quedó a medias (pestaña cerrada) se da por terminada y se sube.
+function freeSessionResume(){
+  try{
+    if(!freeAcctId()) return;
+    const list = readFreePending();
+    if(closeFreeDrafts(list)) writeFreePending(list);
+    flushFreeSessions();
+  }catch(e){}
+}
+async function flushFreeSessions(){
+  const uid = freeAcctId();
+  if(!uid) return;
+  if(_freeFlushing){ _freeFlushAgain = true; return; }   // ya hay una subida en curso: al terminar se revisa otra vez
+  if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured() || typeof LeoBackend.pushFreeSession !== 'function') return;
+  _freeFlushing = true;
+  try{
+    const now = Date.now();
+    const sameDraft = (a, b) => a.uid === b.uid && a.skill === b.skill && a.startedAt === b.startedAt;
+    // Limpieza: cerradas sin respuestas y demasiado viejas (de cualquier cuenta).
+    let list = readFreePending();
+    const kept = list.filter(d => (d.open || d.results.length) && now - (d.startedAt || 0) < FREE_PENDING_MAX_AGE_MS);
+    if(kept.length !== list.length) writeFreePending(kept);
+    const ready = kept.filter(d => !d.open && d.uid === uid && d.results.length);
+    for(const d of ready){
+      const session = {
+        skill: d.skill, level: d.level, topics: d.topics || [],
+        date: localDateStr(new Date(d.startedAt)), startedAt: d.startedAt,
+        durationMs: Math.max(0, (d.endedAt || d.startedAt) - d.startedAt), results: d.results
+      };
+      let res = 'fail';
+      try{ res = await LeoBackend.pushFreeSession(session, uid); }catch(e){ res = 'fail'; }
+      if(res === 'skip') break;                                   // sin sesión de esa cuenta ahora mismo: se queda para después
+      list = readFreePending();                                   // pudo cambiar mientras se subía (otra respuesta)
+      const i = list.findIndex(x => sameDraft(x, d));
+      if(i === -1) continue;
+      if(res === 'ok' || res === 'drop') list.splice(i, 1);       // guardada (o rechazada para siempre por la base)
+      else if((list[i].tries = (list[i].tries || 0) + 1) >= FREE_PENDING_MAX_TRIES) list.splice(i, 1);
+      writeFreePending(list);
+    }
+  }catch(e){}
+  finally{ _freeFlushing = false; }
+  if(_freeFlushAgain){ _freeFlushAgain = false; return flushFreeSessions(); }
+}
+
 function renderFreeDailyLimitReachedBlock(){
   if(_leoAccessTier === 'free'){
+    freeSessionEnd();   // el límite cortó la sesión: se guarda lo respondido hasta aquí
     trackLeoEvent('free_daily_limit_reached');
     return `
       <div class="session-summary upgrade-block">
@@ -3514,6 +3633,7 @@ function renderFreeDailyLimitReachedBlock(){
 
 function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  if(isFree) freeSessionBegin('mixto');
   const saved = !isFree ? loadInflightSession('mixto', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : pickMixItems(level, isFree);
@@ -3539,7 +3659,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
-        if(isFree) bumpFreeDailyExerciseCount();
+        if(isFree){ bumpFreeDailyExerciseCount(); freeSessionAnswer('mixto', level, ['Mezcla de habilidades'], results[results.length-1]); }
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -3552,6 +3672,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     const correct = graded.filter(r=>r.isCorrect).length;
     const score = graded.length ? `${correct} / ${graded.length} correctas · ${total} ejercicios en total` : `${total} ejercicios completados`;
     if(isFree){
+      freeSessionEnd('mixto');
       container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
         title:'¡Listo!', score, topics: ['Mezcla de habilidades']
       });
@@ -4917,6 +5038,7 @@ function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, o
 
 function runDailyChallengeSession({ container, isFree, level }){
   level = level || getUserLevel();
+  if(isFree) freeSessionBegin('reto-diario');
   const saved = !isFree ? loadInflightSession('reto-diario', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : pickDailyChallengeItems(level, isFree);
@@ -4944,6 +5066,7 @@ function runDailyChallengeSession({ container, isFree, level }){
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        if(isFree) freeSessionAnswer('reto-diario', level, ['Reto diario'], results[results.length-1]);
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -4956,6 +5079,7 @@ function runDailyChallengeSession({ container, isFree, level }){
     const score = { correct, total: graded.length };
     if(isFree){
       markDailyChallengeFreeDone(score);
+      freeSessionEnd('reto-diario');
       container.innerHTML = `
         <div class="session-summary" style="padding:0;">
           <h2>¡Reto completado!</h2>
@@ -7396,6 +7520,7 @@ function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
 /* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
 function runFreeGrammarSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  freeSessionBegin('gramatica');
   const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]);
   const topics = GRAMMAR_BANK[level][variantIdx];
   const pool = [];
@@ -7424,6 +7549,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
       results.push({ itemId:item.id, isCorrect });
       showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
         bumpFreeDailyExerciseCount();
+          freeSessionAnswer('gramatica', level, topics.map(t=>t.topic), results[results.length-1]);
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -7431,6 +7557,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    freeSessionEnd('gramatica');
     container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
       topics: topics.map(t=>t.topic)
@@ -7446,6 +7573,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
 /* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
 function runFreeVocabSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  freeSessionBegin('vocabulario');
   const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
   const pool = VOCAB_BANK[level][variantIdx];
   const total = pool.length;
@@ -7493,6 +7621,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();
+          freeSessionAnswer('vocabulario', level, ['Vocabulario en contexto'], results[results.length-1]);
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →');
@@ -7502,6 +7631,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    freeSessionEnd('vocabulario');
     container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`Repasaste ${total} palabras · ${correct}/${total} en el mini quiz`,
       topics: ['Vocabulario en contexto']
@@ -7517,6 +7647,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
 /* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
 function runFreeListeningSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  freeSessionBegin('listening');
   const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
   const pool = LISTENING_BANK[level][variantIdx];
   const total = pool.length;
@@ -7576,6 +7707,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();
+          freeSessionAnswer('listening', level, ['Comprensión auditiva'], results[results.length-1]);
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →');
@@ -7585,6 +7717,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const correct = results.filter(r=>r.isCorrect).length;
+    freeSessionEnd('listening');
     container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${correct} / ${total} correctas`,
       topics: ['Comprensión auditiva']
@@ -7605,6 +7738,7 @@ function checkWritingAnswer(text, item){
 function runFreeWritingSession({ container, level, onOtherSkill }){
   let aiPitchShown = false; // Leo AI se ofrece una vez por sesión de Writing gratis
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  freeSessionBegin('writing');
   const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.writing[level]);
   const pool = WRITING_BANK[level][variantIdx];
   const total = pool.length;
@@ -7686,6 +7820,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
       nextBtn.textContent = idx+1 < total ? 'Siguiente frase →' : 'Ver resultado →';
       nextBtn.addEventListener('click', ()=>{
         bumpFreeDailyExerciseCount();
+          freeSessionAnswer('writing', level, ['Escritura guiada'], results[results.length-1]);
         idx++;
         if(idx < total) renderItem(); else finish();
       });
@@ -7695,6 +7830,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
   }
   function finish(){
     const okCount = results.filter(r=>r.isCorrect).length;
+    freeSessionEnd('writing');
     container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`${okCount} / ${total} frases bien encaminadas`,
       topics: ['Escritura guiada']
@@ -7711,6 +7847,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
    Mismo sistema de grabación que Miembros, sin puntuación inventada. ---------- */
 function runFreeSpeakingSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
+  freeSessionBegin('speaking');
   const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.speaking[level]);
   const pool = SPEAKING_BANK[level][variantIdx];
   const total = pool.length;
@@ -7757,6 +7894,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
     card.querySelector('#nextSpeakBtn').addEventListener('click', ()=>{
       bumpFreeDailyExerciseCount();
       results.push({ itemId:item.id, isCorrect:null });
+      freeSessionAnswer('speaking', level, ['Pronunciación guiada'], results[results.length-1]);
       idx++;
       if(idx < total) renderItem(); else finish();
     });
@@ -7826,6 +7964,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
     }
   }
   function finish(){
+    freeSessionEnd('speaking');
     container.innerHTML = renderFreeSessionSummary({ results: (typeof results !== 'undefined' ? results : null),
       title:'¡Listo!', score:`Practicaste ${total} frases en voz alta`,
       topics: ['Pronunciación guiada']
@@ -7841,6 +7980,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
 /* ---------- Orquestador de practica.html: nivel + pestañas + una
    sola sesión visible a la vez. Lee ?skill= de la URL. ---------- */
 function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
+  freeSessionResume();   // cuenta gratis: sube lo que haya quedado a medias o sin subir (invitados: no hace nada)
   const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing','mixto'];
   const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing', mix:'mixto' };
   const SKILL_DESC = {

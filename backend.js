@@ -375,6 +375,7 @@ const LeoBackend = (function(){
           durationMs: row.duration_ms,
           results: row.results || []
         };
+        if(row.tier) cloudSession.tier = row.tier;   // 'free' = práctica gratis de la cuenta antes de ser miembro
         const sameLocalSession = localByIdentity.get(progressSessionIdentity(cloudSession));
         if(sameLocalSession){
           /* recordSession() guarda primero en el navegador. Cuando llegue
@@ -442,6 +443,35 @@ const LeoBackend = (function(){
       sb.from('profiles').update({ last_practice_at: new Date().toISOString() }).eq('id', session_.user.id)
         .then(()=>{}, ()=>{});
     }catch(e){}
+  }
+
+  /* Sesión de PRÁCTICA GRATIS de una cuenta que no es miembro (ver "Sesiones de PRÁCTICA GRATIS" en
+     app.js). Misma tabla y misma forma que pushSession, pero: (1) no toca last_practice_at, que es la
+     señal de "practicó como miembro" de los correos; (2) responde qué pasó, para que app.js sepa si
+     puede borrar su copia: 'ok' guardada (o ya estaba: la base rechaza la repetida), 'drop' rechazada
+     para siempre (límites de la base), 'fail' reintentar después, 'skip' no hay sesión de esa cuenta.
+     El origen (tier 'free') lo pone la base al insertar; el navegador no lo manda. */
+  async function pushFreeSession(session, expectedUserId){
+    const sb = getClient();
+    if(!sb || !session) return 'skip';
+    const s = await getSession();
+    if(!s || !s.user || !s.user.id || (expectedUserId && s.user.id !== expectedUserId)) return 'skip';
+    try{
+      const { error } = await sb.from('progress_sessions').insert({
+        user_id: s.user.id,
+        skill: session.skill,
+        level: session.level,
+        topics: session.topics || [],
+        date: session.date,
+        started_at: session.startedAt,
+        duration_ms: session.durationMs,
+        results: session.results || []
+      });
+      if(!error) return 'ok';
+      if(error.code === '23505') return 'ok';
+      if(error.code === 'P0001' || error.code === '23514') return 'drop';
+      return 'fail';
+    }catch(e){ return 'fail'; }
   }
 
   /* Trae las filas de mistake_stats del usuario (un ejercicio por
@@ -781,7 +811,7 @@ const LeoBackend = (function(){
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
+    getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
     getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI
   };

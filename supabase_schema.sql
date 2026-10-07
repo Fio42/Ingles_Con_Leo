@@ -960,3 +960,78 @@ begin
   end if;
 end $$;
 grant update (level, onboarded_at) on public.profiles to authenticated;
+
+-- ============================================================
+-- SESIONES DE PRÁCTICA GRATIS (cuentas que no son miembros) + límites de servidor en progress_sessions
+-- Migración: progress_sessions_free_tier_guard (2026-10-07).
+--
+-- Desde esta fecha la práctica gratis de una CUENTA (nunca la de un invitado) también se guarda en
+-- progress_sessions, con la misma forma que las sesiones de Miembros (ver "Sesiones de PRÁCTICA GRATIS"
+-- en app.js y pushFreeSession en backend.js). Al hacerse miembro, la sincronización de siempre trae ese
+-- historial: no se empieza de cero.
+--
+-- Aditivo: no cambia ni borra filas; las existentes quedan con tier NULL (miembro / anteriores).
+-- Las policies NO cambian ("select own" e "insert own": cada cuenta solo lee e inserta SUS filas).
+--   tier        'free' = la cuenta no era miembro al guardar. Lo pone la BASE (trigger), nunca el navegador.
+--   límites     máx. 500 respuestas y 100 KB por fila; temas máx. 4 KB; skill y level con largo acotado.
+--   repetidas   una misma sesión (cuenta + inicio + habilidad) no se guarda dos veces (reintentos).
+--   por día     máx. 40 filas en 24 h por cuenta gratis (y 60 respuestas por fila) y 300 por miembro.
+--   created_at  lo pone la base (no se puede fechar hacia atrás para saltarse el límite).
+-- Pruebas: tools/tests/progress-sessions-guard.test.sql y tools/tests/free-sessions.test.js.
+-- ============================================================
+alter table public.progress_sessions add column if not exists tier text;
+alter table public.progress_sessions drop constraint if exists progress_sessions_tier_chk;
+alter table public.progress_sessions add constraint progress_sessions_tier_chk check (tier is null or tier = 'free');
+
+alter table public.progress_sessions drop constraint if exists progress_sessions_results_chk;
+alter table public.progress_sessions add constraint progress_sessions_results_chk check (
+  case when jsonb_typeof(results) = 'array' then jsonb_array_length(results) <= 500 and octet_length(results::text) <= 100000 else false end);
+alter table public.progress_sessions drop constraint if exists progress_sessions_topics_chk;
+alter table public.progress_sessions add constraint progress_sessions_topics_chk check (jsonb_typeof(topics) = 'array' and octet_length(topics::text) <= 4000);
+alter table public.progress_sessions drop constraint if exists progress_sessions_labels_chk;
+alter table public.progress_sessions add constraint progress_sessions_labels_chk check (char_length(skill) between 1 and 40 and char_length(level) between 1 and 20);
+
+create unique index if not exists progress_sessions_user_started_skill_uidx
+  on public.progress_sessions (user_id, started_at, skill) where started_at is not null;
+create index if not exists progress_sessions_user_created_idx on public.progress_sessions (user_id, created_at desc);
+
+create or replace function public.progress_sessions_guard()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_member boolean;
+  v_n int;
+begin
+  -- Sin usuario (service_role, SQL Editor): no se toca nada.
+  if auth.uid() is null then return new; end if;
+  -- Fila de otra cuenta: la rechaza la policy "insert own"; aquí no se mira nada.
+  if new.user_id is distinct from auth.uid() then return new; end if;
+
+  select p.is_member into v_member from public.profiles p where p.id = new.user_id;
+  new.tier := case when coalesce(v_member, false) then null else 'free' end;
+  new.created_at := now();
+
+  if new.tier = 'free' and jsonb_typeof(new.results) = 'array' and jsonb_array_length(new.results) > 60 then
+    raise exception 'progress_sessions: sesion gratis demasiado grande' using errcode = 'P0001';
+  end if;
+
+  select count(*) into v_n from public.progress_sessions s
+   where s.user_id = new.user_id and s.created_at > now() - interval '24 hours';
+  if v_n >= (case when new.tier = 'free' then 40 else 300 end) then
+    raise exception 'progress_sessions: limite diario de sesiones' using errcode = 'P0001';
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.progress_sessions_guard() from public, anon, authenticated;
+
+drop trigger if exists progress_sessions_guard_trg on public.progress_sessions;
+create trigger progress_sessions_guard_trg before insert on public.progress_sessions
+  for each row execute function public.progress_sessions_guard();
+
+-- El navegador solo necesita leer e insertar SUS filas.
+revoke all on public.progress_sessions from anon;
+revoke update, delete, truncate, references, trigger on public.progress_sessions from authenticated;
