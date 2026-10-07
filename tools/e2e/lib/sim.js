@@ -58,7 +58,7 @@ function fakeClient(cloud, loggedIn){
 const EXPORTS = ['recordSession', 'loadProgress', 'noteGrammarAnswer', 'markGrammarRetry', 'microStatsAll', 'microFlowState', 'microDiagActions', 'microCheckStart',
   'checkSeenSet', 'isCheckItem', 'getMistakesItemIndex', 'computePlanSelection', 'buildPlanPool', 'resolveMemberPool', 'memberBankItems', 'MICRO_BY_ID', 'MICROS',
   'GRAMMAR_BANK', 'GRAMMAR_CHECK_BANK', 'MICRO_FLOW', 'microIsActive', 'microHasItemsAt', 'setUserLevel', 'getUserLevel', 'ensureDerived', 'SESSION_LENGTHS',
-  'SESSION_LENGTH_KEY', 'PROGRESS_KEY', 'MICRO_STATS_KEY', 'CHECK_SEEN_KEY', 'microWeakness', 'microPracticeHref', 'initOnboarding', 'TEMAS', 'TEMA_BY_ID'];
+  'SESSION_LENGTH_KEY', 'PROGRESS_KEY', 'applyMicroResults', 'pickCheckItems', 'markChecksConsumed', 'DERIVED_VERSION', 'DERIVED_META_KEY', 'checkAvailable', 'microCheckReady', 'MICRO_STATS_KEY', 'CHECK_SEEN_KEY', 'microWeakness', 'microPracticeHref', 'initOnboarding', 'TEMAS', 'TEMA_BY_ID'];
 
 function makeDevice(cloud, opts){
   opts = opts || {};

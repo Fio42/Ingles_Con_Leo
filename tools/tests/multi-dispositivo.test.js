@@ -79,7 +79,8 @@ function alumnoEnA(a){
   rec(a, 'gramatica', pr.slice(0, 3), false);
   rec(a, 'gramatica', pr.slice(0, 5), true);
   assert.strictEqual(a.microFlowState(MICRO, a.stats()[MICRO]).state, 'listo-comprobar');
-  rec(a, 'check', checkIds(a), true);
+  rec(a, 'check', checkIds(a).slice(0, 3), true);                  // 1ª ronda
+  rec(a, 'check', checkIds(a).slice(3), true);                     // 2ª ronda: A consumió los 6 checks
 }
 
 test('base: en el mismo dispositivo, una comprobación hecha no vuelve a salir', () => {
@@ -119,7 +120,7 @@ test('segundo dispositivo: las señales por microtema se reconstruyen igual que 
   await b.ctx.LeoBackend.syncProgressFromCloud();
   const sb = plain(b.microStatsAll()), sa = plain(a.stats());
   assert.deepStrictEqual(sb, sa);
-  assert.strictEqual(sb[MICRO].ck.a, 3);
+  assert.strictEqual(sb[MICRO].ck.a, 6);
   assert.ok(sb[MICRO].lc && sb[MICRO].lc.n === 3, 'la última comprobación se recupera');
 });
 
@@ -129,7 +130,7 @@ test('B ya tenía su propia práctica: al llegar lo de A se suman, no se pisan',
   rec(b, 'gramatica', practiceIds(b).slice(0, 1), true);           // práctica propia en B, sin sync
   await b.ctx.LeoBackend.syncProgressFromCloud();
   const s = b.microStatsAll()[MICRO];
-  assert.strictEqual(s.ck.a, 3);                                   // lo de A llegó
+  assert.strictEqual(s.ck.a, 6);                                   // lo de A llegó
   assert.strictEqual(s.a, 3 + 5 + 1);                              // práctica de A (3 + 5) y la de B
   assert.strictEqual(b.checkAvailable(MICRO), false);
 });
@@ -141,7 +142,7 @@ test('B graba una sesión nueva con datos de A ya descargados sin haberlos mirad
   await b.ctx.LeoBackend.syncProgressFromCloud();                  // las sesiones llegan al progreso pero nadie reconstruye todavía
   rec(b, 'gramatica', practiceIds(b).slice(0, 1), true);           // recordSession pone al día las cachés ANTES de sumar
   assert.deepStrictEqual(Object.keys(plain(b.checkSeenSet())).sort(), plain(checkIds(b)).sort());
-  assert.strictEqual(b.stats()[MICRO].ck.a, 3);
+  assert.strictEqual(b.stats()[MICRO].ck.a, 6);
 });
 
 test('antes de ofrecer la comprobación se sincroniza con la nube (y si no se puede, no se arriesga a repetir)', async () => {

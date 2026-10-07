@@ -50,21 +50,21 @@ const NEW_IDS = /^g-medio-fut-(willdec|gtplan|gtevid|willform)-[1-5]$/;
 const allPractice = () => lib.microStats(real);
 
 console.log('Contenido del piloto');
-test('cada microtema tiene >=6 de práctica, 3 de comprobación, >=2 tipos y un recurso', () => {
+test('cada microtema tiene >=6 de práctica, 6 de comprobación (2 rondas de 3), >=2 tipos y un recurso', () => {
   const stats = allPractice();
   MICROS.forEach(id => {
     assert.ok(stats[id].practice.length >= 6, id + ': práctica ' + stats[id].practice.length);
-    assert.strictEqual(stats[id].check.length, 3, id + ': comprobación');
+    assert.strictEqual(stats[id].check.length, 6, id + ': comprobación');
     assert.ok(new Set(stats[id].practice.map(r => r.item.type)).size >= 2, id + ': tipos');
     const res = lib.resourcesOf(real, id);
     assert.ok(res.lesson && res.lesson.anchor === id, id + ': recurso');
   });
 });
 
-test('en total: 20 de práctica nuevos y 12 de comprobación (los 4 existentes no se tocaron)', () => {
+test('en total: 20 de práctica nuevos y 24 de comprobación (12 de la 1ª ronda + 12 de la 2ª; los 4 existentes no se tocaron)', () => {
   const nuevos = real.practice.filter(r => NEW_IDS.test(r.item.id));
   assert.strictEqual(nuevos.length, 20);
-  assert.strictEqual(real.check.filter(c => MICROS.indexOf(c.micro) !== -1).length, 12);
+  assert.strictEqual(real.check.filter(c => MICROS.indexOf(c.micro) !== -1).length, 24);
   ['g-medio5-fut-1', 'g-medio5-fut-2', 'g-medio5-fut-3', 'g-medio5-fut-4'].forEach(id => assert.ok(real.practice.some(r => r.item.id === id), id));
 });
 
@@ -156,8 +156,8 @@ console.log('\nLa comprobación está aislada');
 test('ningún ejercicio de comprobación está en los bancos de práctica ni en el índice de errores', () => {
   const index = T.getMistakesItemIndex();
   const ids = new Set(T.CHECK.map(c => c.id));
-  assert.strictEqual(T.CHECK.filter(c => MICROS.indexOf(c.micro) !== -1).length, 12);   // los de Futuro; el banco completo también incluye los de Condicionales
-  assert.ok(ids.size >= 12);
+  assert.strictEqual(T.CHECK.filter(c => MICROS.indexOf(c.micro) !== -1).length, 24);   // los de Futuro; el banco completo también incluye los de Condicionales
+  assert.ok(ids.size >= 24);
   Object.keys(T.G).forEach(l => {
     T.memberBankItems('gramatica', T.G[l]).forEach(i => assert.ok(!ids.has(i.id), i.id + ' en práctica'));
   });

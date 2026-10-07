@@ -10,7 +10,7 @@
    debe cumplir las reglas de ACTIVE. Los ejercicios sin `micro` siguen como siempre. */
 const fs = require('fs'), vm = require('vm'), path = require('path');
 
-const ACTIVE = { MIN_PRACTICE: 6, MIN_CHECK: 3, MIN_TYPES: 2, MAX_SIMILARITY: 0.8 };
+const ACTIVE = { MIN_PRACTICE: 6, MIN_CHECK: 6, MIN_TYPES: 2, MAX_SIMILARITY: 0.8 };   // MIN_CHECK 6 = dos rondas inéditas de 3
 const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const norm = s => String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
 const textOf = it => norm(it.prompt != null ? it.prompt : (it.type === 'fill' && Array.isArray(it.sentence)) ? it.sentence.join(' ') : it.wrong);

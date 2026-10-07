@@ -46,7 +46,7 @@ function test(name, fn){
 }
 const MICROS = ['cond-1-probable', 'cond-2-imaginario'];
 const NEW_PRACTICE = /^g-medio-cond[12]-[1-5]$/;
-const NEW_CHECK = /^g-chk-cond[12]-[1-3]$/;
+const NEW_CHECK = /^g-chk-cond[12]-[1-6]$/;
 const ARTICLE = 'articulo-condicionales-1-y-2.html';
 const practiceAt = (micro, level) => real.practice.filter(r => r.item.micro === micro && r.level === level);
 
@@ -58,21 +58,21 @@ test('los dos microtemas están activos; cond-3, cond-mixto y Cuantificadores si
   MICROS.forEach(id => assert.strictEqual(T.microIsActive(id), true));
 });
 
-test('cada microtema tiene 6 de práctica en nivel Medio, >=2 tipos, 3 de comprobación y un recurso con su ancla', () => {
+test('cada microtema tiene 6 de práctica en nivel Medio, >=2 tipos, 6 de comprobación (2 rondas de 3) y un recurso con su ancla', () => {
   const stats = lib.microStats(real);
   MICROS.forEach(id => {
     assert.strictEqual(practiceAt(id, 'medio').length, 6, id + ': práctica en medio');
     assert.ok(new Set(practiceAt(id, 'medio').map(r => r.item.type)).size >= 2, id + ': tipos distintos');
-    assert.strictEqual(stats[id].check.length, 3, id + ': comprobación');
+    assert.strictEqual(stats[id].check.length, 6, id + ': comprobación');
     const res = lib.resourcesOf(real, id);
     assert.ok(res.lesson && res.lesson.article === ARTICLE && res.lesson.anchor === id, id + ': recurso');
   });
 });
 
-test('en total: 8 de práctica nuevos y 6 de comprobación; los 4 ejercicios que ya existían no se tocaron', () => {
+test('en total: 8 de práctica nuevos y 12 de comprobación (2 rondas por micro); los 4 ejercicios que ya existían no se tocaron', () => {
   assert.strictEqual(real.practice.filter(r => NEW_PRACTICE.test(r.item.id)).length, 8);
-  assert.strictEqual(real.check.filter(c => NEW_CHECK.test(c.id)).length, 6);
-  assert.strictEqual(real.check.filter(c => MICROS.indexOf(c.micro) !== -1).length, 6);
+  assert.strictEqual(real.check.filter(c => NEW_CHECK.test(c.id)).length, 12);
+  assert.strictEqual(real.check.filter(c => MICROS.indexOf(c.micro) !== -1).length, 12);
   const originales = { 'g-medio-cond12-1':'cond-1-probable', 'g-medio-cond12-2':'cond-2-imaginario', 'g-medio-cond12-3':'cond-2-imaginario', 'g-medio-cond12-4':'cond-2-imaginario', 'g-facil-m400-1':'cond-1-probable' };
   Object.keys(originales).forEach(id => { const r = real.practice.find(x => x.item.id === id); assert.ok(r, id + ' sigue existiendo'); assert.strictEqual(r.item.micro, originales[id]); });
 });
@@ -161,7 +161,7 @@ console.log('\nLa comprobación está aislada y no se sirve antes de tiempo');
 test('ningún ejercicio de comprobación está en los bancos de práctica ni en el índice de errores', () => {
   const index = T.getMistakesItemIndex();
   const mine = T.CHECK.filter(c => MICROS.indexOf(c.micro) !== -1);
-  assert.strictEqual(mine.length, 6);
+  assert.strictEqual(mine.length, 12);
   Object.keys(T.G).forEach(l => T.memberBankItems('gramatica', T.G[l]).forEach(i => assert.ok(!mine.some(c => c.id === i.id), i.id + ' en práctica')));
   mine.forEach(c => assert.strictEqual(index.has(c.id), false, c.id + ' entró al índice de errores'));
 });
@@ -195,7 +195,8 @@ MICROS.forEach(m => {
     assert.strictEqual(again.items, null, 'ya los vio: no se repiten');
     assert.ok(['no-toca', 'sin-ineditos'].indexOf(again.reason) !== -1, again.reason);
     const seen = JSON.parse(store[T.CHECK_SEEN_KEY]);
-    checks.forEach(id => assert.strictEqual(seen[id], 1, id + ' quedó como visto'));
+    st.items.forEach(it => assert.strictEqual(seen[it.id], 1, it.id + ' quedó como visto'));
+    assert.strictEqual(Object.keys(seen).length, 3, 'solo los 3 servidos: la otra ronda sigue inédita');
   });
 });
 

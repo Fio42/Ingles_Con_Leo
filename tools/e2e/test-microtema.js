@@ -71,7 +71,7 @@ async function runMicro(microId, opts){
   // ---- 0. Precondiciones (todo sale de temas.js + data.js)
   check('0.1 el microtema está activo', A.microIsActive(microId), 'temas.js no lo declara active:true');
   check('0.2 tiene >=6 ejercicios de práctica en el nivel ' + level, practice.length >= 6, 'práctica en ' + level + ': ' + practice.length);
-  check('0.3 tiene ' + MF.CHECK_SIZE + ' o más ejercicios de comprobación', checks.length >= MF.CHECK_SIZE, 'checks: ' + checks.length);
+  check('0.3 tiene al menos ' + 2 * MF.CHECK_SIZE + ' ejercicios de comprobación (2 rondas inéditas de ' + MF.CHECK_SIZE + ')', checks.length >= 2 * MF.CHECK_SIZE, 'checks: ' + checks.length);
   check('0.4 tiene recurso (clase con ancla válida)', !!(m.lesson && m.lesson.article && fs.existsSync(path.join(root, m.lesson.article)) &&
     fs.readFileSync(path.join(root, m.lesson.article), 'utf8').indexOf('id="' + (m.lesson.anchor || m.id) + '"') !== -1), 'lesson: ' + JSON.stringify(m.lesson));
   check('0.5 sin historial no hay señales ni recomendación ni comprobación', state() === 'sin-datos' && A.microDiagActions(level, new Set([microId])).length === 0 && A.microCheckStart(microId).reason === 'no-toca', 'estado ' + state());
@@ -119,10 +119,9 @@ async function runMicro(microId, opts){
   check('4.3 no declara dominio sin comprobación (sin lc, sin "recuperado")', st().lc === null && state() !== 'recuperado', JSON.stringify(st()));
   const before = state();
   reinforce('ok');                                                                      // 5ª respuesta
-  check('4.4 con ' + MF.CHECK_AFTER_PRACTICE + ' respuestas de refuerzo pasa a "listo-comprobar"', state() === 'listo-comprobar' && before === 'debil', 'estado ' + state() + ' pr=' + st().pr);
+  check('4.4 con ' + MF.CHECK_AFTER_PRACTICE + ' respuestas (4 de 5 recientes, 80 %, ' + MF.CHECK_MIN_DISTINCT + '+ distintos) cumple la preparación y pasa a "listo-comprobar"', state() === 'listo-comprobar' && before === 'debil', 'estado ' + state() + ' pr=' + st().pr);
   const actC = A.microDiagActions(level, new Set([microId]));
   check('4.5 ahora recomienda "Comprobar" con enlace ?comprobar=' + microId, actC.length === 1 && actC[0].microState === 'listo-comprobar' && /[?&]comprobar=/.test(actC[0].href), JSON.stringify(actC.map(a => a.href)));
-  res.push({ name: 'OBS un fallo accidental NO retrasa la comprobación: se ofrece al llegar a ' + MF.CHECK_AFTER_PRACTICE + ' respuestas aunque haya errores (regla actual, solo AUTOCLEAR exige 80%)', ok: true, obs: true });
 
   // ---- 5. Comprobación: 3 checks inéditos, aislados de la práctica
   const idx = A.getMistakesItemIndex();
@@ -183,6 +182,84 @@ async function runMicro(microId, opts){
     play(D, level, items, items.map((_, i) => i < okCount ? 'ok' : 'fail'), 'check');
     const s = D.microFlowState(microId, D.microStatsAll()[microId]).state;
     check('8 comprobación ' + label + ' -> ' + expect + (expect === 'debil-comprobado' ? ' (la alerta continúa, no hay dominio)' : ' (se cierra la alerta sin declarar dominio)'), s === expect, 'estado ' + s + ' ' + JSON.stringify(D.stats(microId)));
+  }
+
+  // ---- 9. Preparación para comprobar: calidad del refuerzo, no cantidad
+  const fresh = () => { const c = createCloud(), D = makeDevice(c, { search: '?micro=' + microId }); D.setUserLevel(level); play(D, level, practice.slice(0, failsRequired), ['fail-retry-ok']); return { c, D }; };
+  const ans = (D, idx, how) => play(D, level, [practice[idx % practice.length]], [how]);
+  const stOf = D => D.stats(microId);
+  const stateOf = D => D.microFlowState(microId, D.microStatsAll()[microId]).state;
+  const notReady = D => stateOf(D) !== 'listo-comprobar' && D.microCheckStart(microId).items === null;
+  const seq = (D, hows, from) => hows.forEach((h, i) => ans(D, (from || 0) + i, h));
+  const P = MF;
+  {
+    const { D } = fresh(); seq(D, ['ok', 'fail', 'ok', 'fail', 'ok'], 3);
+    check('9.1 5 respuestas pero con mala precisión (3 de 5) NO ofrecen comprobación', stOf(D).pr === 5 && stOf(D).pc === 3 && stateOf(D) === 'debil' && notReady(D), JSON.stringify(stOf(D)));
+    const act = D.microDiagActions(level, new Set([microId]))[0];
+    check('9.1b explica que falta firmeza, ofrece la clase y sigue el refuerzo (no hay callejón)', !!act && act.microState === 'debil' && /repasa la clase/i.test(act.reason) && !!act.article && /[?&]micro=/.test(act.href), JSON.stringify(act));
+  }
+  {
+    const { D } = fresh(); seq(D, ['fail', 'fail', 'fail', 'ok', 'ok', 'ok', 'ok', 'ok'], 3);   // últimas 5 todas bien, pero acumulado 5/8
+    check('9.2 las últimas 5 están bien pero el acumulado es <70 % (5/8): NO hay comprobación', stOf(D).rc.slice(-5).every(x => x === 1) && stOf(D).pc * 100 < P.CHECK_MIN_ACC * stOf(D).pr && notReady(D), JSON.stringify(stOf(D)));
+    seq(D, ['ok'], 11); const mid = notReady(D);
+    seq(D, ['ok'], 12);
+    check('9.2b sigue sin estar listo a 6/9 y lo está al llegar a 7/10 (70 %)', mid && stOf(D).pr === 10 && stOf(D).pc === 7 && stateOf(D) === 'listo-comprobar', JSON.stringify(stOf(D)));
+  }
+  {
+    const { D } = fresh(); [0, 1, 2, 0, 1, 2].forEach(i => ans(D, i, 'ok'));                       // 6/6 pero repitiendo solo 3 ejercicios
+    check('9.3 acumulado 100 % pero solo ' + stOf(D).rd.length + ' ejercicios distintos (<' + P.CHECK_MIN_DISTINCT + '): NO hay comprobación', stOf(D).rd.length < P.CHECK_MIN_DISTINCT && stOf(D).pc === stOf(D).pr && notReady(D), JSON.stringify(stOf(D)));
+    ans(D, 3, 'ok');
+    check('9.3b al responder un ejercicio nuevo (' + P.CHECK_MIN_DISTINCT + ' distintos) ya está listo', stateOf(D) === 'listo-comprobar', JSON.stringify(stOf(D)));
+  }
+  {
+    const { D } = fresh(); seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 3);
+    check('9.4 cumple las cuatro condiciones (5 respuestas, ' + P.CHECK_MIN_DISTINCT + '+ distintos, 5/5 recientes, 100 %): se ofrece la comprobación', stateOf(D) === 'listo-comprobar' && D.microCheckStart(microId).items !== null, JSON.stringify(stOf(D)));
+  }
+  {
+    const { D } = fresh(); seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 3);
+    const a = stateOf(D); seq(D, ['fail'], 2); const b = stateOf(D); seq(D, ['fail'], 5); const c2 = stateOf(D);
+    seq(D, ['ok', 'ok', 'ok'], 0); const d = stateOf(D); seq(D, ['ok'], 3); const e = stateOf(D);
+    check('9.5 un error accidental puede quitar la preparación y se recupera con buenas respuestas (listo -> sigue listo con 1 fallo -> deja de estarlo con 2 -> vuelve a estarlo)', a === 'listo-comprobar' && b === 'listo-comprobar' && c2 === 'debil' && d === 'debil' && e === 'listo-comprobar', [a, b, c2, d, e].join(' > ') + ' ' + JSON.stringify(stOf(D)));
+  }
+  let roundOne = null, bothRounds = null;
+  {
+    const { c, D } = fresh(); seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 3);
+    const r1 = D.microCheckStart(microId).items; const ids1 = r1.map(i => i.id);
+    play(D, level, r1, ['fail'], 'check');                                                        // 0 de 3: primera ronda fallida
+    const s1 = stOf(D);
+    check('9.6 fallo de la 1ª ronda: vuelve a refuerzo (contadores en cero, cr=1, alerta sigue) y NO se sirve la 2ª ronda de inmediato', stateOf(D) === 'debil-comprobado' && s1.cr === 1 && s1.pr === 0 && s1.rc.length === 0 && s1.rd.length === 0 && !!s1.wk && D.microCheckStart(microId).items === null && D.microCheckStart(microId).reason === 'no-toca', JSON.stringify(s1));
+    const act = D.microDiagActions(level, new Set([microId]))[0];
+    check('9.6b la recomendación sigue siendo de refuerzo y avisa de que habrá otra comprobación', !!act && act.microState === 'debil-comprobado' && /otra comprobación/i.test(act.reason) && !!act.article, JSON.stringify(act));
+    seq(D, ['ok', 'ok', 'ok', 'ok'], 0); const early = D.microCheckStart(microId).items === null;
+    seq(D, ['ok'], 4);
+    check('9.6c la 2ª ronda solo aparece cuando vuelve a cumplir la preparación (' + P.CHECK_AFTER_PRACTICE + ' respuestas buenas y distintas)', early && stateOf(D) === 'listo-comprobar', JSON.stringify(stOf(D)));
+    const r2 = D.microCheckStart(microId).items; const ids2 = (r2 || []).map(i => i.id);
+    check('9.7 la 2ª ronda usa 3 IDs totalmente nuevos (ninguno de la 1ª, todos del banco de comprobación)', ids2.length === P.CHECK_SIZE && ids2.every(id => ids1.indexOf(id) === -1 && checkIds.indexOf(id) !== -1) && new Set(ids1.concat(ids2)).size === 2 * P.CHECK_SIZE, ids1.join(',') + ' | ' + ids2.join(','));
+    roundOne = { c, D, ids1, ids2, r2 };
+  }
+  {
+    const { c, D, ids1, ids2, r2 } = roundOne;
+    play(D, level, r2, ['fail'], 'check');                                                        // la 2ª ronda también falla
+    const seen = Object.keys(JSON.parse(D.store[D.CHECK_SEEN_KEY]));
+    check('9.8 tras consumir los ' + 2 * P.CHECK_SIZE + ' checks no se recicla ninguno (ni con la preparación cumplida)', seen.length === 2 * P.CHECK_SIZE && D.microCheckStart(microId).items === null, seen.join(','));
+    seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 0);
+    const again = D.microCheckStart(microId);
+    check('9.8b sin checks inéditos el estado nunca vuelve a "listo-comprobar" y no se sirve nada', again.items === null && again.reason === 'sin-ineditos' && stateOf(D) !== 'listo-comprobar', JSON.stringify(again.reason) + ' ' + stateOf(D));
+    seq(D, ['ok'], 5);                                                                            // 6 respuestas al 100 %: el auto-cierre solo actúa porque ya no quedan checks
+    check('9.8c ya sin checks posibles, 6 respuestas con >=80 % cierran la alerta SIN declarar dominio', !stOf(D).wk && stateOf(D) === 'sin-alerta' && stOf(D).lc && stOf(D).lc.ok < stOf(D).lc.n - 1, JSON.stringify(stOf(D)));
+    const B = makeDevice(c, { search: '' });
+    check('9.9 el segundo navegador sincroniza', (await B.LeoBackend.syncProgressFromCloud()) === 'ok', '');
+    const pick = x => x && { wk: x.wk, pr: x.pr, pc: x.pc, rc: x.rc, rd: x.rd, cr: x.cr, lc: x.lc, ck: x.ck, wi: x.wi, a: x.a, w: x.w };
+    check('9.9b el segundo navegador reconstruye EXACTAMENTE el mismo estado (wk, pr, pc, rc, rd, cr, lc, ck, wi)', JSON.stringify(pick(B.microStatsAll()[microId])) === JSON.stringify(pick(D.stats(microId))), JSON.stringify(pick(B.microStatsAll()[microId])) + ' vs ' + JSON.stringify(pick(D.stats(microId))));
+    check('9.9c y sabe que los 6 checks ya se vieron (no sirve ninguno)', Object.keys(JSON.parse(B.store[B.CHECK_SEEN_KEY])).length === 2 * P.CHECK_SIZE && B.microCheckStart(microId).items === null, '');
+    bothRounds = true;
+  }
+  {
+    // 2ª ronda con éxito: 3/3 en la segunda cierra con dominio
+    const { D } = fresh(); seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 3);
+    play(D, level, D.microCheckStart(microId).items, ['fail'], 'check'); seq(D, ['ok', 'ok', 'ok', 'ok', 'ok'], 3);
+    const it = D.microCheckStart(microId).items; play(D, level, it, ['ok'], 'check');
+    check('9.10 si la 1ª ronda falla y la 2ª sale 3/3: recuperado, alerta cerrada, rondas en cero', stateOf(D) === 'recuperado' && !stOf(D).wk && stOf(D).cr === 0 && stOf(D).lc.ok === P.CHECK_SIZE, JSON.stringify(stOf(D)));
   }
   return { microId, level, res, info: { focusUrl: info.focusUrl, practice: practice.length, checks: checks.length } };
 }

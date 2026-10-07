@@ -153,12 +153,12 @@ test('la sesión se mantiene en 9 y trae ejercicios del microtema también con e
 });
 
 console.log('\nC. Comprobación: cuándo se ofrece');
-test('se ofrece solo después de practicar >=5 respuestas desde la alerta, y es un enlace (no hay popup)', () => {
+test('se ofrece solo cuando el refuerzo es bueno (>=5 respuestas, >=4 distintos, 4 de las últimas 5 y >=70%), y es un enlace (no hay popup)', () => {
   activate(); otherHistory(); day(1); makeWeak();
   assert.strictEqual(microActions()[0].microState, 'debil');
-  day(2); practiceAfter(4);
+  day(2); practiceAfter(4, true);
   assert.strictEqual(microActions()[0].microState, 'debil');          // 4 < 5: todavía no
-  day(3); practiceAfter(1);
+  day(3); practiceAfter(1, true);
   const a = microActions()[0];
   assert.strictEqual(a.microState, 'listo-comprobar');
   assert.strictEqual(a.title, 'Comprobar: Going to: lo que se ve venir');
@@ -166,9 +166,16 @@ test('se ofrece solo después de practicar >=5 respuestas desde la alerta, y es 
   assert.strictEqual(a.cta, 'Comprobar');
   assert.strictEqual(todayAction().micro, 'going-to-evidencia');
 });
+test('5 respuestas con mala precisión NO bastan: sigue el refuerzo, con la explicación y la clase', () => {
+  activate(); otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6, false);   // la mitad bien, la mitad mal
+  const a = microActions()[0];
+  assert.strictEqual(a.microState, 'debil');
+  assert.ok(/repasa la clase/i.test(a.reason), a.reason);
+  assert.ok(a.article, 'ofrece la clase');
+});
 test('después de la sesión, el fin de sesión lo ofrece primero y con el nombre del microtema', () => {
   activate(); otherHistory(); day(1); makeWeak(); day(2);
-  const e = EV(); const pairs = []; for(let i = 0; i < 6; i++) pairs.push([e[i], i % 2 === 0]);
+  const e = EV(); const pairs = []; for(let i = 0; i < 6; i++) pairs.push([e[i], true]);   // un refuerzo bueno: 6 de 6 al primer intento
   play(pairs);
   const ins = T.computeSessionInsight(pairs.map(([itemId, isCorrect]) => ({ itemId, isCorrect })), CLOCK, 'plan', {});
   assert.ok(ins, 'sin insight');
@@ -178,9 +185,9 @@ test('después de la sesión, el fin de sesión lo ofrece primero y con el nombr
   assert.ok(!ins.actions.some(a => /Will y going to|Futuro/.test(a.title)), 'quedó una acción genérica de Futuro: ' + ins.actions.map(a => a.title).join(' | '));
 });
 test('si no quedan 3 comprobaciones inéditas no se ofrece: queda el refuerzo', () => {
-  activate(); otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6);
+  activate(); otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6, true);
   assert.strictEqual(microActions()[0].microState, 'listo-comprobar');
-  const seen = {}; T.GRAMMAR_CHECK_BANK.filter(c => c.micro === 'going-to-evidencia').slice(0, 1).forEach(c => { seen[c.id] = 1; });
+  const seen = {}; T.GRAMMAR_CHECK_BANK.filter(c => c.micro === 'going-to-evidencia').slice(0, 4).forEach(c => { seen[c.id] = 1; });   // de 6, quedan 2 inéditos (<3)
   store[T.CHECK_SEEN_KEY] = JSON.stringify(seen);
   assert.strictEqual(T.checkAvailable('going-to-evidencia'), false);
   assert.strictEqual(microActions()[0].microState, 'debil');
@@ -195,12 +202,12 @@ test('un ?comprobar= manual NO se salta el flujo: no sirve ejercicios, no marca 
     const st = T.microCheckStart('going-to-evidencia');
     assert.strictEqual(st.items, null); assert.strictEqual(st.reason, 'no-toca');
     assert.strictEqual(snap(), before, 'cambió algo guardado');
-    assert.strictEqual(T.checkAvailable('going-to-evidencia'), true);                 // las 3 siguen inéditas
+    assert.strictEqual(T.checkAvailable('going-to-evidencia'), true);                 // las 6 siguen inéditas
   };
   noToca();                                                                            // nunca fue débil
   day(1); makeWeak(); noToca();                                                        // débil, pero sin práctica posterior
-  day(2); practiceAfter(4); noToca();                                                  // 4 < 5 respuestas
-  day(3); practiceAfter(2);                                                            // ahora SÍ toca
+  day(2); practiceAfter(4, true); noToca();                                                  // 4 < 5 respuestas
+  day(3); practiceAfter(2, true);                                                            // ahora SÍ toca
   assert.strictEqual(microActions()[0].microState, 'listo-comprobar');
   assert.strictEqual(T.microCheckStart('going-to-evidencia').items.length, 3);
   const r = doCheck(3);                                                                // y tras recuperarse ya no se puede repetir a mano
@@ -215,7 +222,8 @@ test('una comprobación ya iniciada legítimamente se retoma aunque el estado ca
   const st = T.microCheckStart('going-to-evidencia');
   T.saveInflightSession('check', 'going-to-evidencia', { itemIds: st.items.map(i => i.id), idx:1, results:[{ itemId: st.items[0].id, isCorrect:true }], startedAt: CLOCK });
   // a mitad de la comprobación el estado ya no es "listo" (p. ej. se marcó la primera como vista)
-  const seen = {}; seen[st.items[0].id] = 1; store[T.CHECK_SEEN_KEY] = JSON.stringify(seen);
+  const seen = {}; seen[st.items[0].id] = 1; T.GRAMMAR_CHECK_BANK.filter(c => c.micro === 'going-to-evidencia' && c.id !== st.items[0].id).slice(0, 3).forEach(c => { seen[c.id] = 1; });   // quedan 2 inéditos (<3)
+  store[T.CHECK_SEEN_KEY] = JSON.stringify(seen);
   assert.strictEqual(T.checkAvailable('going-to-evidencia'), false);
   const again = T.microCheckStart('going-to-evidencia');
   assert.strictEqual(again.resumed, true); assert.strictEqual(again.items.length, 3);
@@ -223,14 +231,14 @@ test('una comprobación ya iniciada legítimamente se retoma aunque el estado ca
   assert.strictEqual(fin.outcome, 'recuperado');
 });
 test('un microtema inactivo nunca ofrece comprobación ni refuerzo', () => {
-  otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6);
+  otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6, true);
   assert.ok(ev().wk);                                  // la señal se guarda igual (queda lista para cuando se active)
   assert.strictEqual(microActions().length, 0);
   assert.strictEqual(T.microCheckStart('going-to-evidencia').items, null);
 });
 
 console.log('\nD. Resultado de la comprobación (3/3, 2/3, 0-1/3)');
-function toCheck(){ activate(); otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6); day(3); }
+function toCheck(){ activate(); otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6, true); day(3); }
 test('3/3: recuperado. Se cierra la alerta y la recomendación desaparece', () => {
   toCheck(); const r = doCheck(3);
   assert.strictEqual(r.outcome, 'recuperado');
@@ -246,7 +254,7 @@ test('2/3: mejora parcial. Se cierra la alerta pero NO se marca recuperado ni do
   assert.strictEqual(T.microFlowState('going-to-evidencia', ev()).state, 'mejorando');
   assert.strictEqual(microActions().length, 0);
 });
-[0, 1].forEach(k => test(k + '/3: sigue débil, se recomienda reforzar con la explicación y NO se vuelve a ofrecer la comprobación', () => {
+[0, 1].forEach(k => test(k + '/3: sigue débil, vuelve a refuerzo con la explicación y la 2ª ronda NO se sirve de inmediato', () => {
   toCheck(); const r = doCheck(k);
   assert.strictEqual(r.outcome, 'sigue-debil');
   assert.ok(ev().wk);
@@ -254,21 +262,39 @@ test('2/3: mejora parcial. Se cierra la alerta pero NO se marca recuperado ni do
   assert.strictEqual(a.microState, 'debil-comprobado');
   assert.strictEqual(a.title, 'Reforzar Going to: lo que se ve venir');
   assert.ok(new RegExp('acertaste ' + k + ' de 3').test(a.reason));
+  assert.ok(/otra comprobación/i.test(a.reason), 'avisa de que habrá otra comprobación');
   assert.ok(a.article.indexOf('#going-to-evidencia') !== -1);
-  assert.strictEqual(T.checkAvailable('going-to-evidencia'), false);
-  assert.strictEqual(T.pickCheckItems('going-to-evidencia', 3), null);
+  assert.strictEqual(T.checkAvailable('going-to-evidencia'), true);                  // quedan 3 inéditos (2ª ronda)...
+  const st = T.microCheckStart('going-to-evidencia');
+  assert.strictEqual(st.items, null); assert.strictEqual(st.reason, 'no-toca');       // ...pero no se sirven hasta volver a estar preparado
+  const next = T.pickCheckItems('going-to-evidencia', 3).map(i => i.id);
+  assert.ok(next.every(id => r.ids.indexOf(id) === -1), 'la 2ª ronda son 3 IDs totalmente nuevos');
+  assert.strictEqual(ev().pr, 0); assert.strictEqual(ev().rc.length, 0); assert.strictEqual(ev().rd.length, 0);
 }));
-test('tras una comprobación fallida, 6 respuestas con >=80% al primer intento cierran la alerta; con menos, sigue', () => {
-  toCheck(); doCheck(1); day(4);
+test('tras una comprobación fallida la alerta NO se cierra mientras quede otra ronda: se ofrece al volver a estar preparado', () => {
+  toCheck(); const r1 = doCheck(1); day(4);
+  practiceAfter(6, false);                                                             // 50 %: ni se ofrece ni se cierra
+  assert.ok(ev().wk); assert.strictEqual(T.microFlowState('going-to-evidencia', ev()).state, 'debil-comprobado');
+  day(5); practiceAfter(6, true);                                                      // 9 de 12 = 75 % y las últimas 5 bien
+  assert.ok(ev().wk, 'con otra ronda disponible el auto-cierre no actúa');
+  assert.strictEqual(T.microFlowState('going-to-evidencia', ev()).state, 'listo-comprobar');
+  const r2 = doCheck(1);
+  assert.ok(r2.ids.every(id => r1.ids.indexOf(id) === -1), 'la 2ª ronda no repite ningún ejercicio de la 1ª');
+  assert.strictEqual(T.checkAvailable('going-to-evidencia'), false);                   // 6 de 6 consumidos: no hay reciclaje
+  assert.strictEqual(T.microCheckStart('going-to-evidencia').reason, 'sin-ineditos');
+});
+test('tras consumir los 6 checks, 6 respuestas con >=80% al primer intento cierran la alerta SIN dominio; con menos, sigue', () => {
+  toCheck(); doCheck(1); day(4); practiceAfter(6, true); day(5); doCheck(1); day(6);
   practiceAfter(6, false); assert.ok(ev().wk, 'con 50% no debe cerrarse');
-  day(5); practiceAfter(6, true); assert.ok(ev().wk, 'las 12 acumuladas son 75%: tampoco');
-  day(6); practiceAfter(6, true); // 18 respuestas: 15 de 18 = 83%
+  day(7); practiceAfter(6, true); assert.ok(ev().wk, 'las 12 acumuladas son 75%: tampoco');
+  day(8); practiceAfter(6, true); // 18 respuestas: 15 de 18 = 83%
   assert.strictEqual(ev().wk, null);
+  assert.notStrictEqual(T.microFlowState('going-to-evidencia', ev()).state, 'recuperado');
   assert.strictEqual(microActions().length, 0);
 });
 test('sin comprobación posible, la alerta se cierra con práctica sólida (6 respuestas, >=80%)', () => {
   activate(); otherHistory(); day(1); makeWeak();
-  const seen = {}; T.GRAMMAR_CHECK_BANK.filter(c => c.micro === 'going-to-evidencia').slice(0, 2).forEach(c => { seen[c.id] = 1; });
+  const seen = {}; T.GRAMMAR_CHECK_BANK.filter(c => c.micro === 'going-to-evidencia').slice(0, 4).forEach(c => { seen[c.id] = 1; });   // quedan 2 inéditos (<3): no hay comprobación posible
   store[T.CHECK_SEEN_KEY] = JSON.stringify(seen);
   day(2); practiceAfter(6, true);
   assert.strictEqual(ev().wk, null);
@@ -298,12 +324,14 @@ test('checks: nunca aparecen en el Plan, sesiones normales ni repaso (5/9/15, va
   const ids = new Set(T.GRAMMAR_CHECK_BANK.map(c => c.id));
   [5, 9, 15].forEach(n => { for(let i = 0; i < 25; i++){ const pool = T.buildPlanPool('medio', T.computePlanSelection('medio', n, { focusMicro:'going-to-evidencia' })); assert.ok(pool.every(e => !ids.has(e.item.id))); } });
 });
-test('cada comprobación se usa una sola vez: tras terminarla no queda ninguna inédita', () => {
+test('cada comprobación se usa una sola vez: lo hecho no vuelve a salir y la otra ronda sigue inédita', () => {
   toCheck(); const r = doCheck(3);
   const seen = JSON.parse(store[T.CHECK_SEEN_KEY]);
   r.ids.forEach(id => assert.strictEqual(seen[id], 1));
-  assert.strictEqual(T.pickCheckItems('going-to-evidencia', 3), null);
-  assert.strictEqual(T.microCheckStart('going-to-evidencia').items, null);
+  assert.strictEqual(Object.keys(seen).length, 3);                                     // solo la ronda hecha
+  const resto = T.pickCheckItems('going-to-evidencia', 3).map(i => i.id);                // los 3 inéditos que quedan
+  assert.ok(resto.every(id => r.ids.indexOf(id) === -1));
+  assert.strictEqual(T.microCheckStart('going-to-evidencia').items, null);                // recuperado: no toca otra
 });
 test('la comprobación a medias se retoma (mismos ejercicios) y los vistos no salen de nuevo', () => {
   toCheck(); const st = T.microCheckStart('going-to-evidencia');
@@ -382,7 +410,7 @@ test('el origen de la práctica se captura al cargar y se entrega una sola vez; 
 
 console.log('\nG. Activación');
 test('active:false o active:true: solo cambia lo que ve el alumno con señales de microtema', () => {
-  otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6);
+  otherHistory(); day(1); makeWeak(); day(2); practiceAfter(6, true);
   const off = JSON.stringify(plain(T.computeDiagnosis().actions));
   activate();
   const on = JSON.stringify(plain(T.computeDiagnosis().actions));

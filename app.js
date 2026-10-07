@@ -788,13 +788,14 @@ function checkSeenSet(){
    se reconstruyen UNA vez recorriendo las sesiones en orden. Las respuestas nuevas siguen actualizándose de forma
    incremental, así que no se recorre el historial en cada carga. */
 const DERIVED_META_KEY = 'leo_derived_meta_v1';
+const DERIVED_VERSION = 2;   // 2: señales de preparación para comprobar (rc, rd, cr). Subirla fuerza una reconstrucción única desde las sesiones.
 const CHECK_SYNC_TIMEOUT_MS = 8000;
 let _deriving = false, _seenOverride = null;
 function progressSig(){
   try{ const raw = localStorage.getItem(PROGRESS_KEY); return raw ? raw.length : 0; }catch(e){ return -1; }
 }
 function stampDerived(){
-  try{ localStorage.setItem(DERIVED_META_KEY, JSON.stringify({ sig: progressSig() })); }catch(e){}
+  try{ localStorage.setItem(DERIVED_META_KEY, JSON.stringify({ sig: progressSig(), v: DERIVED_VERSION })); }catch(e){}
 }
 function ensureDerived(){
   if(_deriving) return;
@@ -802,7 +803,7 @@ function ensureDerived(){
     const sig = progressSig();
     if(sig < 0) return;
     const meta = readJsonKey(DERIVED_META_KEY, null);
-    if(meta && meta.sig === sig) return;
+    if(meta && meta.sig === sig && meta.v === DERIVED_VERSION) return;
     rebuildDerived();
   }catch(e){}
 }
@@ -863,6 +864,9 @@ function pickCheckItems(microId, n){
 //   a, w, wi, wd, last   práctica: intentos, fallos del primer intento, ejercicios y días con fallos
 //   wk                   fecha en que se detectó la debilidad (null = sin alerta)
 //   pr, pc               respuestas de práctica DESDE wk, y cuántas salieron bien al primer intento
+//   rc                   las ÚLTIMAS 5 respuestas de refuerzo desde wk (1 = bien al primer intento, 0 = no)
+//   rd                   ejercicios DISTINTOS respondidos en el refuerzo desde wk (tope MICRO_STATS_MAX_ITEMS)
+//   cr                   rondas de comprobación hechas desde wk
 //   ck                   comprobación: respuestas y aciertos acumulados
 //   lc                   última comprobación completa { d: fecha, n, ok }
 // "Fallo" = el primer intento salió mal (también cuando acertó al reintentar: results.w).
@@ -872,16 +876,37 @@ function pickCheckItems(microId, n){
 //                   ejercicio no cuenta. Al detectarla se guarda wk.
 //   PRÁCTICA        con wk y el microtema ACTIVO se recomienda reforzarlo: Plan con foco en ese microtema y su
 //                   sección de la clase. Desaparece cuando la alerta se cierra (ver abajo).
-//   COMPROBACIÓN    se ofrece con wk, pr >= CHECK_AFTER_PRACTICE, sin comprobación desde wk y con CHECK_SIZE
-//                   ejercicios inéditos. Es un enlace ("Hoy te conviene" y fin de sesión), nunca una ventana.
+//   COMPROBACIÓN    se ofrece con wk, CHECK_SIZE ejercicios inéditos y la PREPARACIÓN (microCheckReady): pr >= CHECK_AFTER_PRACTICE,
+//                   >= CHECK_MIN_DISTINCT ejercicios distintos, >= CHECK_RECENT_OK correctos al primer intento entre las últimas
+//                   CHECK_RECENT respuestas y pc/pr >= CHECK_MIN_ACC %. NUNCA solo por cantidad de respuestas. Es un enlace
+//                   ("Hoy te conviene" y fin de sesión), nunca una ventana. Cada microtema puede sobrescribir los valores con
+//                   `flow:{...}` en temas.js (hoy ninguno lo hace).
 //   RESULTADO       3/3 recuperado: se cierra la alerta y se borra la evidencia. 2/3 mejora parcial: se cierra
-//                   la alerta SIN marcarlo recuperado. 0-1/3: sigue débil (la alerta continúa).
-//   DEJA DE OFRECERSE  la comprobación, al responderla o si no quedan inéditas. El refuerzo, al cerrarse la
-//                   alerta o, si no hay comprobación posible (o ya se hizo), tras AUTOCLEAR_MIN respuestas con
-//                   >=AUTOCLEAR_ACC% de aciertos al primer intento.
+//                   la alerta SIN marcarlo recuperado. 0-1/3: sigue débil, vuelve al refuerzo con los contadores en cero y la
+//                   SEGUNDA ronda (otros 3 inéditos) solo se ofrece cuando vuelve a cumplir la preparación.
+//   DEJA DE OFRECERSE  la comprobación, al responderla o si no quedan inéditas (no hay reciclaje de checks vistos). El
+//                   refuerzo, al cerrarse la alerta o, si no queda ninguna comprobación posible, tras AUTOCLEAR_MIN respuestas
+//                   con >=AUTOCLEAR_ACC% de aciertos al primer intento.
 // Nada de esto toca mistake_stats, el diagnóstico global ni "dominado".
-const MICRO_FLOW = { CHECK_SIZE: 3, CHECK_AFTER_PRACTICE: 5, AUTOCLEAR_MIN: 6, AUTOCLEAR_ACC: 80 };
-function newMicroStat(){ return { a:0, w:0, wi:{}, wd:[], last:null, ck:{ a:0, ok:0 }, wk:null, pr:0, pc:0, lc:null }; }
+const MICRO_FLOW = { CHECK_SIZE: 3, CHECK_AFTER_PRACTICE: 5, AUTOCLEAR_MIN: 6, AUTOCLEAR_ACC: 80,
+  CHECK_MIN_DISTINCT: 4, CHECK_RECENT: 5, CHECK_RECENT_OK: 4, CHECK_MIN_ACC: 70 };
+// Parámetros del flujo de UN microtema: los valores por defecto + el override opcional `flow` de temas.js.
+function microFlowParams(microId){
+  const m = (typeof MICRO_BY_ID !== 'undefined') ? MICRO_BY_ID[microId] : null;
+  return (m && m.flow) ? Object.assign({}, MICRO_FLOW, m.flow) : MICRO_FLOW;
+}
+function newMicroStat(){ return { a:0, w:0, wi:{}, wd:[], last:null, ck:{ a:0, ok:0 }, wk:null, pr:0, pc:0, rc:[], rd:[], cr:0, lc:null }; }
+// ¿Está el alumno PREPARADO para comprobar? Calidad del refuerzo, no cantidad (ver REGLAS DEL FLUJO).
+function microCheckReady(microId, s){
+  if(!s || !s.wk) return false;
+  const P = microFlowParams(microId);
+  const rc = Array.isArray(s.rc) ? s.rc : [], rd = Array.isArray(s.rd) ? s.rd : [];
+  if(s.pr < P.CHECK_AFTER_PRACTICE || rd.length < P.CHECK_MIN_DISTINCT || rc.length < P.CHECK_RECENT) return false;
+  if(rc.slice(-P.CHECK_RECENT).reduce((a, b) => a + b, 0) < P.CHECK_RECENT_OK) return false;
+  return s.pc * 100 >= P.CHECK_MIN_ACC * s.pr;
+}
+// Contadores del refuerzo en cero (al detectar la debilidad y tras una comprobación fallida).
+function resetMicroRefuerzo(s){ s.pr = 0; s.pc = 0; s.rc = []; s.rd = []; }
 // ¿Quedan CHECK_SIZE comprobaciones que este alumno no ha visto? (sin barajar: solo cuenta)
 function checkAvailable(microId){
   const items = checkIndex().byMicro.get(microId) || [];
@@ -889,16 +914,18 @@ function checkAvailable(microId){
   return items.filter(it => !seen[it.id]).length >= MICRO_FLOW.CHECK_SIZE;
 }
 function microCheckedSinceWeak(s){ return !!(s && s.wk && s.lc && s.lc.d >= s.wk); }
-function clearMicroWeakness(s){ s.wk = null; s.wi = {}; s.wd = []; s.pr = 0; s.pc = 0; }
+function clearMicroWeakness(s){ s.wk = null; s.wi = {}; s.wd = []; resetMicroRefuerzo(s); s.cr = 0; }
 function applyCheckOutcome(s, t, date){
   s.lc = { d: date, n: t.n, ok: t.ok };
   if(t.ok >= t.n - 1){ clearMicroWeakness(s); return; }   // 3/3 recuperado; 2/3 mejora parcial
   if(!s.wk) s.wk = date;                                   // 0-1/3: sigue débil aunque no hubiera evidencia previa
-  s.pr = 0; s.pc = 0;
+  s.cr = (s.cr || 0) + 1;
+  resetMicroRefuerzo(s);                                   // vuelve al refuerzo: la siguiente ronda exige volver a estar preparado
 }
 function microAutoClear(s, microId){
-  if(!s.wk || s.pr < MICRO_FLOW.AUTOCLEAR_MIN || s.pc * 100 < MICRO_FLOW.AUTOCLEAR_ACC * s.pr) return false;
-  return microCheckedSinceWeak(s) || !checkAvailable(microId);
+  const P = microFlowParams(microId);
+  if(!s.wk || s.pr < P.AUTOCLEAR_MIN || s.pc * 100 < P.AUTOCLEAR_ACC * s.pr) return false;
+  return !checkAvailable(microId);                         // solo cuando YA no queda ninguna comprobación posible
 }
 // Aplica las respuestas de una sesión a `all` (objeto de señales por microtema). Sin efectos fuera de `all`.
 function applyMicroResults(all, results, date){
@@ -908,6 +935,9 @@ function applyMicroResults(all, results, date){
   touched.forEach(r=>{
     const s = all[r.m] || (all[r.m] = newMicroStat());
     if(s.wk === undefined){ s.wk = null; s.pr = 0; s.pc = 0; s.lc = null; }   // señales guardadas antes del flujo
+    if(!Array.isArray(s.rc)) s.rc = [];                                        // señales guardadas antes de la preparación (se reconstruyen)
+    if(!Array.isArray(s.rd)) s.rd = [];
+    if(typeof s.cr !== 'number') s.cr = 0;
     if(!(r.m in hadWeak)) hadWeak[r.m] = !!s.wk;
     s.last = date;
     if(isCheckItem(r.itemId)){                                                  // la comprobación se lleva aparte
@@ -923,12 +953,16 @@ function applyMicroResults(all, results, date){
       if(s.wi[r.itemId] || Object.keys(s.wi).length < MICRO_STATS_MAX_ITEMS) s.wi[r.itemId] = (s.wi[r.itemId] || 0) + 1;
       if(s.wd.indexOf(date) === -1) s.wd = s.wd.concat(date).slice(-MICRO_STATS_MAX_DAYS);
     }
-    if(hadWeak[r.m]){ s.pr++; if(!firstFail) s.pc++; }
+    if(hadWeak[r.m]){
+      s.pr++; if(!firstFail) s.pc++;
+      s.rc.push(firstFail ? 0 : 1); if(s.rc.length > MICRO_FLOW.CHECK_RECENT) s.rc = s.rc.slice(-MICRO_FLOW.CHECK_RECENT);
+      if(s.rd.indexOf(r.itemId) === -1 && s.rd.length < MICRO_STATS_MAX_ITEMS) s.rd.push(r.itemId);
+    }
   });
   Object.keys(hadWeak).forEach(m=>{
     const s = all[m], t = checkTally[m];
     if(t && t.n >= MICRO_FLOW.CHECK_SIZE) applyCheckOutcome(s, t, date);
-    else if(!hadWeak[m] && !s.wk && microWeakness(s).weak){ s.wk = date; s.pr = 0; s.pc = 0; }
+    else if(!hadWeak[m] && !s.wk && microWeakness(s).weak){ s.wk = date; resetMicroRefuerzo(s); s.cr = 0; }
     else if(hadWeak[m] && microAutoClear(s, m)) clearMicroWeakness(s);
   });
   return true;
@@ -959,7 +993,7 @@ function microFlowState(microId, s){
     if(s.lc && s.lc.ok === s.lc.n - 1) return { state:'mejorando' };
     return { state:'sin-alerta' };
   }
-  if(!microCheckedSinceWeak(s) && s.pr >= MICRO_FLOW.CHECK_AFTER_PRACTICE && checkAvailable(microId)) return { state:'listo-comprobar' };
+  if(microCheckReady(microId, s) && checkAvailable(microId)) return { state:'listo-comprobar' };   // también tras una ronda fallida, si vuelve a estar preparado
   return { state: microCheckedSinceWeak(s) ? 'debil-comprobado' : 'debil' };
 }
 // Solo los microtemas declarados `active:true` en temas.js generan recomendaciones. Los demás se comportan como siempre.
@@ -996,9 +1030,11 @@ function microAction(m, s, state){
       href: 'plan-estudio.html?comprobar=' + encodeURIComponent(m.id), cta: 'Comprobar', voice: 'casi-dominas' });
   }
   const checked = microCheckedSinceWeak(s);
+  const more = checkAvailable(m.id) ? ' Cuando aciertes la mayoría seguidos sin errores, te ofreceremos otra comprobación.' : '';
+  const waiting = (s && s.pr >= MICRO_FLOW.CHECK_AFTER_PRACTICE && !checked) ? ' Todavía no aciertas lo suficiente para comprobar: repasa la clase y sigue practicando.' : '';
   return Object.assign(base, { title: `Reforzar ${m.label}`,
-    reason: checked ? `En la comprobación acertaste ${s.lc.ok} de ${s.lc.n}. Repasa la explicación y sigue practicando este punto.`
-      : nWrong >= 3 ? `Fallaste ${nWrong} ejercicios distintos de este punto.` : 'Fallaste ejercicios distintos de este punto en días diferentes.',
+    reason: checked ? `En la comprobación acertaste ${s.lc.ok} de ${s.lc.n}. Repasa la explicación y sigue practicando este punto.` + more
+      : (nWrong >= 3 ? `Fallaste ${nWrong} ejercicios distintos de este punto.` : 'Fallaste ejercicios distintos de este punto en días diferentes.') + waiting,
     href: microPracticeHref(m, false), cta: 'Reforzar ahora', voice: 'sigue-tema' });
 }
 // Recomendaciones por microtema (solo ACTIVOS, con ejercicios en el nivel del alumno). Primero la comprobación lista,
@@ -4141,7 +4177,7 @@ function renderMicroCheckUnavailable(container, m, reason){
     <div class="session-shell">
       <div class="session-summary">
         <h2>Por ahora no hay comprobación nueva</h2>
-        <p class="summary-score">${!m ? 'Esa comprobación no está disponible.' : reason === 'no-toca' ? `Todavía no toca comprobar <b>${m.label}</b>.` : reason === 'sin-sync' ? 'No pudimos confirmar tu progreso para no repetirte ejercicios. Revisa tu conexión y vuelve a intentarlo.' : `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.`} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
+        <p class="summary-score">${!m ? 'Esa comprobación no está disponible.' : reason === 'no-toca' ? `Todavía no toca comprobar <b>${m.label}</b>: antes conviene repasar la clase y acertar la mayoría de los ejercicios de refuerzo sin errores.` : reason === 'sin-sync' ? 'No pudimos confirmar tu progreso para no repetirte ejercicios. Revisa tu conexión y vuelve a intentarlo.' : `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.`} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
         <div class="sess-insight">${microCheckLinksHtml(links)}</div>
       </div>
     </div>`;

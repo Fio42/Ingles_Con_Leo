@@ -9,7 +9,9 @@ independientes (su propio localStorage) comparten la misma cuenta.
 node tools/e2e/run-all.js                              # informe completo (microtemas activos + regresiones + suite del repo)
 node tools/e2e/test-microtema.js cond-1-probable       # un microtema
 node tools/e2e/test-microtema.js --all-active          # todos los que tengan active:true en temas.js
-node tools/e2e/regresiones.js                          # invitados, onboarding/nivel, inactivos, IDs, diagnostico, session-cycle
+node tools/e2e/regresiones.js                          # invitados, onboarding/nivel, inactivos, IDs, migracion de senales, diagnostico, session-cycle
+node tools/e2e/simulate-flow.js                        # simulador abstracto de POLITICAS de preparacion para comprobar (A/B/C/D/E/F)
+node tools/e2e/simulate-real.js cond-1-probable        # lo mismo con la IMPLEMENTACION REAL (applyMicroResults, microFlowState, pickCheckItems)
 ```
 
 ## Microtema nuevo
@@ -22,6 +24,15 @@ Excepciones (nivel, fallos requeridos) en `micros.config.json`.
 `m`, `w`, `t`, `f`, `o` en cada resultado; `wi` (3 IDs distintos), `wk`, `pr`, `pc`, `ck`, `lc`; que los checks nunca salgan como
 practica (120 sesiones normales + 10 del Plan con foco), que nunca lleguen a mistake_stats, que no se repitan al recargar
 ni en un segundo navegador, y los desenlaces 3/3, 2/3 y 1/3.
+
+## Reglas que el E2E exige a cada microtema activo
+- >=6 ejercicios de practica en su nivel, >=2 tipos, recurso con ancla y **>=6 de comprobacion (2 rondas inéditas de 3)**.
+- Preparacion para comprobar: >=5 respuestas de refuerzo, >=4 ejercicios distintos, >=4 de las ultimas 5 al primer intento y >=70 % acumulado. Nunca solo por cantidad.
+- Tras fallar la 1ª ronda el alumno vuelve a refuerzo y la 2ª ronda solo se ofrece cuando vuelve a estar preparado; sin reciclaje de checks vistos.
+
+## Decisiones futuras (no tocar sin datos reales)
+- Revisar si **3/3 = dominio** es demasiado estricto: con 3 ítems incluso un alumno de 90 % falla el 3/3 al primer intento ~27 % de las veces (ver simulate-real.js).
+- Reciclaje de checks vistos con enfriamiento: mecanismo de reserva, solo si los datos muestran que el banco de 6 no basta.
 
 ## Prueba contra produccion con la cuenta QA (capa manual, sin guardar credenciales)
 La contrasena la escribe SIEMPRE una persona. Nunca se guarda en el repositorio.

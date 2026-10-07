@@ -5,7 +5,7 @@
    Modelo:  familia -> tema -> microtema -> ejercicios -> recurso -> comprobación
    Reglas PROGRESIVAS (tools/micros-lib.js):
    - microtema solo DECLARADO  -> debe ser coherente, nada más (el sitio se comporta como siempre);
-   - microtema con active:true -> además >=6 de práctica, >=3 de comprobación, >=2 tipos y un recurso;
+   - microtema con active:true -> además >=6 de práctica, >=6 de comprobación (2 rondas de 3), >=2 tipos y un recurso;
    - ejercicio sin `micro`     -> comportamiento antiguo, sin ninguna regla nueva. */
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const lib = require('../micros-lib');
@@ -94,12 +94,12 @@ test('futuro: los 4 ejercicios originales conservan su microtema y cada uno comp
   });
 });
 
-test('el banco de comprobación está aparte y solo tiene los de los pilotos Futuro y Condicionales (3 por microtema)', () => {
+test('el banco de comprobación está aparte y solo tiene los de los pilotos Futuro y Condicionales (6 por microtema: 2 rondas inéditas de 3)', () => {
   assert.ok(Array.isArray(real.check));
-  assert.strictEqual(real.check.length, 18);
+  assert.strictEqual(real.check.length, 36);
   const per = {};
   real.check.forEach(c => { per[c.micro] = (per[c.micro] || 0) + 1; });
-  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':3, 'going-to-plan-decidido':3, 'going-to-evidencia':3, 'will-forma-verbo-base':3, 'cond-1-probable':3, 'cond-2-imaginario':3 });
+  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':6, 'going-to-plan-decidido':6, 'going-to-evidencia':6, 'will-forma-verbo-base':6, 'cond-1-probable':6, 'cond-2-imaginario':6 });
 });
 
 test('temas.js (runtime) y el validador resuelven igual el recurso de cada microtema', () => {
@@ -235,25 +235,25 @@ test('comprobación: necesita micro declarado, tipo válido y explain', () => {
   has(e, 'c1: la comprobación necesita micro'); has(e, 'c2: micro "fantasma"'); has(e, 'c3: tipo inválido'); has(e, 'c3: sin explain');
 });
 
-test('ACTIVO: menos de 6 de práctica, menos de 3 de comprobación, 1 solo tipo, sin recurso', () => {
+test('ACTIVO: menos de 6 de práctica, menos de 6 de comprobación, 1 solo tipo, sin recurso', () => {
   const T = JSON.parse(JSON.stringify(T0)); T[0].micros[0].active = true;
   const e = lib.validate(make({ TEMAS: T, G: withPractice(5, 'm-uno'), CHECK: checks(2, 'm-uno'), lock: lockOf(['m-uno']) }));
-  has(e, '5 ejercicios de práctica, mínimo 6'); has(e, '2 ejercicios de comprobación, mínimo 3'); has(e, 'sin recurso');
+  has(e, '5 ejercicios de práctica, mínimo 6'); has(e, '2 ejercicios de comprobación, mínimo 6'); has(e, 'sin recurso');
   const G1 = { facil: [[{ topic:'Tema uno', items:[0, 1, 2, 3, 4, 5].map(i => item('q' + i, 'choice', 'only choice ' + i + ' word' + i, 'm-uno')) }]] };
-  has(lib.validate(make({ TEMAS: T, G: G1, CHECK: checks(3, 'm-uno'), lock: lockOf(['m-uno']) })), '1 tipo(s) de ejercicio, mínimo 2');
+  has(lib.validate(make({ TEMAS: T, G: G1, CHECK: checks(6, 'm-uno'), lock: lockOf(['m-uno']) })), '1 tipo(s) de ejercicio, mínimo 2');
 });
-test('ACTIVO completo: 6 de práctica + 3 de comprobación + recurso (del tema o propio) = válido', () => {
+test('ACTIVO completo: 6 de práctica + 6 de comprobación + recurso (del tema o propio) = válido', () => {
   const T = JSON.parse(JSON.stringify(T0)); T[0].micros[0].active = true; T[0].glossary = 'glos-ok';
-  ok(lib.validate(make({ TEMAS: T, G: withPractice(6, 'm-uno'), CHECK: checks(3, 'm-uno'), lock: lockOf(['m-uno']) })));
+  ok(lib.validate(make({ TEMAS: T, G: withPractice(6, 'm-uno'), CHECK: checks(6, 'm-uno'), lock: lockOf(['m-uno']) })));
   const T2 = JSON.parse(JSON.stringify(T0)); T2[0].micros[0].active = true; T2[0].micros[0].lesson = { article:'clase.html' };
-  ok(lib.validate(make({ TEMAS: T2, G: withPractice(6, 'm-uno'), CHECK: checks(3, 'm-uno'), lock: lockOf(['m-uno']) })));
+  ok(lib.validate(make({ TEMAS: T2, G: withPractice(6, 'm-uno'), CHECK: checks(6, 'm-uno'), lock: lockOf(['m-uno']) })));
 });
 test('ACTIVO: la comprobación no puede repetir ni parecerse a la práctica (mide generalización, no memoria)', () => {
   const T = JSON.parse(JSON.stringify(T0)); T[0].micros[0].active = true; T[0].glossary = 'glos-ok';
   const G = withPractice(6, 'm-uno');
-  const same = checks(3, 'm-uno'); same[0] = item('c0', 'choice', 'practice sentence number 2 alpha2', 'm-uno');
+  const same = checks(6, 'm-uno'); same[0] = item('c0', 'choice', 'practice sentence number 2 alpha2', 'm-uno');
   has(lib.validate(make({ TEMAS: T, G, CHECK: same, lock: lockOf(['m-uno']) })), 'se parece demasiado a la práctica p2');
-  const near = checks(3, 'm-uno'); near[1] = item('c1', 'choice', 'practice sentence number 3 alpha3 extra', 'm-uno');
+  const near = checks(6, 'm-uno'); near[1] = item('c1', 'choice', 'practice sentence number 3 alpha3 extra', 'm-uno');
   has(lib.validate(make({ TEMAS: T, G, CHECK: near, lock: lockOf(['m-uno']) })), 'c1');
 });
 test('un microtema declarado y sin activar no exige nada aunque tenga poco contenido', () => {
@@ -270,7 +270,7 @@ test('reporte: dice exactamente qué le falta a cada microtema', () => {
   const r = lib.report(make({ G: withPractice(2, 'm-uno'), CHECK: checks(1, 'm-uno'), lock: lockOf(['m-uno']) }));
   assert.strictEqual(r.rows.length, 1);
   assert.strictEqual(r.rows[0].practica, 2); assert.strictEqual(r.rows[0].comprobacion, 1);
-  assert.deepStrictEqual(r.rows[0].huecos, ['faltan 4 de práctica', 'faltan 2 de comprobación', 'sin clase ni glosario']);
+  assert.deepStrictEqual(r.rows[0].huecos, ['faltan 4 de práctica', 'faltan 5 de comprobación', 'sin clase ni glosario']);
 });
 
 console.log('\n' + passed + ' pruebas correctas');

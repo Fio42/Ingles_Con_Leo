@@ -14402,3 +14402,88 @@ GRAMMAR_CHECK_BANK.push(
       explain:"Algo imaginario: en la parte del “if” va el pasado (“were”), no el presente (“am”).",
       examples:[{en:"If I were you, I would ask for help.",es:"Si yo fuera tú, pediría ayuda."},{en:"If she were here, she would help us.",es:"Si ella estuviera aquí, nos ayudaría."}] }
 );
+
+/* ============================================================
+   Segunda ronda de comprobación (estándar: 6 checks inéditos por microtema activo = 2 rondas de 3).
+   Banco aparte: ningún motor de sesión lo lee, nunca entra a práctica ni a mistake_stats.
+   Cada ejercicio tiene UNA sola respuesta válida y un escenario distinto de la práctica y de los demás checks.
+   ============================================================ */
+GRAMMAR_CHECK_BANK.push(
+    { id:'g-chk-will-dec-4', micro:'will-decision-espontanea', translation:"A: \"Olvidé mi cartera en casa.\" B: \"No te preocupes. Yo pago el almuerzo.\"", type:'choice', prompt:"A: \"I forgot my wallet at home.\" B (you had no plan; you decide this very second): \"Don't worry. I ___ for lunch.\"",
+      options:["will pay","am going to pay","paid"], correct:0,
+      explain:"Ofreces ayuda justo al hablar, sin haberlo planeado: “will”.",
+      examples:[{en:"Don't worry, I'll pay for lunch.",es:"No te preocupes, yo pago el almuerzo."},{en:"I'll drive you home.",es:"Te llevo a tu casa."}] },
+    { id:'g-chk-will-dec-5', micro:'will-decision-espontanea', translation:"El elevador está descompuesto. Bueno, subiré por las escaleras.", type:'choice', prompt:"The elevator is broken. (You had no plan; you decide this very second.) \"OK, I ___ the stairs.\"",
+      options:["will take","am going to take","took"], correct:0,
+      explain:"Reaccionas a algo que acabas de descubrir y decides al instante, sin plan previo: “will”.",
+      examples:[{en:"The bus is late. I'll walk.",es:"El autobús se retrasó. Iré caminando."},{en:"It's cold. I'll close the window.",es:"Hace frío. Cerraré la ventana."}] },
+    { id:'g-chk-will-dec-6', micro:'will-decision-espontanea', translation:"A: \"A la impresora se le acabó el papel.\" B: \"No hay problema. Traeré un poco de la oficina.\"", type:'choice', prompt:"A: \"The printer is out of paper.\" B (you had no plan; you decide this very second): \"No problem. I ___ some from the office.\"",
+      options:["will get","am going to get","got"], correct:0,
+      explain:"Surge el problema y decides la solución en ese instante: “will”.",
+      examples:[{en:"No problem. I'll get some paper.",es:"No hay problema. Traeré papel."},{en:"I'll call the manager.",es:"Llamaré al gerente."}] },
+
+    { id:'g-chk-gt-plan-4', micro:'going-to-plan-decidido', translation:"\"¿Por qué Ana está haciendo su maleta?\" \"Va a viajar a Perú mañana. Compró su boleto la semana pasada.\"", type:'choice', prompt:"\"Why is Ana packing her suitcase?\" \"She ___ travel to Peru tomorrow. She bought her ticket last week.\"",
+      options:["is going to","is go to","going to"], correct:0,
+      explain:"Ya compró el boleto: es un plan decidido antes de hablar, así que “going to”. Con “she” se dice “is going to” (sin “is” o con “go” no es correcto).",
+      examples:[{en:"She is going to travel to Peru.",es:"Ella va a viajar a Perú."},{en:"He is going to move next month.",es:"Él se va a mudar el próximo mes."}] },
+    { id:'g-chk-gt-plan-5', micro:'going-to-plan-decidido', translation:"Consiguió el trabajo la semana pasada. Va a empezar el lunes.", type:'fill', sentence:["She","got","the","job","last","week",".","She","___","start","on","Monday","."], blankIndex:8,
+      bank:["is going to","is go to","going to"], correct:"is going to",
+      explain:"Ya lo tenía decidido desde la semana pasada: un plan, así que “going to”. Con “she” se dice “is going to”.",
+      examples:[{en:"She is going to start on Monday.",es:"Ella va a empezar el lunes."},{en:"We are going to leave at six.",es:"Vamos a salir a las seis."}] },
+    { id:'g-chk-gt-plan-6', micro:'going-to-plan-decidido', translation:"A: \"¿Qué harán este verano?\" B: \"Vamos a rentar una cabaña junto al lago. Ya pagamos el depósito.\"", type:'choice', prompt:"A: \"What are you doing this summer?\" B: \"We ___ rent a cabin by the lake. We already paid the deposit.\"",
+      options:["are going to","is going to","was going to"], correct:0,
+      explain:"Ya pagaron el depósito: el plan está decidido. Con “we” se usa “are going to”.",
+      examples:[{en:"We are going to rent a cabin.",es:"Vamos a rentar una cabaña."},{en:"They are going to visit us in July.",es:"Nos van a visitar en julio."}] },
+
+    { id:'g-chk-gt-evid-4', micro:'going-to-evidencia', translation:"La luz del combustible está encendida y la próxima gasolinera está a 50 millas. Nos vamos a quedar sin gasolina.", type:'choice', prompt:"The fuel light is on and the next gas station is 50 miles away. We ___ run out of gas.",
+      options:["are going to","is going to","was going to"], correct:0,
+      explain:"Lo que ves ahora (luz encendida, gasolinera lejos) anuncia lo que va a pasar. Con “we” se usa “are going to”.",
+      examples:[{en:"We are going to run out of gas.",es:"Nos vamos a quedar sin gasolina."},{en:"They are going to miss the train.",es:"Van a perder el tren."}] },
+    { id:'g-chk-gt-evid-5', micro:'going-to-evidencia', translation:"No ha estudiado nada y el examen es hoy. Va a reprobar.", type:'fill', sentence:["He","hasn't","studied","at","all","and","the","exam","is","today",".","He","___","fail","."], blankIndex:12,
+      bank:["is going to","is go to","going to"], correct:"is going to",
+      explain:"Lo que sabes ahora (no estudió y el examen es hoy) hace la predicción: “going to”. Con “he” se dice “is going to”.",
+      examples:[{en:"He is going to fail.",es:"Va a reprobar."},{en:"She is going to be late.",es:"Va a llegar tarde."}] },
+    { id:'g-chk-gt-evid-6', micro:'going-to-evidencia', translation:"El hielo del lago es muy delgado y están empezando a aparecer grietas. Se va a romper.", type:'choice', prompt:"The ice on the lake is very thin and cracks are starting to appear. It ___ break.",
+      options:["is going to","is go to","going to"], correct:0,
+      explain:"Las grietas que ves ahora son la evidencia de lo que va a pasar: “going to”. Con “it” se dice “is going to”.",
+      examples:[{en:"The ice is going to break.",es:"El hielo se va a romper."},{en:"The wall is going to fall.",es:"La pared se va a caer."}] },
+
+    { id:'g-chk-will-form-4', micro:'will-forma-verbo-base', translation:"El tren saldrá a las nueve.", type:'error', wrong:"The train will to leave at nine.", wrongWord:"to leave",
+      right:"The train will leave at nine.", rightWord:"leave",
+      explain:"Después de “will” va el verbo base, sin “to”.",
+      examples:[{en:"The train will leave at nine.",es:"El tren saldrá a las nueve."},{en:"The class will start soon.",es:"La clase empezará pronto."}] },
+    { id:'g-chk-will-form-5', micro:'will-forma-verbo-base', translation:"Estoy seguro de que ella conseguirá el trabajo.", type:'choice', prompt:"I'm sure she ___ the job.",
+      options:["will get","will gets","will getting"], correct:0,
+      explain:"Después de “will” va el verbo base: “will get”, sin -s ni -ing.",
+      examples:[{en:"She will get the job.",es:"Ella conseguirá el trabajo."},{en:"They will win the game.",es:"Ellos ganarán el partido."}] },
+    { id:'g-chk-will-form-6', micro:'will-forma-verbo-base', translation:"Mis primos se mudarán a Canadá el próximo verano.", type:'fill', sentence:["My","cousins","will","___","to","Canada","next","summer","."], blankIndex:3,
+      bank:["move","moves","moving"], correct:"move",
+      explain:"Después de “will” va el verbo base: “move”, sin -s ni -ing.",
+      examples:[{en:"My cousins will move next summer.",es:"Mis primos se mudarán el próximo verano."},{en:"I will call you later.",es:"Te llamaré más tarde."}] },
+
+    { id:'g-chk-cond1-4', micro:'cond-1-probable', translation:"Si lees las instrucciones, entenderás el juego.", type:'choice', prompt:"If you ___ the instructions, you will understand the game.",
+      options:["read","will read","reading"], correct:0,
+      explain:"Después de “if” va el presente simple (“read”), no “will”.",
+      examples:[{en:"If you read the instructions, you will understand.",es:"Si lees las instrucciones, entenderás."},{en:"If we play together, we will have fun.",es:"Si jugamos juntos, nos divertiremos."}] },
+    { id:'g-chk-cond1-5', micro:'cond-1-probable', translation:"Si el autobús llega tarde, tomaremos un taxi.", type:'error', wrong:"If the bus will be late, we will take a taxi.", wrongWord:"will be",
+      right:"If the bus is late, we will take a taxi.", rightWord:"is",
+      explain:"Después de “if” no se usa “will”: va el presente simple (“is”).",
+      examples:[{en:"If the bus is late, we will take a taxi.",es:"Si el autobús llega tarde, tomaremos un taxi."},{en:"If it is cold, I will wear a scarf.",es:"Si hace frío, me pondré una bufanda."}] },
+    { id:'g-chk-cond1-6', micro:'cond-1-probable', translation:"Si tomas té caliente, te sentirás mejor.", type:'fill', sentence:["If","you","___","warm","tea",",","you","will","feel","better","."], blankIndex:2,
+      bank:["drink","will drink","drank"], correct:"drink",
+      explain:"Después de “if” va el presente simple (“drink”) aunque hables del futuro.",
+      examples:[{en:"If you rest, you will recover soon.",es:"Si descansas, te recuperarás pronto."},{en:"If she calls, I will answer.",es:"Si ella llama, contestaré."}] },
+
+    { id:'g-chk-cond2-4', micro:'cond-2-imaginario', translation:"Si yo fuera piloto, viajaría a un país distinto cada semana.", type:'choice', prompt:"If I ___ a pilot, I would travel to a different country every week.",
+      options:["were","am","would be"], correct:0,
+      explain:"Algo imaginario: en la parte del “if” va “were” (pasado), no “am”.",
+      examples:[{en:"If I were a pilot, I would see the world.",es:"Si fuera piloto, vería el mundo."},{en:"If he were a doctor, he would work at night.",es:"Si fuera doctor, trabajaría de noche."}] },
+    { id:'g-chk-cond2-5', micro:'cond-2-imaginario', translation:"Si tuviéramos un jardín, cultivaríamos nuestras propias verduras.", type:'fill', sentence:["If","we","had","a","garden",",","we","___","grow","our","own","vegetables","."], blankIndex:7,
+      bank:["would","will","did"], correct:"would",
+      explain:"Situación imaginaria: pasado en el “if” y “would” + verbo base en el resultado.",
+      examples:[{en:"If we had a garden, we would grow tomatoes.",es:"Si tuviéramos un jardín, cultivaríamos tomates."},{en:"If I had a dog, I would walk it every day.",es:"Si tuviera un perro, lo sacaría a pasear todos los días."}] },
+    { id:'g-chk-cond2-6', micro:'cond-2-imaginario', translation:"Si yo fuera un pez, nadaría todo el día.", type:'error', wrong:"If I were a fish, I will swim all day.", wrongWord:"will",
+      right:"If I were a fish, I would swim all day.", rightWord:"would",
+      explain:"Si el “if” va en pasado (algo imaginario), el resultado lleva “would”, no “will”.",
+      examples:[{en:"If I were a fish, I would swim all day.",es:"Si fuera un pez, nadaría todo el día."},{en:"If I were a cat, I would sleep all afternoon.",es:"Si fuera un gato, dormiría toda la tarde."}] }
+);

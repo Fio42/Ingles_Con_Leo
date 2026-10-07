@@ -2,7 +2,7 @@
 /* Regresiones transversales del sistema adaptativo (sin dependencias; usa el app.js/backend.js/data.js/temas.js reales).
    Uso:  node tools/e2e/regresiones.js [--baseline <commit>]     (por defecto 51c5e7e: justo antes de la automatización adaptativa)
 
-   Áreas:  invitados · onboarding/nivel · microtemas inactivos · versiones mezcladas (caché) · IDs/progreso compatibles · diagnóstico/mistake_stats/dominio
+   Áreas:  invitados · onboarding/nivel · microtemas inactivos · versiones mezcladas (caché) · migración de señales · IDs/progreso compatibles · diagnóstico/mistake_stats/dominio
            (código idéntico al de referencia) · session-cycle (solo sus 2 fallos preexistentes). */
 const fs = require('fs'), path = require('path'), vm = require('vm'), cp = require('child_process');
 const { root, createCloud, makeDevice } = require('./lib/sim');
@@ -77,6 +77,27 @@ const git = f => cp.execSync('git show ' + BASE + ':' + f, { cwd: root, maxBuffe
     A.MICRO_BY_ID['cond-1-probable'].active = true;            // el navegador ya trae el temas.js nuevo
     const acts = A.microDiagActions('medio');
     check('Versiones mezcladas', 'al cargar el temas.js nuevo la debilidad ya guardada se recomienda sin repetir la sesión', acts.length === 1 && acts[0].micro === 'cond-1-probable' && acts[0].microState === 'debil', JSON.stringify(acts.map(a => a.micro)));
+  }
+
+  /* ---------- Migración de señales (usuarios existentes antes de la regla de preparación) ---------- */
+  {
+    const D = makeDevice(createCloud(), { search:'?micro=going-to-evidencia' });
+    D.setUserLevel('medio');
+    const items = []; D.GRAMMAR_BANK.medio.forEach(v => v.forEach(b => b.items.forEach(i => { if(i.micro === 'going-to-evidencia') items.push(i); })));
+    let t = Date.now() - 100000;
+    items.slice(0, 3).forEach(it => { const c = { dataset:{} }; D.noteGrammarAnswer(c, it, false, 'x'); D.markGrammarRetry(c); D.noteGrammarAnswer({ dataset:{} }, it, true, 'y'); D.recordSession({ skill:'plan', level:'medio', topics:[], startedAt: t += 1000, results:[{ itemId: it.id, isCorrect:true }] }); });
+    for(let i = 0; i < 5; i++){ const it = items[(3 + i) % items.length]; D.noteGrammarAnswer({ dataset:{} }, it, true, 'y'); D.recordSession({ skill:'plan', level:'medio', topics:[], startedAt: t += 1000, results:[{ itemId: it.id, isCorrect:true }] }); }
+    const nuevo = JSON.parse(D.store[D.MICRO_STATS_KEY])['going-to-evidencia'];
+    // estado "de antes": señales sin rc/rd/cr y firma sin versión (así las dejó la versión anterior del código)
+    const viejo = JSON.parse(D.store[D.MICRO_STATS_KEY]); const sv = viejo['going-to-evidencia']; delete sv.rc; delete sv.rd; delete sv.cr;
+    D.store[D.MICRO_STATS_KEY] = JSON.stringify(viejo);
+    D.store[D.DERIVED_META_KEY] = JSON.stringify({ sig: JSON.parse(D.store[D.DERIVED_META_KEY]).sig });
+    let rebuilds = 0; const real = D.ctx.rebuildDerived; D.ctx.rebuildDerived = function(){ rebuilds++; return real.apply(this, arguments); };
+    D.microStatsAll(); D.microStatsAll(); D.checkAvailable('going-to-evidencia');
+    const rec = JSON.parse(D.store[D.MICRO_STATS_KEY])['going-to-evidencia'];
+    check('Migración de señales', 'las señales antiguas (sin rc/rd/cr) se reconstruyen UNA vez desde las sesiones y quedan idénticas a las calculadas en vivo', rebuilds === 1 && JSON.stringify(rec) === JSON.stringify(nuevo), 'reconstrucciones=' + rebuilds + ' ' + JSON.stringify(rec) + ' vs ' + JSON.stringify(nuevo));
+    check('Migración de señales', 'la firma queda con la versión actual y una carga posterior no recorre el historial', JSON.parse(D.store[D.DERIVED_META_KEY]).v === D.DERIVED_VERSION, D.store[D.DERIVED_META_KEY]);
+    check('Migración de señales', 'quien ya estaba "listo para comprobar" con buen refuerzo sigue listo (5 buenas, 4 distintos); no se le quita nada', D.microFlowState('going-to-evidencia', rec).state === 'listo-comprobar', JSON.stringify(rec));
   }
 
   /* ---------- IDs / progreso histórico ---------- */
