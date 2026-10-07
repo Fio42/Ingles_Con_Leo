@@ -687,15 +687,72 @@ function microOfItem(itemId, index){
 function readJsonKey(key, fallback){
   try{ const v = JSON.parse(localStorage.getItem(key)); return (v && typeof v === 'object') ? v : fallback; }catch(e){ return fallback; }
 }
-// Ejercicios de comprobación ya vistos por este alumno. Si el conjunto no existe (otro
-// dispositivo), se reconstruye UNA vez solo con las sesiones de comprobación (skill 'check').
+// Ejercicios de comprobación ya vistos por este alumno. Es una CACHÉ derivada de las sesiones skill:'check'
+// (que viajan a la nube con el resto del progreso): ensureDerived() la reconstruye cuando el progreso cambió por
+// fuera (sync de otro dispositivo) o cuando no existe. Un conjunto vacío guardado antes del sync NO es verdad definitiva.
 function checkSeenSet(){
-  const saved = readJsonKey(CHECK_SEEN_KEY, null);
-  if(saved) return saved;
-  const seen = {};
-  try{ loadProgress().sessions.forEach(s => { if(s && s.skill === 'check') (s.results || []).forEach(r => { if(r && r.itemId) seen[r.itemId] = 1; }); }); }catch(e){}
-  try{ localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen)); }catch(e){}
-  return seen;
+  if(_seenOverride) return _seenOverride;
+  ensureDerived();
+  return readJsonKey(CHECK_SEEN_KEY, {});
+}
+
+/* CACHÉS DERIVADAS (leo_check_seen_v1 y leo_micro_stats_v1): son una función de las sesiones guardadas, que ya
+   sincronizan con la nube. localStorage solo las acelera. leo_derived_meta_v1 guarda la "firma" del progreso con el que
+   se calcularon (su tamaño en texto, sin parsearlo): si cambia por fuera (sync de otro dispositivo) o no hay firma,
+   se reconstruyen UNA vez recorriendo las sesiones en orden. Las respuestas nuevas siguen actualizándose de forma
+   incremental, así que no se recorre el historial en cada carga. */
+const DERIVED_META_KEY = 'leo_derived_meta_v1';
+const CHECK_SYNC_TIMEOUT_MS = 8000;
+let _deriving = false, _seenOverride = null;
+function progressSig(){
+  try{ const raw = localStorage.getItem(PROGRESS_KEY); return raw ? raw.length : 0; }catch(e){ return -1; }
+}
+function stampDerived(){
+  try{ localStorage.setItem(DERIVED_META_KEY, JSON.stringify({ sig: progressSig() })); }catch(e){}
+}
+function ensureDerived(){
+  if(_deriving) return;
+  try{
+    const sig = progressSig();
+    if(sig < 0) return;
+    const meta = readJsonKey(DERIVED_META_KEY, null);
+    if(meta && meta.sig === sig) return;
+    rebuildDerived();
+  }catch(e){}
+}
+function rebuildDerived(){
+  _deriving = true;
+  try{
+    const p = loadProgress();   // puede limpiar duplicados y reescribir el progreso: la firma se toma después
+    const sessions = p.sessions.filter(s => s && Array.isArray(s.results)).slice().sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+    const seen = Object.assign({}, readJsonKey(CHECK_SEEN_KEY, {}));
+    sessions.forEach(s => { if(s.skill === 'check') s.results.forEach(r => { if(r && r.itemId) seen[r.itemId] = 1; }); });
+    // Mismo cálculo que al guardar cada sesión, en el mismo orden y con lo "visto" hasta ese momento.
+    const fresh = {}, run = {};
+    _seenOverride = run;
+    sessions.forEach(s => {
+      if(s.skill === 'check') s.results.forEach(r => { if(r && r.itemId) run[r.itemId] = 1; });
+      applyMicroResults(fresh, s.results, s.date);
+    });
+    _seenOverride = null;
+    const all = readJsonKey(MICRO_STATS_KEY, {});
+    Object.keys(fresh).forEach(m => { all[m] = fresh[m]; });
+    if(Object.keys(seen).length) localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));   // quien no usa microtemas no guarda nada
+    if(Object.keys(all).length) localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
+    stampDerived();
+  }catch(e){}
+  finally{ _deriving = false; _seenOverride = null; }
+}
+function microStatsAll(){ ensureDerived(); return readJsonKey(MICRO_STATS_KEY, {}); }
+// Antes de ofrecer una comprobación se trae el progreso de la nube: si no, un dispositivo nuevo no sabe qué ya vio.
+// 'skip' = sin cuenta o sin nube (solo lo local); 'ok' = sincronizado; 'fail' = no se pudo confirmar (no se arriesga a repetir).
+function cloudSyncNeeded(){
+  return typeof LeoBackend !== 'undefined' && typeof LeoBackend.syncProgressFromCloud === 'function' && LeoBackend.isConfigured() && hasLocalAccountHint();
+}
+function syncBeforeCheck(){
+  if(!cloudSyncNeeded()) return Promise.resolve('skip');
+  const timeout = new Promise(res => setTimeout(() => res('fail'), CHECK_SYNC_TIMEOUT_MS));
+  return Promise.race([Promise.resolve(LeoBackend.syncProgressFromCloud()).then(r => r === 'fail' ? 'fail' : 'ok', () => 'fail'), timeout]);
 }
 function markChecksConsumed(results){
   try{
@@ -757,38 +814,43 @@ function microAutoClear(s, microId){
   if(!s.wk || s.pr < MICRO_FLOW.AUTOCLEAR_MIN || s.pc * 100 < MICRO_FLOW.AUTOCLEAR_ACC * s.pr) return false;
   return microCheckedSinceWeak(s) || !checkAvailable(microId);
 }
+// Aplica las respuestas de una sesión a `all` (objeto de señales por microtema). Sin efectos fuera de `all`.
+function applyMicroResults(all, results, date){
+  const touched = (results || []).filter(r => r && r.m && (r.isCorrect === true || r.isCorrect === false));
+  if(!touched.length) return false;
+  const hadWeak = {}, checkTally = {};
+  touched.forEach(r=>{
+    const s = all[r.m] || (all[r.m] = newMicroStat());
+    if(s.wk === undefined){ s.wk = null; s.pr = 0; s.pc = 0; s.lc = null; }   // señales guardadas antes del flujo
+    if(!(r.m in hadWeak)) hadWeak[r.m] = !!s.wk;
+    s.last = date;
+    if(isCheckItem(r.itemId)){                                                  // la comprobación se lleva aparte
+      s.ck.a++; if(r.isCorrect) s.ck.ok++;
+      const t = checkTally[r.m] || (checkTally[r.m] = { n:0, ok:0 });
+      t.n++; if(r.isCorrect) t.ok++;
+      return;
+    }
+    s.a++;
+    const firstFail = r.isCorrect === false || !!r.w;
+    if(firstFail){
+      s.w++;
+      if(s.wi[r.itemId] || Object.keys(s.wi).length < MICRO_STATS_MAX_ITEMS) s.wi[r.itemId] = (s.wi[r.itemId] || 0) + 1;
+      if(s.wd.indexOf(date) === -1) s.wd = s.wd.concat(date).slice(-MICRO_STATS_MAX_DAYS);
+    }
+    if(hadWeak[r.m]){ s.pr++; if(!firstFail) s.pc++; }
+  });
+  Object.keys(hadWeak).forEach(m=>{
+    const s = all[m], t = checkTally[m];
+    if(t && t.n >= MICRO_FLOW.CHECK_SIZE) applyCheckOutcome(s, t, date);
+    else if(!hadWeak[m] && !s.wk && microWeakness(s).weak){ s.wk = date; s.pr = 0; s.pc = 0; }
+    else if(hadWeak[m] && microAutoClear(s, m)) clearMicroWeakness(s);
+  });
+  return true;
+}
 function updateMicroStats(results, date){
   try{
-    const touched = (results || []).filter(r => r && r.m && (r.isCorrect === true || r.isCorrect === false));
-    if(!touched.length) return;
     const all = readJsonKey(MICRO_STATS_KEY, {});
-    const hadWeak = {}, checkTally = {};
-    touched.forEach(r=>{
-      const s = all[r.m] || (all[r.m] = newMicroStat());
-      if(s.wk === undefined){ s.wk = null; s.pr = 0; s.pc = 0; s.lc = null; }   // señales guardadas antes del flujo
-      if(!(r.m in hadWeak)) hadWeak[r.m] = !!s.wk;
-      s.last = date;
-      if(isCheckItem(r.itemId)){                                                  // la comprobación se lleva aparte
-        s.ck.a++; if(r.isCorrect) s.ck.ok++;
-        const t = checkTally[r.m] || (checkTally[r.m] = { n:0, ok:0 });
-        t.n++; if(r.isCorrect) t.ok++;
-        return;
-      }
-      s.a++;
-      const firstFail = r.isCorrect === false || !!r.w;
-      if(firstFail){
-        s.w++;
-        if(s.wi[r.itemId] || Object.keys(s.wi).length < MICRO_STATS_MAX_ITEMS) s.wi[r.itemId] = (s.wi[r.itemId] || 0) + 1;
-        if(s.wd.indexOf(date) === -1) s.wd = s.wd.concat(date).slice(-MICRO_STATS_MAX_DAYS);
-      }
-      if(hadWeak[r.m]){ s.pr++; if(!firstFail) s.pc++; }
-    });
-    Object.keys(hadWeak).forEach(m=>{
-      const s = all[m], t = checkTally[m];
-      if(t && t.n >= MICRO_FLOW.CHECK_SIZE) applyCheckOutcome(s, t, date);
-      else if(!hadWeak[m] && !s.wk && microWeakness(s).weak){ s.wk = date; s.pr = 0; s.pc = 0; }
-      else if(hadWeak[m] && microAutoClear(s, m)) clearMicroWeakness(s);
-    });
+    if(!applyMicroResults(all, results, date)) return;
     localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
   }catch(e){}
 }
@@ -857,7 +919,7 @@ function microAction(m, s, state){
 // luego la que acumula más ejercicios distintos con fallo. `only` (Set de ids) limita a los tocados en una sesión.
 function microDiagActions(level, only){
   if(typeof MICROS === 'undefined') return [];
-  const all = readJsonKey(MICRO_STATS_KEY, {});
+  const all = microStatsAll();
   const out = [];
   MICROS.forEach(m=>{
     if(!m.active || (only && !only.has(m.id)) || !microHasItemsAt(m.id, level)) return;
@@ -871,6 +933,7 @@ function microDiagActions(level, only){
 
 /* Llamado por cada motor de sesión al terminar una sesión. */
 function recordSession({ skill, level, topics, results, startedAt }){
+  ensureDerived();   // pone al día las cachés con lo que haya llegado de la nube ANTES de sumar esta sesión
   const p = loadProgress();
   const now = Date.now();
   const seenBefore = new Set();
@@ -888,6 +951,7 @@ function recordSession({ skill, level, topics, results, startedAt }){
   p.sessions.push(session);
   if(skill !== 'check') p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
   saveProgressRaw(p);
+  stampDerived();
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
     LeoBackend.pushSession(session);
   }
@@ -3940,7 +4004,7 @@ function microCheckStart(microId){
   if(!checkAvailable(microId)) return { items:null, reason:'sin-ineditos' };
   // Solo se puede EMPEZAR una comprobación cuando el flujo la ofrece (listo-comprobar). Un enlace escrito a mano o
   // viejo no la salta: no se sirve nada, no se marca nada como visto y no se toca la señal del microtema.
-  const stat = readJsonKey(MICRO_STATS_KEY, {})[microId];
+  const stat = microStatsAll()[microId];
   if(microFlowState(microId, stat).state !== 'listo-comprobar') return { items:null, reason:'no-toca' };
   const items = pickCheckItems(microId, MICRO_FLOW.CHECK_SIZE);
   if(!items) return { items:null, reason:'sin-ineditos' };
@@ -3991,12 +4055,19 @@ function renderMicroCheckUnavailable(container, m, reason){
     <div class="session-shell">
       <div class="session-summary">
         <h2>Por ahora no hay comprobación nueva</h2>
-        <p class="summary-score">${!m ? 'Esa comprobación no está disponible.' : reason === 'no-toca' ? `Todavía no toca comprobar <b>${m.label}</b>.` : `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.`} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
+        <p class="summary-score">${!m ? 'Esa comprobación no está disponible.' : reason === 'no-toca' ? `Todavía no toca comprobar <b>${m.label}</b>.` : reason === 'sin-sync' ? 'No pudimos confirmar tu progreso para no repetirte ejercicios. Revisa tu conexión y vuelve a intentarlo.' : `Ya viste las comprobaciones disponibles de <b>${m.label}</b>.`} Sigue practicando y te avisamos cuando haya algo nuevo.</p>
         <div class="sess-insight">${microCheckLinksHtml(links)}</div>
       </div>
     </div>`;
 }
 function renderMicroCheck(container, microId){
+  if(!container) return;
+  if(!cloudSyncNeeded()){ renderMicroCheckReady(container, microId); return; }
+  const m0 = (typeof MICRO_BY_ID !== 'undefined') ? MICRO_BY_ID[microId] : null;
+  container.innerHTML = '<div class="session-shell"><div class="session-summary"><p class="summary-score">Preparando tu comprobación…</p></div></div>';
+  syncBeforeCheck().then(st => { if(st === 'fail') renderMicroCheckUnavailable(container, m0, 'sin-sync'); else renderMicroCheckReady(container, microId); });
+}
+function renderMicroCheckReady(container, microId){
   if(!container) return;
   stopActiveAudioFile();
   const m = (typeof MICRO_BY_ID !== 'undefined') ? MICRO_BY_ID[microId] : null;

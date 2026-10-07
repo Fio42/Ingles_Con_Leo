@@ -302,14 +302,14 @@ const LeoBackend = (function(){
      Depende de loadProgress()/saveProgressRaw() de app.js. */
   async function syncProgressFromCloud(){
     const sb = getClient();
-    if(!sb) return;
+    if(!sb) return 'skip';
     const session = await getSession();
-    if(!session) return;
+    if(!session) return 'skip';
     try{
       const { data, error } = await sb.from('progress_sessions')
         .select('*').eq('user_id', session.user.id)
         .order('started_at', { ascending:true });
-      if(error || !data) return;
+      if(error || !data) return 'fail';
       const local = loadProgress();
       const seenCloudIds = new Set(local.sessions.map(s => s.cloudId).filter(Boolean));
       const localByIdentity = new Map(local.sessions.map(s => [progressSessionIdentity(s), s]));
@@ -357,7 +357,8 @@ const LeoBackend = (function(){
            con los datos ya sincronizados. */
         window.dispatchEvent(new Event('leo-progress-synced'));
       }
-    }catch(e){}
+      return 'ok';
+    }catch(e){ return 'fail'; }
   }
 
   /* Guarda en la nube una sesión que recordSession() ya guardó en
