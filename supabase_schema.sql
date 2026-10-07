@@ -938,3 +938,25 @@ drop trigger if exists profiles_send_welcome on public.profiles;
 create trigger profiles_send_welcome
   after insert on public.profiles
   for each row execute function public.send_welcome_on_profile_insert();
+
+-- ============================================================
+-- Actualización 2026-10-06 — nivel y onboarding en la nube
+-- profiles.level: el nivel del alumno (principiante|facil|medio|avanzado).
+-- profiles.onboarded_at: cuándo completó o saltó la bienvenida. Con este valor
+-- el sitio NO vuelve a mostrar el onboarding en otro navegador y el nivel de la
+-- nube manda sobre el de localStorage (que queda como caché).
+-- Aditivo: las cuentas actuales quedan en NULL y se inicializan solas la
+-- siguiente vez que entran (desde su perfil local o, si no hay, desde su historial).
+-- Seguridad: la policy "profiles: update own last_seen" (auth.uid() = id) ya limita
+-- las FILAS; este grant limita las COLUMNAS. No se toca is_member ni nada más.
+-- ============================================================
+alter table public.profiles add column if not exists level text;
+alter table public.profiles add column if not exists onboarded_at timestamptz;
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'profiles_level_check' and conrelid = 'public.profiles'::regclass) then
+    alter table public.profiles add constraint profiles_level_check
+      check (level is null or level in ('principiante', 'facil', 'medio', 'avanzado'));
+  end if;
+end $$;
+grant update (level, onboarded_at) on public.profiles to authenticated;

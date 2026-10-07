@@ -39,8 +39,90 @@ function getUserLevel(){
 }
 function setUserLevel(level){
   const p = getProfile() || { name:'', createdAt: Date.now() };
+  if(p.level === level) return;
   p.level = level;
+  // Con sesión iniciada el cambio queda "pendiente" hasta que la nube lo confirme: si no hay red, el
+  // siguiente arranque lo sube en vez de dejar que el nivel viejo de la nube lo pise.
+  if(hasLocalAccountHint()) p.lp = Date.now(); else delete p.lp;
   saveProfile(p);
+  pushProfileToCloud({ level }, level);
+}
+
+/* ---------- NIVEL Y ONBOARDING EN LA NUBE ----------
+   profiles.level + profiles.onboarded_at (Supabase) son la fuente de verdad de una cuenta; leo_profile
+   (localStorage) es solo una caché. reconcileProfileWithCloud() corre al leer el perfil (getMemberProfile):
+     1. La nube ya tiene onboarded_at + level  -> manda la nube (hidrata leo_profile, no hay onboarding).
+        Única excepción: un cambio de nivel hecho aquí que aún no se pudo subir (leo_profile.lp).
+     2. La nube no lo tiene y este navegador sí tiene perfil -> se inicializa la nube UNA vez con él.
+     3. Ninguno de los dos, pero hay historial de práctica -> se recupera el nivel de la última sesión
+        (cada sesión guarda getUserLevel(): el nivel del alumno, no la dificultad puntual del plan, que solo
+        cambia el banco). Sin historial no se inventa nada: se muestra el onboarding.
+   Sin red no se escribe ni se resetea nada: si no se puede saber, no se muestra onboarding en esa carga. */
+const PROFILE_HISTORY_SKILLS = ['gramatica', 'vocabulario', 'listening', 'lectura', 'writing', 'speaking', 'mixto', 'plan', 'check'];
+let PROFILE_SYNC_UNCERTAIN = false;
+function isValidLevel(l){ return typeof l === 'string' && LEVELS.indexOf(l) !== -1; }
+// Nivel de la última sesión guardada en ESTE navegador (solo de habilidades que registran el nivel del alumno).
+function profileLevelFromLocalHistory(){
+  try{
+    let best = null;
+    loadProgress().sessions.forEach(s => {
+      if(s && PROFILE_HISTORY_SKILLS.indexOf(s.skill) !== -1 && isValidLevel(s.level) && (!best || (s.startedAt || 0) >= (best.startedAt || 0))) best = s;
+    });
+    return best ? best.level : null;
+  }catch(e){ return null; }
+}
+function profileSyncedEvent(){
+  try{ if(typeof window !== 'undefined' && typeof Event === 'function') window.dispatchEvent(new Event('leo-profile-synced')); }catch(e){}
+}
+function profileBackend(){
+  return (typeof LeoBackend !== 'undefined' && LeoBackend && typeof LeoBackend.saveProfileToCloud === 'function') ? LeoBackend : null;
+}
+// Sube level y/u onboarded_at. Si sale bien (o no hay cuenta), borra la marca de "pendiente" del nivel indicado.
+async function pushProfileToCloud(fields, levelToConfirm){
+  const be = profileBackend();
+  if(!be || !hasLocalAccountHint()) return 'skip';
+  const r = await be.saveProfileToCloud(fields);
+  if(r !== 'fail' && levelToConfirm){
+    const p = getProfile();
+    if(p && p.lp && p.level === levelToConfirm){ delete p.lp; saveProfile(p); }
+  }
+  return r;
+}
+async function reconcileProfileWithCloud(row){
+  PROFILE_SYNC_UNCERTAIN = false;
+  if(!row) return 'sin-datos';
+  const local = getProfile();
+  const localLevel = local && isValidLevel(local.level) ? local.level : null;
+  const cloudLevel = isValidLevel(row.level) ? row.level : null;
+  const cloudName = typeof row.display_name === 'string' ? row.display_name.trim() : '';
+  const name = cloudName || (local && local.name) || '';
+  if(row.onboarded_at && cloudLevel){
+    if(local && local.lp && localLevel && localLevel !== cloudLevel){    // cambio de nivel local aún sin subir: gana el más reciente
+      await pushProfileToCloud({ level: localLevel }, localLevel);
+      return 'local-pendiente';
+    }
+    const next = { name, level: cloudLevel, createdAt: (local && local.createdAt) || Date.parse(row.onboarded_at) || Date.now() };
+    const changed = !local || local.level !== next.level || (local.name || '') !== next.name || !!local.lp || local.inferred;
+    if(changed){ saveProfile(next); if(!local || local.level !== next.level) profileSyncedEvent(); }
+    return 'nube';
+  }
+  if(localLevel){                                                         // inicializa la nube una sola vez con el perfil de este navegador
+    const when = new Date(local.createdAt || Date.now());
+    await pushProfileToCloud({ level: localLevel, onboarded_at: (isNaN(when) ? new Date() : when).toISOString() }, localLevel);
+    return 'local-a-nube';
+  }
+  let h = profileLevelFromLocalHistory();
+  if(!h && typeof LeoBackend !== 'undefined' && LeoBackend && typeof LeoBackend.getLatestSessionLevel === 'function'){
+    h = await LeoBackend.getLatestSessionLevel();                         // historial en la nube (este navegador aún no lo ha bajado)
+    if(h === 'fail'){ PROFILE_SYNC_UNCERTAIN = true; return 'sin-red'; }
+  }
+  if(isValidLevel(h)){
+    saveProfile({ name, level: h, createdAt: Date.now(), inferred: true });
+    profileSyncedEvent();
+    await pushProfileToCloud({ level: h, onboarded_at: new Date().toISOString() }, h);
+    return 'historial';
+  }
+  return 'ninguna';                                                       // ninguna señal fiable: el onboarding se muestra (una vez)
 }
 
 function setProfileName(name){
@@ -292,6 +374,7 @@ async function initMemberHeader(){
 
 function initOnboarding(onSaved){
   if(getProfile()) return;
+  if(PROFILE_SYNC_UNCERTAIN) return;   // no se pudo confirmar en la nube si ya lo hizo: mejor no preguntar que preguntar de nuevo
 
   const overlay = document.createElement('div');
   overlay.className = 'onb-overlay';
@@ -334,16 +417,19 @@ function initOnboarding(onSaved){
   syncChecked();
   overlay.querySelectorAll('input[name=onbLevel]').forEach(r=> r.addEventListener('change', syncChecked));
 
-  function finish(profile){
+  function finish(profile, explicitLevel){
+    if(explicitLevel && hasLocalAccountHint()) profile.lp = Date.now();   // nivel elegido: queda pendiente hasta que la nube lo confirme
     saveProfile(profile);
     if(profile.name) saveNameToCloud(profile.name);
+    // Completar O saltar cuenta como onboarding hecho: la nube lo recuerda (onboarded_at) y otros navegadores no lo repiten.
+    pushProfileToCloud({ level: profile.level, onboarded_at: new Date().toISOString() }, explicitLevel ? profile.level : null);
     overlay.remove();
     if(typeof onSaved === 'function') onSaved(profile);
   }
   overlay.querySelector('#onbSubmit').addEventListener('click', ()=>{
     const name = overlay.querySelector('#onbName').value.trim();
     const levelInput = overlay.querySelector('input[name=onbLevel]:checked');
-    finish({ name: name || '', level: levelInput ? levelInput.value : 'facil', createdAt: Date.now() });
+    finish({ name: name || '', level: levelInput ? levelInput.value : 'facil', createdAt: Date.now() }, true);
   });
   overlay.querySelector('#onbSkip').addEventListener('click', (e)=>{
     e.preventDefault();

@@ -228,8 +228,54 @@ const LeoBackend = (function(){
           saveDisplayName(local.name);
         }
       }catch(e){}
+      // Nivel y onboarding: la nube es la fuente de verdad (profiles.level + onboarded_at) y
+      // localStorage solo una caché. La lógica vive en app.js (reconcileProfileWithCloud).
+      try{
+        if(data && typeof reconcileProfileWithCloud === 'function') await reconcileProfileWithCloud(data);
+      }catch(e){}
       return data;
     }catch(e){ return null; }
+  }
+
+  /* Escribe level y/u onboarded_at en SU fila de profiles (permiso solo de esas columnas, ver
+     supabase_schema.sql). { onboarded_at } solo se escribe si la nube aún no lo tiene, así dos
+     dispositivos nunca se pisan la fecha. Devuelve 'ok', 'skip' (sin sesión o sin nube) o 'fail'
+     (red/permiso): quien llama decide qué hacer; aquí nunca lanza error. */
+  async function saveProfileToCloud(fields){
+    try{
+      const sb = getClient();
+      if(!sb) return 'skip';
+      const session = await getSession();
+      if(!session) return 'skip';
+      const payload = {};
+      if(fields && typeof fields.level === 'string') payload.level = fields.level;
+      if(fields && fields.onboarded_at) payload.onboarded_at = fields.onboarded_at;
+      if(!Object.keys(payload).length) return 'skip';
+      let q = sb.from('profiles').update(payload).eq('id', session.user.id);
+      if(payload.onboarded_at) q = q.is('onboarded_at', null);
+      const { error } = await q;
+      return error ? 'fail' : 'ok';
+    }catch(e){ return 'fail'; }
+  }
+
+  /* Nivel de la última sesión de práctica de la cuenta (solo habilidades que guardan el nivel del alumno).
+     Sirve para recuperar el nivel en un navegador nuevo cuando la nube aún no tiene profiles.level.
+     Devuelve el nivel, null (sin historial / sin sesión) o 'fail' (red). Una sola fila, nunca todo el historial. */
+  async function getLatestSessionLevel(){
+    try{
+      const sb = getClient();
+      if(!sb) return null;
+      const session = await getSession();
+      if(!session) return null;
+      const skills = (typeof PROFILE_HISTORY_SKILLS !== 'undefined') ? PROFILE_HISTORY_SKILLS : [];
+      const levels = (typeof LEVELS !== 'undefined') ? LEVELS : [];
+      if(!skills.length || !levels.length) return null;
+      const { data, error } = await sb.from('progress_sessions').select('level')
+        .eq('user_id', session.user.id).in('skill', skills).in('level', levels)
+        .order('started_at', { ascending:false }).limit(1);
+      if(error) return 'fail';
+      return (data && data[0] && data[0].level) || null;
+    }catch(e){ return 'fail'; }
   }
 
   /* Guarda el nombre de la persona en profiles.display_name (lo usan
@@ -735,7 +781,7 @@ const LeoBackend = (function(){
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
+    getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
     getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI
   };
