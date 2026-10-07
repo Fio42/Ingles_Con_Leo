@@ -16,5 +16,5 @@
       })})
     })
   }
-  document.querySelectorAll('#grammarQuiz, #comparisonQuiz, #thereQuiz').forEach(init);
+  document.querySelectorAll('#grammarQuiz, #comparisonQuiz, #thereQuiz, #articlesQuiz, #countableQuiz, #questionsQuiz').forEach(init);
 })();
