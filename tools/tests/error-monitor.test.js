@@ -353,11 +353,11 @@ test('LeoErrors.report: API para errores controlados, también limpia y respeta 
   assert.doesNotThrow(() => env.ctx.LeoErrors.report());
 });
 
-/* ---------------- 4. las 53 páginas cargan el monitor primero ---------------- */
+/* ---------------- 4. las 54 páginas cargan el monitor primero ---------------- */
 section('páginas HTML');
-test('las 53 páginas cargan error-monitor.js UNA vez, en el <head> y como el PRIMER script ejecutable (antes de gtag, meta-pixel, inline, app.js, backend.js, supabase-js, Stripe)', () => {
+test('las 54 páginas cargan error-monitor.js UNA vez, en el <head> y como el PRIMER script ejecutable (antes de gtag, meta-pixel, inline, app.js, backend.js, supabase-js, Stripe)', () => {
   const pages = fs.readdirSync(root).filter(f => f.endsWith('.html'));
-  assert.strictEqual(pages.length, 53);
+  assert.strictEqual(pages.length, 54);
   for(const p of pages){
     const h = read(p);
     assert.strictEqual((h.match(/error-monitor\.js/g) || []).length, 1, p);

@@ -32,16 +32,16 @@ test('los 3 pilotos están declarados con sus microtemas', () => {
   assert.deepStrictEqual(ids('cuantificadores'), ['much-many-contable-incontable', 'a-lot-of', 'some-any-afirm-neg', 'some-any-pregunta-oferta', 'little-few-matiz', 'fewer-less']);
 });
 
-test('migración gradual: solo los 4 microtemas de Futuro están activos (Condicionales y Cuantificadores no) y el resto de temas no cambió', () => {
+test('migración gradual: solo Futuro (4) y Condicionales 1 y 2 están activos; cond-3, cond-mixto y Cuantificadores no, y el resto de temas no cambió', () => {
   assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)).sort(),
-    ['going-to-evidencia', 'going-to-plan-decidido', 'will-decision-espontanea', 'will-forma-verbo-base']);
+    ['cond-1-probable', 'cond-2-imaginario', 'going-to-evidencia', 'going-to-plan-decidido', 'will-decision-espontanea', 'will-forma-verbo-base']);
   const withMicros = plain(real.TEMAS.filter(t => (t.micros || []).length).map(t => t.id).sort());
   assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'will-going-to']);
 });
 
-test('los ejercicios sin micro siguen siendo los de siempre (solo 63 declaran micro: 43 existentes + 20 del piloto Futuro)', () => {
+test('los ejercicios sin micro siguen siendo los de siempre (solo 71 declaran micro: 43 existentes + 20 del piloto Futuro + 8 del piloto Condicionales)', () => {
   const tagged = real.practice.filter(r => r.item.micro);
-  assert.strictEqual(tagged.length, 63);
+  assert.strictEqual(tagged.length, 71);
   assert.ok(real.practice.length - tagged.length > 300);
 });
 
@@ -94,12 +94,12 @@ test('futuro: los 4 ejercicios originales conservan su microtema y cada uno comp
   });
 });
 
-test('el banco de comprobación está aparte y solo tiene los 12 del piloto Futuro (3 por microtema)', () => {
+test('el banco de comprobación está aparte y solo tiene los de los pilotos Futuro y Condicionales (3 por microtema)', () => {
   assert.ok(Array.isArray(real.check));
-  assert.strictEqual(real.check.length, 12);
+  assert.strictEqual(real.check.length, 18);
   const per = {};
   real.check.forEach(c => { per[c.micro] = (per[c.micro] || 0) + 1; });
-  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':3, 'going-to-plan-decidido':3, 'going-to-evidencia':3, 'will-forma-verbo-base':3 });
+  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':3, 'going-to-plan-decidido':3, 'going-to-evidencia':3, 'will-forma-verbo-base':3, 'cond-1-probable':3, 'cond-2-imaginario':3 });
 });
 
 test('temas.js (runtime) y el validador resuelven igual el recurso de cada microtema', () => {

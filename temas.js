@@ -47,10 +47,10 @@ const TEMAS = [
     topics:[`Comparativos (-er / more ... than)`, `Comparativos de igualdad (as...as)`] },
   /* ---- condicionales ---- */
   { id:'condicionales', prereq:['will-going-to'], label:'Condicionales', family:'condicionales', article:null, glossary:null,
-    topics:[`Conditionals (tipo 1 y 2)`, `Condicional tipo 3`, `Condicionales mixtos`],
+    topics:[`Conditionals (tipo 1 y 2)`, `Condicional 1: algo probable`, `Condicional 2: algo imaginario`, `Condicional tipo 3`, `Condicionales mixtos`],
     micros:[
-      { id:'cond-1-probable', label:'Condicional 1: algo probable' },
-      { id:'cond-2-imaginario', prereq:['cond-1-probable'], label:'Condicional 2: algo imaginario' },
+      { id:'cond-1-probable', active:true, label:'Condicional 1: algo probable', lesson:{ article:'articulo-condicionales-1-y-2.html', anchor:'cond-1-probable' } },
+      { id:'cond-2-imaginario', active:true, prereq:['cond-1-probable'], label:'Condicional 2: algo imaginario', lesson:{ article:'articulo-condicionales-1-y-2.html', anchor:'cond-2-imaginario' } },
       { id:'cond-3-pasado-irreal', prereq:['cond-2-imaginario'], label:'Condicional 3: el pasado que ya no se puede cambiar' },
       { id:'cond-mixto', prereq:['cond-3-pasado-irreal'], label:'Condicionales mixtos' }
     ] },

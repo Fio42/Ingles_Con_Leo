@@ -1757,12 +1757,12 @@ const GRAMMAR_BANK = {
               {en:"If I were you, I would apologize.", es:"Si yo fuera tú, me disculparía."},
               {en:"If she were here, she would help.", es:"Si ella estuviera aquí, ayudaría."}
             ]},
-          { id:'g-medio-cond12-4', micro:'cond-2-imaginario', type:'error', wrong:"If I have more time, I would travel more.", wrongWord:"have",
-            right:"If I had more time, I would travel more.", rightWord:"had",
-            explain:"Condicional tipo 2 necesita pasado (“had”) en la parte del “if”, no presente.",
+          { id:'g-medio-cond12-4', micro:'cond-2-imaginario', translation:"Si él fuera el gerente, cambiaría el horario.", type:'error', wrong:"If he were the manager, he will change the schedule.", wrongWord:"will",
+            right:"If he were the manager, he would change the schedule.", rightWord:"would",
+            explain:"Condicional tipo 2: si el “if” va en pasado (“were”), la situación es imaginaria y el resultado lleva “would”, no “will”.",
             examples:[
-              {en:"If I had more time, I would travel more.", es:"Si tuviera más tiempo, viajaría más."},
-              {en:"If I have more time, I will travel more.", es:"Si tengo más tiempo, viajaré más."}
+              {en:"If he were the manager, he would change the schedule.", es:"Si él fuera el gerente, cambiaría el horario."},
+              {en:"If he is the manager, he will change the schedule.", es:"Si él es el gerente, cambiará el horario."}
             ]}
         ]
       },
@@ -14326,4 +14326,79 @@ GRAMMAR_CHECK_BANK.push(
       bank:["open","opens","to open"], correct:"open",
       explain:"Después de “won’t” va el verbo base: “open”.",
       examples:[{en:"The store won't open today.",es:"La tienda no abrirá hoy."},{en:"They won't close early.",es:"No cerrarán temprano."}] }
+);
+
+/* ============================================================
+   PILOTO Condicionales 1 y 2 (microtemas cond-1-probable y cond-2-imaginario).
+   Práctica: bloques nuevos en variantes SOLO de miembros (medio[9] y medio[6]); sumados a los ejercicios que ya
+   existían (g-medio-cond12-1..4, sin cambios) cada microtema queda con 6 de práctica en nivel Medio.
+   Comprobación: banco aparte (GRAMMAR_CHECK_BANK), ningún motor de sesión lo lee.
+   ============================================================ */
+GRAMMAR_BANK.medio[9].push({
+  topic:"Condicional 1: algo probable",
+  items:[
+    { id:'g-medio-cond1-1', micro:'cond-1-probable', translation:"Si estudias mucho, aprobarás el examen.", type:'choice', prompt:"If you ___ hard, you will pass the exam.",
+      options:["study","will study","studied"], correct:0,
+      explain:"En una posibilidad real, la parte del “if” va en presente simple (“study”), nunca con “will”.",
+      examples:[{en:"If you study, you will pass.",es:"Si estudias, aprobarás."},{en:"If he calls, I will answer.",es:"Si llama, contestaré."}] },
+    { id:'g-medio-cond1-2', micro:'cond-1-probable', translation:"Si hace sol, iremos a la playa.", type:'fill', sentence:["If","it","is","sunny",",","we","___","go","to","the","beach","."], blankIndex:6,
+      bank:["will","would","are"], correct:"will",
+      explain:"Posibilidad real: presente en el “if” y “will” + verbo base en el resultado.",
+      examples:[{en:"If it is sunny, we will go out.",es:"Si hace sol, saldremos."},{en:"If I have time, I will help you.",es:"Si tengo tiempo, te ayudaré."}] },
+    { id:'g-medio-cond1-3', micro:'cond-1-probable', translation:"Si la película empieza a las ocho, cenaremos primero.", type:'error', wrong:"If the movie will start at eight, we will have dinner first.", wrongWord:"will start",
+      right:"If the movie starts at eight, we will have dinner first.", rightWord:"starts",
+      explain:"Después de “if” no se usa “will”: va el presente simple (“starts”), aunque hables del futuro.",
+      examples:[{en:"If the movie starts at eight, we will have dinner first.",es:"Si la película empieza a las ocho, cenaremos primero."},{en:"If the bus comes soon, we will arrive early.",es:"Si el autobús llega pronto, llegaremos temprano."}] },
+    { id:'g-medio-cond1-4', micro:'cond-1-probable', translation:"Si salimos ahora, no perderemos el tren.", type:'choice', prompt:"If we ___ now, we won't miss the train.",
+      options:["leave","will leave","left"], correct:0,
+      explain:"Después de “if” va el presente simple (“leave”), aunque hables del futuro.",
+      examples:[{en:"If we leave now, we won't be late.",es:"Si salimos ahora, no llegaremos tarde."},{en:"If you leave early, you will find a seat.",es:"Si sales temprano, encontrarás asiento."}] },
+    { id:'g-medio-cond1-5', micro:'cond-1-probable', translation:"Si él no me llama, me enojaré.", type:'choice', prompt:"If he doesn't call me, I ___ angry.",
+      options:["will be","would be","am being"], correct:0,
+      explain:"Es algo que puede pasar de verdad: el resultado lleva “will”.",
+      examples:[{en:"If he doesn't call, I will be worried.",es:"Si no llama, estaré preocupado."},{en:"If it rains, the game will be canceled.",es:"Si llueve, el juego se cancelará."}] }
+  ]
+});
+GRAMMAR_BANK.medio[6].push({
+  topic:"Condicional 2: algo imaginario",
+  items:[
+    { id:'g-medio-cond2-1', micro:'cond-2-imaginario', translation:"Si ella tuviera más dinero, compraría una casa más grande.", type:'choice', prompt:"If she ___ more money, she would buy a bigger house.",
+      options:["had","has","would have"], correct:0,
+      explain:"Algo imaginario: la parte del “if” va en pasado (“had”) aunque hables del presente.",
+      examples:[{en:"If she had more money, she would travel.",es:"Si tuviera más dinero, viajaría."},{en:"If I lived here, I would walk to work.",es:"Si viviera aquí, caminaría al trabajo."}] },
+    { id:'g-medio-cond2-2', micro:'cond-2-imaginario', translation:"Si él fuera más alto, jugaría baloncesto.", type:'fill', sentence:["If","he","were","taller",",","he","___","play","basketball","."], blankIndex:6,
+      bank:["would","will","had"], correct:"would",
+      explain:"Algo imaginario: pasado en el “if” y “would” + verbo base en el resultado.",
+      examples:[{en:"If he were taller, he would play basketball.",es:"Si fuera más alto, jugaría baloncesto."},{en:"If it were cheaper, I would buy it.",es:"Si fuera más barato, lo compraría."}] },
+    { id:'g-medio-cond2-3', micro:'cond-2-imaginario', translation:"Si yo fuera un pájaro, volaría sobre la ciudad.", type:'error', wrong:"If I were a bird, I will fly over the city.", wrongWord:"will",
+      right:"If I were a bird, I would fly over the city.", rightWord:"would",
+      explain:"Si el “if” va en pasado (algo imaginario), el resultado lleva “would”, no “will”.",
+      examples:[{en:"If I were a bird, I would fly over the city.",es:"Si fuera un pájaro, volaría sobre la ciudad."},{en:"If they lived closer, they would visit us.",es:"Si vivieran más cerca, nos visitarían."}] }
+  ]
+});
+GRAMMAR_CHECK_BANK.push(
+    { id:'g-chk-cond1-1', micro:'cond-1-probable', translation:"Si mañana hace buen tiempo, haremos un picnic.", type:'choice', prompt:"If the weather is nice tomorrow, we ___ a picnic.",
+      options:["will have","would have","had"], correct:0,
+      explain:"Es una posibilidad real para mañana: presente en el “if” y “will” en el resultado.",
+      examples:[{en:"If it is warm, we will have lunch outside.",es:"Si hace calor, almorzaremos afuera."},{en:"If the shop is open, I will buy bread.",es:"Si la tienda está abierta, compraré pan."}] },
+    { id:'g-chk-cond1-2', micro:'cond-1-probable', translation:"Si mañana llueve, nos quedaremos en casa.", type:'error', wrong:"If it will rain tomorrow, we will stay home.", wrongWord:"will rain",
+      right:"If it rains tomorrow, we will stay home.", rightWord:"rains",
+      explain:"Después de “if” no se usa “will”: va el presente simple (“rains”).",
+      examples:[{en:"If it rains, we will stay home.",es:"Si llueve, nos quedaremos en casa."},{en:"If he comes, I will tell him.",es:"Si viene, se lo diré."}] },
+    { id:'g-chk-cond1-3', micro:'cond-1-probable', translation:"Si pierde el autobús, llegará tarde.", type:'fill', sentence:["If","she","misses","the","bus",",","she","___","be","late","."], blankIndex:7,
+      bank:["will","would","is"], correct:"will",
+      explain:"Si algo puede pasar de verdad, el resultado se dice con “will”.",
+      examples:[{en:"If she misses the bus, she will be late.",es:"Si pierde el autobús, llegará tarde."},{en:"If you don't answer, I will leave a message.",es:"Si no contestas, dejaré un mensaje."}] },
+    { id:'g-chk-cond2-1', micro:'cond-2-imaginario', translation:"Si yo tuviera un millón de dólares, dejaría mi trabajo.", type:'choice', prompt:"If I ___ a million dollars, I would quit my job.",
+      options:["had","have","would have"], correct:0,
+      explain:"Algo imaginario: el “if” va en pasado (“had”) y el resultado con “would”.",
+      examples:[{en:"If I had a million dollars, I would buy a boat.",es:"Si tuviera un millón de dólares, compraría un barco."},{en:"If she had a car, she would drive.",es:"Si tuviera auto, manejaría."}] },
+    { id:'g-chk-cond2-2', micro:'cond-2-imaginario', translation:"Si viviéramos en España, hablaríamos español todos los días.", type:'fill', sentence:["If","we","lived","in","Spain",",","we","___","speak","Spanish","every","day","."], blankIndex:7,
+      bank:["would","will","did"], correct:"would",
+      explain:"Situación imaginaria: pasado en el “if” y “would” + verbo base en el resultado.",
+      examples:[{en:"If we lived in Spain, we would speak Spanish.",es:"Si viviéramos en España, hablaríamos español."},{en:"If they lived here, they would know us.",es:"Si vivieran aquí, nos conocerían."}] },
+    { id:'g-chk-cond2-3', micro:'cond-2-imaginario', translation:"Si yo fuera tú, pediría ayuda.", type:'error', wrong:"If I am you, I would ask for help.", wrongWord:"am",
+      right:"If I were you, I would ask for help.", rightWord:"were",
+      explain:"Algo imaginario: en la parte del “if” va el pasado (“were”), no el presente (“am”).",
+      examples:[{en:"If I were you, I would ask for help.",es:"Si yo fuera tú, pediría ayuda."},{en:"If she were here, she would help us.",es:"Si ella estuviera aquí, nos ayudaría."}] }
 );

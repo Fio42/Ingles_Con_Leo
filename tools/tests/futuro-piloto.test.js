@@ -64,7 +64,7 @@ test('cada microtema tiene >=6 de práctica, 3 de comprobación, >=2 tipos y un 
 test('en total: 20 de práctica nuevos y 12 de comprobación (los 4 existentes no se tocaron)', () => {
   const nuevos = real.practice.filter(r => NEW_IDS.test(r.item.id));
   assert.strictEqual(nuevos.length, 20);
-  assert.strictEqual(real.check.length, 12);
+  assert.strictEqual(real.check.filter(c => MICROS.indexOf(c.micro) !== -1).length, 12);
   ['g-medio5-fut-1', 'g-medio5-fut-2', 'g-medio5-fut-3', 'g-medio5-fut-4'].forEach(id => assert.ok(real.practice.some(r => r.item.id === id), id));
 });
 
@@ -156,7 +156,8 @@ console.log('\nLa comprobación está aislada');
 test('ningún ejercicio de comprobación está en los bancos de práctica ni en el índice de errores', () => {
   const index = T.getMistakesItemIndex();
   const ids = new Set(T.CHECK.map(c => c.id));
-  assert.strictEqual(ids.size, 12);
+  assert.strictEqual(T.CHECK.filter(c => MICROS.indexOf(c.micro) !== -1).length, 12);   // los de Futuro; el banco completo también incluye los de Condicionales
+  assert.ok(ids.size >= 12);
   Object.keys(T.G).forEach(l => {
     T.memberBankItems('gramatica', T.G[l]).forEach(i => assert.ok(!ids.has(i.id), i.id + ' en práctica'));
   });
