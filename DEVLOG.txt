@@ -1,6 +1,13 @@
 DEVLOG — Inglés con Leo
 (Registro breve de cambios grandes hecho con Claude. Actualizar al final de cada tarea grande, sin gastar muchas líneas.)
 
+2026-10-08 - Tarjeta de feedback para Miembros
+- Tarjeta compacta (#feedbackCard) en el panel de Miembros, debajo de la sugerencia de nivel: nota 1 a 10; al elegirla aparece el comentario opcional y los botones Enviar / Ahora no. Movil: 2 filas de 5 (botones de 46 px). Sin popup.
+- Nunca compite: no sale si la sugerencia de nivel o el aviso "Nuevo" estan visibles, y se retira sola si alguno aparece despues. Tras enviar: "Gracias por ayudarme a mejorar".
+- Todo lo decide la BASE (migracion supabase/migrations/20261008190000_member_feedback.sql, hay que correrla a mano en el SQL Editor): miembro con 5+ dias (member_since) y 3+ sesiones; responder = 90 dias de silencio y maximo una respuesta cada 90 dias; Ahora no = 7, luego 30, luego 90 dias; 14 dias de espera tras la encuesta de 15 dias. Estado entre dispositivos en member_feedback_state. localStorage solo guarda "no preguntes antes de".
+- Tablas member_feedback (score, comment max 600 texto plano, low_score = score <= 6, days_as_member, sessions_count, level; sin email, nombre ni plan) y member_feedback_state. RLS: solo lectura de lo propio; escrituras solo por 3 funciones. Analisis: select * from member_feedback where low_score. No hay correo por cada nota baja.
+- Miembros sin member_since (3 hoy) no ven la tarjeta. Pruebas: feedback-card.test.js (12), member-feedback-sql.test.js (14, necesita @electric-sql/pglite; se omite si falta) y verificacion en Chromium real a 375 px. ?v= de app.js, style.css y backend.js subido.
+
 2026-10-08 - Checkout abandonado: 2 correos sin presion + freno global real
 - checkout_started_at ahora es el ULTIMO intento real (create-checkout/super-service, stripe-checkout, paypal-checkout): se actualiza si el anterior tiene mas de 10 min (antirrebote de doble clic). Recargar la pagina no cuenta: las funciones solo se llaman desde clics.
 - upgrade-nudge-emails: correo 1 (2 a 4 h, "¿Quieres terminar de activar tu membresia?", boton "Continuar activacion", invita a responder) y correo 2 nuevo `checkout_followup` (24 a 48 h despues del 1, pregunta que paso, enlace discreto). Solo el intento mas reciente cuenta; un intento nuevo reinicia la secuencia (sin cooldown de 14 dias). Si el correo 1 cae de madrugada o lo retiene el freno de 24 h, queda pendiente hasta 30 h. Ventana especial (hasta 72 h o hasta el correo 2): solo checkout puede salir (checkout va ANTES que limit_reached; si compiten sale checkout y limit_reached se suprime, no se encola); reactivacion, tips y demas nudges esperan y NO se acumulan al salir (decide el funnel del momento, uno por 24 h). Sin columnas nuevas (usa lifecycle_emails).

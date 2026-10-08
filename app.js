@@ -7475,6 +7475,90 @@ function renderLevelSuggestion(el){
 }
 
 /* ============================================================
+   TARJETA DE FEEDBACK (panel de Miembros, 2026-10-08)
+   Una sola tarjeta compacta, sin popup. La BASE decide si toca mostrarla (miembro con 5+ días y 3+ sesiones;
+   90 días tras responder; "Ahora no" espera 7, 30 y luego 90 días) y valida lo que se guarda: aquí solo se
+   pinta. Nunca compite con la sugerencia de nivel ni con el aviso "Nuevo": si alguno está visible, no sale.
+   localStorage solo guarda "no preguntes antes de" (una pista para no consultar de más); nunca decide mostrar.
+   ============================================================ */
+const FEEDBACK_CARD_KEY = 'leo_feedback_card_v1';
+const FEEDBACK_CARD = { SHOW_DELAY_MS: 1500, MIN_RECHECK_MS: 3600000, LATER_MS: 7 * 86400000, ANSWERED_MS: 90 * 86400000, MAX_COMMENT: 600 };
+function feedbackCardSetNext(ms){
+  try{ localStorage.setItem(FEEDBACK_CARD_KEY, JSON.stringify({ next: ms })); }catch(e){}
+}
+function feedbackScaleHtml(){
+  let h = '';
+  for(let n = 1; n <= 10; n++) h += '<button type="button" class="fb-num" data-score="' + n + '" aria-pressed="false" aria-label="Calificar ' + n + ' de 10">' + n + '</button>';
+  return h;
+}
+// `el` = contenedor oculto; `blockerIds` = tarjetas importantes que, si están visibles, impiden que salga.
+function renderFeedbackCard(el, blockerIds){
+  if(!el || el.dataset.fbInit) return;
+  if(typeof LeoBackend === 'undefined' || !LeoBackend || typeof LeoBackend.feedbackCardStatus !== 'function') return;
+  el.dataset.fbInit = '1';
+  const cache = readJsonKey(FEEDBACK_CARD_KEY, {});
+  if(cache.next && Date.now() < cache.next) return;
+  const blocked = ()=> (blockerIds || []).some(id => { const b = document.getElementById(id); return !!(b && !b.hidden); });
+  let observer = null;
+  function hide(){ el.hidden = true; el.innerHTML = ''; if(observer){ try{ observer.disconnect(); }catch(e){} observer = null; } }
+  function thanks(){
+    el.innerHTML = '<div class="fb-card" role="status"><p class="fb-thanks">Gracias por ayudarme a mejorar</p></div>';
+    setTimeout(hide, 3500);
+  }
+  function paint(){
+    el.hidden = false;
+    el.innerHTML = '<div class="fb-card" role="region" aria-label="Tu opinión">' +
+      '<p class="fb-q"><strong>¿Qué tan bien te está funcionando Inglés con Leo?</strong><span class="fb-hint">1 = nada, 10 = excelente</span></p>' +
+      '<div class="fb-scale" role="group" aria-label="Puntuación del 1 al 10">' + feedbackScaleHtml() + '</div>' +
+      '<div class="fb-more" hidden>' +
+        '<label class="fb-label" for="fbComment">¿Qué mejorarías o qué te está gustando más? <span>(opcional)</span></label>' +
+        '<textarea id="fbComment" class="fb-text" rows="2" maxlength="' + FEEDBACK_CARD.MAX_COMMENT + '"></textarea>' +
+      '</div>' +
+      '<p class="fb-error" role="alert" hidden>No se pudo enviar. Inténtalo de nuevo.</p>' +
+      '<div class="fb-actions"><button type="button" class="btn btn-primary btn-sm fb-send" hidden>Enviar</button><button type="button" class="btn btn-ghost btn-sm fb-later">Ahora no</button></div>' +
+      '</div>';
+    let score = 0, busy = false;
+    const nums = el.querySelectorAll('.fb-num'), more = el.querySelector('.fb-more'), send = el.querySelector('.fb-send');
+    const later = el.querySelector('.fb-later'), err = el.querySelector('.fb-error'), txt = el.querySelector('#fbComment');
+    nums.forEach(b => b.addEventListener('click', ()=>{
+      if(busy) return;
+      score = Number(b.getAttribute('data-score'));
+      nums.forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+      more.hidden = false; send.hidden = false; err.hidden = true;
+    }));
+    later.addEventListener('click', ()=>{
+      if(busy) return;
+      busy = true;
+      feedbackCardSetNext(Date.now() + FEEDBACK_CARD.LATER_MS);
+      try{ LeoBackend.dismissMemberFeedback(); }catch(e){}
+      hide();
+    });
+    send.addEventListener('click', async ()=>{
+      if(busy || !(score >= 1 && score <= 10)) return;
+      busy = true; send.disabled = true; later.disabled = true; err.hidden = true;
+      const res = await LeoBackend.submitMemberFeedback(score, String(txt.value || '').trim().slice(0, FEEDBACK_CARD.MAX_COMMENT));
+      if(res === 'ok'){ feedbackCardSetNext(Date.now() + FEEDBACK_CARD.ANSWERED_MS); thanks(); return; }
+      if(res === 'too_soon'){ feedbackCardSetNext(Date.now() + 86400000); hide(); return; }
+      busy = false; send.disabled = false; later.disabled = false; err.hidden = false;
+    });
+    // Si después aparece otra tarjeta importante, esta se retira sin contar como "Ahora no".
+    if(typeof MutationObserver === 'function'){
+      observer = new MutationObserver(()=>{ if(blocked() && !busy) hide(); });
+      (blockerIds || []).forEach(id => { const b = document.getElementById(id); if(b) observer.observe(b, { attributes: true, attributeFilter: ['hidden'] }); });
+    }
+  }
+  LeoBackend.feedbackCardStatus().then(st => {
+    if(!st) return;
+    if(!st.show){
+      const t = st.next_check_at ? Date.parse(st.next_check_at) : NaN;
+      feedbackCardSetNext(Math.max(Number.isFinite(t) ? t : 0, Date.now() + FEEDBACK_CARD.MIN_RECHECK_MS));
+      return;
+    }
+    setTimeout(()=>{ if(!blocked()) paint(); }, FEEDBACK_CARD.SHOW_DELAY_MS);
+  }, ()=>{});
+}
+
+/* ============================================================
    PÁGINA DE PROGRESO (progreso.html)
    ============================================================ */
 /* ---------- Estadísticas semanales con comparación vs. la semana anterior ---------- */

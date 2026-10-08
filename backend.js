@@ -821,12 +821,50 @@ const LeoBackend = (function(){
     }
   }
 
+  /* Tarjeta de feedback de Miembros (2026-10-08). Todo pasa por funciones de la base (ver
+     supabase/migrations/20261008190000_member_feedback.sql): ella decide si toca mostrar la tarjeta,
+     valida y guarda. Aquí nunca se lanza error: si algo falla, la tarjeta simplemente no aparece. */
+  async function feedbackCardStatus(){
+    try{
+      const sb = getClient();
+      if(!sb) return null;
+      const session = await getSession();
+      if(!session) return null;
+      const { data, error } = await sb.rpc('member_feedback_status');
+      if(error || !data || typeof data !== 'object') return null;
+      return data;                                  // { show: boolean, next_check_at: ISO | null }
+    }catch(e){ return null; }
+  }
+  // Devuelve 'ok', 'too_soon' (ya respondió hace menos de 90 días) o 'fail'.
+  async function submitMemberFeedback(score, comment){
+    try{
+      const sb = getClient();
+      if(!sb) return 'fail';
+      const session = await getSession();
+      if(!session) return 'fail';
+      const { error } = await sb.rpc('submit_member_feedback', { p_score: score, p_comment: comment || null });
+      if(!error) return 'ok';
+      return /feedback_too_soon/.test(String(error.message || '')) ? 'too_soon' : 'fail';
+    }catch(e){ return 'fail'; }
+  }
+  async function dismissMemberFeedback(){
+    try{
+      const sb = getClient();
+      if(!sb) return 'fail';
+      const session = await getSession();
+      if(!session) return 'fail';
+      const { error } = await sb.rpc('dismiss_member_feedback');
+      return error ? 'fail' : 'ok';
+    }catch(e){ return 'fail'; }
+  }
+
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
-    getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI
+    getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI,
+    feedbackCardStatus, submitMemberFeedback, dismissMemberFeedback
   };
 })();
 
