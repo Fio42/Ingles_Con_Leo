@@ -1,6 +1,13 @@
 DEVLOG — Inglés con Leo
 (Registro breve de cambios grandes hecho con Claude. Actualizar al final de cada tarea grande, sin gastar muchas líneas.)
 
+2026-10-08 - Checkout abandonado: 2 correos sin presion + freno global real
+- checkout_started_at ahora es el ULTIMO intento real (create-checkout/super-service, stripe-checkout, paypal-checkout): se actualiza si el anterior tiene mas de 10 min (antirrebote de doble clic). Recargar la pagina no cuenta: las funciones solo se llaman desde clics.
+- upgrade-nudge-emails: correo 1 (2 a 4 h, "¿Quieres terminar de activar tu membresia?", boton "Continuar activacion", invita a responder) y correo 2 nuevo `checkout_followup` (24 a 48 h despues del 1, pregunta que paso, enlace discreto). Solo el intento mas reciente cuenta; un intento nuevo reinicia la secuencia (sin cooldown de 14 dias). Si el correo 1 cae de madrugada o lo retiene el freno de 24 h, queda pendiente hasta 30 h. Ventana especial (hasta 72 h o hasta el correo 2): solo checkout puede salir (checkout va ANTES que limit_reached; si compiten sale checkout y limit_reached se suprime, no se encola); reactivacion, tips y demas nudges esperan y NO se acumulan al salir (decide el funnel del momento, uno por 24 h). Sin columnas nuevas (usa lifecycle_emails).
+- email_invalid: ahora SI se respeta en nudges (listas + relectura al enviar), racha y encuesta. Antes se ignoraba.
+- Freno global de 24 h (last_marketing_email_at) reservado de forma atomica antes de enviar en nudges, racha y encuesta; se devuelve si el envio falla. Tolerancia de 15 min para crons diarios. limit_reached sigue ganando por prioridad.
+- Prueba: node tools/tests/checkout-abandonado.test.js (55 pruebas con el codigo real de las funciones). Pendiente: desplegar las 6 funciones (upgrade-nudge-emails, streak-reminder-email, survey-15d-email, stripe-checkout, paypal-checkout, super-service).
+
 2026-10-08 - Sugerencia de nivel (solo sugiere, nunca cambia sola)
 - Tarjeta en el panel de Miembros (#levelSuggest): "Parece que este nivel te esta quedando facil. Quieres probar Medio?" (o bajar, con tono amable). Botones: aceptar / mantener mi nivel. Aceptar usa setUserLevel(nivel, 'suggested'), guarda el nivel anterior y ofrece "Volver a X" 14 dias. Rechazar la calla 30 dias (direccion + nivel).
 - Regla conservadora (app.js, bloque SUGERENCIA DE NIVEL): >=15 respuestas validas del nivel actual, >=2 sesiones, >=2 habilidades si hay, >=3 temas de gramatica, ningun tema >40%. Subir: >=14/15 recientes y gramatica >=85% con >=6. Bajar: <=6/15 y dificultad en >=2 areas. Solo primer intento, sin repasos, sin comprobaciones, sin Plan Facil/Dificil.

@@ -100,6 +100,13 @@
 //                        checkout, nunca el simple hecho de visitar
 //                        una página: es una señal real, no
 //                        inventada). Con cooldown largo.
+//                        (2026-10-08) checkout_started_at ahora es el
+//                        ULTIMO intento real (cada clic en un botón de
+//                        pago, con antirrebote de 10 min), no el primero.
+//                        Solo cuenta el intento más reciente.
+//   - checkout_followup  Segundo y último correo de ese mismo intento:
+//                        24 a 48 h DESPUÉS del primero, solo si sigue sin
+//                        ser miembro. Pregunta qué pasó; sin presión.
 //   - active_free_pitch  DESACTIVADO por ahora (ver
 //                        ACTIVE_FREE_PITCH_ENABLED más abajo: la
 //                        lógica queda lista en el código pero no se
@@ -337,8 +344,21 @@ const LIMIT_REACHED_COOLDOWN_DAYS = 7
 const LIMIT_RESET_MIN_HOURS = 24
 const LIMIT_RESET_MAX_HOURS = 28
 const CHECKOUT_ABANDONED_MIN_HOURS = 2
-const CHECKOUT_ABANDONED_MAX_HOURS = 4
-const CHECKOUT_ABANDONED_COOLDOWN_DAYS = 14
+// El correo 1 sale normalmente a las 2 a 4 h. El tope de 30 h solo existe
+// para que NO se pierda si justo cae de madrugada (horas sin envío) o si
+// otro correo (p. ej. limit_reached) ocupó el lugar de las 24 h: queda
+// pendiente y sale en la primera oportunidad permitida.
+const CHECKOUT_ABANDONED_MAX_HOURS = 30
+// Ventana especial de alta intención: desde el último intento hasta el
+// correo 2 (máximo ~72 h). Ver checkoutWindowActive().
+const CHECKOUT_WINDOW_MAX_HOURS = 72
+// Segundo correo del mismo intento: 24 a 48 h después del primero.
+const CHECKOUT_FOLLOWUP_MIN_HOURS = 24
+const CHECKOUT_FOLLOWUP_MAX_HOURS = 48
+// Tolerancia al reservar el lugar del freno global de 24h: un Cron diario
+// (racha, 13:00) puede arrancar unos segundos ANTES que el día anterior y,
+// sin tolerancia, se bloquearía un día sí y otro no.
+const MARKETING_SLOT_TOLERANCE_MINUTES = 15
 const REACTIVATION_DAY14_INACTIVE_DAYS = 10
 const ACTIVE_FREE_USER_MIN_DAYS_SINCE_SIGNUP = 10
 const ACTIVE_FREE_USER_LAST_SEEN_MAX_DAYS = 2
@@ -446,6 +466,7 @@ const MAX_PER_RUN = 300
 const PRIORITY_ORDER = [
   'limit_reached',
   'checkout_abandoned',
+  'checkout_followup',
   'limit_reset',
   'abandoned_signup',
   'reactivation_3d',
@@ -536,7 +557,7 @@ Deno.serve(async (req: Request) => {
           if (typeof email !== 'string' || !email) continue
           const { data: prof } = await supabase.from('profiles').select('id, is_member').eq('email', email).maybeSingle()
           if (!prof || prof.is_member !== wantsMember) continue
-          const didSend = await sendIfStillEligible(prof.id, email, which, wantsMember)
+          const didSend = await sendIfStillEligible(prof.id, email, which, wantsMember, true)
           if (didSend) sentManual++
         }
         return json({ ok: true, manual: true, which, sentManual }, 200)
@@ -576,6 +597,7 @@ Deno.serve(async (req: Request) => {
         .eq('is_member', false)
         .not('email', 'is', null)
         .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
         .order('id', { ascending: true })
         .range(page * 1000, page * 1000 + 999)
       if (e) { error = e; break }
@@ -602,6 +624,7 @@ Deno.serve(async (req: Request) => {
       .eq('is_member', false)
       .not('email', 'is', null)
       .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
       .gte('created_at', new Date(Date.now() - 3 * 86400000).toISOString())
       .order('created_at', { ascending: false })
       .limit(MAX_PER_RUN)
@@ -650,6 +673,7 @@ Deno.serve(async (req: Request) => {
         .eq('is_member', true)
         .not('email', 'is', null)
         .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
         .order('id', { ascending: true })
         .range(page * 1000, page * 1000 + 999)
       if (e) { memberError = e; break }
@@ -805,6 +829,74 @@ const HTML_MEMBER_WELCOME = `
 
 // ---------------- Decidir qué correo (si acaso) le toca a alguien ----------------
 
+// Etapa de checkout abandonado que le toca a alguien AHORA, o null.
+// Estado por intento, sin columnas nuevas:
+//   checkout_started_at            = último intento real (T)
+//   lifecycle_emails.checkout_abandoned = cuándo salió el correo 1
+//   lifecycle_emails.checkout_followup  = cuándo salió el correo 2
+// Un correo "pertenece" al intento actual solo si se mandó en/después de T;
+// los de intentos anteriores no cuentan (quedan cancelados).
+function checkoutStage(
+  p: { checkout_started_at: string | null; lifecycle_emails: Record<string, string> | null },
+  now: number
+): 'checkout_abandoned' | 'checkout_followup' | null {
+  if (!p.checkout_started_at) return null
+  const t = Date.parse(p.checkout_started_at)
+  if (!Number.isFinite(t)) return null
+  const lc = p.lifecycle_emails || {}
+  const parse = (v: string | undefined): number | null => {
+    if (!v) return null
+    const ms = Date.parse(v)
+    return Number.isFinite(ms) ? ms : null
+  }
+  const e1 = parse(lc['checkout_abandoned'])
+  const e2 = parse(lc['checkout_followup'])
+  const e1ThisAttempt = e1 !== null && e1 >= t
+  if (!e1ThisAttempt) {
+    const hrs = (now - t) / 3600000
+    // Sin cooldown fijo entre intentos: un intento real nuevo reinicia la
+    // secuencia (el freno global de 24 h evita el spam).
+    if (hrs >= CHECKOUT_ABANDONED_MIN_HOURS && hrs <= CHECKOUT_ABANDONED_MAX_HOURS) {
+      return 'checkout_abandoned'
+    }
+    return null
+  }
+  if (e2 !== null && e2 >= t) return null // el correo 2 de este intento ya salió
+  const hrsAfterE1 = (now - (e1 as number)) / 3600000
+  const hrsAfterAttempt = (now - t) / 3600000
+  if (hrsAfterE1 >= CHECKOUT_FOLLOWUP_MIN_HOURS && hrsAfterE1 <= CHECKOUT_FOLLOWUP_MAX_HOURS && hrsAfterAttempt <= CHECKOUT_WINDOW_MAX_HOURS) {
+    return 'checkout_followup'
+  }
+  return null
+}
+
+// ¿Está esta cuenta en la ventana especial de checkout (alta intención)?
+// Empieza en el ÚLTIMO intento real y termina cuando sale el correo 2 de ese
+// intento, cuando se acaba la secuencia sin él, o a las 72 h. Mientras dura,
+// decideEmail() no manda nada que no sea limit_reached o el propio checkout.
+// Al terminar NO se "descargan" correos atrasados: decideEmail() simplemente
+// recalcula el estado de hoy (y el freno de 24 h deja salir uno por vez).
+function checkoutWindowActive(
+  p: { checkout_started_at: string | null; lifecycle_emails: Record<string, string> | null },
+  now: number
+): boolean {
+  if (!p.checkout_started_at) return false
+  const t = Date.parse(p.checkout_started_at)
+  if (!Number.isFinite(t) || now < t) return false
+  if ((now - t) / 3600000 > CHECKOUT_WINDOW_MAX_HOURS) return false
+  const lc = p.lifecycle_emails || {}
+  const toMs = (v: string | undefined): number | null => {
+    if (!v) return null
+    const ms = Date.parse(v)
+    return Number.isFinite(ms) ? ms : null
+  }
+  const e1 = toMs(lc['checkout_abandoned'])
+  const e2 = toMs(lc['checkout_followup'])
+  if (e1 === null || e1 < t) return (now - t) / 3600000 <= CHECKOUT_ABANDONED_MAX_HOURS // correo 1 aún posible
+  if (e2 !== null && e2 >= t) return false // el correo 2 ya salió: ventana cerrada
+  return (now - e1) / 3600000 <= CHECKOUT_FOLLOWUP_MAX_HOURS
+}
+
 function decideEmail(p: Profile, now: number): EmailKey | null {
   const lifecycle = p.lifecycle_emails || {}
   const ageMs = now - new Date(p.created_at).getTime()
@@ -831,6 +923,20 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
     return null
   }
 
+  // Checkout empezado pero todavía sin conversión. Es una señal de intención
+  // alta: va ANTES que limit_reached (2026-10-08). Si ambos están listos, sale
+  // checkout y limit_reached se suprime (no se pone en cola); durante la
+  // ventana activa limit_reached tampoco puede salir y retrasar el seguimiento. Como este bucle
+  // solo considera cuentas gratis y sendIfStillEligible vuelve a comprobar
+  // is_member justo antes de enviar, nunca se manda a quien ya pagó.
+  // (2026-10-08) Solo cuenta el ULTIMO intento (checkout_started_at) y
+  // cada intento tiene como máximo 2 correos (ver checkoutStage).
+  const checkoutKey = checkoutStage(p, now)
+  if (checkoutKey) return checkoutKey
+  // Ventana especial: nada de racha/encuesta/reactivación/tips/otros nudges
+  // menores mientras dura el seguimiento de checkout.
+  if (checkoutWindowActive(p, now)) return null
+
   // 1) Límite gratuito alcanzado: la señal más "caliente" de todas
   // (el usuario está usando la plataforma ahora mismo y chocó con el
   // límite), así que va primero.
@@ -847,18 +953,6 @@ function decideEmail(p: Profile, now: number): EmailKey | null {
     }
   }
 
-  // Checkout empezado pero todavía sin conversión. Es una señal de intención
-  // alta, así que queda inmediatamente después del límite. Como este bucle
-  // solo considera cuentas gratis y sendIfStillEligible vuelve a comprobar
-  // is_member justo antes de enviar, nunca se manda a quien ya pagó.
-  if (p.checkout_started_at) {
-    const hrs = hoursSince(p.checkout_started_at, now)
-    const lastSent = lifecycle['checkout_abandoned']
-    const cooldownOk = !lastSent || daysSince(lastSent, now) >= CHECKOUT_ABANDONED_COOLDOWN_DAYS
-    if (hrs >= CHECKOUT_ABANDONED_MIN_HOURS && hrs <= CHECKOUT_ABANDONED_MAX_HOURS && cooldownOk) {
-      return 'checkout_abandoned'
-    }
-  }
 
   // Al día siguiente del límite, recordar que la práctica gratis ya volvió
   // a estar disponible, SOLO si no hubo práctica posterior al límite.
@@ -1166,16 +1260,30 @@ async function sendIfStillEligible(
   userId: string,
   email: string | null,
   key: EmailKey,
-  expectedIsMember: boolean = false
+  expectedIsMember: boolean = false,
+  manual: boolean = false
 ): Promise<boolean> {
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at')
+    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at, email_invalid, last_marketing_email_at, checkout_started_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
+  // Correo rebotado o marcado como spam (lo pone resend-webhook): ninguna
+  // automatización le escribe más (2026-10-08).
+  if (fresh.email_invalid) return false
+  // Checkout: re-verificar con datos frescos que sigue siendo el intento
+  // más reciente y que esta etapa todavía le toca (conversión, intento
+  // nuevo o envío duplicado cancelan el correo).
+  if (!manual && (key === 'checkout_abandoned' || key === 'checkout_followup')) {
+    const stageNow = checkoutStage(
+      { checkout_started_at: fresh.checkout_started_at, lifecycle_emails: fresh.lifecycle_emails },
+      Date.now()
+    )
+    if (stageNow !== key) return false
+  }
 
   // long_term rota por LONG_TERM_EMAILS: se elige el siguiente de la
   // lista según cuántos ya se le mandaron a esta persona. Se detiene
@@ -1224,10 +1332,36 @@ async function sendIfStillEligible(
     if (!claimed || !claimed.length) return false
   }
 
+  // Lugar del freno global (máx. 1 correo no transaccional por usuario cada
+  // 24h), reservado de forma ATÓMICA antes de mandar: si otro proceso (o
+  // otra función, como racha o encuesta) lo tomó en el último día, este
+  // correo se cancela. El modo manual de prueba lo salta, como siempre.
+  let slotIso: string | null = null
+  if (!manual && !NO_COOLDOWN_KEYS.has(key)) {
+    slotIso = new Date().toISOString()
+    const slotCutoff = new Date(Date.now() - (MARKETING_EMAIL_MIN_GAP_HOURS * 60 - MARKETING_SLOT_TOLERANCE_MINUTES) * 60000).toISOString()
+    const { data: slot, error: slotError } = await supabase
+      .from('profiles')
+      .update({ last_marketing_email_at: slotIso })
+      .eq('id', userId)
+      .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+      .select('id')
+    if (slotError) console.error('Error reservando el lugar del freno global:', slotError)
+    if (!slot || !slot.length) return false
+  }
+
   const okToSend = await sendEmailFor(key, email, userId, personalize(content, fresh.display_name))
   if (!okToSend) {
     // Se libera la reserva para que el Cron la reintente.
     if (key === 'welcome') await supabase.from('profiles').update({ welcome_claimed_at: null }).eq('id', userId)
+    // Y se devuelve el lugar del freno global, porque no salió nada.
+    if (slotIso) {
+      await supabase
+        .from('profiles')
+        .update({ last_marketing_email_at: fresh.last_marketing_email_at ?? null })
+        .eq('id', userId)
+        .eq('last_marketing_email_at', slotIso)
+    }
     return false
   }
 
@@ -1316,6 +1450,8 @@ type EmailContent = {
   bodyHtml: string
   ctaText: string
   ctaUrl: string
+  // 'link' = enlace discreto de texto en vez de botón (correos de seguimiento).
+  ctaStyle?: 'button' | 'link'
   footerNote: string
 }
 
@@ -1346,6 +1482,17 @@ function personalize(c: EmailContent, rawName: string | null | undefined): Email
 }
 
 function emailShell(c: EmailContent, unsubUrl: string): string {
+  const ctaHtml = c.ctaStyle === 'link'
+    ? `<p style="text-align:center; margin:22px 0 6px; font-size:14px;">
+      <a href="${c.ctaUrl}" style="color:#253ECC; text-decoration:underline;">${c.ctaText}</a>
+    </p>`
+    : `<p style="text-align:center; margin:28px 0 10px;">
+      <a href="${c.ctaUrl}"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
+        ${c.ctaText} →
+      </a>
+    </p>`
   return `
 <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${c.preheader}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
 <div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
@@ -1353,13 +1500,7 @@ function emailShell(c: EmailContent, unsubUrl: string): string {
     <p style="color:#333; font-size:15px; margin:0 0 4px;">${c.greeting}</p>
     <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">${c.title}</h1>
     ${c.bodyHtml}
-    <p style="text-align:center; margin:28px 0 10px;">
-      <a href="${c.ctaUrl}"
-         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
-                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
-        ${c.ctaText} →
-      </a>
-    </p>
+    ${ctaHtml}
     <p style="color:#333; font-size:15px; line-height:1.6; margin:24px 0 0;">
       Nos vemos en la práctica,<br><strong>Leo</strong>
     </p>
@@ -1674,28 +1815,37 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   },
   checkout_abandoned: {
     subject: '¿Quieres terminar de activar tu membresía?',
-    preheader: 'Tu membresía sigue lista cuando quieras continuar.',
+    preheader: 'Puedes retomarlo cuando te venga bien.',
     greeting: '¡Hola! 👋',
-    title: 'Tu membresía está lista para continuar',
+    title: 'Tu activación quedó a medias',
     bodyHtml: `
     <p style="${P}">
-      Vimos que empezaste el proceso para activar tu membresía. Si quieres
-      continuarlo, puedes volver a la misma pantalla cuando te venga bien.
+      Vi que empezaste a activar tu membresía. Si quieres retomarlo, puedes
+      volver a la misma pantalla cuando te venga bien.
     </p>
     <div style="${BOX}">
-      Puedes elegir la opción de pago que prefieras. Si tienes una duda,
-      responde este correo o
-      <a href="https://wa.me/529994996520" style="${LINK}">escríbenos por WhatsApp</a>
-      y te ayudamos. Cancelas cuando quieras.
-    </div>
-    <p style="${P}">
-      Te recuerdo lo que se activa al terminar: práctica sin límite diario,
-      tu plan de estudio y <strong>Leo AI</strong>, que te explica cada error,
-      revisa tus frases de Writing y te dice qué reforzar. Todo por $2 USD al mes.
-    </p>`,
+      Si tuviste algún problema o algo no quedó claro, puedes responder este
+      correo. Me gustaría escucharte.
+    </div>`,
     ctaText: 'Continuar activación',
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
+  },
+  checkout_followup: {
+    subject: 'Una pregunta sobre tu membresía',
+    preheader: 'Si algo no quedó claro, respóndeme este correo.',
+    greeting: '¡Hola! 👋',
+    title: 'Me gustaría entender qué pasó',
+    bodyHtml: `
+    <p style="${P}">
+      Vi que empezaste a activar tu membresía pero no la terminaste. Si algo
+      no quedó claro o tuviste algún problema, me gustaría escucharte. Puedes
+      responder directamente a este correo.
+    </p>`,
+    ctaText: 'Volver a la membresía',
+    ctaUrl: `${SITE}/miembros.html`,
+    ctaStyle: 'link',
+    footerNote: 'Si decidiste no continuar, no hay problema. Este es el último correo sobre esto.',
   },
   active_free_pitch: {
     subject: 'Se nota que le estás echando ganas 🔥',

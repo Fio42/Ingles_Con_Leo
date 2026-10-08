@@ -109,7 +109,7 @@ Deno.serve(async (req: Request) => {
           if (typeof email !== 'string' || !email) continue
           const { data: prof } = await supabase.from('profiles').select('id, is_member, survey_15d_sent_at').eq('email', email).maybeSingle()
           if (!prof || !prof.is_member) continue
-          const didSend = await sendSurveyIfStillEligible(prof.id, email)
+          const didSend = await sendSurveyIfStillEligible(prof.id, email, true)
           if (didSend) sentManual++
         }
         return json({ ok: true, manual: true, sentManual }, 200)
@@ -128,6 +128,7 @@ Deno.serve(async (req: Request) => {
       .eq('is_member', true)
       .is('survey_15d_sent_at', null)
       .is('email_opt_out_at', null)
+      .eq('email_invalid', false)
       .gte('member_since', from)
       .lte('member_since', to)
       .order('member_since', { ascending: true })
@@ -153,15 +154,16 @@ Deno.serve(async (req: Request) => {
 // candidatos) y, si sigue siendo miembro, genera un token al azar,
 // manda el correo con el link de la encuesta, y marca que ya se le
 // mandó (para no repetirlo nunca).
-async function sendSurveyIfStillEligible(userId: string, email: string | null): Promise<boolean> {
+async function sendSurveyIfStillEligible(userId: string, email: string | null, manual: boolean = false): Promise<boolean> {
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, email_opt_out_at, survey_15d_sent_at, survey_15d_token')
+    .select('is_member, email_opt_out_at, survey_15d_sent_at, survey_15d_token, email_invalid, last_marketing_email_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || !fresh.is_member) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de los correos
+  if (fresh.email_invalid) return false // rebotó o marcó spam: no se le escribe más
   if (fresh.survey_15d_sent_at) return false // ya se mandó
 
   // Si ya había un token de un intento anterior que quedó a medias, se
@@ -191,6 +193,25 @@ async function sendSurveyIfStillEligible(userId: string, email: string | null): 
   }
   if (!reclamado || !reclamado.length) return false
 
+  // Freno global compartido con upgrade-nudge-emails (2026-10-08): máx. 1
+  // correo no transaccional por usuario cada 24h. Si otro correo tomó el
+  // lugar, la encuesta se pospone (el Cron de cada hora la reintenta).
+  let slotIso: string | null = null
+  if (!manual) {
+    slotIso = new Date().toISOString()
+    const slotCutoff = new Date(Date.now() - (24 * 60 - 15) * 60000).toISOString()
+    const { data: slot } = await supabase
+      .from('profiles')
+      .update({ last_marketing_email_at: slotIso })
+      .eq('id', userId)
+      .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+      .select('id')
+    if (!slot || !slot.length) {
+      await supabase.from('profiles').update({ survey_15d_claimed_at: null }).eq('id', userId)
+      return false
+    }
+  }
+
   let okToSend = false
   try {
     okToSend = await sendViaResend(email, '¿Cómo va tu experiencia con Inglés con Leo? 📝', htmlEncuesta(surveyUrl))
@@ -199,6 +220,9 @@ async function sendSurveyIfStillEligible(userId: string, email: string | null): 
   }
   if (!okToSend) {
     await supabase.from('profiles').update({ survey_15d_claimed_at: null }).eq('id', userId)
+    if (slotIso) {
+      await supabase.from('profiles').update({ last_marketing_email_at: fresh.last_marketing_email_at ?? null }).eq('id', userId).eq('last_marketing_email_at', slotIso)
+    }
     return false
   }
   const { error } = await supabase

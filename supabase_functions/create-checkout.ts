@@ -72,12 +72,17 @@ Deno.serve(async (req: Request) => {
     // que sea, seguimos con el checkout normal de todas formas.
     if (SUPABASE_SERVICE_ROLE_KEY) {
       try {
+        // checkout_started_at = ULTIMO intento real (2026-10-08). Cada
+        // llamada a esta función es un clic explícito en un botón de pago
+        // (recargar la página no la llama). Antirrebote de 10 min: un doble
+        // clic o un reintento inmediato no cuenta como intento nuevo.
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        const debounceCutoff = new Date(Date.now() - 10 * 60000).toISOString()
         await supabaseAdmin
           .from('profiles')
           .update({ checkout_started_at: new Date().toISOString() })
           .eq('id', user.id)
-          .is('checkout_started_at', null)
+          .or(`checkout_started_at.is.null,checkout_started_at.lt.${debounceCutoff}`)
       } catch (e) {
         console.error('No se pudo registrar checkout_started_at:', e)
       }

@@ -111,6 +111,9 @@ create trigger on_auth_user_created
 -- 3 columnas nuevas en profiles, las 3 opcionales (empiezan en NULL,
 -- que quiere decir "todavía no pasó"). No se toca ninguna columna
 -- existente.
+-- checkout_started_at = ULTIMO intento real de checkout (desde 2026-10-08; antes era
+-- el primero). Lo escriben create-checkout / stripe-checkout / paypal-checkout
+-- con antirrebote de 10 min. Alimenta los 2 correos de checkout abandonado.
 alter table public.profiles add column if not exists checkout_started_at timestamptz;
 alter table public.profiles add column if not exists upgrade_email_1_sent_at timestamptz;
 alter table public.profiles add column if not exists upgrade_email_2_sent_at timestamptz;

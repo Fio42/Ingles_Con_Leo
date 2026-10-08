@@ -167,11 +167,12 @@ async function fetchUserIdsForDate(dateStr: string): Promise<string[] | null> {
 async function sendIfStillEligible(userId: string, todayStr: string): Promise<boolean> {
   const { data: prof } = await supabase
     .from('profiles')
-    .select('email, is_member, streak_reminder_last_sent, email_opt_out_at')
+    .select('email, is_member, streak_reminder_last_sent, email_opt_out_at, email_invalid, last_marketing_email_at')
     .eq('id', userId)
     .maybeSingle()
   if (!prof || !prof.is_member || !prof.email) return false
   if (prof.email_opt_out_at) return false // se dio de baja de estos correos
+  if (prof.email_invalid) return false // rebotó o marcó spam: no se le escribe más
   if (prof.streak_reminder_last_sent === todayStr) return false
 
   const { data: hoy } = await supabase
@@ -206,6 +207,23 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
   }
   if (!reclamado || !reclamado.length) return false
 
+  // Freno global compartido con upgrade-nudge-emails (2026-10-08): máx. 1
+  // correo no transaccional por usuario cada 24h (profiles.last_marketing_email_at).
+  // Se reserva el lugar de forma atómica; si otro correo lo tomó, este se
+  // pospone (se libera la reserva y el Cron de otro día lo vuelve a intentar).
+  const slotIso = new Date().toISOString()
+  const slotCutoff = new Date(Date.now() - (24 * 60 - 15) * 60000).toISOString()
+  const { data: slot } = await supabase
+    .from('profiles')
+    .update({ last_marketing_email_at: slotIso })
+    .eq('id', userId)
+    .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+    .select('id')
+  if (!slot || !slot.length) {
+    await supabase.from('profiles').update({ streak_reminder_claimed_at: null }).eq('id', userId)
+    return false
+  }
+
   let okToSend = false
   try {
     okToSend = await sendEmail(prof.email, streakCount, userId)
@@ -214,6 +232,7 @@ async function sendIfStillEligible(userId: string, todayStr: string): Promise<bo
   }
   if (!okToSend) {
     await supabase.from('profiles').update({ streak_reminder_claimed_at: null }).eq('id', userId)
+    await supabase.from('profiles').update({ last_marketing_email_at: prof.last_marketing_email_at ?? null }).eq('id', userId).eq('last_marketing_email_at', slotIso)
     return false
   }
   const { error } = await supabase
