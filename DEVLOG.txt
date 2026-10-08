@@ -1,6 +1,13 @@
 DEVLOG — Inglés con Leo
 (Registro breve de cambios grandes hecho con Claude. Actualizar al final de cada tarea grande, sin gastar muchas líneas.)
 
+2026-10-08 - Sugerencia de nivel (solo sugiere, nunca cambia sola)
+- Tarjeta en el panel de Miembros (#levelSuggest): "Parece que este nivel te esta quedando facil. Quieres probar Medio?" (o bajar, con tono amable). Botones: aceptar / mantener mi nivel. Aceptar usa setUserLevel(nivel, 'suggested'), guarda el nivel anterior y ofrece "Volver a X" 14 dias. Rechazar la calla 30 dias (direccion + nivel).
+- Regla conservadora (app.js, bloque SUGERENCIA DE NIVEL): >=15 respuestas validas del nivel actual, >=2 sesiones, >=2 habilidades si hay, >=3 temas de gramatica, ningun tema >40%. Subir: >=14/15 recientes y gramatica >=85% con >=6. Bajar: <=6/15 y dificultad en >=2 areas. Solo primer intento, sin repasos, sin comprobaciones, sin Plan Facil/Dificil.
+- Dos marcas nuevas en las respuestas (aditivas): Plan guarda cl (banco real del ejercicio) y los reintentos de Vocabulario/Listening/Lectura guardan w:'retry' (antes se perdian). Las sesiones de Plan anteriores no traen cl y no cuentan para esta sugerencia.
+- La decision del alumno vive en leo_level_suggest_v1 (solo este navegador). Si rechaza en un navegador, otro navegador puede ofrecerla una vez mas.
+- Prueba: node tools/tests/level-suggest.test.js (29 pruebas). Pendiente conocido ajeno a esto: error-monitor.test.js espera 60 paginas HTML (hay 66) y session-cycle.test.js falla de forma intermitente.
+
 2026-10-04 — Glosario: primera tanda SEO de pronunciación (100 fichas)
 - Se añadieron 100 términos completos de alta prioridad (contracciones, pronunciación difícil, TH/W/V, verbos irregulares, phrasal verbs y falsos amigos) en `tools/glosario/terminos.js`. La arquitectura existente los genera como fichas propias con `DefinedTerm`, canonical, título/descripción únicos, enlaces relacionados, índice y sitemap. Resultado: 136 fichas propias, 503 entradas del índice y 136 URLs de glosario en sitemap (antes: 36 / 403 / 36).
 - La búsqueda del glosario ahora normaliza mayúsculas, acentos, apóstrofes rectos/tipográficos, guiones y puntuación. Ejemplo: `mustn't`, `mustn’t`, `mustnt` y `MUSTN'T` encuentran la misma ficha.

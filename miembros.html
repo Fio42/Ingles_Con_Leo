@@ -26,7 +26,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261005b">
+<link rel="stylesheet" href="style.css?v=20261008a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -460,6 +460,8 @@
           <p>Tu plan personalizado y tus accesos rápidos.</p>
         </div>
 
+        <div class="level-suggest" id="levelSuggest" hidden></div>
+
         <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero" id="todayHero">
           <span class="plan-feature-badge">Recomendado</span>
           <div class="plan-feature-icon">
@@ -674,7 +676,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261007a"></script>
 <script src="temas.js?v=20261007a"></script>
-<script src="app.js?v=20261007d"></script>
+<script src="app.js?v=20261008a"></script>
 <script src="backend.js?v=20261007b"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -919,6 +921,7 @@
     renderContinueCard(document.getElementById('continueCard'));
     renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
     renderTodayHero(document.getElementById('todayHero'));
+    renderLevelSuggestion(document.getElementById('levelSuggest'));
     renderRecentActivityV2(document.getElementById('recentActivity'));
     // Igual que progreso.html: si llegan sesiones de otro dispositivo,
     // se redibujan los números y "Tu diagnóstico" con los datos completos.
@@ -928,8 +931,10 @@
         renderStatCards(document.getElementById('statCards'));
         renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
         renderTodayHero(document.getElementById('todayHero'));
+        renderLevelSuggestion(document.getElementById('levelSuggest'));
         renderRecentActivityV2(document.getElementById('recentActivity'));
       });
+      window.addEventListener('leo-profile-synced', function(){ renderLevelSuggestion(document.getElementById('levelSuggest')); });
     }
     renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });

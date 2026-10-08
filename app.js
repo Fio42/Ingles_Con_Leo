@@ -711,6 +711,14 @@ function saveProgressRaw(p){
 const ANSWER_LOG = new Map();   // itemId -> { pick, t, w, ok } de lo respondido en esta página
 const ANSWER_PICK_MAX = 40;
 let RETRY_ITEM_ID = null;       // ejercicio que se está reintentando justo ahora
+// Reintentos de las demás habilidades (Vocabulario, Listening, Lectura...): "Volver a intentar" borra el fallo de results
+// y el acierto posterior parecería de primer intento. Se recuerda el ejercicio para marcarlo (w:'retry') al guardar la sesión.
+const RETRIED_ITEMS = new Set();
+function popRetried(results){
+  const r = results.pop();
+  try{ if(r && r.itemId && r.isCorrect === false) RETRIED_ITEMS.add(r.itemId); }catch(e){}
+  return r;
+}
 
 function noteGrammarAnswer(container, item, isCorrect, pick){
   try{
@@ -764,7 +772,10 @@ function instrumentResults(results, seenBefore){
     if(r && r.itemId) seen.add(r.itemId);
     const graded = !!r && (r.isCorrect === true || r.isCorrect === false);
     const micro = graded ? microOfItem(r.itemId, index) : null;   // sale del ejercicio, no depende de la página
-    if(!log || !graded || log.ok !== r.isCorrect) return (micro && !r.m) ? Object.assign({}, r, { m: micro }) : r;
+    if(!log || !graded || log.ok !== r.isCorrect){
+      const base = (!log && graded && r.itemId && RETRIED_ITEMS.has(r.itemId) && !r.w) ? Object.assign({}, r, { w:'retry' }) : r;
+      return (micro && !base.m) ? Object.assign({}, base, { m: micro }) : base;
+    }
     const extra = {};
     if(micro) extra.m = micro;
     if(log.pick) extra.p = log.pick;
@@ -775,6 +786,7 @@ function instrumentResults(results, seenBefore){
     return Object.assign({}, r, extra);
   });
   results.forEach(r=>{ if(r && r.itemId) ANSWER_LOG.delete(r.itemId); });
+  RETRIED_ITEMS.clear();
   return out;
 }
 
@@ -2068,7 +2080,7 @@ function runGrammarSession({ container, level, onExit }){
     container.appendChild(wrap);
     renderGrammarItemInto(card, item, (isCorrect)=>{
       results.push({ itemId:item.id, isCorrect });
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -2297,7 +2309,7 @@ function runVocabSession({ container, level, onExit }){
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         leoAiAttach(card.querySelector('#fb'), { kind:'vocab', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
-        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente palabra →' : 'Ver resultado →');
@@ -2389,7 +2401,7 @@ function runListeningSession({ container, level, onExit }){
           </div>`;
         leoAiAttach(fb, { kind:'listening', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
-        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente audio →' : 'Ver resultado →');
@@ -2479,7 +2491,7 @@ function runReadingSession({ container, level, onExit }){
           </div>`;
         leoAiAttach(fb, { kind:'reading', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
-        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           idx++;
           if(idx < total) renderItem(); else finish();
         }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -3702,7 +3714,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         if(isFree){ bumpFreeDailyExerciseCount(); freeSessionAnswer('mixto', level, ['Mezcla de habilidades'], results[results.length-1]); }
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -4300,6 +4312,7 @@ function renderPlanIntro(container, opts){
     started = true;
     const contentLevel = resolvePlanContentLevel(level, currentDiff);
     const pool = buildPlanPool(contentLevel, currentSelection);
+    pool.forEach(e => { if(e && typeof e === 'object') e.cl = contentLevel; });   // banco real de cada ejercicio (la sugerencia de nivel lo exige)
     runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
   }
   // ¿Podría tocarle la ruta inicial y aún no se confirmó el historial de la nube? (Con una sesión de Plan a medias
@@ -4378,8 +4391,8 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     container.innerHTML = '';
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
-      results.push(Object.assign({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] }, extra || null));
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] }, entry.cl ? { cl: entry.cl } : null, extra || null));
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -5089,7 +5102,7 @@ async function runMistakesSessionCore({ container, mode, skillFilter }){
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -5252,7 +5265,7 @@ function runDailyChallengeSession({ container, isFree, level }){
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         if(isFree) freeSessionAnswer('reto-diario', level, ['Reto diario'], results[results.length-1]);
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -7294,6 +7307,174 @@ function renderTodayHero(el){
 }
 
 /* ============================================================
+   SUGERENCIA DE NIVEL (solo Miembros, solo SUGIERE: nunca cambia el nivel sola)
+   ------------------------------------------------------------
+   El nivel lo elige el alumno (o queda provisional en Fácil si saltó el onboarding). Si va claramente sobrado o
+   claramente desbordado en su nivel, se le ofrece UN paso (nunca dos) con dos botones: aceptar / mantener.
+   Todo sale del historial que ya se sincroniza (progress.sessions); lo único que se guarda aparte es la decisión
+   del alumno en este navegador (leo_level_suggest_v1), NO dentro de leo_profile (la nube lo reescribe).
+   EVIDENCIA (una respuesta cuenta solo si cumple TODO):
+     - sesión del nivel ACTUAL (session.level) y de los últimos 45 días, y posterior a la última decisión sobre el nivel;
+     - primera vez que la cuenta ve ese ejercicio (los repasos y reintentos no cuentan);
+     - sesiones skill 'check' / 'errores' fuera; respuestas sin esfuerzo (lowEffort) fuera;
+     - Plan: solo si el ejercicio se sacó del banco de SU nivel (r.cl === nivel). La dificultad Fácil/Difícil del Plan
+       guarda el nivel del alumno pero sirve ejercicios de otro nivel; las sesiones anteriores a esta marca no la
+       traen y por eso no cuentan (conservador);
+     - acierto = al primer intento (isCorrect y sin r.w: un acierto tras "Volver a intentar" cuenta como fallo).
+   SUGERIR exige, sobre las últimas 15 respuestas válidas (R) y las últimas 30 (E):
+     >=15 respuestas válidas; R en >=2 sesiones; E con >=2 habilidades cuando el alumno ya practicó >=2;
+     >=3 temas distintos de gramática en E; ningún tema con más del 40% de E.
+     SUBIR  >=14/15 en R  y  gramática >=85% con >=6 respuestas en E.
+     BAJAR  <=6/15 en R   y  dificultad en >=2 áreas (habilidades o familias de gramática con >=3 respuestas y <60%).
+   Principiante no baja, Avanzado no sube. Rechazar = misma sugerencia (dirección + nivel) callada 30 días.
+   ============================================================ */
+const LEVEL_SUGGEST_KEY = 'leo_level_suggest_v1';
+const LEVEL_SUGGEST = {
+  MIN_ANSWERS: 15, RECENT: 15, EVIDENCE: 30, MIN_SESSIONS: 2, MIN_TEMAS: 3, MAX_TEMA_SHARE: 0.4, DAYS: 45,
+  UP_RECENT_OK: 14, UP_GRAMMAR_ACC: 85, UP_GRAMMAR_MIN: 6,
+  DOWN_RECENT_OK: 6, WEAK_AREA_ACC: 60, WEAK_AREA_MIN: 3, WEAK_AREAS_NEEDED: 2,
+  DISMISS_DAYS: 30, UNDO_DAYS: 14
+};
+const LEVEL_SUGGEST_LABELS = { principiante:'Principiante', facil:'Fácil', medio:'Medio', avanzado:'Avanzado' };
+function levelSuggestState(){
+  const s = readJsonKey(LEVEL_SUGGEST_KEY, {});
+  if(!s.dismissed || typeof s.dismissed !== 'object') s.dismissed = {};
+  return s;
+}
+function saveLevelSuggestState(s){
+  try{
+    const cut = Date.now() - LEVEL_SUGGEST.DISMISS_DAYS * 86400000;
+    Object.keys(s.dismissed || {}).forEach(k => { if(!(s.dismissed[k] >= cut)) delete s.dismissed[k]; });
+    localStorage.setItem(LEVEL_SUGGEST_KEY, JSON.stringify(s));
+  }catch(e){}
+}
+// Respuestas válidas del nivel `level` (ver EVIDENCIA arriba), de la más antigua a la más reciente.
+function levelSuggestEvidence(p, level, since, now){
+  const index = getDiagItemIndex();
+  if(!index) return null;
+  const sessions = ((p && p.sessions) || []).filter(s => s && Array.isArray(s.results)).slice().sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+  const cutoff = Math.max(since || 0, now - LEVEL_SUGGEST.DAYS * 86400000);
+  const seen = new Set();
+  const out = [];
+  sessions.forEach((s, si) => {
+    const counts = s.level === level && s.skill !== 'check' && s.skill !== 'errores' && (s.startedAt || 0) >= cutoff;
+    s.results.forEach(r => {
+      if(!r || !r.itemId) return;
+      const firstTime = !seen.has(r.itemId);
+      seen.add(r.itemId);                                        // lo visto en CUALQUIER sesión hace repetido al ejercicio
+      if(!counts || !firstTime) return;
+      if(r.isCorrect !== true && r.isCorrect !== false) return;
+      if(r.lowEffort || r.x) return;
+      if(s.skill === 'plan' && r.cl !== level) return;
+      if(isCheckItem(r.itemId)) return;
+      const found = index.get(r.itemId);
+      if(!found) return;
+      const skill = r.skill || DIAG_KIND_TO_SKILL[found.kind] || s.skill;
+      if(DIAG_SKILLS.indexOf(skill) === -1) return;
+      const tema = (skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening' || skill === 'writing') ? diagTemaIdForFound(found) : null;
+      const fam = (skill === 'gramatica') ? diagFamilyForTopic(found.topic) : null;
+      out.push({ si, skill, ok: r.isCorrect === true && !r.w, fam: fam ? fam.id : null,
+        key: tema || (found.topic ? 'topic:' + found.topic : 'skill:' + skill) });
+    });
+  });
+  return out;
+}
+// { dir:'up'|'down', from, to, ... } o null. No escribe nada.
+function computeLevelSuggestion(p, now){
+  try{
+    const prof = getProfile();
+    if(!prof || !isValidLevel(prof.level) || PROFILE_SYNC_UNCERTAIN) return null;   // sin nivel confirmado no se opina
+    const level = prof.level, idx = LEVELS.indexOf(level);
+    now = now || Date.now();
+    const L = LEVEL_SUGGEST, st = levelSuggestState();
+    const ev = levelSuggestEvidence(p || loadProgress(), level, st.since, now);
+    if(!ev || ev.length < L.MIN_ANSWERS) return null;
+    const E = ev.slice(-L.EVIDENCE), R = ev.slice(-L.RECENT);
+    if(new Set(R.map(a => a.si)).size < L.MIN_SESSIONS) return null;
+    if(new Set(E.map(a => a.skill)).size < Math.min(2, new Set(ev.map(a => a.skill)).size)) return null;
+    const gram = E.filter(a => a.skill === 'gramatica');
+    if(new Set(gram.map(a => a.key)).size < L.MIN_TEMAS) return null;
+    const share = {};
+    E.forEach(a => { share[a.key] = (share[a.key] || 0) + 1; });
+    if(Object.keys(share).some(k => share[k] / E.length > L.MAX_TEMA_SHARE)) return null;
+    const recentOk = R.filter(a => a.ok).length;
+    let dir = null;
+    if(idx < LEVELS.length - 1 && recentOk >= L.UP_RECENT_OK && gram.length >= L.UP_GRAMMAR_MIN
+      && gram.filter(a => a.ok).length * 100 >= L.UP_GRAMMAR_ACC * gram.length) dir = 'up';
+    else if(idx > 0 && recentOk <= L.DOWN_RECENT_OK){
+      const areas = {};
+      E.forEach(a => {
+        const k = a.skill !== 'gramatica' ? 's:' + a.skill : (a.fam ? 'f:' + a.fam : null);
+        if(!k) return;
+        const g = areas[k] || (areas[k] = { n:0, ok:0 });
+        g.n++; if(a.ok) g.ok++;
+      });
+      const weak = Object.keys(areas).filter(k => areas[k].n >= L.WEAK_AREA_MIN && areas[k].ok * 100 < L.WEAK_AREA_ACC * areas[k].n).length;
+      if(weak >= L.WEAK_AREAS_NEEDED) dir = 'down';
+    }
+    if(!dir) return null;
+    const quiet = st.dismissed[dir + ':' + level];
+    if(quiet && now - quiet < L.DISMISS_DAYS * 86400000) return null;
+    return { dir, from: level, to: LEVELS[idx + (dir === 'up' ? 1 : -1)], answers: ev.length, recentOk };
+  }catch(e){ return null; }
+}
+function acceptLevelSuggestion(sug){
+  const st = levelSuggestState();
+  st.prev = { level: sug.from, to: sug.to, dir: sug.dir, at: Date.now() };   // para poder volver con un clic
+  st.since = Date.now();                                                    // la evidencia del nivel nuevo empieza de cero
+  saveLevelSuggestState(st);
+  setUserLevel(sug.to, 'suggested');
+}
+function rejectLevelSuggestion(sug){
+  const st = levelSuggestState();
+  st.dismissed[sug.dir + ':' + sug.from] = Date.now();
+  saveLevelSuggestState(st);
+}
+function undoLevelSuggestion(){
+  const st = levelSuggestState();
+  if(!st.prev) return null;
+  const back = st.prev;
+  st.dismissed[back.dir + ':' + back.level] = Date.now();                   // no volver a ofrecer lo mismo enseguida
+  st.since = Date.now();
+  delete st.prev;
+  saveLevelSuggestState(st);
+  setUserLevel(back.level, 'self');
+  return back.level;
+}
+// Tarjeta del panel de Miembros (`el` = contenedor oculto). Espera a confirmar el historial de la nube.
+function renderLevelSuggestion(el){
+  if(!el) return;
+  function hide(){ el.hidden = true; el.innerHTML = ''; }
+  function say(html){ el.hidden = false; el.innerHTML = '<div class="level-suggest-card" role="region" aria-label="Sugerencia de nivel">' + html + '</div>'; }
+  function paint(){
+    const st = levelSuggestState(), now = Date.now(), lab = LEVEL_SUGGEST_LABELS;
+    const prof = getProfile();
+    if(st.prev && prof && prof.level === st.prev.to && now - st.prev.at < LEVEL_SUGGEST.UNDO_DAYS * 86400000){
+      say(`<div class="level-suggest-text"><strong>Ahora practicas en nivel ${lab[st.prev.to]}.</strong> Si no te convence, puedes volver a ${lab[st.prev.level]} cuando quieras.</div>
+        <div class="level-suggest-actions"><button type="button" class="btn btn-ghost btn-sm" id="lsUndo">Volver a ${lab[st.prev.level]}</button></div>`);
+      el.querySelector('#lsUndo').addEventListener('click', ()=>{
+        const back = undoLevelSuggestion();
+        say('<div class="level-suggest-text"><strong>Listo, volviste a ' + (lab[back] || 'tu nivel anterior') + '.</strong></div>');
+        setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 800);
+      });
+      return;
+    }
+    const sug = computeLevelSuggestion(null, now);
+    if(!sug){ hide(); return; }
+    const up = sug.dir === 'up', to = lab[sug.to], from = lab[sug.from];
+    say(`<div class="level-suggest-text"><strong>${up ? 'Parece que este nivel te está quedando fácil.' : 'Parece que este nivel te está resultando difícil.'}</strong> ${up ? `¿Quieres probar ${to}?` : `¿Quieres probar ${to} para ganar confianza?`}<span class="level-suggest-sub">Puedes volver a ${from} cuando quieras.</span></div>
+      <div class="level-suggest-actions"><button type="button" class="btn btn-primary btn-sm" id="lsAccept">Sí, probar ${to}</button><button type="button" class="btn btn-ghost btn-sm" id="lsKeep">Mantener mi nivel</button></div>`);
+    el.querySelector('#lsAccept').addEventListener('click', ()=>{
+      acceptLevelSuggestion(sug);
+      say('<div class="level-suggest-text"><strong>Listo, ahora practicas en nivel ' + to + '.</strong> Tu próxima sesión ya usa este nivel.</div>');
+      setTimeout(()=>{ try{ location.reload(); }catch(e){} }, 900);
+    });
+    el.querySelector('#lsKeep').addEventListener('click', ()=>{ rejectLevelSuggestion(sug); hide(); });
+  }
+  ensureStartRouteSync().then(ok => { if(ok) paint(); else hide(); }, hide);
+}
+
+/* ============================================================
    PÁGINA DE PROGRESO (progreso.html)
    ============================================================ */
 /* ---------- Estadísticas semanales con comparación vs. la semana anterior ---------- */
@@ -7734,7 +7915,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
     container.appendChild(wrap);
     renderGrammarItemInto(card, item, (isCorrect)=>{
       results.push({ itemId:item.id, isCorrect });
-      showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+      showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         bumpFreeDailyExerciseCount();
           freeSessionAnswer('gramatica', level, topics.map(t=>t.topic), results[results.length-1]);
         idx++;
@@ -7806,7 +7987,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
         results.push({ itemId:item.id, isCorrect });
-        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();
           freeSessionAnswer('vocabulario', level, ['Vocabulario en contexto'], results[results.length-1]);
           idx++;
@@ -7892,7 +8073,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
         results.push({ itemId:item.id, isCorrect });
-        showRetryOrNextButtons(card, isCorrect, ()=>{ results.pop(); renderItem(); }, ()=>{
+        showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();
           freeSessionAnswer('listening', level, ['Comprensión auditiva'], results[results.length-1]);
           idx++;
