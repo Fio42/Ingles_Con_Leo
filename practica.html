@@ -115,19 +115,74 @@
 </header>
 
 <main id="practicaMain" style="visibility:hidden;">
-  <section class="page-hero">
+  <section class="page-hero" style="padding-bottom:12px;">
     <div class="wrap">
       <span class="badge badge-free">Gratis</span>
       <h1 style="margin-top:14px;">Elige tu nivel y practica</h1>
-      <p class="lead">Elige tu nivel y una habilidad, y haz una mini sesión real de varios ejercicios. Sin registrarte. Es una muestra del sistema de Inglés con Leo, creado con el método del Profe Leo.</p>
+      <p class="lead">Elige tu nivel y una habilidad y empieza ahora. Sin registrarte, sin tarjeta.</p>
       <p style="margin-top:8px;font-size:14px;color:var(--ink-faint);">¿No sabes cuál es tu nivel? <a href="test-de-nivel-de-ingles.html" style="color:var(--blue);font-weight:600;">Haz el test de nivel gratis</a>.</p>
-      <p id="freeAccountHint" style="margin-top:8px;font-size:14px;color:var(--ink-faint);">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro&volver=practica.html" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
       <div id="newAccountBanner" role="status" style="display:none;margin-top:14px;padding:12px 16px;border-radius:12px;background:rgba(37,62,204,0.08);border:1px solid rgba(37,62,204,0.25);font-size:15px;line-height:1.5;"></div>
     </div>
   </section>
 
   <section style="padding-top:8px;">
     <div class="wrap">
+      <div class="levels" id="levelSelector"></div>
+
+      <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
+
+      <div class="skill-section" style="margin-top:20px;">
+        <div class="skill-section-head" id="skillHead"></div>
+        <div class="skill-section-body" id="skillBody"></div>
+      </div>
+
+      <p id="freeAccountHint" style="margin-top:20px;font-size:14px;color:var(--ink-faint);text-align:center;">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro&volver=practica.html" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
+      <div class="article-cta practice-members-cta" style="margin-top:16px;">
+        <div class="practice-members-copy">
+          <h3>Esto es una muestra del sistema</h3>
+          <p>Como miembro, el sistema recuerda tu progreso, conecta tus errores y te dice qué practicar después, con el método del Profe Leo y Leo AI cuando necesitas una explicación extra.</p>
+          <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Descubrir el sistema completo <span aria-hidden="true">→</span></a>
+          <p class="practice-members-price">$2 USD al mes. Cancela cuando quieras.</p>
+        </div>
+        <div class="practice-members-benefits" aria-label="Beneficios de ser miembro">
+          <div class="practice-members-benefit">
+            <div class="practice-members-benefit-icon tint-blue">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="practice-members-benefit-title">Te dice qué practicar</div>
+            <div class="practice-members-benefit-desc">Práctica ilimitada guiada por tus puntos débiles.</div>
+          </div>
+          <div class="practice-members-benefit">
+            <div class="practice-members-benefit-icon tint-amber">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.7 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="practice-members-benefit-title">Aprende de tus errores</div>
+            <div class="practice-members-benefit-desc">El sistema los guarda y los conecta.</div>
+          </div>
+          <div class="practice-members-benefit">
+            <div class="practice-members-benefit-icon tint-coral">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
+            </div>
+            <div class="practice-members-benefit-title">Racha y progreso</div>
+            <div class="practice-members-benefit-desc">Mira cuánto avanzas cada semana.</div>
+          </div>
+          <div class="practice-members-benefit">
+            <div class="practice-members-benefit-icon tint-violet">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="practice-members-benefit-title">Método del Profe Leo</div>
+            <div class="practice-members-benefit-desc">Clases interactivas y preparación TOEFL e IELTS.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:8px;" id="masPracticar">
+    <div class="wrap">
+      <div class="section-head" style="margin-top:36px;">
+        <h2>Más para practicar</h2>
+      </div>
       <div class="quick-actions-card">
         <div class="quick-actions-item daily-card" id="dailyChallengeCard">
           <div class="daily-card-top">
@@ -166,64 +221,12 @@
           <span class="learn-promo-arrow" aria-hidden="true">→</span>
         </a>
       </div>
-    </div>
-  </section>
-
-  <section style="padding-top:8px;">
-    <div class="wrap">
-      <div class="levels" id="levelSelector"></div>
-
-      <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
-
-      <div class="skill-section" style="margin-top:20px;">
-        <div class="skill-section-head" id="skillHead"></div>
-        <div class="skill-section-body" id="skillBody"></div>
-      </div>
-
       <div class="section-head" style="margin-top:36px;">
         <h2>Conoce la preparación para el TOEFL</h2>
         <p>Así es un ejercicio real de nuestra preparación para el TOEFL. Contesta estas 5 preguntas de muestra.</p>
       </div>
       <div class="session-shell" id="toeflTeaserArea" style="margin-top:16px;"></div>
 
-      <div class="article-cta practice-members-cta" style="margin-top:28px;">
-        <div class="practice-members-copy">
-          <h3>Esto es una muestra del sistema</h3>
-          <p>Como miembro, el sistema recuerda tu progreso, conecta tus errores y te dice qué practicar después, con el método del Profe Leo y Leo AI cuando necesitas una explicación extra.</p>
-          <a href="miembros.html" class="btn btn-primary" style="width:fit-content;">Descubrir el sistema completo <span aria-hidden="true">→</span></a>
-          <p class="practice-members-price">$2 USD al mes. Cancela cuando quieras.</p>
-        </div>
-        <div class="practice-members-benefits" aria-label="Beneficios de ser miembro">
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-blue">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Te dice qué practicar</div>
-            <div class="practice-members-benefit-desc">Práctica ilimitada guiada por tus puntos débiles.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-amber">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.7 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M20 4v5h-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Aprende de tus errores</div>
-            <div class="practice-members-benefit-desc">El sistema los guarda y los conecta.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-coral">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1.5-1-2-1-2s2 1 2 4a5 5 0 01-10 0c0-5 4-6 4-9 0-1-.5-2-.5-2s2 0 2.5 0z" fill="currentColor"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Racha y progreso</div>
-            <div class="practice-members-benefit-desc">Mira cuánto avanzas cada semana.</div>
-          </div>
-          <div class="practice-members-benefit">
-            <div class="practice-members-benefit-icon tint-violet">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-            </div>
-            <div class="practice-members-benefit-title">Método del Profe Leo</div>
-            <div class="practice-members-benefit-desc">Clases interactivas y preparación TOEFL e IELTS.</div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 </main>
