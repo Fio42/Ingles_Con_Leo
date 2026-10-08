@@ -115,6 +115,18 @@
 </header>
 
 <main id="practicaMain" style="visibility:hidden;">
+<script>
+/* Visitante sin sesion guardada en este navegador: no puede ser miembro, asi que no hay
+   redireccion posible y no hace falta esperar a la red para mostrar la pagina (antes el
+   titular tardaba varios segundos en aparecer). Con sesion guardada se espera como siempre. */
+(function(){try{for(var i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token$/.test(localStorage.key(i)||'')) return;}}catch(e){return;}
+document.getElementById('practicaMain').style.visibility='visible';})();
+/* Lo de abajo (cuenta, miembros, extras) se muestra cuando los ejercicios ya se armaron,
+   para que no salte la pagina mientras carga. Red de seguridad a los 6 s. */
+window.leoShowLate=function(){var l=document.querySelectorAll('.late-hidden');for(var i=0;i<l.length;i++)l[i].classList.remove('late-hidden');};
+setTimeout(window.leoShowLate,6000);
+</script>
+<style>.late-hidden{visibility:hidden;}</style>
   <section class="page-hero" style="padding-bottom:12px;">
     <div class="wrap">
       <span class="badge badge-free">Gratis</span>
@@ -131,13 +143,13 @@
 
       <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
 
-      <div class="skill-section" style="margin-top:20px;">
+      <div class="skill-section late-hidden" style="margin-top:20px;">
         <div class="skill-section-head" id="skillHead"></div>
         <div class="skill-section-body" id="skillBody"></div>
       </div>
 
-      <p id="freeAccountHint" style="margin-top:20px;font-size:14px;color:var(--ink-faint);text-align:center;">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro&volver=practica.html" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
-      <div class="article-cta practice-members-cta" style="margin-top:16px;">
+      <p id="freeAccountHint" class="late-hidden" style="margin-top:20px;font-size:14px;color:var(--ink-faint);text-align:center;">¿Quieres guardar tu progreso y practicar más cada día? <a href="miembros.html?modo=registro&volver=practica.html" style="color:var(--blue);font-weight:600;">Crea una cuenta gratis</a>, no pide tarjeta.</p>
+      <div class="article-cta practice-members-cta late-hidden" style="margin-top:16px;">
         <div class="practice-members-copy">
           <h3>Esto es una muestra del sistema</h3>
           <p>Como miembro, el sistema recuerda tu progreso, conecta tus errores y te dice qué practicar después, con el método del Profe Leo y Leo AI cuando necesitas una explicación extra.</p>
@@ -178,7 +190,7 @@
     </div>
   </section>
 
-  <section style="padding-top:8px;" id="masPracticar">
+  <section style="padding-top:8px;" id="masPracticar" class="late-hidden">
     <div class="wrap">
       <div class="section-head" style="margin-top:36px;">
         <h2>Más para practicar</h2>
@@ -231,7 +243,7 @@
   </section>
 </main>
 
-<footer>
+<footer class="late-hidden">
   <div class="wrap foot-row">
     <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
     <div class="foot-links">
@@ -400,6 +412,7 @@
       card: document.getElementById('dailyChallengeCard')
     });
     if(typeof renderToeflTeaser === 'function') renderToeflTeaser(document.getElementById('toeflTeaserArea'));
+    if(window.leoShowLate) window.leoShowLate();
     // El onboarding (nombre + nivel) ya no sale a visitantes: solo a quien
     // tiene cuenta (gratis) iniciada, por ejemplo al volver aqui recien
     // creada la cuenta (?cuenta=nueva).
