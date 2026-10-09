@@ -1845,7 +1845,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaText: 'Volver a la membresía',
     ctaUrl: `${SITE}/miembros.html`,
     ctaStyle: 'link',
-    footerNote: 'Si decidiste no continuar, no hay problema. Este es el último correo sobre esto.',
+    footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
   },
   active_free_pitch: {
     subject: 'Se nota que le estás echando ganas 🔥',
