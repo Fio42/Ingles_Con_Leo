@@ -1,6 +1,8 @@
 /* Fuentes de respaldo con metricas ajustadas a Inter: evitan el salto de layout (CLS) cuando carga la fuente real */
-@font-face{font-family:'Inter Fallback';src:local('Arial');size-adjust:107.4%;ascent-override:90.2%;descent-override:22.5%;line-gap-override:0%;}
-@font-face{font-family:'Baloo Fallback';src:local('Arial Bold'),local('Arial-BoldMT');font-weight:500 800;size-adjust:94.1%;ascent-override:114.5%;descent-override:55.7%;line-gap-override:0%;}
+@font-face{font-family:'Inter Fallback';src:local('Arial'),local('Liberation Sans'),local('LiberationSans'),local('Arimo');size-adjust:107.4%;ascent-override:90.2%;descent-override:22.5%;line-gap-override:0%;}
+@font-face{font-family:'Inter Fallback Roboto';src:local('Roboto Regular'),local('Roboto'),local('Roboto-Regular');size-adjust:107.2%;ascent-override:90.4%;descent-override:22.5%;line-gap-override:0%;}
+@font-face{font-family:'Baloo Fallback';src:local('Arial Bold'),local('Arial-BoldMT'),local('Liberation Sans Bold'),local('LiberationSans-Bold'),local('Arimo Bold'),local('Arimo-Bold');font-weight:500 800;size-adjust:94.1%;ascent-override:114.5%;descent-override:55.7%;line-gap-override:0%;}
+@font-face{font-family:'Baloo Fallback Roboto';src:local('Roboto Bold'),local('Roboto-Bold');font-weight:500 800;size-adjust:99.5%;ascent-override:108.3%;descent-override:52.7%;line-gap-override:0%;}
 :root{
   --paper:#FBF8F2;
   --paper-dim:#F3EFE6;
@@ -38,14 +40,14 @@ body{
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font-family:'Inter','Inter Fallback',sans-serif;
+  font-family:'Inter','Inter Fallback','Inter Fallback Roboto',sans-serif;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
   padding-bottom:74px;
 }
 @media(min-width:900px){body{padding-bottom:0;}}
 h1,h2,h3,.display{
-  font-family:'Baloo 2','Baloo Fallback',sans-serif;
+  font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;
   font-weight:700;
   line-height:1.14;
   margin:0;
@@ -68,7 +70,7 @@ header{
   border-bottom:1px solid var(--line);
 }
 .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;position:relative;}
-.logo{display:flex;align-items:center;gap:8px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.28rem;color:var(--ink);flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.28rem;color:var(--ink);flex-shrink:0;}
 .logo .leo{color:var(--blue);}
 .logo-mark{width:34px;height:34px;flex-shrink:0;object-fit:contain;border-radius:50%;background:#F5A524;}
 .nav-links{display:none;gap:26px;font-weight:600;font-size:0.96rem;color:var(--ink-soft);}
@@ -95,14 +97,14 @@ header{
 
 .nav-profile-btn{display:flex;align-items:center;gap:8px;background:none;border:none;padding:5px 10px 5px 5px;border-radius:999px;cursor:pointer;transition:background .15s ease;}
 .nav-profile-btn:hover{background:var(--paper-dim);}
-.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2';font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:0.9rem;flex-shrink:0;}
 .nav-avatar.lg{width:44px;height:44px;font-size:1.1rem;}
 .nav-profile-name{font-weight:700;font-size:0.9rem;color:var(--ink);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;}
 .nav-chevron{width:14px;height:14px;color:var(--ink-faint);flex-shrink:0;}
 
 .nav-pop{position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:2px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow);padding:10px;min-width:230px;display:none;z-index:80;}
 .nav-pop.open{display:block;}
-.nav-pop-title{font-family:'Baloo 2';font-weight:700;font-size:0.95rem;padding:6px 8px 10px;}
+.nav-pop-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:0.95rem;padding:6px 8px 10px;}
 .nav-pop-msg{color:var(--ink-soft);font-size:0.86rem;padding:6px 8px;line-height:1.42;margin:0;}
 .nav-pop-item{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:none;padding:10px 10px;border-radius:var(--radius-sm);font-weight:600;font-size:0.89rem;color:var(--ink);cursor:pointer;text-decoration:none;font-family:inherit;}
 .nav-pop-item:hover{background:var(--paper-dim);}
@@ -188,7 +190,7 @@ section{padding:52px 0;}
 .level-card[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 0 0 4px var(--tone-tint);}
 .level-card .tone-bar{width:44px;height:6px;border-radius:99px;background:var(--tone);}
 .level-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-.level-name{font-family:'Baloo 2';font-weight:700;font-size:1.35rem;color:var(--ink);}
+.level-name{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.35rem;color:var(--ink);}
 .level-range{color:var(--ink-faint);font-weight:600;font-size:0.9rem;margin-top:2px;}
 .level-icon{width:46px;height:46px;flex-shrink:0;}
 .level-desc{color:var(--ink-soft);font-size:0.95rem;}
@@ -228,7 +230,7 @@ section{padding:52px 0;}
 
 .practice-body{padding:26px 22px 28px;min-height:340px;}
 .practice-level-tag{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);margin-bottom:16px;}
-.practice-prompt{font-family:'Baloo 2';font-weight:600;font-size:1.3rem;color:var(--ink);margin-bottom:20px;}
+.practice-prompt{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:600;font-size:1.3rem;color:var(--ink);margin-bottom:20px;}
 .practice-instruction{font-size:0.8rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;}
 .practice-translation{font-size:0.95rem;color:var(--ink-soft);font-style:italic;margin:-14px 0 18px;}
 .option-list{display:flex;flex-direction:column;gap:10px;}
@@ -267,7 +269,7 @@ section{padding:52px 0;}
 
 .vocab-card{display:flex;align-items:center;gap:18px;background:var(--paper-dim);border-radius:var(--radius-md);padding:20px;margin-bottom:16px;}
 .vocab-icon{width:56px;height:56px;flex-shrink:0;}
-.vocab-word{font-family:'Baloo 2';font-weight:700;font-size:1.3rem;}
+.vocab-word{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.3rem;}
 .vocab-sub{color:var(--ink-soft);font-size:0.92rem;margin-top:2px;}
 
 /* ---------- locked state ---------- */
@@ -289,7 +291,7 @@ section{padding:52px 0;}
 .progress-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
 @media(min-width:640px){.progress-stats{grid-template-columns:repeat(4,1fr);}}
 .stat{background:var(--paper-dim);border-radius:var(--radius-md);padding:24px 16px;text-align:center;}
-.stat .num{font-family:'Baloo 2';font-weight:800;font-size:2.2rem;color:var(--blue);}
+.stat .num{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:2.2rem;color:var(--blue);}
 .stat .lbl{font-size:0.85rem;color:var(--ink-soft);font-weight:600;margin-top:2px;}
 .bar-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
 .bar-row:last-child{margin-bottom:0;}
@@ -349,25 +351,25 @@ section{padding:52px 0;}
 .practice-members-benefit-icon.tint-amber{background:var(--amber-tint);color:var(--amber);}
 .practice-members-benefit-icon.tint-coral{background:var(--coral-tint);color:var(--coral);}
 .practice-members-benefit-icon.tint-violet{background:var(--violet-tint);color:var(--violet);}
-.practice-members-benefit-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.9rem;color:var(--ink);line-height:1.25;}
+.practice-members-benefit-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:0.9rem;color:var(--ink);line-height:1.25;}
 .practice-members-benefit-desc{font-size:0.78rem;color:var(--ink-soft);line-height:1.35;}
 @media(min-width:760px){.practice-members-cta{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,0.95fr);align-items:center;padding:38px 44px;}}
 @media(max-width:380px){.practice-members-benefits{grid-template-columns:1fr;}}
 .article-table-wrap{overflow-x:auto;margin:14px 0 22px;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:var(--radius-md);}
 .article-table{width:100%;border-collapse:collapse;font-size:0.98rem;}
 .article-table th,.article-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;}
-.article-table th{font-family:'Baloo 2',sans-serif;font-weight:700;color:var(--ink);background:var(--paper-dim);position:sticky;top:0;}
+.article-table th{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;color:var(--ink);background:var(--paper-dim);position:sticky;top:0;}
 .article-table td{color:var(--ink-soft);}
 .article-table tr:last-child td{border-bottom:none;}
 @media(max-width:480px){.article-table{font-size:0.88rem;}.article-table th,.article-table td{padding:8px 10px;}}
 .article-faq details{background:var(--paper-dim);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:10px;}
-.article-faq summary{font-family:'Baloo 2',sans-serif;font-weight:700;cursor:pointer;color:var(--ink);}
+.article-faq summary{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;cursor:pointer;color:var(--ink);}
 .article-faq details p{margin:10px 0 0;}
 .article-body .inline-link{color:var(--blue);font-weight:600;text-decoration:none;}
 .article-body .inline-link:hover{text-decoration:underline;}
 
 .article-toc{margin:22px 0 8px;background:var(--paper-dim);border-radius:var(--radius-lg);padding:20px 22px;}
-.article-toc-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:10px;color:var(--ink);}
+.article-toc-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:0.95rem;margin-bottom:10px;color:var(--ink);}
 .article-toc ol{margin:0;padding-left:20px;color:var(--ink-soft);font-size:0.95rem;line-height:1.9;}
 .article-toc a{color:var(--blue);font-weight:600;text-decoration:none;}
 .article-toc a:hover{text-decoration:underline;}
@@ -445,7 +447,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .skill-tab-btn[aria-pressed="true"]{border-color:var(--blue);color:var(--blue-deep);background:var(--blue-tint);}
 
 .skill-section-head{padding:20px 22px;border-bottom:1px solid var(--line);background:var(--paper-dim);}
-.skill-section-head h3{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;}
+.skill-section-head h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.15rem;}
 .skill-section-head p{color:var(--ink-soft);font-size:0.87rem;margin-top:3px;}
 .skill-section-body{padding:26px 22px 28px;min-height:220px;}
 .next-row{display:flex;justify-content:flex-end;margin-top:18px;}
@@ -491,7 +493,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .session-progress-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .2s ease;}
 .session-summary{text-align:center;padding:12px 6px 4px;}
 .session-summary h2{font-size:1.6rem;margin-bottom:8px;}
-.summary-score{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--blue);margin-bottom:22px;}
+.summary-score{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.15rem;color:var(--blue);margin-bottom:22px;}
 .summary-topics{margin-bottom:26px;}
 .summary-topics ul{list-style:none;padding:0;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
 .summary-topics li{background:var(--blue-tint);color:var(--blue-deep);font-weight:600;font-size:0.85rem;padding:6px 14px;border-radius:999px;}
@@ -513,11 +515,11 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .audio-missing-note{color:var(--ink-faint);font-size:0.85rem;font-style:italic;margin-top:10px;}
 
 /* ---------- Dashboard (miembros.html) ---------- */
-.dash-greeting{font-family:'Baloo 2';font-weight:700;font-size:1.7rem;margin-bottom:4px;}
+.dash-greeting{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.7rem;margin-bottom:4px;}
 .dash-sub{color:var(--ink-soft);margin-bottom:28px;}
 .continue-card{background:var(--ink);color:#fff;border-radius:var(--radius-md);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;max-width:640px;}
 .continue-eyebrow{color:#9FB0FF;font-weight:700;font-size:0.76rem;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;}
-.continue-title{font-family:'Baloo 2';font-weight:700;font-size:1.2rem;color:#fff;}
+.continue-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.2rem;color:#fff;}
 .continue-sub{color:#C7CCDA;font-size:0.9rem;margin-top:4px;}
 .continue-card .btn-primary{background:#fff;color:var(--ink);}
 .continue-card .btn-primary:hover{background:#EEE;}
@@ -530,7 +532,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media(min-width:1000px){.skill-cards-grid{grid-template-columns:repeat(3,1fr);}}
 .skill-card-link{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:26px 22px;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
 .skill-card-link:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--blue);}
-.skill-card-link h3{font-family:'Baloo 2';font-size:1.15rem;}
+.skill-card-link h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.15rem;}
 .skill-card-link p{color:var(--ink-soft);font-size:0.9rem;}
 .skill-card-link .go{margin-top:4px;font-weight:700;color:var(--blue);font-size:0.88rem;}
 .skill-icon-wrap{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -590,7 +592,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .stat-card-icon{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .stat-card-icon svg{width:26px;height:26px;}
 .stat-card-label{font-size:0.85rem;color:var(--ink-soft);font-weight:600;line-height:1.25;}
-.stat-card-value{font-family:'Baloo 2';font-weight:700;font-size:1.35rem;margin-top:3px;line-height:1.2;}
+.stat-card-value{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.35rem;margin-top:3px;line-height:1.2;}
 
 .dash-grid{display:grid;gap:24px;grid-template-columns:1fr;margin-bottom:12px;align-items:stretch;}
 @media(min-width:900px){.dash-grid{grid-template-columns:1.4fr 1fr;}}
@@ -602,7 +604,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .rings-panel{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:36px 34px 32px;display:flex;flex-direction:column;}
 .rings-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
-.rings-panel-head h3{font-family:'Baloo 2';font-size:1.5rem;}
+.rings-panel-head h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.5rem;}
 .rings-panel-head p{color:var(--ink-soft);font-size:0.95rem;margin-top:6px;}
 .rings-panel-head .see-all{font-weight:700;color:var(--blue);font-size:0.88rem;white-space:nowrap;}
 .ring-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 12px;margin-top:auto;padding-top:30px;flex:1;align-items:center;}
@@ -610,7 +612,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 @media(min-width:520px){.ring-grid{grid-template-columns:repeat(5,1fr);gap:16px;}}
 .ring-item{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;}
 .ring-item svg{display:block;}
-.ring-pct{font-family:'Baloo 2';font-weight:700;fill:var(--ink);opacity:1;animation:ringPctFadeIn .5s ease-out .5s both;}
+.ring-pct{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;fill:var(--ink);opacity:1;animation:ringPctFadeIn .5s ease-out .5s both;}
 .ring-label{font-size:0.86rem;color:var(--ink-soft);font-weight:700;}
 
 /* ============================================================
@@ -697,7 +699,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .bottom-grid{display:grid;gap:20px;grid-template-columns:1fr;align-items:stretch;}
 @media(min-width:900px){.bottom-grid{grid-template-columns:1fr 1fr;}}
 @media(min-width:1200px){.bottom-grid{grid-template-columns:1.15fr 1fr 0.85fr;}}
-.bottom-panel-title{font-family:'Baloo 2';font-weight:700;font-size:1.1rem;margin-bottom:16px;}
+.bottom-panel-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:16px;}
 .recent-row{border-left:4px solid var(--line);}
 
 .activity-card, .weekly-chart-card, .streak-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:24px 22px 20px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;}
@@ -717,7 +719,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .streak-subhead{font-weight:700;font-size:0.86rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:2px;}
 .streak-flame{width:52px;height:52px;border-radius:50%;background:var(--coral-tint);color:var(--coral);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
 .streak-flame svg{width:26px;height:26px;}
-.streak-number{font-family:'Baloo 2';font-weight:700;font-size:2rem;line-height:1;}
+.streak-number{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:2rem;line-height:1;}
 .streak-caption{color:var(--ink-soft);font-size:0.86rem;margin-top:4px;}
 .streak-goal{color:var(--blue-deep);font-weight:700;font-size:0.86rem;margin-top:12px;background:var(--blue-tint);border-radius:999px;padding:8px 14px;}
 .streak-goal-week{margin-top:14px;}
@@ -786,7 +788,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .tip-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 26px;display:flex;flex-direction:column;justify-content:center;gap:12px;height:100%;box-sizing:border-box;}
 .tip-card-icon{width:42px;height:42px;border-radius:50%;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .tip-card-icon svg{width:21px;height:21px;}
-.tip-card-eyebrow{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;}
+.tip-card-eyebrow{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.05rem;}
 .tip-card-text{color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
 .tip-card .btn{margin-top:2px;align-self:flex-start;}
 
@@ -998,7 +1000,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 .hero-v2-card-tag{display:inline-block;background:var(--blue-tint);color:var(--blue-deep);font-size:0.62rem;font-weight:700;padding:3px 8px;border-radius:999px;margin-bottom:8px;}
 .hero-v2-card-en{
-  font-family:'Baloo 2',sans-serif;font-weight:700;font-size:0.86rem;line-height:1.25;
+  font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:0.86rem;line-height:1.25;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
 }
 .hero-v2-card-es{
@@ -1039,7 +1041,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   text-decoration:none;color:inherit;cursor:pointer;
 }
 .how-v2-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--blue);}
-.how-v2-num{font-family:'Baloo 2',sans-serif;font-weight:800;color:var(--blue);font-size:0.92rem;letter-spacing:0.03em;}
+.how-v2-num{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;color:var(--blue);font-size:0.92rem;letter-spacing:0.03em;}
 .how-v2-card h3{font-size:1.28rem;margin-top:2px;}
 .how-v2-card > p{color:var(--ink-soft);font-size:0.96rem;margin-bottom:8px;}
 
@@ -1073,7 +1075,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 .home-skill-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--blue);}
-.home-skill-card h3{font-family:'Baloo 2',sans-serif;font-size:1.1rem;}
+.home-skill-card h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.1rem;}
 .home-skill-card p{color:var(--ink-soft);font-size:0.88rem;}
 .home-skill-go{margin-top:auto;font-weight:700;color:var(--blue);font-size:0.86rem;}
 
@@ -1145,7 +1147,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .pricing-kicker{display:inline-block;margin-bottom:8px;border-radius:999px;background:var(--blue-tint);color:var(--blue);padding:5px 10px;font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;}
 .pricing-card h2{font-size:1.45rem;margin-bottom:18px;}
 .pricing-price{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:20px;}
-.pricing-amount{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:3rem;color:var(--blue);line-height:1;}
+.pricing-amount{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:3rem;color:var(--blue);line-height:1;}
 .pricing-period{color:var(--ink-soft);font-weight:600;font-size:0.95rem;}
 .pricing-limited{display:inline-flex;align-items:center;gap:6px;margin:-8px 0 18px;border-radius:999px;background:var(--amber-tint);color:#8A5A00;padding:6px 12px;font-size:0.78rem;font-weight:700;}
 .pricing-features{list-style:none;margin:0 0 24px;padding:0;display:flex;flex-direction:column;gap:11px;text-align:left;max-width:340px;margin-left:auto;margin-right:auto;}
@@ -1166,7 +1168,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-level-card{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:24px 22px;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;border-top:6px solid var(--tone);}
 .home-level-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--line);}
 .home-level-tag{display:inline-block;font-weight:700;font-size:0.8rem;color:var(--tone);background:var(--tone-tint);padding:5px 12px;border-radius:999px;margin-bottom:10px;}
-.home-level-card h3{font-family:'Baloo 2',sans-serif;font-size:1.3rem;margin-bottom:6px;}
+.home-level-card h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.3rem;margin-bottom:6px;}
 .home-level-card p{color:var(--ink-soft);font-size:0.9rem;}
 
 /* ---------- Sobre Leo (home) ---------- */
@@ -1239,7 +1241,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .clases-continue{margin-bottom:34px;}
 .clases-continue-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;}
-.clases-continue-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;display:flex;align-items:center;gap:8px;}
+.clases-continue-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;display:flex;align-items:center;gap:8px;}
 .clases-continue-sub{font-size:0.86rem;color:var(--ink-soft);margin:0;}
 .clases-continue-arrows{display:flex;gap:8px;flex-shrink:0;}
 .clases-carousel-arrow{width:34px;height:34px;border:2px solid var(--line);border-radius:50%;background:#fff;color:var(--blue-deep);font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s ease, background .15s ease;}
@@ -1251,7 +1253,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .clases-category{margin-bottom:34px;}
 .clases-category-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px;}
-.clases-category-title{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;}
+.clases-category-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.15rem;color:var(--ink);margin:0 0 2px;}
 .clases-category-desc{font-size:0.86rem;color:var(--ink-soft);margin:0;}
 .clases-ver-todas{background:none;border:none;padding:0;font-weight:700;font-size:0.85rem;color:var(--blue);cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;}
 .clases-ver-todas:hover{text-decoration:underline;}
@@ -1263,7 +1265,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .clase-card.soon{cursor:default;opacity:0.6;}
 .clase-card.soon:hover{transform:none;box-shadow:none;border-color:var(--line);}
 .clase-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.clase-card-title{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;color:var(--ink);}
+.clase-card-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.05rem;color:var(--ink);}
 .clase-card.in-progress{border-color:var(--blue);}
 .clase-card-desc{font-size:0.88rem;color:var(--ink-soft);margin:0;flex:1;}
 .clase-card-progress-track{height:5px;border-radius:999px;background:var(--paper-dim);overflow:hidden;}
@@ -1287,7 +1289,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .clase-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--blue);margin-bottom:10px;}
 .clase-step-intro{color:var(--ink-soft);margin:0 0 18px;}
-.clase-situation-card h2{font-family:'Baloo 2';margin:6px 0 14px;font-size:1.4rem;}
+.clase-situation-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:6px 0 14px;font-size:1.4rem;}
 .clase-situation-en{font-size:1.05rem;font-weight:600;margin:0 0 6px;}
 .clase-situation-es{color:var(--ink-soft);margin:0 0 20px;}
 
@@ -1335,7 +1337,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 .clases-banner{background:linear-gradient(135deg, var(--blue-deep), var(--blue));color:#fff;border-radius:var(--radius-lg);padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;}
 .clases-banner-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;opacity:0.85;margin-bottom:6px;}
-.clases-banner h2{font-family:'Baloo 2';margin:0 0 6px;font-size:1.3rem;color:#fff;}
+.clases-banner h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0 0 6px;font-size:1.3rem;color:#fff;}
 .clases-banner p{margin:0;opacity:0.9;max-width:420px;}
 .clases-banner .btn-primary{background:#fff;color:var(--blue-deep);}
 .clases-banner .btn-primary:hover{background:#EEE;}
@@ -1355,7 +1357,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .mistakes-card-top .stat-card-icon{width:44px;height:44px;}
 .mistakes-card-top .stat-card-icon svg{width:22px;height:22px;}
 .mistakes-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--coral);}
-.mistakes-card h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.mistakes-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.18rem;color:var(--ink);}
 .mistakes-sub{margin:0;color:var(--ink-soft);font-size:0.95rem;}
 .mistakes-sub .mistakes-count{color:var(--coral);font-weight:700;}
 .mistakes-chips{display:flex;flex-wrap:wrap;gap:8px;}
@@ -1387,10 +1389,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .progress-summary-icon svg{width:22px;height:22px;}
 .progress-summary-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
 .progress-summary-sub{margin:2px 0 0;font-size:0.82rem;font-weight:600;color:var(--ink-soft);line-height:1.35;}
-.progress-summary-head h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.progress-summary-head h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.18rem;color:var(--ink);}
 .progress-summary-stats{display:flex;gap:28px;flex-wrap:wrap;}
 .progress-summary-stat{display:flex;flex-direction:column;gap:2px;}
-.progress-summary-num{font-family:'Baloo 2';font-weight:700;font-size:1.4rem;color:var(--ink);}
+.progress-summary-num{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.4rem;color:var(--ink);}
 .progress-summary-label{font-size:0.78rem;color:var(--ink-soft);}
 .progress-summary-insight{margin:0;background:var(--paper-dim);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.9rem;color:var(--ink-soft);font-weight:600;}
 .progress-summary-cta{align-self:flex-start;background:var(--blue-tint);color:var(--blue-deep);border:2px solid var(--blue);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
@@ -1414,7 +1416,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .daily-card-top .stat-card-icon{width:44px;height:44px;}
 .daily-card-top .stat-card-icon svg{width:22px;height:22px;}
 .daily-eyebrow{font-size:0.76rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--amber);}
-.daily-card h2{font-family:'Baloo 2';margin:0;font-size:1.18rem;color:var(--ink);}
+.daily-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.18rem;color:var(--ink);}
 .daily-sub{margin:0;color:var(--ink-soft);font-size:0.95rem;}
 .daily-done-msg{margin:0;font-weight:700;color:var(--ink);}
 .daily-btn{align-self:flex-start;background:var(--amber-tint);color:var(--amber);border:2px solid var(--amber);font-weight:700;font-size:0.86rem;padding:9px 18px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;text-decoration:none;font-family:inherit;transition:background .2s ease, color .2s ease, box-shadow .2s ease;}
@@ -1448,7 +1450,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .learn-promo-icon svg{width:18px;height:18px;color:var(--blue);}
 .learn-promo-body{flex:1;min-width:0;}
 .learn-promo-eyebrow{font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);}
-.learn-promo-body h3{font-family:'Baloo 2';margin:1px 0 0;font-size:0.95rem;color:var(--ink);}
+.learn-promo-body h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:1px 0 0;font-size:0.95rem;color:var(--ink);}
 .learn-promo-arrow{flex-shrink:0;color:var(--blue);font-weight:700;font-size:1.1rem;}
 @media (min-width:760px){
   .quick-actions-card{flex-direction:row;align-items:stretch;}
@@ -1464,7 +1466,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    seccion, sin inventar un lenguaje visual nuevo. */
 .toefl-banner{background:linear-gradient(135deg, var(--violet-deep), var(--violet));color:#fff;border-radius:var(--radius-lg);padding:28px 30px;display:flex;flex-direction:column;gap:14px;}
 .toefl-banner-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;opacity:0.85;}
-.toefl-banner h2{font-family:'Baloo 2';margin:0;font-size:1.3rem;color:#fff;}
+.toefl-banner h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.3rem;color:#fff;}
 .toefl-banner p{margin:0;opacity:0.9;max-width:480px;}
 .toefl-banner-skills{display:flex;flex-wrap:wrap;gap:8px;}
 .toefl-skill-pill{background:rgba(255,255,255,0.16);color:#fff;font-size:0.82rem;font-weight:700;padding:6px 14px;border-radius:999px;}
@@ -1480,7 +1482,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    seccion nueva. */
 .toefl-soon-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:28px 30px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;max-width:640px;}
 .toefl-soon-eyebrow{font-size:0.78rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--violet);}
-.toefl-soon-card h2{font-family:'Baloo 2';margin:0;font-size:1.3rem;color:var(--ink);}
+.toefl-soon-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.3rem;color:var(--ink);}
 .toefl-soon-card p{margin:0;color:var(--ink-soft);}
 .toefl-soon-skills{display:flex;flex-wrap:wrap;gap:8px;}
 .toefl-soon-card .toefl-skill-pill{background:var(--violet-tint);color:var(--violet);}
@@ -1607,7 +1609,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .plan-feature-badge{position:absolute;top:14px;right:14px;background:var(--blue);color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;padding:4px 10px;border-radius:999px;}
 .plan-feature-icon{width:44px;height:44px;border-radius:50%;background:#fff;color:var(--blue-deep);display:flex;align-items:center;justify-content:center;}
 .plan-feature-icon svg{width:22px;height:22px;}
-.plan-feature-card h2{font-family:'Baloo 2';margin:2px 0 0;font-size:1.18rem;color:var(--ink);}
+.plan-feature-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:2px 0 0;font-size:1.18rem;color:var(--ink);}
 .plan-feature-sub{font-weight:700;color:var(--ink);margin:0;font-size:0.92rem;}
 .plan-feature-desc{color:var(--ink-soft);margin:0 0 4px;font-size:0.85rem;}
 .plan-feature-card .btn{margin-top:2px;}
@@ -1734,7 +1736,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 #memberContent .performance-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
 #memberContent .performance-head-icon{width:38px;height:38px;border-radius:50%;background:var(--amber-tint);color:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 #memberContent .performance-head-icon svg{width:18px;height:18px;}
-#memberContent .performance-head h2{font-family:'Baloo 2';font-weight:700;font-size:1.15rem;margin:0;}
+#memberContent .performance-head h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.15rem;margin:0;}
 #memberContent .performance-head p{color:var(--ink-soft);font-size:0.86rem;margin-top:3px;}
 #memberContent .performance-head .see-all{margin-left:auto;font-weight:700;color:var(--blue);font-size:0.86rem;white-space:nowrap;}
 #memberContent .performance-grid{display:grid;grid-template-columns:1fr;gap:22px;}
@@ -1756,7 +1758,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* Tu actividad reciente: ahora su propia tarjeta de ancho completo */
 #memberContent .activity-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-#memberContent .activity-section-head h2{font-family:'Baloo 2';font-size:1.2rem;margin:0;}
+#memberContent .activity-section-head h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.2rem;margin:0;}
 #memberContent .activity-section-head .see-all{font-weight:700;color:var(--blue);font-size:0.86rem;white-space:nowrap;}
 #memberContent .activity-card-full{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:16px 18px;}
 #memberContent .activity-card-full .recent-list{gap:6px;}
@@ -1794,7 +1796,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
    lectura, armar oración, link de "volver").
    ============================================================ */
 .toefl-landing-intro{max-width:640px;margin-bottom:26px;}
-.toefl-landing-intro h2{font-family:'Baloo 2';margin:0 0 8px;font-size:1.4rem;color:var(--ink);}
+.toefl-landing-intro h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0 0 8px;font-size:1.4rem;color:var(--ink);}
 .toefl-landing-intro p{margin:0;color:var(--ink-soft);}
 .toefl-landing-grid{display:grid;grid-template-columns:1fr;gap:16px;}
 @media(min-width:700px){
@@ -1803,21 +1805,21 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .toefl-landing-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 22px 20px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
 .toefl-landing-icon{width:42px;height:42px;border-radius:12px;background:var(--violet-tint);color:var(--violet);display:flex;align-items:center;justify-content:center;margin-bottom:6px;}
 .toefl-landing-icon svg{width:22px;height:22px;}
-.toefl-landing-card h3{font-family:'Baloo 2';margin:0;font-size:1.1rem;color:var(--ink);}
+.toefl-landing-card h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.1rem;color:var(--ink);}
 .toefl-landing-card p{margin:0;color:var(--ink-soft);font-size:0.92rem;}
 .toefl-landing-count{font-size:0.78rem;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:0.03em;margin:2px 0 10px;}
 .toefl-landing-card .btn{align-self:stretch;justify-content:center;}
 .toefl-back-link{display:inline-block;margin-bottom:14px;color:var(--ink-faint);font-weight:600;font-size:0.85rem;text-decoration:none;}
 .toefl-back-link:hover{color:var(--ink);}
 .reading-passage{background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px 18px;}
-.reading-passage h4{font-family:'Baloo 2';margin:0 0 8px;font-size:1rem;color:var(--ink);}
+.reading-passage h4{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0 0 8px;font-size:1rem;color:var(--ink);}
 .reading-passage p{margin:0;color:var(--ink-soft);line-height:1.55;}
 .assembled-row{display:flex;flex-wrap:wrap;gap:10px;background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px;min-height:56px;margin-bottom:14px;align-items:center;}
 .word-chip.filled{border-color:var(--blue);background:var(--blue-tint);}
 
 /* ---------- IELTS: cue card (Speaking Part 2) y tabla de datos (Writing Task 1 Academic) ---------- */
 .ielts-cuecard{background:var(--paper-dim);border:2px dashed var(--line);border-radius:var(--radius-sm);padding:18px 20px;margin-bottom:10px;}
-.ielts-cuecard-topic{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;color:var(--ink);margin-bottom:10px;}
+.ielts-cuecard-topic{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.05rem;color:var(--ink);margin-bottom:10px;}
 .ielts-cuecard-points{margin:0;padding-left:20px;color:var(--ink-soft);line-height:1.7;}
 .ielts-chart-wrap{background:var(--paper-dim);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:14px;overflow-x:auto;}
 .ielts-chart-title{font-weight:700;color:var(--ink);margin-bottom:10px;font-size:0.92rem;}
@@ -1841,7 +1843,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 }
 
 .upgrade-banner{background:#fff;border:2px solid #d9e1ff;border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);max-width:640px;}
-.upgrade-banner h3{font-family:'Baloo 2';margin:0;font-size:1.1rem;color:var(--ink);}
+.upgrade-banner h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.1rem;color:var(--ink);}
 .upgrade-banner p{margin:0;color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
 .upgrade-banner .btn{align-self:flex-start;}
 .upgrade-banner-note{font-size:0.78rem;color:var(--ink-faint);}
@@ -1853,7 +1855,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .locked-card-top .stat-card-icon svg{width:20px;height:20px;}
 .locked-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--paper-dim);color:var(--ink-faint);flex-shrink:0;}
 .locked-badge svg{width:13px;height:13px;}
-.locked-card h3{font-family:'Baloo 2';margin:0;font-size:1.02rem;color:var(--ink);}
+.locked-card h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0;font-size:1.02rem;color:var(--ink);}
 .locked-card p{margin:0;color:var(--ink-soft);font-size:0.86rem;line-height:1.45;}
 @media (max-width:900px){
   .locked-grid{grid-template-columns:repeat(2,1fr);}
@@ -1879,7 +1881,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* ---------- Pantalla de inicio ---------- */
 .rush-start-card{align-items:flex-start;text-align:left;}
-.rush-title{font-family:'Baloo 2';font-weight:800;font-size:1.9rem;color:var(--ink);margin:0;}
+.rush-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:1.9rem;color:var(--ink);margin:0;}
 .rush-tagline{color:var(--ink-soft);margin-top:10px;line-height:1.5;}
 .rush-record-chip{margin-top:16px;background:var(--blue-tint);color:var(--blue-deep);font-weight:700;font-size:0.88rem;padding:8px 14px;border-radius:999px;}
 .rush-start-btn{margin-top:22px;width:100%;}
@@ -1889,7 +1891,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .rush-hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-right:44px;}
 .rush-hud-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .rush-level-tag{font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--blue-tint);color:var(--blue-deep);}
-.rush-points{font-family:'Baloo 2';font-weight:700;color:var(--ink);font-size:1.05rem;}
+.rush-points{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;color:var(--ink);font-size:1.05rem;}
 .rush-combo{font-weight:700;font-size:0.82rem;padding:5px 12px;border-radius:999px;background:var(--amber-tint);color:#8A5A00;}
 .rush-hud-right{display:flex;gap:4px;}
 .rush-life{font-size:1.2rem;line-height:1;}
@@ -1902,14 +1904,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .rush-timer-fill{height:100%;background:var(--coral);border-radius:99px;width:100%;}
 
 .rush-play-btn{margin-top:20px;align-self:flex-start;}
-.rush-prompt{font-family:'Baloo 2';font-weight:600;font-size:1.25rem;color:var(--ink);margin-top:18px;margin-bottom:18px;line-height:1.35;}
+.rush-prompt{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:600;font-size:1.25rem;color:var(--ink);margin-top:18px;margin-bottom:18px;line-height:1.35;}
 .rush-option-list{gap:10px;}
 .rush-option{position:relative;}
 .rush-option-key{width:26px;height:26px;border-radius:7px;background:var(--paper-dim);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;border:none;flex-shrink:0;}
 .option.correct .rush-option-key{background:var(--green);color:#fff;}
 .option.incorrect .rush-option-key{background:var(--coral);color:#fff;}
 
-.rush-levelup-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink);color:#fff;font-family:'Baloo 2';font-weight:800;font-size:1.6rem;padding:18px 36px;border-radius:999px;letter-spacing:.02em;box-shadow:0 16px 40px rgba(0,0,0,0.25);animation:rushToast .75s ease forwards;z-index:50;}
+.rush-levelup-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--ink);color:#fff;font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:1.6rem;padding:18px 36px;border-radius:999px;letter-spacing:.02em;box-shadow:0 16px 40px rgba(0,0,0,0.25);animation:rushToast .75s ease forwards;z-index:50;}
 @keyframes rushToast{
   0%{opacity:0;transform:translate(-50%,-50%) scale(.85);}
   15%{opacity:1;transform:translate(-50%,-50%) scale(1);}
@@ -1920,17 +1922,17 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 /* ---------- Fin de partida / límite gratis ---------- */
 .rush-over-card{align-items:center;text-align:center;}
 .rush-newrecord{font-weight:800;color:var(--green);letter-spacing:.03em;font-size:0.88rem;margin-bottom:6px;}
-.rush-over-card h2{font-family:'Baloo 2';font-size:1.3rem;margin:0;}
-.rush-over-score{font-family:'Baloo 2';font-weight:800;font-size:2.4rem;color:var(--ink);margin-top:10px;}
+.rush-over-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.3rem;margin:0;}
+.rush-over-score{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:2.4rem;color:var(--ink);margin-top:10px;}
 .rush-over-score span{font-size:1.1rem;color:var(--ink-faint);font-weight:700;}
 .rush-over-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin-top:20px;}
 .rush-over-stats div{background:var(--paper-dim);border-radius:var(--radius-sm);padding:12px 6px;display:flex;flex-direction:column;gap:2px;}
-.rush-over-stats strong{font-family:'Baloo 2';font-size:1.05rem;color:var(--ink);}
+.rush-over-stats strong{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.05rem;color:var(--ink);}
 .rush-over-stats span{font-size:0.72rem;color:var(--ink-soft);}
 .rush-over-card .rush-start-btn{margin-top:24px;}
 
 .rush-limit-card{align-items:flex-start;text-align:left;}
-.rush-limit-card h2{font-family:'Baloo 2';font-size:1.3rem;margin:0;}
+.rush-limit-card h2{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.3rem;margin:0;}
 .rush-limit-sub{color:var(--ink-soft);margin-top:8px;}
 .rush-limit-list{margin:14px 0 0;padding-left:20px;color:var(--ink);font-size:0.94rem;line-height:1.8;}
 .rush-limit-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px;width:100%;}
@@ -1971,13 +1973,13 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .toeic-letters .option{max-width:100%;}
 .toeic-read-text{font-weight:500;line-height:1.7;}
 .toeic-timer{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid var(--line);border-radius:var(--radius-sm);padding:12px 16px;margin:16px 0 10px;font-weight:600;}
-.toeic-timer-num{font-family:'Baloo 2';font-size:1.6rem;font-weight:800;min-width:60px;text-align:right;}
+.toeic-timer-num{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.6rem;font-weight:800;min-width:60px;text-align:right;}
 .toeic-timer.listen{border-color:var(--blue);background:var(--blue-tint);}
 .toeic-timer.prep{border-color:#F5A524;background:#FFF7E6;}
 .toeic-timer.speak{border-color:var(--coral);background:#FDEEEB;color:var(--coral);}
 .toeic-timer.done{border-color:var(--green);background:var(--green-tint);}
 .toeic-info{border:2px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:6px;}
-.toeic-info-title{font-family:'Baloo 2';font-weight:700;font-size:1.05rem;margin-bottom:8px;}
+.toeic-info-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:8px;}
 .toeic-info table{width:100%;border-collapse:collapse;font-size:0.92rem;}
 .toeic-info th{text-align:left;padding:6px 10px 6px 0;white-space:nowrap;vertical-align:top;color:var(--ink-soft);font-weight:600;}
 .toeic-info td{padding:6px 0;border-top:1px solid var(--line);}
@@ -2005,14 +2007,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .toeic-mini-fb.bad{background:#FDEEEB;}
 .toeic-mini-transcript{margin-top:10px;font-size:0.9rem;color:var(--ink-soft);}
 .toeic-mini-result{margin-top:10px;background:#fff;border:2px solid var(--line);border-radius:var(--radius-sm);padding:18px;text-align:center;}
-.toeic-mini-result h3{font-family:'Baloo 2';font-size:1.4rem;margin:0 0 6px;color:var(--blue-deep);}
+.toeic-mini-result h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.4rem;margin:0 0 6px;color:var(--blue-deep);}
 .toeic-mini-result p{color:var(--ink-soft);margin:0 auto 14px;max-width:460px;}
 .toeic-mini-result .btn{margin:0 auto;}
 .toeic-includes{border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px 20px;margin:0 0 30px;background:#fff;}
-.toeic-includes h3{font-family:'Baloo 2';margin:0 0 14px;font-size:1.2rem;}
+.toeic-includes h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;margin:0 0 14px;font-size:1.2rem;}
 .toeic-includes-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
 .toeic-includes-item{background:var(--paper-dim);border-radius:var(--radius-sm);padding:12px 14px;display:flex;flex-direction:column;gap:2px;}
-.toeic-includes-item strong{font-family:'Baloo 2';font-size:1.6rem;color:var(--blue);line-height:1.1;}
+.toeic-includes-item strong{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.6rem;color:var(--blue);line-height:1.1;}
 .toeic-includes-item span{font-size:0.85rem;color:var(--ink-soft);}
 .toeic-includes p{color:var(--ink-soft);font-size:0.95rem;}
 
@@ -2033,7 +2035,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* ---------- Resumen destacado (artículos de gramática) ---------- */
 .pp-summary{border-left:4px solid var(--blue);background:var(--blue-tint);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:14px 18px;margin:18px 0 22px;}
-.pp-summary-title{font-family:'Baloo 2';font-weight:800;color:var(--blue-deep);margin-bottom:4px;}
+.pp-summary-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;color:var(--blue-deep);margin-bottom:4px;}
 .pp-summary p{margin:0;}
 .pp-quiz{margin-top:8px;}
 
@@ -2079,7 +2081,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-testimonials .section-head{margin-bottom:28px;}
 .home-testimonials-grid{display:grid;grid-template-columns:1fr;gap:16px;}
 .home-testimonial{margin:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px;min-width:0;box-shadow:0 4px 14px rgba(18,30,70,0.05);}
-.home-testimonial-person{display:flex;align-items:center;gap:14px;margin-bottom:16px;color:var(--ink);font-family:'Baloo 2','Baloo Fallback',sans-serif;font-size:1.2rem;line-height:1.2;}
+.home-testimonial-person{display:flex;align-items:center;gap:14px;margin-bottom:16px;color:var(--ink);font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.2rem;line-height:1.2;}
 .home-testimonial-person img{width:64px;height:64px;flex:0 0 64px;border-radius:50%;object-fit:cover;}
 .home-testimonial blockquote{margin:0;color:var(--ink-soft);font-size:1rem;line-height:1.6;}
 .home-testimonials-cta{margin:26px 0 0;text-align:center;}
@@ -2090,7 +2092,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .home-plan{background:#fff;border:2px solid var(--line);border-radius:var(--radius-lg);padding:24px;display:flex;flex-direction:column;gap:10px;min-width:0;}
 .home-plan-member{border-color:var(--blue);box-shadow:var(--shadow);}
 .home-plan-name{font-weight:700;color:var(--blue);font-size:0.9rem;text-transform:uppercase;letter-spacing:.04em;}
-.home-plan-price{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:2.2rem;line-height:1;color:var(--ink);}
+.home-plan-price{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:800;font-size:2.2rem;line-height:1;color:var(--ink);}
 .home-plan-price small{font-size:1rem;font-weight:700;color:var(--ink-soft);}
 .home-plan-annual{margin:0;color:var(--ink-soft);font-size:0.92rem;}
 .home-plan-list{list-style:none;margin:6px 0 10px;padding:0;display:grid;gap:8px;}
@@ -2119,14 +2121,14 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .diag-today-title{font-weight:700;color:var(--blue-deep);font-size:0.95rem;}
 .diag-today:hover .diag-today-title{text-decoration:underline;}
 .diag-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;min-width:0;}
-.diag-h3{font-family:'Baloo 2';font-size:1.1rem;margin:0 0 12px;color:var(--ink);}
+.diag-h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.1rem;margin:0 0 12px;color:var(--ink);}
 .diag-muted{color:var(--ink-soft);font-size:0.86rem;line-height:1.45;}
 .diag-highlights{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px;}
 @media(min-width:760px){.diag-highlights{grid-template-columns:repeat(3,1fr);}}
 .diag-highlights .diag-card{margin-bottom:0;}
 .diag-hl-label{font-size:0.74rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--blue);margin-bottom:4px;}
 .diag-hl-weak .diag-hl-label{color:#A32E1E;}
-.diag-hl-value{font-family:'Baloo 2';font-weight:700;font-size:1.2rem;line-height:1.25;color:var(--ink);margin-bottom:2px;}
+.diag-hl-value{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.2rem;line-height:1.25;color:var(--ink);margin-bottom:2px;}
 .diag-hl-empty{color:var(--ink-soft);}
 .diag-actions{display:flex;flex-direction:column;gap:12px;}
 .diag-action{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--paper-dim);border-radius:var(--radius-md);padding:14px 16px;}
@@ -2156,7 +2158,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .diag-wait-bar span{display:block;height:100%;background:var(--blue);border-radius:999px;}
 .diag-week-stats{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:12px;}
 .diag-week-stats > div{display:flex;flex-direction:column;}
-.diag-week-num{font-family:'Baloo 2';font-weight:700;font-size:1.4rem;color:var(--ink);line-height:1.2;}
+.diag-week-num{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.4rem;color:var(--ink);line-height:1.2;}
 .diag-week-num .diag-arrow{font-size:0.9rem;}
 .diag-week-list{margin:0;padding-left:20px;color:var(--ink-soft);font-size:0.92rem;line-height:1.6;}
 .diag-week-list b{color:var(--ink);}
@@ -2218,7 +2220,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .ai-pitch::after{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.18),rgba(255,255,255,0) 70%);pointer-events:none;}
 .ai-pitch-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:0.76rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;border-radius:999px;padding:4px 10px;}
 .ai-pitch-badge svg{width:14px;height:14px;}
-.ai-pitch h3{font-family:'Baloo 2';font-size:1.3rem;line-height:1.2;margin:10px 0 6px;color:#fff;}
+.ai-pitch h3{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-size:1.3rem;line-height:1.2;margin:10px 0 6px;color:#fff;}
 .ai-pitch p{margin:0 0 12px;color:rgba(255,255,255,0.86);font-size:0.95rem;line-height:1.5;}
 .ai-pitch-points{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:7px;}
 .ai-pitch-points li{position:relative;padding-left:24px;font-size:0.92rem;color:#fff;line-height:1.4;}
@@ -2288,7 +2290,7 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 
 /* Clases: bloque para miembros "Practicar este tema" (temas.js) */
 .tema-cta{margin-top:30px;background:var(--blue-tint);border-radius:var(--radius-lg);padding:20px 22px;display:flex;flex-direction:column;gap:8px;}
-.tema-cta-title{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:1.2rem;color:var(--ink);}
+.tema-cta-title{font-family:'Baloo 2','Baloo Fallback','Baloo Fallback Roboto',sans-serif;font-weight:700;font-size:1.2rem;color:var(--ink);}
 .article-body .tema-cta p{margin:0;color:var(--ink-soft);font-size:0.98rem;}
 .tema-cta-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:4px;}
 .tema-cta .btn{width:fit-content;max-width:100%;}
