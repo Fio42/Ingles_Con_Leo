@@ -31,6 +31,13 @@ const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const HISTORY_PATH = path.join(__dirname, 'history.json');
 const REPORT_PATH = path.join(REPO_ROOT, 'SITE_HEALTH_REPORT.md');
 const LIGHTHOUSE_DIR = path.join(__dirname, 'lighthouse-raw');
+// Detalle e historial de cada corrida de Lighthouse (LCP, recursos que
+// bloquean, condiciones de medición). Ver lh-detail.js.
+const LH_HISTORY_PATH = path.join(__dirname, 'lighthouse-history.json');
+const lhDetail = require('./lh-detail');
+// Registros de ESTA corrida y corridas anteriores por página (se llenan en main()).
+const LH_RECORDS = [];
+const LH_PREVIOUS = {};
 
 // Páginas clave para Lighthouse (ver run-lighthouse.js). Se listan acá
 // también nada más para poder etiquetarlas bonito en el reporte.
@@ -424,6 +431,13 @@ function loadLighthouseResults() {
       const cats = raw.categories || {};
       const audits = raw.audits || {};
       const bp = bestPracticesWithoutMetaPixel(cats['best-practices'], audits);
+      const summary = {
+        performance: cats.performance ? Math.round(cats.performance.score * 100) : null,
+        seo: cats.seo ? Math.round(cats.seo.score * 100) : null,
+        accessibility: cats.accessibility ? Math.round(cats.accessibility.score * 100) : null,
+        bestPractices: bp.score,
+      };
+      try { LH_RECORDS.push(lhDetail.extractDetail(raw, page, summary)); } catch (e) { /* el detalle es un extra: nunca rompe el reporte */ }
       results[page.url] = {
         label: page.label,
         performance: cats.performance ? Math.round(cats.performance.score * 100) : null,
@@ -459,7 +473,15 @@ function auditLighthouse(lhResults, history, findings) {
         findings.push(mk(SEV.IMPORTANT, `lighthouse-${cat}`, url, `Lighthouse ${label} = ${score}/100.`, 'Hay margen claro de mejora.', 'Revisar el detalle del reporte de Lighthouse para esta página.'));
       }
       if (prev && typeof prev[cat] === 'number' && score < prev[cat] - 10) {
-        findings.push(mk(SEV.CRITICAL, `lighthouse-regression`, url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, 'Es una regresión real, algo que se agregó o cambió empeoró el sitio.', 'Revisar qué cambió en esta página desde la corrida anterior.'));
+        // ¿Es ruido del simulador o algo real? Se compara con el historial guardado.
+        const slug = (LIGHTHOUSE_PAGES.find((p) => p.url === url) || {}).slug;
+        const cur = LH_RECORDS.find((x) => x.slug === slug);
+        const v = cur && cat === 'performance' ? lhDetail.assessVariation(LH_PREVIOUS[slug] || [], cur, cat) : null;
+        if (v && v.verdict === 'ruido') {
+          findings.push(mk(SEV.WARNING, `lighthouse-regression`, url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, v.text, 'Esperar la siguiente corrida; si se repite varias veces seguidas, mirar el detalle de rendimiento del reporte.'));
+        } else {
+          findings.push(mk(SEV.CRITICAL, `lighthouse-regression`, url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, `Puede ser una regresión real: algo que se agregó o cambió empeoró el sitio.${v ? ' ' + v.text : ''}`, 'Revisar qué cambió en esta página desde la corrida anterior y el detalle de rendimiento del reporte.'));
+        }
       }
     });
     if (r.consoleErrors > 0) {
@@ -569,6 +591,15 @@ function buildReport(findings, meta) {
     lines.push('');
   }
 
+  if (meta.lighthouseDetail && meta.lighthouseDetail.length) {
+    lines.push('### Detalle de rendimiento (qué retrasa cada página)');
+    lines.push('');
+    for (const d of meta.lighthouseDetail) lines.push(...d);
+    lines.push('');
+    lines.push('El historial completo está en tools/site-health/lighthouse-history.json.');
+    lines.push('');
+  }
+
   lines.push('---');
   lines.push(`Auditado: ${meta.totalCrawled} URLs visitadas, ${meta.totalPublicPages} páginas públicas conocidas. Generado automáticamente por tools/site-health/audit.js, no editar a mano (se sobreescribe en cada corrida).`);
   lines.push('');
@@ -620,6 +651,11 @@ async function main() {
 
   console.log('Leyendo resultados de Lighthouse (si existen)...');
   const lhResults = loadLighthouseResults();
+  // Historial de detalle: se separa lo anterior (para comparar) y luego se agrega lo de hoy.
+  const lhHistory = lhDetail.loadHistory(LH_HISTORY_PATH);
+  for (const rec of LH_RECORDS) {
+    LH_PREVIOUS[rec.slug] = (lhHistory.pages[rec.slug] || []).filter((x) => x.fetchTime !== rec.fetchTime);
+  }
   auditLighthouse(lhResults, history, findings);
 
   // Marca cuáles findings son NUEVOS respecto a la corrida anterior.
@@ -632,8 +668,15 @@ async function main() {
     totalCrawled: visited.size,
     totalPublicPages,
     lighthouse: lhResults,
+    lighthouseDetail: LH_RECORDS.map((rec) => lhDetail.detailLines(rec, rec.performance != null ? lhDetail.assessVariation(LH_PREVIOUS[rec.slug] || [], rec, 'performance') : null)),
   });
   fs.writeFileSync(REPORT_PATH, report, 'utf8');
+  try {
+    if (lhDetail.addRecords(lhHistory, LH_RECORDS) > 0) {
+      fs.writeFileSync(LH_HISTORY_PATH, JSON.stringify(lhHistory, null, 1), 'utf8');
+      console.log(`Detalle de Lighthouse guardado en ${LH_HISTORY_PATH}`);
+    }
+  } catch (e) { console.error('No se pudo guardar lighthouse-history.json (no es grave):', e.message); }
   console.log(`Reporte escrito en ${REPORT_PATH}`);
 
   // Actualiza el historial para la próxima corrida.

@@ -68,6 +68,7 @@ jobs:
 
           for attempt in 1 2 3 4 5; do
             git add SITE_HEALTH_REPORT.md tools/site-health/history.json
+            if [ -f tools/site-health/lighthouse-history.json ]; then git add tools/site-health/lighthouse-history.json; fi
             if git diff --cached --quiet; then
               echo "Sin cambios en el reporte, no hay nada que subir."
               exit 0
