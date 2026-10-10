@@ -116,6 +116,17 @@ const LABELS = {
   'Voz pasiva con modales (should be / must have been)': 'should be done',
   'Bring vs Take': 'bring / take',
   'Inversión, would rather y it\'s high time': 'would rather',
+  // Ampliación del refuerzo adaptativo (2026-10-10): los bloques nuevos reutilizan la etiqueta corta de su tema para no crear tarjetas repetidas.
+  'Presente perfecto: experiencias sin fecha': 'Perfect vs Past',
+  'Presente perfecto o pasado simple: con fecha terminada': 'Perfect vs Past',
+  'Since / For: elegir bien': 'since / for',
+  'Since / For con presente perfecto': 'since / for',
+  'Fewer y less en frases': 'fewer / less',
+  'Some / Any en frases afirmativas y negativas': 'some / any',
+  'Verbos modales: must, mustn\'t y don\'t have to': 'must / should',
+  'Verbos modales: obligación (must / have to) vs consejo (should)': 'must / should',
+  'In / On / At con tiempo (horas, días, meses)': 'in / on / at',
+  'In / On / At con lugares': 'in / on / at',
 };
 
 // Microexplicacion de cada etiqueta (la ve la persona bajo "Siguiente

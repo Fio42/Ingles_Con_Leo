@@ -90,18 +90,18 @@ const TEMAS = [
   { id:'cuantificadores', merges:['contables-incontables', 'much-many', 'little-few', 'some-any', 'fewer-vs-less'],
     label:'Cuantificadores', family:'cuantificadores', article:null, glossary:null, topics:[],
     micros:[
-      { id:'much-many-contable-incontable', glossary:'much-vs-many', label:'Much y many: contable o incontable' },
+      { id:'much-many-contable-incontable', active:true, glossary:'much-vs-many', label:'Much y many: contable o incontable' },
       { id:'a-lot-of', prereq:['much-many-contable-incontable'], label:'A lot of: sirve para los dos' },
-      { id:'some-any-afirm-neg', label:'Some y any: frases afirmativas y negativas' },
+      { id:'some-any-afirm-neg', active:true, glossary:'any-vs-some', label:'Some y any: frases afirmativas y negativas' },
       { id:'some-any-pregunta-oferta', prereq:['some-any-afirm-neg'], label:'Some y any: preguntas y ofrecimientos' },
-      { id:'little-few-matiz', prereq:['much-many-contable-incontable'], label:'A little, little, a few y few' },
-      { id:'fewer-less', prereq:['much-many-contable-incontable'], glossary:'fewer-vs-less', label:'Fewer y less' }
+      { id:'little-few-matiz', active:true, glossary:'little-vs-a-little', prereq:['much-many-contable-incontable'], label:'A little, little, a few y few' },
+      { id:'fewer-less', active:true, prereq:['much-many-contable-incontable'], glossary:'fewer-vs-less', label:'Fewer y less' }
     ] },
   { id:'much-many', prereq:['contables-incontables'], label:'Much y many', family:'cuantificadores', article:null, glossary:'much-vs-many',
     topics:[`Much / Many`, `Cuantificadores (a lot of / much / many / few / little)`] },
-  { id:'fewer-vs-less', prereq:['contables-incontables'], label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`] },
+  { id:'fewer-vs-less', prereq:['contables-incontables'], label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`, `Fewer y less en frases`] },
   { id:'little-few', prereq:['contables-incontables'], label:'A little, little, a few y few', family:'cuantificadores', article:null, glossary:null, topics:[`A little / Little / A few / Few`] },
-  { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:null, topics:[`Some / Any`] },
+  { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:null, topics:[`Some / Any`, `Some / Any en frases afirmativas y negativas`] },
   { id:'contables-incontables', label:'Sustantivos contables e incontables', family:'cuantificadores', article:null, glossary:null, topics:[`Sustantivos contables e incontables`] },
   /* ---- demostrativos ---- */
   { id:'a-an', label:'A y an', family:'demostrativos', article:null, glossary:'a-vs-an', topics:[`A / An`] },
@@ -120,7 +120,11 @@ const TEMAS = [
   /* ---- modales ---- */
   { id:'can-cant', label:'Can y can\'t', family:'modales', article:null, glossary:null, topics:[`Can / Can't (habilidad)`] },
   { id:'modales-obligacion', label:'Must, have to y should', family:'modales', article:null, glossary:null,
-    topics:[`Verbos modales de obligación (must / have to / should)`] },
+    topics:[`Verbos modales de obligación (must / have to / should)`, `Verbos modales: must, mustn't y don't have to`, `Verbos modales: obligación (must / have to) vs consejo (should)`],
+    micros:[
+      { id:'mustnt-vs-dont-have-to', active:true, glossary:'mustnt-vs-dont-have-to', label:"Mustn't (prohibido) vs don't have to (no hace falta)" },
+      { id:'obligacion-vs-consejo', active:true, glossary:'should', label:'Must / have to (obligación) vs should (consejo)' }
+    ] },
   { id:'modales-posibilidad', label:'May, might y could', family:'modales', article:null, glossary:null,
     topics:[`Verbos modales de posibilidad (may / might / could)`] },
   { id:'modales-perfectos', prereq:['modales-obligacion'], label:'Should have y must have', family:'modales', article:null, glossary:'should-have',
@@ -137,11 +141,23 @@ const TEMAS = [
   { id:'causativos', label:'Verbos causativos (have something done)', family:'pasiva', article:null, glossary:null, topics:[`Verbos causativos (have something done)`] },
   /* ---- perfecto ---- */
   { id:'present-perfect-vs-past', prereq:['verbos-irregulares'], label:'Presente perfecto vs pasado simple', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:null,
-    topics:[`Present Perfect vs Past Simple`] },
-  { id:'since-for', prereq:['present-perfect-vs-past'], label:'Since y for', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:'since-vs-for', topics:[`Since / For`] },
+    topics:[`Present Perfect vs Past Simple`, `Presente perfecto: experiencias sin fecha`, `Presente perfecto o pasado simple: con fecha terminada`],
+    micros:[
+      { id:'pp-experiencia-sin-fecha', active:true, label:'Presente perfecto: experiencias sin fecha (ever, never, yet, already)', lesson:{ article:'articulo-presente-perfecto.html', anchor:'already-yet-just' } },
+      { id:'pasado-fecha-terminada', active:true, label:'Pasado simple: cuando dices cuándo pasó (yesterday, last year, ago)', lesson:{ article:'articulo-presente-perfecto.html', anchor:'vs-pasado-simple' } }
+    ] },
+  { id:'since-for', prereq:['present-perfect-vs-past'], label:'Since y for', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:'since-vs-for', topics:[`Since / For`, `Since / For: elegir bien`, `Since / For con presente perfecto`],
+    micros:[
+      { id:'since-for-eleccion', active:true, label:'Since o for: punto en el tiempo o duración', lesson:{ article:'articulo-presente-perfecto.html', anchor:'for-since' } },
+      { id:'since-for-presente-perfecto', active:true, prereq:['since-for-eleccion'], label:'Since y for van con presente perfecto (no con presente)', lesson:{ article:'articulo-presente-perfecto.html', anchor:'errores' } }
+    ] },
   { id:'past-perfect', prereq:['present-perfect-vs-past'], label:'Pasado perfecto (past perfect)', family:'perfecto', article:null, glossary:null, topics:[`Past Perfect`] },
   /* ---- preposiciones ---- */
-  { id:'in-on-at', label:'In, on y at', family:'preposiciones', article:'articulo-in-on-at.html', glossary:null, topics:[`In / On / At`] },
+  { id:'in-on-at', label:'In, on y at', family:'preposiciones', article:'articulo-in-on-at.html', glossary:null, topics:[`In / On / At`, `In / On / At con tiempo (horas, días, meses)`, `In / On / At con lugares`],
+    micros:[
+      { id:'in-on-at-tiempo', active:true, label:'In, on y at con el tiempo (horas, días y meses)', lesson:{ article:'articulo-in-on-at.html', anchor:'tiempo' } },
+      { id:'in-on-at-lugar', active:true, label:'In, on y at con lugares', lesson:{ article:'articulo-in-on-at.html', anchor:'lugar' } }
+    ] },
   { id:'by-until', label:'By y until', family:'preposiciones', article:null, glossary:null, topics:[`By vs Until`, `By vs Until (en el trabajo)`] },
   { id:'preposiciones-movimiento', label:'Preposiciones de movimiento (to, into, from)', family:'preposiciones', article:null, glossary:null,
     topics:[`Preposiciones de movimiento (to / into / from)`] },

@@ -32,16 +32,16 @@ test('los 3 pilotos están declarados con sus microtemas', () => {
   assert.deepStrictEqual(ids('cuantificadores'), ['much-many-contable-incontable', 'a-lot-of', 'some-any-afirm-neg', 'some-any-pregunta-oferta', 'little-few-matiz', 'fewer-less']);
 });
 
-test('migración gradual: solo Futuro (4) y Condicionales 1 y 2 están activos; cond-3, cond-mixto y Cuantificadores no, y el resto de temas no cambió', () => {
+test('migración gradual: activos Futuro (4), Condicionales 1 y 2, y la ampliación de 5 temas (presente perfecto, since/for, cuantificadores, modales, in/on/at); cond-3, cond-mixto, a-lot-of y some-any-pregunta-oferta siguen sin activar', () => {
   assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)).sort(),
-    ['cond-1-probable', 'cond-2-imaginario', 'going-to-evidencia', 'going-to-plan-decidido', 'will-decision-espontanea', 'will-forma-verbo-base']);
+    ['cond-1-probable', 'cond-2-imaginario', 'fewer-less', 'going-to-evidencia', 'going-to-plan-decidido', 'in-on-at-lugar', 'in-on-at-tiempo', 'little-few-matiz', 'much-many-contable-incontable', 'mustnt-vs-dont-have-to', 'obligacion-vs-consejo', 'pasado-fecha-terminada', 'pp-experiencia-sin-fecha', 'since-for-eleccion', 'since-for-presente-perfecto', 'some-any-afirm-neg', 'will-decision-espontanea', 'will-forma-verbo-base']);
   const withMicros = plain(real.TEMAS.filter(t => (t.micros || []).length).map(t => t.id).sort());
-  assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'will-going-to']);
+  assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'in-on-at', 'modales-obligacion', 'present-perfect-vs-past', 'since-for', 'will-going-to']);
 });
 
-test('los ejercicios sin micro siguen siendo los de siempre (solo 71 declaran micro: 43 existentes + 20 del piloto Futuro + 8 del piloto Condicionales)', () => {
+test('los ejercicios sin micro siguen siendo los de siempre (solo 124 declaran micro: 71 de los pilotos + 15 existentes etiquetados en la ampliación + 38 nuevos)', () => {
   const tagged = real.practice.filter(r => r.item.micro);
-  assert.strictEqual(tagged.length, 71);
+  assert.strictEqual(tagged.length, 124);
   assert.ok(real.practice.length - tagged.length > 300);
 });
 
@@ -50,8 +50,8 @@ test('fusión de cuantificadores: los ids antiguos siguen existiendo tal cual (e
     'contables-incontables': { family:'cuantificadores', topics:['Sustantivos contables e incontables'] },
     'much-many': { family:'cuantificadores', topics:['Much / Many', 'Cuantificadores (a lot of / much / many / few / little)'], glossary:'much-vs-many' },
     'little-few': { family:'cuantificadores', topics:['A little / Little / A few / Few'] },
-    'some-any': { family:'cuantificadores', topics:['Some / Any'] },
-    'fewer-vs-less': { family:'cuantificadores', topics:['"Fewer" vs "Less"'], glossary:'fewer-vs-less' }
+    'some-any': { family:'cuantificadores', topics:['Some / Any', 'Some / Any en frases afirmativas y negativas'] },   // ampliación: solo se SUMÓ una etiqueta
+    'fewer-vs-less': { family:'cuantificadores', topics:['"Fewer" vs "Less"', 'Fewer y less en frases'], glossary:'fewer-vs-less' }
   };
   Object.keys(frozen).forEach(id => {
     const t = real.temaById[id];
@@ -94,12 +94,14 @@ test('futuro: los 4 ejercicios originales conservan su microtema y cada uno comp
   });
 });
 
-test('el banco de comprobación está aparte y solo tiene los de los pilotos Futuro y Condicionales (6 por microtema: 2 rondas inéditas de 3)', () => {
+test('el banco de comprobación está aparte y tiene 6 por microtema activo (2 rondas inéditas de 3): 6 de los pilotos + 12 de la ampliación', () => {
   assert.ok(Array.isArray(real.check));
-  assert.strictEqual(real.check.length, 36);
+  assert.strictEqual(real.check.length, 108);
   const per = {};
   real.check.forEach(c => { per[c.micro] = (per[c.micro] || 0) + 1; });
-  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':6, 'going-to-plan-decidido':6, 'going-to-evidencia':6, 'will-forma-verbo-base':6, 'cond-1-probable':6, 'cond-2-imaginario':6 });
+  assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':6, 'going-to-plan-decidido':6, 'going-to-evidencia':6, 'will-forma-verbo-base':6, 'cond-1-probable':6, 'cond-2-imaginario':6,
+    'pp-experiencia-sin-fecha':6, 'pasado-fecha-terminada':6, 'since-for-eleccion':6, 'since-for-presente-perfecto':6, 'much-many-contable-incontable':6, 'little-few-matiz':6,
+    'some-any-afirm-neg':6, 'fewer-less':6, 'mustnt-vs-dont-have-to':6, 'obligacion-vs-consejo':6, 'in-on-at-tiempo':6, 'in-on-at-lugar':6 });
 });
 
 test('temas.js (runtime) y el validador resuelven igual el recurso de cada microtema', () => {

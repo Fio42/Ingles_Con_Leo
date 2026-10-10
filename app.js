@@ -1072,6 +1072,13 @@ function microLessonHref(m){
   if(!res || !res.lesson || !res.lesson.article) return null;
   return res.lesson.article + '?tema=' + encodeURIComponent(m.tema) + '&via=rec' + (res.lesson.anchor ? '#' + res.lesson.anchor : '');
 }
+// Sin clase propia pero con glosario (cuantificadores, modales): se ofrece la explicación rápida, igual que contentForTema.
+function microQuickHref(m){
+  const res = (typeof microResources === 'function') ? microResources(m.id) : null;
+  if(!res || (res.lesson && res.lesson.article) || !res.glossary) return null;
+  return '/glosario/' + res.glossary + '/?tema=' + encodeURIComponent(m.tema) + '&via=rec';
+}
+function microExplainLabel(m){ return microLessonHref(m) ? 'Ver la clase' : 'Ver explicación rápida'; }
 function microPracticeHref(m, start){
   const tema = (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[m.tema]) || {};
   return planFocusHref(tema.family, !!start, m.tema) + '&micro=' + encodeURIComponent(m.id);
@@ -1079,8 +1086,8 @@ function microPracticeHref(m, start){
 // Acción lista para "Hoy te conviene" y el fin de sesión; nombra el concepto exacto, no la familia.
 function microAction(m, s, state){
   const nWrong = s && s.wi ? Object.keys(s.wi).length : 0;
-  const lesson = microLessonHref(m);
-  const base = { micro: m.id, tema: m.tema, microState: state, evidence: nWrong, article: lesson, articleLabel: lesson ? 'Ver la clase' : undefined };
+  const lesson = microLessonHref(m) || microQuickHref(m);
+  const base = { micro: m.id, tema: m.tema, microState: state, evidence: nWrong, article: lesson, articleLabel: lesson ? microExplainLabel(m) : undefined };
   if(state === 'listo-comprobar'){
     return Object.assign(base, { title: `Comprobar: ${m.label}`, reason: `Ya practicaste esto. Son ${MICRO_FLOW.CHECK_SIZE} ejercicios nuevos para ver si ya lo dominas.`,
       href: 'plan-estudio.html?comprobar=' + encodeURIComponent(m.id), cta: 'Comprobar', voice: 'casi-dominas' });
@@ -4465,7 +4472,7 @@ function microCheckLinksHtml(links){
   return `<div class="sess-next">${links.map(a=>`<a href="${a.href}" class="sess-next-link${a.main ? ' is-main' : ''}"><span>${a.title}</span><span aria-hidden="true">→</span></a>`).join('')}</div>`;
 }
 function renderMicroCheckSummary(m, res){
-  const lesson = microLessonHref(m);
+  const lesson = microLessonHref(m) || microQuickHref(m);
   const head = { recuperado:'¡Lo dominas!', mejorando:'Vas mejorando', 'sigue-debil':'Todavía cuesta' }[res.outcome];
   const msg = {
     recuperado: `Acertaste ${res.ok} de ${res.n}. Ya tienes claro <b>${m.label}</b>.`,
@@ -4476,7 +4483,7 @@ function renderMicroCheckSummary(m, res){
   if(res.outcome === 'recuperado'){
     links.push({ title:'Volver a mi plan', href:'plan-estudio.html', main:true });
   } else {
-    if(lesson) links.push({ title:`Ver la clase: ${m.label}`, href:lesson, main: res.outcome === 'sigue-debil' });
+    if(lesson) links.push({ title:`${microExplainLabel(m)}: ${m.label}`, href:lesson, main: res.outcome === 'sigue-debil' });
     links.push({ title:`Seguir practicando ${m.label}`, href:microPracticeHref(m, true), main: res.outcome === 'mejorando' || !lesson });
   }
   return `
@@ -4490,9 +4497,9 @@ function renderMicroCheckSummary(m, res){
     </div>`;
 }
 function renderMicroCheckUnavailable(container, m, reason){
-  const lesson = m ? microLessonHref(m) : null;
+  const lesson = m ? (microLessonHref(m) || microQuickHref(m)) : null;
   const links = [];
-  if(m && lesson) links.push({ title:`Ver la clase: ${m.label}`, href:lesson });
+  if(m && lesson) links.push({ title:`${microExplainLabel(m)}: ${m.label}`, href:lesson });
   links.push({ title: m ? `Seguir practicando ${m.label}` : 'Ir a mi plan', href: m && microIsActive(m.id) ? microPracticeHref(m, true) : 'plan-estudio.html', main:true });
   container.innerHTML = `
     <div class="session-shell">

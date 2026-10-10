@@ -816,28 +816,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'In / On / At',
         items: [
-          { id:'g-facil-prep-1', translation:"Las llaves están sobre la mesa.", type:'choice', prompt:"The keys are ___ the table.",
+          { id:'g-facil-prep-1', micro:'in-on-at-lugar', translation:"Las llaves están sobre la mesa.", type:'choice', prompt:"The keys are ___ the table.",
             options:["in","on","at"], correct:1,
             explain:"Usamos “on” para superficies, como una mesa.",
             examples:[
               {en:"The keys are on the table.", es:"Las llaves están en la mesa."},
               {en:"There's a picture on the wall.", es:"Hay un cuadro en la pared."}
             ]},
-          { id:'g-facil-prep-2', translation:"Vivo en Bogotá.", type:'fill', sentence:["I","live","___","Bogotá","."], blankIndex:2,
+          { id:'g-facil-prep-2', micro:'in-on-at-lugar', translation:"Vivo en Bogotá.", type:'fill', sentence:["I","live","___","Bogotá","."], blankIndex:2,
             bank:["in","on","at"], correct:"in",
             explain:"Usamos “in” para ciudades y países.",
             examples:[
               {en:"I live in Bogotá.", es:"Vivo en Bogotá."},
               {en:"She was born in Peru.", es:"Ella nació en Perú."}
             ]},
-          { id:'g-facil-prep-3', translation:"Nos encontraremos a las 5.", type:'choice', prompt:"We'll meet ___ 5 o'clock.",
+          { id:'g-facil-prep-3', micro:'in-on-at-tiempo', translation:"Nos encontraremos a las 5.", type:'choice', prompt:"We'll meet ___ 5 o'clock.",
             options:["in","on","at"], correct:2,
             explain:"Usamos “at” para horas exactas.",
             examples:[
               {en:"We'll meet at 5 o'clock.", es:"Nos veremos a las cinco."},
               {en:"The class starts at nine.", es:"La clase empieza a las nueve."}
             ]},
-          { id:'g-facil-prep-4', translation:"Mi cumpleaños es el lunes.", type:'error', wrong:"My birthday is in Monday.", wrongWord:"in",
+          { id:'g-facil-prep-4', micro:'in-on-at-tiempo', translation:"Mi cumpleaños es el lunes.", type:'error', wrong:"My birthday is in Monday.", wrongWord:"in",
             right:"My birthday is on Monday.", rightWord:"on",
             explain:"Usamos “on” para días específicos, como “Monday”.",
             examples:[
@@ -1668,28 +1668,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Present Perfect vs Past Simple',
         items: [
-          { id:'g-medio-pps-1', type:'choice', prompt:"I ___ to Paris last year.",
+          { id:'g-medio-pps-1', micro:'pasado-fecha-terminada', type:'choice', prompt:"I ___ to Paris last year.",
             options:["have gone","went","have been"], correct:1,
             explain:"Con una fecha específica pasada (“last year”) usamos pasado simple, no presente perfecto.",
             examples:[
               {en:"I went to Paris last year.", es:"Fui a París el año pasado."},
               {en:"She has visited Paris twice.", es:"Ella ha visitado París dos veces."}
             ]},
-          { id:'g-medio-pps-2', type:'fill', sentence:["I","___","never","tried","sushi","before","."], blankIndex:1,
+          { id:'g-medio-pps-2', micro:'pp-experiencia-sin-fecha', type:'fill', sentence:["I","___","never","tried","sushi","before","."], blankIndex:1,
             bank:["have","did","was"], correct:"have",
             explain:"Sin fecha específica, hablando de experiencia de vida, usamos presente perfecto.",
             examples:[
               {en:"I have never tried sushi before.", es:"Nunca he probado sushi."},
               {en:"She has already seen that movie.", es:"Ella ya vio esa película."}
             ]},
-          { id:'g-medio-pps-3', type:'choice', prompt:"___ you finish the report yet?",
+          { id:'g-medio-pps-3', micro:'pp-experiencia-sin-fecha', type:'choice', prompt:"___ you finish the report yet?",
             options:["Did","Have","Was"], correct:1,
             explain:"“Yet” en preguntas normalmente va con presente perfecto.",
             examples:[
               {en:"Have you finished the report yet?", es:"¿Ya terminaste el informe?"},
               {en:"Did you finish it yesterday?", es:"¿Lo terminaste ayer?"}
             ]},
-          { id:'g-medio-pps-4', type:'error', wrong:"I have seen that movie yesterday.", wrongWord:"have seen",
+          { id:'g-medio-pps-4', micro:'pasado-fecha-terminada', type:'error', wrong:"I have seen that movie yesterday.", wrongWord:"have seen",
             right:"I saw that movie yesterday.", rightWord:"saw",
             explain:"“Yesterday” es una fecha específica, así que necesitamos pasado simple, no presente perfecto.",
             examples:[
@@ -1701,28 +1701,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Since / For',
         items: [
-          { id:'g-medio-sf-1', type:'choice', prompt:"I have lived here ___ 2015.",
+          { id:'g-medio-sf-1', micro:'since-for-eleccion', type:'choice', prompt:"I have lived here ___ 2015.",
             options:["since","for","from"], correct:0,
             explain:"Usamos “since” con un punto en el tiempo (un año, una fecha).",
             examples:[
               {en:"I have lived here since 2015.", es:"Vivo aquí desde 2015."},
               {en:"She has worked here for five years.", es:"Ella trabaja aquí desde hace cinco años."}
             ]},
-          { id:'g-medio-sf-2', type:'fill', sentence:["She","has","studied","English","___","three","years","."], blankIndex:4,
+          { id:'g-medio-sf-2', micro:'since-for-eleccion', type:'fill', sentence:["She","has","studied","English","___","three","years","."], blankIndex:4,
             bank:["for","since","ago"], correct:"for",
             explain:"Usamos “for” con una duración (una cantidad de tiempo).",
             examples:[
               {en:"She has studied English for three years.", es:"Ella estudia inglés desde hace tres años."},
               {en:"He has known her since childhood.", es:"Él la conoce desde la infancia."}
             ]},
-          { id:'g-medio-sf-3', type:'choice', prompt:"We haven't talked ___ Monday.",
+          { id:'g-medio-sf-3', micro:'since-for-eleccion', type:'choice', prompt:"We haven't talked ___ Monday.",
             options:["for","since","during"], correct:1,
             explain:"“Monday” es un punto en el tiempo, así que usamos “since”.",
             examples:[
               {en:"We haven't talked since Monday.", es:"No hemos hablado desde el lunes."},
               {en:"I haven't seen him for two weeks.", es:"No lo he visto en dos semanas."}
             ]},
-          { id:'g-medio-sf-4', type:'error', wrong:"I've known him since five years.", wrongWord:"since",
+          { id:'g-medio-sf-4', micro:'since-for-eleccion', type:'error', wrong:"I've known him since five years.", wrongWord:"since",
             right:"I've known him for five years.", rightWord:"for",
             explain:"“Five years” es una duración, entonces va con “for”, no “since”.",
             examples:[
@@ -1837,21 +1837,21 @@ const GRAMMAR_BANK = {
       {
         topic: 'Verbos modales de obligación (must / have to / should)',
         items: [
-          { id:'g-medio4-mod-1', type:'choice', prompt:"You ___ wear a seatbelt, it's the law.",
+          { id:'g-medio4-mod-1', micro:'obligacion-vs-consejo', type:'choice', prompt:"You ___ wear a seatbelt, it's the law.",
             options:["must","should","could"], correct:0,
             explain:"“Must” expresa una obligación fuerte, como una regla o ley.",
             examples:[
               {en:"You must wear a seatbelt.", es:"Debes usar cinturón de seguridad (es obligatorio)."},
               {en:"Employees must wash their hands.", es:"Los empleados deben lavarse las manos."}
             ]},
-          { id:'g-medio4-mod-2', type:'choice', prompt:"You ___ see a doctor if you feel sick. It's a good idea.",
+          { id:'g-medio4-mod-2', micro:'obligacion-vs-consejo', type:'choice', prompt:"You ___ see a doctor if you feel sick. It's a good idea.",
             options:["should","must","can"], correct:0,
             explain:"“Should” es un consejo, no una obligación estricta como “must”.",
             examples:[
               {en:"You should see a doctor.", es:"Deberías ver a un doctor (es un consejo)."},
               {en:"You should drink more water.", es:"Deberías tomar más agua."}
             ]},
-          { id:'g-medio4-mod-3', type:'fill', sentence:["I","___","go","to","work","tomorrow,","it's","a","holiday","."], blankIndex:1,
+          { id:'g-medio4-mod-3', micro:'mustnt-vs-dont-have-to', type:'fill', sentence:["I","___","go","to","work","tomorrow,","it's","a","holiday","."], blankIndex:1,
             bank:["don't have to","must","should"], correct:"don't have to",
             explain:"“Don't have to” significa que no hay obligación, es diferente de “mustn't” (prohibido).",
             examples:[
@@ -14486,4 +14486,183 @@ GRAMMAR_CHECK_BANK.push(
       right:"If I were a fish, I would swim all day.", rightWord:"would",
       explain:"Si el “if” va en pasado (algo imaginario), el resultado lleva “would”, no “will”.",
       examples:[{en:"If I were a fish, I would swim all day.",es:"Si fuera un pez, nadaría todo el día."},{en:"If I were a cat, I would sleep all afternoon.",es:"Si fuera un gato, dormiría toda la tarde."}] }
+);
+
+/* ============================================================
+   AMPLIACION DEL REFUERZO ADAPTATIVO (5 temas): presente perfecto vs pasado, since / for, cuantificadores, modales de obligacion, in / on / at.
+   Practica: bloques nuevos en variantes SOLO de miembros. Comprobacion: banco aparte (GRAMMAR_CHECK_BANK), ningun motor de sesion lo lee.
+   Los ejercicios que ya existian no se tocaron, solo se les agrego la etiqueta micro.
+   ============================================================ */
+GRAMMAR_BANK.medio[10].push({
+  topic:"Presente perfecto: experiencias sin fecha",
+  items:[
+    {id:"g-medio-ppe-1",micro:"pp-experiencia-sin-fecha",translation:"¿Alguna vez has visitado un museo en Londres?",type:"choice",prompt:"___ you ever visited a museum in London?",options:["Has","Have","Did"],correct:1,explain:"Con “ever” (alguna vez) preguntamos por experiencias de vida sin fecha: “Have you ever visited...?”.",examples:[{en:"Have you ever visited London?",es:"¿Has visitado Londres alguna vez?"},{en:"I have visited London twice.",es:"He visitado Londres dos veces."}]},
+    {id:"g-medio-ppe-2",micro:"pp-experiencia-sin-fecha",translation:"Ella ya terminó su tarea.",type:"fill",sentence:["She","has","___","finished","her","homework","."],blankIndex:2,bank:["already","yesterday","ago"],correct:"already",explain:"“Already” (ya) va con presente perfecto, no con una fecha pasada como “yesterday” o “ago”.",examples:[{en:"She has already finished.",es:"Ella ya terminó."},{en:"They have already left.",es:"Ellos ya se fueron."}]},
+    {id:"g-medio-ppe-3",micro:"pp-experiencia-sin-fecha",translation:"He visto esa serie tres veces.",type:"error",wrong:"I have see that series three times.",wrongWord:"see",right:"I have seen that series three times.",rightWord:"seen",explain:"Después de “have” va el participio: “seen”, no el verbo base “see”.",examples:[{en:"I have seen that series three times.",es:"He visto esa serie tres veces."},{en:"She has seen the sea.",es:"Ella ha visto el mar."}]},
+    {id:"g-medio-ppe-4",micro:"pp-experiencia-sin-fecha",translation:"Perdí mis llaves, así que no puedo abrir la puerta.",type:"choice",prompt:"I ___ my keys, so I can't open the door.",options:["was lost","have lost","did lost"],correct:1,explain:"Algo que pasó antes pero tiene un resultado ahora (no puedo abrir) usa presente perfecto: “have lost”.",examples:[{en:"I have lost my keys.",es:"He perdido mis llaves."},{en:"She has broken her phone.",es:"Ella rompió su teléfono (y sigue roto)."}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[9].push({
+  topic:"Presente perfecto o pasado simple: con fecha terminada",
+  items:[
+    {id:"g-medio-ppf-1",micro:"pasado-fecha-terminada",translation:"Ella perdió su teléfono hace dos días.",type:"choice",prompt:"She ___ her phone two days ago.",options:["has lost","lost","have lost"],correct:1,explain:"“Ago” marca un momento terminado del pasado. Con “ago” usamos pasado simple: “lost”.",examples:[{en:"She lost her phone two days ago.",es:"Ella perdió su teléfono hace dos días."},{en:"He arrived an hour ago.",es:"Él llegó hace una hora."}]},
+    {id:"g-medio-ppf-2",micro:"pasado-fecha-terminada",translation:"Vivimos en Madrid en 2019.",type:"fill",sentence:["We","___","in","Madrid","in","2019","."],blankIndex:1,bank:["lived","have lived","live"],correct:"lived",explain:"Con un año pasado concreto (“in 2019”) usamos pasado simple: “lived”.",examples:[{en:"We lived in Madrid in 2019.",es:"Vivimos en Madrid en 2019."},{en:"I visited Rome in 2020.",es:"Visité Roma en 2020."}]},
+    {id:"g-medio-ppf-3",micro:"pasado-fecha-terminada",translation:"Compré este carro el mes pasado.",type:"error",wrong:"I have bought this car last month.",wrongWord:"have bought",right:"I bought this car last month.",rightWord:"bought",explain:"“Last month” es un momento terminado, así que va pasado simple: “bought”.",examples:[{en:"I bought this car last month.",es:"Compré este carro el mes pasado."},{en:"We sold the house last year.",es:"Vendimos la casa el año pasado."}]},
+    {id:"g-medio-ppf-4",micro:"pasado-fecha-terminada",translation:"¿Cuándo compraste esa chaqueta?",type:"choice",prompt:"When ___ you buy that jacket?",options:["are","have","did"],correct:2,explain:"Si preguntas “cuándo” pasó algo, hablas de un momento concreto: usa pasado simple con “did”.",examples:[{en:"When did you buy it?",es:"¿Cuándo lo compraste?"},{en:"When did she call?",es:"¿Cuándo llamó ella?"}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[8].push({
+  topic:"Since / For: elegir bien",
+  items:[
+    {id:"g-medio-sfe-1",micro:"since-for-eleccion",translation:"Somos amigos desde hace diez años.",type:"choice",prompt:"We have been friends ___ ten years.",options:["since","from","for"],correct:2,explain:"Diez años es una duración (cuánto tiempo), así que usamos “for”.",examples:[{en:"We have been friends for ten years.",es:"Somos amigos desde hace diez años."},{en:"We have been friends since 2015.",es:"Somos amigos desde 2015."}]},
+    {id:"g-medio-sfe-2",micro:"since-for-eleccion",translation:"Él trabaja aquí desde enero.",type:"fill",sentence:["He","has","worked","here","___","January","."],blankIndex:4,bank:["since","for","ago"],correct:"since",explain:"“January” es un punto en el tiempo (cuándo empezó), así que usamos “since”.",examples:[{en:"He has worked here since January.",es:"Él trabaja aquí desde enero."},{en:"He has worked here for two months.",es:"Él trabaja aquí desde hace dos meses."}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[6].push({
+  topic:"Since / For con presente perfecto",
+  items:[
+    {id:"g-medio-sfp-1",micro:"since-for-presente-perfecto",translation:"Vivo aquí desde 2018.",type:"error",wrong:"I live here since 2018.",wrongWord:"live",right:"I have lived here since 2018.",rightWord:"have lived",explain:"Con “since” o “for” el inglés usa presente perfecto, no presente: “have lived”.",examples:[{en:"I have lived here since 2018.",es:"Vivo aquí desde 2018."},{en:"She has lived here for a year.",es:"Ella vive aquí desde hace un año."}]},
+    {id:"g-medio-sfp-2",micro:"since-for-presente-perfecto",translation:"Ella trabaja en esta empresa desde 2017.",type:"choice",prompt:"She ___ in this company since 2017.",options:["works","has worked","worked"],correct:1,explain:"Algo que empezó en 2017 y sigue hoy usa presente perfecto: “has worked”.",examples:[{en:"She has worked here since 2017.",es:"Ella trabaja aquí desde 2017."},{en:"He has studied here since March.",es:"Él estudia aquí desde marzo."}]},
+    {id:"g-medio-sfp-3",micro:"since-for-presente-perfecto",translation:"Nos conocemos desde hace seis años.",type:"fill",sentence:["We","___","each","other","for","six","years","now","."],blankIndex:1,bank:["have known","know","knew"],correct:"have known",explain:"Con “for six years now” la situación sigue hoy: presente perfecto, “have known”.",examples:[{en:"We have known each other for six years.",es:"Nos conocemos desde hace seis años."},{en:"They have known him for ages.",es:"Lo conocen desde hace mucho."}]},
+    {id:"g-medio-sfp-4",micro:"since-for-presente-perfecto",translation:"¿Cuánto tiempo llevas estudiando inglés?",type:"choice",prompt:"How long ___ you studied English?",options:["did","have","do"],correct:1,explain:"Para preguntar “cuánto tiempo” hasta hoy usamos “How long have you...?”.",examples:[{en:"How long have you lived here?",es:"¿Cuánto tiempo llevas viviendo aquí?"},{en:"How long has she worked here?",es:"¿Cuánto tiempo lleva ella trabajando aquí?"}]},
+    {id:"g-medio-sfp-5",micro:"since-for-presente-perfecto",translation:"Está enfermo desde el lunes.",type:"error",wrong:"He is sick since Monday.",wrongWord:"is",right:"He has been sick since Monday.",rightWord:"has been",explain:"Con “since Monday” hablamos de algo que empezó y continúa: “has been”, no “is”.",examples:[{en:"He has been sick since Monday.",es:"Está enfermo desde el lunes."},{en:"She has been busy since morning.",es:"Ella está ocupada desde la mañana."}]},
+    {id:"g-medio-sfp-6",micro:"since-for-presente-perfecto",translation:"Mi hermano vive en Canadá desde hace dos años.",type:"choice",prompt:"My brother ___ in Canada for two years.",options:["has lived","is living","lives"],correct:0,explain:"“For two years” con algo que sigue hoy pide presente perfecto: “has lived”.",examples:[{en:"My brother has lived in Canada for two years.",es:"Mi hermano vive en Canadá desde hace dos años."},{en:"We have lived here for a month.",es:"Vivimos aquí desde hace un mes."}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[8].push({
+  topic:"Fewer y less en frases",
+  items:[
+    {id:"g-medio-fl-1",micro:"fewer-less",translation:"Hay menos gente en la fiesta que la semana pasada.",type:"choice",prompt:"There are ___ people at the party than last week.",options:["less","fewer","little"],correct:1,explain:"“People” se puede contar (una persona, dos personas), así que usamos “fewer”.",examples:[{en:"There are fewer people today.",es:"Hay menos gente hoy."},{en:"We have fewer cars now.",es:"Ahora tenemos menos carros."}]},
+    {id:"g-medio-fl-2",micro:"fewer-less",translation:"Tomo menos café que antes.",type:"fill",sentence:["I","drink","___","coffee","than","before","."],blankIndex:2,bank:["less","fewer","few"],correct:"less",explain:"“Coffee” no se cuenta (es incontable), así que usamos “less”.",examples:[{en:"I drink less coffee now.",es:"Ahora tomo menos café."},{en:"She eats less sugar.",es:"Ella come menos azúcar."}]},
+    {id:"g-medio-fl-3",micro:"fewer-less",translation:"Este año tenemos menos estudiantes.",type:"error",wrong:"We have less students this year.",wrongWord:"less",right:"We have fewer students this year.",rightWord:"fewer",explain:"“Students” se cuenta, así que va “fewer”, no “less”.",examples:[{en:"We have fewer students this year.",es:"Este año tenemos menos estudiantes."},{en:"There are fewer chairs.",es:"Hay menos sillas."}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[9].push({
+  topic:"Verbos modales: obligación (must / have to) vs consejo (should)",
+  items:[
+    {id:"g-medio-ms-1",micro:"obligacion-vs-consejo",translation:"Debes manejar por la derecha en este país. Es la ley.",type:"choice",prompt:"You ___ drive on the right in this country. It's the law.",options:["might","must","would"],correct:1,explain:"Una ley es una obligación fuerte: “must” (o “have to”).",examples:[{en:"You must drive on the right.",es:"Debes manejar por la derecha."},{en:"We must stop at a red light.",es:"Debemos parar en la luz roja."}]},
+    {id:"g-medio-ms-2",micro:"obligacion-vs-consejo",translation:"Te ves cansado. Deberías acostarte temprano esta noche.",type:"choice",prompt:"You look tired. You ___ go to bed early tonight.",options:["should","must to","are"],correct:0,explain:"Es un consejo amable, no una obligación: “should”.",examples:[{en:"You should go to bed early.",es:"Deberías acostarte temprano."},{en:"He should drink more water.",es:"Él debería tomar más agua."}]},
+    {id:"g-medio-ms-3",micro:"obligacion-vs-consejo",translation:"En mi trabajo tengo que usar uniforme. Es la política de la empresa.",type:"fill",sentence:["In","my","job",",","I","___","wear","a","uniform",".","It's","company","policy","."],blankIndex:5,bank:["have to","would","might"],correct:"have to",explain:"Una regla de la empresa es una obligación: “have to”.",examples:[{en:"I have to wear a uniform.",es:"Tengo que usar uniforme."},{en:"She has to work on Saturdays.",es:"Ella tiene que trabajar los sábados."}]},
+    {id:"g-medio-ms-4",micro:"obligacion-vs-consejo",translation:"Creo que deberías hablar con tu jefe sobre el problema.",type:"choice",prompt:"I think you ___ talk to your boss about the problem.",options:["are","should","must to"],correct:1,explain:"“I think you...” introduce un consejo, no una orden: “should”.",examples:[{en:"I think you should talk to him.",es:"Creo que deberías hablar con él."},{en:"You should rest today.",es:"Deberías descansar hoy."}]}
+  ]
+});
+
+GRAMMAR_BANK.medio[10].push({
+  topic:"Verbos modales: must, mustn't y don't have to",
+  items:[
+    {id:"g-medio-mnt-1",micro:"mustnt-vs-dont-have-to",translation:"No puedes estacionarte aquí. Está prohibido.",type:"choice",prompt:"You ___ park here. It's forbidden.",options:["don't have to","mustn't","doesn't have to"],correct:1,explain:"“Mustn’t” significa prohibido. “Don’t have to” significa que no es necesario.",examples:[{en:"You mustn't park here.",es:"No puedes estacionarte aquí."},{en:"We mustn't be late.",es:"No debemos llegar tarde."}]},
+    {id:"g-medio-mnt-2",micro:"mustnt-vs-dont-have-to",translation:"Mañana es feriado, así que no tenemos que ir a la escuela.",type:"choice",prompt:"Tomorrow is a holiday, so we ___ go to school.",options:["mustn't","must","don't have to"],correct:2,explain:"Si no hay obligación (pero tampoco está prohibido) usamos “don’t have to”.",examples:[{en:"We don't have to go to school.",es:"No tenemos que ir a la escuela."},{en:"You don't have to pay.",es:"No tienes que pagar."}]},
+    {id:"g-medio-mnt-3",micro:"mustnt-vs-dont-have-to",translation:"Los visitantes no deben tocar las pinturas. Se pueden dañar.",type:"fill",sentence:["Visitors","___","touch","the","paintings",".","They","can","be","damaged","."],blankIndex:1,bank:["mustn't","don't have to","aren't"],correct:"mustn't",explain:"Es una prohibición para evitar un daño: “mustn’t”.",examples:[{en:"Visitors mustn't touch the paintings.",es:"Los visitantes no deben tocar las pinturas."},{en:"You mustn't run here.",es:"No debes correr aquí."}]},
+    {id:"g-medio-mnt-4",micro:"mustnt-vs-dont-have-to",translation:"No tienes que traer un regalo, es opcional.",type:"error",wrong:"You mustn't bring a gift, it's optional.",wrongWord:"mustn't",right:"You don't have to bring a gift, it's optional.",rightWord:"don't have to",explain:"Si es opcional, no está prohibido: se dice “don’t have to”.",examples:[{en:"You don't have to bring a gift.",es:"No tienes que traer un regalo."},{en:"We don't have to hurry.",es:"No tenemos que apurarnos."}]},
+    {id:"g-medio-mnt-5",micro:"mustnt-vs-dont-have-to",translation:"Ella no tiene que cocinar esta noche. Vamos a pedir pizza.",type:"choice",prompt:"She ___ cook tonight. We are ordering pizza.",options:["doesn't have to","mustn't","don't have to"],correct:0,explain:"Con “she” se dice “doesn’t have to”. No es obligatorio cocinar, no está prohibido.",examples:[{en:"She doesn't have to cook.",es:"Ella no tiene que cocinar."},{en:"He doesn't have to work today.",es:"Él no tiene que trabajar hoy."}]}
+  ]
+});
+
+GRAMMAR_BANK.facil[6].push({
+  topic:"In / On / At con tiempo (horas, días, meses)",
+  items:[
+    {id:"g-facil-iot-1",micro:"in-on-at-tiempo",translation:"Mi clase empieza a las 7 p. m.",type:"choice",prompt:"My class starts ___ 7 p.m.",options:["on","at","in"],correct:1,explain:"Usamos “at” con horas exactas.",examples:[{en:"My class starts at 7.",es:"Mi clase empieza a las 7."},{en:"We eat at noon.",es:"Comemos al mediodía."}]},
+    {id:"g-facil-iot-2",micro:"in-on-at-tiempo",translation:"Nací en 1998.",type:"fill",sentence:["I","was","born","___","1998","."],blankIndex:3,bank:["in","on","at"],correct:"in",explain:"Usamos “in” con años, meses y estaciones.",examples:[{en:"I was born in 1998.",es:"Nací en 1998."},{en:"She was born in May.",es:"Ella nació en mayo."}]},
+    {id:"g-facil-iot-3",micro:"in-on-at-tiempo",translation:"Vamos a la iglesia los domingos.",type:"choice",prompt:"We go to church ___ Sundays.",options:["at","on","in"],correct:1,explain:"Usamos “on” con días de la semana.",examples:[{en:"We go to church on Sundays.",es:"Vamos a la iglesia los domingos."},{en:"I work on Fridays.",es:"Trabajo los viernes."}]},
+    {id:"g-facil-iot-4",micro:"in-on-at-tiempo",translation:"Me despierto a las 6 en punto.",type:"error",wrong:"I wake up in 6 o'clock.",wrongWord:"in",right:"I wake up at 6 o'clock.",rightWord:"at",explain:"Con una hora exacta usamos “at”, no “in”.",examples:[{en:"I wake up at 6 o'clock.",es:"Me despierto a las 6 en punto."},{en:"The bus leaves at 8.",es:"El autobús sale a las 8."}]}
+  ]
+});
+
+GRAMMAR_BANK.facil[8].push({
+  topic:"In / On / At con lugares",
+  items:[
+    {id:"g-facil-iol-1",micro:"in-on-at-lugar",translation:"Mi hermano vive en un apartamento pequeño.",type:"choice",prompt:"My brother lives ___ a small apartment.",options:["on","at","in"],correct:2,explain:"Usamos “in” para espacios cerrados, como un apartamento o un cuarto.",examples:[{en:"He lives in a small apartment.",es:"Él vive en un apartamento pequeño."},{en:"The cat is in the box.",es:"El gato está en la caja."}]},
+    {id:"g-facil-iol-2",micro:"in-on-at-lugar",translation:"Ella te espera en la parada del autobús.",type:"fill",sentence:["She","is","waiting","for","you","___","the","bus","stop","."],blankIndex:5,bank:["at","in","on"],correct:"at",explain:"Usamos “at” para un punto o lugar de encuentro, como una parada.",examples:[{en:"She is at the bus stop.",es:"Ella está en la parada."},{en:"We are at the door.",es:"Estamos en la puerta."}]},
+    {id:"g-facil-iol-3",micro:"in-on-at-lugar",translation:"Hay una mosca en el techo.",type:"choice",prompt:"There is a fly ___ the ceiling.",options:["on","in","at"],correct:0,explain:"Usamos “on” para algo que está pegado a una superficie.",examples:[{en:"There is a fly on the ceiling.",es:"Hay una mosca en el techo."},{en:"The picture is on the wall.",es:"El cuadro está en la pared."}]},
+    {id:"g-facil-iol-4",micro:"in-on-at-lugar",translation:"Mi primo vive en España.",type:"error",wrong:"My cousin lives at Spain.",wrongWord:"at",right:"My cousin lives in Spain.",rightWord:"in",explain:"Con países y ciudades usamos “in”.",examples:[{en:"My cousin lives in Spain.",es:"Mi primo vive en España."},{en:"They live in Lima.",es:"Ellos viven en Lima."}]}
+  ]
+});
+
+GRAMMAR_BANK.facil[10].push({
+  topic:"Some / Any en frases afirmativas y negativas",
+  items:[
+    {id:"g-facil-sa-1",micro:"some-any-afirm-neg",translation:"Hoy no tengo nada de dinero.",type:"choice",prompt:"I don't have ___ money today.",options:["some","any","a"],correct:1,explain:"En frases negativas usamos “any”: “don’t have any”.",examples:[{en:"I don't have any money.",es:"No tengo nada de dinero."},{en:"We don't have any milk.",es:"No tenemos nada de leche."}]},
+    {id:"g-facil-sa-2",micro:"some-any-afirm-neg",translation:"Hay algo de leche en el refrigerador.",type:"fill",sentence:["There","is","___","milk","in","the","fridge","."],blankIndex:2,bank:["some","any","many"],correct:"some",explain:"En una frase afirmativa usamos “some”.",examples:[{en:"There is some milk in the fridge.",es:"Hay algo de leche en el refrigerador."},{en:"I bought some bread.",es:"Compré algo de pan."}]}
+  ]
+});
+
+// Comprobacion de la ampliacion: 6 por microtema (2 rondas de 3), todos inéditos.
+GRAMMAR_CHECK_BANK.push(
+    {id:"g-chk-ppe-1",micro:"pp-experiencia-sin-fecha",translation:"Nunca he visto nieve, así que estoy muy emocionado de verla.",type:"choice",prompt:"I ___ never seen snow, so I'm very excited to see it.",options:["was","have","did"],correct:1,explain:"Una experiencia de vida sin fecha usa presente perfecto: “have never seen”.",examples:[{en:"I have never seen snow.",es:"Nunca he visto nieve."},{en:"He has never flown.",es:"Él nunca ha volado."}]},
+    {id:"g-chk-ppe-2",micro:"pp-experiencia-sin-fecha",translation:"Ellos acaban de llegar al aeropuerto.",type:"fill",sentence:["They","have","___","arrived","at","the","airport","."],blankIndex:2,bank:["just","last night","ago"],correct:"just",explain:"“Just” (acabar de) va con presente perfecto, no con una fecha.",examples:[{en:"They have just arrived.",es:"Acaban de llegar."},{en:"She has just called.",es:"Ella acaba de llamar."}]},
+    {id:"g-chk-ppe-3",micro:"pp-experiencia-sin-fecha",translation:"¿Ha corrido ella alguna vez un maratón?",type:"choice",prompt:"Has she ever ___ a marathon?",options:["ran","run","running"],correct:1,explain:"Después de “has” va el participio de “run”, que es “run”.",examples:[{en:"Has she ever run a marathon?",es:"¿Ha corrido ella un maratón?"},{en:"Have you ever run in the rain?",es:"¿Has corrido alguna vez bajo la lluvia?"}]},
+    {id:"g-chk-ppe-4",micro:"pp-experiencia-sin-fecha",translation:"Él ha estado en Canadá dos veces.",type:"error",wrong:"He has be to Canada twice.",wrongWord:"be",right:"He has been to Canada twice.",rightWord:"been",explain:"Después de “has” va el participio “been”, no “be”.",examples:[{en:"He has been to Canada twice.",es:"Él ha estado en Canadá dos veces."},{en:"I have been to Cuba.",es:"He estado en Cuba."}]},
+    {id:"g-chk-ppe-5",micro:"pp-experiencia-sin-fecha",translation:"¡Alguien ha robado mi bicicleta! No está aquí.",type:"choice",prompt:"Someone has ___ my bike! It isn't here.",options:["stole","steal","stolen"],correct:2,explain:"Después de “has” va el participio: “stolen”.",examples:[{en:"Someone has stolen my bike.",es:"Alguien ha robado mi bicicleta."},{en:"She has broken the window.",es:"Ella ha roto la ventana."}]},
+    {id:"g-chk-ppe-6",micro:"pp-experiencia-sin-fecha",translation:"¿Has estado alguna vez en Perú?",type:"fill",sentence:["Have","you","___","been","to","Peru","?"],blankIndex:2,bank:["ever","yesterday","ago"],correct:"ever",explain:"“Ever” (alguna vez) va en preguntas de experiencia con presente perfecto.",examples:[{en:"Have you ever been to Peru?",es:"¿Has estado en Perú alguna vez?"},{en:"Have you ever met a famous person?",es:"¿Has conocido alguna vez a un famoso?"}]},
+    {id:"g-chk-ppf-1",micro:"pasado-fecha-terminada",translation:"Ellos se casaron en 2010.",type:"choice",prompt:"They ___ married in 2010.",options:["have got","got","get"],correct:1,explain:"Un año concreto del pasado pide pasado simple: “got married”.",examples:[{en:"They got married in 2010.",es:"Se casaron en 2010."},{en:"We met in 2015.",es:"Nos conocimos en 2015."}]},
+    {id:"g-chk-ppf-2",micro:"pasado-fecha-terminada",translation:"Él envió el correo hace cinco minutos.",type:"fill",sentence:["He","___","the","email","five","minutes","ago","."],blankIndex:1,bank:["sent","has sent","sends"],correct:"sent",explain:"“Ago” marca un momento terminado: pasado simple, “sent”.",examples:[{en:"He sent the email five minutes ago.",es:"Envió el correo hace cinco minutos."},{en:"I called her an hour ago.",es:"La llamé hace una hora."}]},
+    {id:"g-chk-ppf-3",micro:"pasado-fecha-terminada",translation:"Visitamos el museo el domingo pasado.",type:"error",wrong:"We have visited the museum last Sunday.",wrongWord:"have visited",right:"We visited the museum last Sunday.",rightWord:"visited",explain:"“Last Sunday” es un momento terminado: pasado simple.",examples:[{en:"We visited the museum last Sunday.",es:"Visitamos el museo el domingo pasado."},{en:"I saw him last week.",es:"Lo vi la semana pasada."}]},
+    {id:"g-chk-ppf-4",micro:"pasado-fecha-terminada",translation:"Mozart escribió muchas canciones hermosas.",type:"choice",prompt:"Mozart ___ many beautiful songs.",options:["has written","wrote","is writing"],correct:1,explain:"Mozart vivió en una época terminada, así que usamos pasado simple: “wrote”.",examples:[{en:"Mozart wrote many songs.",es:"Mozart escribió muchas canciones."},{en:"Shakespeare wrote plays.",es:"Shakespeare escribió obras de teatro."}]},
+    {id:"g-chk-ppf-5",micro:"pasado-fecha-terminada",translation:"¿Te llamó ella ayer?",type:"choice",prompt:"___ she call you yesterday?",options:["Did","Has","Is"],correct:0,explain:"“Yesterday” es una fecha terminada: la pregunta lleva “did”.",examples:[{en:"Did she call you yesterday?",es:"¿Te llamó ayer?"},{en:"Did they arrive on time?",es:"¿Llegaron a tiempo?"}]},
+    {id:"g-chk-ppf-6",micro:"pasado-fecha-terminada",translation:"La conocí en 2018.",type:"error",wrong:"I have met her in 2018.",wrongWord:"have met",right:"I met her in 2018.",rightWord:"met",explain:"Con un año concreto (“in 2018”) va pasado simple: “met”.",examples:[{en:"I met her in 2018.",es:"La conocí en 2018."},{en:"He moved here in 2020.",es:"Se mudó aquí en 2020."}]},
+    {id:"g-chk-sfe-1",micro:"since-for-eleccion",translation:"Ellos viven en esta casa desde el verano pasado.",type:"choice",prompt:"They have lived in this house ___ last summer.",options:["for","since","ago"],correct:1,explain:"“Last summer” es un punto en el tiempo (cuándo empezó): “since”.",examples:[{en:"They have lived here since last summer.",es:"Viven aquí desde el verano pasado."},{en:"We have known her since 2020.",es:"La conocemos desde 2020."}]},
+    {id:"g-chk-sfe-2",micro:"since-for-eleccion",translation:"No la veo desde hace tres semanas.",type:"choice",prompt:"I haven't seen her ___ three weeks.",options:["since","for","at"],correct:1,explain:"“Three weeks” es una duración: “for”.",examples:[{en:"I haven't seen her for three weeks.",es:"No la veo desde hace tres semanas."},{en:"I haven't called him for days.",es:"No lo llamo desde hace días."}]},
+    {id:"g-chk-sfe-3",micro:"since-for-eleccion",translation:"Mi teléfono está dañado desde el martes.",type:"fill",sentence:["My","phone","has","been","broken","___","Tuesday","."],blankIndex:5,bank:["since","for","in"],correct:"since",explain:"“Tuesday” es un punto en el tiempo: “since”.",examples:[{en:"My phone has been broken since Tuesday.",es:"Mi teléfono está dañado desde el martes."},{en:"It has rained since morning.",es:"Ha llovido desde la mañana."}]},
+    {id:"g-chk-sfe-4",micro:"since-for-eleccion",translation:"Ella estudia francés desde hace seis meses.",type:"error",wrong:"She has studied French since six months.",wrongWord:"since",right:"She has studied French for six months.",rightWord:"for",explain:"“Six months” es una duración: “for”, no “since”.",examples:[{en:"She has studied French for six months.",es:"Estudia francés desde hace seis meses."},{en:"He has played guitar for years.",es:"Toca guitarra desde hace años."}]},
+    {id:"g-chk-sfe-5",micro:"since-for-eleccion",translation:"Él es maestro desde hace mucho tiempo.",type:"fill",sentence:["He","has","been","a","teacher","___","a","long","time","."],blankIndex:5,bank:["for","since","from"],correct:"for",explain:"“A long time” es una duración: “for”.",examples:[{en:"He has been a teacher for a long time.",es:"Es maestro desde hace mucho."},{en:"We have waited for an hour.",es:"Esperamos desde hace una hora."}]},
+    {id:"g-chk-sfe-6",micro:"since-for-eleccion",translation:"Hemos esperado aquí desde las 8.",type:"error",wrong:"We have waited here for 8 o'clock.",wrongWord:"for",right:"We have waited here since 8 o'clock.",rightWord:"since",explain:"“8 o’clock” es un punto en el tiempo: “since”.",examples:[{en:"We have waited here since 8 o'clock.",es:"Hemos esperado desde las 8."},{en:"I have been here since noon.",es:"Estoy aquí desde el mediodía."}]},
+    {id:"g-chk-sfp-1",micro:"since-for-presente-perfecto",translation:"Trabajo en este hospital desde 2012.",type:"error",wrong:"I work in this hospital since 2012.",wrongWord:"work",right:"I have worked in this hospital since 2012.",rightWord:"have worked",explain:"Con “since” el inglés usa presente perfecto: “have worked”.",examples:[{en:"I have worked here since 2012.",es:"Trabajo aquí desde 2012."},{en:"She has worked here since May.",es:"Ella trabaja aquí desde mayo."}]},
+    {id:"g-chk-sfp-2",micro:"since-for-presente-perfecto",translation:"Ellos están casados desde hace diez años.",type:"choice",prompt:"They ___ married for ten years now.",options:["are","were","have been"],correct:2,explain:"Algo que empezó y sigue hoy, con “for”, usa presente perfecto: “have been”.",examples:[{en:"They have been married for ten years.",es:"Están casados desde hace diez años."},{en:"We have been here for an hour.",es:"Estamos aquí desde hace una hora."}]},
+    {id:"g-chk-sfp-3",micro:"since-for-presente-perfecto",translation:"A ella le encanta esta canción desde que era niña.",type:"fill",sentence:["She","___","this","song","since","she","was","a","child","."],blankIndex:1,bank:["has loved","loves","loved"],correct:"has loved",explain:"“Since” + un momento pasado, con algo que sigue hoy: presente perfecto, “has loved”.",examples:[{en:"She has loved this song since then.",es:"Le encanta desde entonces."},{en:"He has liked jazz since 2010.",es:"Le gusta el jazz desde 2010."}]},
+    {id:"g-chk-sfp-4",micro:"since-for-presente-perfecto",translation:"¿Cuánto tiempo llevan viviendo en Chile?",type:"choice",prompt:"How long ___ they lived in Chile?",options:["are","do","have"],correct:2,explain:"Para “cuánto tiempo llevan” usamos “How long have they...?”.",examples:[{en:"How long have they lived in Chile?",es:"¿Cuánto llevan viviendo en Chile?"},{en:"How long have you known him?",es:"¿Cuánto tiempo hace que lo conoces?"}]},
+    {id:"g-chk-sfp-5",micro:"since-for-presente-perfecto",translation:"Estoy aquí desde las 9 en punto.",type:"error",wrong:"I am here since 9 o'clock.",wrongWord:"am",right:"I have been here since 9 o'clock.",rightWord:"have been",explain:"Con “since 9 o’clock” hablamos de algo que empezó y continúa: “have been”.",examples:[{en:"I have been here since 9 o'clock.",es:"Estoy aquí desde las 9 en punto."},{en:"She has been here since noon.",es:"Ella está aquí desde el mediodía."}]},
+    {id:"g-chk-sfp-6",micro:"since-for-presente-perfecto",translation:"Ha estado lloviendo desde esta mañana.",type:"fill",sentence:["It","___","raining","since","this","morning","."],blankIndex:1,bank:["has been","is","was"],correct:"has been",explain:"“Since this morning” pide presente perfecto continuo: “has been raining”.",examples:[{en:"It has been raining since morning.",es:"Ha estado lloviendo desde la mañana."},{en:"He has been working since noon.",es:"Ha estado trabajando desde el mediodía."}]},
+    {id:"g-chk-mm-1",micro:"much-many-contable-incontable",translation:"¿Cuánta agua tomas cada día?",type:"choice",prompt:"How ___ water do you drink every day?",options:["many","much","few"],correct:1,explain:"“Water” es incontable, así que usamos “much”.",examples:[{en:"How much water do you drink?",es:"¿Cuánta agua tomas?"},{en:"How much time do we have?",es:"¿Cuánto tiempo tenemos?"}]},
+    {id:"g-chk-mm-2",micro:"much-many-contable-incontable",translation:"No hay muchas sillas en el salón.",type:"choice",prompt:"There aren't ___ chairs in the room.",options:["much","many","a little"],correct:1,explain:"“Chairs” se cuenta, así que usamos “many”.",examples:[{en:"There aren't many chairs.",es:"No hay muchas sillas."},{en:"She doesn't have many friends.",es:"Ella no tiene muchos amigos."}]},
+    {id:"g-chk-mm-3",micro:"much-many-contable-incontable",translation:"No tenemos mucho tiempo antes de la clase.",type:"fill",sentence:["We","don't","have","___","time","before","class","."],blankIndex:3,bank:["much","many","few"],correct:"much",explain:"“Time” es incontable: “much”.",examples:[{en:"We don't have much time.",es:"No tenemos mucho tiempo."},{en:"I don't have much money.",es:"No tengo mucho dinero."}]},
+    {id:"g-chk-mm-4",micro:"much-many-contable-incontable",translation:"Tengo demasiados problemas en el trabajo.",type:"error",wrong:"I have too much problems at work.",wrongWord:"much",right:"I have too many problems at work.",rightWord:"many",explain:"“Problems” se cuenta, así que va “many”.",examples:[{en:"I have too many problems.",es:"Tengo demasiados problemas."},{en:"She has too many clothes.",es:"Ella tiene demasiada ropa."}]},
+    {id:"g-chk-mm-5",micro:"much-many-contable-incontable",translation:"¿Cuántos estudiantes hay en tu clase?",type:"choice",prompt:"How ___ students are in your class?",options:["many","much","little"],correct:0,explain:"“Students” se cuenta: “How many”.",examples:[{en:"How many students are there?",es:"¿Cuántos estudiantes hay?"},{en:"How many books do you have?",es:"¿Cuántos libros tienes?"}]},
+    {id:"g-chk-mm-6",micro:"much-many-contable-incontable",translation:"Ella no come mucho arroz.",type:"fill",sentence:["She","doesn't","eat","___","rice","."],blankIndex:3,bank:["much","many","few"],correct:"much",explain:"“Rice” es incontable: “much”.",examples:[{en:"She doesn't eat much rice.",es:"No come mucho arroz."},{en:"He doesn't drink much coffee.",es:"No toma mucho café."}]},
+    {id:"g-chk-lf-1",micro:"little-few-matiz",translation:"Tengo pocos amigos en esta ciudad, así que me siento solo.",type:"choice",prompt:"I have ___ friends in this city, so I feel lonely.",options:["little","few","a little"],correct:1,explain:"“Friends” se cuenta y casi no hay: “few” (muy pocos).",examples:[{en:"I have few friends here.",es:"Tengo pocos amigos aquí."},{en:"Few people came.",es:"Vinieron muy pocas personas."}]},
+    {id:"g-chk-lf-2",micro:"little-few-matiz",translation:"¿Puedo tomar un poco de azúcar en mi té, por favor?",type:"choice",prompt:"Can I have ___ sugar in my tea, please?",options:["a few","a little","few"],correct:1,explain:"“Sugar” es incontable y quieres una cantidad pequeña: “a little”.",examples:[{en:"I'd like a little sugar.",es:"Quisiera un poco de azúcar."},{en:"Add a little salt.",es:"Agrega un poco de sal."}]},
+    {id:"g-chk-lf-3",micro:"little-few-matiz",translation:"Hay muy poca esperanza. El equipo va perdiendo 5 a 0.",type:"fill",sentence:["There","is","___","hope",".","The","team","is","losing","5-0","."],blankIndex:2,bank:["little","few","a few"],correct:"little",explain:"“Hope” es incontable y casi no hay: “little” (muy poco).",examples:[{en:"There is little hope.",es:"Hay muy poca esperanza."},{en:"We have little time.",es:"Tenemos muy poco tiempo."}]},
+    {id:"g-chk-lf-4",micro:"little-few-matiz",translation:"Necesito un poco de agua.",type:"error",wrong:"I need a few water.",wrongWord:"a few",right:"I need a little water.",rightWord:"a little",explain:"“Water” es incontable, así que va “a little”, no “a few”.",examples:[{en:"I need a little water.",es:"Necesito un poco de agua."},{en:"She needs a little help.",es:"Ella necesita un poco de ayuda."}]},
+    {id:"g-chk-lf-5",micro:"little-few-matiz",translation:"Él tiene unos cuantos amigos cercanos y son muy leales.",type:"choice",prompt:"He has ___ close friends, and they are very loyal.",options:["a little","a few","little"],correct:1,explain:"“Friends” se cuenta y hay algunos: “a few”.",examples:[{en:"He has a few close friends.",es:"Tiene unos cuantos amigos cercanos."},{en:"I bought a few apples.",es:"Compré unas cuantas manzanas."}]},
+    {id:"g-chk-lf-6",micro:"little-few-matiz",translation:"Nos queda muy poco tiempo, así que apurémonos.",type:"fill",sentence:["We","have","___","time","left",",","so","let's","hurry","."],blankIndex:2,bank:["little","few","a few"],correct:"little",explain:"“Time” es incontable y queda casi nada: “little”.",examples:[{en:"We have little time left.",es:"Nos queda muy poco tiempo."},{en:"There is little water.",es:"Hay muy poca agua."}]},
+    {id:"g-chk-sa-1",micro:"some-any-afirm-neg",translation:"Compramos unas manzanas en el mercado.",type:"choice",prompt:"We bought ___ apples at the market.",options:["any","some","much"],correct:1,explain:"En una frase afirmativa usamos “some”.",examples:[{en:"We bought some apples.",es:"Compramos unas manzanas."},{en:"I have some questions.",es:"Tengo algunas preguntas."}]},
+    {id:"g-chk-sa-2",micro:"some-any-afirm-neg",translation:"No encuentro ningún par de calcetines en mi cajón.",type:"choice",prompt:"I can't find ___ socks in my drawer.",options:["some","any","a"],correct:1,explain:"En una frase negativa usamos “any”.",examples:[{en:"I can't find any socks.",es:"No encuentro calcetines."},{en:"We don't have any eggs.",es:"No tenemos huevos."}]},
+    {id:"g-chk-sa-3",micro:"some-any-afirm-neg",translation:"Ella no compró nada de pan.",type:"fill",sentence:["She","didn't","buy","___","bread","."],blankIndex:3,bank:["some","any","a few"],correct:"any",explain:"Con “didn’t” (negativo) usamos “any”.",examples:[{en:"She didn't buy any bread.",es:"No compró nada de pan."},{en:"He didn't eat any meat.",es:"No comió nada de carne."}]},
+    {id:"g-chk-sa-4",micro:"some-any-afirm-neg",translation:"No quedan sillas.",type:"error",wrong:"There aren't some chairs left.",wrongWord:"some",right:"There aren't any chairs left.",rightWord:"any",explain:"En frases negativas va “any”, no “some”.",examples:[{en:"There aren't any chairs left.",es:"No quedan sillas."},{en:"I don't have any plans.",es:"No tengo planes."}]},
+    {id:"g-chk-sa-5",micro:"some-any-afirm-neg",translation:"Él tiene algunas buenas ideas para el proyecto.",type:"fill",sentence:["He","has","___","good","ideas","for","the","project","."],blankIndex:2,bank:["some","any","much"],correct:"some",explain:"En una frase afirmativa usamos “some”.",examples:[{en:"He has some good ideas.",es:"Tiene algunas buenas ideas."},{en:"She told me some news.",es:"Me dio algunas noticias."}]},
+    {id:"g-chk-sa-6",micro:"some-any-afirm-neg",translation:"Ellos no tienen hijos.",type:"choice",prompt:"They don't have ___ children.",options:["some","a","any"],correct:2,explain:"En una frase negativa usamos “any”.",examples:[{en:"They don't have any children.",es:"No tienen hijos."},{en:"I don't have any brothers.",es:"No tengo hermanos."}]},
+    {id:"g-chk-fl-1",micro:"fewer-less",translation:"Hoy tengo menos tarea que ayer.",type:"choice",prompt:"I have ___ homework today than yesterday.",options:["fewer","less","few"],correct:1,explain:"“Homework” es incontable: “less”.",examples:[{en:"I have less homework today.",es:"Hoy tengo menos tarea."},{en:"There is less noise now.",es:"Ahora hay menos ruido."}]},
+    {id:"g-chk-fl-2",micro:"fewer-less",translation:"Ahora menos carros usan este camino.",type:"choice",prompt:"___ cars use this road now.",options:["Less","Little","Fewer"],correct:2,explain:"“Cars” se cuenta: “Fewer”.",examples:[{en:"Fewer cars use this road.",es:"Menos carros usan este camino."},{en:"Fewer people came.",es:"Vino menos gente."}]},
+    {id:"g-chk-fl-3",micro:"fewer-less",translation:"Hay menos tráfico los domingos.",type:"fill",sentence:["There","is","___","traffic","on","Sundays","."],blankIndex:2,bank:["less","fewer","many"],correct:"less",explain:"“Traffic” es incontable: “less”.",examples:[{en:"There is less traffic on Sundays.",es:"Hay menos tráfico los domingos."},{en:"We have less time.",es:"Tenemos menos tiempo."}]},
+    {id:"g-chk-fl-4",micro:"fewer-less",translation:"Ahora ella comete menos errores.",type:"error",wrong:"She makes less mistakes now.",wrongWord:"less",right:"She makes fewer mistakes now.",rightWord:"fewer",explain:"“Mistakes” se cuenta: “fewer”.",examples:[{en:"She makes fewer mistakes now.",es:"Ahora comete menos errores."},{en:"He has fewer problems.",es:"Tiene menos problemas."}]},
+    {id:"g-chk-fl-5",micro:"fewer-less",translation:"Vendimos menos boletos de los que esperábamos.",type:"fill",sentence:["We","sold","___","tickets","than","we","expected","."],blankIndex:2,bank:["fewer","less","little"],correct:"fewer",explain:"“Tickets” se cuenta: “fewer”.",examples:[{en:"We sold fewer tickets than we expected.",es:"Vendimos menos boletos de lo esperado."},{en:"They sold fewer books.",es:"Vendieron menos libros."}]},
+    {id:"g-chk-fl-6",micro:"fewer-less",translation:"Deberías comer menos azúcar.",type:"choice",prompt:"You should eat ___ sugar.",options:["fewer","less","many"],correct:1,explain:"“Sugar” es incontable: “less”.",examples:[{en:"You should eat less sugar.",es:"Deberías comer menos azúcar."},{en:"Drink less coffee.",es:"Toma menos café."}]},
+    {id:"g-chk-mnt-1",micro:"mustnt-vs-dont-have-to",translation:"Los estudiantes no deben usar el celular durante el examen. Va contra las reglas.",type:"choice",prompt:"Students ___ use phones during the exam. It's against the rules.",options:["mustn't","don't have to","doesn't have to"],correct:0,explain:"Va contra las reglas, o sea está prohibido: “mustn’t”.",examples:[{en:"Students mustn't use phones.",es:"Los estudiantes no deben usar el celular."},{en:"You mustn't cheat.",es:"No debes hacer trampa."}]},
+    {id:"g-chk-mnt-2",micro:"mustnt-vs-dont-have-to",translation:"No tienes que usar traje. Los jeans están bien.",type:"fill",sentence:["You","___","wear","a","suit",".","Jeans","are","fine","."],blankIndex:1,bank:["don't have to","mustn't","can't to"],correct:"don't have to",explain:"Los jeans están bien: no es obligatorio el traje, pero tampoco está prohibido: “don’t have to”.",examples:[{en:"You don't have to wear a suit.",es:"No tienes que usar traje."},{en:"We don't have to pay.",es:"No tenemos que pagar."}]},
+    {id:"g-chk-mnt-3",micro:"mustnt-vs-dont-have-to",translation:"No tenemos que levantarnos temprano el domingo.",type:"error",wrong:"We mustn't wake up early on Sunday.",wrongWord:"mustn't",right:"We don't have to wake up early on Sunday.",rightWord:"don't have to",explain:"Levantarse temprano el domingo no está prohibido, solo no es necesario: “don’t have to”.",examples:[{en:"We don't have to wake up early.",es:"No tenemos que levantarnos temprano."},{en:"You don't have to call me.",es:"No tienes que llamarme."}]},
+    {id:"g-chk-mnt-4",micro:"mustnt-vs-dont-have-to",translation:"Los niños no deben jugar con fósforos. Es peligroso.",type:"choice",prompt:"Children ___ play with matches. It is dangerous.",options:["don't have to","mustn't","doesn't have to"],correct:1,explain:"Es peligroso, así que está prohibido: “mustn’t”.",examples:[{en:"Children mustn't play with matches.",es:"Los niños no deben jugar con fósforos."},{en:"You mustn't touch that.",es:"No debes tocar eso."}]},
+    {id:"g-chk-mnt-5",micro:"mustnt-vs-dont-have-to",translation:"Él no tiene que pagar el boleto. Es gratis para los miembros.",type:"fill",sentence:["He","___","pay","for","the","ticket",".","It's","free","for","members","."],blankIndex:1,bank:["doesn't have to","mustn't","don't have to"],correct:"doesn't have to",explain:"Es gratis, no hace falta pagar, y con “he” se dice “doesn’t have to”.",examples:[{en:"He doesn't have to pay.",es:"Él no tiene que pagar."},{en:"She doesn't have to come.",es:"Ella no tiene que venir."}]},
+    {id:"g-chk-mnt-6",micro:"mustnt-vs-dont-have-to",translation:"¡No debes decírselo a nadie! Es un secreto.",type:"choice",prompt:"You ___ tell anyone. It's a secret!",options:["mustn't","don't have to","haven't to"],correct:0,explain:"Es un secreto: está prohibido contarlo. Se dice “mustn’t”.",examples:[{en:"You mustn't tell anyone.",es:"No debes decírselo a nadie."},{en:"We mustn't forget.",es:"No debemos olvidar."}]},
+    {id:"g-chk-ms-1",micro:"obligacion-vs-consejo",translation:"Los empleados tienen que llegar antes de las 8 a. m. La empresa lo exige.",type:"choice",prompt:"Employees ___ arrive before 8 a.m. The company requires it.",options:["have to","might","would"],correct:0,explain:"La empresa lo exige: es una obligación, “have to”.",examples:[{en:"Employees have to arrive early.",es:"Los empleados tienen que llegar temprano."},{en:"I have to wear a helmet.",es:"Tengo que usar casco."}]},
+    {id:"g-chk-ms-2",micro:"obligacion-vs-consejo",translation:"Has tenido tos por semanas. Deberías ver a un doctor.",type:"choice",prompt:"You've had a cough for weeks. You ___ see a doctor.",options:["should","must to","are"],correct:0,explain:"Es un consejo para tu bien: “should”.",examples:[{en:"You should see a doctor.",es:"Deberías ver a un doctor."},{en:"She should call him.",es:"Ella debería llamarlo."}]},
+    {id:"g-chk-ms-3",micro:"obligacion-vs-consejo",translation:"Los pasajeros deben mostrar su pasaporte en la frontera. Es obligatorio.",type:"fill",sentence:["Passengers","___","show","their","passports","at","the","border",".","It's","required","."],blankIndex:1,bank:["must","might","would"],correct:"must",explain:"En la frontera es una regla: “must” (obligación).",examples:[{en:"Passengers must show their passports.",es:"Los pasajeros deben mostrar su pasaporte."},{en:"Drivers must wear seat belts.",es:"Los conductores deben usar el cinturón."}]},
+    {id:"g-chk-ms-4",micro:"obligacion-vs-consejo",translation:"Esa película es genial. Creo que deberías verla.",type:"choice",prompt:"That movie is great. I think you ___ watch it.",options:["have","should","musts"],correct:1,explain:"“I think you...” suena a recomendación: “should”.",examples:[{en:"I think you should watch it.",es:"Creo que deberías verla."},{en:"You should try this cake.",es:"Deberías probar este pastel."}]},
+    {id:"g-chk-ms-5",micro:"obligacion-vs-consejo",translation:"Para entrar al club, tienes que ser mayor de 18.",type:"fill",sentence:["To","enter","the","club",",","you","___","be","over","18","."],blankIndex:6,bank:["have to","might","would"],correct:"have to",explain:"Es un requisito de entrada, una obligación: “have to”.",examples:[{en:"You have to be over 18.",es:"Tienes que ser mayor de 18."},{en:"We have to show our tickets.",es:"Tenemos que mostrar los boletos."}]},
+    {id:"g-chk-ms-6",micro:"obligacion-vs-consejo",translation:"Mi maestro dice que deberíamos leer más en inglés para mejorar.",type:"choice",prompt:"My teacher says we ___ read more in English to improve.",options:["should","must to","are"],correct:0,explain:"Es una recomendación para mejorar, no una orden: “should”.",examples:[{en:"We should read more in English.",es:"Deberíamos leer más en inglés."},{en:"You should practice every day.",es:"Deberías practicar cada día."}]},
+    {id:"g-chk-iot-1",micro:"in-on-at-tiempo",translation:"La fiesta es el sábado por la noche.",type:"choice",prompt:"The party is ___ Saturday night.",options:["at","in","on"],correct:2,explain:"Con días de la semana usamos “on”.",examples:[{en:"The party is on Saturday night.",es:"La fiesta es el sábado por la noche."},{en:"I play soccer on Tuesdays.",es:"Juego fútbol los martes."}]},
+    {id:"g-chk-iot-2",micro:"in-on-at-tiempo",translation:"Ella nació en marzo.",type:"choice",prompt:"She was born ___ March.",options:["in","on","at"],correct:0,explain:"Con meses usamos “in”.",examples:[{en:"She was born in March.",es:"Ella nació en marzo."},{en:"It snows in winter.",es:"Nieva en invierno."}]},
+    {id:"g-chk-iot-3",micro:"in-on-at-tiempo",translation:"La película empieza a las 9:30.",type:"fill",sentence:["The","movie","starts","___","9:30","."],blankIndex:3,bank:["at","on","in"],correct:"at",explain:"Con horas exactas usamos “at”.",examples:[{en:"The movie starts at 9:30.",es:"La película empieza a las 9:30."},{en:"Dinner is at seven.",es:"La cena es a las siete."}]},
+    {id:"g-chk-iot-4",micro:"in-on-at-tiempo",translation:"Tenemos una reunión el martes.",type:"error",wrong:"We have a meeting at Tuesday.",wrongWord:"at",right:"We have a meeting on Tuesday.",rightWord:"on",explain:"Con días de la semana usamos “on”.",examples:[{en:"We have a meeting on Tuesday.",es:"Tenemos una reunión el martes."},{en:"The exam is on Monday.",es:"El examen es el lunes."}]},
+    {id:"g-chk-iot-5",micro:"in-on-at-tiempo",translation:"Aquí hace mucho calor en verano.",type:"fill",sentence:["It's","very","hot","___","summer","here","."],blankIndex:3,bank:["in","on","at"],correct:"in",explain:"Con estaciones del año usamos “in”.",examples:[{en:"It's very hot in summer.",es:"Hace mucho calor en verano."},{en:"It rains in spring.",es:"Llueve en primavera."}]},
+    {id:"g-chk-iot-6",micro:"in-on-at-tiempo",translation:"Siempre me siento cansado por la noche.",type:"choice",prompt:"I always feel tired ___ night.",options:["at","in","on"],correct:0,explain:"La expresión fija es “at night”.",examples:[{en:"I feel tired at night.",es:"Me siento cansado por la noche."},{en:"The stars shine at night.",es:"Las estrellas brillan de noche."}]},
+    {id:"g-chk-iol-1",micro:"in-on-at-lugar",translation:"Ella está en casa.",type:"choice",prompt:"She is ___ home.",options:["in","at","on"],correct:1,explain:"La expresión fija es “at home”.",examples:[{en:"She is at home.",es:"Ella está en casa."},{en:"I am at work.",es:"Estoy en el trabajo."}]},
+    {id:"g-chk-iol-2",micro:"in-on-at-lugar",translation:"Tu teléfono está sobre el sofá.",type:"choice",prompt:"Your phone is ___ the sofa.",options:["on","in","at"],correct:0,explain:"Para algo apoyado sobre una superficie usamos “on”.",examples:[{en:"Your phone is on the sofa.",es:"Tu teléfono está sobre el sofá."},{en:"The glass is on the table.",es:"El vaso está sobre la mesa."}]},
+    {id:"g-chk-iol-3",micro:"in-on-at-lugar",translation:"Mis abuelos viven en un pueblo pequeño.",type:"fill",sentence:["My","grandparents","live","___","a","small","town","."],blankIndex:3,bank:["in","on","at"],correct:"in",explain:"Con pueblos y ciudades usamos “in”.",examples:[{en:"My grandparents live in a small town.",es:"Mis abuelos viven en un pueblo pequeño."},{en:"We live in a big city.",es:"Vivimos en una ciudad grande."}]},
+    {id:"g-chk-iol-4",micro:"in-on-at-lugar",translation:"El libro está sobre la mesa.",type:"error",wrong:"The book is in the table.",wrongWord:"in",right:"The book is on the table.",rightWord:"on",explain:"Para algo sobre una superficie usamos “on”, no “in”.",examples:[{en:"The book is on the table.",es:"El libro está sobre la mesa."},{en:"The keys are on the desk.",es:"Las llaves están sobre el escritorio."}]},
+    {id:"g-chk-iol-5",micro:"in-on-at-lugar",translation:"Ella está en el segundo piso.",type:"choice",prompt:"She is ___ the second floor.",options:["at","in","on"],correct:2,explain:"Con los pisos de un edificio usamos “on”.",examples:[{en:"She is on the second floor.",es:"Ella está en el segundo piso."},{en:"My office is on the third floor.",es:"Mi oficina está en el tercer piso."}]},
+    {id:"g-chk-iol-6",micro:"in-on-at-lugar",translation:"Él vive en el número 25 de la calle Park.",type:"fill",sentence:["He","lives","___","25","Park","Street","."],blankIndex:2,bank:["at","in","on"],correct:"at",explain:"Con una dirección exacta (con número) usamos “at”.",examples:[{en:"He lives at 25 Park Street.",es:"Vive en Park Street 25."},{en:"The shop is at 10 Main Street.",es:"La tienda está en Main Street 10."}]}
 );
