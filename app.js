@@ -1597,9 +1597,10 @@ function pickCycleItems(items, state, targetCount){
   const total = items.length;
   const target = Math.min(targetCount, total);
   const tail = new Set(state.lastTail);
-  // Ciclo recien reiniciado (nada visto todavia): los ultimos que se vieron
-  // del ciclo anterior se barajan aparte y van al final, para no abrir con ellos.
-  const freshStart = state.seen.size === 0 && tail.size > 0;
+  // Ciclo recien reiniciado (se vieron menos que la cola): los ultimos que se
+  // vieron del ciclo anterior se barajan aparte y van al final, para no abrir con
+  // ellos. Vale tambien cuando el ciclo se cerro a mitad de una sesion.
+  const freshStart = tail.size > 0 && state.seen.size < tail.size;
   let remaining = items.filter(i => !state.seen.has(i.id));
   remaining = freshStart
     ? shuffleArray(remaining.filter(i => !tail.has(i.id))).concat(shuffleArray(remaining.filter(i => tail.has(i.id))))
@@ -1631,11 +1632,36 @@ function pickCycleItemsByTopic(items, state, targetCount){
     list.forEach(i => { if(!m.has(i.topic)) m.set(i.topic, []); m.get(i.topic).push(i); });
     return [...m.values()];
   }
-  function take(groups, need){
+  // Elige el siguiente tema entero (o el que se parte) para llenar `left` lugares:
+  // 1) el mas grande que cabe completo (asi la sesion usa pocos temas y los temas
+  //    de 1 o 2 ejercicios solo tapan huecos chicos);
+  // 2) si ninguno cabe, uno que se pueda partir de modo que lo que sobre quepa en
+  //    la sesion siguiente (un tema nunca se reparte en mas de 2 sesiones);
+  // 3) si ni asi, el mas chico.
+  function pickGroup(cands, left){
+    const fits = cands.filter(g => g.length <= left);
+    if(fits.length){
+      const big = Math.max(...fits.map(g => g.length));
+      return shuffleArray(fits.filter(g => g.length === big))[0];
+    }
+    const splittable = cands.filter(g => g.length - left <= target);
+    if(splittable.length) return shuffleArray(splittable)[0];
+    return cands.reduce((a, b) => (b.length < a.length ? b : a));
+  }
+  function fill(started, whole, need, avoidTail){
     const chosen = [];
     let left = need;
-    for(const g of groups){
-      if(left <= 0) break;
+    shuffleArray(started).forEach(g => {
+      if(left <= 0) return;
+      const part = shuffleArray(g).slice(0, left);
+      chosen.push(part);
+      left -= part.length;
+    });
+    let cands = whole.slice();
+    while(left > 0 && cands.length){
+      const calm = avoidTail ? cands.filter(g => !g.some(i => tail.has(i.id))) : cands;
+      const g = pickGroup(calm.length ? calm : cands, left);
+      cands = cands.filter(x => x !== g);
       const part = shuffleArray(g).slice(0, left);
       chosen.push(part);
       left -= part.length;
@@ -1648,18 +1674,15 @@ function pickCycleItemsByTopic(items, state, targetCount){
     for(let k = 0; k < max; k++) groups.forEach(g => { if(g[k]) out.push(g[k]); });
     return out;
   }
-  const freshStart = state.seen.size === 0 && tail.size > 0;
+  const freshStart = tail.size > 0 && state.seen.size < tail.size;
   const groups = groupByTopic(items.filter(i => !state.seen.has(i.id)));
   const started = groups.filter(g => g.length < sizeByTopic.get(g[0].topic));
   const whole = groups.filter(g => g.length === sizeByTopic.get(g[0].topic));
-  const wholeOrdered = freshStart
-    ? shuffleArray(whole.filter(g => !g.some(i => tail.has(i.id)))).concat(shuffleArray(whole.filter(g => g.some(i => tail.has(i.id)))))
-    : shuffleArray(whole);
-  const partA = interleave(take(shuffleArray(started).concat(wholeOrdered), target));
+  const partA = interleave(fill(started, whole, target, freshStart));
   if(partA.length >= target) return partA;
   const pickedIds = new Set(partA.map(i => i.id));
   const rest = groupByTopic(items.filter(i => !pickedIds.has(i.id)));
-  return partA.concat(interleave(take(shuffleArray(rest), target - partA.length)));
+  return partA.concat(interleave(fill([], rest, target - partA.length, false)));
 }
 /* CYCLE-END */
 function topicsOfPool(skill, pool){

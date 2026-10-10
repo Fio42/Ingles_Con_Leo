@@ -84,12 +84,16 @@ test('el ciclo siguiente tambien recorre todo sin repetir (3 ciclos seguidos)', 
 
 test('al empezar un ciclo nuevo no abre con los ultimos vistos del ciclo anterior', () => {
   ctx.__len = 'corta';
-  const bank = ctx.BANKS.speaking.facil, size = memberBankItems('speaking', bank).length; // 40, multiplo de 5
-  assert.strictEqual(size % 5, 0);
+  // Funciona con cualquier tamano de banco: el ciclo puede cerrar justo al final de una
+  // sesion o a mitad de una (p. ej. 43 ejercicios y sesiones de 5).
+  const bank = ctx.BANKS.speaking.facil, items = memberBankItems('speaking', bank), size = items.length;
+  const ids = items.map(i => i.id);
   let violations = 0;
   for(let trial = 0; trial < 30; trial++){
     const progress = { sessions: [] }, all = [];
     while(all.length < size) playSession('speaking', 'facil', bank, progress).forEach(id => all.push(id));
+    // ya se cerro el ciclo (aunque haya sido a mitad de sesion); lo ultimo que se jugo es la cola
+    assert.strictEqual(computeCycleState(progress, ids, 5).cycles, 1);
     const tail = new Set(all.slice(-5));
     const next = playSession('speaking', 'facil', bank, progress);
     if(next.some(id => tail.has(id))) violations++;
