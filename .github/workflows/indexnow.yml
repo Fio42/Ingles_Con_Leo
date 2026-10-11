@@ -9,6 +9,8 @@ name: IndexNow ping
 # - "Run workflow" a mano: manda todas las URLs del sitemap.xml.
 # - El job FALLA (rojo) y muestra la respuesta si algun buscador contesta
 #   4xx/5xx. 200 y 202 cuentan como exito.
+# - Cada llamada se reintenta 3 veces (curl --retry). Si aun asi no hay
+#   respuesta (HTTP 000, corte de red), sale como warning amarillo, no rojo.
 # - Excepcion: HTTP 403 de api.indexnow.org (Bing, problema externo conocido)
 #   se muestra como warning amarillo y NO hace fallar el job.
 #
@@ -50,8 +52,11 @@ jobs:
             '{host:$host, key:$key, keyLocation:("https://" + $host + "/" + $key + ".txt"), urlList:$urlList}')
           fail=0
           for ep in https://api.indexnow.org/indexnow https://yandex.com/indexnow; do
-            code=$(curl -sS -o resp.txt -w "%{http_code}" -X POST "$ep" \
+            rm -f resp.txt
+            code=$(curl -sS --http1.1 --retry 3 --retry-all-errors --retry-delay 5 --max-time 30 \
+              -o resp.txt -w "%{http_code}" -X POST "$ep" \
               -H "Content-Type: application/json; charset=utf-8" --data "$payload") || code=000
+            [ -f resp.txt ] || : > resp.txt
             echo "$ep -> HTTP $code"; cat resp.txt; echo
             case "$code" in
               200|202) ;;
@@ -61,6 +66,8 @@ jobs:
                 else
                   echo "::error::IndexNow fallo en $ep con HTTP $code"; fail=1
                 fi ;;
+              000)
+                echo "::warning::IndexNow no pudo conectar con $ep (corte de red, ya reintentado 3 veces). No se marca como fallo; el proximo push vuelve a avisar" ;;
               *) echo "::error::IndexNow fallo en $ep con HTTP $code"; fail=1 ;;
             esac
           done
