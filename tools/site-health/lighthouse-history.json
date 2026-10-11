@@ -79,6 +79,84 @@
      "finalUrl": "https://inglesconleo.com/",
      "durationMs": 11038
     }
+   },
+   {
+    "slug": "home",
+    "url": "https://inglesconleo.com/",
+    "fetchTime": "2026-10-11T17:05:57.052Z",
+    "performance": 52,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 3480,
+     "lcp": 4237,
+     "tbt": 1141,
+     "cls": 0,
+     "speedIndex": 5272,
+     "ttfb": 27,
+     "pageKb": 874
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "inglesconleo.com/style.css",
+      "ms": 370,
+      "kb": 34,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/app.js",
+      "ms": 333,
+      "kb": 131,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/chatbot.css",
+      "ms": 304,
+      "kb": 4,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 234,
+      "kb": 144,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/audio/leo/bienvenida.mp3",
+      "ms": 184,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 1956,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/",
+     "durationMs": 11434
+    }
    }
   ],
   "practica": [
@@ -158,6 +236,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/practica.html",
      "durationMs": 8162
+    }
+   },
+   {
+    "slug": "practica",
+    "url": "https://inglesconleo.com/practica.html",
+    "fetchTime": "2026-10-11T17:06:11.673Z",
+    "performance": 73,
+    "seo": 100,
+    "accessibility": 90,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2746,
+     "lcp": 2896,
+     "tbt": 718,
+     "cls": 0,
+     "speedIndex": 2746,
+     "ttfb": 36,
+     "pageKb": 1040
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 110,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 101,
+      "kb": 177,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 93,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/data.js",
+      "ms": 77,
+      "kb": 221,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js",
+      "ms": 65,
+      "kb": 55,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2443,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/practica.html",
+     "durationMs": 7911
     }
    }
   ],
@@ -239,6 +395,84 @@
      "finalUrl": "https://inglesconleo.com/articulos.html",
      "durationMs": 8435
     }
+   },
+   {
+    "slug": "articulos",
+    "url": "https://inglesconleo.com/articulos.html",
+    "fetchTime": "2026-10-11T17:06:24.166Z",
+    "performance": 82,
+    "seo": 100,
+    "accessibility": 96,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1533,
+     "lcp": 2786,
+     "tbt": 527,
+     "cls": 0.002,
+     "speedIndex": 1533,
+     "ttfb": 32,
+     "pageKb": 984
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "img.youtube.com/vi/QqTghI1S9Ec/hqdefault.jpg",
+      "ms": 130,
+      "kb": 20,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/IyPbbyuz1ho/hqdefault.jpg",
+      "ms": 118,
+      "kb": 22,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/E2IFaTqUsT0/hqdefault.jpg",
+      "ms": 117,
+      "kb": 17,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 101,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/xaA3y6ipUNE/hqdefault.jpg",
+      "ms": 93,
+      "kb": 18,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2486,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulos.html",
+     "durationMs": 8521
+    }
    }
   ],
   "articulo-verbo-to-be": [
@@ -318,6 +552,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
      "durationMs": 8306
+    }
+   },
+   {
+    "slug": "articulo-verbo-to-be",
+    "url": "https://inglesconleo.com/articulo-verbo-to-be.html",
+    "fetchTime": "2026-10-11T17:06:36.961Z",
+    "performance": 75,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2761,
+     "lcp": 2911,
+     "tbt": 623,
+     "cls": 0.001,
+     "speedIndex": 2761,
+     "ttfb": 23,
+     "pageKb": 815
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 379,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 158,
+      "kb": 144,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 157,
+      "kb": 0,
+      "type": "Preflight",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 79,
+      "kb": 177,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 75,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2483,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
+     "durationMs": 8368
     }
    }
   ],
@@ -399,6 +711,84 @@
      "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
      "durationMs": 8072
     }
+   },
+   {
+    "slug": "articulo-presente-simple",
+    "url": "https://inglesconleo.com/articulo-presente-simple.html",
+    "fetchTime": "2026-10-11T17:06:49.733Z",
+    "performance": 69,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2736,
+     "lcp": 3722,
+     "tbt": 636,
+     "cls": 0.009,
+     "speedIndex": 2736,
+     "ttfb": 29,
+     "pageKb": 815
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 369,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 89,
+      "kb": 177,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 82,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 76,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js",
+      "ms": 72,
+      "kb": 55,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2462,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
+     "durationMs": 8160
+    }
    }
   ],
   "articulo-como-aprender-desde-cero": [
@@ -479,6 +869,84 @@
      "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
      "durationMs": 8325
     }
+   },
+   {
+    "slug": "articulo-como-aprender-desde-cero",
+    "url": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+    "fetchTime": "2026-10-11T17:07:02.303Z",
+    "performance": 78,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1530,
+     "lcp": 1859,
+     "tbt": 964,
+     "cls": 0,
+     "speedIndex": 1530,
+     "ttfb": 29,
+     "pageKb": 808
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 338,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/chatbot.css",
+      "ms": 105,
+      "kb": 5,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 92,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 77,
+      "kb": 177,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 72,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2482,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+     "durationMs": 8323
+    }
    }
   ],
   "miembros": [
@@ -558,6 +1026,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/miembros.html",
      "durationMs": 13822
+    }
+   },
+   {
+    "slug": "miembros",
+    "url": "https://inglesconleo.com/miembros.html",
+    "fetchTime": "2026-10-11T17:07:14.897Z",
+    "performance": 67,
+    "seo": 100,
+    "accessibility": 98,
+    "bestPractices": 77,
+    "metrics": {
+     "fcp": 1699,
+     "lcp": 3311,
+     "tbt": 1132,
+     "cls": 0.079,
+     "speedIndex": 1699,
+     "ttfb": 24,
+     "pageKb": 1571
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "m.stripe.com/6",
+      "ms": 314,
+      "kb": 1,
+      "type": "XHR",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "js.stripe.com/v3/",
+      "ms": 188,
+      "kb": 293,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "accounts.google.com/gsi/button",
+      "ms": 108,
+      "kb": 56,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 87,
+      "kb": 176,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 71,
+      "kb": 110,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2486,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/miembros.html",
+     "durationMs": 13835
     }
    }
   ]
