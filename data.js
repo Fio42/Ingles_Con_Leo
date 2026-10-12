@@ -561,7 +561,7 @@ const GRAMMAR_BANK = {
       {
         topic: "Is / Are (singular y plural)",
         items: [
-          { id:'g-principiante6-5',
+          { id:'g-principiante6-5', micro:'tobe-am-is-are',
             translation:"Ella es mi hermana.",
             type:'choice',
             prompt:"She ___ my sister.",
@@ -572,7 +572,7 @@ const GRAMMAR_BANK = {
               {en:"He is my friend.", es:"Él es mi amigo."},
               {en:"It is a cat.", es:"Es un gato."}
             ]},
-          { id:'g-principiante6-6',
+          { id:'g-principiante6-6', micro:'tobe-am-is-are',
             translation:"Ellos están felices.",
             type:'fill',
             sentence:["They","___","happy","."],
@@ -584,7 +584,7 @@ const GRAMMAR_BANK = {
               {en:"We are happy.", es:"Estamos felices."},
               {en:"You are kind.", es:"Tú eres amable."}
             ]},
-          { id:'g-principiante6-7',
+          { id:'g-principiante6-7', micro:'tobe-am-is-are',
             translation:"Yo soy estudiante.",
             type:'choice',
             prompt:"I ___ a student.",
@@ -595,7 +595,7 @@ const GRAMMAR_BANK = {
               {en:"I am a teacher.", es:"Soy profesor."},
               {en:"I am happy.", es:"Estoy feliz."}
             ]},
-          { id:'g-principiante6-8',
+          { id:'g-principiante6-8', micro:'tobe-am-is-are',
             translation:"Ella es mi mamá.",
             type:'error',
             wrong:"She are my mom.",
@@ -783,28 +783,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'A / An',
         items: [
-          { id:'g-facil-art-1', translation:"Vi un elefante en el zoológico.", type:'choice', prompt:"I saw ___ elephant at the zoo.",
+          { id:'g-facil-art-1', micro:'a-an-sonido', translation:"Vi un elefante en el zoológico.", type:'choice', prompt:"I saw ___ elephant at the zoo.",
             options:["a","an","some"], correct:1,
             explain:"Usamos “an” antes de sonido de vocal, como “elephant”.",
             examples:[
               {en:"I saw an elephant.", es:"Vi un elefante."},
               {en:"She has a dog.", es:"Ella tiene un perro."}
             ]},
-          { id:'g-facil-art-2', translation:"Ella es enfermera.", type:'fill', sentence:["She","is","___","nurse","."], blankIndex:2,
+          { id:'g-facil-art-2', micro:'a-an-sonido', translation:"Ella es enfermera.", type:'fill', sentence:["She","is","___","nurse","."], blankIndex:2,
             bank:["a","an","some"], correct:"a",
             explain:"“Nurse” empieza con sonido de consonante, así que usamos “a”.",
             examples:[
               {en:"He is a teacher.", es:"Él es maestro."},
               {en:"It's an apple.", es:"Es una manzana."}
             ]},
-          { id:'g-facil-art-3', translation:"Eso es un paraguas.", type:'choice', prompt:"That is ___ umbrella.",
+          { id:'g-facil-art-3', micro:'a-an-sonido', translation:"Eso es un paraguas.", type:'choice', prompt:"That is ___ umbrella.",
             options:["a","an","the"], correct:1,
             explain:"“Umbrella” empieza con sonido de vocal, entonces usamos “an”.",
             examples:[
               {en:"That is an umbrella.", es:"Esa es una sombrilla."},
               {en:"This is a book.", es:"Este es un libro."}
             ]},
-          { id:'g-facil-art-4', translation:"Necesito una hora para terminar.", type:'error', wrong:"I need a hour to finish.", wrongWord:"a",
+          { id:'g-facil-art-4', micro:'a-an-sonido', translation:"Necesito una hora para terminar.", type:'error', wrong:"I need a hour to finish.", wrongWord:"a",
             right:"I need an hour to finish.", rightWord:"an",
             explain:"“Hour” suena como si empezara con vocal (la “h” es muda), así que usamos “an”.",
             examples:[
@@ -952,28 +952,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Adverbios de frecuencia (always / usually / sometimes / never)',
         items: [
-          { id:'g-facil4-freq-1', translation:"Siempre tomo café en la mañana.", type:'choice', prompt:"I ___ drink coffee in the morning.",
+          { id:'g-facil4-freq-1', micro:'ps-adverbios-frecuencia', translation:"Siempre tomo café en la mañana.", type:'choice', prompt:"I ___ drink coffee in the morning.",
             options:["always","never","yesterday"], correct:0,
             explain:"Los adverbios de frecuencia como “always” van antes del verbo principal.",
             examples:[
               {en:"I always drink coffee in the morning.", es:"Siempre tomo café en la mañana."},
               {en:"She always arrives on time.", es:"Ella siempre llega a tiempo."}
             ]},
-          { id:'g-facil4-freq-2', translation:"Ella siempre llega tarde.", type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
+          { id:'g-facil4-freq-2', micro:'ps-adverbios-frecuencia', translation:"Ella siempre llega tarde.", type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
             bank:["always","yesterday","tomorrow"], correct:"always",
             explain:"Con el verbo “to be”, el adverbio de frecuencia va después: “is always”.",
             examples:[
               {en:"She is always late.", es:"Ella siempre llega tarde."},
               {en:"He is never hungry in the morning.", es:"Él nunca tiene hambre en la mañana."}
             ]},
-          { id:'g-facil4-freq-3', translation:"Normalmente vamos a la playa en verano.", type:'choice', prompt:"We ___ go to the beach in summer.",
+          { id:'g-facil4-freq-3', micro:'ps-adverbios-frecuencia', translation:"Normalmente vamos a la playa en verano.", type:'choice', prompt:"We ___ go to the beach in summer.",
             options:["usually","yesterday","tomorrow"], correct:0,
             explain:"“Usually” describe algo habitual; “yesterday” y “tomorrow” son momentos específicos, no frecuencia.",
             examples:[
               {en:"We usually go to the beach in summer.", es:"Normalmente vamos a la playa en verano."},
               {en:"They usually eat dinner at eight.", es:"Ellos normalmente cenan a las ocho."}
             ]},
-          { id:'g-facil4-freq-4', translation:"Ella nunca llega tarde.", type:'error', wrong:"She never is late.", wrongWord:"never is",
+          { id:'g-facil4-freq-4', micro:'ps-adverbios-frecuencia', translation:"Ella nunca llega tarde.", type:'error', wrong:"She never is late.", wrongWord:"never is",
             right:"She is never late.", rightWord:"is never",
             explain:"Con “to be”, el orden correcto es verbo + adverbio: “is never”, no “never is”.",
             examples:[
@@ -987,28 +987,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Can / Can\'t (habilidad)',
         items: [
-          { id:'g-facil5-can-1', translation:"¿Sabes nadar?", type:'choice', prompt:"___ you swim?",
+          { id:'g-facil5-can-1', micro:'can-verbo-base', translation:"¿Sabes nadar?", type:'choice', prompt:"___ you swim?",
             options:["Can","Do","Are"], correct:0,
             explain:"Usamos “can” para preguntar sobre habilidad, no “do” ni “are”.",
             examples:[
               {en:"Can you swim?", es:"¿Sabes nadar?"},
               {en:"I can ride a bike.", es:"Sé andar en bicicleta."}
             ]},
-          { id:'g-facil5-can-2', translation:"Ella sabe tocar el piano.", type:'fill', sentence:["She","___","play","the","piano","."], blankIndex:1,
+          { id:'g-facil5-can-2', micro:'can-verbo-base', translation:"Ella sabe tocar el piano.", type:'fill', sentence:["She","___","play","the","piano","."], blankIndex:1,
             bank:["can","cans","canning"], correct:"can",
             explain:"“Can” no cambia con la persona: siempre “can”, nunca “cans”.",
             examples:[
               {en:"She can play the piano.", es:"Ella sabe tocar el piano."},
               {en:"They can speak French.", es:"Ellos saben hablar francés."}
             ]},
-          { id:'g-facil5-can-3', translation:"Él todavía no puede manejar, solo tiene 15 años.", type:'choice', prompt:"He ___ drive yet, he's only 15.",
+          { id:'g-facil5-can-3', micro:'can-verbo-base', translation:"Él todavía no puede manejar, solo tiene 15 años.", type:'choice', prompt:"He ___ drive yet, he's only 15.",
             options:["can't","doesn't can","not can"], correct:0,
             explain:"La forma negativa de “can” es “can't” (o “cannot”), no “doesn't can”.",
             examples:[
               {en:"He can't drive yet.", es:"Él todavía no sabe manejar."},
               {en:"We can't come tonight.", es:"No podemos ir esta noche."}
             ]},
-          { id:'g-facil5-can-4', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"to",
+          { id:'g-facil5-can-4', micro:'can-verbo-base', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"to",
             right:"She can sing very well.", rightWord:"",
             explain:"Después de “can” va el verbo base sin “to”: sobra la palabra “to”.",
             examples:[
@@ -1158,28 +1158,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Preguntas con Do/Does en presente simple',
         items: [
-          { id:'g-facil7-dodoes-1', translation:"¿Cómo preguntas \"¿Te gusta el café?\" en inglés?", type:'choice', prompt:"How do you ask \"¿Te gusta el café?\" in English?",
+          { id:'g-facil7-dodoes-1', micro:'dodoes-elegir-sujeto', translation:"¿Cómo preguntas \"¿Te gusta el café?\" en inglés?", type:'choice', prompt:"How do you ask \"¿Te gusta el café?\" in English?",
             options:["Do you like coffee?","Does you like coffee?","Are you like coffee?"], correct:0,
             explain:"Con “you” usamos “Do”: “Do you like...?”",
             examples:[
               {en:"Do you like coffee?", es:"¿Te gusta el café?"},
               {en:"Do you like tea?", es:"¿Te gusta el té?"}
             ]},
-          { id:'g-facil7-dodoes-2', translation:"¿Ella trabaja los sábados?", type:'fill', sentence:["___","she","work","on","Saturdays","?"], blankIndex:0,
+          { id:'g-facil7-dodoes-2', micro:'dodoes-elegir-sujeto', translation:"¿Ella trabaja los sábados?", type:'fill', sentence:["___","she","work","on","Saturdays","?"], blankIndex:0,
             bank:["Does","Do","Is"], correct:"Does",
             explain:"Con “she/he/it” usamos “Does”.",
             examples:[
               {en:"Does she work on Saturdays?", es:"¿Ella trabaja los sábados?"},
               {en:"Does he live near here?", es:"¿Él vive cerca de aquí?"}
             ]},
-          { id:'g-facil7-dodoes-3', translation:"¿Cuál pregunta es correcta sobre tu hermano?", type:'choice', prompt:"Which question about your brother is correct?",
+          { id:'g-facil7-dodoes-3', micro:'dodoes-elegir-sujeto', translation:"¿Cuál pregunta es correcta sobre tu hermano?", type:'choice', prompt:"Which question about your brother is correct?",
             options:["Does he play soccer?","Do he play soccer?","Is he plays soccer?"], correct:0,
             explain:"Con “he” usamos “Does”, no “Do”.",
             examples:[
               {en:"Does he play soccer?", es:"¿Él juega fútbol?"},
               {en:"Does he play every weekend?", es:"¿Él juega cada fin de semana?"}
             ]},
-          { id:'g-facil7-dodoes-4', translation:"¿Ellos viven en Bogotá?", type:'error', wrong:"Does they live in Bogotá?", wrongWord:"Does",
+          { id:'g-facil7-dodoes-4', micro:'dodoes-elegir-sujeto', translation:"¿Ellos viven en Bogotá?", type:'error', wrong:"Does they live in Bogotá?", wrongWord:"Does",
             right:"Do they live in Bogotá?", rightWord:"Do",
             explain:"Con “they” usamos “Do”, no “Does”.",
             examples:[
@@ -10096,7 +10096,7 @@ GRAMMAR_BANK.principiante.push([
     topic: "Do / Does",
     items: [
       {
-        id: "g-principiante5-dodoes-1",
+        id: "g-principiante5-dodoes-1", micro:"dodoes-elegir-sujeto",
         translation: "¿Le gusta el café a ella?",
         type: "choice",
         prompt: "How do you ask a question with she?",
@@ -10109,7 +10109,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-dodoes-2",
+        id: "g-principiante5-dodoes-2", micro:"dodoes-elegir-sujeto",
         translation: "¿Te gusta el té?",
         type: "fill",
         sentence: ["___", "you", "like", "tea", "?"],
@@ -10123,7 +10123,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-dodoes-3",
+        id: "g-principiante5-dodoes-3", micro:"dodoes-elegir-sujeto",
         translation: "¿Cuál es correcta para “he”?",
         type: "choice",
         prompt: "Which is correct for he?",
@@ -10136,7 +10136,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-dodoes-4",
+        id: "g-principiante5-dodoes-4", micro:"dodoes-elegir-sujeto",
         translation: "¿Te gusta la pizza?",
         type: "error",
         wrong: "Does you like pizza?",
@@ -13196,28 +13196,28 @@ GRAMMAR_BANK.principiante.push(
         items:[
           /* tobe-1 y tobe-2 repetían palabra por palabra a g-principiante6-7 y g-principiante6-5.
              Mismo concepto y misma respuesta (am / is), oración distinta. */
-          { id:'g-principiante-m200-tobe-1', translation:"Yo soy profesor.", type:'choice', prompt:"I ___ a teacher.",
+          { id:'g-principiante-m200-tobe-1', micro:'tobe-am-is-are', translation:"Yo soy profesor.", type:'choice', prompt:"I ___ a teacher.",
             options:["am","is","are"], correct:0,
             explain:"Con \u201cI\u201d siempre se usa \u201cam\u201d.",
             examples:[
               {en:"I am a teacher.", es:"Yo soy profesor."},
               {en:"I am happy.", es:"Yo estoy feliz."}
             ]},
-          { id:'g-principiante-m200-tobe-2', translation:"Él es mi hermano.", type:'choice', prompt:"He ___ my brother.",
+          { id:'g-principiante-m200-tobe-2', micro:'tobe-am-is-are', translation:"Él es mi hermano.", type:'choice', prompt:"He ___ my brother.",
             options:["is","am","are"], correct:0,
             explain:"Con \u201che / she / it\u201d se usa \u201cis\u201d.",
             examples:[
               {en:"She is my sister.", es:"Ella es mi hermana."},
               {en:"He is my brother.", es:"Él es mi hermano."}
             ]},
-          { id:'g-principiante-m200-tobe-3', translation:"Ellos son mis amigos.", type:'choice', prompt:"They ___ my friends.",
+          { id:'g-principiante-m200-tobe-3', micro:'tobe-am-is-are', translation:"Ellos son mis amigos.", type:'choice', prompt:"They ___ my friends.",
             options:["are","is","am"], correct:0,
             explain:"Con \u201cyou / we / they\u201d se usa \u201care\u201d.",
             examples:[
               {en:"They are my friends.", es:"Ellos son mis amigos."},
               {en:"We are neighbors.", es:"Somos vecinos."}
             ]},
-          { id:'g-principiante-m200-tobe-4', translation:"Nosotros somos doctores.", type:'fill', sentence:["We","___","doctors","."], blankIndex:1,
+          { id:'g-principiante-m200-tobe-4', micro:'tobe-am-is-are', translation:"Nosotros somos doctores.", type:'fill', sentence:["We","___","doctors","."], blankIndex:1,
             bank:["are","is","am"], correct:"are",
             explain:"Con \u201cwe\u201d se usa \u201care\u201d.",
             examples:[
@@ -13968,7 +13968,7 @@ GRAMMAR_BANK.principiante.push([{ topic:"Verbo to be, have y there is/are", item
     options:["has","have","haves"], correct:0,
     explain:"Con he/she/it, 'have' cambia a 'has'.",
     examples:[{en:"He has a new bike.",es:"Él tiene una bici nueva."},{en:"She has two sisters.",es:"Ella tiene dos hermanas."}] },
-  { id:'g-principiante-m400-3', translation:"Yo tengo hambre.", type:'choice', prompt:"I ___ hungry.",
+  { id:'g-principiante-m400-3', micro:'tobe-am-is-are', translation:"Yo tengo hambre.", type:'choice', prompt:"I ___ hungry.",
     options:["is","are","am"], correct:2,
     explain:"Con 'I' usamos 'am'.",
     examples:[{en:"I am tired.",es:"Estoy cansado."},{en:"I am at home.",es:"Estoy en casa."}] }
@@ -14665,4 +14665,299 @@ GRAMMAR_CHECK_BANK.push(
     {id:"g-chk-iol-4",micro:"in-on-at-lugar",translation:"El libro está sobre la mesa.",type:"error",wrong:"The book is in the table.",wrongWord:"in",right:"The book is on the table.",rightWord:"on",explain:"Para algo sobre una superficie usamos “on”, no “in”.",examples:[{en:"The book is on the table.",es:"El libro está sobre la mesa."},{en:"The keys are on the desk.",es:"Las llaves están sobre el escritorio."}]},
     {id:"g-chk-iol-5",micro:"in-on-at-lugar",translation:"Ella está en el segundo piso.",type:"choice",prompt:"She is ___ the second floor.",options:["at","in","on"],correct:2,explain:"Con los pisos de un edificio usamos “on”.",examples:[{en:"She is on the second floor.",es:"Ella está en el segundo piso."},{en:"My office is on the third floor.",es:"Mi oficina está en el tercer piso."}]},
     {id:"g-chk-iol-6",micro:"in-on-at-lugar",translation:"Él vive en el número 25 de la calle Park.",type:"fill",sentence:["He","lives","___","25","Park","Street","."],blankIndex:2,bank:["at","in","on"],correct:"at",explain:"Con una dirección exacta (con número) usamos “at”.",examples:[{en:"He lives at 25 Park Street.",es:"Vive en Park Street 25."},{en:"The shop is at 10 Main Street.",es:"La tienda está en Main Street 10."}]}
+);
+
+/* ============================================================
+   RUTA BASE (Principiante y Fácil): 7 microtemas.
+   to be (am/is/are), presente simple (la -s, don't/doesn't, adverbios de frecuencia), do/does, can y a/an.
+   Práctica: se reutilizaron 29 ejercicios que ya existían (solo ganaron la etiqueta micro, mismo id y mismo texto).
+   Lo nuevo en práctica (18) va en variantes SOLO de miembros (facil 8, 9 y 10) y solo donde no había nada que reutilizar
+   (la -s de he / she / it y don't / doesn't no tenían ejercicios en Principiante ni en Fácil).
+   Comprobación: 42 ejercicios nuevos en el banco aparte (6 por microtema = 2 rondas inéditas de 3).
+   ============================================================ */
+GRAMMAR_BANK.facil[8].push({
+  topic:"Presente simple: la -s de he / she / it",
+  items:[
+    { id:'g-facil-ps3-1', micro:'ps-tercera-persona-s', translation:"Mi hermano trabaja en un banco.", type:'choice', prompt:"My brother ___ in a bank.",
+      options:["work","works","working"], correct:1,
+      explain:"Con he / she / it el verbo del presente simple lleva -s: “works”.",
+      examples:[{en:"He works in a hospital.",es:"Él trabaja en un hospital."},{en:"She works every day.",es:"Ella trabaja todos los días."}] },
+    { id:'g-facil-ps3-2', micro:'ps-tercera-persona-s', translation:"Ella estudia inglés todos los días.", type:'fill', sentence:["She","___","English","every","day","."], blankIndex:1,
+      bank:["studies","study","studying"], correct:"studies",
+      explain:"Con she el verbo lleva -s. Si termina en consonante + y, la y cambia a -ies: “studies”.",
+      examples:[{en:"She studies at night.",es:"Ella estudia en la noche."},{en:"He studies Spanish.",es:"Él estudia español."}] },
+    { id:'g-facil-ps3-3', micro:'ps-tercera-persona-s', translation:"El autobús sale a las 8.", type:'choice', prompt:"The bus ___ at 8 o'clock.",
+      options:["leaves","leave","leaving"], correct:0,
+      explain:"“The bus” equivale a “it”: el verbo lleva -s, “leaves”.",
+      examples:[{en:"The train leaves at nine.",es:"El tren sale a las nueve."},{en:"The shop opens at ten.",es:"La tienda abre a las diez."}] },
+    { id:'g-facil-ps3-4', micro:'ps-tercera-persona-s', translation:"Él juega fútbol los domingos.", type:'error', wrong:"He play soccer on Sundays.", wrongWord:"play",
+      right:"He plays soccer on Sundays.", rightWord:"plays",
+      explain:"Con “he” el verbo necesita -s: “plays”.",
+      examples:[{en:"She plays the piano.",es:"Ella toca el piano."},{en:"My dad plays tennis.",es:"Mi papá juega tenis."}] },
+    { id:'g-facil-ps3-5', micro:'ps-tercera-persona-s', translation:"María toma café en la mañana.", type:'fill', sentence:["Maria","___","coffee","in","the","morning","."], blankIndex:1,
+      bank:["drink","drinks","drinking"], correct:"drinks",
+      explain:"Maria es una sola persona (she): el verbo lleva -s, “drinks”.",
+      examples:[{en:"He drinks water.",es:"Él toma agua."},{en:"My mom drinks tea.",es:"Mi mamá toma té."}] },
+    { id:'g-facil-ps3-6', micro:'ps-tercera-persona-s', translation:"Mis papás viven cerca del parque.", type:'choice', prompt:"My parents ___ near the park.",
+      options:["live","lives","living"], correct:0,
+      explain:"“My parents” es plural (they): el verbo no lleva -s, “live”. La -s es solo para he / she / it.",
+      examples:[{en:"They live in Lima.",es:"Ellos viven en Lima."},{en:"We live near the beach.",es:"Vivimos cerca de la playa."}] }
+  ]
+});
+
+GRAMMAR_BANK.facil[9].push({
+  topic:"Presente simple: don't y doesn't",
+  items:[
+    { id:'g-facil-psneg-1', micro:'ps-negativa-dont-doesnt', translation:"No me gusta la comida picante.", type:'choice', prompt:"I ___ like spicy food.",
+      options:["don't","doesn't","not"], correct:0,
+      explain:"Con I / you / we / they negamos con “don't” + verbo base.",
+      examples:[{en:"I don't like tea.",es:"No me gusta el té."},{en:"We don't live here.",es:"No vivimos aquí."}] },
+    { id:'g-facil-psneg-2', micro:'ps-negativa-dont-doesnt', translation:"Ella no trabaja los domingos.", type:'fill', sentence:["She","___","work","on","Sundays","."], blankIndex:1,
+      bank:["don't","doesn't","isn't"], correct:"doesn't",
+      explain:"Con she / he / it negamos con “doesn't” y el verbo queda sin -s.",
+      examples:[{en:"He doesn't work on Fridays.",es:"Él no trabaja los viernes."},{en:"It doesn't rain here.",es:"Aquí no llueve."}] },
+    { id:'g-facil-psneg-3', micro:'ps-negativa-dont-doesnt', translation:"No tenemos carro.", type:'choice', prompt:"We ___ have a car.",
+      options:["doesn't","aren't","don't"], correct:2,
+      explain:"Con “we” negamos con “don't”.",
+      examples:[{en:"We don't have time.",es:"No tenemos tiempo."},{en:"They don't have a dog.",es:"Ellos no tienen perro."}] },
+    { id:'g-facil-psneg-4', micro:'ps-negativa-dont-doesnt', translation:"A él no le gusta el té.", type:'error', wrong:"He doesn't likes tea.", wrongWord:"likes",
+      right:"He doesn't like tea.", rightWord:"like",
+      explain:"Después de “doesn't” el verbo va sin -s: la -s ya está en “doesn't”.",
+      examples:[{en:"He doesn't like coffee.",es:"No le gusta el café."},{en:"She doesn't want it.",es:"Ella no lo quiere."}] },
+    { id:'g-facil-psneg-5', micro:'ps-negativa-dont-doesnt', translation:"Mi hermano no juega videojuegos.", type:'choice', prompt:"My brother ___ play video games.",
+      options:["don't","isn't","doesn't"], correct:2,
+      explain:"“My brother” equivale a “he”: negamos con “doesn't” + verbo base.",
+      examples:[{en:"My sister doesn't play tennis.",es:"Mi hermana no juega tenis."},{en:"He doesn't play the guitar.",es:"Él no toca la guitarra."}] },
+    { id:'g-facil-psneg-6', micro:'ps-negativa-dont-doesnt', translation:"Ellos no viven en Cali.", type:'fill', sentence:["They","___","live","in","Cali","."], blankIndex:1,
+      bank:["doesn't","aren't","don't"], correct:"don't",
+      explain:"Con “they” negamos con “don't” + verbo base.",
+      examples:[{en:"They don't speak French.",es:"Ellos no hablan francés."},{en:"You don't need a ticket.",es:"No necesitas un boleto."}] }
+  ]
+});
+
+GRAMMAR_BANK.facil[9].push({
+  topic:"Adverbios de frecuencia: dónde van",
+  items:[
+    { id:'g-facil-freqpos-1', micro:'ps-adverbios-frecuencia', translation:"Yo siempre voy a la escuela.", type:'choice', prompt:"Which sentence is correct?",
+      options:["I go always to school.","I always go to school.","I go to always school."], correct:1,
+      explain:"Con verbos normales, el adverbio de frecuencia va antes del verbo: “I always go”.",
+      examples:[{en:"She sometimes cooks dinner.",es:"A veces ella cocina la cena."},{en:"We often walk to work.",es:"A menudo caminamos al trabajo."}] },
+    { id:'g-facil-freqpos-2', micro:'ps-adverbios-frecuencia', translation:"Ellos usualmente juegan fútbol los domingos.", type:'error', wrong:"They play usually soccer on Sundays.", wrongWord:"play usually",
+      right:"They usually play soccer on Sundays.", rightWord:"usually play",
+      explain:"El adverbio de frecuencia va antes del verbo principal: “usually play”.",
+      examples:[{en:"We usually eat at home.",es:"Usualmente comemos en casa."},{en:"He never calls me.",es:"Él nunca me llama."}] }
+  ]
+});
+
+GRAMMAR_BANK.facil[10].push({
+  topic:"Can / Can't: después va el verbo base",
+  items:[
+    { id:'g-facil-cancant-1', micro:'can-verbo-base', translation:"Mi perro puede saltar muy alto.", type:'choice', prompt:"My dog ___ jump very high.",
+      options:["cans","is can","can"], correct:2,
+      explain:"“Can” no cambia con nadie: no lleva -s. “My dog can jump”.",
+      examples:[{en:"He can jump high.",es:"Él puede saltar alto."},{en:"Birds can fly.",es:"Los pájaros pueden volar."}] },
+    { id:'g-facil-cancant-2', micro:'can-verbo-base', translation:"Él sabe hablar tres idiomas.", type:'error', wrong:"He can speaks three languages.", wrongWord:"speaks",
+      right:"He can speak three languages.", rightWord:"speak",
+      explain:"Después de “can” el verbo va en forma base, sin -s: “can speak”.",
+      examples:[{en:"She can speak Spanish.",es:"Ella sabe hablar español."},{en:"I can help you.",es:"Puedo ayudarte."}] }
+  ]
+});
+
+GRAMMAR_BANK.facil[10].push({
+  topic:"A / An: depende del sonido",
+  items:[
+    { id:'g-facil-aan-1', micro:'a-an-sonido', translation:"Él es un hombre honesto.", type:'choice', prompt:"He is ___ honest man.",
+      options:["an","a","some"], correct:0,
+      explain:"Importa el sonido, no la letra: “honest” empieza con sonido de vocal (la h no se pronuncia), así que usamos “an”.",
+      examples:[{en:"She gave an honest answer.",es:"Ella dio una respuesta honesta."},{en:"I'll be there in an hour.",es:"Estaré allí en una hora."}] },
+    { id:'g-facil-aan-2', micro:'a-an-sonido', translation:"Mi hermano va a una universidad.", type:'fill', sentence:["My","brother","goes","to","___","university","."], blankIndex:4,
+      bank:["an","a","some"], correct:"a",
+      explain:"Importa el sonido, no la letra: “university” empieza con sonido /yu/ (como una consonante), así que usamos “a”.",
+      examples:[{en:"She has a unique style.",es:"Ella tiene un estilo único."},{en:"It is a useful tool.",es:"Es una herramienta útil."}] }
+  ]
+});
+
+/* ---- Comprobación (banco aparte) ---- */
+GRAMMAR_CHECK_BANK.push(
+  /* to be: am / is / are */
+  { id:'g-chk-tobe-1', micro:'tobe-am-is-are', translation:"Mi papá es enfermero.", type:'choice', prompt:"My father ___ a nurse.",
+    options:["are","is","am"], correct:1,
+    explain:"“My father” equivale a “he”: usamos “is”.",
+    examples:[{en:"My father is a driver.",es:"Mi papá es conductor."},{en:"He is at work.",es:"Él está en el trabajo."}] },
+  { id:'g-chk-tobe-2', micro:'tobe-am-is-are', translation:"Tú eres mi mejor amigo.", type:'fill', sentence:["You","___","my","best","friend","."], blankIndex:1,
+    bank:["is","are","am"], correct:"are",
+    explain:"Con “you” siempre usamos “are”.",
+    examples:[{en:"You are my teacher.",es:"Tú eres mi maestro."},{en:"You are late.",es:"Llegas tarde."}] },
+  { id:'g-chk-tobe-3', micro:'tobe-am-is-are', translation:"Los niños están en el parque.", type:'choice', prompt:"The children ___ in the park.",
+    options:["is","am","are"], correct:2,
+    explain:"“The children” es plural (they): usamos “are”.",
+    examples:[{en:"The kids are happy.",es:"Los niños están felices."},{en:"They are at school.",es:"Ellos están en la escuela."}] },
+  { id:'g-chk-tobe-4', micro:'tobe-am-is-are', translation:"Hoy estoy cansado.", type:'error', wrong:"I is tired today.", wrongWord:"is",
+    right:"I am tired today.", rightWord:"am",
+    explain:"Con “I” siempre usamos “am”.",
+    examples:[{en:"I am ready.",es:"Estoy listo."},{en:"I am from Peru.",es:"Soy de Perú."}] },
+  { id:'g-chk-tobe-5', micro:'tobe-am-is-are', translation:"Mi hermana y yo estamos en casa.", type:'fill', sentence:["My","sister","and","I","___","at","home","."], blankIndex:4,
+    bank:["am","is","are"], correct:"are",
+    explain:"“My sister and I” son dos personas (we): usamos “are”.",
+    examples:[{en:"Tom and I are friends.",es:"Tom y yo somos amigos."},{en:"We are in the kitchen.",es:"Estamos en la cocina."}] },
+  { id:'g-chk-tobe-6', micro:'tobe-am-is-are', translation:"María es de Colombia.", type:'choice', prompt:"Maria ___ from Colombia.",
+    options:["is","are","am"], correct:0,
+    explain:"“Maria” es una sola persona (she): usamos “is”.",
+    examples:[{en:"Ana is from Chile.",es:"Ana es de Chile."},{en:"She is from Mexico.",es:"Ella es de México."}] },
+
+  /* do / does en preguntas */
+  { id:'g-chk-dd-1', micro:'dodoes-elegir-sujeto', translation:"¿Ellos hablan inglés?", type:'fill', sentence:["___","they","speak","English","?"], blankIndex:0,
+    bank:["Does","Do","Is"], correct:"Do",
+    explain:"Con “they” preguntamos con “Do”.",
+    examples:[{en:"Do you speak Spanish?",es:"¿Hablas español?"},{en:"Do we need milk?",es:"¿Necesitamos leche?"}] },
+  { id:'g-chk-dd-2', micro:'dodoes-elegir-sujeto', translation:"¿Tu hermana vive aquí?", type:'choice', prompt:"___ your sister live here?",
+    options:["Do","Is","Does"], correct:2,
+    explain:"“Your sister” equivale a “she”: preguntamos con “Does”.",
+    examples:[{en:"Does he live in Quito?",es:"¿Él vive en Quito?"},{en:"Does it work?",es:"¿Funciona?"}] },
+  { id:'g-chk-dd-3', micro:'dodoes-elegir-sujeto', translation:"¿Él trabaja los domingos?", type:'error', wrong:"Do he work on Sundays?", wrongWord:"Do",
+    right:"Does he work on Sundays?", rightWord:"Does",
+    explain:"Con he / she / it preguntamos con “Does”.",
+    examples:[{en:"Does she work here?",es:"¿Ella trabaja aquí?"},{en:"Does Tom study at night?",es:"¿Tom estudia en la noche?"}] },
+  { id:'g-chk-dd-4', micro:'dodoes-elegir-sujeto', translation:"¿Necesitamos un taxi?", type:'choice', prompt:"___ we need a taxi?",
+    options:["Does","Do","Are"], correct:1,
+    explain:"Con “we” preguntamos con “Do”.",
+    examples:[{en:"Do we have time?",es:"¿Tenemos tiempo?"},{en:"Do they need help?",es:"¿Necesitan ayuda?"}] },
+  { id:'g-chk-dd-5', micro:'dodoes-elegir-sujeto', translation:"¿El bebé duerme en la noche?", type:'fill', sentence:["___","the","baby","sleep","at","night","?"], blankIndex:0,
+    bank:["Do","Is","Does"], correct:"Does",
+    explain:"“The baby” equivale a “he / she / it”: usamos “Does”.",
+    examples:[{en:"Does the cat sleep a lot?",es:"¿El gato duerme mucho?"},{en:"Does the bus stop here?",es:"¿El autobús para aquí?"}] },
+  { id:'g-chk-dd-6', micro:'dodoes-elegir-sujeto', translation:"¿María y Juan trabajan aquí?", type:'choice', prompt:"___ Maria and Juan work here?",
+    options:["Does","Are","Do"], correct:2,
+    explain:"“Maria and Juan” son dos personas (they): usamos “Do”.",
+    examples:[{en:"Do your parents work here?",es:"¿Tus papás trabajan aquí?"},{en:"Do the students study?",es:"¿Los estudiantes estudian?"}] },
+
+  /* can: sin -s, sin to */
+  { id:'g-chk-can-1', micro:'can-verbo-base', translation:"Mi mamá sabe hablar francés e italiano.", type:'choice', prompt:"My mother ___ speak French and Italian.",
+    options:["cans","can to","can"], correct:2,
+    explain:"“Can” no lleva -s ni “to”, y después va el verbo base: “can speak”.",
+    examples:[{en:"My uncle can cook.",es:"Mi tío sabe cocinar."},{en:"We can speak English.",es:"Sabemos hablar inglés."}] },
+  { id:'g-chk-can-2', micro:'can-verbo-base', translation:"¿Tu hermano sabe andar en bicicleta?", type:'fill', sentence:["___","your","brother","ride","a","bike","?"], blankIndex:0,
+    bank:["Does","Can","Is"], correct:"Can",
+    explain:"Para preguntar por una habilidad empezamos con “Can”, y el verbo queda en forma base.",
+    examples:[{en:"Can you swim?",es:"¿Sabes nadar?"},{en:"Can she sing?",es:"¿Ella sabe cantar?"}] },
+  { id:'g-chk-can-3', micro:'can-verbo-base', translation:"Ella baila muy bien.", type:'error', wrong:"She cans dance very well.", wrongWord:"cans",
+    right:"She can dance very well.", rightWord:"can",
+    explain:"“Can” nunca lleva -s, ni siquiera con she / he / it.",
+    examples:[{en:"He can run fast.",es:"Él puede correr rápido."},{en:"It can swim.",es:"Puede nadar."}] },
+  { id:'g-chk-can-4', micro:'can-verbo-base', translation:"Los bebés no pueden caminar. Son muy pequeños.", type:'choice', prompt:"Babies ___ walk. They are too small.",
+    options:["don't can","not can","can't"], correct:2,
+    explain:"La forma negativa de “can” es “can't” (o “cannot”).",
+    examples:[{en:"I can't swim.",es:"No sé nadar."},{en:"She can't drive.",es:"Ella no sabe manejar."}] },
+  { id:'g-chk-can-5', micro:'can-verbo-base', translation:"Ellos pueden correr muy rápido.", type:'fill', sentence:["They","can","___","very","fast","."], blankIndex:2,
+    bank:["runs","to run","run"], correct:"run",
+    explain:"Después de “can” va el verbo base: sin -s y sin “to”.",
+    examples:[{en:"We can run together.",es:"Podemos correr juntos."},{en:"You can run fast.",es:"Puedes correr rápido."}] },
+  { id:'g-chk-can-6', micro:'can-verbo-base', translation:"¿Ella sabe tocar la guitarra? Sí, sabe.", type:'choice', prompt:"Can she play the guitar? Yes, she ___.",
+    options:["does","can","cans"], correct:1,
+    explain:"La respuesta corta repite el modal: “Yes, she can”.",
+    examples:[{en:"Can you swim? Yes, I can.",es:"¿Sabes nadar? Sí, sé."},{en:"Can he drive? No, he can't.",es:"¿Él maneja? No, no puede."}] },
+
+  /* a / an por sonido */
+  { id:'g-chk-aan-1', micro:'a-an-sonido', translation:"Ella trabaja en una oficina en el centro.", type:'choice', prompt:"She works in ___ office downtown.",
+    options:["a","many","an"], correct:2,
+    explain:"“Office” empieza con sonido de vocal: usamos “an”.",
+    examples:[{en:"He has an apple.",es:"Él tiene una manzana."},{en:"We have an exam today.",es:"Hoy tenemos un examen."}] },
+  { id:'g-chk-aan-2', micro:'a-an-sonido', translation:"Él es un estudiante europeo.", type:'fill', sentence:["He","is","___","European","student","."], blankIndex:2,
+    bank:["an","a","some"], correct:"a",
+    explain:"“European” empieza con sonido /yu/ (como una consonante): usamos “a”.",
+    examples:[{en:"She has a uniform.",es:"Ella tiene un uniforme."},{en:"He is a user.",es:"Él es un usuario."}] },
+  { id:'g-chk-aan-3', micro:'a-an-sonido', translation:"Tengo una idea para la fiesta.", type:'choice', prompt:"I have ___ idea for the party.",
+    options:["a","an","many"], correct:1,
+    explain:"“Idea” empieza con sonido de vocal: usamos “an”.",
+    examples:[{en:"That is an easy question.",es:"Esa es una pregunta fácil."},{en:"She is an actor.",es:"Ella es actriz."}] },
+  { id:'g-chk-aan-4', micro:'a-an-sonido', translation:"Mi tío es dentista.", type:'error', wrong:"My uncle is an dentist.", wrongWord:"an",
+    right:"My uncle is a dentist.", rightWord:"a",
+    explain:"“Dentist” empieza con sonido de consonante: usamos “a”.",
+    examples:[{en:"He is a doctor.",es:"Él es médico."},{en:"I have a question.",es:"Tengo una pregunta."}] },
+  { id:'g-chk-aan-5', micro:'a-an-sonido', translation:"Mi papá maneja un carro viejo.", type:'choice', prompt:"My dad drives ___ old car.",
+    options:["a","an","many"], correct:1,
+    explain:"El sonido que importa es el de la palabra que sigue: “old” empieza con vocal, así que usamos “an”.",
+    examples:[{en:"She has an old phone.",es:"Ella tiene un teléfono viejo."},{en:"It is an easy test.",es:"Es una prueba fácil."}] },
+  { id:'g-chk-aan-6', micro:'a-an-sonido', translation:"Toma una hora llegar allá.", type:'fill', sentence:["It","takes","___","hour","to","get","there","."], blankIndex:2,
+    bank:["a","an","many"], correct:"an",
+    explain:"En “hour” la h no se pronuncia: empieza con sonido de vocal, así que usamos “an”.",
+    examples:[{en:"We wait for an hour.",es:"Esperamos una hora."},{en:"It is an honor.",es:"Es un honor."}] },
+
+  /* presente simple: la -s */
+  { id:'g-chk-ps3-1', micro:'ps-tercera-persona-s', translation:"Mi hermana va a la escuela en bus.", type:'choice', prompt:"My sister ___ to school by bus.",
+    options:["go","goes","going"], correct:1,
+    explain:"Con she el verbo lleva -s o -es: “goes”.",
+    examples:[{en:"He goes to the gym.",es:"Él va al gimnasio."},{en:"She goes home at six.",es:"Ella va a casa a las seis."}] },
+  { id:'g-chk-ps3-2', micro:'ps-tercera-persona-s', translation:"Él ve televisión después de la cena.", type:'fill', sentence:["He","___","TV","after","dinner","."], blankIndex:1,
+    bank:["watches","watch","watching"], correct:"watches",
+    explain:"Los verbos que terminan en -ch llevan -es con he / she / it: “watches”.",
+    examples:[{en:"She watches movies.",es:"Ella ve películas."},{en:"He teaches English.",es:"Él enseña inglés."}] },
+  { id:'g-chk-ps3-3', micro:'ps-tercera-persona-s', translation:"A ella le gusta la pizza.", type:'error', wrong:"She like pizza.", wrongWord:"like",
+    right:"She likes pizza.", rightWord:"likes",
+    explain:"Con “she” el verbo lleva -s: “likes”.",
+    examples:[{en:"He likes music.",es:"Le gusta la música."},{en:"She likes dogs.",es:"A ella le gustan los perros."}] },
+  { id:'g-chk-ps3-4', micro:'ps-tercera-persona-s', translation:"Los estudiantes estudian inglés los lunes.", type:'choice', prompt:"The students ___ English on Mondays.",
+    options:["studies","study","studying"], correct:1,
+    explain:"“The students” es plural (they): el verbo no lleva -s.",
+    examples:[{en:"The girls study together.",es:"Las niñas estudian juntas."},{en:"My friends study a lot.",es:"Mis amigos estudian mucho."}] },
+  { id:'g-chk-ps3-5', micro:'ps-tercera-persona-s', translation:"Mi perro duerme mucho.", type:'fill', sentence:["My","dog","___","a","lot","."], blankIndex:2,
+    bank:["sleeping","sleep","sleeps"], correct:"sleeps",
+    explain:"“My dog” equivale a “it”: el verbo lleva -s, “sleeps”.",
+    examples:[{en:"The baby sleeps well.",es:"El bebé duerme bien."},{en:"My cat sleeps all day.",es:"Mi gato duerme todo el día."}] },
+  { id:'g-chk-ps3-6', micro:'ps-tercera-persona-s', translation:"Mi papá trabaja en Medellín.", type:'error', wrong:"My father work in Medellín.", wrongWord:"work",
+    right:"My father works in Medellín.", rightWord:"works",
+    explain:"“My father” equivale a “he”: el verbo lleva -s, “works”.",
+    examples:[{en:"My uncle works in Bogotá.",es:"Mi tío trabaja en Bogotá."},{en:"He works hard.",es:"Él trabaja duro."}] },
+
+  /* presente simple: don't / doesn't */
+  { id:'g-chk-psneg-1', micro:'ps-negativa-dont-doesnt', translation:"Mi mamá no come carne.", type:'choice', prompt:"My mother ___ eat meat.",
+    options:["don't","isn't","doesn't"], correct:2,
+    explain:"“My mother” equivale a “she”: negamos con “doesn't” + verbo base.",
+    examples:[{en:"She doesn't eat fish.",es:"Ella no come pescado."},{en:"My dad doesn't drink coffee.",es:"Mi papá no toma café."}] },
+  { id:'g-chk-psneg-2', micro:'ps-negativa-dont-doesnt', translation:"No necesitas un boleto hoy.", type:'fill', sentence:["You","___","need","a","ticket","today","."], blankIndex:1,
+    bank:["doesn't","don't","aren't"], correct:"don't",
+    explain:"Con “you” negamos con “don't” + verbo base.",
+    examples:[{en:"You don't need a visa.",es:"No necesitas visa."},{en:"We don't need help.",es:"No necesitamos ayuda."}] },
+  { id:'g-chk-psneg-3', micro:'ps-negativa-dont-doesnt', translation:"Ella no habla francés.", type:'error', wrong:"She don't speak French.", wrongWord:"don't",
+    right:"She doesn't speak French.", rightWord:"doesn't",
+    explain:"Con she / he / it negamos con “doesn't”, no con “don't”.",
+    examples:[{en:"He doesn't speak Italian.",es:"Él no habla italiano."},{en:"It doesn't work.",es:"No funciona."}] },
+  { id:'g-chk-psneg-4', micro:'ps-negativa-dont-doesnt', translation:"Él no vive en esta ciudad.", type:'choice', prompt:"He doesn't ___ in this city.",
+    options:["lives","living","live"], correct:2,
+    explain:"Después de “doesn't” el verbo va sin -s: “live”.",
+    examples:[{en:"She doesn't live here.",es:"Ella no vive aquí."},{en:"He doesn't work today.",es:"Él no trabaja hoy."}] },
+  { id:'g-chk-psneg-5', micro:'ps-negativa-dont-doesnt', translation:"La tienda no cierra temprano los lunes.", type:'fill', sentence:["The","shop","___","close","early","on","Mondays","."], blankIndex:2,
+    bank:["isn't","doesn't","don't"], correct:"doesn't",
+    explain:"“The shop” equivale a “it”: negamos con “doesn't” + verbo base.",
+    examples:[{en:"The bank doesn't open on Sundays.",es:"El banco no abre los domingos."},{en:"The bus doesn't stop here.",es:"El autobús no para aquí."}] },
+  { id:'g-chk-psneg-6', micro:'ps-negativa-dont-doesnt', translation:"No vemos televisión en la noche.", type:'error', wrong:"We doesn't watch TV at night.", wrongWord:"doesn't",
+    right:"We don't watch TV at night.", rightWord:"don't",
+    explain:"Con “we” negamos con “don't”, no con “doesn't”.",
+    examples:[{en:"We don't eat late.",es:"No comemos tarde."},{en:"They don't watch TV.",es:"Ellos no ven televisión."}] },
+
+  /* presente simple: adverbios de frecuencia */
+  { id:'g-chk-freq-1', micro:'ps-adverbios-frecuencia', translation:"Él siempre está feliz.", type:'choice', prompt:"Choose the correct sentence:",
+    options:["He always is happy.","He is always happy.","Always he is happy."], correct:1,
+    explain:"Con el verbo “to be”, el adverbio de frecuencia va después: “is always”.",
+    examples:[{en:"She is never late.",es:"Ella nunca llega tarde."},{en:"They are often tired.",es:"A menudo están cansados."}] },
+  { id:'g-chk-freq-2', micro:'ps-adverbios-frecuencia', translation:"Mis papás usualmente ven televisión después de cenar.", type:'fill', sentence:["My","parents","___","watch","TV","after","dinner","."], blankIndex:2,
+    bank:["yesterday","usually","tomorrow"], correct:"usually",
+    explain:"Para hablar de hábitos usamos un adverbio de frecuencia como “usually”. “Yesterday” y “tomorrow” no marcan frecuencia.",
+    examples:[{en:"I usually wake up at six.",es:"Usualmente me despierto a las seis."},{en:"We sometimes eat out.",es:"A veces comemos fuera."}] },
+  { id:'g-chk-freq-3', micro:'ps-adverbios-frecuencia', translation:"Él a veces ve televisión en la noche.", type:'error', wrong:"He watches sometimes TV at night.", wrongWord:"watches sometimes",
+    right:"He sometimes watches TV at night.", rightWord:"sometimes watches",
+    explain:"El adverbio de frecuencia va antes del verbo principal: “sometimes watches”.",
+    examples:[{en:"She always drinks water.",es:"Ella siempre toma agua."},{en:"I often read at night.",es:"A menudo leo en la noche."}] },
+  { id:'g-chk-freq-4', micro:'ps-adverbios-frecuencia', translation:"Ella nunca almuerza en la escuela.", type:'choice', prompt:"She ___ eats lunch at school.",
+    options:["tomorrow","never","yesterday"], correct:1,
+    explain:"“Never” es un adverbio de frecuencia y va antes del verbo: “never eats”.",
+    examples:[{en:"He never drinks soda.",es:"Él nunca toma gaseosa."},{en:"I never smoke.",es:"Yo nunca fumo."}] },
+  { id:'g-chk-freq-5', micro:'ps-adverbios-frecuencia', translation:"Ellos usualmente llegan a tiempo.", type:'fill', sentence:["They","are","___","on","time","."], blankIndex:2,
+    bank:["tomorrow","yesterday","usually"], correct:"usually",
+    explain:"Con “are” el adverbio va después: “are usually”. Los otros dos no son adverbios de frecuencia.",
+    examples:[{en:"We are always ready.",es:"Siempre estamos listos."},{en:"He is sometimes late.",es:"A veces él llega tarde."}] },
+  { id:'g-chk-freq-6', micro:'ps-adverbios-frecuencia', translation:"Yo nunca voy al gimnasio.", type:'error', wrong:"I go never to the gym.", wrongWord:"go never",
+    right:"I never go to the gym.", rightWord:"never go",
+    explain:"El adverbio de frecuencia va antes del verbo principal: “never go”.",
+    examples:[{en:"I never eat meat.",es:"Yo nunca como carne."},{en:"We always take the bus.",es:"Siempre tomamos el bus."}] }
 );

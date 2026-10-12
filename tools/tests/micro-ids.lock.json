@@ -1,11 +1,14 @@
 {
   "_nota": "Ids de microtema que ya se usan (con ejercicios o activos). Con progreso asociado NO se renombran ni se borran; micros.test.js falla si alguno desaparece. Se actualiza con: node tools/micros-report.js --lock",
   "ids": [
+    "a-an-sonido",
     "a-lot-of",
+    "can-verbo-base",
     "cond-1-probable",
     "cond-2-imaginario",
     "cond-3-pasado-irreal",
     "cond-mixto",
+    "dodoes-elegir-sujeto",
     "fewer-less",
     "going-to-evidencia",
     "going-to-plan-decidido",
@@ -17,10 +20,14 @@
     "obligacion-vs-consejo",
     "pasado-fecha-terminada",
     "pp-experiencia-sin-fecha",
+    "ps-adverbios-frecuencia",
+    "ps-negativa-dont-doesnt",
+    "ps-tercera-persona-s",
     "since-for-eleccion",
     "since-for-presente-perfecto",
     "some-any-afirm-neg",
     "some-any-pregunta-oferta",
+    "tobe-am-is-are",
     "will-decision-espontanea",
     "will-forma-verbo-base"
   ]

@@ -127,6 +127,12 @@ const LABELS = {
   'Verbos modales: obligación (must / have to) vs consejo (should)': 'must / should',
   'In / On / At con tiempo (horas, días, meses)': 'in / on / at',
   'In / On / At con lugares': 'in / on / at',
+  // Ruta base (2026-10-12): los bloques nuevos reutilizan la etiqueta corta de su tema.
+  'Presente simple: la -s de he / she / it': 'Presente simple',
+  "Presente simple: don't y doesn't": 'Presente simple',
+  'Adverbios de frecuencia: dónde van': 'always / never',
+  "Can / Can't: después va el verbo base": 'can / can\'t',
+  'A / An: depende del sonido': 'a / an',
 };
 
 // Microexplicacion de cada etiqueta (la ve la persona bajo "Siguiente

@@ -146,8 +146,8 @@ test('los 15 ejercicios que ya existían conservan su id, su texto y solo ganaro
   assert.ok(!first('g-medio4-mod-4').micro, 'mod-4 (must to) no se etiquetó: no es obligación vs consejo');
 });
 
-test('el banco de práctica solo creció en 38 ejercicios (416 -> 454) y ninguna etiqueta existente cambió de nombre', () => {
-  assert.strictEqual(real.practice.length, 454);
+test('el banco de práctica solo creció en 38 ejercicios en la ampliación (416 -> 454) y en 18 más en la ruta base (454 -> 472), y ninguna etiqueta existente cambió de nombre', () => {
+  assert.strictEqual(real.practice.length, 472);
   const topics = new Set(real.practice.map(r => r.topic));
   ['Present Perfect vs Past Simple', 'Since / For', 'In / On / At', 'Some / Any', '"Fewer" vs "Less"', 'Much / Many', 'A little / Little / A few / Few',
     'Verbos modales de obligación (must / have to / should)', 'Cuantificadores (a lot of / much / many / few / little)'].forEach(t => assert.ok(topics.has(t), 'desapareció la etiqueta ' + t));

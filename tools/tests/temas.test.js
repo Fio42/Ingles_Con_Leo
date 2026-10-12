@@ -987,7 +987,7 @@ test('writing con tema claro: Hoy te conviene (practicar Writing del tema) + det
   assert.strictEqual(a.title, 'Reforzar Comparativos en Writing'); assert.strictEqual(a.tema, 'comparativos');
   assert.strictEqual(a.href, 'plan-estudio.html?habilidad=writing&tema=comparativos');
   assert.strictEqual(T.todayStartHref(a), 'plan-estudio.html?habilidad=writing&tema=comparativos&empezar=1');
-  assert(!a.article, 'Comparativos no tiene clase ni glosario: solo practicar');
+  assert.strictEqual(a.article, 'articulo-comparativos-y-superlativos.html?tema=comparativos&via=rec', 'Comparativos ya tiene su clase conectada: practicar + clase');
   checkAction(a);
   assert(/Dentro de Writing, lo que más necesitas reforzar es <b>Comparativos<\/b>\./.test(T.diagSkillsHtml(JSON.parse(store[T.PROGRESS_KEY]), d)));
 });
@@ -1067,7 +1067,8 @@ test('Mis errores: errores de Writing de un tema -> "Sobre todo en X" con práct
   setProgress(T, wWeak('comparativos'));
   const g = T.computeMistakePatterns(mistakeStats(ids.slice(0, 4))).groups.find(x => x.key === 'skill:writing');
   assert(g && g.temaContent && g.temaContent.id === 'comparativos');
-  eq(linksIn(T.temaLinksHtml(g.temaContent)), ['plan-estudio.html?habilidad=writing&tema=comparativos&empezar=1']);
+  // Comparativos ya tiene clase conectada (articulo-comparativos-y-superlativos.html): además de la práctica se ofrece "Ver clase".
+  eq(linksIn(T.temaLinksHtml(g.temaContent)), ['plan-estudio.html?habilidad=writing&tema=comparativos&empezar=1', 'articulo-comparativos-y-superlativos.html?tema=comparativos&via=rec']);
   const g2 = T.computeMistakePatterns(mistakeStats(wGeneral('facil').slice(0, 4))).groups.find(x => x.key === 'skill:writing');
   assert(g2 && !g2.temaContent);
 });
@@ -1113,7 +1114,8 @@ test('"Hoy te conviene" recuerda de qué habilidad es el tema y el diagnóstico 
   assert.strictEqual(readyDiag(T).today.temaSkill, 'listening');
 });
 test('resumen de Writing mejorado: si Gramática del MISMO tema sigue débil, esa sigue siendo la siguiente recomendación', ()=>{
-  const gp = itemsOfTema(T, 'presente-simple', 'facil'), wp = wIds('presente-simple', 'facil');
+  // Los 8 ejercicios de Presente simple que había cuando se escribió la prueba (los de la ruta base se suman después): con más ejercicios, 12 respuestas tocan más de 10 distintos y "Repasar tus errores" pasa primero, como corresponde.
+  const gp = itemsOfTema(T, 'presente-simple', 'facil').slice(0, 8), wp = wIds('presente-simple', 'facil');
   const hist = [ session(1, answers(gp, 12, 10)), wsession(12, wres(wp, 10, 10)), wsession(11, wres(wGeneral('facil'), 8, 90)) ];
   const results = wres(wp, 14, 100, 1);
   const s = wsession(0, results);

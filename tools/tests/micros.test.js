@@ -32,16 +32,16 @@ test('los 3 pilotos están declarados con sus microtemas', () => {
   assert.deepStrictEqual(ids('cuantificadores'), ['much-many-contable-incontable', 'a-lot-of', 'some-any-afirm-neg', 'some-any-pregunta-oferta', 'little-few-matiz', 'fewer-less']);
 });
 
-test('migración gradual: activos Futuro (4), Condicionales 1 y 2, y la ampliación de 5 temas (presente perfecto, since/for, cuantificadores, modales, in/on/at); cond-3, cond-mixto, a-lot-of y some-any-pregunta-oferta siguen sin activar', () => {
+test('migración gradual: activos Futuro (4), Condicionales 1 y 2, y la ampliación de 5 temas (presente perfecto, since/for, cuantificadores, modales, in/on/at), la ruta base de Principiante y Fácil (to be, presente simple, do/does, can, a/an); cond-3, cond-mixto, a-lot-of y some-any-pregunta-oferta siguen sin activar', () => {
   assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)).sort(),
-    ['cond-1-probable', 'cond-2-imaginario', 'fewer-less', 'going-to-evidencia', 'going-to-plan-decidido', 'in-on-at-lugar', 'in-on-at-tiempo', 'little-few-matiz', 'much-many-contable-incontable', 'mustnt-vs-dont-have-to', 'obligacion-vs-consejo', 'pasado-fecha-terminada', 'pp-experiencia-sin-fecha', 'since-for-eleccion', 'since-for-presente-perfecto', 'some-any-afirm-neg', 'will-decision-espontanea', 'will-forma-verbo-base']);
+    ['a-an-sonido', 'can-verbo-base', 'cond-1-probable', 'cond-2-imaginario', 'dodoes-elegir-sujeto', 'fewer-less', 'going-to-evidencia', 'going-to-plan-decidido', 'in-on-at-lugar', 'in-on-at-tiempo', 'little-few-matiz', 'much-many-contable-incontable', 'mustnt-vs-dont-have-to', 'obligacion-vs-consejo', 'pasado-fecha-terminada', 'pp-experiencia-sin-fecha', 'ps-adverbios-frecuencia', 'ps-negativa-dont-doesnt', 'ps-tercera-persona-s', 'since-for-eleccion', 'since-for-presente-perfecto', 'some-any-afirm-neg', 'tobe-am-is-are', 'will-decision-espontanea', 'will-forma-verbo-base']);
   const withMicros = plain(real.TEMAS.filter(t => (t.micros || []).length).map(t => t.id).sort());
-  assert.deepStrictEqual(withMicros, ['condicionales', 'cuantificadores', 'in-on-at', 'modales-obligacion', 'present-perfect-vs-past', 'since-for', 'will-going-to']);
+  assert.deepStrictEqual(withMicros, ['a-an', 'can-cant', 'condicionales', 'cuantificadores', 'do-does', 'in-on-at', 'modales-obligacion', 'present-perfect-vs-past', 'presente-simple', 'since-for', 'to-be-presente', 'will-going-to']);
 });
 
-test('los ejercicios sin micro siguen siendo los de siempre (solo 124 declaran micro: 71 de los pilotos + 15 existentes etiquetados en la ampliación + 38 nuevos)', () => {
+test('los ejercicios sin micro siguen siendo los de siempre (solo 171 declaran micro: 71 de los pilotos + 15 existentes etiquetados en la ampliación + 38 nuevos + 29 existentes etiquetados en la ruta base + 18 nuevos de la ruta base)', () => {
   const tagged = real.practice.filter(r => r.item.micro);
-  assert.strictEqual(tagged.length, 124);
+  assert.strictEqual(tagged.length, 171);
   assert.ok(real.practice.length - tagged.length > 300);
 });
 
@@ -94,14 +94,15 @@ test('futuro: los 4 ejercicios originales conservan su microtema y cada uno comp
   });
 });
 
-test('el banco de comprobación está aparte y tiene 6 por microtema activo (2 rondas inéditas de 3): 6 de los pilotos + 12 de la ampliación', () => {
+test('el banco de comprobación está aparte y tiene 6 por microtema activo (2 rondas inéditas de 3): 6 de los pilotos + 12 de la ampliación + 7 de la ruta base', () => {
   assert.ok(Array.isArray(real.check));
-  assert.strictEqual(real.check.length, 108);
+  assert.strictEqual(real.check.length, 150);
   const per = {};
   real.check.forEach(c => { per[c.micro] = (per[c.micro] || 0) + 1; });
   assert.deepStrictEqual(plain(per), { 'will-decision-espontanea':6, 'going-to-plan-decidido':6, 'going-to-evidencia':6, 'will-forma-verbo-base':6, 'cond-1-probable':6, 'cond-2-imaginario':6,
     'pp-experiencia-sin-fecha':6, 'pasado-fecha-terminada':6, 'since-for-eleccion':6, 'since-for-presente-perfecto':6, 'much-many-contable-incontable':6, 'little-few-matiz':6,
-    'some-any-afirm-neg':6, 'fewer-less':6, 'mustnt-vs-dont-have-to':6, 'obligacion-vs-consejo':6, 'in-on-at-tiempo':6, 'in-on-at-lugar':6 });
+    'some-any-afirm-neg':6, 'fewer-less':6, 'mustnt-vs-dont-have-to':6, 'obligacion-vs-consejo':6, 'in-on-at-tiempo':6, 'in-on-at-lugar':6,
+    'tobe-am-is-are':6, 'dodoes-elegir-sujeto':6, 'ps-tercera-persona-s':6, 'ps-negativa-dont-doesnt':6, 'ps-adverbios-frecuencia':6, 'can-verbo-base':6, 'a-an-sonido':6 });
 });
 
 test('temas.js (runtime) y el validador resuelven igual el recurso de cada microtema', () => {
