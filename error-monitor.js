@@ -147,7 +147,7 @@
     }
 
     /* ---------- Filtros de ruido ---------- */
-    var NOISE = /ResizeObserver loop|^Script error\.?$|Non-Error promise rejection captured|(?:chrome|moz|safari(?:-web)?)-extension:\/\//i;
+    var NOISE = /ResizeObserver loop|^Script error\.?$|Non-Error promise rejection captured|_AutofillCallbackHandler|(?:chrome|moz|safari(?:-web)?)-extension:\/\//i;
     function isSelf(text){ return typeof text === 'string' && (text.indexOf(SELF_FILE) !== -1 || text.indexOf('report-error') !== -1 || text.indexOf('LeoErrors') !== -1); }
     // ¿La línea de arriba del stack (donde nació el error) es de este archivo?
     function topFrameIsSelf(stack){
