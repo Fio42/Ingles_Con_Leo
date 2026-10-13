@@ -235,6 +235,84 @@
      "finalUrl": "https://inglesconleo.com/",
      "durationMs": 9649
     }
+   },
+   {
+    "slug": "home",
+    "url": "https://inglesconleo.com/",
+    "fetchTime": "2026-10-13T18:42:09.994Z",
+    "performance": 51,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 3564,
+     "lcp": 4275,
+     "tbt": 1123,
+     "cls": 0,
+     "speedIndex": 5611,
+     "ttfb": 101,
+     "pageKb": 875
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "inglesconleo.com/android-chrome-192x192.png",
+      "ms": 264,
+      "kb": 5,
+      "type": "Other",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 237,
+      "kb": 145,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/audio/leo/bienvenida.mp3",
+      "ms": 204,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 201,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/",
+      "ms": 186,
+      "kb": 10,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 1997,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/",
+     "durationMs": 11948
+    }
    }
   ],
   "practica": [
@@ -470,6 +548,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/practica.html",
      "durationMs": 7541
+    }
+   },
+   {
+    "slug": "practica",
+    "url": "https://inglesconleo.com/practica.html",
+    "fetchTime": "2026-10-13T18:42:24.593Z",
+    "performance": 53,
+    "seo": 100,
+    "accessibility": 90,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 3049,
+     "lcp": 8953,
+     "tbt": 622,
+     "cls": 0,
+     "speedIndex": 3992,
+     "ttfb": 97,
+     "pageKb": 1047
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "inglesconleo.com/android-chrome-192x192.png",
+      "ms": 212,
+      "kb": 5,
+      "type": "Other",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 200,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/chatbot.js",
+      "ms": 144,
+      "kb": 16,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/data.js",
+      "ms": 127,
+      "kb": 227,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "ms": 121,
+      "kb": 34,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2325,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/practica.html",
+     "durationMs": 8697
     }
    }
   ],
@@ -707,6 +863,84 @@
      "finalUrl": "https://inglesconleo.com/articulos.html",
      "durationMs": 7998
     }
+   },
+   {
+    "slug": "articulos",
+    "url": "https://inglesconleo.com/articulos.html",
+    "fetchTime": "2026-10-13T18:42:37.823Z",
+    "performance": 54,
+    "seo": 100,
+    "accessibility": 96,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2952,
+     "lcp": 8681,
+     "tbt": 576,
+     "cls": 0.002,
+     "speedIndex": 3506,
+     "ttfb": 106,
+     "pageKb": 986
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "img.youtube.com/vi/QqTghI1S9Ec/hqdefault.jpg",
+      "ms": 220,
+      "kb": 20,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 199,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/IyPbbyuz1ho/hqdefault.jpg",
+      "ms": 193,
+      "kb": 22,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/qYfRn_KUcyE/hqdefault.jpg",
+      "ms": 189,
+      "kb": 22,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/JPq1KBBsbtI/hqdefault.jpg",
+      "ms": 155,
+      "kb": 19,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2342,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulos.html",
+     "durationMs": 9283
+    }
    }
   ],
   "articulo-verbo-to-be": [
@@ -942,6 +1176,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
      "durationMs": 8235
+    }
+   },
+   {
+    "slug": "articulo-verbo-to-be",
+    "url": "https://inglesconleo.com/articulo-verbo-to-be.html",
+    "fetchTime": "2026-10-13T18:42:51.263Z",
+    "performance": 80,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1060,
+     "lcp": 3018,
+     "tbt": 585,
+     "cls": 0.001,
+     "speedIndex": 1175,
+     "ttfb": 93,
+     "pageKb": 817
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 582,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 201,
+      "kb": 0,
+      "type": "Preflight",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 200,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/site.webmanifest",
+      "ms": 107,
+      "kb": 1,
+      "type": "Manifest",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/articulo-verbo-to-be.html",
+      "ms": 104,
+      "kb": 9,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2343,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
+     "durationMs": 8590
     }
    }
   ],
@@ -1179,6 +1491,84 @@
      "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
      "durationMs": 7863
     }
+   },
+   {
+    "slug": "articulo-presente-simple",
+    "url": "https://inglesconleo.com/articulo-presente-simple.html",
+    "fetchTime": "2026-10-13T18:43:04.222Z",
+    "performance": 85,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2106,
+     "lcp": 2106,
+     "tbt": 487,
+     "cls": 0.009,
+     "speedIndex": 2106,
+     "ttfb": 117,
+     "pageKb": 817
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "inglesconleo.com/android-chrome-192x192.png",
+      "ms": 317,
+      "kb": 5,
+      "type": "Other",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 202,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/chatbot.css",
+      "ms": 147,
+      "kb": 4,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/articulo-presente-simple.html",
+      "ms": 128,
+      "kb": 9,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 116,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2350,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
+     "durationMs": 8405
+    }
    }
   ],
   "articulo-como-aprender-desde-cero": [
@@ -1415,6 +1805,84 @@
      "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
      "durationMs": 7853
     }
+   },
+   {
+    "slug": "articulo-como-aprender-desde-cero",
+    "url": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+    "fetchTime": "2026-10-13T18:43:17.016Z",
+    "performance": 50,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2802,
+     "lcp": 7990,
+     "tbt": 808,
+     "cls": 0,
+     "speedIndex": 3742,
+     "ttfb": 106,
+     "pageKb": 809
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 200,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+      "ms": 118,
+      "kb": 11,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 117,
+      "kb": 176,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 110,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 110,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2439,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+     "durationMs": 9000
+    }
    }
   ],
   "miembros": [
@@ -1650,6 +2118,84 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/miembros.html",
      "durationMs": 13422
+    }
+   },
+   {
+    "slug": "miembros",
+    "url": "https://inglesconleo.com/miembros.html",
+    "fetchTime": "2026-10-13T18:43:30.254Z",
+    "performance": 68,
+    "seo": 100,
+    "accessibility": 98,
+    "bestPractices": 77,
+    "metrics": {
+     "fcp": 1752,
+     "lcp": 3342,
+     "tbt": 969,
+     "cls": 0.08,
+     "speedIndex": 1752,
+     "ttfb": 128,
+     "pageKb": 1552
+    },
+    "lcpElement": null,
+    "lcpPhases": null,
+    "renderBlocking": [],
+    "slowestRequests": [
+     {
+      "url": "accounts.google.com/gsi/button",
+      "ms": 215,
+      "kb": 56,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 200,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "accounts.google.com/gsi/client",
+      "ms": 190,
+      "kb": 100,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/miembros.html",
+      "ms": 139,
+      "kb": 20,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/data.js",
+      "ms": 117,
+      "kb": 228,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2183,
+     "chrome": "Chrome/154.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/miembros.html",
+     "durationMs": 14044
     }
    }
   ]
