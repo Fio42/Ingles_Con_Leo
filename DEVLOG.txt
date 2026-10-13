@@ -1444,3 +1444,5 @@ app.js?v=20261003j, temas.js?v=20261003f.
 2026-10-12 | Limpieza de formato en 26 articulos: 77 negritas excesivas (frases de ejemplo y listas de frases) pasadas a cursiva; 3 rayas largas en prosa sustituidas por parentesis/comas (gerundio-e-infinitivo, verbos-irregulares, presente-simple). Se conservan negritas de etiquetas de lista y celdas de tabla. No se tocaron URLs, textos, verbo-to-be ni correo-formal. Tests OK.
 
 2026-10-13 | Revision de errores (app_errors): casi todo es ruido de navegadores internos de TikTok/Instagram con mala conexion; los archivos existen. error-monitor.js ahora ignora _AutofillCallbackHandler (autofill de iOS/Instagram). Pendiente que Leo revise en Stripe los 20 avisos de firma invalida (8-10 oct).
+
+2026-10-13 | Mini auditoria SEO: articulo-will-vs-going-to.html estaba huerfano (sin sitemap ni tarjeta en articulos.html, 1 solo enlace entrante). Anadido al sitemap y a articulos.html, enlace desde verbos-modales, titulo acortado (sin sufijo) y meta description a <160. Detectado y NO tocado: presente-continuo (298 palabras), ingles-aeropuerto (298), ingles-restaurante (315) delgados.
