@@ -28,18 +28,24 @@ def main():
         return 1
     ruta = sys.argv[1].replace("\\", "/")
     texto = None
+    voz_csv = ""
     with open(CSV_FILE, newline="", encoding="utf-8") as f:
         for fila in csv.reader(f):
             if fila and fila[0].strip() == ruta:
                 texto = fila[1]
+                voz_csv = fila[2] if len(fila) > 2 else ""
     if texto is None:
         print("No encuentro esa ruta en lista_audios.csv:", ruta)
         return 1
     turnos = [l.lstrip("—").strip() for l in texto.split("\n") if l.strip()]
+    # Si la fila del CSV pone primero la voz masculina (Andrew), se intercambian.
+    voz1, voz2 = VOZ_1, VOZ_2
+    if voz_csv.split("|")[0].strip().lower().find("andrew") != -1:
+        voz1, voz2 = VOZ_2, VOZ_1
     kokoro = Kokoro(MODELO, VOCES)
     partes, sr = [], 24000
     for i, t in enumerate(turnos):
-        voz = VOZ_1 if i % 2 == 0 else VOZ_2
+        voz = voz1 if i % 2 == 0 else voz2
         samples, sr = kokoro.create(t, voice=voz, speed=0.95, lang="en-us")
         partes.append(samples)
         partes.append(np.zeros(int(sr * PAUSA), dtype=np.float32))
