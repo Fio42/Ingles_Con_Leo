@@ -1446,3 +1446,5 @@ app.js?v=20261003j, temas.js?v=20261003f.
 2026-10-13 | Revision de errores (app_errors): casi todo es ruido de navegadores internos de TikTok/Instagram con mala conexion; los archivos existen. error-monitor.js ahora ignora _AutofillCallbackHandler (autofill de iOS/Instagram). Pendiente que Leo revise en Stripe los 20 avisos de firma invalida (8-10 oct).
 
 2026-10-13 | Mini auditoria SEO: articulo-will-vs-going-to.html estaba huerfano (sin sitemap ni tarjeta en articulos.html, 1 solo enlace entrante). Anadido al sitemap y a articulos.html, enlace desde verbos-modales, titulo acortado (sin sufijo) y meta description a <160. Detectado y NO tocado: presente-continuo (298 palabras), ingles-aeropuerto (298), ingles-restaurante (315) delgados.
+
+2026-10-13 | 4 enlaces internos hacia articulos sin enlaces entrantes desde otros articulos: restaurante->meseros, como-hacer-preguntas->preguntas-respuestas-conversar, hora-en-ingles->rutina-diaria, llamadas->verbos-modales. Sin cambios de titulos, URLs ni canonicals. Tests OK. Siguen con pocos entrantes: recepcionistas-hotel (0), will-vs-going-to, comparativos, pronombres.
