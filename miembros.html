@@ -215,7 +215,9 @@
         </div>
         <button class="btn btn-primary btn-block" id="welcomeActivateBtn">Activar membresía: $2 USD/mes</button>
         <p class="gate-hint" style="margin-top:4px;">Cancela cuando quieras</p>
-        <p class="gate-hint" style="margin-top:10px;"><a href="#" id="welcomeSkipBtn" style="color:var(--ink-faint);">Ahora no</a></p>
+        <!-- Salida clara a la practica gratis (antes era un enlace gris al final de una pantalla muy larga que
+             llevaba a otra pantalla de pago). El boton principal sigue siendo Activar membresia. -->
+        <a href="practica.html?cuenta=nueva" class="btn btn-ghost btn-block" id="welcomeSkipBtn" style="margin-top:12px;">Practicar gratis ahora</a>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
         <p style="margin:0 0 18px;">Tu cuenta ya está creada. Elige tu plan y activa tu membresía.</p>
@@ -363,7 +365,10 @@
       <div class="upgrade-banner" style="margin:0 auto 6px;">
         <h3>Tu cuenta ya está lista.</h3>
         <p>Activa tu membresía por $2 USD al mes (o $20 USD al año) y el sistema empezará a guiarte con el método del Profe Leo, con Leo AI cuando necesites ayuda.</p>
-        <button type="button" class="btn btn-primary" id="previewActivateBtn">Activar membresía</button>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          <button type="button" class="btn btn-primary" id="previewActivateBtn">Activar membresía</button>
+          <a href="practica.html" class="btn btn-ghost" id="previewPracticeBtn">Practicar gratis ahora</a>
+        </div>
         <p class="upgrade-banner-note">Stripe · PayPal · Mercado Pago · Cancela cuando quieras</p>
       </div>
 
@@ -1262,10 +1267,15 @@
     welcomeActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
   }
   if(welcomeSkipBtn){
-    welcomeSkipBtn.addEventListener('click', (e)=>{ e.preventDefault(); showMemberPreview(); });
+    // Es un enlace normal a practica.html?cuenta=nueva (misma ruta que ya usa quien se registra desde la practica).
+    welcomeSkipBtn.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('welcome_free_practice_clicked'); });
   }
   if(previewActivateBtn){
     previewActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
+  }
+  const previewPracticeBtn = document.getElementById('previewPracticeBtn');
+  if(previewPracticeBtn){
+    previewPracticeBtn.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('preview_free_practice_clicked'); });
   }
   if(previewLogoutBtn){
     previewLogoutBtn.addEventListener('click', async (e)=>{
