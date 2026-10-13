@@ -58,7 +58,7 @@ const MICROS = {
   'tobe-am-is-are':          { tema:'to-be-presente',  lesson:['articulo-verbo-to-be.html', 'forma-afirmativa'] },
   'ps-tercera-persona-s':    { tema:'presente-simple', lesson:['articulo-presente-simple.html', 'forma-afirmativa'] },
   'ps-negativa-dont-doesnt': { tema:'presente-simple', lesson:['articulo-presente-simple.html', 'forma-negativa'] },
-  'ps-adverbios-frecuencia': { tema:'presente-simple', lesson:['articulo-presente-simple.html', 'adverbios'] },
+  'ps-adverbios-frecuencia': { tema:'presente-simple', lesson:['articulo-adverbios-de-frecuencia-ingles.html', 'adverbios-frecuencia'] },
   'dodoes-elegir-sujeto':    { tema:'do-does',         lesson:['articulo-do-vs-does.html', 'do-o-does'] },
   'can-verbo-base':          { tema:'can-cant',        lesson:['articulo-verbos-modales.html', 'forma-basica'] },
   'a-an-sonido':             { tema:'a-an',            lesson:['articulo-articulos-a-an-the.html', 'a-an-sonido'] }
@@ -176,8 +176,8 @@ test('los 29 ejercicios que ya existían conservan su id y su texto y solo ganar
   assert.ok(!first('g-facil-tobe-3').micro, '"Presente simple y to be" no se etiquetó: es otro tema');
 });
 
-test('el banco de práctica solo creció en 18 ejercicios (454 -> 472) y ninguna etiqueta existente cambió de nombre', () => {
-  assert.strictEqual(real.practice.length, 472);
+test('el banco de práctica solo creció en 18 ejercicios (454 -> 472) y en 25 más en la auditoría (-> 497) y ninguna etiqueta existente cambió de nombre', () => {
+  assert.strictEqual(real.practice.length, 497);
   const topics = new Set(real.practice.map(r => r.topic));
   ['Presente simple y "to be"', 'Adverbios de frecuencia (always / usually / sometimes / never)', 'Do / Does', 'Preguntas con Do/Does en presente simple', 'Is / Are (singular y plural)',
     'Verbo "to be": am / is / are', 'Can / Can\'t (habilidad)', 'A / An'].forEach(t => assert.ok(topics.has(t), 'desapareció la etiqueta ' + t));
@@ -202,7 +202,14 @@ test('las clases conectadas corresponden de verdad a su tema y cargan los script
     'gerundios-infinitivos':  { file:'articulo-gerundio-e-infinitivo.html',        keys:['gerundio', 'infinitivo', 'to +'] },
     'can-cant':               { file:'articulo-verbos-modales.html',               keys:['can', 'habilidad', "can't"] },
     'modales-posibilidad':    { file:'articulo-verbos-modales.html',               keys:['may', 'might', 'posibilidad'] },
-    'a-an':                   { file:'articulo-articulos-a-an-the.html',           keys:['a y an', 'sonido', ' an '] }
+    'a-an':                   { file:'articulo-articulos-a-an-the.html',           keys:['a y an', 'sonido', ' an '] },
+    // Auditoría 2026-10-13: clases que ya existían y se conectaron a su tema. Cada una debe explicar de verdad lo que practica el tema.
+    'pronombres':             { file:'articulo-pronombres-personales-ingles.html', keys:['pronombres personales', 'pronombres objeto', 'him', 'them'] },
+    'posesivos':              { file:'articulo-adjetivos-posesivos-ingles.html',   keys:['adjetivos posesivos', 'his', 'her', 'their'] },
+    'verbo-have':             { file:'articulo-have-y-has-en-ingles.html',         keys:['have', 'has', 'tengo'] },
+    'contables-incontables':  { file:'articulo-sustantivos-contables-incontables.html', keys:['contables', 'incontables', 'much', 'many'] },
+    'question-words':         { file:'articulo-como-hacer-preguntas-en-ingles.html', keys:['what', 'where', 'when', 'who'] },
+    'modales-obligacion':     { file:'articulo-verbos-modales.html',               keys:['must', 'have to', 'should', "mustn't"] }
   };
   Object.keys(WANT).forEach(id => {
     const w = WANT[id], t = real.temaById[id];
@@ -213,10 +220,8 @@ test('las clases conectadas corresponden de verdad a su tema y cargan los script
     assert.ok(h.indexOf('temas.js') < h.indexOf('app.js?v='), w.file + ': temas.js antes de app.js');
     assert.ok(h.indexOf('article-body') !== -1, w.file + ': sin article-body');
   });
-  // lo que NO se conectó a propósito
-  assert.strictEqual(real.temaById['pronombres'].article, null, 'pronombres incluye pronombres objeto, que la clase no cubre');
-  assert.strictEqual(real.temaById['modales-obligacion'].article, null, 'sus microtemas ya apuntan a una explicación más precisa');
-  assert.strictEqual(real.temaById['question-words'].article, null);
+  // la clase de pronombres ahora explica también los objeto (me / him / them): es lo que permitió conectarla
+  assert.ok(html('articulo-pronombres-personales-ingles.html').indexOf('id="pronombres-objeto"') !== -1);
 });
 
 test('el glosario de a / an ofrece la clase conectada y sigue ofreciendo la práctica', () => {

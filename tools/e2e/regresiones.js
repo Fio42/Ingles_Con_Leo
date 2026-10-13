@@ -3,7 +3,7 @@
    Uso:  node tools/e2e/regresiones.js [--baseline <commit>]     (por defecto 51c5e7e: justo antes de la automatización adaptativa)
 
    Áreas:  invitados · onboarding/nivel · microtemas inactivos · versiones mezcladas (caché) · migración de señales · IDs/progreso compatibles · diagnóstico/mistake_stats/dominio
-           (código idéntico al de referencia) · session-cycle (solo sus 2 fallos preexistentes). */
+           (código idéntico al de referencia) · session-cycle (sin fallos). */
 const fs = require('fs'), path = require('path'), vm = require('vm'), cp = require('child_process');
 const { root, createCloud, makeDevice } = require('./lib/sim');
 const args = process.argv.slice(2);
@@ -54,8 +54,9 @@ const git = f => cp.execSync('git show ' + BASE + ':' + f, { cwd: root, maxBuffe
   /* ---------- Microtemas inactivos ---------- */
   {
     const T = makeDevice(createCloud(), {});
-    const inactive = ['cond-3-pasado-irreal', 'cond-mixto', 'much-many-contable-incontable', 'a-lot-of', 'some-any-afirm-neg', 'some-any-pregunta-oferta', 'little-few-matiz', 'fewer-less'];
-    check('Inactivos', 'cond-3, cond-mixto y los 6 de Cuantificadores siguen sin active:true', inactive.every(id => T.MICRO_BY_ID[id] && !T.MICRO_BY_ID[id].active), inactive.filter(id => T.MICRO_BY_ID[id] && T.MICRO_BY_ID[id].active).join(','));
+    // Los 4 de Cuantificadores (much-many, some-any, little-few, fewer-less) se activaron en el commit bc3e0ab y tools/tests/micros.test.js los exige activos; siguen sin activar los otros 4.
+    const inactive = ['cond-3-pasado-irreal', 'cond-mixto', 'a-lot-of', 'some-any-pregunta-oferta'];
+    check('Inactivos', 'cond-3, cond-mixto, a-lot-of y some-any-pregunta-oferta siguen sin active:true', inactive.every(id => T.MICRO_BY_ID[id] && !T.MICRO_BY_ID[id].active), inactive.filter(id => T.MICRO_BY_ID[id] && T.MICRO_BY_ID[id].active).join(','));
     const A = makeDevice(createCloud(), {});
     inactive.forEach(id => {
       const items = []; Object.keys(A.GRAMMAR_BANK).forEach(l => A.GRAMMAR_BANK[l].forEach(v => v.forEach(b => b.items.forEach(i => { if(i.micro === id) items.push({ l, i }); }))));
@@ -153,13 +154,12 @@ const git = f => cp.execSync('git show ' + BASE + ':' + f, { cwd: root, maxBuffe
     check('Diagnóstico/mistake_stats/dominio', 'apply_mistake_results (SQL del dominio por ejercicio) sin cambios desde la referencia', (() => { try{ const f = s => (s.match(/create or replace function public\.apply_mistake_results[\s\S]*?\$\$;/i) || [''])[0].replace(/\s+/g, ' '); return f(git('supabase_schema.sql')) === f(sql); }catch(e){ return false; } })(), '');
   }
 
-  /* ---------- session-cycle: solo sus 2 fallos preexistentes ---------- */
+  /* ---------- session-cycle: sin fallos (los 2 antiguos se arreglaron en 863f25e y la prueba pasa completa) ---------- */
   {
     let out = '';
     try{ out = cp.execSync('node tools/tests/session-cycle.test.js', { cwd: root, stdio:['ignore', 'pipe', 'pipe'] }).toString(); }catch(e){ out = (e.stdout || '').toString(); }
     const fails = (out.match(/^\s+FAIL .*/gm) || []).map(s => s.trim());
-    const expected = ['FAIL al empezar un ciclo nuevo no abre con los ultimos vistos del ciclo anterior', 'FAIL Gramatica: cada sesion usa pocos temas (no peor que antes) y los temas se terminan juntos'];
-    check('session-cycle', 'falla exactamente los 2 de siempre (ciclo nuevo / Some-Any), ninguno más', fails.length === 2 && expected.every(e => fails.indexOf(e) !== -1), JSON.stringify(fails));
+    check('session-cycle', 'no falla ninguna prueba del mazo de sesiones', fails.length === 0, JSON.stringify(fails));
   }
 
   let bad = 0;

@@ -61,8 +61,8 @@ const MICROS = {
   'little-few-matiz':                  { tema:'cuantificadores',        glossary:'little-vs-a-little' },
   'some-any-afirm-neg':                { tema:'cuantificadores',        glossary:'any-vs-some' },
   'fewer-less':                        { tema:'cuantificadores',        glossary:'fewer-vs-less' },
-  'mustnt-vs-dont-have-to':            { tema:'modales-obligacion',     glossary:'mustnt-vs-dont-have-to' },
-  'obligacion-vs-consejo':             { tema:'modales-obligacion',     glossary:'should' },
+  'mustnt-vs-dont-have-to':            { tema:'modales-obligacion',     lesson:['articulo-verbos-modales.html', 'obligacion-must'] },
+  'obligacion-vs-consejo':             { tema:'modales-obligacion',     lesson:['articulo-verbos-modales.html', 'consejo-should'] },
   'in-on-at-tiempo':                   { tema:'in-on-at',               lesson:['articulo-in-on-at.html', 'tiempo'] },
   'in-on-at-lugar':                    { tema:'in-on-at',               lesson:['articulo-in-on-at.html', 'lugar'] }
 };
@@ -146,8 +146,8 @@ test('los 15 ejercicios que ya existían conservan su id, su texto y solo ganaro
   assert.ok(!first('g-medio4-mod-4').micro, 'mod-4 (must to) no se etiquetó: no es obligación vs consejo');
 });
 
-test('el banco de práctica solo creció en 38 ejercicios en la ampliación (416 -> 454) y en 18 más en la ruta base (454 -> 472), y ninguna etiqueta existente cambió de nombre', () => {
-  assert.strictEqual(real.practice.length, 472);
+test('el banco de práctica solo creció en 38 ejercicios en la ampliación (416 -> 454) y en 18 más en la ruta base (454 -> 472) y en 21 más en la auditoría (472 -> 497: 9 para completar little-few y do/does, 16 de pasado continuo y there is/are), y ninguna etiqueta existente cambió de nombre', () => {
+  assert.strictEqual(real.practice.length, 497);
   const topics = new Set(real.practice.map(r => r.topic));
   ['Present Perfect vs Past Simple', 'Since / For', 'In / On / At', 'Some / Any', '"Fewer" vs "Less"', 'Much / Many', 'A little / Little / A few / Few',
     'Verbos modales de obligación (must / have to / should)', 'Cuantificadores (a lot of / much / many / few / little)'].forEach(t => assert.ok(topics.has(t), 'desapareció la etiqueta ' + t));

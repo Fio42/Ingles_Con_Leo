@@ -4145,14 +4145,18 @@ function buildPlanPool(level, selection){
     let count = selection.bySkill[sk] || 0;
     if(sk === focusSkill) count -= focusEntries.length;
     if(count <= 0) return;
-    // Se piden unos pocos de más para poder saltar los que ya vienen en
-    // la sesión (repaso de errores o refuerzo) y no repetir un ejercicio.
-    // Si el banco es tan chico que no alcanza, se completa como antes,
-    // para que la sesión siempre tenga la duración elegida.
-    const extra = Math.min(5, alreadyIn.size);
-    const { pool } = buildSessionPool({ skill: sk, level, bankLevel: PLAN_BANK_BY_SKILL[sk][level], targetCount: count + extra });
-    const picked = pool.filter(item => !alreadyIn.has(item.id)).slice(0, count);
-    if(picked.length < count) picked.push(...pool.filter(item => picked.indexOf(item) === -1).slice(0, count - picked.length));
+    // Mazo barajado del banco del nivel (el mismo de las sesiones de Miembros): primero los
+    // ejercicios que la cuenta todavia no ha resuelto en el ciclo actual, y solo cuando el
+    // banco se agota se baraja de nuevo. Antes se juntaban bloques fijos y se tomaban siempre
+    // los primeros de cada bloque, asi que el resto del banco casi nunca salia.
+    // Se excluyen los que ya vienen en la sesion (repaso de errores o refuerzo). Si el banco
+    // es tan chico que no alcanza, se completa con ellos para respetar la duracion elegida.
+    const bankItems = memberBankItems(sk, PLAN_BANK_BY_SKILL[sk][level]);
+    const tailSize = Math.min(count, Math.floor(bankItems.length / 3));
+    const cycle = computeCycleState(loadProgress(), bankItems.map(i => i.id), tailSize);
+    const candidates = bankItems.filter(item => !alreadyIn.has(item.id));
+    const picked = pickCycleItems(candidates, cycle, count);
+    if(picked.length < count) picked.push(...bankItems.filter(item => picked.indexOf(item) === -1).slice(0, count - picked.length));
     picked.forEach(item=>{ alreadyIn.add(item.id); entries.push({ kind: PLAN_SKILL_TO_KIND[sk], item }); });
   });
   return shuffleArray(entries);
@@ -5923,18 +5927,18 @@ const DIAG_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening
 const DIAG_GRAMMAR_FAMILIES = [
   { id:'preposiciones', label:'Preposiciones', re:/in \/ on \/ at|preposici|by vs until|beside/i, article:'articulo-in-on-at.html' },
   { id:'pasiva', label:'Voz pasiva', re:/pasiva|causativ/i },
-  { id:'modales', label:'Verbos modales', re:/modal|can \/ can't/i },
+  { id:'modales', label:'Verbos modales', re:/modal|can \/ can't/i, article:'articulo-verbos-modales.html' },
   { id:'condicionales', label:'Condicionales', re:/condicional|conditional|wish|if only/i },
   { id:'perfecto', label:'Presente perfecto', re:/present perfect|presente perfecto|past perfect|since \/ for|pasado perfecto/i, article:'articulo-presente-perfecto.html' },
   { id:'indirecto', label:'Estilo indirecto', re:/reported|indirecto/i },
   { id:'presente-simple', label:'Presente simple', re:/presente simple|do \/ does|frecuencia/i, article:'articulo-presente-simple.html' },
   { id:'to-be', label:'Verbo to be', re:/to be|is \/ are/i, article:'articulo-verbo-to-be.html' },
   { id:'pasado', label:'Pasado simple', re:/pasado simple|used to/i, article:'articulo-pasado-simple.html' },
-  { id:'continuo', label:'Presente continuo', re:/continuo/i },
-  { id:'futuro', label:'Futuro (will y going to)', re:/futuro|going to/i },
+  { id:'continuo', label:'Presente y pasado continuo', re:/continuo/i, article:'articulo-presente-continuo.html' },
+  { id:'futuro', label:'Futuro (will y going to)', re:/futuro|going to/i, article:'articulo-will-vs-going-to.html' },
   { id:'relativas', label:'Cláusulas relativas', re:/relativ|whom/i },
   { id:'cuantificadores', label:'Some, any, much y many', re:/some \/ any|much \/ many|little|few|cuantificador|contables|fewer/i },
-  { id:'comparativos', label:'Comparativos', re:/comparativ/i },
+  { id:'comparativos', label:'Comparativos', re:/comparativ/i, article:'articulo-comparativos-y-superlativos.html' },
   { id:'pronombres', label:'Pronombres y posesivos', re:/pronombre|posesiv/i },
   { id:'bases', label:'Números, días y preguntas básicas', re:/número|numero|colores|días|plural|yes \/ no|question words|preguntas simples/i, article:'articulo-numeros-en-ingles.html' },
   { id:'demostrativos', label:'A/an y this/that', re:/a \/ an|this|these/i },

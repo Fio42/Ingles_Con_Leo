@@ -40,7 +40,10 @@ function famItems(fid){
 }
 const flat = bank => { const o = []; Object.keys(bank).forEach(l => bank[l].forEach(v => v.forEach(i => o.push(i.id)))); return o; };
 const IDS = {
-  prep: famItems('preposiciones'), tobe: famItems('to-be'), pasado: famItems('pasado'),
+  // El alumno inventado del 92 % practica una lista fija de 15 ejercicios de "to be". El tamaño de esa lista decide cuántos errores
+  // quedan "activos" a la vez (tolerancia = 10 % de los ejercicios), así que no puede crecer sola cada vez que se agrega contenido:
+  // se excluyen los ejercicios de la auditoría 2026-10-13 (ids con "-m500-": there is / are, pasado continuo) que son posteriores.
+  prep: famItems('preposiciones'), tobe: famItems('to-be').filter(id => id.indexOf('-m500-') === -1), pasado: famItems('pasado'),
   lis: flat(T.LB), voc: flat(T.VB), wri: flat(T.WB), rea: flat(T.RB)
 };
 // n respuestas de una lista de ids, con un % de aciertos exacto y repartidas en el orden dado

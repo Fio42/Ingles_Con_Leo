@@ -72,8 +72,12 @@ async function runMicro(microId, opts){
   check('0.1 el microtema está activo', A.microIsActive(microId), 'temas.js no lo declara active:true');
   check('0.2 tiene >=6 ejercicios de práctica en el nivel ' + level, practice.length >= 6, 'práctica en ' + level + ': ' + practice.length);
   check('0.3 tiene al menos ' + 2 * MF.CHECK_SIZE + ' ejercicios de comprobación (2 rondas inéditas de ' + MF.CHECK_SIZE + ')', checks.length >= 2 * MF.CHECK_SIZE, 'checks: ' + checks.length);
-  check('0.4 tiene recurso (clase con ancla válida)', !!(m.lesson && m.lesson.article && fs.existsSync(path.join(root, m.lesson.article)) &&
-    fs.readFileSync(path.join(root, m.lesson.article), 'utf8').indexOf('id="' + (m.lesson.anchor || m.id) + '"') !== -1), 'lesson: ' + JSON.stringify(m.lesson));
+  // Recurso = lo que de verdad ofrece el sitio (igual que tools/micros-lib.js): su clase con ancla válida o, si no tiene, la clase del tema o el glosario propio.
+  const tema = A.TEMA_BY_ID[m.tema] || {};
+  const lessonOk = !!(m.lesson && m.lesson.article && fs.existsSync(path.join(root, m.lesson.article)) &&
+    fs.readFileSync(path.join(root, m.lesson.article), 'utf8').indexOf('id="' + (m.lesson.anchor || m.id) + '"') !== -1);
+  const fallbackOk = !m.lesson && ((tema.article && fs.existsSync(path.join(root, tema.article))) || ((m.glossary || tema.glossary) && fs.existsSync(path.join(root, 'glosario', m.glossary || tema.glossary, 'index.html'))));
+  check('0.4 tiene recurso (clase con ancla válida, o clase del tema / glosario que existen)', lessonOk || fallbackOk, 'lesson: ' + JSON.stringify(m.lesson) + ' glossary: ' + (m.glossary || tema.glossary));
   check('0.5 sin historial no hay señales ni recomendación ni comprobación', state() === 'sin-datos' && A.microDiagActions(level, new Set([microId])).length === 0 && A.microCheckStart(microId).reason === 'no-toca', 'estado ' + state());
   if(!res.every(r => r.ok)) return { microId, level, res, info: { focusUrl: info.focusUrl } };
 
@@ -107,7 +111,30 @@ async function runMicro(microId, opts){
   const pool = A.buildPlanPool(level, sel);
   const focusEntries = pool.filter(e => e.focus);
   const siblings = focusEntries.filter(e => e.item.micro !== microId);
-  check('3.4 el Plan con foco trae refuerzo del microtema (la mayoría son suyos; si se agotan, solo completa con ejercicios del MISMO tema)', focusEntries.length >= 1 && focusEntries.length - siblings.length >= Math.ceil(focusEntries.length / 2) && siblings.every(e => e.item.micro && A.MICRO_BY_ID[e.item.micro] && A.MICRO_BY_ID[e.item.micro].tema === m.tema), JSON.stringify(focusEntries.map(e => e.item.id + ':' + e.item.micro)));
+  // 3.4 Orden del refuerzo: microtema > resto del MISMO tema > resto de la MISMA familia (el refuerzo nunca sale de la familia).
+  // Un ejercicio de otro tema solo entra si en el tema no quedaba ninguno elegible (no hecho bien en los últimos 3 días ni ya en la sesión como repaso).
+  // Es una regla del estado del alumno, no del azar: se comprueba con 12 armados distintos del Plan.
+  const topicOf = {}; Object.keys(A.GRAMMAR_BANK).forEach(l => A.GRAMMAR_BANK[l].forEach(v => v.forEach(g => g.items.forEach(i => { topicOf[i.id] = g.topic; }))));
+  const famOf = id => { const f = A.diagFamilyForTopic(topicOf[id]); return f && f.id; }, temaOf = id => A.diagTemaIdForTopic(topicOf[id]);
+  const cutMs = Date.now() - 3 * 86400000, recentOk = new Set();
+  A.loadProgress().sessions.forEach(s => (s.startedAt || 0) >= cutMs && (s.results || []).forEach(r => { if(r.isCorrect === true) recentOk.add(r.itemId); }));
+  const temaPool = []; A.GRAMMAR_BANK[level].forEach(v => v.forEach(g => g.items.forEach(i => { if(A.diagTemaIdForTopic(g.topic) === m.tema) temaPool.push(i.id); })));
+  const famId = famOf(practice[0].id);
+  let okOrder = true, why = '', mostly = true;
+  for(let k = 0; k < 12; k++){
+    const p = A.buildPlanPool(level, A.computePlanSelection(level, A.SESSION_LENGTHS.media.items, { focusMicro: microId }));
+    const fe = p.filter(e => e.focus), inSession = new Set(p.filter(e => !e.focus).map(e => e.item.id));
+    const own = fe.filter(e => e.item.micro === microId).length;
+    if(!(fe.length >= 1 && own >= Math.ceil(fe.length / 2) || own === temaPool.filter(id => !recentOk.has(id) && !inSession.has(id)).length)) mostly = false;
+    fe.filter(e => e.item.micro !== microId).forEach(e => {
+      if(famOf(e.item.id) !== famId){ okOrder = false; why = 'sale de la familia: ' + e.item.id; }
+      if(temaOf(e.item.id) !== m.tema){
+        const left = temaPool.filter(id => !recentOk.has(id) && !inSession.has(id) && !fe.some(x => x.item.id === id));
+        if(left.length){ okOrder = false; why = 'completó con otro tema habiendo del mismo: ' + e.item.id + ' vs ' + left[0]; }
+      }
+    });
+  }
+  check('3.4 el Plan con foco trae refuerzo del microtema (la mayoría son suyos) y solo se completa con el mismo tema y, si ese se agota, con la misma familia', focusEntries.length >= 1 && focusEntries.length - siblings.length >= Math.ceil(focusEntries.length / 2) && okOrder && mostly, why + ' ' + JSON.stringify(focusEntries.map(e => e.item.id + ':' + e.item.micro)));
   if(siblings.length) res.push({ name: 'OBS el refuerzo se completó con ' + siblings.length + ' ejercicio(s) de otro microtema del mismo tema (' + siblings.map(e => e.item.micro).join(',') + '): con solo ' + practice.length + ' ejercicios de práctica y los fallados yendo al repaso de errores, el microtema se agota pronto', ok: true, obs: true });
 
   // ---- 4. Refuerzo con un fallo accidental; la comprobación no aparece antes de tiempo

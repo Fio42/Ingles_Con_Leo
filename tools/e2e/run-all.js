@@ -15,7 +15,7 @@ const regAreas = {}; (reg.out.match(/^=== .*$/gm) || []).forEach(l => { const m 
 
 const suiteDir = path.join(root, 'tools', 'tests');
 const suite = fs.readdirSync(suiteDir).filter(f => /\.test\.js$/.test(f)).map(f => { const r = run('tools/tests/' + f); return { f, fails: (r.out.match(/^(FALLA|\s+FAIL)\b/gm) || []).length, last: r.out.trim().split('\n').pop() }; });
-const unexpected = suite.filter(s => s.fails && s.f !== 'session-cycle.test.js');
+const unexpected = suite.filter(s => s.fails);
 
 const grp = names => { const v = names.map(n => perMicro[n]).filter(Boolean); return v.length === names.length && v.every(x => x === 'PASS') ? 'PASS' : 'FAIL'; };
 const tag = ids => ids.every(id => perMicro[id]) ? grp(ids) : 'FAIL (microtema no activo o inexistente)';
@@ -29,7 +29,7 @@ const lines = [
   ['Regresiones', Object.keys(regAreas).filter(k => ['Onboarding/nivel', 'Invitados'].indexOf(k) === -1).every(k => regAreas[k] === 'PASS') && unexpected.length === 0 ? 'PASS' : 'FAIL']
 ];
 console.log('Microtemas activos probados: ' + Object.keys(perMicro).join(', '));
-console.log('Suite del repo: ' + suite.length + ' archivos, fallas inesperadas: ' + (unexpected.map(s => s.f).join(', ') || 'ninguna') + ' (session-cycle: ' + (suite.find(s => s.f === 'session-cycle.test.js') || {}).fails + ' fallos preexistentes)\n');
+console.log('Suite del repo: ' + suite.length + ' archivos, fallas inesperadas: ' + (unexpected.map(s => s.f).join(', ') || 'ninguna') + '\n');
 lines.forEach(([k, v]) => console.log(k.padEnd(18) + ': ' + v));
 if(micro.code !== 0) console.log('\n--- detalle microtemas ---\n' + micro.out.split('\n').filter(l => /FALLA|===/.test(l) || /^\s{8}/.test(l)).join('\n'));
 if(reg.code !== 0) console.log('\n--- detalle regresiones ---\n' + reg.out.split('\n').filter(l => /FALLA|===/.test(l) || /^\s{8}/.test(l)).join('\n'));

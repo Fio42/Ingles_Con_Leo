@@ -205,11 +205,11 @@ test('tema sin clase y con glosario -> "Ver explicación rápida" (enlace real)'
   checkAction(d.today);
 });
 test('tema sin clase ni glosario -> solo Practicar, ningún enlace inventado', ()=>{
-  const qw = itemsOfTema(T, 'question-words', 'facil');
-  const bases = itemsOfFamily(T, 'bases', 'facil').filter(i => !qw.includes(i));
+  const qw = itemsOfTema(T, 'to-too-two', 'facil');
+  const bases = itemsOfFamily(T, 'confusiones', 'facil').filter(i => !qw.includes(i));
   setProgress(T, [ session(2, answers(qw, 10, 10)), session(1, answers(bases, 10, 90)) ]);
   const d = readyDiag(T);
-  assert.strictEqual(d.weak.focusTema && d.weak.focusTema.id, 'question-words');
+  assert.strictEqual(d.weak.focusTema && d.weak.focusTema.id, 'to-too-two');
   assert(!d.today.article, 'no debe haber enlace: ' + d.today.article);
   checkAction(d.today);
 });
@@ -288,10 +288,10 @@ test('diagnóstico con tema sin clase pero con glosario: practicar + explicació
   assert.strictEqual(links.length, 2); assert.strictEqual(links[1], '/glosario/its-vs-it-s/' + VIA('its-vs-its')); assert(/Ver explicación rápida/.test(html));
 });
 test('diagnóstico con tema sin clase ni glosario: solo practicar', ()=>{
-  const qw = itemsOfTema(T, 'question-words', 'facil');
-  const bases = itemsOfFamily(T, 'bases', 'facil').filter(i => !qw.includes(i));
+  const qw = itemsOfTema(T, 'to-too-two', 'facil');
+  const bases = itemsOfFamily(T, 'confusiones', 'facil').filter(i => !qw.includes(i));
   setProgress(T, [ session(2, answers(qw, 10, 10)), session(1, answers(bases, 10, 90)) ]);
-  assert.strictEqual(linksIn(T.diagUnitRowHtml(familyUnit(readyDiag(T), 'bases'))).length, 1);
+  assert.strictEqual(linksIn(T.diagUnitRowHtml(familyUnit(readyDiag(T), 'confusiones'))).length, 1);
 });
 test('diagnóstico SIN datos suficientes de un tema: solo la familia, como antes', ()=>{
   const pas = itemsOfFamily(T, 'pasado', 'facil');
@@ -318,10 +318,10 @@ test('Mis errores con topic_id válido: práctica del tema + clase, usando el re
   assert.deepStrictEqual(linksIn(T.temaLinksHtml(g.temaContent, 'Reforzar en mi Plan')), ['plan-estudio.html?foco=pasado&tema=verbos-irregulares&empezar=1', 'articulo-verbos-irregulares.html' + VIA('verbos-irregulares')]);
 });
 test('Mis errores con tema sin recurso extra: solo práctica', ()=>{
-  const qw = itemsOfTema(T, 'question-words', 'facil');
+  const qw = itemsOfTema(T, 'to-too-two', 'facil');
   setProgress(T, [ session(1, answers(qw, 6, 0)) ]);
   const g = T.computeMistakePatterns(mistakeStats(qw.slice(0, 3))).groups[0];
-  assert.strictEqual(g.temaContent.id, 'question-words');
+  assert.strictEqual(g.temaContent.id, 'to-too-two');
   assert.strictEqual(linksIn(T.temaLinksHtml(g.temaContent)).length, 1);
 });
 
@@ -351,7 +351,7 @@ test('Leo AI (progreso): lo ya mostrado es el tema de "Hoy te conviene" y no hay
   assert(!('next' in payload)); noUrls(payload);
   assert(JSON.stringify(payload).length < 1100, 'payload compacto: ' + JSON.stringify(payload).length);
 });
-const PAY = { candidates:[{ id:'pasado-regulares', label:'Pasado simple (verbos regulares)' }, { id:'question-words', label:'Palabras de pregunta (what, where, when, who)' }], shown:['Verbos irregulares en pasado'] };
+const PAY = { candidates:[{ id:'pasado-regulares', label:'Pasado simple (verbos regulares)' }, { id:'to-too-two', label:'"To" vs "Too" vs "Two"' }], shown:['Verbos irregulares en pasado'] };
 test('Leo AI devuelve un topic_id inventado: no se muestra ningún enlace', ()=>{
   ['verbos-irregulares-2', 'http://x.com', '', 'none', undefined, 'in-on-at'].forEach(id => assert.strictEqual(T.leoAiFocusLink(PAY, { focus_topic:id, focus_action:'lesson' }), null, String(id)));
 });
@@ -365,7 +365,7 @@ test('Leo AI sugiere un tema válido: el enlace sale del registro (clase o prác
   eq(f, { href:'articulo-pasado-simple.html' + VIA('pasado-regulares'), text:'Ver la clase: Pasado simple (verbos regulares)' }); assert(hrefOk(f.href));
   f = T.leoAiFocusLink(PAY, { focus_topic:'pasado-regulares', focus_action:'practice' });
   assert.strictEqual(f.text, 'Practicar Pasado simple (verbos regulares)'); assert(/^plan-estudio\.html\?foco=pasado&tema=pasado-regulares/.test(f.href));
-  f = T.leoAiFocusLink(PAY, { focus_topic:'question-words', focus_action:'lesson' });
+  f = T.leoAiFocusLink(PAY, { focus_topic:'to-too-two', focus_action:'lesson' });
   assert(/^Practicar /.test(f.text) && hrefOk(f.href), 'pide lesson pero no hay clase: practicar, nunca un enlace inventado');
 });
 test('Leo AI: los mismos datos dan el mismo payload (misma clave de caché, 0 llamadas nuevas)', ()=>{
@@ -519,7 +519,7 @@ test('al terminar práctica del tema y MEJORÓ: lo dice y pasa a la siguiente pr
   assert(!d.today || !/Verbos irregulares/.test(d.today.title), 'la recomendación del sistema cambió');
 });
 test('tema solo con glosario que sigue débil: la segunda acción es la explicación rápida; sin recurso: solo practicar', ()=>{
-  const cases = [ ['its-vs-its', 'confusiones', '/glosario/its-vs-it-s/'], ['question-words', 'bases', null] ];
+  const cases = [ ['its-vs-its', 'confusiones', '/glosario/its-vs-it-s/'], ['to-too-two', 'confusiones', null] ];
   cases.forEach(([tid, fam, gl])=>{
     const mine = itemsOfTema(T, tid, 'facil'), rest = itemsOfFamily(T, fam, 'facil').filter(i => !mine.includes(i));
     const results = answers(mine, 6, 17);

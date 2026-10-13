@@ -1185,6 +1185,20 @@ const GRAMMAR_BANK = {
             examples:[
               {en:"Do they live in Bogotá?", es:"¿Ellos viven en Bogotá?"},
               {en:"Do they speak English?", es:"¿Ellos hablan inglés?"}
+            ]},
+          { id:'g-facil7-dodoes-5', micro:'dodoes-elegir-sujeto', translation:"¿Tus amigos juegan videojuegos los fines de semana?", type:'choice', prompt:"___ your friends play video games on weekends?",
+            options:["Do","Does","Is"], correct:0,
+            explain:"“Your friends” es plural (como “they”), así que usamos “Do”.",
+            examples:[
+              {en:"Do your friends play video games on weekends?", es:"¿Tus amigos juegan videojuegos los fines de semana?"},
+              {en:"Do your cousins visit you often?", es:"¿Tus primos te visitan seguido?"}
+            ]},
+          { id:'g-facil7-dodoes-6', micro:'dodoes-elegir-sujeto', translation:"¿La tienda abre a las ocho?", type:'fill', sentence:["___","the","store","open","at","eight","?"], blankIndex:0,
+            bank:["Does","Do","Are"], correct:"Does",
+            explain:"“The store” es singular (como “it”), así que usamos “Does”.",
+            examples:[
+              {en:"Does the store open at eight?", es:"¿La tienda abre a las ocho?"},
+              {en:"Does the bank close early on Fridays?", es:"¿El banco cierra temprano los viernes?"}
             ]}
         ]
       }
@@ -2070,6 +2084,34 @@ const GRAMMAR_BANK = {
             examples:[
               {en:"We have little time.", es:"Tenemos poco tiempo."},
               {en:"There is little hope left.", es:"Queda poca esperanza."}
+            ]},
+          { id:'g-medio7-quant-5', micro:'little-few-matiz', translation:"Quedan unos pocos asientos libres, así que reserva ya.", type:'choice', prompt:"There are ___ seats left, so book now.",
+            options:["a few","a little","little"], correct:0,
+            explain:"“Seats” se cuenta y todavía quedan algunos: usamos “a few”.",
+            examples:[
+              {en:"There are a few seats left, so book now.", es:"Quedan unos pocos asientos libres, así que reserva ya."},
+              {en:"A few tickets are still available.", es:"Todavía quedan unos pocos boletos."}
+            ]},
+          { id:'g-medio7-quant-6', micro:'little-few-matiz', translation:"Muy pocos estudiantes entregaron la tarea a tiempo.", type:'fill', sentence:["Very","___","students","handed","in","the","homework","on","time","."], blankIndex:1,
+            bank:["few","little","a little"], correct:"few",
+            explain:"“Students” se cuenta y casi nadie la entregó: usamos “few” (sin “a”).",
+            examples:[
+              {en:"Very few students handed in the homework on time.", es:"Muy pocos estudiantes entregaron la tarea a tiempo."},
+              {en:"Few cities have such clean air.", es:"Pocas ciudades tienen un aire tan limpio."}
+            ]},
+          { id:'g-medio7-quant-7', micro:'little-few-matiz', translation:"Nos queda un poco de gasolina, así que podemos llegar.", type:'error', wrong:"We have a few gas left, so we can make it.", wrongWord:"a few",
+            right:"We have a little gas left, so we can make it.", rightWord:"a little",
+            explain:"“Gas” es incontable, así que va “a little”, no “a few”.",
+            examples:[
+              {en:"She added a little honey to the tea.", es:"Ella agregó un poco de miel al té."},
+              {en:"There is a little cheese in the fridge.", es:"Hay un poco de queso en el refrigerador."}
+            ]},
+          { id:'g-medio7-quant-8', micro:'little-few-matiz', translation:"Ella tenía muy poco dinero para viajar, así que se quedó en casa.", type:'choice', prompt:"She had ___ money for travelling, so she stayed home.",
+            options:["little","a little","a few"], correct:0,
+            explain:"Aquí el sentido es negativo (casi nada), por eso usamos “little” sin “a”.",
+            examples:[
+              {en:"He has little patience with rude people.", es:"Él tiene muy poca paciencia con la gente grosera."},
+              {en:"There is little chance of rain today.", es:"Hay muy poca probabilidad de lluvia hoy."}
             ]}
         ]
       }
@@ -10148,6 +10190,34 @@ GRAMMAR_BANK.principiante.push([
           { en: "Do you like pizza?", es: "¿Te gusta la pizza?" },
           { en: "Does she like pizza?", es: "¿Le gusta la pizza a ella?" }
         ]
+      },
+      {
+        id: "g-principiante5-dodoes-5", micro:"dodoes-elegir-sujeto",
+        translation: "¿Ana habla francés?",
+        type: "error",
+        wrong: "Do Ana speak French?",
+        wrongWord: "Do",
+        right: "Does Ana speak French?",
+        rightWord: "Does",
+        explain: "“Ana” es una sola persona, como “she”. Por eso usamos “does”, no “do”.",
+        examples: [
+          { en: "Does Ana speak French?", es: "¿Ana habla francés?" },
+          { en: "Does Pedro speak Italian?", es: "¿Pedro habla italiano?" }
+        ]
+      },
+      {
+        id: "g-principiante5-dodoes-6", micro:"dodoes-elegir-sujeto",
+        translation: "¿Tu profesor habla español?",
+        type: "fill",
+        sentence: ["___", "your", "teacher", "speak", "Spanish", "?"],
+        blankIndex: 0,
+        bank: ["Does", "Do", "Is"],
+        correct: "Does",
+        explain: "“Your teacher” es una sola persona (como “he/she”), así que usamos “does”.",
+        examples: [
+          { en: "Does your teacher speak Spanish?", es: "¿Tu profesor habla español?" },
+          { en: "Does the doctor speak English?", es: "¿El doctor habla inglés?" }
+        ]
       }
     ]
   }
@@ -13320,6 +13390,13 @@ GRAMMAR_BANK.facil.push(
             examples:[
               {en:"I have few friends here, I feel lonely.", es:"Tengo muy pocos amigos aquí, me siento solo."},
               {en:"Few people came to the party.", es:"Poca gente vino a la fiesta."}
+            ]},
+          { id:'g-facil-m200-littlefew-5', micro:'little-few-matiz', translation:"Hay muy poca leche en el refrigerador, vamos a comprar más.", type:'fill', sentence:["There","is","___","milk","in","the","fridge",",","so","let's","buy","more","."], blankIndex:2,
+            bank:["little","a few","few"], correct:"little",
+            explain:"“Milk” es incontable y queda casi nada: usamos “little”.",
+            examples:[
+              {en:"There is little milk in the fridge, so let's buy more.", es:"Hay muy poca leche en el refrigerador, vamos a comprar más."},
+              {en:"We have little rice at home.", es:"Tenemos muy poco arroz en casa."}
             ]}
         ]}
     ]
@@ -14960,4 +15037,145 @@ GRAMMAR_CHECK_BANK.push(
     right:"I never go to the gym.", rightWord:"never go",
     explain:"El adverbio de frecuencia va antes del verbo principal: “never go”.",
     examples:[{en:"I never eat meat.",es:"Yo nunca como carne."},{en:"We always take the bus.",es:"Siempre tomamos el bus."}] }
+);
+
+/* ============================================================
+   AUDITORÍA 2026-10-13: dos temas que tenían clase pero ningún ejercicio propio.
+   There is / There are  -> microtema there-is-are-elegir (principiante, variante solo de miembros principiante[6]).
+   Pasado continuo       -> microtema pasado-cont-was-were-ing (fácil, variante solo de miembros facil[10]).
+   Cada uno: 6 de práctica (3 tipos) + 6 de comprobación (banco aparte, 2 rondas de 3). Ids nuevos, no se tocó ningún id existente.
+   ============================================================ */
+GRAMMAR_BANK.principiante[6].push({
+  topic:"There is / are (hay)",
+  items:[
+    { id:'g-principiante-m500-thereis-1', micro:'there-is-are-elegir', translation:"Hay un libro sobre la mesa.", type:'choice', prompt:"There ___ a book on the table.",
+      options:["is","are","am"], correct:0,
+      explain:"Hay una sola cosa (“a book”), así que usamos “there is”.",
+      examples:[{en:"There is a pen in my bag.",es:"Hay un lapicero en mi bolso."},{en:"There is a park near here.",es:"Hay un parque cerca de aquí."}] },
+    { id:'g-principiante-m500-thereis-2', micro:'there-is-are-elegir', translation:"Hay tres sillas en la cocina.", type:'fill', sentence:["There","___","three","chairs","in","the","kitchen","."], blankIndex:1,
+      bank:["are","is","am"], correct:"are",
+      explain:"“Three chairs” es plural, así que usamos “there are”.",
+      examples:[{en:"There are four windows in this room.",es:"Hay cuatro ventanas en este cuarto."},{en:"There are many shops downtown.",es:"Hay muchas tiendas en el centro."}] },
+    { id:'g-principiante-m500-thereis-3', micro:'there-is-are-elegir', translation:"Hay dos estudiantes en la clase.", type:'error', wrong:"There is two students in the class.", wrongWord:"is",
+      right:"There are two students in the class.", rightWord:"are",
+      explain:"“Two students” es plural, así que va “are”, no “is”.",
+      examples:[{en:"There are two buses at the station.",es:"Hay dos buses en la estación."},{en:"There are some eggs in the fridge.",es:"Hay unos huevos en el refrigerador."}] },
+    { id:'g-principiante-m500-thereis-7', micro:'there-is-are-elegir', translation:"Hay un supermercado frente al hotel.", type:'choice', prompt:"There ___ a supermarket in front of the hotel.",
+      options:["are","is","be"], correct:1,
+      explain:"Es un solo supermercado, así que usamos “there is”.",
+      examples:[{en:"There is a mirror in the bedroom.",es:"Hay un espejo en el dormitorio."},{en:"There is a stadium in my city.",es:"Hay un estadio en mi ciudad."}] },
+    { id:'g-principiante-m500-thereis-8', micro:'there-is-are-elegir', translation:"Hay muchos turistas en la plaza.", type:'error', wrong:"There is many tourists in the square.", wrongWord:"is",
+      right:"There are many tourists in the square.", rightWord:"are",
+      explain:"“Many tourists” es plural, así que va “are”, no “is”.",
+      examples:[{en:"There are many cars on the road.",es:"Hay muchos carros en la carretera."},{en:"There are lots of flowers in the garden.",es:"Hay muchísimas flores en el jardín."}] }
+  ]
+});
+GRAMMAR_BANK.principiante[6].push({
+  topic:"There is / are: negativas y preguntas",
+  items:[
+    { id:'g-principiante-m500-thereis-4', micro:'there-is-are-elegir', translation:"No hay agua en la botella.", type:'choice', prompt:"There ___ any water in the bottle.",
+      options:["aren't","isn't","don't"], correct:1,
+      explain:"“Water” no se cuenta (es singular), así que la negación es “there isn't”.",
+      examples:[{en:"There isn't any sugar in my coffee.",es:"No hay azúcar en mi café."},{en:"There isn't any bread today.",es:"Hoy no hay pan."}] },
+    { id:'g-principiante-m500-thereis-5', micro:'there-is-are-elegir', translation:"¿Hay un banco cerca de aquí?", type:'choice', prompt:"___ a bank near here?",
+      options:["There is","Is there","Are there"], correct:1,
+      explain:"En una pregunta con una sola cosa, “is” va antes de “there”: “Is there a bank...?”.",
+      examples:[{en:"Is there a pharmacy on this street?",es:"¿Hay una farmacia en esta calle?"},{en:"Is there a bus to the airport?",es:"¿Hay un bus al aeropuerto?"}] },
+    { id:'g-principiante-m500-thereis-6', micro:'there-is-are-elegir', translation:"¿Hay niños en el parque?", type:'fill', sentence:["___","there","children","in","the","park","?"], blankIndex:0,
+      bank:["Is","Are","Do"], correct:"Are",
+      explain:"“Children” es plural, así que preguntamos “Are there...?”.",
+      examples:[{en:"Are there any tickets left?",es:"¿Quedan boletos?"},{en:"Are there two beds in the room?",es:"¿Hay dos camas en el cuarto?"}] }
+  ]
+});
+GRAMMAR_BANK.facil[10].push({
+  topic:"Pasado continuo (was / were + -ing)",
+  items:[
+    { id:'g-facil-m500-pastcont-1', micro:'pasado-cont-was-were-ing', translation:"Yo estaba estudiando cuando sonó el teléfono.", type:'choice', prompt:"I ___ studying when the phone rang.",
+      options:["was","were","am"], correct:0,
+      explain:"Con “I” en pasado continuo usamos “was” y el verbo con -ing: “was studying”.",
+      examples:[{en:"I was cooking dinner at six.",es:"Yo estaba cocinando la cena a las seis."},{en:"She was reading in her room.",es:"Ella estaba leyendo en su cuarto."}] },
+    { id:'g-facil-m500-pastcont-2', micro:'pasado-cont-was-were-ing', translation:"Ellos estaban jugando fútbol en el parque.", type:'fill', sentence:["They","___","playing","soccer","in","the","park","."], blankIndex:1,
+      bank:["was","were","are"], correct:"were",
+      explain:"Con “they” usamos “were”: “they were playing”.",
+      examples:[{en:"We were watching a movie last night.",es:"Estábamos viendo una película anoche."},{en:"You were talking too loudly.",es:"Estabas hablando muy fuerte."}] },
+    { id:'g-facil-m500-pastcont-3', micro:'pasado-cont-was-were-ing', translation:"Ella estaba caminando a casa.", type:'error', wrong:"She was walk home.", wrongWord:"walk",
+      right:"She was walking home.", rightWord:"walking",
+      explain:"Después de “was” o “were” el verbo lleva -ing: “walking”.",
+      examples:[{en:"He was running in the rain.",es:"Él estaba corriendo bajo la lluvia."},{en:"The kids were sleeping.",es:"Los niños estaban durmiendo."}] },
+    { id:'g-facil-m500-pastcont-6', micro:'pasado-cont-was-were-ing', translation:"Nosotros estábamos comiendo cuando llegó Ana.", type:'error', wrong:"We was eating when Ana arrived.", wrongWord:"was",
+      right:"We were eating when Ana arrived.", rightWord:"were",
+      explain:"Con “we” usamos “were”, no “was”.",
+      examples:[{en:"We were waiting for the bus.",es:"Estábamos esperando el bus."},{en:"They were singing in the car.",es:"Ellos estaban cantando en el carro."}] }
+  ]
+});
+GRAMMAR_BANK.facil[10].push({
+  topic:"Pasado continuo: preguntas y sujetos",
+  items:[
+    { id:'g-facil-m500-pastcont-4', micro:'pasado-cont-was-were-ing', translation:"¿Qué estabas haciendo ayer a las ocho?", type:'choice', prompt:"What ___ you doing yesterday at eight?",
+      options:["did","was","were"], correct:2,
+      explain:"Con “you” usamos “were”: “What were you doing...?”.",
+      examples:[{en:"Where were you going?",es:"¿A dónde ibas?"},{en:"Who was she calling?",es:"¿A quién estaba llamando ella?"}] },
+    { id:'g-facil-m500-pastcont-5', micro:'pasado-cont-was-were-ing', translation:"Mi hermano estaba trabajando en el jardín.", type:'fill', sentence:["My","brother","___","working","in","the","garden","."], blankIndex:2,
+      bank:["is","were","was"], correct:"was",
+      explain:"“My brother” es una sola persona (como “he”), así que usamos “was”.",
+      examples:[{en:"The baby was crying all night.",es:"El bebé estaba llorando toda la noche."},{en:"It was snowing in the mountains.",es:"Estaba nevando en las montañas."}] },
+    { id:'g-facil-m500-pastcont-7', micro:'pasado-cont-was-were-ing', translation:"Los niños estaban jugando en la sala.", type:'choice', prompt:"The children ___ playing in the living room.",
+      options:["was","are","were"], correct:2,
+      explain:"“The children” es plural (como “they”), así que usamos “were”.",
+      examples:[{en:"The dogs were barking all morning.",es:"Los perros estaban ladrando toda la mañana."},{en:"Birds were singing outside.",es:"Los pájaros estaban cantando afuera."}] },
+    { id:'g-facil-m500-pastcont-8', micro:'pasado-cont-was-were-ing', translation:"¿Estabas viendo televisión a las nueve?", type:'fill', sentence:["___","you","watching","TV","at","nine","?"], blankIndex:0,
+      bank:["Was","Did","Were"], correct:"Were",
+      explain:"Con “you” preguntamos “Were you + -ing?”.",
+      examples:[{en:"Was she working last night?",es:"¿Ella estaba trabajando anoche?"},{en:"Were they studying together?",es:"¿Estaban estudiando juntos?"}] }
+  ]
+});
+GRAMMAR_CHECK_BANK.push(
+  { id:'g-chk-thereis-1', micro:'there-is-are-elegir', translation:"Hay una escuela cerca de mi casa.", type:'choice', prompt:"There ___ a school near my house.",
+    options:["be","is","are"], correct:1,
+    explain:"Hay una sola escuela, así que usamos “there is”.",
+    examples:[{en:"There is a bakery on my street.",es:"Hay una panadería en mi calle."},{en:"There is a lamp in the hall.",es:"Hay una lámpara en el pasillo."}] },
+  { id:'g-chk-thereis-2', micro:'there-is-are-elegir', translation:"Hay cinco manzanas en la canasta.", type:'fill', sentence:["There","___","five","apples","in","the","basket","."], blankIndex:1,
+    bank:["is","be","are"], correct:"are",
+    explain:"“Five apples” es plural, así que usamos “there are”.",
+    examples:[{en:"There are six eggs in the box.",es:"Hay seis huevos en la caja."},{en:"There are ten students here.",es:"Hay diez estudiantes aquí."}] },
+  { id:'g-chk-thereis-3', micro:'there-is-are-elegir', translation:"Hay una oficina de correos en esta esquina.", type:'error', wrong:"There are a post office on this corner.", wrongWord:"are",
+    right:"There is a post office on this corner.", rightWord:"is",
+    explain:"Es una sola oficina, así que va “is”, no “are”.",
+    examples:[{en:"There is a gym next to the hotel.",es:"Hay un gimnasio junto al hotel."},{en:"There is a clock on the wall.",es:"Hay un reloj en la pared."}] },
+  { id:'g-chk-thereis-4', micro:'there-is-are-elegir', translation:"¿Hay muchas personas en la fila?", type:'choice', prompt:"___ many people in the line?",
+    options:["Is there","There are","Are there"], correct:2,
+    explain:"“People” es plural, así que preguntamos “Are there...?”.",
+    examples:[{en:"Are there any seats left?",es:"¿Quedan asientos?"},{en:"Are there cheap hotels here?",es:"¿Hay hoteles baratos aquí?"}] },
+  { id:'g-chk-thereis-5', micro:'there-is-are-elegir', translation:"Hoy no hay mesas libres.", type:'choice', prompt:"There ___ any free tables today.",
+    options:["aren't","isn't","don't"], correct:0,
+    explain:"“Tables” es plural, así que la negación es “there aren't”.",
+    examples:[{en:"There aren't any clean cups.",es:"No hay tazas limpias."},{en:"There aren't any messages for you.",es:"No hay mensajes para ti."}] },
+  { id:'g-chk-thereis-6', micro:'there-is-are-elegir', translation:"¿Hay un baño en este piso?", type:'fill', sentence:["___","there","a","bathroom","on","this","floor","?"], blankIndex:0,
+    bank:["Are","Does","Is"], correct:"Is",
+    explain:"Es un solo baño, así que preguntamos “Is there...?”.",
+    examples:[{en:"Is there a doctor here?",es:"¿Hay un médico aquí?"},{en:"Is there a map in the car?",es:"¿Hay un mapa en el carro?"}] },
+  { id:'g-chk-pastcont-1', micro:'pasado-cont-was-were-ing', translation:"Mi mamá estaba preparando el almuerzo.", type:'choice', prompt:"My mom ___ making lunch.",
+    options:["were","is","was"], correct:2,
+    explain:"“My mom” es una sola persona (como “she”), así que usamos “was”.",
+    examples:[{en:"Dad was washing the car.",es:"Papá estaba lavando el carro."},{en:"Lucía was dancing alone.",es:"Lucía estaba bailando sola."}] },
+  { id:'g-chk-pastcont-2', micro:'pasado-cont-was-were-ing', translation:"Los estudiantes estaban escribiendo un examen.", type:'fill', sentence:["The","students","___","writing","a","test","."], blankIndex:2,
+    bank:["was","are","were"], correct:"were",
+    explain:"“The students” es plural (como “they”), así que usamos “were”.",
+    examples:[{en:"The players were warming up.",es:"Los jugadores estaban calentando."},{en:"My friends were laughing.",es:"Mis amigos estaban riendo."}] },
+  { id:'g-chk-pastcont-3', micro:'pasado-cont-was-were-ing', translation:"Ellos estaban esperando afuera.", type:'error', wrong:"They were wait outside.", wrongWord:"wait",
+    right:"They were waiting outside.", rightWord:"waiting",
+    explain:"Después de “were” el verbo lleva -ing: “waiting”.",
+    examples:[{en:"She was drawing a house.",es:"Ella estaba dibujando una casa."},{en:"We were eating lunch.",es:"Estábamos almorzando."}] },
+  { id:'g-chk-pastcont-4', micro:'pasado-cont-was-were-ing', translation:"A las diez yo estaba durmiendo.", type:'choice', prompt:"At ten o'clock I ___ sleeping.",
+    options:["were","am","was"], correct:2,
+    explain:"Con “I” en pasado continuo usamos “was”.",
+    examples:[{en:"At noon I was driving to work.",es:"Al mediodía yo estaba manejando al trabajo."},{en:"I was thinking about you.",es:"Estaba pensando en ti."}] },
+  { id:'g-chk-pastcont-5', micro:'pasado-cont-was-were-ing', translation:"¿Qué estaba haciendo tu hermana?", type:'fill', sentence:["What","___","your","sister","doing","?"], blankIndex:1,
+    bank:["did","was","were"], correct:"was",
+    explain:"“Your sister” es una sola persona (como “she”), así que preguntamos “What was...?”.",
+    examples:[{en:"What was he saying?",es:"¿Qué estaba diciendo él?"},{en:"What were they doing?",es:"¿Qué estaban haciendo ellos?"}] },
+  { id:'g-chk-pastcont-6', micro:'pasado-cont-was-were-ing', translation:"Estábamos hablando cuando se fue la luz.", type:'choice', prompt:"We ___ talking when the lights went out.",
+    options:["was","were","are"], correct:1,
+    explain:"Con “we” usamos “were”: “we were talking”.",
+    examples:[{en:"We were walking when it rained.",es:"Estábamos caminando cuando llovió."},{en:"You were smiling in the photo.",es:"Estabas sonriendo en la foto."}] }
 );

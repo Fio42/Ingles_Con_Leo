@@ -40,7 +40,7 @@ const TEMAS = [
     topics:[`Los números (1-10)`, `Números parecidos que confunden (13 vs 30, 14 vs 40...)`] },
   { id:'basicos-ingles', label:'Plural, colores, días y respuestas básicas', family:'bases', article:null, glossary:null,
     topics:[`Los colores`, `Los días de la semana`, `Plural: agregar "-s"`, `Yes / No básico`, `Preguntas simples: "What is this?"`] },
-  { id:'question-words', label:'Palabras de pregunta (what, where, when, who)', family:'bases', article:null, glossary:null,
+  { id:'question-words', label:'Palabras de pregunta (what, where, when, who)', family:'bases', article:'articulo-como-hacer-preguntas-en-ingles.html', glossary:null,
     topics:[`Question words (What / Where / When / Who)`] },
   /* ---- comparativos ---- */
   { id:'comparativos', label:'Comparativos', family:'comparativos', article:'articulo-comparativos-y-superlativos.html', glossary:null,
@@ -83,6 +83,11 @@ const TEMAS = [
     topics:[`Formal vs natural / matices`, `Participios como adjetivos (-ed vs -ing)`] },
   /* ---- presente continuo ---- */
   { id:'presente-continuo', prereq:['to-be-presente'], label:'Presente continuo', family:'continuo', article:'articulo-presente-continuo.html', glossary:null, topics:[`Presente continuo (I am ___ing)`] },
+  { id:'pasado-continuo', prereq:['presente-continuo', 'was-were'], label:'Pasado continuo', family:'continuo', article:'articulo-pasado-continuo.html', glossary:null,
+    topics:[`Pasado continuo (was / were + -ing)`, `Pasado continuo: preguntas y sujetos`],
+    micros:[
+      { id:'pasado-cont-was-were-ing', active:true, label:'Pasado continuo: was o were + verbo con -ing', lesson:{ article:'articulo-pasado-continuo.html', anchor:'estructura-pasado-continuo' } }
+    ] },
   /* ---- cuantificadores ---- */
   /* Tema paraguas: reune los temas solapados de cuantificadores a nivel de microtema SIN tocar
      los ids antiguos (siguen en enlaces, Writing, Listening e historial). Sus topics quedan en
@@ -102,7 +107,7 @@ const TEMAS = [
   { id:'fewer-vs-less', prereq:['contables-incontables'], label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`, `Fewer y less en frases`] },
   { id:'little-few', prereq:['contables-incontables'], label:'A little, little, a few y few', family:'cuantificadores', article:null, glossary:null, topics:[`A little / Little / A few / Few`] },
   { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:null, topics:[`Some / Any`, `Some / Any en frases afirmativas y negativas`] },
-  { id:'contables-incontables', label:'Sustantivos contables e incontables', family:'cuantificadores', article:null, glossary:null, topics:[`Sustantivos contables e incontables`] },
+  { id:'contables-incontables', label:'Sustantivos contables e incontables', family:'cuantificadores', article:'articulo-sustantivos-contables-incontables.html', glossary:null, topics:[`Sustantivos contables e incontables`] },
   /* ---- demostrativos ---- */
   { id:'a-an', label:'A y an', family:'demostrativos', article:'articulo-articulos-a-an-the.html', glossary:'a-vs-an', topics:[`A / An`, `A / An: depende del sonido`],
     micros:[
@@ -125,11 +130,11 @@ const TEMAS = [
     micros:[
       { id:'can-verbo-base', active:true, label:'Can y can\'t: el verbo que sigue queda igual', lesson:{ article:'articulo-verbos-modales.html', anchor:'forma-basica' } }
     ] },
-  { id:'modales-obligacion', label:'Must, have to y should', family:'modales', article:null, glossary:null,
+  { id:'modales-obligacion', label:'Must, have to y should', family:'modales', article:'articulo-verbos-modales.html', glossary:null,
     topics:[`Verbos modales de obligación (must / have to / should)`, `Verbos modales: must, mustn't y don't have to`, `Verbos modales: obligación (must / have to) vs consejo (should)`],
     micros:[
-      { id:'mustnt-vs-dont-have-to', active:true, glossary:'mustnt-vs-dont-have-to', label:"Mustn't (prohibido) vs don't have to (no hace falta)" },
-      { id:'obligacion-vs-consejo', active:true, glossary:'should', label:'Must / have to (obligación) vs should (consejo)' }
+      { id:'mustnt-vs-dont-have-to', active:true, glossary:'mustnt-vs-dont-have-to', label:"Mustn't (prohibido) vs don't have to (no hace falta)", lesson:{ article:'articulo-verbos-modales.html', anchor:'obligacion-must' } },
+      { id:'obligacion-vs-consejo', active:true, glossary:'should', label:'Must / have to (obligación) vs should (consejo)', lesson:{ article:'articulo-verbos-modales.html', anchor:'consejo-should' } }
     ] },
   { id:'modales-posibilidad', label:'May, might y could', family:'modales', article:'articulo-verbos-modales.html', glossary:null,
     topics:[`Verbos modales de posibilidad (may / might / could)`] },
@@ -175,7 +180,7 @@ const TEMAS = [
     micros:[
       { id:'ps-tercera-persona-s', active:true, label:'Presente simple: la -s de he / she / it', lesson:{ article:'articulo-presente-simple.html', anchor:'forma-afirmativa' } },
       { id:'ps-negativa-dont-doesnt', active:true, prereq:['ps-tercera-persona-s'], label:'Presente simple: don\'t y doesn\'t', lesson:{ article:'articulo-presente-simple.html', anchor:'forma-negativa' } },
-      { id:'ps-adverbios-frecuencia', active:true, label:'Adverbios de frecuencia: significado y lugar', lesson:{ article:'articulo-presente-simple.html', anchor:'adverbios' } }
+      { id:'ps-adverbios-frecuencia', active:true, label:'Adverbios de frecuencia: significado y lugar', lesson:{ article:'articulo-adverbios-de-frecuencia-ingles.html', anchor:'adverbios-frecuencia' } }
     ] },
   { id:'do-does', prereq:['presente-simple'], label:'Do y does', family:'presente-simple', article:'articulo-do-vs-does.html', glossary:null,
     topics:[`Do / Does`, `Preguntas con Do/Does en presente simple`],
@@ -183,9 +188,9 @@ const TEMAS = [
       { id:'dodoes-elegir-sujeto', active:true, label:'Do o does según quién', lesson:{ article:'articulo-do-vs-does.html', anchor:'do-o-does' } }
     ] },
   /* ---- pronombres ---- */
-  { id:'pronombres', label:'Pronombres (sujeto y objeto)', family:'pronombres', article:null, glossary:null,
+  { id:'pronombres', label:'Pronombres (sujeto y objeto)', family:'pronombres', article:'articulo-pronombres-personales-ingles.html', glossary:null,
     topics:[`He / She / It (pronombres)`, `Pronombres objeto (me / you / him / her / it / us / them)`] },
-  { id:'posesivos', label:'Posesivos (my, your, his, her...)', family:'pronombres', article:null, glossary:null,
+  { id:'posesivos', label:'Posesivos (my, your, his, her...)', family:'pronombres', article:'articulo-adjetivos-posesivos-ingles.html', glossary:null,
     topics:[`Adjetivos posesivos simples (my / your)`, `His / Her (posesivos simples)`, `Posesivos (my / your / his / her / our / their)`] },
   /* ---- relativas ---- */
   { id:'relativas', prereq:['pronombres'], label:'Cláusulas relativas', family:'relativas', article:null, glossary:null,
@@ -198,12 +203,17 @@ const TEMAS = [
       { id:'tobe-am-is-are', active:true, label:'To be: am, is o are según quién', lesson:{ article:'articulo-verbo-to-be.html', anchor:'forma-afirmativa' } }
     ] },
   { id:'was-were', prereq:['to-be-presente'], label:'Was y were', family:'to-be', article:'articulo-verbo-to-be.html', glossary:'was-vs-were', topics:[`"To be" en pasado: was / were`] },
+  { id:'there-is-are', prereq:['to-be-presente'], label:'There is y there are', family:'to-be', article:'articulo-there-is-there-are.html', glossary:null,
+    topics:[`There is / are (hay)`, `There is / are: negativas y preguntas`],
+    micros:[
+      { id:'there-is-are-elegir', active:true, label:'There is o there are según lo que hay', lesson:{ article:'articulo-there-is-there-are.html', anchor:'cual-usar' } }
+    ] },
   /* ---- verbos ---- */
   { id:'phrasal-verbs', label:'Phrasal verbs', family:'verbos', article:'articulo-phrasal-verbs.html', glossary:'look-for',
     topics:[`Phrasal verbs comunes (look for / give up / find out)`] },
   { id:'gerundios-infinitivos', label:'Gerundios e infinitivos', family:'verbos', article:'articulo-gerundio-e-infinitivo.html', glossary:null,
     topics:[`Gerundios vs infinitivos (like doing / want to do)`] },
-  { id:'verbo-have', label:'Verbo have', family:'verbos', article:null, glossary:null, topics:[`Verbo "have" (tengo / tienes / tiene)`] },
+  { id:'verbo-have', label:'Verbo have', family:'verbos', article:'articulo-have-y-has-en-ingles.html', glossary:null, topics:[`Verbo "have" (tengo / tienes / tiene)`] },
   { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
   /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
   { id:'question-tags', label:'Question tags', family:null, article:null, glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
