@@ -180,32 +180,38 @@
 //    también (cambio más grande, no lo hice porque no se pidió).
 //
 // ------------------------------------------------------------
-// MIEMBROS INACTIVOS (is_member=true) — Actualización 2026-09-22:
-// además de todo lo de arriba (que es solo para cuentas gratis), hay
-// 2 correos aparte para miembros que llevan varios días sin entrar.
-// NO venden nada (no mencionan pagos/renovación/membresía): solo
-// invitan a volver a practicar. Lógica en decideMemberEmail() (no en
-// decideEmail(), que es solo cuentas gratis):
-//   - member_reactivation_3d   ~3 días sin actividad
-//                              (profiles.last_seen_at).
-//   - member_reactivation_10d ~10 días sin actividad. Es el ÚLTIMO:
-//                              no hay día 15/20/25.
-//   - Cada uno se manda como mucho una vez POR EPISODIO real de
-//     inactividad: si vuelve a entrar (last_seen_at avanza) y luego
-//     vuelve a estar inactivo, cuenta como episodio nuevo y puede
-//     recibir los 2 otra vez.
-//   - Zona de silencio: no se manda ninguno de los 2 si
-//     profiles.next_renewal_at cae entre 3 días antes y 2 días
-//     después de "ahora" (para no hacer pensar en el cobro justo
-//     antes/después de que pase). Si next_renewal_at es NULL (no se
-//     pudo conseguir del proveedor de pago, ver nota de cada webhook)
-//     esa cuenta no tiene zona de silencio: sigue recibiendo los
-//     recordatorios normal.
-//   - Comparte el freno global de 24h (last_marketing_email_at) con
-//     el resto del sistema, pero no compite en prioridad con nada de
-//     lo de arriba: son consultas y bucles completamente aparte, así
-//     que no pueden desplazar ni ser desplazados por la lógica de
-//     cuentas gratis.
+// MIEMBROS DE PAGO INACTIVOS (is_member=true) — Reemplazo 2026-10-13:
+// El flujo viejo de 3 y 10 días ya NO existe. Lo reemplaza una secuencia de
+// máximo 3 correos por ciclo de inactividad, cuyas reglas viven en
+// member-reactivation-core.mjs (con su prueba tools/tests/member-
+// reactivation.test.js):
+//   - member_react_1  14 días sin practicar        "¿Practicamos inglés cinco minutos?"
+//   - member_react_2  21 días después del 1        "Hay más formas de practicar tu inglés"
+//   - member_react_3  21 días después del 2        "Tu próximo paso puede ser muy sencillo"
+//     (días 14, 35 y 56 de inactividad; después, silencio total.)
+//   - "Inactividad" = práctica real (profiles.last_practice_at y la última
+//     fila de progress_sessions), nunca visitas. Quien pagó y nunca practicó
+//     también cuenta, con textos distintos (no se le dice "te extrañamos").
+//   - Si vuelve a practicar el ciclo se cierra solo (closeReturnedCycles) y
+//     si vuelve a quedar inactivo empieza uno nuevo.
+//   - REGLA ESTRICTA DE RENOVACIÓN: se consulta EN VIVO a Stripe, PayPal o
+//     Mercado Pago (verifyMemberBilling) justo antes de enviar. Solo se manda
+//     con suscripción activa, último cobro pagado, sin pago pendiente ni
+//     cancelación programada y con renovación a MÁS de 5 días. Pasada la
+//     fecha, no se manda hasta que el proveedor confirme el cobro nuevo. Sin
+//     fecha fiable o sin poder consultar al proveedor: no se manda.
+//   - Freno solo para miembros: 14 días desde el último correo automático no
+//     transaccional de cualquier flujo (lastNonTransactionalEmailMs). Las
+//     cuentas gratis siguen con su freno de 24 h, sin cambios.
+//   - Ventana 8:00 a 20:59 hora de Cancún. Máximo MAX_REACTIVATION_PER_RUN
+//     envíos por pasada.
+//   - Bitácora: tabla member_reactivation_log (envíos, omisiones con motivo,
+//     ciclos cancelados, clics). Resultados: vista member_reactivation_results.
+//   - Interruptor: secreto MEMBER_REACTIVATION_V2 = 'on'. Apagado no manda.
+//   - Simulación sin enviar: cuerpo {"reactivation_dry_run": true}.
+//     Fechas de renovación reales: {"billing_sync": true, "apply": false|true}.
+//   - member_activation (24 a 48 h después de pagar, una vez) se conserva tal
+//     cual, con su freno de 24 h.
 //
 // ------------------------------------------------------------
 // Reutiliza exactamente el mismo Resend y el mismo remitente
@@ -220,6 +226,7 @@
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import * as RC from './member-reactivation-core.mjs'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -390,37 +397,16 @@ const WELCOME_CRON_DELAY_MINUTES = 10
 // pasado este tiempo (mismo criterio que member_welcome_claimed_at).
 const WELCOME_CLAIM_LEASE_MINUTES = 15
 
-// ---------------- Miembros inactivos (is_member=true) ----------------
-// Estos correos NO venden nada: solo invitan a volver a practicar.
-// Van por fuera de decideEmail()/PRIORITY_ORDER (que son para cuentas
-// gratis) porque su lógica es más chica y separada: ver
-// decideMemberEmail() más abajo. Máximo 2 por episodio real de
-// inactividad (día 3 y día 10); si vuelve a entrar y luego vuelve a
-// dejar de entrar, es un episodio nuevo y puede recibir los 2 otra
-// vez (se detecta comparando last_seen_at contra la fecha en que se
-// mandó cada uno, igual que ya hace reactivation_3d para cuentas
-// gratis).
-const MEMBER_REACTIVATION_3D_MIN_DAYS = 3
-const MEMBER_REACTIVATION_10D_MIN_DAYS = 10
+// ---------------- Miembros (is_member=true) ----------------
+// La reactivación por inactividad (14/35/56) está en member-reactivation-core.mjs
+// y en el bloque "Reactivación de miembros de pago v2" al final de este archivo.
 
 // Ventana de "member_activation" (miembro nuevo que no ha practicado
 // ni una vez desde que pagó): 24-48h después de member_since. Fuera de
-// esta ventana ya no se ofrece (si sigue sin practicar, lo toma
-// member_reactivation_3d más adelante, que sí repite).
+// esta ventana ya no se ofrece por member_activation (si sigue sin
+// practicar, lo toma la secuencia de reactivación 14/35/56).
 const MEMBER_ACTIVATION_MIN_HOURS = 24
 const MEMBER_ACTIVATION_MAX_HOURS = 48
-
-// Zona de silencio alrededor del cobro mensual: no mandar ninguno de
-// los 2 correos de arriba si next_renewal_at cae dentro de este
-// rango (desde X días antes hasta Y días después). Si next_renewal_at
-// es NULL (no se pudo conseguir una fecha confiable del proveedor de
-// pago), esta zona simplemente no se aplica para esa cuenta: sigue
-// recibiendo los recordatorios normalmente. No se pierde el correo
-// por caer en la zona de silencio: se reintenta en cada pasada del
-// Cron (cada 30 min) y sale en cuanto ya no esté en la zona,
-// mientras las demás condiciones sigan cumpliéndose.
-const MEMBER_RENEWAL_SILENCE_BEFORE_DAYS = 3
-const MEMBER_RENEWAL_SILENCE_AFTER_DAYS = 2
 
 // Ventana horaria (ajustado 2026-09-25 por pedido de Leo): 8am-9pm
 // hora de Cancún es la ventana PREFERIDA (mejor probabilidad de
@@ -479,15 +465,13 @@ const PRIORITY_ORDER = [
   'final_onboarding',
   'long_term',
   'active_free_pitch',
-  // Los siguientes 3 son para MIEMBROS (is_member=true), no para
+  // El siguiente es para MIEMBROS (is_member=true), no para
   // cuentas gratis: viven en esta misma lista solo para que el modo
   // manual de prueba (manual_emails + which) los reconozca como
   // válidos. Su lógica de decisión es aparte (ver decideMemberEmail
   // más abajo), no pasan por decideEmail ni compiten en prioridad con
   // los de arriba.
   'member_activation',
-  'member_reactivation_3d',
-  'member_reactivation_10d',
 ] as const
 type EmailKey = (typeof PRIORITY_ORDER)[number]
 
@@ -496,7 +480,7 @@ type EmailKey = (typeof PRIORITY_ORDER)[number]
 // correo requiere is_member=true (en vez de false, como todos los
 // demás), y para que el modo manual de prueba busque el perfil
 // correcto.
-const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation', 'member_reactivation_3d', 'member_reactivation_10d'])
+const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation'])
 
 // Subconjunto de EmailKey: solo las 4 claves de la secuencia por
 // calendario que pueden "caducar" y marcarse 'skipped' (ver
@@ -546,6 +530,14 @@ Deno.serve(async (req: Request) => {
     // duplicar después.
     try {
       const body = await req.json()
+      // Simulación de la reactivación de miembros: NO envía ni escribe nada.
+      if (body && body.reactivation_dry_run === true) {
+        return json(await reactivationDryRun(), 200)
+      }
+      // Fechas de renovación reales desde los proveedores. Sin apply:true solo informa.
+      if (body && body.billing_sync === true) {
+        return json(await billingSync(body.apply === true), 200)
+      }
       if (body && Array.isArray(body.manual_emails) && body.manual_emails.length && body.which) {
         const which = String(body.which) as EmailKey
         if (!PRIORITY_ORDER.includes(which)) {
@@ -662,8 +654,8 @@ Deno.serve(async (req: Request) => {
     // Consulta y bucle totalmente separados de los de arriba (cuentas
     // gratis): así la lógica existente de onboarding/límite/checkout
     // no se toca ni se puede ver afectada por esto. Ver
-    // decideMemberEmail() y la nota larga de MEMBER_REACTIVATION_*
-    // más arriba.
+    // decideMemberEmail() y la nota larga de MIEMBROS DE PAGO INACTIVOS
+    // más arriba (la reactivación v2 va por runReactivationFor).
     const memberProfiles: Record<string, unknown>[] = []
     let memberError: unknown = null
     for (let page = 0; page < 20; page++) {
@@ -688,12 +680,29 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, counts }, 200)
     }
 
+    const reactEnabled = Deno.env.get('MEMBER_REACTIVATION_V2') === 'on'
+    let reactSent = 0
     for (const p of memberProfiles as unknown as Profile[]) {
+      // 1) Activación de miembro nuevo (se conserva).
       const key = decideMemberEmail(p, now)
-      if (!key) continue
-      if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
-      const didSend = await sendIfStillEligible(p.id, p.email, key, true)
-      if (didSend) counts[key] = (counts[key] || 0) + 1
+      if (key) {
+        if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
+        const didSend = await sendIfStillEligible(p.id, p.email, key, true)
+        if (didSend) counts[key] = (counts[key] || 0) + 1
+        continue
+      }
+      // 2) Reactivación 14/35/56. Primero se cierran ciclos de quien ya volvió.
+      await closeReturnedCycles(p as unknown as Record<string, any>)
+      if (!reactEnabled || reactSent >= MAX_REACTIVATION_PER_RUN) continue
+      // Filtro barato y seguro: quien practicó hace menos de 14 días sigue activo.
+      const lp = p.last_practice_at ? new Date(p.last_practice_at).getTime() : null
+      if (lp !== null && (now - lp) / 86400000 < RC.REACT.FIRST_INACTIVE_DAYS) continue
+      const r = await runReactivationFor(p.id, false)
+      if (r.decision === 'sent') {
+        reactSent++
+        const ck = 'member_react_' + r.step
+        counts[ck] = (counts[ck] || 0) + 1
+      }
     }
 
     // Barrido de bienvenidas de miembro que no salieron (auditoría
@@ -1107,41 +1116,15 @@ function freeLastPracticeMs(p: Profile): number | null {
   return null
 }
 
-// ---------------- Decidir el correo (si acaso) de un MIEMBRO inactivo ----------------
-// Aparte de decideEmail() a propósito: solo aplica a is_member=true,
-// solo tiene 2 posibles correos (nunca un día 15/20/25), y no vende
-// nada (ni menciona pagos/renovación/cancelación). Ver la nota larga
-// de MEMBER_REACTIVATION_*/MEMBER_RENEWAL_SILENCE_* arriba.
-
-// true si "ahora" cae dentro de la zona de silencio alrededor de
-// next_renewal_at (o si no hay next_renewal_at conocido -> false,
-// nunca se calla por una fecha que no tenemos).
-function inRenewalSilenceZone(p: Profile, now: number): boolean {
-  if (!p.next_renewal_at) return false
-  const daysUntilRenewal = (new Date(p.next_renewal_at).getTime() - now) / 86400000
-  return daysUntilRenewal <= MEMBER_RENEWAL_SILENCE_BEFORE_DAYS && daysUntilRenewal >= -MEMBER_RENEWAL_SILENCE_AFTER_DAYS
-}
-
+// ---------------- Decidir el correo de activación de un MIEMBRO nuevo ----------------
+// Solo member_activation (pagó y no ha practicado, 24 a 48 h después de
+// member_since, una sola vez). La reactivación por inactividad es otro
+// camino (runReactivationFor), con sus propias reglas.
 function decideMemberEmail(p: Profile, now: number): EmailKey | null {
   const lifecycle = p.lifecycle_emails || {}
-
-  // Mismo freno global de 24h que ya usa decideEmail() para cuentas
-  // gratis, leyendo la misma columna (last_marketing_email_at).
-  // member_activation NO queda exento a propósito (pedido explícito):
-  // si a este miembro ya se le mandó otro correo de este sistema en
-  // las últimas 24h, espera su turno como cualquier otro en vez de
-  // amontonarse.
   if (p.last_marketing_email_at && hoursSince(p.last_marketing_email_at, now) < MARKETING_EMAIL_MIN_GAP_HOURS) {
     return null
   }
-
-  // 0) Activación de miembro nuevo: pagó y no ha practicado NI UNA VEZ
-  // desde que se hizo miembro (last_practice_at sigue vacío, o es de
-  // ANTES de member_since -> era la práctica de cuando todavía era
-  // cuenta gratis, no cuenta). Ventana de 24-48h; fuera de ella ya no
-  // se ofrece por member_activation (si sigue sin practicar, lo toma
-  // member_reactivation_3d más adelante, que sí repite). Se manda una
-  // sola vez en la vida de la membresía (lifecycle_emails.member_activation).
   if (!lifecycle['member_activation'] && p.member_since) {
     const hrsSinceMember = hoursSince(p.member_since, now)
     const practicedSinceMember = !!p.last_practice_at && new Date(p.last_practice_at).getTime() > new Date(p.member_since).getTime()
@@ -1149,53 +1132,6 @@ function decideMemberEmail(p: Profile, now: number): EmailKey | null {
       return 'member_activation'
     }
   }
-
-  // El resto (reactivación por inactividad) necesita una señal de
-  // práctica real primero: sin last_practice_at no hay "inactividad"
-  // que detectar todavía (puede ser un miembro nuevo dentro de su
-  // ventana de activación, o fuera de ella pero que aún no cae en el
-  // día 3 de reactivación).
-  if (!p.last_practice_at) return null
-
-  // Zona de silencio de renovación: se salta esta pasada nada más,
-  // no se pierde el correo (se reintenta cada 30 min hasta salir de
-  // la zona, mientras siga cumpliendo lo demás). No aplica a
-  // member_activation (ya se resolvió arriba, punto 0): no tiene
-  // relación con el cobro, es sobre usar lo que ya compró.
-  if (inRenewalSilenceZone(p, now)) {
-    return null
-  }
-
-  // Última práctica REAL (no visitas): profiles.last_practice_at, que
-  // escribe backend.js (pushSession()) cada vez que un miembro termina
-  // una sesión. Antes se usaba last_seen_at, pero esa columna se
-  // actualiza con CUALQUIER visita logueada (progreso.html, un
-  // artículo, etc.), así que "abrir una página sin practicar" ya no
-  // cuenta como seguir activo ni resetea la inactividad.
-  const inactiveDays = daysSince(p.last_practice_at, now)
-
-  // Día 10 se revisa PRIMERO a propósito: si por cooldown/prioridad
-  // nunca se mandó el de día 3 y ya vamos en el día 12, no tiene
-  // sentido mandar el de día 3 ("hace unos días que no practicas")
-  // tan tarde; se manda directo el de día 10, que sigue siendo
-  // válido. "cameBackSince" es lo que separa un episodio de otro: si
-  // last_practice_at no ha avanzado desde el último envío de esta
-  // clave, sigue siendo el MISMO episodio (no se repite); si sí
-  // avanzó (volvió a practicar y volvió a estar inactivo), es un
-  // episodio nuevo y puede volver a recibirlo (con la siguiente
-  // variante, ver sendIfStillEligible).
-  const lastSent10 = lifecycle['member_reactivation_10d']
-  const cameBackSince10 = !lastSent10 || new Date(p.last_practice_at).getTime() > new Date(lastSent10).getTime()
-  if (inactiveDays >= MEMBER_REACTIVATION_10D_MIN_DAYS && cameBackSince10) {
-    return 'member_reactivation_10d'
-  }
-
-  const lastSent3 = lifecycle['member_reactivation_3d']
-  const cameBackSince3 = !lastSent3 || new Date(p.last_practice_at).getTime() > new Date(lastSent3).getTime()
-  if (inactiveDays >= MEMBER_REACTIVATION_3D_MIN_DAYS && cameBackSince3) {
-    return 'member_reactivation_3d'
-  }
-
   return null
 }
 
@@ -1293,8 +1229,8 @@ async function sendIfStillEligible(
   const longTermIdx = parseInt(freshLifecycle['long_term_count'] || '0', 10) || 0
   if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
 
-  // Variantes de los correos de reactivación (reactivation_3d,
-  // member_reactivation_3d, member_reactivation_10d): un contador por
+  // Variantes de los correos de reactivación (reactivation_3d de cuentas
+  // gratis): un contador por
   // clave en lifecycle_emails (mismo patrón que long_term_count) elige
   // la siguiente variante EN ORDEN, y al llegar al final vuelve a
   // empezar (%), para que nadie reciba el mismo texto palabra por
@@ -1875,11 +1811,6 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     ctaUrl: `${SITE}/miembros.html`,
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
-  // member_reactivation_3d/10d no usan esta entrada directamente: su
-  // contenido sale de REACTIVATION_VARIANTS según su contador (ver
-  // sendIfStillEligible). Getters para cumplir con el tipo.
-  get member_reactivation_3d() { return REACTIVATION_VARIANTS.member_reactivation_3d![0] },
-  get member_reactivation_10d() { return REACTIVATION_VARIANTS.member_reactivation_10d![0] },
   member_activation: {
     subject: 'Ya tienes todo listo. Empieza por aquí 👋',
     preheader: 'Tu plan de estudio y Leo AI ya te están esperando.',
@@ -1944,9 +1875,8 @@ const DAY1_PRACTICED_CONTENT: EmailContent = {
 }
 
 // ---------------- Variantes de los correos de reactivación ----------------
-// reactivation_3d (cuenta gratis), member_reactivation_3d y
-// member_reactivation_10d se pueden repetir varias veces en la vida de
-// una cuenta (cada episodio nuevo de inactividad). Antes mandaban
+// reactivation_3d (cuenta gratis) se puede repetir varias veces en la
+// vida de una cuenta (cada episodio nuevo de inactividad). Antes mandaban
 // siempre el mismo texto; ahora rotan EN ORDEN (nunca al azar) por
 // estas listas, usando un contador en lifecycle_emails
 // (`${key}_count`, mismo patrón que long_term_count) que sendIfStillEligible
@@ -2034,162 +1964,7 @@ const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
       footerNote: '¿Dudas? Responde este correo, lo leo yo.',
     },
   ],
-  member_reactivation_3d: [
-    // v0: el original (5 minutos + phrasal verb), se mantiene igual.
-    {
-      subject: 'Tu sesión de 5 minutos está lista',
-      preheader: 'Y un phrasal verb que vas a usar esta misma semana.',
-      greeting: '¡Hola! 👋',
-      title: 'Un tip rápido antes de volver',
-      titleWithName: '{name}, un tip rápido antes de volver',
-      bodyHtml: `
-      <div style="${BOX}">
-        <strong>Catch up</strong> = ponerse al día<br>
-        I need to catch up on my English practice. (Necesito ponerme al día con mi práctica de inglés.)
-      </div>
-      <p style="${P}">
-        Hace unos días que no practicas. Elige una sesión corta en tu área de
-        miembros y retomas en 5 minutos.
-      </p>`,
-      ctaText: 'Hacer una sesión corta',
-      ctaUrl: `${SITE}/practica-miembros.html`,
-      footerNote: '¿Hay algo que te gustaría practicar y no encuentras? Respóndeme, lo leo yo.',
-    },
-    // v1: pequeño reto (English Rush ya lo usa day3, aquí un reto de
-    // vocabulario dentro del mismo correo, sin mandar a otra página).
-    {
-      subject: 'Un reto chiquito para hoy',
-      preheader: '30 segundos para responder. A ver si le achuntas.',
-      greeting: '¡Hola! 👋',
-      title: 'Te propongo algo simple',
-      bodyHtml: `
-      <p style="${P}">¿Cuál de las dos es correcta?</p>
-      <div style="${BOX}">
-        A) I'm agree with you.<br>
-        B) I agree with you.
-      </div>
-      <p style="${P}">
-        Es la <strong>B</strong>: <em>agree</em> ya es un verbo en inglés, no
-        hace falta el <em>to be</em> antes (a diferencia del español "estoy
-        de acuerdo"). Si te lo supiste, tu nivel sigue ahí, solo falta
-        retomar el ritmo.
-      </p>`,
-      ctaText: 'Practicar un poco hoy',
-      ctaUrl: `${SITE}/practica-miembros.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-    // v2: progreso ya conseguido (dashboard/racha, sin culpa).
-    {
-      subject: 'Tu progreso te está esperando',
-      preheader: 'Todo lo que llevas avanzado sigue guardado, tal cual.',
-      greeting: '¡Hola! 👋',
-      title: 'Sigue justo donde ibas',
-      bodyHtml: `
-      <p style="${P}">
-        Tu progreso, tu racha y tus estadísticas siguen guardados exactamente
-        como los dejaste. No hay que "empezar de nuevo", solo continuar.
-      </p>
-      <div style="${BOX}">
-        Un vistazo rápido a tu progreso suele ser el mejor empujón para
-        retomar. En tu diagnóstico, toca <strong>Explícame mi progreso</strong>
-        y Leo AI te dice en palabras simples cómo vas y qué te conviene
-        practicar hoy.
-      </div>`,
-      ctaText: 'Ver mi progreso',
-      ctaUrl: `${SITE}/progreso.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-    // v3: volver sin culpa (tono más suave, ninguna venta).
-    {
-      subject: 'Sin culpa, retoma cuando puedas',
-      preheader: 'Unos días de pausa no cambian nada de lo que ya avanzaste.',
-      greeting: '¡Hola! 👋',
-      title: 'No pasa nada por la pausa',
-      bodyHtml: `
-      <p style="${P}">
-        La vida se pone ocupada y el inglés a veces queda en pausa. Es
-        completamente normal, y tu cuenta sigue exactamente como la
-        dejaste.
-      </p>
-      <div style="${BOX}">
-        Cuando tengas un ratito, ahí va a estar todo esperándote. Sin
-        presión.
-      </div>`,
-      ctaText: 'Retomar cuando quieras',
-      ctaUrl: `${SITE}/practica-miembros.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-  ],
-  member_reactivation_10d: [
-    // v0: el original (novedades: TOEIC, test de nivel).
-    {
-      subject: 'Hay cosas nuevas en tu membresía 👀',
-      preheader: 'Leo AI ya te explica tus errores. Y hay más novedades.',
-      greeting: '¡Hola! 👋',
-      title: 'Esto es nuevo desde tu última visita',
-      bodyHtml: `
-      ${aiCard(
-        'Nuevo: Leo AI, incluido en tu membresía',
-        'Ya no te quedas con la duda cuando fallas un ejercicio. Leo AI:',
-        [
-          'Te explica cada error en español sencillo, con un ejemplo',
-          'Revisa tus frases de Writing y te dice qué corregir',
-          'Analiza tu progreso y te dice qué reforzar primero',
-        ],
-      )}
-      <div style="${BOX}">
-        <strong>Preparación para el TOEIC:</strong> el examen que piden muchas
-        empresas, con listening y reading tipo examen.<br><br>
-        <strong>Test de nivel con listening:</strong> para ver cuánto has avanzado.
-      </div>
-      <p style="${P}">
-        Y todo lo de siempre: ejercicios por nivel, clases interactivas y
-        English Rush. Tu progreso sigue guardado.
-      </p>`,
-      ctaText: 'Volver a practicar',
-      ctaUrl: `${SITE}/practica-miembros.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-    // v1: lo que ya construyó (progreso real, no presión de pago).
-    {
-      subject: 'Ya construiste algo, no lo dejes ahí',
-      preheader: 'Tu avance de estas semanas sigue guardado tal cual.',
-      greeting: '¡Hola! 👋',
-      title: 'Tu avance sigue ahí',
-      bodyHtml: `
-      <p style="${P}">
-        Antes de dejar de entrar ya habías avanzado en varias habilidades.
-        Ese avance no se pierde por unas semanas sin practicar, sigue
-        guardado tal cual.
-      </p>
-      <div style="${BOX}">
-        Retomar no es "empezar de cero": es seguir exactamente donde ibas.
-      </div>`,
-      ctaText: 'Retomar mi práctica',
-      ctaUrl: `${SITE}/practica-miembros.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-    // v2: sesión preparada (plan de estudio, sin que decida nada).
-    {
-      subject: 'Te dejé una sesión lista para hoy',
-      preheader: 'Con tu nivel y tu progreso, no tienes que pensar por dónde empezar.',
-      greeting: '¡Hola! 👋',
-      title: 'Solo tienes que entrar',
-      bodyHtml: `
-      <p style="${P}">
-        Tu plan de estudio arma una práctica recomendada según tu nivel, tu
-        progreso y tus errores frecuentes. No tienes que decidir nada, solo
-        entrar y seguirlo. Y si algo no te queda claro, Leo AI te lo explica
-        ahí mismo.
-      </p>
-      <div style="${BOX}">
-        5 a 25 minutos, tú eliges cuánto tiempo.
-      </div>`,
-      ctaText: 'Ir a mi plan de estudio',
-      ctaUrl: `${SITE}/plan-estudio.html`,
-      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
-    },
-  ],
+
 }
 
 // ---------------- Correos después del día 30 (long_term) ----------------
@@ -2365,3 +2140,407 @@ const LONG_TERM_EMAILS: EmailContent[] = [
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
 ]
+
+
+// ============================================================
+// Reactivación de miembros de pago v2 (secuencia 14 / 35 / 56)
+// Las reglas viven en member-reactivation-core.mjs (lógica pura, con su
+// propia prueba). Aquí solo está lo que toca la red y la base de datos:
+// leer al alumno, consultar al proveedor de pago EN VIVO, reservar el
+// lugar en el freno global, mandar con Resend y dejar bitácora.
+//
+// Interruptor: la secuencia solo manda correos si el secreto
+// MEMBER_REACTIVATION_V2 vale 'on'. Apagado, no manda NADA (ni el flujo
+// viejo de 3 y 10 días, que ya no existe). Los modos de simulación
+// (reactivation_dry_run, billing_sync sin apply) funcionan siempre y
+// nunca envían ni escriben correos.
+// ============================================================
+const MAX_REACTIVATION_PER_RUN = 25
+
+const REACT_PROFILE_COLS =
+  'id, email, is_member, display_name, member_since, last_seen_at, last_practice_at, lifecycle_emails, last_marketing_email_at, streak_reminder_last_sent, survey_15d_sent_at, upgrade_email_1_sent_at, upgrade_email_2_sent_at, upgrade_email_3_sent_at, email_opt_out_at, email_invalid, next_renewal_at, stripe_customer_id, paypal_subscription_id, mp_preapproval_id'
+
+function cancunDay(): string {
+  return new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 10)
+}
+
+// Bitácora auditable: un renglón por envío, por motivo de omisión (una vez
+// al día por motivo) y por ciclo cancelado. Si falla, nunca rompe el envío.
+async function logReactivation(
+  userId: string,
+  event: 'sent' | 'skipped' | 'cancelled_returned' | 'clicked',
+  step: number | null,
+  kind: string | null,
+  reason: string | null,
+  detail: Record<string, unknown>,
+  dedupeKey: string
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('member_reactivation_log')
+      .upsert(
+        { user_id: userId, event, step, kind, reason, detail, dedupe_key: dedupeKey },
+        { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true }
+      )
+    if (error) console.error('Error escribiendo la bitácora de reactivación:', error)
+  } catch (e) {
+    console.error('Error escribiendo la bitácora de reactivación:', e)
+  }
+}
+
+async function fetchJsonSafe(url: string, init: RequestInit): Promise<any | null> {
+  try {
+    const res = await fetch(url, Object.assign({}, init, { signal: AbortSignal.timeout(8000) }))
+    if (!res.ok) {
+      console.error('Proveedor de pago respondió', res.status, url.split('?')[0].replace(/\/[^/]*$/, '/…'))
+      return null
+    }
+    return await res.json()
+  } catch (e) {
+    console.error('Error consultando al proveedor de pago:', e)
+    return null
+  }
+}
+
+// Solo LECTURAS (GET) a los proveedores. Nada de esto cambia cobros,
+// importes, estados de pago ni períodos de facturación.
+async function stripeSubscriptions(customerId: string): Promise<unknown[] | null> {
+  const key = Deno.env.get('STRIPE_SECRET_KEY') || ''
+  if (!key) return null
+  const data = await fetchJsonSafe(
+    `https://api.stripe.com/v1/subscriptions?customer=${encodeURIComponent(customerId)}&status=all&limit=10&expand%5B%5D=data.latest_invoice`,
+    { headers: { Authorization: `Bearer ${key}` } }
+  )
+  return data && Array.isArray(data.data) ? data.data : null
+}
+
+async function paypalSubscription(subscriptionId: string): Promise<unknown | null> {
+  const cid = Deno.env.get('PAYPAL_CLIENT_ID') || ''
+  const secret = Deno.env.get('PAYPAL_CLIENT_SECRET') || ''
+  if (!cid || !secret) return null
+  const base =
+    (Deno.env.get('PAYPAL_MODE') || 'live').trim().toLowerCase() === 'sandbox'
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com'
+  const tok = await fetchJsonSafe(`${base}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + btoa(`${cid}:${secret}`), 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials',
+  })
+  if (!tok || !tok.access_token) return null
+  return await fetchJsonSafe(`${base}/v1/billing/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    headers: { Authorization: `Bearer ${tok.access_token}` },
+  })
+}
+
+async function mercadoPagoPreapproval(preapprovalId: string): Promise<unknown | null> {
+  const token = Deno.env.get('MP_ACCESS_TOKEN') || ''
+  if (!token) return null
+  return await fetchJsonSafe(`https://api.mercadopago.com/preapproval/${encodeURIComponent(preapprovalId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+// Verifica EN ESTE MOMENTO el estado real de la suscripción en cada
+// proveedor que tenga la persona. Si algo no se puede consultar, el
+// resultado es 'blocked' (ante la duda, no se envía).
+async function verifyMemberBilling(p: Record<string, any>) {
+  const nowMs = Date.now()
+  const results: any[] = []
+  if (p.stripe_customer_id) results.push(RC.evaluateStripe(await stripeSubscriptions(p.stripe_customer_id), nowMs))
+  if (p.paypal_subscription_id) results.push(RC.evaluatePaypal(await paypalSubscription(p.paypal_subscription_id), nowMs))
+  if (p.mp_preapproval_id) results.push(RC.evaluateMp(await mercadoPagoPreapproval(p.mp_preapproval_id), nowMs))
+  return RC.combineBilling(results)
+}
+
+function summarizeBilling(b: any) {
+  return {
+    state: b.state,
+    reason: b.reason || null,
+    renews: b.periodEndMs ? new Date(b.periodEndMs).toISOString().slice(0, 10) : null,
+    providers: (b.results || []).map((r: any) => ({
+      provider: r.provider,
+      state: r.state,
+      reason: r.reason || null,
+      renews: r.periodEndMs ? new Date(r.periodEndMs).toISOString().slice(0, 10) : null,
+    })),
+  }
+}
+
+async function lastSessionInfo(userId: string): Promise<{ at: string | null; skill: string | null } | null> {
+  const { data, error } = await supabase
+    .from('progress_sessions')
+    .select('created_at, skill')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) {
+    console.error('Error leyendo progress_sessions:', error)
+    return null
+  }
+  return data && data[0] ? { at: data[0].created_at, skill: data[0].skill } : { at: null, skill: null }
+}
+
+async function leoAiAvailable(): Promise<boolean> {
+  const { data } = await supabase.from('leo_ai_config').select('enabled, public').maybeSingle()
+  return !!(data && data.enabled && data.public)
+}
+
+async function activeMistakesCount(userId: string): Promise<number | null> {
+  const { count, error } = await supabase
+    .from('mistake_stats')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('status', 'active')
+  return error ? null : count
+}
+
+async function sendReactivationViaResend(
+  to: string,
+  subject: string,
+  html: string,
+  oneClickUnsubUrl: string,
+  step: number
+): Promise<{ ok: boolean; id: string | null }> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [to],
+        reply_to: REPLY_TO_EMAIL,
+        subject,
+        html,
+        headers: {
+          'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+        tags: [
+          { name: 'flow', value: 'member_reactivation' },
+          { name: 'step', value: String(step) },
+        ],
+      }),
+    })
+    if (!res.ok) {
+      console.error('Error mandando reactivación con Resend:', await res.text())
+      return { ok: false, id: null }
+    }
+    const body = await res.json().catch(() => ({}))
+    return { ok: true, id: (body && body.id) || null }
+  } catch (e) {
+    console.error('Error mandando reactivación con Resend:', e)
+    return { ok: false, id: null }
+  }
+}
+
+type ReactOutcome = {
+  id: string
+  decision: 'sent' | 'would_send' | 'skip'
+  reason?: string
+  step?: number
+  kind?: string
+  inactiveDays?: number
+  billing?: unknown
+}
+
+// Evalúa a UNA persona con datos frescos y, si todo se cumple y no es
+// simulación, manda el correo. Es el mismo camino para la simulación y
+// para el envío real: lo que la simulación dice es lo que se haría.
+async function runReactivationFor(userId: string, dryRun: boolean): Promise<ReactOutcome> {
+  const id8 = userId.slice(0, 8)
+  const { data: p, error } = await supabase.from('profiles').select(REACT_PROFILE_COLS).eq('id', userId).maybeSingle()
+  if (error || !p) return { id: id8, decision: 'skip', reason: 'profile_unreadable' }
+  const sess = await lastSessionInfo(userId)
+  if (sess === null) return { id: id8, decision: 'skip', reason: 'activity_unreliable' }
+
+  const pre: any = RC.precheck({ profile: p, lastSessionAt: sess.at, nowMs: Date.now(), ignoreHours: dryRun })
+  if (!pre.ok) {
+    if (!dryRun && pre.loggable) {
+      await logReactivation(userId, 'skipped', pre.step ?? null, pre.kind ?? null, pre.reason, {}, `skipped:${pre.reason}:${cancunDay()}`)
+    }
+    return { id: id8, decision: 'skip', reason: pre.reason, kind: pre.kind, step: pre.step }
+  }
+
+  // Verificación EN VIVO con el proveedor, justo antes de decidir.
+  const billing = await verifyMemberBilling(p)
+  const fin: any = RC.finalize(pre, billing, Date.now())
+  const summary = summarizeBilling(billing)
+  const base = { id: id8, kind: pre.kind, step: pre.step, inactiveDays: Math.floor(pre.inactiveDays), billing: summary }
+  if (!fin.send) {
+    if (!dryRun) {
+      await logReactivation(userId, 'skipped', pre.step, pre.kind, fin.reason, { billing: summary }, `skipped:${fin.reason}:${cancunDay()}`)
+    }
+    return Object.assign({ decision: 'skip' as const, reason: fin.reason }, base)
+  }
+  if (dryRun) return Object.assign({ decision: 'would_send' as const }, base)
+
+  // Fecha de renovación verificada: se guarda (solo esa columna) si cambió.
+  if (billing.state === 'ok' && billing.periodEndMs) {
+    const iso = new Date(billing.periodEndMs).toISOString()
+    const stored = p.next_renewal_at ? Date.parse(p.next_renewal_at) : null
+    if (stored === null || Math.abs(stored - billing.periodEndMs) > 60000) {
+      await supabase.from('profiles').update({ next_renewal_at: iso }).eq('id', userId)
+    }
+  }
+
+  const [leoAi, mistakes] = await Promise.all([
+    leoAiAvailable(),
+    pre.step === 2 ? activeMistakesCount(userId) : Promise.resolve(null),
+  ])
+  const content = RC.buildContent({ site: SITE, kind: pre.kind, step: pre.step, skill: sess.skill, mistakes, leoAi })
+
+  // Lugar en el freno global (14 días), reservado de forma atómica: si otro
+  // proceso mandó algo entre la lectura y este momento, se cancela.
+  const slotIso = new Date().toISOString()
+  const slotCutoff = new Date(
+    Date.now() - RC.REACT.GLOBAL_GAP_DAYS * 86400000 + MARKETING_SLOT_TOLERANCE_MINUTES * 60000
+  ).toISOString()
+  const { data: slot, error: slotError } = await supabase
+    .from('profiles')
+    .update({ last_marketing_email_at: slotIso })
+    .eq('id', userId)
+    .eq('is_member', true)
+    .is('email_opt_out_at', null)
+    .eq('email_invalid', false)
+    .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+    .select('id')
+  if (slotError) console.error('Error reservando el freno global (reactivación):', slotError)
+  if (!slot || !slot.length) return Object.assign({ decision: 'skip' as const, reason: 'slot_taken' }, base)
+
+  const links = await unsubLinks(userId)
+  const html = emailShell(personalize(content, p.display_name), links.page)
+  const sent = await sendReactivationViaResend(p.email, content.subject, html, links.oneClick, pre.step)
+  if (!sent.ok) {
+    // No salió nada: se devuelve el lugar para reintentar en la siguiente pasada.
+    await supabase
+      .from('profiles')
+      .update({ last_marketing_email_at: p.last_marketing_email_at ?? null })
+      .eq('id', userId)
+      .eq('last_marketing_email_at', slotIso)
+    await logReactivation(userId, 'skipped', pre.step, pre.kind, 'send_failed', {}, `skipped:send_failed:${cancunDay()}`)
+    return Object.assign({ decision: 'skip' as const, reason: 'send_failed' }, base)
+  }
+
+  const nowIso = new Date().toISOString()
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data: fresh } = await supabase.from('profiles').select('lifecycle_emails').eq('id', userId).maybeSingle()
+    const merged: Record<string, string> = Object.assign({}, (fresh && fresh.lifecycle_emails) || {})
+    merged[RC.STEP_KEYS[pre.step - 1]] = nowIso
+    for (let i = pre.step; i < RC.STEP_KEYS.length; i++) delete merged[RC.STEP_KEYS[i]]
+    const { error: upErr } = await supabase
+      .from('profiles')
+      .update({ lifecycle_emails: merged, last_marketing_email_at: nowIso })
+      .eq('id', userId)
+    if (!upErr) break
+    console.error(`Error registrando la reactivación paso ${pre.step} para ${userId}:`, upErr)
+  }
+  await logReactivation(
+    userId,
+    'sent',
+    pre.step,
+    pre.kind,
+    null,
+    { resend_id: sent.id, inactive_days: Math.floor(pre.inactiveDays), billing: summary },
+    `sent:${pre.step}:${nowIso}`
+  )
+  return Object.assign({ decision: 'sent' as const }, base)
+}
+
+// Si el alumno volvió a practicar después de un correo de la secuencia,
+// ese ciclo se cierra: queda constancia en la bitácora y se limpian las
+// marcas viejas (el historial queda en la bitácora y en
+// last_marketing_email_at). Así los envíos pendientes de ese ciclo no
+// existen más.
+async function closeReturnedCycles(p: Record<string, any>): Promise<void> {
+  const lc = p.lifecycle_emails || {}
+  if (!RC.STEP_KEYS.some((k: string) => lc[k])) return
+  const lp = RC.toMs(p.last_practice_at)
+  if (lp === null) return
+  const stale = RC.staleCycleEmails(lc, lp)
+  if (!stale.length) return
+  for (const s of stale) {
+    await logReactivation(
+      p.id,
+      'cancelled_returned',
+      s.step,
+      null,
+      'practiced_again',
+      { email_sent_at: new Date(s.sentMs).toISOString(), practiced_at: new Date(lp).toISOString() },
+      `cancelled_returned:${s.step}:${new Date(s.sentMs).toISOString()}`
+    )
+  }
+  const merged: Record<string, string> = Object.assign({}, lc)
+  for (const s of stale) delete merged[RC.STEP_KEYS[s.step - 1]]
+  await supabase.from('profiles').update({ lifecycle_emails: merged }).eq('id', p.id)
+}
+
+async function allMembersForReactivation(): Promise<Record<string, any>[]> {
+  const out: Record<string, any>[] = []
+  for (let page = 0; page < 20; page++) {
+    const { data: chunk, error } = await supabase
+      .from('profiles')
+      .select(REACT_PROFILE_COLS)
+      .eq('is_member', true)
+      .order('id', { ascending: true })
+      .range(page * 1000, page * 1000 + 999)
+    if (error) throw error
+    out.push(...(chunk || []))
+    if (!chunk || chunk.length < 1000) break
+  }
+  return out
+}
+
+// Simulación: a quién le tocaría qué, sin enviar ni escribir nada.
+async function reactivationDryRun() {
+  const members = await allMembersForReactivation()
+  const rows: ReactOutcome[] = []
+  for (const m of members) rows.push(await runReactivationFor(m.id, true))
+  const byReason: Record<string, number> = {}
+  for (const r of rows) {
+    const k = r.decision === 'would_send' ? 'would_send' : r.reason || 'skip'
+    byReason[k] = (byReason[k] || 0) + 1
+  }
+  return { ok: true, dry_run: true, enabled: Deno.env.get('MEMBER_REACTIVATION_V2') === 'on', members: rows.length, summary: byReason, rows }
+}
+
+// Recupera la fecha de renovación REAL desde cada proveedor. Sin apply:true
+// solo informa. Con apply:true guarda únicamente profiles.next_renewal_at,
+// y solo cuando el proveedor confirma suscripción activa, cobro pagado y
+// fecha futura. Nunca toca cobros, importes ni estados de pago.
+async function billingSync(apply: boolean) {
+  const members = await allMembersForReactivation()
+  const rows: unknown[] = []
+  const byReason: Record<string, number> = {}
+  let verified = 0
+  let updated = 0
+  let noProvider = 0
+  for (const m of members) {
+    if (!m.stripe_customer_id && !m.paypal_subscription_id && !m.mp_preapproval_id) {
+      noProvider++
+      rows.push({ id: m.id.slice(0, 8), billing: { state: 'blocked', reason: 'no_paid_subscription' }, stored: m.next_renewal_at })
+      continue
+    }
+    const b = await verifyMemberBilling(m)
+    let wrote = false
+    if (b.state === 'ok' && b.periodEndMs && b.periodEndMs > Date.now()) {
+      verified++
+      const stored = m.next_renewal_at ? Date.parse(m.next_renewal_at) : null
+      if (apply && (stored === null || Math.abs(stored - b.periodEndMs) > 60000)) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ next_renewal_at: new Date(b.periodEndMs).toISOString() })
+          .eq('id', m.id)
+          .eq('is_member', true)
+        if (!error) {
+          wrote = true
+          updated++
+        }
+      }
+    } else {
+      byReason[b.reason || 'blocked'] = (byReason[b.reason || 'blocked'] || 0) + 1
+    }
+    rows.push({ id: m.id.slice(0, 8), billing: summarizeBilling(b), stored: m.next_renewal_at, wrote })
+  }
+  return { ok: true, apply, members: members.length, no_provider_subscription: noProvider, verified_ok: verified, updated, not_verified_by_reason: byReason, rows }
+}

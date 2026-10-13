@@ -58,6 +58,13 @@ Deno.serve(async (req: Request) => {
 
     const event = JSON.parse(rawBody)
     const type = event?.type as string | undefined
+    // Clics en los correos de reactivación de miembros (solo seguimiento de
+    // resultados; no cambia nada del alumno). Hay que activar el evento
+    // "email.clicked" en el webhook de Resend para que llegue.
+    if (type === 'email.clicked') {
+      await recordReactivationClick(event)
+      return json({ ok: true, click: true }, 200)
+    }
     if (!type || !BOUNCE_EVENTS.has(type)) {
       return json({ ok: true, skipped: true }, 200)
     }
@@ -82,6 +89,34 @@ Deno.serve(async (req: Request) => {
     return json({ ok: false }, 200)
   }
 })
+
+async function recordReactivationClick(event: any): Promise<void> {
+  try {
+    const tags = event?.data?.tags
+    const tagVal = (name: string) =>
+      Array.isArray(tags) ? tags.find((t: any) => t && t.name === name)?.value : tags && tags[name]
+    if (tagVal('flow') !== 'member_reactivation') return
+    const step = parseInt(String(tagVal('step') || ''), 10) || null
+    const email = event?.data?.to?.[0] as string | undefined
+    if (!email) return
+    const { data: prof } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle()
+    if (!prof) return
+    const emailId = String(event?.data?.email_id || '')
+    const { error } = await supabase.from('member_reactivation_log').upsert(
+      {
+        user_id: prof.id,
+        event: 'clicked',
+        step,
+        detail: { email_id: emailId, link: event?.data?.click?.link || null },
+        dedupe_key: `clicked:${step}:${emailId || new Date().toISOString().slice(0, 10)}`,
+      },
+      { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true }
+    )
+    if (error) console.error('Error guardando el clic de reactivación:', error)
+  } catch (e) {
+    console.error('Error guardando el clic de reactivación:', e)
+  }
+}
 
 // Verificación de firma Svix (el sistema de webhooks que usa Resend).
 // El "mensaje firmado" es "{svix-id}.{svix-timestamp}.{cuerpo crudo}",

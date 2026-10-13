@@ -1,0 +1,2546 @@
+// ============================================================
+// Inglés con Leo — Edge Function: upgrade-nudge-emails
+//
+// OJO: el nombre del archivo/función en Supabase se dejó igual a
+// propósito (para que NO haga falta crear una función nueva ni un
+// Cron nuevo: se reutiliza exactamente el mismo deploy y el mismo
+// Cron de cada 30 minutos que ya tenías). Pero su alcance creció:
+// antes solo mandaba 3 correos de "hazte miembro" a los 30min/2d/7d.
+// Ahora es el sistema completo de correos automáticos del ciclo de
+// vida de una cuenta gratis (is_member = false): bienvenida,
+// recordatorios de práctica, descubrir funciones, y solo AL FINAL
+// la membresía. Ver el chat para la explicación completa del
+// porqué del cambio (el nuevo modelo es "cuenta gratis primero",
+// no "cuenta gratis = quiere pagar").
+//
+// ------------------------------------------------------------
+// QUÉ CORREOS EXISTEN Y CUÁNDO SE DISPARAN (todo con is_member =
+// false; en cuanto alguien paga, deja de calificar para CUALQUIERA
+// de estos automáticamente, porque cada uno vuelve a revisar
+// is_member justo antes de mandar):
+//
+//  Por calendario (según profiles.created_at). Cada uno es
+//  "elegible DESDE" ese momento: si un correo de mayor prioridad le
+//  gana el turno el día que le tocaba, no se pierde, se queda
+//  pendiente y sale en cuanto pueda. PERO cada uno (menos
+//  membership_intro) también tiene un plazo máximo ("caduca"): si
+//  para entonces sigue sin mandarse, se marca 'skipped' en
+//  lifecycle_emails (registrado como decisión, no como error) y ya
+//  no se vuelve a ofrecer, para no mandarlo semanas después fuera de
+//  contexto (ver la sección "Caducidad/catch-up" más abajo):
+//   - welcome            En cuanto se crea la cuenta. "Tu cuenta
+//                        está lista" + llevar a practicar. NO vende
+//                        membresía, y NO cuenta para el freno de
+//                        24h (ver más abajo), así que nunca le tapa
+//                        el paso a abandoned_signup. No caduca (se
+//                        manda apenas la cuenta existe, así que
+//                        nunca llega tarde).
+//   - day1               Elegible desde 20 horas después de crear
+//                        la cuenta. Invita a volver a practicar.
+//                        Caduca (se marca 'skipped') a los 4 días.
+//   - day3               Elegible desde 3 días después. Muestra una
+//                        función que tal vez no ha usado (English
+//                        Rush). Caduca a los 7 días.
+//   - membership_intro   Elegible desde 7 días después. Primera vez
+//                        que se presenta la membresía de $2 USD/mes.
+//                        NO caduca: hablar de la membresía sigue
+//                        siendo útil sin importar cuánto pase.
+//   - reactivation_day14 Elegible desde 14 días después. "¿Sigues
+//                        practicando inglés?" (no es principalmente
+//                        venta). Caduca a los 45 días.
+//   - final_onboarding   Elegible desde 30 días después. Última
+//                        función a descubrir + mención suave de
+//                        membresía. Caduca a los 75 días.
+//   - long_term          Después del día 30 (actualización
+//                        2026-09-24, pedido de Leo): un correo cada
+//                        LONG_TERM_INTERVAL_DAYS (21 días), rotando
+//                        por la lista LONG_TERM_EMAILS (un tip útil +
+//                        invitación a practicar; solo algunos
+//                        mencionan la membresía, y siempre suave).
+//                        Empieza 21 días después de final_onboarding
+//                        (o desde el día 51 si final_onboarding
+//                        caducó sin mandarse). Cada correo de la lista
+//                        se manda una sola vez por persona (se lleva
+//                        la cuenta en lifecycle_emails.long_term_count);
+//                        cuando se acaba la lista, se detiene. Para
+//                        seguir más tiempo basta con agregar correos
+//                        nuevos al final de LONG_TERM_EMAILS: la gente
+//                        que ya terminó la lista los recibe solos.
+//                        Se detiene también si la persona lleva más de
+//                        LONG_TERM_SUNSET_DAYS (180) días sin entrar
+//                        a la página, para no insistirle a quien ya no
+//                        abre nada (eso daña la reputación del
+//                        remitente y manda todo a spam).
+//
+//  Por comportamiento (no dependen del día, dependen de lo que hace
+//  cada quien):
+//   - abandoned_signup   30-180 min después de crear la cuenta,
+//                        SOLO si todavía no hizo ni un ejercicio
+//                        (profiles.free_first_exercise_at sigue
+//                        NULL). Un recordatorio suave, una sola vez.
+//                        Como welcome no consume el freno de 24h,
+//                        este SÍ puede mandarse el mismo día que
+//                        welcome, unas horas después.
+//   - reactivation_3d    Ya había practicado antes, pero lleva 3+
+//                        días sin entrar (profiles.last_seen_at).
+//                        Con cooldown: no se repite antes de que
+//                        haya vuelto a entrar Y vuelto a estar
+//                        inactivo otra vez.
+//   - limit_reached      3-36 horas después de llegar a su límite
+//                        diario de ejercicios (lo detecta el propio
+//                        navegador y lo guarda en
+//                        profiles.free_daily_limit_reached_at). Con
+//                        cooldown de varios días: no le llega cada
+//                        vez que toca el límite, solo de vez en
+//                        cuando.
+//   - checkout_abandoned Empezó un checkout (Stripe/PayPal/Mercado
+//                        Pago) pero no completó el pago
+//                        (profiles.checkout_started_at, que YA
+//                        existía y lo pone el propio webhook del
+//                        checkout, nunca el simple hecho de visitar
+//                        una página: es una señal real, no
+//                        inventada). Con cooldown largo.
+//                        (2026-10-08) checkout_started_at ahora es el
+//                        ULTIMO intento real (cada clic en un botón de
+//                        pago, con antirrebote de 10 min), no el primero.
+//                        Solo cuenta el intento más reciente.
+//   - checkout_followup  Segundo y último correo de ese mismo intento:
+//                        24 a 48 h DESPUÉS del primero, solo si sigue sin
+//                        ser miembro. Pregunta qué pasó; sin presión.
+//   - active_free_pitch  DESACTIVADO por ahora (ver
+//                        ACTIVE_FREE_PITCH_ENABLED más abajo: la
+//                        lógica queda lista en el código pero no se
+//                        manda nada de este tipo todavía). La idea,
+//                        cuando se active: cuenta gratis con 10+
+//                        días de antigüedad que sigue entrando
+//                        seguido y ya practicó alguna vez, pero
+//                        sigue sin ser miembro.
+//
+// ------------------------------------------------------------
+// PRIORIDAD Y ANTI-SPAM (muy importante, ver pedido de Leo):
+//  - Nadie recibe más de UNO de estos correos por corrida (cada
+//    usuario, como mucho, un correo por pasada del Cron).
+//  - Nadie recibe más de un correo de este sistema en un lapso de
+//    MARKETING_EMAIL_MIN_GAP_HOURS (24h por default), sin importar
+//    cuántas condiciones distintas le apliquen ese día. EXCEPCIÓN:
+//    "welcome" no cuenta para este freno (ni lo consume al
+//    mandarse, ni se bloquea por él), porque es un correo
+//    inicial/operacional, no de marketing. Esto tampoco afecta a
+//    los correos transaccionales (bienvenida de pago, recuperar
+//    contraseña, avisos de comentarios): esos son funciones de
+//    Supabase totalmente aparte y no se tocaron.
+//  - Si a alguien le aplican varias condiciones a la vez, se manda
+//    solo la de mayor prioridad (ver PRIORITY_ORDER más abajo):
+//      0) welcome (siempre que aplique, va primero y aparte del
+//         freno de 24h)
+//      1) limite gratuito alcanzado
+//      2) reactivación por abandono (recién creó cuenta sin
+//         practicar, o llevaba practicando y dejó de entrar)
+//      3) secuencia de onboarding por calendario (day1, day3,
+//         membership_intro, reactivation_day14, final_onboarding),
+//         sin techo: si algo de mayor prioridad le gana el turno,
+//         se queda pendiente para la siguiente pasada, nunca
+//         desaparece.
+//      4) promoción de membresía "porque sí" (checkout abandonado;
+//         "usuario gratis muy activo" existe en el código pero está
+//         apagado, ver ACTIVE_FREE_PITCH_ENABLED)
+//  - Cada correo se manda UNA sola vez (o con su propio cooldown si
+//    es de los que se pueden repetir), y se registra en
+//    profiles.lifecycle_emails (una columna jsonb: una sola
+//    columna nueva sirve para todos los tipos de correo, en vez de
+//    tener que agregar una columna por cada correo nuevo que se te
+//    ocurra más adelante).
+//  - Ventana horaria (pedido de Leo, 2026-09-25, ajustado el mismo
+//    día): 8am-9pm hora de Cancún es la ventana preferida, pero no es
+//    un candado duro: un correo que quede listo a las 10-11pm sale
+//    normal. Lo único que SÍ se bloquea de verdad es la madrugada
+//    (1am-7:59am hora de Cancún), salvo welcome y abandoned_signup
+//    que se mandan a cualquier hora (ver isGoodSendHour/
+//    HOUR_GATE_EXEMPT_KEYS más abajo). No cambia NADA de a quién le
+//    toca ni cuándo "empieza a contar" cada plazo (eso sigue en UTC
+//    tal cual, sin tocar): solo decide si YA es buen momento para
+//    mandarlo. Si cae en madrugada, se reintenta en la siguiente
+//    pasada del Cron (sigue corriendo cada 30 min todo el día, sin
+//    cambios), nunca se pierde.
+//
+// ------------------------------------------------------------
+// PENDIENTE (a propósito NO implementado todavía, falta info o lo
+// pediste para después):
+//  - (Hecho 2026-09-24: correos después del día 30, ver long_term.)
+//    Si hay una novedad puntual que avisar a todos (una sección
+//    nueva, por ejemplo), eso sigue siendo un correo aparte.
+//  - "Continuar donde lo dejaste" con el ejercicio exacto: hoy no
+//    existe ningún registro en Supabase de qué ejercicio exacto
+//    veía una cuenta gratis (el progreso de cuentas gratis vive
+//    nada más como contador del día, no como sesión guardada; eso
+//    solo existe para Miembros, en progress_sessions). Por eso los
+//    correos de cuenta gratis invitan a "seguir practicando" en
+//    general, no a un ejercicio puntual. Si más adelante quieres
+//    eso, hay que guardar el progreso de cuentas gratis en Supabase
+//    también (cambio más grande, no lo hice porque no se pidió).
+//
+// ------------------------------------------------------------
+// MIEMBROS DE PAGO INACTIVOS (is_member=true) — Reemplazo 2026-10-13:
+// El flujo viejo de 3 y 10 días ya NO existe. Lo reemplaza una secuencia de
+// máximo 3 correos por ciclo de inactividad, cuyas reglas viven en
+// member-reactivation-core.mjs (con su prueba tools/tests/member-
+// reactivation.test.js):
+//   - member_react_1  14 días sin practicar        "¿Practicamos inglés cinco minutos?"
+//   - member_react_2  21 días después del 1        "Hay más formas de practicar tu inglés"
+//   - member_react_3  21 días después del 2        "Tu próximo paso puede ser muy sencillo"
+//     (días 14, 35 y 56 de inactividad; después, silencio total.)
+//   - "Inactividad" = práctica real (profiles.last_practice_at y la última
+//     fila de progress_sessions), nunca visitas. Quien pagó y nunca practicó
+//     también cuenta, con textos distintos (no se le dice "te extrañamos").
+//   - Si vuelve a practicar el ciclo se cierra solo (closeReturnedCycles) y
+//     si vuelve a quedar inactivo empieza uno nuevo.
+//   - REGLA ESTRICTA DE RENOVACIÓN: se consulta EN VIVO a Stripe, PayPal o
+//     Mercado Pago (verifyMemberBilling) justo antes de enviar. Solo se manda
+//     con suscripción activa, último cobro pagado, sin pago pendiente ni
+//     cancelación programada y con renovación a MÁS de 5 días. Pasada la
+//     fecha, no se manda hasta que el proveedor confirme el cobro nuevo. Sin
+//     fecha fiable o sin poder consultar al proveedor: no se manda.
+//   - Freno solo para miembros: 14 días desde el último correo automático no
+//     transaccional de cualquier flujo (lastNonTransactionalEmailMs). Las
+//     cuentas gratis siguen con su freno de 24 h, sin cambios.
+//   - Ventana 8:00 a 20:59 hora de Cancún. Máximo MAX_REACTIVATION_PER_RUN
+//     envíos por pasada.
+//   - Bitácora: tabla member_reactivation_log (envíos, omisiones con motivo,
+//     ciclos cancelados, clics). Resultados: vista member_reactivation_results.
+//   - Interruptor: secreto MEMBER_REACTIVATION_V2 = 'on'. Apagado no manda.
+//   - Simulación sin enviar: cuerpo {"reactivation_dry_run": true}.
+//     Fechas de renovación reales: {"billing_sync": true, "apply": false|true}.
+//   - member_activation (24 a 48 h después de pagar, una vez) se conserva tal
+//     cual, con su freno de 24 h.
+//
+// ------------------------------------------------------------
+// Reutiliza exactamente el mismo Resend y el mismo remitente
+// (hola@inglesconleo.com) que ya usan los demás correos del sitio.
+//
+// Variables de entorno (Supabase -> Edge Functions -> Secrets), las
+// mismas que ya tenías puestas para esta función:
+//   SUPABASE_URL               (ya viene puesta sola)
+//   SUPABASE_SERVICE_ROLE_KEY  la "service_role" key.
+//   RESEND_API_KEY             la misma que ya usan los demás
+//                              correos del sitio.
+// ============================================================
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import * as RC from './member-reactivation-core.mjs'
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+
+const FROM_EMAIL = 'Inglés con Leo <hola@inglesconleo.com>'
+const REPLY_TO_EMAIL = 'inglesconleoreal@gmail.com'
+const SITE = 'https://inglesconleo.com'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
+// Compara contra la llave de Vault con public.internal_secret_ok (solo
+// service_role puede llamarla). Si la consulta falla, se rechaza.
+async function internalSecretOk(secret: string | null): Promise<boolean> {
+  if (!secret) return false
+  // Reintenta si la consulta falla (p. ej. "JWT issued at future" al
+  // arrancar con el reloj un poco adelantado). Una llave mala no falla:
+  // devuelve false y se rechaza de inmediato.
+  for (let intento = 1; intento <= 3; intento++) {
+    const { data, error } = await supabase.rpc('internal_secret_ok', { p_secret: secret })
+    if (!error) return data === true
+    console.error(`Error revisando la llave interna (intento ${intento}):`, error)
+    if (intento < 3) await new Promise((r) => setTimeout(r, 1000))
+  }
+  return false
+}
+
+// ---- Baja de correos (ver email-unsubscribe.ts) ----
+// Misma firma que en email-unsubscribe.ts: si cambias una, cambia las
+// dos (y la de streak-reminder-email.ts).
+const UNSUB_PAGE = 'https://inglesconleo.com/baja.html'
+async function unsubToken(userId: string): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey('raw', enc.encode(SUPABASE_SERVICE_ROLE_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode('unsub:' + userId)))
+  return Array.from(sig).map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32)
+}
+async function unsubLinks(userId: string): Promise<{ page: string; oneClick: string }> {
+  const t = await unsubToken(userId)
+  const qs = `u=${encodeURIComponent(userId)}&t=${t}`
+  return {
+    page: `${UNSUB_PAGE}?${qs}`,
+    oneClick: `${SUPABASE_URL}/functions/v1/email-unsubscribe?${qs}`,
+  }
+}
+
+// OJO: este número tiene que ser el mismo que FREE_USER_DAILY_LIMIT
+// en app.js. Viven en dos archivos distintos (uno corre en el
+// navegador, este corre en Supabase) así que si cambias el límite
+// diario de ejercicios en un lado, cámbialo también aquí.
+const FREE_USER_DAILY_LIMIT = 10
+
+// ---------------- Configuración centralizada ----------------
+// Todos los tiempos y cooldowns importantes están aquí. Para
+// ajustar cuándo se manda cada correo, este es el único lugar que
+// hace falta tocar.
+
+// Calendario (en base a profiles.created_at). Cada uno es "elegible
+// DESDE" ese momento y se queda pendiente (candidato en cada pasada
+// del Cron) hasta que se manda de verdad: si un correo de mayor
+// prioridad le gana el turno un día, no desaparece, simplemente se
+// manda en la siguiente pasada donde nada más le gane. Una vez
+// mandado, lifecycle_emails evita que se repita.
+//
+// PERO: para que esto no forme una cola de correos de onboarding
+// viejos (que un día le lleguen todos seguidos a una cuenta de 3
+// semanas como si acabara de registrarse), cada uno también tiene un
+// "SKIP_AFTER_DAYS": si para entonces todavía no se mandó, se marca
+// como 'skipped' en lifecycle_emails (queda registrado que se
+// decidió NO mandarlo, no que se perdió) y ya no se vuelve a
+// considerar. day1/day3 son los que "caducan" más rápido, porque su
+// contenido habla de "acabas de crear tu cuenta" y no tiene sentido
+// semanas después. membership_intro NO tiene vencimiento: hablar de
+// la membresía sigue siendo útil sin importar cuánto tiempo pase.
+const DAY1_MIN_HOURS = 20
+const DAY1_SKIP_AFTER_DAYS = 4
+const DAY3_MIN_DAYS = 3
+const DAY3_SKIP_AFTER_DAYS = 7
+// day5 (2026-09-29, pedido de Leo: seguimiento sin huecos): tapa el
+// hueco entre day3 y membership_intro (día 7). Un tip + invitación, no
+// vende nada.
+const DAY5_MIN_DAYS = 5
+const DAY5_SKIP_AFTER_DAYS = 9
+const MEMBERSHIP_EMAIL_MIN_DAY = 7
+// (sin SKIP_AFTER: membership_intro no caduca, ver nota arriba)
+// Días de espera desde que tocó el límite gratis antes de ofrecerle
+// membership_intro por comportamiento (ver decideEmail punto 3): para
+// no encimarse con limit_reached, que ya vende la membresía por ese
+// mismo golpe de límite.
+const MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS = 3
+const REACTIVATION_EMAIL_MIN_DAY = 14
+const REACTIVATION_EMAIL_SKIP_AFTER_DAYS = 45
+// 2026-09-29: final_onboarding pasó del día 30 al día 21 (antes había
+// 16 días de silencio entre reactivation_day14 y este). El texto habla
+// de "un mes"; se ajustó a "unas semanas".
+const FINAL_ONBOARDING_MIN_DAY = 21
+const FINAL_ONBOARDING_SKIP_AFTER_DAYS = 60
+// Después de final_onboarding (ver "long_term" en la nota de arriba).
+// 2026-09-29: de 21 a 14 días entre correos, para no dejar huecos.
+const LONG_TERM_INTERVAL_DAYS = 14
+const LONG_TERM_SUNSET_DAYS = 180
+
+// Las 4 claves de la secuencia por calendario que SÍ pueden caducar
+// (con su plazo), en el mismo orden en que se revisan. Se usa para
+// no repetir la misma lista dos veces en el código.
+const EXPIRABLE_SCHEDULE: { key: EmailKeyScheduled; skipAfterDays: number }[] = [
+  { key: 'day1', skipAfterDays: DAY1_SKIP_AFTER_DAYS },
+  { key: 'day3', skipAfterDays: DAY3_SKIP_AFTER_DAYS },
+  { key: 'day5', skipAfterDays: DAY5_SKIP_AFTER_DAYS },
+  { key: 'reactivation_day14', skipAfterDays: REACTIVATION_EMAIL_SKIP_AFTER_DAYS },
+  { key: 'final_onboarding', skipAfterDays: FINAL_ONBOARDING_SKIP_AFTER_DAYS },
+]
+
+// Comportamiento:
+const ABANDONED_SIGNUP_MIN_HOURS = 24
+const ABANDONED_SIGNUP_MAX_HOURS = 72
+const INACTIVE_USER_DAYS = 3
+const INACTIVE_REACTIVATION_COOLDOWN_DAYS = 10
+const LIMIT_REACHED_MIN_HOURS = 0.5
+const LIMIT_REACHED_MAX_HOURS = 1.5
+const LIMIT_REACHED_COOLDOWN_DAYS = 7
+const LIMIT_RESET_MIN_HOURS = 24
+const LIMIT_RESET_MAX_HOURS = 28
+const CHECKOUT_ABANDONED_MIN_HOURS = 2
+// El correo 1 sale normalmente a las 2 a 4 h. El tope de 30 h solo existe
+// para que NO se pierda si justo cae de madrugada (horas sin envío) o si
+// otro correo (p. ej. limit_reached) ocupó el lugar de las 24 h: queda
+// pendiente y sale en la primera oportunidad permitida.
+const CHECKOUT_ABANDONED_MAX_HOURS = 30
+// Ventana especial de alta intención: desde el último intento hasta el
+// correo 2 (máximo ~72 h). Ver checkoutWindowActive().
+const CHECKOUT_WINDOW_MAX_HOURS = 72
+// Segundo correo del mismo intento: 24 a 48 h después del primero.
+const CHECKOUT_FOLLOWUP_MIN_HOURS = 24
+const CHECKOUT_FOLLOWUP_MAX_HOURS = 48
+// Tolerancia al reservar el lugar del freno global de 24h: un Cron diario
+// (racha, 13:00) puede arrancar unos segundos ANTES que el día anterior y,
+// sin tolerancia, se bloquearía un día sí y otro no.
+const MARKETING_SLOT_TOLERANCE_MINUTES = 15
+const REACTIVATION_DAY14_INACTIVE_DAYS = 10
+const ACTIVE_FREE_USER_MIN_DAYS_SINCE_SIGNUP = 10
+const ACTIVE_FREE_USER_LAST_SEEN_MAX_DAYS = 2
+const ACTIVE_FREE_USER_COOLDOWN_DAYS = 14
+
+// "active_free_pitch" (correo de venta recurrente a cuentas gratis
+// muy activas) queda con la lógica lista pero APAGADO por ahora: no
+// se manda nada de este tipo hasta que se ponga en true. Primero se
+// quiere medir cómo funcionan onboarding, reactivación, límite
+// gratuito, checkout abandonado y el correo de membresía del día 7.
+const ACTIVE_FREE_PITCH_ENABLED = false
+
+// Anti-spam global: como mucho un correo de este sistema por
+// usuario en este lapso, sin importar qué tipo sea. EXCEPCIÓN:
+// "welcome" es un correo inicial/operacional (confirma que la
+// cuenta está lista) y no cuenta para este freno, ni al mandarse ni
+// al revisarlo: así no le tapa el paso a abandoned_signup unas
+// horas después si de verdad no practicó. Los correos
+// transaccionales del sitio (recuperar contraseña, bienvenida de
+// pago, avisos de comentarios) tampoco cuentan, pero eso es porque
+// viven en funciones de Supabase totalmente aparte, ni pasan por
+// aquí.
+const MARKETING_EMAIL_MIN_GAP_HOURS = 24
+const NO_COOLDOWN_KEYS = new Set(['welcome'])
+// La bienvenida sale al instante por el trigger profiles_send_welcome;
+// el Cron solo la toma como respaldo pasados estos minutos.
+const WELCOME_CRON_DELAY_MINUTES = 10
+// Si el proceso muere con la bienvenida reservada, otro la puede tomar
+// pasado este tiempo (mismo criterio que member_welcome_claimed_at).
+const WELCOME_CLAIM_LEASE_MINUTES = 15
+
+// ---------------- Miembros (is_member=true) ----------------
+// La reactivación por inactividad (14/35/56) está en member-reactivation-core.mjs
+// y en el bloque "Reactivación de miembros de pago v2" al final de este archivo.
+
+// Ventana de "member_activation" (miembro nuevo que no ha practicado
+// ni una vez desde que pagó): 24-48h después de member_since. Fuera de
+// esta ventana ya no se ofrece por member_activation (si sigue sin
+// practicar, lo toma la secuencia de reactivación 14/35/56).
+const MEMBER_ACTIVATION_MIN_HOURS = 24
+const MEMBER_ACTIVATION_MAX_HOURS = 48
+
+// Ventana horaria (ajustado 2026-09-25 por pedido de Leo): 8am-9pm
+// hora de Cancún es la ventana PREFERIDA (mejor probabilidad de
+// apertura), pero NO es un candado duro: un correo que quede listo a
+// las 10 u 11pm sale normal, sin razón para posponerlo. Lo único que
+// sí se bloquea de verdad es la madrugada (1:00am-7:59am hora de
+// Cancún): ahí sí se espera a la siguiente pasada del Cron dentro de
+// zona segura. Todo el resto de esta función sigue trabajando en UTC
+// tal cual (created_at, last_seen_at, etc.), esto SOLO decide si es
+// buen momento para MANDAR el correo que ya se decidió que le toca a
+// alguien. América/Cancún (Quintana Roo) es UTC-5 todo el año (no
+// tiene horario de verano), así que no hace falta ninguna librería
+// de zonas horarias: basta con restar 5 horas a la hora UTC actual.
+// Como ninguna de las ventanas de elegibilidad de estos correos es
+// más angosta que unas horas (salvo abandoned_signup, ver abajo), y
+// la madrugada bloqueada dura como mucho 7 horas, nadie se queda sin
+// su correo por esto, solo puede salir un poco después de lo ideal.
+// Dos claves quedan exentas a propósito, sin importar la hora (ni
+// siquiera en la madrugada):
+//  - abandoned_signup: ventana dura de 30-180 minutos, sin "caduca"
+//    (ver arriba). Esperar a que amanezca lo perdería de verdad, no
+//    solo lo atrasaría.
+//  - welcome: confirmación de que la cuenta ya está lista, no
+//    "caduca" nunca y no es un correo de venta, así que no hay razón
+//    para atrasarlo (además así nunca le tapa el paso a
+//    abandoned_signup unas horas después).
+const CANCUN_UTC_OFFSET_HOURS = -5
+const BLOCKED_HOUR_LOCAL_START = 1 // 1:00am hora de Cancún
+const BLOCKED_HOUR_LOCAL_END = 7 // hasta las 7:59am hora de Cancún
+const HOUR_GATE_EXEMPT_KEYS = new Set(['abandoned_signup', 'welcome'])
+function isGoodSendHour(now: number): boolean {
+  const utcHour = new Date(now).getUTCHours()
+  const localHour = (utcHour + CANCUN_UTC_OFFSET_HOURS + 24) % 24
+  const isMadrugada = localHour >= BLOCKED_HOUR_LOCAL_START && localHour <= BLOCKED_HOUR_LOCAL_END
+  return !isMadrugada
+}
+
+const MAX_PER_RUN = 300
+
+// Orden de prioridad: si a alguien le aplican varias condiciones el
+// mismo momento, se manda solo la primera de esta lista que
+// aplique. (Ver la nota larga arriba del archivo.)
+const PRIORITY_ORDER = [
+  'limit_reached',
+  'checkout_abandoned',
+  'checkout_followup',
+  'limit_reset',
+  'abandoned_signup',
+  'reactivation_3d',
+  'welcome',
+  'day1',
+  'day3',
+  'day5',
+  'membership_intro',
+  'reactivation_day14',
+  'final_onboarding',
+  'long_term',
+  'active_free_pitch',
+  // El siguiente es para MIEMBROS (is_member=true), no para
+  // cuentas gratis: viven en esta misma lista solo para que el modo
+  // manual de prueba (manual_emails + which) los reconozca como
+  // válidos. Su lógica de decisión es aparte (ver decideMemberEmail
+  // más abajo), no pasan por decideEmail ni compiten en prioridad con
+  // los de arriba.
+  'member_activation',
+] as const
+type EmailKey = (typeof PRIORITY_ORDER)[number]
+
+// Las 3 claves de arriba que son de miembros en vez de cuentas
+// gratis: se usan para que sendIfStillEligible() sepa que este
+// correo requiere is_member=true (en vez de false, como todos los
+// demás), y para que el modo manual de prueba busque el perfil
+// correcto.
+const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation'])
+
+// Subconjunto de EmailKey: solo las 4 claves de la secuencia por
+// calendario que pueden "caducar" y marcarse 'skipped' (ver
+// EXPIRABLE_SCHEDULE arriba). membership_intro queda fuera a
+// propósito: nunca caduca.
+type EmailKeyScheduled = 'day1' | 'day3' | 'day5' | 'reactivation_day14' | 'final_onboarding'
+
+type Profile = {
+  id: string
+  email: string | null
+  is_member: boolean
+  created_at: string
+  last_seen_at: string | null
+  checkout_started_at: string | null
+  free_daily_count: number | null
+  free_daily_date: string | null
+  free_last_practice_at: string | null
+  free_first_exercise_at: string | null
+  free_daily_limit_reached_at: string | null
+  lifecycle_emails: Record<string, string> | null
+  last_marketing_email_at: string | null
+  display_name?: string | null
+  next_renewal_at: string | null
+  member_since?: string | null
+  // Última práctica REAL de un Miembro (distinto de last_seen_at, que
+  // se actualiza con cualquier visita). La escribe backend.js
+  // (pushSession()). Ver la nota larga en decideMemberEmail().
+  last_practice_at?: string | null
+}
+
+Deno.serve(async (req: Request) => {
+  // Solo el Cron y el trigger de bienvenida pueden llamar esta función
+  // (2026-10-01): mandan el header x-internal-secret con la llave que
+  // vive en Supabase Vault ('internal_functions_secret'). Sin ella: 401.
+  if (!(await internalSecretOk(req.headers.get('x-internal-secret')))) {
+    return json({ ok: false, error: 'unauthorized' }, 401)
+  }
+  try {
+    // Modo manual (botón "Test" de Supabase o una prueba puntual tuya,
+    // NO lo usa el Cron): si el cuerpo trae "manual_emails" y "which",
+    // manda ESE correo a esos correos exactos, sin mirar ventanas de
+    // tiempo, cooldown, ni (para los 2 de miembros) la zona de
+    // silencio de renovación. Para los 11 correos de cuenta gratis
+    // sigue revisando is_member=false antes de mandar; para los 2 de
+    // miembros (MEMBER_ONLY_KEYS) revisa is_member=true en vez de
+    // false. Sigue registrando el envío en lifecycle_emails, para no
+    // duplicar después.
+    try {
+      const body = await req.json()
+      // Simulación de la reactivación de miembros: NO envía ni escribe nada.
+      if (body && body.reactivation_dry_run === true) {
+        return json(await reactivationDryRun(), 200)
+      }
+      // Fechas de renovación reales desde los proveedores. Sin apply:true solo informa.
+      if (body && body.billing_sync === true) {
+        return json(await billingSync(body.apply === true), 200)
+      }
+      if (body && Array.isArray(body.manual_emails) && body.manual_emails.length && body.which) {
+        const which = String(body.which) as EmailKey
+        if (!PRIORITY_ORDER.includes(which)) {
+          return json({ ok: false, error: 'which invalido. Usa uno de: ' + PRIORITY_ORDER.join(', ') }, 200)
+        }
+        const wantsMember = MEMBER_ONLY_KEYS.has(which)
+        let sentManual = 0
+        for (const email of body.manual_emails) {
+          if (typeof email !== 'string' || !email) continue
+          const { data: prof } = await supabase.from('profiles').select('id, is_member').eq('email', email).maybeSingle()
+          if (!prof || prof.is_member !== wantsMember) continue
+          const didSend = await sendIfStillEligible(prof.id, email, which, wantsMember, true)
+          if (didSend) sentManual++
+        }
+        return json({ ok: true, manual: true, which, sentManual }, 200)
+      }
+      // Bienvenida al instante (2026-10-01): la llama el trigger
+      // profiles_send_welcome de la base de datos en cuanto se crea el
+      // perfil, para no esperar hasta 30 min al Cron. Solo manda
+      // "welcome" y solo si todavía no salió; si esta llamada falla, el
+      // Cron la manda en su siguiente pasada (ver WELCOME_CRON_DELAY_MINUTES).
+      if (body && typeof body.welcome_user_id === 'string' && body.welcome_user_id) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('id, email, is_member, email_opt_out_at, lifecycle_emails')
+          .eq('id', body.welcome_user_id)
+          .maybeSingle()
+        if (!prof || prof.is_member || prof.email_opt_out_at || (prof.lifecycle_emails || {})['welcome']) {
+          return json({ ok: true, welcome: false }, 200)
+        }
+        const didSend = await sendIfStillEligible(prof.id, prof.email, 'welcome')
+        return json({ ok: true, welcome: didSend }, 200)
+      }
+    } catch (_e) {
+      // Sin cuerpo JSON (o vacío): seguimos con el modo automático normal.
+    }
+
+    // Se leen TODAS las cuentas gratis por páginas de 1000 (orden fijo
+    // por id). Antes era .limit(300) sin orden: con más de 300 cuentas,
+    // las de más allá del corte nunca recibían ningún correo.
+    const profiles: Record<string, unknown>[] = []
+    let error: unknown = null
+    for (let page = 0; page < 20; page++) {
+      const { data: chunk, error: e } = await supabase
+        .from('profiles')
+        .select(
+          'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_last_practice_at, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+        )
+        .eq('is_member', false)
+        .not('email', 'is', null)
+        .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
+        .order('id', { ascending: true })
+        .range(page * 1000, page * 1000 + 999)
+      if (e) { error = e; break }
+      profiles.push(...(chunk || []))
+      if (!chunk || chunk.length < 1000) break
+    }
+    if (error) {
+      console.error('Error buscando cuentas gratis:', error)
+      return json({ ok: false }, 200)
+    }
+
+    // Cuentas recientes primero (arreglo 2026-09-30): la consulta de
+    // arriba no tiene orden y corta en MAX_PER_RUN, así que si hay más
+    // cuentas gratis que ese límite, una cuenta NUEVA podía no entrar
+    // nunca en la lista y su correo de bienvenida no salía. Esta
+    // consulta aparte trae solo las cuentas de los últimos 3 días,
+    // ordenadas de la más nueva a la más vieja, y se pone al
+    // principio de la lista (sin duplicar ids).
+    const { data: recentProfiles } = await supabase
+      .from('profiles')
+      .select(
+        'id, email, is_member, created_at, last_seen_at, checkout_started_at, free_daily_count, free_daily_date, free_last_practice_at, free_first_exercise_at, free_daily_limit_reached_at, lifecycle_emails, last_marketing_email_at'
+      )
+      .eq('is_member', false)
+      .not('email', 'is', null)
+      .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
+      .gte('created_at', new Date(Date.now() - 3 * 86400000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(MAX_PER_RUN)
+    const seenIds = new Set<string>()
+    const allProfiles = [...(recentProfiles || []), ...profiles].filter((x) => {
+      const id = x.id as string
+      if (seenIds.has(id)) return false
+      seenIds.add(id)
+      return true
+    })
+
+    const now = Date.now()
+    const counts: Record<string, number> = {}
+
+    for (const p of allProfiles as unknown as Profile[]) {
+      // Antes de decidir, revisar si algún correo de la secuencia por
+      // calendario ya "caducó" (pasó su SKIP_AFTER_DAYS) sin haberse
+      // mandado. Si sí, se marca 'skipped' en lifecycle_emails (una sola
+      // escritura ligera, sin mandar correo y sin tocar
+      // last_marketing_email_at) ANTES de llamar a decideEmail, para que
+      // esta misma pasada ya no lo vuelva a ofrecer.
+      const expiredKeys = findNewlyExpiredKeys(p, now)
+      if (expiredKeys.length) {
+        p.lifecycle_emails = await markExpiredAsSkipped(p.id, p.lifecycle_emails || {}, expiredKeys)
+      }
+
+      const key = decideEmail(p, now)
+      if (!key) continue
+      if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
+      const didSend = await sendIfStillEligible(p.id, p.email, key)
+      if (didSend) counts[key] = (counts[key] || 0) + 1
+    }
+
+    // ---- Segunda pasada, aparte: miembros inactivos (is_member=true) ----
+    // Consulta y bucle totalmente separados de los de arriba (cuentas
+    // gratis): así la lógica existente de onboarding/límite/checkout
+    // no se toca ni se puede ver afectada por esto. Ver
+    // decideMemberEmail() y la nota larga de MIEMBROS DE PAGO INACTIVOS
+    // más arriba (la reactivación v2 va por runReactivationFor).
+    const memberProfiles: Record<string, unknown>[] = []
+    let memberError: unknown = null
+    for (let page = 0; page < 20; page++) {
+      const { data: chunk, error: e } = await supabase
+        .from('profiles')
+        .select('id, email, is_member, last_seen_at, lifecycle_emails, last_marketing_email_at, next_renewal_at, member_since, last_practice_at')
+        .eq('is_member', true)
+        .not('email', 'is', null)
+        .is('email_opt_out_at', null)
+        .eq('email_invalid', false)
+        .order('id', { ascending: true })
+        .range(page * 1000, page * 1000 + 999)
+      if (e) { memberError = e; break }
+      memberProfiles.push(...(chunk || []))
+      if (!chunk || chunk.length < 1000) break
+    }
+    if (memberError) {
+      console.error('Error buscando miembros:', memberError)
+      // No se corta todo el run por esto: los correos de cuentas
+      // gratis de arriba ya se mandaron bien. Se devuelve lo que sí
+      // se logró.
+      return json({ ok: true, counts }, 200)
+    }
+
+    const reactEnabled = Deno.env.get('MEMBER_REACTIVATION_V2') === 'on'
+    let reactSent = 0
+    for (const p of memberProfiles as unknown as Profile[]) {
+      // 1) Activación de miembro nuevo (se conserva).
+      const key = decideMemberEmail(p, now)
+      if (key) {
+        if (!HOUR_GATE_EXEMPT_KEYS.has(key) && !isGoodSendHour(now)) continue
+        const didSend = await sendIfStillEligible(p.id, p.email, key, true)
+        if (didSend) counts[key] = (counts[key] || 0) + 1
+        continue
+      }
+      // 2) Reactivación 14/35/56. Primero se cierran ciclos de quien ya volvió.
+      await closeReturnedCycles(p as unknown as Record<string, any>)
+      if (!reactEnabled || reactSent >= MAX_REACTIVATION_PER_RUN) continue
+      // Filtro barato y seguro: quien practicó hace menos de 14 días sigue activo.
+      const lp = p.last_practice_at ? new Date(p.last_practice_at).getTime() : null
+      if (lp !== null && (now - lp) / 86400000 < RC.REACT.FIRST_INACTIVE_DAYS) continue
+      const r = await runReactivationFor(p.id, false)
+      if (r.decision === 'sent') {
+        reactSent++
+        const ck = 'member_react_' + r.step
+        counts[ck] = (counts[ck] || 0) + 1
+      }
+    }
+
+    // Barrido de bienvenidas de miembro que no salieron (auditoría
+    // 2026-09-30): ver sweepMemberWelcomes().
+    const welcomesSent = await sweepMemberWelcomes()
+    if (welcomesSent) counts['member_welcome_sweep'] = welcomesSent
+
+    return json({ ok: true, counts }, 200)
+  } catch (e) {
+    console.error(e)
+    return json({ ok: false }, 200)
+  }
+})
+
+// ---------------- Barrido: bienvenida de miembro pendiente ----------------
+// Red de seguridad para la bienvenida que mandan los webhooks de pago
+// (stripe/paypal/mp): si Resend falló o el proceso murió, member_welcome_sent_at
+// sigue vacío y esta pasada (cada 30 min) la manda. Solo miembros de los
+// últimos 3 días (no se manda fuera de contexto) y con 10 min de espera para
+// dejar que el webhook la mande primero. Usa el mismo lease que los webhooks
+// (member_welcome_claimed_at), así nunca salen dos.
+async function sweepMemberWelcomes(): Promise<number> {
+  let sent = 0
+  try {
+    const nowMs = Date.now()
+    const { data: rows, error } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('is_member', true)
+      .is('member_welcome_sent_at', null)
+      .not('email', 'is', null)
+      .gte('member_since', new Date(nowMs - 3 * 86400000).toISOString())
+      .lte('member_since', new Date(nowMs - 10 * 60000).toISOString())
+      .order('member_since', { ascending: true })
+      .limit(200)
+    if (error) {
+      console.error('Error buscando bienvenidas pendientes:', error)
+      return 0
+    }
+    for (const r of rows || []) {
+      const cutoff = new Date(Date.now() - 15 * 60000).toISOString()
+      const { data: reclamado } = await supabase
+        .from('profiles')
+        .update({ member_welcome_claimed_at: new Date().toISOString() })
+        .eq('id', r.id)
+        .eq('is_member', true)
+        .is('member_welcome_sent_at', null)
+        .or(`member_welcome_claimed_at.is.null,member_welcome_claimed_at.lt.${cutoff}`)
+        .select('id')
+      if (!reclamado || !reclamado.length) continue
+      const ok = await sendMemberWelcomeViaResend(r.email as string)
+      await supabase
+        .from('profiles')
+        .update(ok ? { member_welcome_sent_at: new Date().toISOString(), member_welcome_claimed_at: null } : { member_welcome_claimed_at: null })
+        .eq('id', r.id)
+      if (ok) sent++
+    }
+  } catch (e) {
+    console.error('Error en sweepMemberWelcomes:', e)
+  }
+  return sent
+}
+
+async function sendMemberWelcomeViaResend(to: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [to],
+        reply_to: REPLY_TO_EMAIL,
+        subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
+        html: HTML_MEMBER_WELCOME,
+      }),
+    })
+    if (!res.ok) console.error('Error mandando bienvenida de miembro (barrido):', await res.text())
+    return res.ok
+  } catch (e) {
+    console.error('Error mandando bienvenida de miembro (barrido):', e)
+    return false
+  }
+}
+
+const HTML_MEMBER_WELCOME = `
+<div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
+  <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
+    <h1 style="color:#253ECC; font-size:22px; margin-top:0;">¡Bienvenido a Inglés con Leo!</h1>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Tu membresía ya está activa y puedes empezar a practicar desde hoy.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Dentro encontrarás actividades de gramática, vocabulario, listening,
+      speaking y writing, organizadas para que avances a tu ritmo y sin
+      complicaciones.
+    </p>
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI · Incluido</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">Tu profesor de apoyo con IA ya está activo</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">Después de contestar un ejercicio, busca los botones con la estrellita ✦:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Explícame por qué</strong>: te explica tu error en español sencillo</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar</td></tr>
+      </table>
+    </div>
+    <p style="text-align:center; margin:28px 0;">
+      <a href="https://inglesconleo.com/miembros.html"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:12px 24px; border-radius:8px; font-size:15px; display:inline-block;">
+        Entrar a mi cuenta
+      </a>
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      No necesitas estudiar horas. Con unos minutos de práctica constante
+      puedes avanzar muchísimo, sobre todo si cada error lo conviertes en
+      algo que ya entiendes.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Si no sabes por dónde empezar, entra a tu plan de estudio: está armado
+      con tu nivel y tus puntos débiles.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Si en algún momento tienes una duda o necesitas ayuda, puedes responder
+      directamente a este correo.
+    </p>
+    <p style="color:#333; font-size:15px; margin-bottom:0;">
+      Gracias por formar parte de Inglés con Leo. ¡Bienvenida(o)!
+    </p>
+  </div>
+</div>
+`.trim()
+
+// ---------------- Decidir qué correo (si acaso) le toca a alguien ----------------
+
+// Etapa de checkout abandonado que le toca a alguien AHORA, o null.
+// Estado por intento, sin columnas nuevas:
+//   checkout_started_at            = último intento real (T)
+//   lifecycle_emails.checkout_abandoned = cuándo salió el correo 1
+//   lifecycle_emails.checkout_followup  = cuándo salió el correo 2
+// Un correo "pertenece" al intento actual solo si se mandó en/después de T;
+// los de intentos anteriores no cuentan (quedan cancelados).
+function checkoutStage(
+  p: { checkout_started_at: string | null; lifecycle_emails: Record<string, string> | null },
+  now: number
+): 'checkout_abandoned' | 'checkout_followup' | null {
+  if (!p.checkout_started_at) return null
+  const t = Date.parse(p.checkout_started_at)
+  if (!Number.isFinite(t)) return null
+  const lc = p.lifecycle_emails || {}
+  const parse = (v: string | undefined): number | null => {
+    if (!v) return null
+    const ms = Date.parse(v)
+    return Number.isFinite(ms) ? ms : null
+  }
+  const e1 = parse(lc['checkout_abandoned'])
+  const e2 = parse(lc['checkout_followup'])
+  const e1ThisAttempt = e1 !== null && e1 >= t
+  if (!e1ThisAttempt) {
+    const hrs = (now - t) / 3600000
+    // Sin cooldown fijo entre intentos: un intento real nuevo reinicia la
+    // secuencia (el freno global de 24 h evita el spam).
+    if (hrs >= CHECKOUT_ABANDONED_MIN_HOURS && hrs <= CHECKOUT_ABANDONED_MAX_HOURS) {
+      return 'checkout_abandoned'
+    }
+    return null
+  }
+  if (e2 !== null && e2 >= t) return null // el correo 2 de este intento ya salió
+  const hrsAfterE1 = (now - (e1 as number)) / 3600000
+  const hrsAfterAttempt = (now - t) / 3600000
+  if (hrsAfterE1 >= CHECKOUT_FOLLOWUP_MIN_HOURS && hrsAfterE1 <= CHECKOUT_FOLLOWUP_MAX_HOURS && hrsAfterAttempt <= CHECKOUT_WINDOW_MAX_HOURS) {
+    return 'checkout_followup'
+  }
+  return null
+}
+
+// ¿Está esta cuenta en la ventana especial de checkout (alta intención)?
+// Empieza en el ÚLTIMO intento real y termina cuando sale el correo 2 de ese
+// intento, cuando se acaba la secuencia sin él, o a las 72 h. Mientras dura,
+// decideEmail() no manda nada que no sea limit_reached o el propio checkout.
+// Al terminar NO se "descargan" correos atrasados: decideEmail() simplemente
+// recalcula el estado de hoy (y el freno de 24 h deja salir uno por vez).
+function checkoutWindowActive(
+  p: { checkout_started_at: string | null; lifecycle_emails: Record<string, string> | null },
+  now: number
+): boolean {
+  if (!p.checkout_started_at) return false
+  const t = Date.parse(p.checkout_started_at)
+  if (!Number.isFinite(t) || now < t) return false
+  if ((now - t) / 3600000 > CHECKOUT_WINDOW_MAX_HOURS) return false
+  const lc = p.lifecycle_emails || {}
+  const toMs = (v: string | undefined): number | null => {
+    if (!v) return null
+    const ms = Date.parse(v)
+    return Number.isFinite(ms) ? ms : null
+  }
+  const e1 = toMs(lc['checkout_abandoned'])
+  const e2 = toMs(lc['checkout_followup'])
+  if (e1 === null || e1 < t) return (now - t) / 3600000 <= CHECKOUT_ABANDONED_MAX_HOURS // correo 1 aún posible
+  if (e2 !== null && e2 >= t) return false // el correo 2 ya salió: ventana cerrada
+  return (now - e1) / 3600000 <= CHECKOUT_FOLLOWUP_MAX_HOURS
+}
+
+function decideEmail(p: Profile, now: number): EmailKey | null {
+  const lifecycle = p.lifecycle_emails || {}
+  const ageMs = now - new Date(p.created_at).getTime()
+  const ageMinutes = ageMs / 60000
+  const ageHours = ageMs / 3600000
+  const ageDays = ageMs / 86400000
+
+  // 0) "welcome" va ANTES del freno global a propósito: es el correo
+  // inicial de "tu cuenta está lista", no cuenta como marketing, y no
+  // debe bloquear ni ser bloqueado por abandoned_signup (que sí puede
+  // tocarle unas horas después, si de verdad no practicó).
+  // Las cuentas de menos de WELCOME_CRON_DELAY_MINUTES las atiende el
+  // trigger al instante (modo welcome_user_id); el Cron solo la manda
+  // si eso falló, así nunca salen dos bienvenidas por coincidir.
+  if (!lifecycle['welcome']) {
+    return ageMinutes >= WELCOME_CRON_DELAY_MINUTES ? 'welcome' : null
+  }
+
+  // Anti-spam global: si ya recibió cualquier correo de este sistema
+  // (que sí cuente para el freno, ver NO_COOLDOWN_KEYS) hace menos de
+  // MARKETING_EMAIL_MIN_GAP_HOURS, no le toca nada más en esta
+  // pasada, sin importar qué otra condición cumpla.
+  if (p.last_marketing_email_at && hoursSince(p.last_marketing_email_at, now) < MARKETING_EMAIL_MIN_GAP_HOURS) {
+    return null
+  }
+
+  // Checkout empezado pero todavía sin conversión. Es una señal de intención
+  // alta: va ANTES que limit_reached (2026-10-08). Si ambos están listos, sale
+  // checkout y limit_reached se suprime (no se pone en cola); durante la
+  // ventana activa limit_reached tampoco puede salir y retrasar el seguimiento. Como este bucle
+  // solo considera cuentas gratis y sendIfStillEligible vuelve a comprobar
+  // is_member justo antes de enviar, nunca se manda a quien ya pagó.
+  // (2026-10-08) Solo cuenta el ULTIMO intento (checkout_started_at) y
+  // cada intento tiene como máximo 2 correos (ver checkoutStage).
+  const checkoutKey = checkoutStage(p, now)
+  if (checkoutKey) return checkoutKey
+  // Ventana especial: nada de racha/encuesta/reactivación/tips/otros nudges
+  // menores mientras dura el seguimiento de checkout.
+  if (checkoutWindowActive(p, now)) return null
+
+  // 1) Límite gratuito alcanzado: la señal más "caliente" de todas
+  // (el usuario está usando la plataforma ahora mismo y chocó con el
+  // límite), así que va primero.
+  if (p.free_daily_limit_reached_at) {
+    const hrs = hoursSince(p.free_daily_limit_reached_at, now)
+    const lastSent = lifecycle['limit_reached']
+    const cooldownOk = !lastSent || daysSince(lastSent, now) >= LIMIT_REACHED_COOLDOWN_DAYS
+    // Solo cuenta si el límite se alcanzó DESPUÉS del último correo de
+    // este tipo (si no, sería el mismo "toque de límite" de la vez
+    // pasada, no uno nuevo).
+    const isFreshHit = !lastSent || new Date(p.free_daily_limit_reached_at).getTime() > new Date(lastSent).getTime()
+    if (hrs >= LIMIT_REACHED_MIN_HOURS && hrs <= LIMIT_REACHED_MAX_HOURS && cooldownOk && isFreshHit) {
+      return 'limit_reached'
+    }
+  }
+
+
+  // Al día siguiente del límite, recordar que la práctica gratis ya volvió
+  // a estar disponible, SOLO si no hubo práctica posterior al límite.
+  // free_last_practice_at es UTC y se escribe junto al contador gratis; no
+  // usamos free_daily_date, porque esa fecha viene del huso local del navegador.
+  if (p.free_daily_limit_reached_at && p.free_last_practice_at) {
+    const hrs = hoursSince(p.free_daily_limit_reached_at, now)
+    const lastSent = lifecycle['limit_reset']
+    const isFreshEpisode = !lastSent || new Date(p.free_daily_limit_reached_at).getTime() > new Date(lastSent).getTime()
+    const hasPracticedSinceLimit = new Date(p.free_last_practice_at).getTime() > new Date(p.free_daily_limit_reached_at).getTime()
+    if (hrs >= LIMIT_RESET_MIN_HOURS && hrs <= LIMIT_RESET_MAX_HOURS && isFreshEpisode && !hasPracticedSinceLimit) {
+      return 'limit_reset'
+    }
+  }
+
+  // 2) Reactivación por abandono.
+  //    2a) Creó cuenta y nunca hizo ni un ejercicio.
+  if (!p.free_first_exercise_at && !lifecycle['abandoned_signup']) {
+    if (ageHours >= ABANDONED_SIGNUP_MIN_HOURS && ageHours <= ABANDONED_SIGNUP_MAX_HOURS) {
+      return 'abandoned_signup'
+    }
+  }
+  //    2b) Ya había practicado, pero lleva varios días sin practicar
+  //    DE VERDAD. Usa free_daily_date (última fecha con un ejercicio
+  //    gratis real) en vez de last_seen_at: last_seen_at se actualiza
+  //    con cualquier visita estando logueado (abrir progreso.html, un
+  //    artículo, etc.), así que abrir una página sin practicar ya NO
+  //    cuenta como "seguir activo" ni resetea la inactividad.
+  const lastFreePracticeMs = freeLastPracticeMs(p)
+  if (p.free_first_exercise_at && lastFreePracticeMs !== null) {
+    const lastPracticeMs = lastFreePracticeMs
+    const inactiveDays = (now - lastPracticeMs) / 86400000
+    const lastSent = lifecycle['reactivation_3d']
+    const cooldownOk = !lastSent || daysSince(lastSent, now) >= INACTIVE_REACTIVATION_COOLDOWN_DAYS
+    // Solo si volvió a practicar (free_daily_date más nuevo) desde el
+    // último envío: así no se repite el mismo correo por la misma
+    // ausencia, solo por un episodio nuevo de verdad.
+    const cameBackSince = !lastSent || lastPracticeMs > new Date(lastSent).getTime()
+    if (inactiveDays >= INACTIVE_USER_DAYS && cooldownOk && cameBackSince) {
+      return 'reactivation_3d'
+    }
+  }
+
+  // 3) Secuencia de onboarding por calendario. "welcome" ya se
+  // resolvió arriba (punto 0). Cada uno de estos es "elegible DESDE"
+  // su día/hora, sin techo: si hoy no le toca por prioridad, sigue
+  // pendiente y se manda en cuanto pueda (nunca desaparece).
+  if (!lifecycle['day1'] && ageHours >= DAY1_MIN_HOURS) {
+    return 'day1'
+  }
+  if (!lifecycle['day3'] && ageDays >= DAY3_MIN_DAYS) {
+    return 'day3'
+  }
+  // (no se manda si membership_intro ya salió: sería un tip "de relleno"
+  // después de la venta, en el orden equivocado)
+  if (!lifecycle['day5'] && !lifecycle['membership_intro'] && ageDays >= DAY5_MIN_DAYS) {
+    return 'day5'
+  }
+  // "membership_intro" (presentar la membresía, UNA sola vez) tiene 2
+  // caminos de entrada, para que se sienta como un solo sistema en vez
+  // de "membership_intro" + "active_free_pitch" mandando lo mismo por
+  // separado:
+  //   a) Comportamiento: ya demostró que usa el producto en serio
+  //      (tocó el límite gratis) Y volvió a practicar después de ese
+  //      golpe (no es la misma visita que ya aprovechó limit_reached,
+  //      es señal de que sigue viniendo). Se espera
+  //      MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS desde el golpe de límite a
+  //      propósito, para NO mandar este correo pegado a limit_reached
+  //      (que ya vende la membresía por ese mismo evento) y no sentirse
+  //      como 2 correos de venta seguidos por lo mismo.
+  //   b) Calendario (día 7): el piso de siempre, por si (a) nunca se
+  //      cumplió. No reutiliza ninguna columna nueva: free_daily_date y
+  //      free_daily_limit_reached_at ya existían para otras cosas.
+  if (!lifecycle['membership_intro']) {
+    const hitLimitBefore = !!p.free_daily_limit_reached_at
+    const practicedAfterLimitHit =
+      hitLimitBefore &&
+      !!p.free_daily_date &&
+      new Date(p.free_daily_date + 'T00:00:00Z').getTime() > new Date(p.free_daily_limit_reached_at!).getTime()
+    const daysSinceLimitHit = hitLimitBefore ? daysSince(p.free_daily_limit_reached_at!, now) : 0
+    if (practicedAfterLimitHit && daysSinceLimitHit >= MEMBERSHIP_PITCH_BEHAVIOR_MIN_DAYS) {
+      return 'membership_intro'
+    }
+    if (ageDays >= MEMBERSHIP_EMAIL_MIN_DAY) {
+      return 'membership_intro'
+    }
+  }
+  if (!lifecycle['reactivation_day14'] && p.free_first_exercise_at && lastFreePracticeMs !== null && ageDays >= REACTIVATION_EMAIL_MIN_DAY) {
+    const inactiveDays = (now - lastFreePracticeMs) / 86400000
+    if (inactiveDays >= REACTIVATION_DAY14_INACTIVE_DAYS) {
+      return 'reactivation_day14'
+    }
+  }
+  if (!lifecycle['final_onboarding'] && ageDays >= FINAL_ONBOARDING_MIN_DAY) {
+    return 'final_onboarding'
+  }
+
+  // 3b) Después del día 30: un correo cada LONG_TERM_INTERVAL_DAYS,
+  // rotando por LONG_TERM_EMAILS (ver nota "long_term" arriba).
+  {
+    const finalMark = lifecycle['final_onboarding']
+    const sentCount = parseInt(lifecycle['long_term_count'] || '0', 10) || 0
+    const lastActivity = p.last_seen_at || p.created_at
+    const stillAround = daysSince(lastActivity, now) <= LONG_TERM_SUNSET_DAYS
+    if (finalMark && sentCount < LONG_TERM_EMAILS.length && stillAround) {
+      // Desde cuándo contar los 21 días: el último long_term; si no hay,
+      // el envío de final_onboarding; y si ese caducó ('skipped'), el
+      // día 30 de la cuenta.
+      let sinceIso = lifecycle['long_term']
+      if (!sinceIso) {
+        sinceIso = finalMark !== 'skipped'
+          ? finalMark
+          : new Date(new Date(p.created_at).getTime() + FINAL_ONBOARDING_MIN_DAY * 86400000).toISOString()
+      }
+      if (daysSince(sinceIso, now) >= LONG_TERM_INTERVAL_DAYS) {
+        return 'long_term'
+      }
+    }
+  }
+
+  // 4) Promoción de membresía "porque sí" (prioridad más baja: solo
+  // se manda si nada de lo anterior aplicó).
+  // Desactivado por ahora (ver ACTIVE_FREE_PITCH_ENABLED arriba):
+  // se deja la lógica lista pero no se manda nada de este tipo hasta
+  // que se decida activar promociones recurrentes.
+  if (ACTIVE_FREE_PITCH_ENABLED && p.free_first_exercise_at && p.last_seen_at) {
+    const lastSent = lifecycle['active_free_pitch']
+    const cooldownOk = !lastSent || daysSince(lastSent, now) >= ACTIVE_FREE_USER_COOLDOWN_DAYS
+    const stillComingBack = daysSince(p.last_seen_at, now) <= ACTIVE_FREE_USER_LAST_SEEN_MAX_DAYS
+    if (ageDays >= ACTIVE_FREE_USER_MIN_DAYS_SINCE_SIGNUP && stillComingBack && cooldownOk) {
+      return 'active_free_pitch'
+    }
+  }
+
+  return null
+}
+
+function hoursSince(iso: string, now: number): number {
+  return (now - new Date(iso).getTime()) / 3600000
+}
+function daysSince(iso: string, now: number): number {
+  return (now - new Date(iso).getTime()) / 86400000
+}
+
+// Las cuentas nuevas escriben free_last_practice_at en cada ejercicio. El
+// fallback por fecha mantiene reactivación para cuentas antiguas hasta que
+// vuelvan a practicar; NUNCA se usa para limit_reset, que necesita precisión
+// de timestamp para evitar un correo incorrecto.
+function freeLastPracticeMs(p: Profile): number | null {
+  if (p.free_last_practice_at) return new Date(p.free_last_practice_at).getTime()
+  if (p.free_daily_date) return new Date(p.free_daily_date + 'T00:00:00Z').getTime()
+  return null
+}
+
+// ---------------- Decidir el correo de activación de un MIEMBRO nuevo ----------------
+// Solo member_activation (pagó y no ha practicado, 24 a 48 h después de
+// member_since, una sola vez). La reactivación por inactividad es otro
+// camino (runReactivationFor), con sus propias reglas.
+function decideMemberEmail(p: Profile, now: number): EmailKey | null {
+  const lifecycle = p.lifecycle_emails || {}
+  if (p.last_marketing_email_at && hoursSince(p.last_marketing_email_at, now) < MARKETING_EMAIL_MIN_GAP_HOURS) {
+    return null
+  }
+  if (!lifecycle['member_activation'] && p.member_since) {
+    const hrsSinceMember = hoursSince(p.member_since, now)
+    const practicedSinceMember = !!p.last_practice_at && new Date(p.last_practice_at).getTime() > new Date(p.member_since).getTime()
+    if (!practicedSinceMember && hrsSinceMember >= MEMBER_ACTIVATION_MIN_HOURS && hrsSinceMember <= MEMBER_ACTIVATION_MAX_HOURS) {
+      return 'member_activation'
+    }
+  }
+  return null
+}
+
+// ---------------- Caducidad/catch-up de la secuencia por calendario ----------------
+// Objetivo: un correo puede retrasarse por el freno de 24h o porque otro
+// de mayor prioridad le ganó el turno, pero si pasa DEMASIADO tiempo sin
+// mandarse, ya no tiene sentido mandarlo fuera de contexto semanas
+// después. En vez de eso, se marca 'skipped' en lifecycle_emails (queda
+// registrado que se decidió NO mandarlo a propósito, no que se perdió
+// por error) y decideEmail() ya no lo vuelve a ofrecer, porque su check
+// es "!lifecycle[key]" y 'skipped' (como cualquier string) ya es un
+// valor "truthy".
+
+// Revisa las 4 claves de EXPIRABLE_SCHEDULE y devuelve las que recién
+// cruzaron su plazo (SKIP_AFTER_DAYS) sin haberse mandado ni marcado ya.
+function findNewlyExpiredKeys(p: Profile, now: number): EmailKeyScheduled[] {
+  const lifecycle = p.lifecycle_emails || {}
+  const ageDays = (now - new Date(p.created_at).getTime()) / 86400000
+  const expired: EmailKeyScheduled[] = []
+  for (const item of EXPIRABLE_SCHEDULE) {
+    if (!lifecycle[item.key] && ageDays > item.skipAfterDays) {
+      expired.push(item.key)
+    }
+  }
+  return expired
+}
+
+// Escritura ligera y aparte de sendIfStillEligible: NO manda ningún
+// correo, NO toca last_marketing_email_at (no debe contar como si se
+// hubiera mandado marketing, para no tapar el paso a otro correo real
+// en esta misma pasada). Solo guarda 'skipped' en lifecycle_emails para
+// esas claves. Devuelve el lifecycle_emails ya actualizado para que el
+// resto de esta pasada (decideEmail) lo use sin tener que releer de la
+// base de datos.
+async function markExpiredAsSkipped(
+  userId: string,
+  currentLifecycle: Record<string, string>,
+  expiredKeys: EmailKeyScheduled[]
+): Promise<Record<string, string>> {
+  const merged = Object.assign({}, currentLifecycle)
+  for (const key of expiredKeys) merged[key] = 'skipped'
+  const { error } = await supabase.from('profiles').update({ lifecycle_emails: merged }).eq('id', userId)
+  if (error) console.error(`Error marcando como 'skipped' (${expiredKeys.join(', ')}) para ${userId}:`, error)
+  return merged
+}
+
+// ---------------- Mandar + registrar ----------------
+
+// Vuelve a leer is_member y lifecycle_emails EN ESTE MOMENTO (no el
+// valor que traía la lista original, que pudo quedar viejo mientras
+// se mandaban los correos anteriores de esta misma corrida), manda
+// el correo que corresponde, y si se mandó, registra el envío tanto
+// en lifecycle_emails[key] como en last_marketing_email_at (el
+// freno global de "no más de uno cada 24h").
+//
+// expectedIsMember: para los 11 correos de cuenta gratis de siempre
+// es false (el default, no hace falta pasarlo). Para los 2 correos
+// nuevos de miembros (ver MEMBER_ONLY_KEYS) es true: así, si alguien
+// se dio de baja o se hizo miembro justo entre que se decidió el
+// correo y este momento, no se manda a la audiencia equivocada.
+async function sendIfStillEligible(
+  userId: string,
+  email: string | null,
+  key: EmailKey,
+  expectedIsMember: boolean = false,
+  manual: boolean = false
+): Promise<boolean> {
+  if (!email) return false
+  const { data: fresh } = await supabase
+    .from('profiles')
+    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at, email_invalid, last_marketing_email_at, checkout_started_at')
+    .eq('id', userId)
+    .maybeSingle()
+  if (!fresh || fresh.is_member !== expectedIsMember) return false
+  if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
+  // Correo rebotado o marcado como spam (lo pone resend-webhook): ninguna
+  // automatización le escribe más (2026-10-08).
+  if (fresh.email_invalid) return false
+  // Checkout: re-verificar con datos frescos que sigue siendo el intento
+  // más reciente y que esta etapa todavía le toca (conversión, intento
+  // nuevo o envío duplicado cancelan el correo).
+  if (!manual && (key === 'checkout_abandoned' || key === 'checkout_followup')) {
+    const stageNow = checkoutStage(
+      { checkout_started_at: fresh.checkout_started_at, lifecycle_emails: fresh.lifecycle_emails },
+      Date.now()
+    )
+    if (stageNow !== key) return false
+  }
+
+  // long_term rota por LONG_TERM_EMAILS: se elige el siguiente de la
+  // lista según cuántos ya se le mandaron a esta persona. Se detiene
+  // sola cuando se acaba la lista (a propósito NO da la vuelta, a
+  // diferencia de las variantes de abajo).
+  const freshLifecycle: Record<string, string> = fresh.lifecycle_emails || {}
+  const longTermIdx = parseInt(freshLifecycle['long_term_count'] || '0', 10) || 0
+  if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
+
+  // Variantes de los correos de reactivación (reactivation_3d de cuentas
+  // gratis): un contador por
+  // clave en lifecycle_emails (mismo patrón que long_term_count) elige
+  // la siguiente variante EN ORDEN, y al llegar al final vuelve a
+  // empezar (%), para que nadie reciba el mismo texto palabra por
+  // palabra en cada episodio de inactividad.
+  const variantList = REACTIVATION_VARIANTS[key]
+  let variantIdx = -1
+  let content: EmailContent
+  if (key === 'long_term') {
+    content = LONG_TERM_EMAILS[longTermIdx]
+  } else if (variantList) {
+    variantIdx = (parseInt(freshLifecycle[`${key}_count`] || '0', 10) || 0) % variantList.length
+    content = variantList[variantIdx]
+  } else if (key === 'day1') {
+    // day1 reconoce si ya hizo su primera práctica (no le habla como
+    // si todavía no hubiera empezado nada).
+    content = fresh.free_first_exercise_at ? DAY1_PRACTICED_CONTENT : EMAIL_CONTENT.day1
+  } else {
+    content = EMAIL_CONTENT[key]
+  }
+
+  // Bienvenida: reserva atómica antes de mandar (welcome_claimed_at con
+  // lease de WELCOME_CLAIM_LEASE_MINUTES). Si el trigger llega dos veces
+  // o coincide con el Cron, solo quien gana la reserva la manda.
+  if (key === 'welcome') {
+    if (freshLifecycle['welcome']) return false
+    const cutoff = new Date(Date.now() - WELCOME_CLAIM_LEASE_MINUTES * 60000).toISOString()
+    const { data: claimed, error: claimError } = await supabase
+      .from('profiles')
+      .update({ welcome_claimed_at: new Date().toISOString() })
+      .eq('id', userId)
+      .is('lifecycle_emails->>welcome', null)
+      .or(`welcome_claimed_at.is.null,welcome_claimed_at.lt.${cutoff}`)
+      .select('id')
+    if (claimError) console.error('Error reservando la bienvenida:', claimError)
+    if (!claimed || !claimed.length) return false
+  }
+
+  // Lugar del freno global (máx. 1 correo no transaccional por usuario cada
+  // 24h), reservado de forma ATÓMICA antes de mandar: si otro proceso (o
+  // otra función, como racha o encuesta) lo tomó en el último día, este
+  // correo se cancela. El modo manual de prueba lo salta, como siempre.
+  let slotIso: string | null = null
+  if (!manual && !NO_COOLDOWN_KEYS.has(key)) {
+    slotIso = new Date().toISOString()
+    const slotCutoff = new Date(Date.now() - (MARKETING_EMAIL_MIN_GAP_HOURS * 60 - MARKETING_SLOT_TOLERANCE_MINUTES) * 60000).toISOString()
+    const { data: slot, error: slotError } = await supabase
+      .from('profiles')
+      .update({ last_marketing_email_at: slotIso })
+      .eq('id', userId)
+      .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+      .select('id')
+    if (slotError) console.error('Error reservando el lugar del freno global:', slotError)
+    if (!slot || !slot.length) return false
+  }
+
+  const okToSend = await sendEmailFor(key, email, userId, personalize(content, fresh.display_name))
+  if (!okToSend) {
+    // Se libera la reserva para que el Cron la reintente.
+    if (key === 'welcome') await supabase.from('profiles').update({ welcome_claimed_at: null }).eq('id', userId)
+    // Y se devuelve el lugar del freno global, porque no salió nada.
+    if (slotIso) {
+      await supabase
+        .from('profiles')
+        .update({ last_marketing_email_at: fresh.last_marketing_email_at ?? null })
+        .eq('id', userId)
+        .eq('last_marketing_email_at', slotIso)
+    }
+    return false
+  }
+
+  const nowIso = new Date().toISOString()
+  const extra: Record<string, string> = { [key]: nowIso }
+  if (key === 'long_term') extra['long_term_count'] = String(longTermIdx + 1)
+  if (variantIdx >= 0) extra[`${key}_count`] = String(variantIdx + 1)
+  const mergedLifecycle = Object.assign({}, freshLifecycle, extra)
+  const updatePayload: Record<string, unknown> = { lifecycle_emails: mergedLifecycle }
+  if (key === 'welcome') updatePayload.welcome_claimed_at = null
+  // "welcome" no cuenta para el freno global de 24h (ver
+  // NO_COOLDOWN_KEYS): se registra en lifecycle_emails para no
+  // repetirse, pero NO se guarda en last_marketing_email_at, así no
+  // le tapa el paso a abandoned_signup (ni a nada más) unas horas
+  // después.
+  if (!NO_COOLDOWN_KEYS.has(key)) {
+    updatePayload.last_marketing_email_at = nowIso
+  }
+  const { error } = await supabase.from('profiles').update(updatePayload).eq('id', userId)
+  if (error) console.error(`Error registrando el envío de "${key}" para ${userId}:`, error)
+  return true
+}
+
+async function sendEmailFor(key: EmailKey, to: string, userId: string, override?: EmailContent): Promise<boolean> {
+  const content = override || EMAIL_CONTENT[key]
+  const links = await unsubLinks(userId)
+  return sendViaResend(to, content.subject, emailShell(content, links.page), links.oneClick)
+}
+
+async function sendViaResend(to: string, subject: string, html: string, oneClickUnsubUrl: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [to],
+        reply_to: REPLY_TO_EMAIL,
+        subject,
+        html,
+        // Botón "Cancelar suscripción" de Gmail/Outlook junto al remitente.
+        headers: {
+          'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
+    })
+    if (!res.ok) {
+      const detalle = await res.text()
+      console.error('Error mandando correo con Resend:', detalle)
+      return false
+    }
+    return true
+  } catch (e) {
+    console.error('Error mandando correo con Resend:', e)
+    return false
+  }
+}
+
+function json(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+// ---------------- Contenido de cada correo ----------------
+// Un solo "molde" (emailShell) con el mismo estilo que ya usa el
+// resto del sitio (tarjeta blanca, azul #253ECC, Resend), para no
+// repetir el HTML completo 11 veces. Cada correo solo define su
+// saludo, título, cuerpo, botón y una nota chiquita al pie.
+
+type EmailContent = {
+  // Opcional: versión del título con el nombre de la persona. Usa
+  // {name} donde va el nombre. Si no hay nombre, se usa "title".
+  titleWithName?: string
+  subject: string
+  // Texto gris que Gmail muestra junto al asunto en la bandeja de
+  // entrada (antes de abrir el correo). Va oculto dentro del correo.
+  preheader: string
+  greeting: string
+  title: string
+  bodyHtml: string
+  ctaText: string
+  ctaUrl: string
+  // 'link' = enlace discreto de texto en vez de botón (correos de seguimiento).
+  ctaStyle?: 'button' | 'link'
+  footerNote: string
+}
+
+// ---------------- Nombre de la persona (profiles.display_name) ----------------
+// Deja solo el primer nombre, con mayúscula inicial, sin símbolos raros
+// y escapado para HTML. Si no parece un nombre (vacío, un correo, puros
+// números), devuelve '' y el correo sale sin nombre, como antes.
+function cleanFirstName(raw: string | null | undefined): string {
+  if (!raw) return ''
+  let first = String(raw).trim().split(/\s+/)[0] || ''
+  if (first.includes('@')) return ''
+  first = first.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ'\-]/g, '').slice(0, 20)
+  if (first.length < 2) return ''
+  first = first.charAt(0).toLocaleUpperCase('es') + first.slice(1).toLocaleLowerCase('es')
+  return first.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
+}
+
+// Pone el nombre en el saludo ("¡Hola, Ana! 👋") y, si el correo tiene
+// titleWithName, también en el título. Sin nombre, devuelve el correo tal cual.
+function personalize(c: EmailContent, rawName: string | null | undefined): EmailContent {
+  const name = cleanFirstName(rawName)
+  if (!name) return c
+  let greeting = c.greeting
+  if (greeting.startsWith('¡Hola de nuevo!')) greeting = greeting.replace('¡Hola de nuevo!', `¡Hola de nuevo, ${name}!`)
+  else if (greeting.startsWith('¡Hola!')) greeting = greeting.replace('¡Hola!', `¡Hola, ${name}!`)
+  const title = c.titleWithName ? c.titleWithName.replace('{name}', name) : c.title
+  return Object.assign({}, c, { greeting, title })
+}
+
+function emailShell(c: EmailContent, unsubUrl: string): string {
+  const ctaHtml = c.ctaStyle === 'link'
+    ? `<p style="text-align:center; margin:22px 0 6px; font-size:14px;">
+      <a href="${c.ctaUrl}" style="color:#253ECC; text-decoration:underline;">${c.ctaText}</a>
+    </p>`
+    : `<p style="text-align:center; margin:28px 0 10px;">
+      <a href="${c.ctaUrl}"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:14px 28px; border-radius:8px; font-size:15px; font-weight:bold; display:inline-block;">
+        ${c.ctaText} →
+      </a>
+    </p>`
+  return `
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">${c.preheader}&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>
+<div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
+  <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
+    <p style="color:#333; font-size:15px; margin:0 0 4px;">${c.greeting}</p>
+    <h1 style="color:#253ECC; font-size:22px; margin:0 0 14px;">${c.title}</h1>
+    ${c.bodyHtml}
+    ${ctaHtml}
+    <p style="color:#333; font-size:15px; line-height:1.6; margin:24px 0 0;">
+      Nos vemos en la práctica,<br><strong>Leo</strong>
+    </p>
+    <p style="color:#888; font-size:13px; line-height:1.6; margin:16px 0 0;">
+      ${c.footerNote}
+    </p>
+  </div>
+  <p style="max-width:520px; margin:14px auto 0; text-align:center; color:#999; font-size:12px; line-height:1.6;">
+    Recibes este correo porque tienes una cuenta en Inglés con Leo.<br>
+    <a href="${unsubUrl}" style="color:#999;">Ya no quiero recibir estos correos</a>
+  </p>
+</div>
+`.trim()
+}
+
+// Estilos compartidos de los correos (para no repetirlos en cada uno).
+const P = 'color:#333; font-size:15px; line-height:1.6;'
+// Cajita azul clara para el "mini tip" de inglés de cada correo: le da
+// a la persona algo útil por abrirlo, no solo un "vuelve a practicar".
+const BOX = 'background-color:#f1f4fe; border-left:4px solid #253ECC; border-radius:8px; padding:14px 16px; margin:18px 0; color:#333; font-size:15px; line-height:1.6;'
+const LINK = 'color:#253ECC; font-weight:bold;'
+
+// Tarjeta oscura de Leo AI (2026-10-02): la misma idea que .ai-pitch del
+// sitio, con estilos en línea para que se vea igual en Gmail y Outlook
+// (Outlook ignora el degradado y usa el azul oscuro de fondo). Solo va en
+// correos donde Leo AI es EL argumento (venta de membresía o activar a un
+// miembro), nunca en todos: así no se vuelve ruido.
+// Ojo con lo que se promete: Leo AI explica ejercicios ya calificados,
+// revisa frases de Writing y analiza sesiones/errores/progreso. NO es un
+// chat libre. Del tope diario NO se habla en los correos (pedido de Leo):
+// ni "ilimitado" ni "tiene límite", simplemente no se menciona.
+function aiCard(title: string, intro: string, points: string[]): string {
+  const items = points.map((t) =>
+    `<tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;">${t}</td></tr>`
+  ).join('')
+  return `
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">${title}</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">${intro}</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">${items}</table>
+    </div>`
+}
+
+const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
+  // long_term no usa esta entrada: su contenido sale de
+  // LONG_TERM_EMAILS según long_term_count (ver sendIfStillEligible).
+  // Se deja un getter para cumplir con el tipo sin duplicar texto.
+  get long_term() { return LONG_TERM_EMAILS[0] },
+  welcome: {
+    subject: 'Ya estás dentro 🎉 (y un truco para empezar bien)',
+    preheader: 'Ya puedes practicar gratis. Así le sacas el máximo.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu cuenta gratis ya está activa',
+    titleWithName: '{name}, tu cuenta gratis ya está activa',
+    bodyHtml: `
+    <p style="${P}">
+      Desde hoy puedes practicar gratis gramática, vocabulario, listening,
+      writing y speaking, con ejercicios adaptados a tu nivel.
+    </p>
+    <div style="${BOX}">
+      <strong>Truco para empezar bien:</strong> si no sabes tu nivel exacto,
+      haz primero el <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">test de nivel</a>
+      (unos 10 minutos). Así los ejercicios no se te hacen ni muy fáciles ni
+      imposibles.
+    </div>
+    <p style="${P}">
+      Mi recomendación: pocos minutos, pero todos los días. Eso le gana a
+      estudiar dos horas una vez a la semana.
+    </p>`,
+    ctaText: 'Empezar a practicar',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  abandoned_signup: {
+    subject: '¿Cómo dirías "tengo 25 años" en inglés?',
+    preheader: 'Casi todos lo dicen mal al principio. Aquí va la respuesta.',
+    greeting: '¡Hola de nuevo!',
+    title: 'Una pregunta rápida',
+    titleWithName: '{name}, una pregunta rápida',
+    bodyHtml: `
+    <p style="${P}">¿Cuál es la correcta?</p>
+    <div style="${BOX}">
+      A) I have 25 years.<br>
+      B) I am 25 years old.
+    </div>
+    <p style="${P}">
+      Es la <strong>B</strong>. En inglés la edad se dice con <em>to be</em>
+      (soy/estoy), no con <em>have</em>. Si pensaste en la A, no te
+      preocupes: es de los errores más comunes entre hispanohablantes.
+    </p>
+    <p style="${P}">
+      Así son los ejercicios de tu cuenta: cortos, con la explicación en
+      español en cuanto contestas. El primero te toma menos de un minuto.
+    </p>`,
+    ctaText: 'Hacer mi primer ejercicio',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Algo no funcionó al entrar? Responde este correo y lo vemos.',
+  },
+  // reactivation_3d no usa esta entrada directamente: su contenido
+  // sale de REACTIVATION_VARIANTS.reactivation_3d según
+  // reactivation_3d_count (ver sendIfStillEligible). Se deja un
+  // getter para cumplir con el tipo sin duplicar texto, igual que
+  // long_term arriba.
+  get reactivation_3d() { return REACTIVATION_VARIANTS.reactivation_3d![0] },
+  day1: {
+    subject: '¿"People is" o "people are"?',
+    preheader: 'Un error que se cuela hasta en nivel intermedio.',
+    greeting: '¡Hola! 👋',
+    title: 'El tip de hoy',
+    titleWithName: '{name}, este es el tip de hoy',
+    bodyHtml: `
+    <p style="${P}">
+      Se dice <strong>people are</strong>. En español "la gente" es singular,
+      pero en inglés <em>people</em> es plural, igual que <em>police</em>.
+    </p>
+    <div style="${BOX}">
+      ✗ People is very friendly here.<br>
+      ✓ People are very friendly here.
+    </div>
+    <p style="${P}">
+      Ayer creaste tu cuenta. Hoy te propongo algo sencillo: 5 ejercicios,
+      unos 3 minutos. Tu progreso se guarda solo.
+    </p>`,
+    ctaText: 'Hacer mis 5 ejercicios',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  day3: {
+    subject: '¿Hasta qué nivel llegas con 3 vidas? 🎮',
+    preheader: 'English Rush: preguntas rápidas que se ponen cada vez más difíciles.',
+    greeting: '¡Hola! 👋',
+    title: 'Te reto a una partida de English Rush',
+    bodyHtml: `
+    <p style="${P}">
+      English Rush es el juego gratis de Inglés con Leo: preguntas rápidas de
+      vocabulario, gramática y listening, con tiempo. Tienes 3 vidas, y cada
+      5 aciertos subes de nivel.
+    </p>
+    <div style="${BOX}">
+      <strong>Reto:</strong> llega al nivel 4 sin perder ni una vida.
+      Suena fácil, hasta que empieza a correr el tiempo. 😅
+    </div>
+    <p style="${P}">
+      Es la forma más divertida de practicar cuando no tienes ganas de
+      "estudiar".
+    </p>`,
+    ctaText: 'Jugar una partida',
+    ctaUrl: `${SITE}/juego.html`,
+    footerNote: '¿Hasta qué nivel llegaste? Responde este correo y cuéntame.',
+  },
+  day5: {
+    subject: '¿"Make" o "do"? Casi todos se equivocan',
+    preheader: 'Un truco de 10 segundos para no volver a confundirlos.',
+    greeting: '¡Hola! 👋',
+    title: 'El truco para "make" y "do"',
+    titleWithName: '{name}, el truco para "make" y "do"',
+    bodyHtml: `
+    <p style="${P}">
+      En español todo es "hacer", pero en inglés se reparte así:
+    </p>
+    <div style="${BOX}">
+      <strong>do</strong> = actividades y tareas: <em>do homework, do the dishes</em><br>
+      <strong>make</strong> = crear o producir algo: <em>make a cake, make a decision</em>
+    </div>
+    <p style="${P}">
+      Para fijarlo, nada como practicarlo. Cinco ejercicios, unos 3 minutos,
+      y tu progreso se guarda solo.
+    </p>`,
+    ctaText: 'Practicar 3 minutos',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  membership_intro: {
+    subject: 'Una semana practicando 🙌 Ahora entiende por qué fallas',
+    preheader: 'Leo AI te explica cada error en español sencillo. Incluido en la membresía de $2 USD.',
+    greeting: '¡Hola! 👋',
+    title: 'Llevas una semana. Es momento de dejar de adivinar',
+    titleWithName: '{name}, llevas una semana. Es momento de dejar de adivinar',
+    bodyHtml: `
+    <p style="${P}">
+      Practicar ya lo estás haciendo. Lo que más acelera el inglés es
+      entender <em>por qué</em> te equivocas, para no repetir el mismo error
+      la próxima vez. Para eso está Leo AI:
+    </p>
+    ${aiCard(
+      'Tu profesor de apoyo, dentro de cada ejercicio',
+      'Contestas, ves la respuesta y tocas un botón. En segundos tienes la explicación pensada para tu error.',
+      [
+        'Te explica cada error en español sencillo, con un ejemplo',
+        'Revisa tus frases de Writing y te dice qué corregir',
+        'Analiza tus sesiones y tus errores para decirte qué reforzar',
+      ],
+    )}
+    <p style="${P}">Y además, todo lo de la membresía:</p>
+    <ul style="${P} padding-left:20px; margin:0;">
+      <li>Práctica sin límite diario en las 5 habilidades</li>
+      <li>Plan de estudio armado con tus puntos débiles</li>
+      <li>Repaso automático de tus errores y tu progreso</li>
+      <li>Clases interactivas y preparación para TOEFL, IELTS y más</li>
+    </ul>
+    <div style="${BOX}">
+      <strong>$2 USD al mes</strong> (en México, $37 MXN), o <strong>$20 USD al año</strong>,
+      que son 2 meses gratis. Cancelas cuando quieras, sin llamadas ni letras chiquitas.
+    </div>`,
+    ctaText: 'Conocer Leo AI y la membresía',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
+  },
+  reactivation_day14: {
+    subject: 'Te guardé tu lugar',
+    preheader: '3 frases en inglés para volver sin sentir que empiezas de cero.',
+    greeting: '¡Hola! 👋',
+    title: 'Volver es más fácil de lo que parece',
+    bodyHtml: `
+    <p style="${P}">
+      Si el inglés se te fue quedando de lado estas semanas, pasa muchísimo.
+      Aquí van 3 frases que sirven justo para eso:
+    </p>
+    <div style="${BOX}">
+      <strong>I'm back!</strong> ¡Ya regresé!<br>
+      <strong>Where was I?</strong> ¿En qué me quedé?<br>
+      <strong>Let's pick up where we left off.</strong> Sigamos donde nos quedamos.
+    </div>
+    <p style="${P}">
+      Tu cuenta y tu progreso siguen ahí. Cinco minutos hoy y ya estás de vuelta.
+    </p>`,
+    ctaText: 'Seguir donde me quedé',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: 'Si algo te hizo dejar de practicar, respóndeme y cuéntame. Me ayuda a mejorar la página.',
+  },
+  final_onboarding: {
+    subject: 'Unas semanas después: ¿cuánto has avanzado?',
+    preheader: 'Una forma rápida de medirlo, y un reto de 1 minuto al día.',
+    greeting: '¡Hola! 👋',
+    title: 'Mide cuánto has avanzado',
+    titleWithName: '{name}, mide cuánto has avanzado',
+    bodyHtml: `
+    <p style="${P}">
+      Ya pasaron unas semanas desde que creaste tu cuenta. Dos ideas para lo que sigue:
+    </p>
+    <div style="${BOX}">
+      <strong>1. Vuelve a hacer el test de nivel.</strong> Compara tu resultado
+      con el de antes. Ver el avance en números motiva muchísimo.<br><br>
+      <strong>2. Haz el reto diario.</strong> Son 5 ejercicios, más o menos un
+      minuto. Está en la página de práctica, gratis.
+    </div>
+    <p style="${P}">
+      Y si quieres ir más rápido: con la membresía, Leo AI revisa tus
+      errores de estas semanas y te dice qué reforzar primero, para que
+      cada minuto de práctica vaya justo a lo que te falta. $2 USD al mes.
+    </p>
+    <p style="${P}">
+      <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">Hacer el test de nivel</a>
+    </p>`,
+    ctaText: 'Hacer el reto de hoy',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  limit_reached: {
+    subject: 'Llegaste al límite 💪 (y eso dice mucho de ti)',
+    preheader: 'Completaste tus 10 ejercicios gratis. Así puedes seguir.',
+    greeting: '¡Hola! 👋',
+    title: 'Completaste tus 10 ejercicios del día',
+    titleWithName: '¡Bien hecho, {name}! Completaste tus 10 ejercicios del día',
+    bodyHtml: `
+    <p style="${P}">
+      La mayoría de la gente deja el inglés porque no practica. Tú hiciste
+      justo lo contrario: llegaste al tope de tu cuenta gratis.
+    </p>
+    <p style="${P}">Tienes dos opciones:</p>
+    <div style="${BOX}">
+      <strong>Esperar a mañana:</strong> tus 10 ejercicios se reinician solos.<br><br>
+      <strong>Seguir sin límite:</strong> con la membresía practicas todo lo
+      que quieras, por $2 USD al mes (o $20 USD al año). Cancelas cuando quieras.
+    </div>
+    ${aiCard(
+      'Más práctica, y que cada error te enseñe algo',
+      'Si ya practicas tanto, lo que más te va a servir es entender tus errores. Con la membresía, Leo AI:',
+      [
+        'Te explica en segundos por qué fallaste cada ejercicio',
+        'Revisa tus frases de Writing y te dice cómo mejorarlas',
+        'Analiza tu sesión y te dice qué te conviene practicar después',
+      ],
+    )}`,
+    ctaText: 'Ver opciones para seguir hoy',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Si prefieres esperar a mañana, perfecto: aquí te esperan tus ejercicios.',
+  },
+  limit_reset: {
+    subject: 'Tus 10 ejercicios gratis ya están listos 🙌',
+    preheader: 'Hoy puedes volver a practicar sin pagar nada.',
+    greeting: '¡Hola! 👋',
+    title: 'Hoy tienes 10 ejercicios gratis de nuevo',
+    titleWithName: '{name}, hoy tienes 10 ejercicios gratis de nuevo',
+    bodyHtml: `
+    <p style="${P}">
+      Ayer completaste tus 10 ejercicios gratis. Hoy ya se renovaron, así que
+      puedes seguir practicando desde donde quieras.
+    </p>
+    <div style="${BOX}">
+      Con unos minutos basta. Elige gramática, vocabulario, listening, writing
+      o speaking y haz un ejercicio para mantener el ritmo.
+    </div>
+    <p style="${P}">
+      Tu cuenta gratis sigue funcionando igual; no necesitas activar nada para
+      usar los ejercicios de hoy.
+    </p>`,
+    ctaText: 'Practicar mis 10 ejercicios de hoy',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  checkout_abandoned: {
+    subject: '¿Quieres terminar de activar tu membresía?',
+    preheader: 'Puedes retomarlo cuando te venga bien.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu activación quedó a medias',
+    bodyHtml: `
+    <p style="${P}">
+      Vi que empezaste a activar tu membresía. Si quieres retomarlo, puedes
+      volver a la misma pantalla cuando te venga bien.
+    </p>
+    <div style="${BOX}">
+      Si tuviste algún problema o algo no quedó claro, puedes responder este
+      correo. Me gustaría escucharte.
+    </div>`,
+    ctaText: 'Continuar activación',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
+  },
+  checkout_followup: {
+    subject: 'Una pregunta sobre tu membresía',
+    preheader: 'Si algo no quedó claro, respóndeme este correo.',
+    greeting: '¡Hola! 👋',
+    title: 'Me gustaría entender qué pasó',
+    bodyHtml: `
+    <p style="${P}">
+      Vi que empezaste a activar tu membresía pero no la terminaste. Si algo
+      no quedó claro o tuviste algún problema, me gustaría escucharte. Puedes
+      responder directamente a este correo.
+    </p>`,
+    ctaText: 'Volver a la membresía',
+    ctaUrl: `${SITE}/miembros.html`,
+    ctaStyle: 'link',
+    footerNote: 'Si decidiste no continuar, no hay problema: tu cuenta gratis sigue funcionando igual.',
+  },
+  active_free_pitch: {
+    subject: 'Se nota que le estás echando ganas 🔥',
+    preheader: 'Ya que practicas seguido, esto te puede servir.',
+    greeting: '¡Hola! 👋',
+    title: 'Se nota que le estás echando ganas',
+    titleWithName: '{name}, se nota que le estás echando ganas',
+    bodyHtml: `
+    <p style="${P}">
+      Llevas varios días practicando con tu cuenta gratis. Ya que la usas
+      seguido, la membresía te quita el límite diario y te suma tu plan de
+      estudio, el repaso automático de tus errores y las clases interactivas.
+    </p>
+    ${aiCard(
+      'Lo que más vas a notar: Leo AI',
+      'Con tanta práctica, cada error es una oportunidad. Leo AI la aprovecha por ti:',
+      [
+        'Te explica por qué fallaste, en español sencillo',
+        'Revisa tus frases de Writing',
+        'Analiza tu progreso y te dice qué reforzar',
+      ],
+    )}
+    <div style="${BOX}">
+      <strong>$2 USD al mes</strong> o <strong>$20 USD al año</strong>. Cancelas cuando quieras.
+    </div>`,
+    ctaText: 'Ver la membresía',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
+  },
+  member_activation: {
+    subject: 'Ya tienes todo listo. Empieza por aquí 👋',
+    preheader: 'Tu plan de estudio y Leo AI ya te están esperando.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu membresía ya está activa',
+    titleWithName: '{name}, tu membresía ya está activa',
+    bodyHtml: `
+    <p style="${P}">
+      Ya tienes acceso completo: práctica sin límite diario en las 5
+      habilidades, clases interactivas, repaso automático de tus errores
+      y Leo AI.
+    </p>
+    <div style="${BOX}">
+      Para que no tengas que pensar por dónde empezar, armamos un
+      <strong>plan de estudio</strong> con tu nivel, tu progreso y tus
+      errores más frecuentes. Es tu mejor primer paso ahora mismo.
+    </div>
+    ${aiCard(
+      'Cuando falles, no sigas de largo',
+      'Después de contestar, busca los botones de Leo AI (los que tienen la estrellita ✦):',
+      [
+        '<strong>Explícame por qué</strong>: te explica tu error en ese mismo ejercicio',
+        '<strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir',
+        '<strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar',
+      ],
+    )}
+    <p style="${P}">
+      Con 5-10 minutos hoy ya arrancas. Tú eliges cuánto tiempo practicar
+      cada vez.
+    </p>`,
+    ctaText: 'Ver mi plan de estudio',
+    ctaUrl: `${SITE}/plan-estudio.html`,
+    footerNote: '¿Dudas sobre cómo usar tu membresía? Responde este correo, lo leo yo.',
+  },
+}
+
+// day1 con una versión distinta para quien YA hizo su primera
+// práctica (no le habla como si no hubiera empezado nada). El "tip
+// del día" se mantiene (es el gancho del correo), cambia el cierre.
+const DAY1_PRACTICED_CONTENT: EmailContent = {
+  subject: '¿"People is" o "people are"?',
+  preheader: 'Un error que se cuela hasta en nivel intermedio.',
+  greeting: '¡Hola! 👋',
+  title: 'El tip de hoy',
+  titleWithName: '{name}, este es el tip de hoy',
+  bodyHtml: `
+    <p style="${P}">
+      Se dice <strong>people are</strong>. En español "la gente" es singular,
+      pero en inglés <em>people</em> es plural, igual que <em>police</em>.
+    </p>
+    <div style="${BOX}">
+      ✗ People is very friendly here.<br>
+      ✓ People are very friendly here.
+    </div>
+    <p style="${P}">
+      Ya hiciste tu primer ejercicio, va muy bien. Hoy te propongo seguir
+      con algo cortito: unos minutos bastan para no perder el impulso.
+    </p>`,
+  ctaText: 'Seguir practicando',
+  ctaUrl: `${SITE}/practica.html`,
+  footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+}
+
+// ---------------- Variantes de los correos de reactivación ----------------
+// reactivation_3d (cuenta gratis) se puede repetir varias veces en la
+// vida de una cuenta (cada episodio nuevo de inactividad). Antes mandaban
+// siempre el mismo texto; ahora rotan EN ORDEN (nunca al azar) por
+// estas listas, usando un contador en lifecycle_emails
+// (`${key}_count`, mismo patrón que long_term_count) que sendIfStillEligible
+// calcula con "% variants.length": al llegar al final vuelve a
+// empezar. Todas atacan el mismo objetivo (volver a practicar), nunca
+// venta, desde un ángulo distinto cada vez.
+const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
+  reactivation_3d: [
+    // v0: "falsos amigos" (el original, se mantiene igual para no
+    // romper continuidad de quien ya lo recibió antes de este cambio).
+    {
+      subject: '3 palabras que no significan lo que parece 👀',
+      preheader: 'Una de ellas te puede meter en un lío. Y tu práctica sigue guardada.',
+      greeting: '¡Hola! 👋',
+      title: 'Cuidado con estos "falsos amigos"',
+      bodyHtml: `
+      <div style="${BOX}">
+        <strong>Embarrassed</strong> = avergonzado (no embarazada: esa es <em>pregnant</em>)<br>
+        <strong>Actually</strong> = en realidad (no actualmente: ese es <em>currently</em>)<br>
+        <strong>Library</strong> = biblioteca (no librería: esa es <em>bookstore</em>)
+      </div>
+      <p style="${P}">
+        Llevas unos días sin practicar, y tu progreso sigue exactamente donde
+        lo dejaste. Una sesión corta hoy basta para no perder el ritmo.
+      </p>`,
+      ctaText: 'Retomar mi práctica',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Te gustan estos tips? Responde este correo y cuéntame qué te cuesta más del inglés.',
+    },
+    // v1: sesión de 5 minutos (bajar la barrera de entrada).
+    {
+      subject: '¿Tienes 5 minutos? Con eso alcanza',
+      preheader: 'Una sesión cortita, solo para no perder el hilo.',
+      greeting: '¡Hola! 👋',
+      title: 'No hace falta mucho tiempo',
+      bodyHtml: `
+      <p style="${P}">
+        No se trata de sentarte una hora. Una sesión de 5 minutos ya cuenta,
+        y suele ser justo lo que hace falta para volver a agarrar el ritmo.
+      </p>
+      <div style="${BOX}">
+        Elige la habilidad que más se te antoje hoy: gramática, vocabulario,
+        listening, writing o speaking. Lo demás puede esperar.
+      </div>`,
+      ctaText: 'Hacer una sesión de 5 minutos',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: 'Si un día quieres más tiempo, ahí también está. Tú decides cuánto.',
+    },
+    // v2: hábito/racha (constancia, no intensidad).
+    {
+      subject: 'El hábito se construye así',
+      preheader: 'No se trata de hacer mucho, se trata de no cortar la seguidilla.',
+      greeting: '¡Hola! 👋',
+      title: 'Un poquito hoy también cuenta',
+      bodyHtml: `
+      <p style="${P}">
+        Aprender un idioma se parece más a regar una planta todos los días
+        que a estudiar para un examen. Un ejercicio corto hoy pesa más de lo
+        que parece.
+      </p>
+      <div style="${BOX}">
+        No hace falta retomar donde ibas a full. Basta con un ejercicio para
+        que el hábito siga en pie.
+      </div>`,
+      ctaText: 'Practicar hoy',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Qué horario del día te queda mejor para practicar? Respóndeme, me sirve para mejorar los recordatorios.',
+    },
+    // v3: continuar donde quedó, sin culpa.
+    {
+      subject: 'Justo donde lo dejaste',
+      preheader: 'Tu progreso no se borra por unos días de pausa.',
+      greeting: '¡Hola! 👋',
+      title: 'Nada se perdió',
+      bodyHtml: `
+      <p style="${P}">
+        Unos días sin practicar no borran nada: tu progreso sigue guardado
+        tal cual lo dejaste, y puedes retomar exactamente ahí.
+      </p>
+      <div style="${BOX}">
+        Sin presión ni "empezar de cero". Solo entra y sigue donde ibas.
+      </div>`,
+      ctaText: 'Seguir donde me quedé',
+      ctaUrl: `${SITE}/practica.html`,
+      footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+    },
+  ],
+
+}
+
+// ---------------- Correos después del día 30 (long_term) ----------------
+// Se mandan en este orden, uno cada LONG_TERM_INTERVAL_DAYS. Cada uno
+// trae algo útil (un tip real) para que valga la pena abrirlo; solo
+// algunos mencionan la membresía, y siempre de forma suave. Para
+// alargar la secuencia, agrega correos nuevos AL FINAL (nunca en medio
+// ni reordenando: el orden es lo que usa long_term_count). No repetir
+// tips que ya salen en otros correos (edad con to be, falsos amigos,
+// people are, English Rush, test de nivel, reto diario).
+const LONG_TERM_EMAILS: EmailContent[] = [
+  {
+    subject: '4 frases para sonar más natural en inglés',
+    preheader: 'Las usan los nativos todo el tiempo y casi nunca salen en los libros.',
+    greeting: '¡Hola! 👋',
+    title: 'Suena más natural con estas 4 frases',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>No worries.</strong> No te preocupes / No pasa nada.<br>
+      <strong>Sounds good.</strong> Me parece bien.<br>
+      <strong>I'm on my way.</strong> Voy en camino.<br>
+      <strong>How's it going?</strong> ¿Cómo va todo?
+    </div>
+    <p style="${P}">
+      Son cortas, sirven en casi cualquier conversación y te hacen sonar
+      mucho menos "de libro". Pruébalas esta semana en un mensaje.
+    </p>`,
+    ctaText: 'Practicar un poco hoy',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: '¿Qué frase te cuesta decir en inglés? Respóndeme y te ayudo.',
+  },
+  {
+    subject: '¿Worked se pronuncia "work-ed"? 🤔',
+    preheader: 'La terminación -ed tiene 3 sonidos distintos. Así los distingues.',
+    greeting: '¡Hola! 👋',
+    title: 'Los 3 sonidos de la -ed',
+    bodyHtml: `
+    <p style="${P}">
+      En pasado, la -ed casi nunca se pronuncia "ed". Tiene 3 sonidos:
+    </p>
+    <div style="${BOX}">
+      <strong>/t/</strong> worked, stopped, watched (suena "workt")<br>
+      <strong>/d/</strong> played, called, lived (suena "pleid")<br>
+      <strong>/id/</strong> wanted, needed (solo después de t o d)
+    </div>
+    <p style="${P}">
+      La mejor forma de agarrarle el oído es escuchando frases reales.
+      Los ejercicios de listening son justo para eso.
+    </p>`,
+    ctaText: 'Hacer un listening',
+    ctaUrl: `${SITE}/practica.html?skill=listening`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  {
+    subject: 'Los 5 verbos irregulares que más vas a usar',
+    preheader: 'Si te sabes estos, ya cubres una buena parte de las conversaciones.',
+    greeting: '¡Hola! 👋',
+    title: '5 verbos irregulares que no pueden faltar',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>go / went</strong> ir / fui<br>
+      <strong>have / had</strong> tener / tuve<br>
+      <strong>make / made</strong> hacer / hice<br>
+      <strong>get / got</strong> conseguir, llegar / conseguí, llegué<br>
+      <strong>say / said</strong> decir / dije
+    </div>
+    <p style="${P}">
+      Si quieres la lista completa con traducción, está en
+      <a href="${SITE}/articulo-verbos-irregulares.html" style="${LINK}">esta guía gratis</a>.
+      Y si quieres practicarlos sin límite y que Leo AI te explique cada
+      vez que te equivocas, la membresía cuesta $2 USD al mes.
+    </p>`,
+    ctaText: 'Practicar gramática',
+    ctaUrl: `${SITE}/practica.html?skill=grammar`,
+    footerNote: 'Tu cuenta gratis sigue funcionando igual, sin presión.',
+  },
+  {
+    subject: '¿Make o do? El truco para no confundirlos',
+    preheader: 'Los dos significan "hacer", pero no se usan igual.',
+    greeting: '¡Hola! 👋',
+    title: 'Make vs do, en 30 segundos',
+    bodyHtml: `
+    <p style="${P}">
+      Regla rápida: <strong>make</strong> es crear o producir algo;
+      <strong>do</strong> es realizar una tarea o actividad.
+    </p>
+    <div style="${BOX}">
+      make a mistake, make a decision, make dinner<br>
+      do homework, do the dishes, do exercise
+    </div>
+    <p style="${P}">
+      Hay excepciones, pero con esta regla aciertas la mayoría de las veces.
+    </p>`,
+    ctaText: 'Ponerlo a prueba',
+    ctaUrl: `${SITE}/practica.html?skill=grammar`,
+    footerNote: '¿Te sirven estos tips? Respóndeme y dime qué tema quieres en el próximo.',
+  },
+  {
+    subject: '"Tell me about yourself": cómo responder en inglés',
+    preheader: 'La pregunta que abre casi todas las entrevistas de trabajo.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu respuesta en 3 pasos',
+    bodyHtml: `
+    <p style="${P}">
+      Si algún día tienes una entrevista en inglés, casi seguro empieza con
+      esta pregunta. Una estructura simple que funciona:
+    </p>
+    <div style="${BOX}">
+      <strong>1. Presente:</strong> I'm a sales assistant at...<br>
+      <strong>2. Pasado:</strong> Before that, I worked in...<br>
+      <strong>3. Futuro:</strong> Now I'm looking for...
+    </div>
+    <p style="${P}">
+      En <a href="${SITE}/articulo-entrevista-trabajo-ingles.html" style="${LINK}">esta guía</a>
+      tienes más preguntas comunes con ejemplos de respuesta.
+    </p>`,
+    ctaText: 'Leer la guía',
+    ctaUrl: `${SITE}/articulo-entrevista-trabajo-ingles.html`,
+    footerNote: '¿Tienes una entrevista pronto? Respóndeme y cuéntame para qué puesto.',
+  },
+  {
+    subject: '¿In, on o at? Así se usan con el tiempo',
+    preheader: 'Una regla de "de grande a pequeño" que te ahorra muchos errores.',
+    greeting: '¡Hola! 👋',
+    title: 'In, on, at: de grande a pequeño',
+    bodyHtml: `
+    <div style="${BOX}">
+      <strong>in</strong> para lo más grande: in 2026, in March, in summer<br>
+      <strong>on</strong> para días: on Monday, on my birthday<br>
+      <strong>at</strong> para horas exactas: at 7 pm, at night
+    </div>
+    <p style="${P}">
+      Llevas un buen tiempo con tu cuenta. Si quieres dar el siguiente
+      paso, la membresía te da práctica sin límite diario, Leo AI para
+      entender tus errores y preparación para exámenes por $2 USD al mes
+      (o $20 USD al año).
+    </p>`,
+    ctaText: 'Seguir practicando',
+    ctaUrl: `${SITE}/practica.html`,
+    footerNote: 'Gracias por seguir aquí. Si algo se puede mejorar, respóndeme: lo leo yo.',
+  },
+  // 2026-10-02: presentación de Leo AI. Va al final a propósito: quien ya
+  // terminó la lista lo recibe en su siguiente turno (sin correo masivo
+  // aparte) y quien va a la mitad lo recibe cuando le toque.
+  {
+    subject: '¿Por qué "I didn\'t went" está mal? 🤖',
+    preheader: 'Así te lo explicaría Leo AI, la nueva herramienta de la membresía.',
+    greeting: '¡Hola! 👋',
+    title: 'Equivocarte está bien. Quedarte con la duda, no',
+    bodyHtml: `
+    <p style="${P}">Mira este error, de los más comunes:</p>
+    <div style="${BOX}">
+      ✗ I didn't went to work yesterday.<br>
+      ✓ I didn't go to work yesterday.<br><br>
+      <em>Después de <strong>didn't</strong> el verbo va en su forma base. El
+      "pasado" ya lo lleva did, así que no hace falta ponerlo dos veces.</em>
+    </div>
+    <p style="${P}">
+      Ese tipo de explicación, pensada para tu error y en español, es lo que
+      hace Leo AI dentro de cada ejercicio de la membresía.
+    </p>
+    ${aiCard(
+      'Leo AI: tu profesor de apoyo con IA',
+      'Incluido en la membresía de $2 USD al mes, sin costo extra:',
+      [
+        'Te explica cada error en segundos, con un ejemplo',
+        'Revisa tus frases de Writing y te dice qué corregir',
+        'Analiza tus errores y tu progreso para decirte qué reforzar',
+      ],
+    )}`,
+    ctaText: 'Conocer Leo AI',
+    ctaUrl: `${SITE}/miembros.html`,
+    footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
+  },
+]
+
+
+// ============================================================
+// Reactivación de miembros de pago v2 (secuencia 14 / 35 / 56)
+// Las reglas viven en member-reactivation-core.mjs (lógica pura, con su
+// propia prueba). Aquí solo está lo que toca la red y la base de datos:
+// leer al alumno, consultar al proveedor de pago EN VIVO, reservar el
+// lugar en el freno global, mandar con Resend y dejar bitácora.
+//
+// Interruptor: la secuencia solo manda correos si el secreto
+// MEMBER_REACTIVATION_V2 vale 'on'. Apagado, no manda NADA (ni el flujo
+// viejo de 3 y 10 días, que ya no existe). Los modos de simulación
+// (reactivation_dry_run, billing_sync sin apply) funcionan siempre y
+// nunca envían ni escriben correos.
+// ============================================================
+const MAX_REACTIVATION_PER_RUN = 25
+
+const REACT_PROFILE_COLS =
+  'id, email, is_member, display_name, member_since, last_seen_at, last_practice_at, lifecycle_emails, last_marketing_email_at, streak_reminder_last_sent, survey_15d_sent_at, upgrade_email_1_sent_at, upgrade_email_2_sent_at, upgrade_email_3_sent_at, email_opt_out_at, email_invalid, next_renewal_at, stripe_customer_id, paypal_subscription_id, mp_preapproval_id'
+
+function cancunDay(): string {
+  return new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 10)
+}
+
+// Bitácora auditable: un renglón por envío, por motivo de omisión (una vez
+// al día por motivo) y por ciclo cancelado. Si falla, nunca rompe el envío.
+async function logReactivation(
+  userId: string,
+  event: 'sent' | 'skipped' | 'cancelled_returned' | 'clicked',
+  step: number | null,
+  kind: string | null,
+  reason: string | null,
+  detail: Record<string, unknown>,
+  dedupeKey: string
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('member_reactivation_log')
+      .upsert(
+        { user_id: userId, event, step, kind, reason, detail, dedupe_key: dedupeKey },
+        { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true }
+      )
+    if (error) console.error('Error escribiendo la bitácora de reactivación:', error)
+  } catch (e) {
+    console.error('Error escribiendo la bitácora de reactivación:', e)
+  }
+}
+
+async function fetchJsonSafe(url: string, init: RequestInit): Promise<any | null> {
+  try {
+    const res = await fetch(url, Object.assign({}, init, { signal: AbortSignal.timeout(8000) }))
+    if (!res.ok) {
+      console.error('Proveedor de pago respondió', res.status, url.split('?')[0].replace(/\/[^/]*$/, '/…'))
+      return null
+    }
+    return await res.json()
+  } catch (e) {
+    console.error('Error consultando al proveedor de pago:', e)
+    return null
+  }
+}
+
+// Solo LECTURAS (GET) a los proveedores. Nada de esto cambia cobros,
+// importes, estados de pago ni períodos de facturación.
+async function stripeSubscriptions(customerId: string): Promise<unknown[] | null> {
+  const key = Deno.env.get('STRIPE_SECRET_KEY') || ''
+  if (!key) return null
+  const data = await fetchJsonSafe(
+    `https://api.stripe.com/v1/subscriptions?customer=${encodeURIComponent(customerId)}&status=all&limit=10&expand%5B%5D=data.latest_invoice`,
+    { headers: { Authorization: `Bearer ${key}` } }
+  )
+  return data && Array.isArray(data.data) ? data.data : null
+}
+
+async function paypalSubscription(subscriptionId: string): Promise<unknown | null> {
+  const cid = Deno.env.get('PAYPAL_CLIENT_ID') || ''
+  const secret = Deno.env.get('PAYPAL_CLIENT_SECRET') || ''
+  if (!cid || !secret) return null
+  const base =
+    (Deno.env.get('PAYPAL_MODE') || 'live').trim().toLowerCase() === 'sandbox'
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com'
+  const tok = await fetchJsonSafe(`${base}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + btoa(`${cid}:${secret}`), 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials',
+  })
+  if (!tok || !tok.access_token) return null
+  return await fetchJsonSafe(`${base}/v1/billing/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+    headers: { Authorization: `Bearer ${tok.access_token}` },
+  })
+}
+
+async function mercadoPagoPreapproval(preapprovalId: string): Promise<unknown | null> {
+  const token = Deno.env.get('MP_ACCESS_TOKEN') || ''
+  if (!token) return null
+  return await fetchJsonSafe(`https://api.mercadopago.com/preapproval/${encodeURIComponent(preapprovalId)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}
+
+// Verifica EN ESTE MOMENTO el estado real de la suscripción en cada
+// proveedor que tenga la persona. Si algo no se puede consultar, el
+// resultado es 'blocked' (ante la duda, no se envía).
+async function verifyMemberBilling(p: Record<string, any>) {
+  const nowMs = Date.now()
+  const results: any[] = []
+  if (p.stripe_customer_id) results.push(RC.evaluateStripe(await stripeSubscriptions(p.stripe_customer_id), nowMs))
+  if (p.paypal_subscription_id) results.push(RC.evaluatePaypal(await paypalSubscription(p.paypal_subscription_id), nowMs))
+  if (p.mp_preapproval_id) results.push(RC.evaluateMp(await mercadoPagoPreapproval(p.mp_preapproval_id), nowMs))
+  return RC.combineBilling(results)
+}
+
+function summarizeBilling(b: any) {
+  return {
+    state: b.state,
+    reason: b.reason || null,
+    renews: b.periodEndMs ? new Date(b.periodEndMs).toISOString().slice(0, 10) : null,
+    providers: (b.results || []).map((r: any) => ({
+      provider: r.provider,
+      state: r.state,
+      reason: r.reason || null,
+      renews: r.periodEndMs ? new Date(r.periodEndMs).toISOString().slice(0, 10) : null,
+    })),
+  }
+}
+
+async function lastSessionInfo(userId: string): Promise<{ at: string | null; skill: string | null } | null> {
+  const { data, error } = await supabase
+    .from('progress_sessions')
+    .select('created_at, skill')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) {
+    console.error('Error leyendo progress_sessions:', error)
+    return null
+  }
+  return data && data[0] ? { at: data[0].created_at, skill: data[0].skill } : { at: null, skill: null }
+}
+
+async function leoAiAvailable(): Promise<boolean> {
+  const { data } = await supabase.from('leo_ai_config').select('enabled, public').maybeSingle()
+  return !!(data && data.enabled && data.public)
+}
+
+async function activeMistakesCount(userId: string): Promise<number | null> {
+  const { count, error } = await supabase
+    .from('mistake_stats')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('status', 'active')
+  return error ? null : count
+}
+
+async function sendReactivationViaResend(
+  to: string,
+  subject: string,
+  html: string,
+  oneClickUnsubUrl: string,
+  step: number
+): Promise<{ ok: boolean; id: string | null }> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: [to],
+        reply_to: REPLY_TO_EMAIL,
+        subject,
+        html,
+        headers: {
+          'List-Unsubscribe': `<${oneClickUnsubUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+        tags: [
+          { name: 'flow', value: 'member_reactivation' },
+          { name: 'step', value: String(step) },
+        ],
+      }),
+    })
+    if (!res.ok) {
+      console.error('Error mandando reactivación con Resend:', await res.text())
+      return { ok: false, id: null }
+    }
+    const body = await res.json().catch(() => ({}))
+    return { ok: true, id: (body && body.id) || null }
+  } catch (e) {
+    console.error('Error mandando reactivación con Resend:', e)
+    return { ok: false, id: null }
+  }
+}
+
+type ReactOutcome = {
+  id: string
+  decision: 'sent' | 'would_send' | 'skip'
+  reason?: string
+  step?: number
+  kind?: string
+  inactiveDays?: number
+  billing?: unknown
+}
+
+// Evalúa a UNA persona con datos frescos y, si todo se cumple y no es
+// simulación, manda el correo. Es el mismo camino para la simulación y
+// para el envío real: lo que la simulación dice es lo que se haría.
+async function runReactivationFor(userId: string, dryRun: boolean): Promise<ReactOutcome> {
+  const id8 = userId.slice(0, 8)
+  const { data: p, error } = await supabase.from('profiles').select(REACT_PROFILE_COLS).eq('id', userId).maybeSingle()
+  if (error || !p) return { id: id8, decision: 'skip', reason: 'profile_unreadable' }
+  const sess = await lastSessionInfo(userId)
+  if (sess === null) return { id: id8, decision: 'skip', reason: 'activity_unreliable' }
+
+  const pre: any = RC.precheck({ profile: p, lastSessionAt: sess.at, nowMs: Date.now(), ignoreHours: dryRun })
+  if (!pre.ok) {
+    if (!dryRun && pre.loggable) {
+      await logReactivation(userId, 'skipped', pre.step ?? null, pre.kind ?? null, pre.reason, {}, `skipped:${pre.reason}:${cancunDay()}`)
+    }
+    return { id: id8, decision: 'skip', reason: pre.reason, kind: pre.kind, step: pre.step }
+  }
+
+  // Verificación EN VIVO con el proveedor, justo antes de decidir.
+  const billing = await verifyMemberBilling(p)
+  const fin: any = RC.finalize(pre, billing, Date.now())
+  const summary = summarizeBilling(billing)
+  const base = { id: id8, kind: pre.kind, step: pre.step, inactiveDays: Math.floor(pre.inactiveDays), billing: summary }
+  if (!fin.send) {
+    if (!dryRun) {
+      await logReactivation(userId, 'skipped', pre.step, pre.kind, fin.reason, { billing: summary }, `skipped:${fin.reason}:${cancunDay()}`)
+    }
+    return Object.assign({ decision: 'skip' as const, reason: fin.reason }, base)
+  }
+  if (dryRun) return Object.assign({ decision: 'would_send' as const }, base)
+
+  // Fecha de renovación verificada: se guarda (solo esa columna) si cambió.
+  if (billing.state === 'ok' && billing.periodEndMs) {
+    const iso = new Date(billing.periodEndMs).toISOString()
+    const stored = p.next_renewal_at ? Date.parse(p.next_renewal_at) : null
+    if (stored === null || Math.abs(stored - billing.periodEndMs) > 60000) {
+      await supabase.from('profiles').update({ next_renewal_at: iso }).eq('id', userId)
+    }
+  }
+
+  const [leoAi, mistakes] = await Promise.all([
+    leoAiAvailable(),
+    pre.step === 2 ? activeMistakesCount(userId) : Promise.resolve(null),
+  ])
+  const content = RC.buildContent({ site: SITE, kind: pre.kind, step: pre.step, skill: sess.skill, mistakes, leoAi })
+
+  // Lugar en el freno global (14 días), reservado de forma atómica: si otro
+  // proceso mandó algo entre la lectura y este momento, se cancela.
+  const slotIso = new Date().toISOString()
+  const slotCutoff = new Date(
+    Date.now() - RC.REACT.GLOBAL_GAP_DAYS * 86400000 + MARKETING_SLOT_TOLERANCE_MINUTES * 60000
+  ).toISOString()
+  const { data: slot, error: slotError } = await supabase
+    .from('profiles')
+    .update({ last_marketing_email_at: slotIso })
+    .eq('id', userId)
+    .eq('is_member', true)
+    .is('email_opt_out_at', null)
+    .eq('email_invalid', false)
+    .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
+    .select('id')
+  if (slotError) console.error('Error reservando el freno global (reactivación):', slotError)
+  if (!slot || !slot.length) return Object.assign({ decision: 'skip' as const, reason: 'slot_taken' }, base)
+
+  const links = await unsubLinks(userId)
+  const html = emailShell(personalize(content, p.display_name), links.page)
+  const sent = await sendReactivationViaResend(p.email, content.subject, html, links.oneClick, pre.step)
+  if (!sent.ok) {
+    // No salió nada: se devuelve el lugar para reintentar en la siguiente pasada.
+    await supabase
+      .from('profiles')
+      .update({ last_marketing_email_at: p.last_marketing_email_at ?? null })
+      .eq('id', userId)
+      .eq('last_marketing_email_at', slotIso)
+    await logReactivation(userId, 'skipped', pre.step, pre.kind, 'send_failed', {}, `skipped:send_failed:${cancunDay()}`)
+    return Object.assign({ decision: 'skip' as const, reason: 'send_failed' }, base)
+  }
+
+  const nowIso = new Date().toISOString()
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data: fresh } = await supabase.from('profiles').select('lifecycle_emails').eq('id', userId).maybeSingle()
+    const merged: Record<string, string> = Object.assign({}, (fresh && fresh.lifecycle_emails) || {})
+    merged[RC.STEP_KEYS[pre.step - 1]] = nowIso
+    for (let i = pre.step; i < RC.STEP_KEYS.length; i++) delete merged[RC.STEP_KEYS[i]]
+    const { error: upErr } = await supabase
+      .from('profiles')
+      .update({ lifecycle_emails: merged, last_marketing_email_at: nowIso })
+      .eq('id', userId)
+    if (!upErr) break
+    console.error(`Error registrando la reactivación paso ${pre.step} para ${userId}:`, upErr)
+  }
+  await logReactivation(
+    userId,
+    'sent',
+    pre.step,
+    pre.kind,
+    null,
+    { resend_id: sent.id, inactive_days: Math.floor(pre.inactiveDays), billing: summary },
+    `sent:${pre.step}:${nowIso}`
+  )
+  return Object.assign({ decision: 'sent' as const }, base)
+}
+
+// Si el alumno volvió a practicar después de un correo de la secuencia,
+// ese ciclo se cierra: queda constancia en la bitácora y se limpian las
+// marcas viejas (el historial queda en la bitácora y en
+// last_marketing_email_at). Así los envíos pendientes de ese ciclo no
+// existen más.
+async function closeReturnedCycles(p: Record<string, any>): Promise<void> {
+  const lc = p.lifecycle_emails || {}
+  if (!RC.STEP_KEYS.some((k: string) => lc[k])) return
+  const lp = RC.toMs(p.last_practice_at)
+  if (lp === null) return
+  const stale = RC.staleCycleEmails(lc, lp)
+  if (!stale.length) return
+  for (const s of stale) {
+    await logReactivation(
+      p.id,
+      'cancelled_returned',
+      s.step,
+      null,
+      'practiced_again',
+      { email_sent_at: new Date(s.sentMs).toISOString(), practiced_at: new Date(lp).toISOString() },
+      `cancelled_returned:${s.step}:${new Date(s.sentMs).toISOString()}`
+    )
+  }
+  const merged: Record<string, string> = Object.assign({}, lc)
+  for (const s of stale) delete merged[RC.STEP_KEYS[s.step - 1]]
+  await supabase.from('profiles').update({ lifecycle_emails: merged }).eq('id', p.id)
+}
+
+async function allMembersForReactivation(): Promise<Record<string, any>[]> {
+  const out: Record<string, any>[] = []
+  for (let page = 0; page < 20; page++) {
+    const { data: chunk, error } = await supabase
+      .from('profiles')
+      .select(REACT_PROFILE_COLS)
+      .eq('is_member', true)
+      .order('id', { ascending: true })
+      .range(page * 1000, page * 1000 + 999)
+    if (error) throw error
+    out.push(...(chunk || []))
+    if (!chunk || chunk.length < 1000) break
+  }
+  return out
+}
+
+// Simulación: a quién le tocaría qué, sin enviar ni escribir nada.
+async function reactivationDryRun() {
+  const members = await allMembersForReactivation()
+  const rows: ReactOutcome[] = []
+  for (const m of members) rows.push(await runReactivationFor(m.id, true))
+  const byReason: Record<string, number> = {}
+  for (const r of rows) {
+    const k = r.decision === 'would_send' ? 'would_send' : r.reason || 'skip'
+    byReason[k] = (byReason[k] || 0) + 1
+  }
+  return { ok: true, dry_run: true, enabled: Deno.env.get('MEMBER_REACTIVATION_V2') === 'on', members: rows.length, summary: byReason, rows }
+}
+
+// Recupera la fecha de renovación REAL desde cada proveedor. Sin apply:true
+// solo informa. Con apply:true guarda únicamente profiles.next_renewal_at,
+// y solo cuando el proveedor confirma suscripción activa, cobro pagado y
+// fecha futura. Nunca toca cobros, importes ni estados de pago.
+async function billingSync(apply: boolean) {
+  const members = await allMembersForReactivation()
+  const rows: unknown[] = []
+  const byReason: Record<string, number> = {}
+  let verified = 0
+  let updated = 0
+  let noProvider = 0
+  for (const m of members) {
+    if (!m.stripe_customer_id && !m.paypal_subscription_id && !m.mp_preapproval_id) {
+      noProvider++
+      rows.push({ id: m.id.slice(0, 8), billing: { state: 'blocked', reason: 'no_paid_subscription' }, stored: m.next_renewal_at })
+      continue
+    }
+    const b = await verifyMemberBilling(m)
+    let wrote = false
+    if (b.state === 'ok' && b.periodEndMs && b.periodEndMs > Date.now()) {
+      verified++
+      const stored = m.next_renewal_at ? Date.parse(m.next_renewal_at) : null
+      if (apply && (stored === null || Math.abs(stored - b.periodEndMs) > 60000)) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ next_renewal_at: new Date(b.periodEndMs).toISOString() })
+          .eq('id', m.id)
+          .eq('is_member', true)
+        if (!error) {
+          wrote = true
+          updated++
+        }
+      }
+    } else {
+      byReason[b.reason || 'blocked'] = (byReason[b.reason || 'blocked'] || 0) + 1
+    }
+    rows.push({ id: m.id.slice(0, 8), billing: summarizeBilling(b), stored: m.next_renewal_at, wrote })
+  }
+  return { ok: true, apply, members: members.length, no_provider_subscription: noProvider, verified_ok: verified, updated, not_verified_by_reason: byReason, rows }
+}

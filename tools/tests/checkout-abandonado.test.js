@@ -88,13 +88,21 @@ function makeSupabase(extra){
 }
 function loadTs(file, extra){
   extra = extra || {};
-  const src = read('supabase_functions/' + file).replace(/^import .*createClient.*$/m, '');
+  let src = read('supabase_functions/' + file).replace(/^import .*createClient.*$/m, '');
+  // La reactivación de miembros importa sus reglas de member-reactivation-core.mjs:
+  // se inyectan como un objeto RC dentro del mismo contexto.
+  if(/^import \* as RC /m.test(src)){
+    const core = read('supabase_functions/member-reactivation-core.mjs');
+    const names = [...core.matchAll(/^export (?:function|const) (\w+)/gm)].map(m => m[1]);
+    src = src.replace(/^import \* as RC .*$/m, '');
+    src = 'const RC = (() => {\n' + core.replace(/^export /gm, '') + '\nreturn { ' + names.join(', ') + ' };\n})();\n' + src;
+  }
   const js = ts.transpileModule(src, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
   const served = [];
   const sb = makeSupabase(extra);
   const ctx = {
     exports: {}, console: { log(){}, error(){}, warn(){} }, crypto: globalThis.crypto, TextEncoder, Request, Response, URL, JSON, Promise, Set, Map, Math, Number, String, Array, Object, parseInt, Date: FakeDate,
-    setTimeout, clearTimeout, createClient: () => sb,
+    setTimeout, clearTimeout, createClient: () => sb, AbortSignal, btoa, encodeURIComponent,
     Deno: { env: { get: k => (extra.env || {})[k] || 'x' }, serve: fn => { served.push(fn); } },
     fetch: extra.fetch || (async (url, init) => {
       if(String(url).includes('resend.com')){
@@ -414,7 +422,7 @@ test('Miembros: el Cron de nudges no manda reactivacion a un miembro con correo 
 /* ---------------- 8. contrato del codigo ---------------- */
 test('Codigo: las consultas de lista excluyen email_invalid y el envio vuelve a leerlo', () => {
   const s = read('supabase_functions/upgrade-nudge-emails.ts');
-  assert.strictEqual((s.match(/\.eq\('email_invalid', false\)/g) || []).length, 3);
+  assert.strictEqual((s.match(/\.eq\('email_invalid', false\)/g) || []).length, 4); // 2 listas + lista de miembros + reserva del envio de reactivacion
   assert(/if \(fresh\.email_invalid\) return false/.test(s));
   assert(/checkout_followup/.test(s));
   const bloque = s.slice(s.indexOf('  checkout_abandoned: {'), s.indexOf('  active_free_pitch: {'));
