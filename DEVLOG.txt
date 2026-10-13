@@ -1440,3 +1440,5 @@ app.js?v=20261003j, temas.js?v=20261003f.
 2026-10-12 | Sprint ingles laboral: verificado en vivo (llamadas y reuniones 200, mp3 532862/529982 bytes, duracion 43.9 s). Enlaces nuevos: atencion-cliente -> llamadas, recepcionistas-hotel -> llamadas. Proximo articulo propuesto (NO creado): presentarte en ingles en el trabajo + Tell me about yourself.
 
 2026-10-12 | Nuevo articulo articulo-tell-me-about-yourself-ingles.html (formula presente/pasado/futuro, 3 respuestas modelo, plantilla, presentarte el primer dia, errores, 4 preguntas de comprension con audio Kokoro 35 s + 4 ejercicios, FAQ). Card, sitemap, enlace desde entrevista-trabajo (1 parrafo) y reuniones. Los otros articulos de entrevista no se tocaron.
+
+2026-10-12 | Limpieza de formato en 26 articulos: 77 negritas excesivas (frases de ejemplo y listas de frases) pasadas a cursiva; 3 rayas largas en prosa sustituidas por parentesis/comas (gerundio-e-infinitivo, verbos-irregulares, presente-simple). Se conservan negritas de etiquetas de lista y celdas de tabla. No se tocaron URLs, textos, verbo-to-be ni correo-formal. Tests OK.
