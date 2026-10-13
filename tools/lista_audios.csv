@@ -847,3 +847,22 @@ audio/articulos/preguntas-migracion/dialogo-familia.mp3,"— Next, please. Passp
 — I'm a nurse.
 — Thank you. Welcome to the United States.
 — Thank you very much.",en-US-AndrewMultilingualNeural|en-US-AvaMultilingualNeural
+audio/articulos/problemas-hotel/dialogo-averia.mp3,"— Front desk. How can I help you?
+— Hi, this is room 512. The air conditioning isn't working.
+— I'm sorry about that. Is the unit making any noise, or is it just not cooling?
+— It's not cooling at all, and the room is very warm.
+— Thank you. I'll send someone from maintenance to take a look.
+— Great. About how long will it take?
+— Someone should be there in about thirty minutes.
+— Okay, thank you. I'll be in the room.
+— Thank you for letting us know. Call us if you need anything else.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
+audio/articulos/problemas-hotel/dialogo-cambio-habitacion.mp3,"— Excuse me, I have a problem with my room.
+— Of course. What seems to be the problem?
+— The room next to mine is very loud, and I couldn't sleep last night.
+— I'm sorry to hear that. May I have your room number, please?
+— It's 308. Would it be possible to change rooms?
+— Let me check what's available. We have a quiet room on the fifth floor.
+— That sounds good. Is it the same type of room?
+— Yes, it has the same bed type, and the view is of the garden.
+— Perfect. Thank you for your help.
+— You're welcome. I'll have your new key cards ready in a few minutes.",en-US-AvaMultilingualNeural|en-US-AndrewMultilingualNeural
