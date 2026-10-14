@@ -26,7 +26,7 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261008c">
+<link rel="stylesheet" href="style.css?v=20261014a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -293,7 +293,7 @@ setTimeout(window.leoShowLate,6000);
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261012a"></script>
-<script src="app.js?v=20261010a"></script>
+<script src="app.js?v=20261014a"></script>
 <script src="leo-voz.js?v=20261003d" defer></script>
 <script src="backend.js?v=20261008b"></script>
 <script src="toefl-data.js?v=20261012a"></script>
@@ -370,6 +370,7 @@ setTimeout(window.leoShowLate,6000);
     // diario de cuenta gratis en vez del límite de visitante (ver
     // initLeoAccessTier en app.js, única fuente de verdad de los
     // límites). Si no hay sesión, sigue siendo visitante.
+    let justCreatedAccount = false;
     if(loggedInProfile){
       initLeoAccessTier('free', loggedInProfile);
       // Ya tiene cuenta gratis: no tiene caso invitarla a crear una.
@@ -381,6 +382,7 @@ setTimeout(window.leoShowLate,6000);
       // vuelva a salir si recarga.
       try{
         if(new URLSearchParams(window.location.search).get('cuenta') === 'nueva'){
+          justCreatedAccount = true;
           const banner = document.getElementById('newAccountBanner');
           if(banner){
             banner.innerHTML = '<strong>¡Listo, tu cuenta gratis está creada!</strong> Tu progreso y tu racha ahora se guardan. Elige tu nivel y sigue practicando.';
@@ -401,7 +403,7 @@ setTimeout(window.leoShowLate,6000);
     }
     const main = document.getElementById('practicaMain');
     if(main) main.style.visibility = 'visible';
-    initFreePractice({
+    const freePractice = initFreePractice({
       levelsEl: document.getElementById('levelSelector'),
       tabsEl: document.getElementById('skillTabs'),
       headEl: document.getElementById('skillHead'),
@@ -416,7 +418,11 @@ setTimeout(window.leoShowLate,6000);
     // El onboarding (nombre + nivel) ya no sale a visitantes: solo a quien
     // tiene cuenta (gratis) iniciada, por ejemplo al volver aqui recien
     // creada la cuenta (?cuenta=nueva).
-    if(loggedInProfile) initOnboarding();
+    if(loggedInProfile){
+      initOnboarding(function(){ if(freePractice && freePractice.syncLevel) freePractice.syncLevel(); });
+      // Cuenta recién creada que ya tenía nivel (no vio el onboarding): también baja directo al ejercicio.
+      if(justCreatedAccount && getProfile() && freePractice && freePractice.focusPractice) setTimeout(freePractice.focusPractice, 400);
+    }
   })();
 </script>
 

@@ -7305,37 +7305,116 @@ function progressAiCtx(diag, week){
     candidates: leoAiTemaPool(main, main), label:'Explícame mi progreso' };
 }
 
-/* Panel de miembros: la tarjeta principal "Recomendado" pasa a decir qué
-   te toca hoy (misma acción que "Hoy te conviene" del diagnóstico) y
-   empieza directo. Sin diagnóstico todavía queda la tarjeta del Plan
-   tal cual está en el HTML. */
+/* Panel de miembros: UNA sola acción principal, según el estado de la cuenta.
+   Todo sale de lo que el sistema ya calcula; aquí solo se decide cuál mostrar:
+     1. resume   hay una sesión a medias (de los últimos 3 días): "Sigue donde te quedaste".
+     2. today    el diagnóstico ya tiene recomendación (diag.today). Si esa recomendación son los errores
+                 pendientes, el diagnóstico ya los puso primero solo cuando tienen prioridad real
+                 (10 o más pendientes, o errores repetidos), y aquí se presenta como "Refuerzo pendiente".
+     3. first    cuenta sin ninguna práctica: "Tu primera práctica" (el Plan, que arranca solo con la ruta inicial).
+     4. null     con práctica pero sin diagnóstico todavía: se queda la tarjeta del Plan que ya trae el HTML.
+   Las demás tarjetas (Continuar, Errores, Reto diario, habilidades) siguen debajo como opciones secundarias;
+   "Continuar" se oculta solo cuando repetiría la misma invitación que la acción principal. */
+const DASH_RESUME_SKILLS = ['gramatica','vocabulario','listening','lectura','writing','speaking','mixto','plan','errores'];
+const DASH_RESUME_MAX_AGE_MS = 3 * 86400000;
+// La sesión a medias más reciente que de verdad se retomaría al abrir su página. `storage` = localStorage.
+function findResumableSession(storage, nowMs, userLevel){
+  let best = null;
+  try{
+    for(let i = 0; i < storage.length; i++){
+      const key = storage.key(i);
+      if(!key || key.indexOf('leo_inflight_') !== 0) continue;
+      const rest = key.slice('leo_inflight_'.length);
+      const skill = DASH_RESUME_SKILLS.find(sk => rest.indexOf(sk + '_') === 0);
+      if(!skill) continue;
+      const level = rest.slice(skill.length + 1);
+      // Cada sesión solo se retoma con el mismo nivel con el que se guardó (las de errores usan 'rapido' o 'todos').
+      if(skill === 'errores' ? (level !== 'rapido' && level !== 'todos') : level !== userLevel) continue;
+      let d = null;
+      try{ d = JSON.parse(storage.getItem(key)); }catch(e){ d = null; }
+      if(!d || typeof d.idx !== 'number') continue;
+      const total = d.total || (Array.isArray(d.pool) && d.pool.length) || (Array.isArray(d.itemIds) && d.itemIds.length) || 0;
+      if(!(total > 0) || d.idx < 1 || d.idx >= total) continue;     // sin respuestas, o ya terminada: no hay nada que retomar
+      const startedAt = typeof d.startedAt === 'number' ? d.startedAt : 0;
+      if(!startedAt || nowMs - startedAt > DASH_RESUME_MAX_AGE_MS) continue;
+      if(!best || startedAt > best.startedAt) best = { skill, level, done: d.idx, total, startedAt };
+    }
+  }catch(e){ return null; }
+  return best;
+}
+function dashResumeHref(r){
+  if(r.skill === 'plan') return 'plan-estudio.html?empezar=1';
+  if(r.skill === 'errores') return r.level === 'rapido' ? 'errores.html?modo=rapido' : 'errores.html';
+  return SKILL_PAGE[r.skill];
+}
+// Decide la acción principal. Función pura: { resume, today, hasHistory } -> descripción o null.
+function pickDashHero({ resume, today, hasHistory }){
+  if(resume){
+    const left = resume.total - resume.done;
+    const label = resume.skill === 'plan' ? 'Plan de estudio' : (DISPLAY_SKILL_LABELS[resume.skill] || 'tu sesión');
+    return { state:'resume', eyebrow:'Sigue donde te quedaste', title: `${label}: llevas ${resume.done} de ${resume.total}`,
+      reason: left === 1 ? 'Te falta 1 ejercicio para terminar esta sesión.' : `Te faltan ${left} ejercicios para terminar esta sesión.`,
+      cta:'Continuar mi sesión →', href: dashResumeHref(resume) };
+  }
+  if(today){
+    const refuerzo = /^errores\.html/.test(today.href || '');
+    return { state: refuerzo ? 'refuerzo' : 'today', eyebrow: refuerzo ? 'Refuerzo pendiente' : 'Hoy te conviene', title: today.title, reason: today.reason,
+      cta: refuerzo ? 'Empezar el repaso →' : 'Empezar lo que me toca hoy →', href: todayStartHref(today), action: today };
+  }
+  if(!hasHistory){
+    return { state:'first', eyebrow:'Tu primera práctica', title:'Empieza con una sesión corta',
+      reason:'Armamos la sesión según tu nivel. No tienes que elegir nada.', cta:'Empezar mi primera práctica →', href:'plan-estudio.html?empezar=1' };
+  }
+  return null;
+}
+const _pageOf = h => String(h || '').split(/[?#]/)[0];
+// "Continuar" se oculta solo si repetiría la acción principal (misma página, o "Empieza aquí" con la primera práctica).
+function syncContinueWithHero(hero){
+  const cc = document.getElementById('continueCard');
+  if(!cc) return;
+  const link = cc.querySelector('a.btn');
+  const hide = !!hero && (hero.state === 'first' || (!!link && _pageOf(link.getAttribute('href')) === _pageOf(hero.href)));
+  cc.hidden = hide;
+  const grid = cc.closest ? cc.closest('.dash-top-grid') : null;
+  if(grid) grid.classList.toggle('no-continue', hide);
+}
 function renderTodayHero(el){
   if(!el) return;
   function paint(){
     let diag = null;
     try{ diag = computeDiagnosis(); }catch(e){ diag = null; }
-    if(!diag || !diag.ready || !diag.today) return;
-    const t = diag.today;
+    let p = null;
+    try{ p = loadProgress(); }catch(e){ p = null; }
+    const hasHistory = !!(p && ((p.sessions && p.sessions.length) || p.lastActivity));
+    let resume = null;
+    try{ resume = findResumableSession(localStorage, Date.now(), getUserLevel()); }catch(e){ resume = null; }
+    const hero = pickDashHero({ resume, today: (diag && diag.ready && diag.today) ? diag.today : null, hasHistory });
+    if(!hero) return;                    // se queda la tarjeta del Plan del HTML
+    const t = hero.action || {};
     const card = document.createElement('div');
     card.className = 'plan-feature-card plan-feature-hero today-hero';
     card.id = el.id || '';
+    card.dataset.heroState = hero.state;
     card.innerHTML = `
       <span class="plan-feature-badge">Recomendado</span>
       <div class="plan-feature-icon">
         <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
       </div>
-      <div class="today-hero-eyebrow">Hoy te conviene</div>
-      <h2>${t.title}</h2>
-      <p class="plan-feature-desc">${t.reason}</p>
-      ${leoVozHtml(t.voice)}
-      <a href="${todayStartHref(t)}" class="btn btn-primary btn-block">Empezar lo que me toca hoy →</a>
+      <div class="today-hero-eyebrow">${hero.eyebrow}</div>
+      <h2>${hero.title}</h2>
+      <p class="plan-feature-desc">${hero.reason}</p>
+      ${hero.state === 'today' || hero.state === 'refuerzo' ? leoVozHtml(t.voice) : ''}
+      <a href="${hero.href}" class="btn btn-primary btn-block" data-hero-cta="${hero.state}">${hero.cta}</a>
       <div class="today-hero-links">
         ${t.article ? `<a href="${t.article}">${t.articleLabel || 'Leer la explicación'}</a>` : ''}
-        ${/^plan-estudio\.html$/.test(t.href) ? '' : '<a href="plan-estudio.html">Ver mi Plan de estudio</a>'}
+        ${hero.state === 'today' || hero.state === 'refuerzo' ? (/^plan-estudio\.html$/.test(t.href) ? '' : '<a href="plan-estudio.html">Ver mi Plan de estudio</a>') : ''}
       </div>`;
     el.replaceWith(card);
     el = card;
-    if(t.voice) leoVozActivate();
+    const heroCta = card.querySelector('[data-hero-cta]');
+    if(heroCta) heroCta.addEventListener('click', () => trackLeoEvent('dash_hero_clicked', { hero_state: hero.state }));   // solo Analytics (no está en el mapa del Pixel)
+    if((hero.state === 'today' || hero.state === 'refuerzo') && t.voice) leoVozActivate();
+    syncContinueWithHero(hero);
   }
   diagRenderWithStats(paint);
 }
@@ -8486,7 +8565,9 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     mixto: runFreeMixSession
   };
 
+  // Una cuenta gratis que ya eligió su nivel (onboarding) empieza en ese nivel, no siempre en Fácil. Los invitados siguen en Fácil.
   let currentLevel = 'facil';
+  try{ if(_leoAccessTier === 'free' && getProfile()) currentLevel = getUserLevel(); }catch(e){}
   let currentSkill = 'gramatica';
   try{
     const params = new URLSearchParams(window.location.search);
@@ -8548,9 +8629,19 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill });
   }
 
-  renderLevelSelector(levelsEl, currentLevel, (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); });
+  const onPickLevel = (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); };
+  renderLevelSelector(levelsEl, currentLevel, onPickLevel);
   renderTabs();
   renderCurrent();
+  // Para practica.html: tras el onboarding (o al llegar con la cuenta recién creada) se muestra el nivel elegido y se
+  // baja directo al ejercicio, para que en el móvil la primera pregunta no quede debajo de las tarjetas de nivel.
+  return {
+    syncLevel(){
+      try{ if(_leoAccessTier === 'free' && getProfile()){ const lvl = getUserLevel(); if(lvl !== currentLevel){ currentLevel = lvl; renderLevelSelector(levelsEl, currentLevel, onPickLevel); renderCurrent(); } } }catch(e){}
+      focusTabs();
+    },
+    focusPractice: focusTabs
+  };
 }
 
 /* ---------- Orquestador de practica-miembros.html: mismo selector de

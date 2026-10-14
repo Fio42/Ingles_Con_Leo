@@ -1585,6 +1585,15 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
   #memberContent .dash-top-grid{grid-template-columns:1.3fr 1fr 1fr;}
   #memberContent .dash-top-grid.no-mistakes{grid-template-columns:1fr 1fr;}
 }
+/* Cuando "Continuar" se oculta porque repetiria la accion principal (ver syncContinueWithHero en app.js), las otras
+   tarjetas se reparten el ancho sin dejar hueco. */
+@media(min-width:1150px){
+  #memberContent .dash-top-grid.no-continue{grid-template-columns:1fr 1fr;}
+}
+@media(min-width:700px){
+  #memberContent .dash-top-grid.no-continue.no-mistakes{grid-template-columns:minmax(0,640px);}
+}
+#memberContent .dash-more-label{margin:18px 0 -4px;font-size:0.82rem;font-weight:700;letter-spacing:0.02em;color:var(--ink-faint);text-transform:uppercase;}
 /* Continua donde te quedaste: mismo radio y padding que Repaso
    personal/Reto diario (antes tenia mas padding y un titulo mas
    grande que sus vecinas, y se sentia "mas importante" de lo que
