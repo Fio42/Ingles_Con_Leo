@@ -5,14 +5,16 @@ name: IndexNow ping
 # que el archivo de la clave este publicado en el propio sitio
 # (41c1350951c5e79e95e8a4d0b5c84112.txt en la raiz del repo).
 #
-# - Push normal: manda SOLO las paginas .html nuevas o modificadas.
+# - Push normal: manda las paginas .html nuevas o modificadas de TODO el push
+#   (todos sus commits, no solo el ultimo) y espera 60 s a que Pages publique.
 # - "Run workflow" a mano: manda todas las URLs del sitemap.xml.
 # - El job FALLA (rojo) y muestra la respuesta si algun buscador contesta
 #   4xx/5xx. 200 y 202 cuentan como exito.
 # - Cada llamada se reintenta 3 veces (curl --retry). Si aun asi no hay
 #   respuesta (HTTP 000, corte de red), sale como warning amarillo, no rojo.
-# - Excepcion: HTTP 403 de api.indexnow.org (Bing, problema externo conocido)
-#   se muestra como warning amarillo y NO hace fallar el job.
+# - Excepcion: HTTP 403 de api.indexnow.org (Bing rechaza el sitio aunque la
+#   clave es valida, ver mensaje del warning) se muestra como warning amarillo
+#   y NO hace fallar el job.
 #
 # Google NO usa IndexNow (solo Bing/Yandex/Seznam/Naver), asi que esto no
 # reemplaza al sitemap.xml ni a Google Search Console.
@@ -30,17 +32,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Avisar a IndexNow (falla si hay 4xx/5xx)
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
         run: |
           KEY="41c1350951c5e79e95e8a4d0b5c84112"
           HOST="inglesconleo.com"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             urls=$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's/<loc>//;s#</loc>##')
           else
-            urls=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- '*.html' \
+            # Un push puede traer VARIOS commits: se compara contra el estado
+            # anterior del push (BEFORE_SHA), no solo contra el ultimo commit.
+            # Si ese commit no existe (rama nueva, force push), se usa HEAD~1.
+            base="$BEFORE_SHA"
+            if [ -z "$base" ] || echo "$base" | grep -Eq '^0+$' || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              base="HEAD~1"
+            fi
+            urls=$(git diff --name-only --diff-filter=AM "$base" "$AFTER_SHA" -- '*.html' \
               | sed -E 's#(^|/)index\.html$#\1#; s#^#https://'"$HOST"'/#')
+            # GitHub Pages tarda en publicar el push: se espera un poco para que
+            # el buscador no lea la version vieja de la pagina.
+            if [ -n "$urls" ]; then sleep 60; fi
           fi
           if [ -z "$urls" ]; then
             echo "Ninguna pagina .html nueva o cambiada: nada que avisar."
@@ -62,7 +77,7 @@ jobs:
               200|202) ;;
               403)
                 if [ "$ep" = "https://api.indexnow.org/indexnow" ]; then
-                  echo "::warning::IndexNow (Bing) responde HTTP 403 en $ep: problema externo conocido, no se marca como fallo"
+                  echo "::warning::Bing rechaza el sitio (HTTP 403 UserForbiddedToAccessSite) aunque la clave y el archivo https://$HOST/$KEY.txt estan bien (verificado el 2026-10-14: 200, contenido exacto, sin redirecciones; una clave inventada si recibe 202). Es una decision del lado de Bing: revisar el sitio en Bing Webmaster Tools. No se marca como fallo para no tapar a Yandex y Seznam."
                 else
                   echo "::error::IndexNow fallo en $ep con HTTP $code"; fail=1
                 fi ;;
