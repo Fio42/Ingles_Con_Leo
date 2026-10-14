@@ -31,6 +31,8 @@ Cifras al 2026-10-14:
 
 ### Pendientes priorizados (ninguno esta hecho salvo que lo diga)
 
+HECHO EL 2026-10-14 (tarde, con autorizacion general de Leo): puntos 1, 2, 4 (parcial) y 10 de abajo. Ver seccion 12.
+
 Requieren aprobacion de Leo (cambian produccion, correos, negocio o seguridad):
 1. Seguridad: `anon` tiene INSERT/UPDATE de columna sobre TODO `profiles` (incluye `is_member`). Hoy lo frena solo la RLS. Revocarlo es una migracion pequeña y reversible, pero hay que probar registro/login despues.
 2. Seguridad: `handle_new_user()` (SECURITY DEFINER) es invocable por RPC por anon y authenticated; revocar EXECUTE es seguro (el trigger no lo necesita) pero se prueba con un registro real.
@@ -491,3 +493,15 @@ Nota para el grafo de enlaces: contar solo `<a href>` (no `<link rel=canonical>`
 - Documentos anteriores hablan de 36 pruebas / 35 tests: hoy son 33 `.test.js` + 2 `.test.sql`.
 - El DEVLOG dice "3 articulos con cache vieja" nunca: el hallazgo es nuevo (3 articulos sin `?v=` en `app.js` y `clases.js` sin `?v=`).
 - Kokoro: documentos previos decian que no se podia ejecutar desde la sesion del agente; SI se puede (8.2).
+
+---
+
+## 12. Cambios aplicados despues de la auditoria (2026-10-14, tarde)
+
+Hechos con la autorizacion general de Leo ("todo lo que puedas sin romper ni arriesgar nada"):
+1. Supabase, migracion `harden_profiles_anon_and_function_grants` (version 20261014182848): el rol anon ya no puede insertar/actualizar/borrar en `profiles` (ni por tabla ni por columna; conserva SELECT, que la RLS deja vacio); `handle_new_user()` ya no es invocable por RPC (revocado a public, anon y authenticated; el trigger `on_auth_user_created` sigue y se probo en una transaccion con rollback que un trigger SECURITY DEFINER dispara sin EXECUTE); `apply_mistake_results` con `search_path=public`. Verificado: authenticated conserva sus 11 columnas UPDATE, service_role intacto, 95 auth.users = 95 perfiles. Advisors de seguridad: desaparecieron los avisos de handle_new_user y search_path. Quedan: 10 tablas RLS sin politicas (intencional), 3 RPC de feedback para authenticated (intencional) y contraseñas filtradas (se activa en el panel de Auth, no por SQL). SQL de reversion dentro del archivo de migracion.
+2. Paridad de migraciones: se crearon en el repo `supabase/migrations/20261014163304_revoke_truncate_anon_authenticated.sql` y `20261014182848_harden_profiles_anon_and_function_grants.sql`. Siguen sin archivo las 8 migraciones antiguas de la seccion 6.3 y los 4 archivos con marca de tiempo distinta; no se renombraron para no romper nada.
+3. Cache: `app.js?v=20261014a` en articulo-hora-en-ingles, articulo-ingles-aeropuerto y articulo-ingles-restaurante (81 HTML con un unico valor); `clases.js?v=20261014a` en clases.html; `article-quiz.js?v=20261007a` en 9 articulos que lo cargaban sin version (32 en total, un solo valor). `meta-pixel.js` sigue sin version en 84 paginas (archivo estable; no se toco a proposito).
+4. `.gitignore`: `*.tmp*.mp3`, `tools/site-health/DEVLOG.txt`, `tools/.kokoro-models/`.
+5. Decisiones: NO se acortaron titulos largos (cambiar titulos de paginas posicionadas sin evidencia puede mover posiciones); NO se tocaron fichas ni articulos en experimento; `dateModified` de fichas no se toco (las fichas no llevan ese campo en el JSON-LD actual: el desfase de la seccion 7.2 era un falso positivo de esa medicion; verificar antes de actuar).
+6. Primera cuenta nueva despues del cambio: comprobar que se crea su perfil (`select count(*) from auth.users u where not exists (select 1 from public.profiles p where p.id=u.id)` debe seguir en 0).

@@ -36,3 +36,8 @@ __pycache__/
 # QA E2E: sesion autenticada local de la cuenta de prueba (NUNCA subir: usuario, contrasena, cookies, tokens, storageState)
 tools/e2e/.auth/
 *.storageState.json
+
+# Temporales de generacion de audio (Kokoro/Edge TTS) y notas locales de Site Health
+*.tmp*.mp3
+tools/site-health/DEVLOG.txt
+tools/.kokoro-models/
