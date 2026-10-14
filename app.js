@@ -5599,6 +5599,34 @@ function renderContinueCard(container){
 function applyDashboardGreeting(el){
   const profile = getProfile();
   el.textContent = (profile && profile.name) ? `Hola, ${profile.name} \uD83D\uDC4B` : 'Hola \uD83D\uDC4B';
+  try{
+    const sub = dashGreetingSubText();
+    let line = document.getElementById('greetSub');
+    if(!line && sub && el.parentNode){
+      line = document.createElement('div');
+      line.id = 'greetSub';
+      line.className = 'dash-greeting-sub';
+      el.parentNode.insertBefore(line, el.nextSibling);
+    }
+    if(line) line.textContent = sub || '';
+  }catch(e){ /* el saludo base ya se pintó; la línea extra es opcional */ }
+}
+
+/* Línea de contexto bajo el saludo. Solo lectura del progreso local; si no hay
+   nada útil que decir devuelve '' y no se muestra nada. */
+function dashGreetingSubText(){
+  const p = loadProgress();
+  if(!p || !p.sessions || !p.sessions.length) return '';
+  const today = localDateStr(new Date());
+  const dates = p.sessions.map(s=>s.date).filter(Boolean).sort();
+  const lastDate = dates[dates.length-1];
+  if(!lastDate) return '';
+  const days = Math.round((new Date(today+'T00:00:00') - new Date(lastDate+'T00:00:00')) / 86400000);
+  const streak = computeStreak();
+  if(days === 0) return streak >= 2 ? `Llevas ${streak} días seguidos. Buen ritmo.` : 'Ya practicaste hoy. Buen trabajo.';
+  if(days === 1 && streak >= 2) return `Llevas ${streak} días seguidos. Practica hoy para mantenerla.`;
+  if(days >= 4 && days <= 60) return `Hace ${days} días que no practicas. Retomemos con 5 minutos.`;
+  return '';
 }
 
 /* ---------- Dashboard v2: stats, anillos de progreso, actividad ---------- */
