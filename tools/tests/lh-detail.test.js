@@ -61,4 +61,32 @@ test('detailLines produce líneas cortas con LCP, bloqueos y condiciones', () =>
   const lines = d.detailLines(d.extractDetail(raw, page, sum), null).join('\n');
   assert(/LCP 3000ms/.test(lines) && /style\.css/.test(lines) && /CPU x4/.test(lines));
 });
+test('extractDetail lee el formato de Lighthouse 13 (insights) cuando faltan las auditorías viejas', () => {
+  const raw13 = {
+    fetchTime: '2026-10-14T00:00:00Z', lighthouseVersion: '13.5.0',
+    categories: { 'best-practices': { auditRefs: [{ id: 'errors-in-console' }, { id: 'ok-audit' }] } },
+    audits: {
+      'largest-contentful-paint': { numericValue: 8000 },
+      'lcp-breakdown-insight': { details: { items: [
+        { type: 'table', items: [{ subpart: 'timeToFirstByte', duration: 90 }, { subpart: 'elementRenderDelay', duration: 7000 }] },
+        { type: 'node', selector: 'body > main > p.lead', snippet: '<p class="lead">', nodeLabel: 'Hola' } ] } },
+      'render-blocking-insight': { details: { items: [{ url: 'https://inglesconleo.com/style.css', wastedMs: 300, totalBytes: 2048 }] } },
+      'errors-in-console': { score: 0, scoreDisplayMode: 'binary', title: 'Errores en consola', details: { items: [{}] } },
+      'ok-audit': { score: 1, scoreDisplayMode: 'binary', title: 'ok' },
+    },
+  };
+  const r = d.extractDetail(raw13, page, sum);
+  assert.strictEqual(r.lcpElement.selector, 'body > main > p.lead');
+  assert.strictEqual(r.lcpPhases.elementRenderDelay, 7000);
+  assert.strictEqual(r.renderBlocking.length, 1);
+  assert.deepStrictEqual(r.bestPracticesFails.map((f) => f.id), ['errors-in-console']);
+});
+test('classifyDrop: una sola corrida baja es "aislada"; dos seguidas es "confirmada"; sin historial no opina', () => {
+  const hist = [75, 73, 87].map((p) => ({ performance: p }));
+  assert.strictEqual(d.classifyDrop(hist, 53).kind, 'aislada');
+  const hist2 = [75, 73, 87, 53].map((p) => ({ performance: p }));
+  assert.strictEqual(d.classifyDrop(hist2, 55).kind, 'confirmada');
+  assert.strictEqual(d.classifyDrop(hist2, 86).kind, 'aislada');
+  assert.strictEqual(d.classifyDrop([{ performance: 80 }, { performance: 40 }], 30).kind, 'sin-datos');
+});
 console.log('\n' + ok + ' pruebas correctas');

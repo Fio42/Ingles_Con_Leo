@@ -39,24 +39,55 @@ function findLighthouseBin() {
 
 const LIGHTHOUSE_BIN = findLighthouseBin();
 
+// Una sola medición de Lighthouse en GitHub varía muchísimo (misma página y mismo
+// código: 87 -> 53 -> 85 en tres días). Por eso se mide RUNS veces por página y se
+// guarda la corrida del medio (mediana por Performance). Así un pico de lentitud
+// de la máquina no dispara una falsa alarma.
+const RUNS = Number(process.env.LH_RUNS) || 3;
+
+function perfOf(file) {
+  try {
+    const j = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const sc = j.categories && j.categories.performance && j.categories.performance.score;
+    return typeof sc === 'number' ? sc : null;
+  } catch (e) { return null; }
+}
+
 for (const page of PAGES) {
   const outFile = path.join(OUT_DIR, `${page.slug}.json`);
-  console.log(`Lighthouse: ${page.label} (${page.url})...`);
-  try {
-    execFileSync(
-      LIGHTHOUSE_BIN,
-      [
-        page.url,
-        '--output=json',
-        `--output-path=${outFile}`,
-        '--only-categories=performance,seo,accessibility,best-practices',
-        '--chrome-flags="--headless=new --no-sandbox --disable-gpu"',
-        '--quiet',
-      ],
-      { stdio: 'inherit', shell: true }
-    );
-  } catch (e) {
+  console.log(`Lighthouse: ${page.label} (${page.url}), ${RUNS} mediciones...`);
+  const good = [];
+  for (let i = 1; i <= RUNS; i++) {
+    const tmp = path.join(OUT_DIR, `${page.slug}.run${i}.json`);
+    try {
+      execFileSync(
+        LIGHTHOUSE_BIN,
+        [
+          page.url,
+          '--output=json',
+          `--output-path=${tmp}`,
+          '--only-categories=performance,seo,accessibility,best-practices',
+          '--chrome-flags="--headless=new --no-sandbox --disable-gpu"',
+          '--quiet',
+        ],
+        { stdio: 'inherit', shell: true }
+      );
+      const sc = perfOf(tmp);
+      if (sc != null) good.push({ tmp, sc });
+    } catch (e) {
+      console.error(`  Medición ${i} falló para ${page.url}, se sigue.`);
+    }
+  }
+  if (good.length) {
+    good.sort((a, b) => a.sc - b.sc);
+    const mid = good[Math.floor((good.length - 1) / 2)];
+    fs.copyFileSync(mid.tmp, outFile);
+    console.log(`  Performance de las mediciones: ${good.map((g) => Math.round(g.sc * 100)).join(', ')}. Se guarda la del medio (${Math.round(mid.sc * 100)}).`);
+  } else {
     console.error(`  Lighthouse falló para ${page.url}, se sigue con las demás páginas.`);
+  }
+  for (let i = 1; i <= RUNS; i++) {
+    try { fs.unlinkSync(path.join(OUT_DIR, `${page.slug}.run${i}.json`)); } catch (e) { /* no existe */ }
   }
 }
 

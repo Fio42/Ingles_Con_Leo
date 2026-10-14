@@ -48,11 +48,31 @@ function lcpElementAndPhases(audits) {
       for (const it of items) out.phases[cut(it.phase, 30)] = num(it.timing);
     }
   }
+  // Lighthouse 13 quitó 'largest-contentful-paint-element': ahora el mismo dato
+  // vive en 'lcp-breakdown-insight' (tabla de fases + un nodo con el elemento).
+  if (!out.element || !out.phases) {
+    const ins = audits['lcp-breakdown-insight'] && audits['lcp-breakdown-insight'].details;
+    const parts = ins && Array.isArray(ins.items) ? ins.items : [];
+    for (const p of parts) {
+      if (p && p.type === 'node' && !out.element) {
+        out.element = { selector: cut(p.selector, 100), snippet: cut(p.snippet, 140), label: cut(p.nodeLabel, 80) };
+      }
+      if (p && p.type === 'table' && Array.isArray(p.items) && !out.phases) {
+        const rows = p.items.filter((it) => it && it.subpart);
+        if (rows.length) {
+          out.phases = {};
+          for (const it of rows) out.phases[cut(it.subpart, 30)] = num(it.duration);
+        }
+      }
+    }
+  }
   return out;
 }
 
 function renderBlocking(audits) {
-  const items = audits['render-blocking-resources'] && audits['render-blocking-resources'].details && audits['render-blocking-resources'].details.items;
+  // Lighthouse 13 sustituyó 'render-blocking-resources' por 'render-blocking-insight' (mismas columnas).
+  const src = audits['render-blocking-resources'] || audits['render-blocking-insight'];
+  const items = src && src.details && src.details.items;
   return (items || []).slice(0, 6).map((i) => ({ url: shortUrl(i.url), wastedMs: num(i.wastedMs), bytes: num(i.totalBytes) }));
 }
 
@@ -79,6 +99,18 @@ function thirdParties(audits) {
     blockingMs: num(i.blockingTime),
     kb: num((i.transferSize || 0) / 1024),
   }));
+}
+
+/** Qué auditorías de Best Practices no pasan (para saber POR QUÉ no es 100). */
+function bestPracticesFailures(raw) {
+  const cat = raw.categories && raw.categories['best-practices'];
+  const audits = raw.audits || {};
+  if (!cat || !Array.isArray(cat.auditRefs)) return [];
+  return cat.auditRefs
+    .map((ref) => ({ id: ref.id, a: audits[ref.id] }))
+    .filter((x) => x.a && typeof x.a.score === 'number' && x.a.score < 1 && x.a.scoreDisplayMode !== 'notApplicable' && x.a.scoreDisplayMode !== 'informative')
+    .slice(0, 6)
+    .map((x) => ({ id: x.id, title: cut(x.a.title, 80), items: x.a.details && Array.isArray(x.a.details.items) ? x.a.details.items.length : null }));
 }
 
 function conditions(raw) {
@@ -127,6 +159,7 @@ function extractDetail(raw, page, summary) {
     lcpElement: lcp.element,
     lcpPhases: lcp.phases,
     renderBlocking: renderBlocking(audits),
+    bestPracticesFails: bestPracticesFailures(raw),
     slowestRequests: slowestRequests(audits, pageHost),
     thirdParties: thirdParties(audits),
     conditions: conditions(raw),
@@ -189,6 +222,25 @@ function assessVariation(prevRecords, current, cat = 'performance') {
   return { verdict: 'real', samples: vals.length, text: `Peor que todo lo visto: ${range}; este valor (${current[cat]}) es nuevo.${cond}` };
 }
 
+/**
+ * ¿La caída de hoy ya se vio en la corrida anterior también?
+ * Una sola corrida mala (la máquina de medición de GitHub varía mucho) NO debe
+ * marcarse como crítica: se marca crítica solo si la corrida anterior YA estaba
+ * por debajo de lo normal y hoy sigue igual.
+ * prevRecords: corridas ANTERIORES de la misma página (sin la actual).
+ * Devuelve 'confirmada', 'aislada' (una sola corrida) o 'sin-datos'.
+ */
+const DROP_THRESHOLD = 10;
+function classifyDrop(prevRecords, currentScore, cat = 'performance') {
+  const vals = prevRecords.map((r) => r[cat]).filter((v) => typeof v === 'number');
+  if (vals.length < 3 || typeof currentScore !== 'number') return { kind: 'sin-datos', base: null, last: null };
+  const last = vals[vals.length - 1];
+  const base = median(vals.slice(0, -1));
+  const lastLow = last < base - DROP_THRESHOLD;
+  const nowLow = currentScore < base - DROP_THRESHOLD;
+  return { kind: lastLow && nowLow ? 'confirmada' : 'aislada', base, last };
+}
+
 /** Líneas cortas de markdown con el detalle de una corrida. */
 function detailLines(rec, variation) {
   const m = rec.metrics || {};
@@ -205,10 +257,13 @@ function detailLines(rec, variation) {
   if (rec.slowestRequests && rec.slowestRequests.length) {
     lines.push(`  - Peticiones más lentas: ${rec.slowestRequests.slice(0, 3).map((r) => `${r.url} ${r.ms}ms${r.thirdParty ? ' (tercero)' : ''}`).join('; ')}`);
   }
+  if (rec.bestPractices != null && rec.bestPractices < 100 && rec.bestPracticesFails && rec.bestPracticesFails.length) {
+    lines.push(`  - Best Practices no pasa: ${rec.bestPracticesFails.map((f) => `${f.title}${f.items != null ? ` (${f.items})` : ''}`).join('; ')}`);
+  }
   const c = rec.conditions || {};
   lines.push(`  - Condiciones: ${c.formFactor || '?'}, ${c.throttlingMethod || '?'}, CPU x${c.cpuSlowdown ?? '?'}, RTT ${c.rttMs ?? '?'}ms, benchmark ${c.benchmarkIndex ?? '?'}, Lighthouse ${c.lighthouse || '?'}`);
   if (variation) lines.push(`  - Variación: ${variation.text}`);
   return lines;
 }
 
-module.exports = { HISTORY_CAP, MIN_SAMPLES, extractDetail, loadHistory, addRecords, assessVariation, detailLines };
+module.exports = { HISTORY_CAP, MIN_SAMPLES, DROP_THRESHOLD, extractDetail, loadHistory, addRecords, assessVariation, classifyDrop, detailLines };

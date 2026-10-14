@@ -472,16 +472,22 @@ function auditLighthouse(lhResults, history, findings) {
       } else if (score < 80) {
         findings.push(mk(SEV.IMPORTANT, `lighthouse-${cat}`, url, `Lighthouse ${label} = ${score}/100.`, 'Hay margen claro de mejora.', 'Revisar el detalle del reporte de Lighthouse para esta página.'));
       }
-      if (prev && typeof prev[cat] === 'number' && score < prev[cat] - 10) {
-        // ¿Es ruido del simulador o algo real? Se compara con el historial guardado.
-        const slug = (LIGHTHOUSE_PAGES.find((p) => p.url === url) || {}).slug;
+      // Caída de puntaje. La máquina de medición de GitHub varía mucho de un día a otro
+      // (misma página, mismo código: 87 -> 53 -> 85), así que UNA sola corrida mala no se
+      // marca crítica. Se marca crítica solo si la corrida anterior ya estaba baja y hoy sigue.
+      const slug = (LIGHTHOUSE_PAGES.find((p) => p.url === url) || {}).slug;
+      const priors = LH_PREVIOUS[slug] || [];
+      const drop = cat === 'performance' ? lhDetail.classifyDrop(priors, score, cat) : { kind: 'sin-datos' };
+      const singleDrop = prev && typeof prev[cat] === 'number' && score < prev[cat] - lhDetail.DROP_THRESHOLD;
+      if (drop.kind === 'confirmada') {
+        findings.push(mk(SEV.CRITICAL, 'lighthouse-regression', url, `Lighthouse ${label} sigue bajo: ${score} hoy y ${drop.last} en la corrida anterior (lo normal era ~${Math.round(drop.base)}).`, 'Dos corridas seguidas por debajo de lo normal: ya no parece ruido, puede ser una regresión real (algo que se agregó o cambió empeoró la página).', 'Revisar qué cambió en esta página desde hace dos días y el detalle de rendimiento del reporte (elemento LCP y recursos lentos).'));
+      } else if (singleDrop) {
         const cur = LH_RECORDS.find((x) => x.slug === slug);
-        const v = cur && cat === 'performance' ? lhDetail.assessVariation(LH_PREVIOUS[slug] || [], cur, cat) : null;
-        if (v && v.verdict === 'ruido') {
-          findings.push(mk(SEV.WARNING, `lighthouse-regression`, url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, v.text, 'Esperar la siguiente corrida; si se repite varias veces seguidas, mirar el detalle de rendimiento del reporte.'));
-        } else {
-          findings.push(mk(SEV.CRITICAL, `lighthouse-regression`, url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, `Puede ser una regresión real: algo que se agregó o cambió empeoró el sitio.${v ? ' ' + v.text : ''}`, 'Revisar qué cambió en esta página desde la corrida anterior y el detalle de rendimiento del reporte.'));
-        }
+        const v = cur && cat === 'performance' ? lhDetail.assessVariation(priors, cur, cat) : null;
+        const why = v && v.verdict === 'ruido'
+          ? v.text
+          : 'Caída de una sola corrida: todavía no se sabe si es real o ruido de la máquina de medición. Pasa a crítico solo si se repite en la siguiente corrida.';
+        findings.push(mk(SEV.WARNING, 'lighthouse-regression', url, `Lighthouse ${label} bajó de ${prev[cat]} a ${score} desde la última corrida.`, why, 'No tocar nada todavía: esperar la siguiente corrida (mañana).'));
       }
     });
     if (r.consoleErrors > 0) {
@@ -504,7 +510,17 @@ function mk(severity, category, url, problem, why, action) {
   return { severity, category, url, problem, why, action };
 }
 function findingKey(f) {
-  return `${f.severity}|${f.category}|${f.url}|${f.problem}`;
+  return normalizeFindingKey(`${f.severity}|${f.category}|${f.url}|${f.problem}`);
+}
+// Los hallazgos de Lighthouse llevan el puntaje dentro del texto ("= 51/100", "de 87 a 53").
+// Si el número entra en la identidad, un cambio de 50 a 51 hace que el mismo problema salga
+// como 🆕 NUEVO cada día. Se quitan los números de la clave solo para esos hallazgos.
+function normalizeFindingKey(key) {
+  const parts = String(key).split('|');
+  if (parts.length >= 4 && /^lighthouse/.test(parts[1])) {
+    return [parts[0], parts[1], parts[2], parts.slice(3).join('|').replace(/\d+(\.\d+)?/g, '#')].join('|');
+  }
+  return String(key);
 }
 
 function severityRank(s) {
@@ -659,7 +675,7 @@ async function main() {
   auditLighthouse(lhResults, history, findings);
 
   // Marca cuáles findings son NUEVOS respecto a la corrida anterior.
-  const prevKeys = new Set(history.findingKeys || []);
+  const prevKeys = new Set((history.findingKeys || []).map(normalizeFindingKey));
   for (const f of findings) f.isNew = !prevKeys.has(findingKey(f));
 
   const totalPublicPages = Object.values(localIntent).filter((v) => !v.expectNoindex).length;
