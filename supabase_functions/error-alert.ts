@@ -7,7 +7,7 @@
 // Vault, igual que upgrade-nudge-emails. Sin llave: 401. Se despliega sin
 // verify_jwt.
 //
-//   { "event": "alert",  "error_id": 123, "reason": "new|regression|critical_repeat|escalation" }
+//   { "event": "alert",  "error_id": 123, "reason": "new|regression|critical_repeat|escalation" }   (al momento solo si es critical; ver ERROR_INSTANT_ALERTS)
 //   { "event": "digest" }   resumen de 24 h (9:00 America/Cancun); solo manda correo si hubo algo.
 //
 // Nunca registra sus propios fallos en app_errors (evita bucles): solo
@@ -116,6 +116,9 @@ export async function handle(req: Request): Promise<Response> {
       if (!Number.isInteger(id) || id <= 0) return json({ ok: false, error: 'bad_error_id' }, 400)
       const { data: row, error } = await supabase.from('app_errors').select('*').eq('id', id).maybeSingle()
       if (error || !row) return json({ ok: false, error: 'not_found' }, 404)
+      // Solo los errores CRITICOS avisan al momento. El resto va en el resumen diario.
+      // Para que lleguen todos al momento: secreto ERROR_INSTANT_ALERTS = 'on'.
+      if (row.severity !== 'critical' && env('ERROR_INSTANT_ALERTS') !== 'on') return json({ ok: true, sent: false, reason: 'digest_only' })
       const mail = alertEmail(row, String(body.reason || 'new'))
       return json({ ok: await sendMail(mail.subject, mail.html) })
     }

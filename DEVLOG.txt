@@ -1511,3 +1511,8 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Cache: app.js y style.css pasaron a ?v=20261014b en TODOS los .html (81 y 86 archivos). Respaldo previo en $HOME/bak-sub del equipo de Leo (fuera del repo).
 - Pruebas: tools/tests/*.test.js 0 fallos; prueba unitaria de los 7 casos de texto OK.
 - Pendiente (ideas ya auditadas): banner de errores con nombre de tema, hero con habilidad mas floja, correos personalizados (necesita decidir el freno de 14 dias).
+
+2026-10-14 | AUDITORIA: se anadieron secciones 12 (punto 7: linea de saludo, cache 20261014b) y 13 (revision extra: seguridad Supabase, front, hoja de ruta de personalizacion, hallazgo pendiente de permisos anon) a AUDITORIA_COMPLETA_2026-10-14.md. Cobertura verificada: miembros, correos, DB/seguridad, SEO, tests/audio, examenes, juego, chatbot, Meta Pixel, encuesta, baja, pagos, Site Health.
+
+2026-10-15 | Alertas de errores: solo resumen diario (9:00 Cancun/Bogota). error-alert v3: el evento 'alert' (un correo por error) queda apagado por defecto y responde digest_only; se reactiva con el secreto ERROR_INSTANT_ALERTS='on'. El resumen diario (cron inglesconleo-error-digest) no cambia. Sin cambios en base de datos ni en el sitio.
+2026-10-15 | error-alert v4: los errores de severidad critical SI avisan al momento por correo (tope del servidor: 10/hora y 40/dia, un mismo error critico como mucho cada 2 h). El resto solo en el resumen diario.
