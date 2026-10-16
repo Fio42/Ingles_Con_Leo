@@ -117,6 +117,12 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
   // 1) INVITADO: sin Leo AI; UNA invitacion a crear cuenta (no es acceso a la IA); sus 5 ejercicios no cambian
   { const srv = newServer(); const { ctx, page, errors } = await newPage(browser, null, srv, { w:360 });
     await openPractica(page, { keepLimits:true });
+    // Con el interruptor APAGADO (valor por defecto) el invitado no ve ninguna promesa de la prueba
+    const cardOff = await failOne(page); await page.waitForTimeout(300);
+    assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'prueba apagada: ninguna invitación engañosa al invitado');
+    assert.strictEqual(await page.evaluate(() => localStorage.getItem('leo_ai_teaser_day')), null, 'apagada: ni siquiera se marca el día');
+    await page.evaluate(() => { LEO_AI_TRIAL_PUBLIC = true; });
+    await next(cardOff, page);
     const card = await failOne(page);
     assert.strictEqual(await page.locator('.leo-ai-btn').count(), 0, 'invitado: ningún botón de IA');
     const t = await aiText(page);
@@ -128,7 +134,7 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     await next(card, page);
     await failOne(page);                                                  // 2o fallo: la invitación NO se repite
     assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'una sola invitación por página');
-    await page.reload(); await openPractica(page); await failOne(page);
+    await page.reload(); await openPractica(page); await page.evaluate(() => { LEO_AI_TRIAL_PUBLIC = true; }); await failOne(page);
     assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'ni al recargar el mismo día');
     assert.strictEqual(srv.log.length, 0);
     assert.deepStrictEqual(errors, []);

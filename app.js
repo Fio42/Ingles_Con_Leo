@@ -2856,6 +2856,9 @@ function leoAiAttach(host, ctx){
    ============================================================ */
 const LEO_AI_TRIAL_CREDITS_COPY = 5;  // solo para el texto del invitado; debe coincidir con trial_credits (hay una prueba que lo vigila)
 const LEO_AI_TRIAL_KINDS = { grammar:1, vocab:1, listening:1, reading:1 };
+// Un invitado no puede preguntarle nada al servidor, asi que la invitacion que PROMETE la prueba solo sale si esto es true.
+// Activar la prueba = trial_enabled=true en la base Y poner esto en true (y publicar). Apagada por defecto a proposito.
+var LEO_AI_TRIAL_PUBLIC = false;
 const LEO_AI_TEASER_DAY_KEY = 'leo_ai_teaser_day';   // solo evita repetir la invitación el mismo día en este navegador
 let _leoTrial = null, _leoTrialPromise = null, _leoTeaserShownThisPage = false;
 
@@ -3004,6 +3007,7 @@ function leoAiAttachTrial(host, ctx){
 
 /* Invitado que falla un ejercicio: UNA invitación al día a crear su cuenta gratis y probar Leo AI. No da acceso a la IA. */
 function leoAiAttachGuestTeaser(host){
+  if(!LEO_AI_TRIAL_PUBLIC) return null;
   if(_leoTeaserShownThisPage) return null;
   const day = new Date().toISOString().slice(0, 10);
   try{ if(localStorage.getItem(LEO_AI_TEASER_DAY_KEY) === day) return null; }catch(e){}
