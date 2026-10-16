@@ -635,8 +635,37 @@ const LeoBackend = (function(){
       });
       let data = null;
       try{ data = await res.json(); }catch(e){ data = null; }
-      if(data && data.ok && data.answer && typeof data.answer === 'object') return { ok:true, answer: data.answer };
-      return { ok:false, reason: (data && typeof data.reason === 'string') ? data.reason : ('http_' + res.status), final: !!(data && data.final) };
+      // "trial": cuántas explicaciones de bienvenida le quedan a una cuenta gratis (solo viene en esa prueba).
+      const trial = (data && data.trial && typeof data.trial === 'object') ? data.trial : undefined;
+      if(data && data.ok && data.answer && typeof data.answer === 'object') return { ok:true, answer: data.answer, trial };
+      return { ok:false, reason: (data && typeof data.reason === 'string') ? data.reason : ('http_' + res.status), final: !!(data && data.final), trial };
+    }catch(e){
+      return { ok:false, reason: (e && e.name === 'AbortError') ? 'timeout' : 'network' };
+    }finally{
+      if(timer) clearTimeout(timer);
+    }
+  }
+
+  /* Estado de la prueba gratis de Leo AI de una cuenta (créditos usados y restantes). No llama a la IA ni
+     gasta nada. Devuelve { ok:true, trial:{ enabled, credits, used, remaining } } o { ok:false }. */
+  async function getLeoAiTrial(){
+    if(!isConfigured()) return { ok:false, reason:'not_configured' };
+    let session = null;
+    try{ session = await getSession(); }catch(e){ session = null; }
+    if(!session) return { ok:false, reason:'no_session' };
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(()=> ctrl.abort(), 8000) : null;
+    try{
+      const res = await fetch(SUPABASE_URL + '/functions/v1/leo-ai', {
+        method: 'POST',
+        signal: ctrl ? ctrl.signal : undefined,
+        headers: { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode:'trial_status' })
+      });
+      let data = null;
+      try{ data = await res.json(); }catch(e){ data = null; }
+      if(data && data.ok && data.trial && typeof data.trial === 'object') return { ok:true, trial: data.trial };
+      return { ok:false, reason: 'http_' + res.status };
     }catch(e){
       return { ok:false, reason: (e && e.name === 'AbortError') ? 'timeout' : 'network' };
     }finally{
@@ -863,7 +892,7 @@ const LeoBackend = (function(){
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
-    getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI,
+    getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI, getLeoAiTrial,
     feedbackCardStatus, submitMemberFeedback, dismissMemberFeedback
   };
 })();

@@ -2625,7 +2625,9 @@ function evaluateWritingAnswer(text, item){
      LEO_AI_PUBLIC  = true   -> para todos los miembros.
    Además, el botón solo aparece cuando el sitio ya confirmó que la
    persona es miembro (guardMemberPage / unlock de miembros.html marcan
-   window.__leoMemberVerified). La práctica gratis nunca lo muestra.
+   window.__leoMemberVerified). A las cuentas gratis solo se les ofrece la
+   PRUEBA DE BIENVENIDA (ver "PRUEBA GRATIS DE LEO AI" más abajo); a los
+   invitados, una invitación a crear cuenta. Nunca Writing ni análisis.
    Pasos para activar: ver el encabezado de supabase_functions/leo-ai.ts.
    ============================================================ */
 const LEO_AI_ENABLED = true;  // servidor desplegado; quién lo usa lo decide leo_ai_config/leo_ai_testers en Supabase
@@ -2740,6 +2742,10 @@ const LEO_AI_ICON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><pa
 const LEO_AI_WRITING_VERDICT = { correct:'Tu frase está bien escrita', minor:'Casi perfecta: un detalle por pulir', incorrect:'Hay algo que corregir' };
 const LEO_AI_FAIL_TEXT = {
   daily_limit: 'Ya usaste tus explicaciones de Leo AI de hoy. Mañana tendrás más.',
+  trial_pool: 'Leo AI de bienvenida está muy solicitado ahora mismo. Inténtalo de nuevo en un rato: esta explicación no se te descontó.',
+  trial_busy: 'Leo AI sigue con tu pedido anterior. Espera un momento y vuelve a tocar el botón.',
+  trial_noverify: 'Confirma tu correo para usar Leo AI. Revisa tu bandeja de entrada.',
+  members_only: 'Esta ayuda de Leo AI es solo para miembros.',
   default: 'Leo AI no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo en un momento. La explicación de arriba sigue siendo válida.'
 };
 const _leoAiCache = new Map();
@@ -2777,7 +2783,8 @@ function leoAiInsightCacheSet(key, res){
    suficientes. Nunca lanza errores hacia el ejercicio. */
 function leoAiAttach(host, ctx){
   try{
-    if(!host || !isLeoAiEnabled()) return null;
+    if(!host) return null;
+    if(!isLeoAiEnabled()) return leoAiAttachFree(host, ctx);
     const payload = buildLeoAiPayload(ctx);
     if(!payload) return null;
     const box = document.createElement('div');
@@ -2828,6 +2835,196 @@ function leoAiAttach(host, ctx){
   }catch(e){
     return null;
   }
+}
+
+
+/* ============================================================
+   PRUEBA GRATIS DE LEO AI (cuentas gratis) + invitación a invitados
+   ------------------------------------------------------------
+   Producto (el SERVIDOR lo hace cumplir; aquí solo se muestra):
+     - Invitado: 5 ejercicios al día y SIN Leo AI. Si falla un ejercicio, una
+       sola invitación al día a crear su cuenta gratis (no es acceso a la IA).
+     - Cuenta gratis: unas pocas explicaciones de bienvenida POR CUENTA (no por
+       día; hoy 5, las fija leo_ai_config.trial_credits), solo de ejercicios
+       FALLADOS y siempre al tocar el botón.
+     - Writing y los análisis (sesión, errores, progreso, diagnóstico): solo miembros.
+     - El botón solo aparece si el servidor dice enabled (interruptor
+       leo_ai_config.trial_enabled). El contador viene del servidor, jamás de
+       localStorage. Al gastar las del regalo se invita a la membresía.
+     - Nunca se dice que Leo AI sea ilimitado.
+   Los ejercicios y sus límites (5 de invitado, 10 con cuenta) no cambian.
+   ============================================================ */
+const LEO_AI_TRIAL_CREDITS_COPY = 5;  // solo para el texto del invitado; debe coincidir con trial_credits (hay una prueba que lo vigila)
+const LEO_AI_TRIAL_KINDS = { grammar:1, vocab:1, listening:1, reading:1 };
+const LEO_AI_TEASER_DAY_KEY = 'leo_ai_teaser_day';   // solo evita repetir la invitación el mismo día en este navegador
+let _leoTrial = null, _leoTrialPromise = null, _leoTeaserShownThisPage = false;
+
+/* 'free' | 'guest' | null. Solo dentro de practica.html (que llama a initLeoAccessTier) y nunca a miembros. */
+function leoAiFreeContext(){
+  if(window.__leoMemberVerified === true) return null;
+  if(typeof _leoAccessInit === 'undefined' || _leoAccessInit !== true) return null;
+  return _leoAccessTier === 'free' ? 'free' : 'guest';
+}
+function leoAiAttachFree(host, ctx){
+  try{
+    if(!ctx || !LEO_AI_ENABLED || !LEO_AI_TRIAL_KINDS[ctx.kind] || ctx.isCorrect !== false) return null;
+    const who = leoAiFreeContext();
+    if(who === 'free'){
+      if(typeof LeoBackend === 'undefined' || typeof LeoBackend.askLeoAI !== 'function') return null;
+      return leoAiAttachTrial(host, ctx);
+    }
+    if(who === 'guest') return leoAiAttachGuestTeaser(host);
+  }catch(e){}
+  return null;
+}
+
+/* Estado de la prueba (créditos). Una sola pregunta por página; si falla, no se muestra nada y se vuelve a
+   preguntar en el próximo fallo. No gasta nada ni llama a la IA. */
+function leoAiTrialLoad(){
+  if(_leoTrial) return Promise.resolve(_leoTrial);
+  if(!_leoTrialPromise){
+    _leoTrialPromise = Promise.resolve()
+      .then(()=> (typeof LeoBackend.getLeoAiTrial === 'function') ? LeoBackend.getLeoAiTrial() : null)
+      .then(res=>{
+        _leoTrialPromise = null;
+        if(res && res.ok && res.trial && typeof res.trial === 'object'){ _leoTrial = res.trial; return _leoTrial; }
+        return null;
+      }, ()=>{ _leoTrialPromise = null; return null; });
+  }
+  return _leoTrialPromise;
+}
+function leoAiTrialCountText(t){
+  const n = Math.max(0, Number(t && t.remaining) || 0);
+  return n === 1 ? 'Te queda 1 explicación de bienvenida gratis.' : `Te quedan ${n} explicaciones de bienvenida gratis.`;
+}
+function leoAiTrialRemember(t){
+  if(!t || typeof t !== 'object' || typeof t.remaining !== 'number') return;
+  _leoTrial = Object.assign({}, _leoTrial || {}, t);
+  try{ document.querySelectorAll('[data-leo-credits]').forEach(el=>{ el.textContent = leoAiTrialCountText(_leoTrial); }); }catch(e){}
+}
+function leoAiMembershipHref(){ return 'miembros.html#leo-ai'; }
+
+/* Invitación a la membresía dentro del cuadro de Leo AI. 'soon' = quedan 1 o 2 (suave); 'done' = se acabaron. */
+function leoAiTrialUpsell(parent, variant, remaining){
+  const wrap = document.createElement('div');
+  wrap.className = 'leo-ai-upsell' + (variant === 'done' ? ' is-done' : '');
+  const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; wrap.appendChild(el); return el; };
+  if(variant === 'done'){
+    add('p', 'leo-ai-upsell-title', 'Usaste tus explicaciones de bienvenida');
+    add('p', 'leo-ai-upsell-text', 'Si quieres que Leo AI te siga explicando tus errores mientras practicas, hazte miembro por $2 USD al mes. Tus errores y tu progreso quedan guardados y puedes cancelar cuando quieras.');
+  } else {
+    add('p', 'leo-ai-upsell-title', 'Así te acompaña Leo AI en cada error');
+    add('p', 'leo-ai-upsell-text', 'Como miembro, Leo AI te explica tus errores mientras practicas y el sistema los guarda para que no se repitan. $2 USD al mes, cancela cuando quieras.');
+  }
+  const a = document.createElement('a');
+  a.className = 'btn btn-primary leo-ai-upsell-cta';
+  a.href = leoAiMembershipHref();
+  a.textContent = variant === 'done' ? 'Seguir con Leo AI por $2 USD al mes' : 'Ver qué incluye la membresía';
+  a.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_cta_clicked', { variant, remaining }); });
+  wrap.appendChild(a);
+  parent.appendChild(wrap);
+  return wrap;
+}
+
+function leoAiAttachTrial(host, ctx){
+  const payload = buildLeoAiPayload(ctx);
+  if(!payload || payload.mode !== 'explain') return null;     // solo explicar un ejercicio fallado
+  const box = document.createElement('div');
+  box.className = 'leo-ai is-trial';
+  box.hidden = true;                                           // no ocupa lugar hasta saber si el servidor la ofrece
+  host.appendChild(box);
+  leoAiTrialLoad().then(t=>{
+    if(!box.isConnected) return;                               // ya pasó a otro ejercicio
+    if(!t || t.enabled !== true) { box.remove(); return; }     // apagada en el servidor o sin respuesta: no se muestra nada
+    box.hidden = false;
+    if(!(t.remaining > 0)){
+      if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_wall_shown');
+      leoAiTrialUpsell(box, 'done', 0);
+      return;
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'leo-ai-btn leo-ai-btn-trial';
+    btn.innerHTML = LEO_AI_ICON + '<span></span>';
+    btn.querySelector('span').textContent = 'Mira qué dice Leo AI de tu error';
+    const credits = document.createElement('p');
+    credits.className = 'leo-ai-credits';
+    credits.setAttribute('data-leo-credits', '1');
+    credits.textContent = leoAiTrialCountText(t);
+    box.appendChild(btn); box.appendChild(credits);
+    if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_button_shown', { remaining: t.remaining });
+    const key = JSON.stringify(payload);
+    let busy = false;
+    btn.addEventListener('click', ()=>{
+      if(busy) return;                                         // doble toque: se ignora
+      busy = true; btn.disabled = true; credits.removeAttribute('data-leo-credits');
+      const out = document.createElement('div');
+      out.className = 'leo-ai-answer';
+      out.setAttribute('aria-live', 'polite');
+      out.innerHTML = '<p class="leo-ai-loading">Leo AI está pensando…</p>';
+      box.appendChild(out);
+      const cached = _leoAiCache.has(key);                     // el mismo error en la misma página no gasta otra explicación
+      const request = cached ? Promise.resolve(_leoAiCache.get(key))
+        : Promise.resolve().then(()=> LeoBackend.askLeoAI(payload)).catch(()=> ({ ok:false, reason:'network' }));
+      request.then(res=>{
+        if(!box.isConnected) return;
+        btn.remove(); credits.remove();
+        if(!cached && res && res.trial) leoAiTrialRemember(res.trial);
+        if(res && res.ok){
+          _leoAiCache.set(key, res);
+          renderLeoAiAnswer(out, payload, res);
+          if(cached) return;
+          const left = res.trial && typeof res.trial.remaining === 'number' ? res.trial.remaining : null;
+          if(left === null) return;
+          if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_used', { remaining: left });
+          if(left <= 0){
+            if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_exhausted');
+            leoAiTrialUpsell(box, 'done', 0);
+          } else {
+            const left_p = document.createElement('p');
+            left_p.className = 'leo-ai-credits';
+            left_p.textContent = leoAiTrialCountText(res.trial);
+            box.appendChild(left_p);
+            if(left <= 2) leoAiTrialUpsell(box, 'soon', left);
+          }
+          return;
+        }
+        if(res && res.reason === 'trial_exhausted'){           // ya las había gastado en otro dispositivo
+          out.remove(); leoAiTrialRemember({ remaining: 0 });
+          leoAiTrialUpsell(box, 'done', 0);
+          return;
+        }
+        if(res && res.reason === 'trial_off'){ box.remove(); return; }
+        renderLeoAiAnswer(out, payload, res);
+      });
+    });
+  });
+  return box;
+}
+
+/* Invitado que falla un ejercicio: UNA invitación al día a crear su cuenta gratis y probar Leo AI. No da acceso a la IA. */
+function leoAiAttachGuestTeaser(host){
+  if(_leoTeaserShownThisPage) return null;
+  const day = new Date().toISOString().slice(0, 10);
+  try{ if(localStorage.getItem(LEO_AI_TEASER_DAY_KEY) === day) return null; }catch(e){}
+  _leoTeaserShownThisPage = true;
+  try{ localStorage.setItem(LEO_AI_TEASER_DAY_KEY, day); }catch(e){}
+  let volver = (window.location.pathname.split('/').pop() || '');
+  if(!/^[a-z0-9-]+\.html$/.test(volver)) volver = 'practica.html';
+  const box = document.createElement('div');
+  box.className = 'leo-ai is-teaser';
+  const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; box.appendChild(el); return el; };
+  add('p', 'leo-ai-teaser-title', '¿Quieres saber por qué fallaste?');
+  add('p', 'leo-ai-teaser-text', `Crea tu cuenta gratis y mira qué dice Leo AI de tus errores: ${LEO_AI_TRIAL_CREDITS_COPY} explicaciones de bienvenida, sin tarjeta.`);
+  const a = document.createElement('a');
+  a.className = 'btn btn-primary leo-ai-upsell-cta';
+  a.href = 'miembros.html?modo=registro&volver=' + volver;
+  a.textContent = 'Crear cuenta gratis';
+  a.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_teaser_clicked'); });
+  box.appendChild(a);
+  host.appendChild(box);
+  if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_teaser_shown');
+  return box;
 }
 
 /* El tema extra que sugiere Leo AI solo cuenta si es uno de los ids que la
@@ -3441,9 +3638,11 @@ var FREE_USER_DAILY_LIMIT = 10;
    vieja en caché), se sigue tratando como visitante: es el límite
    más chico, así que es el default más seguro. */
 var _leoAccessTier = 'guest'; // 'guest' | 'free'
+var _leoAccessInit = false;   // true solo cuando practica.html ya decidió el nivel (lo usa la prueba de Leo AI)
 var _leoAccessProfile = null; // fila de profiles, solo cuando hay cuenta gratis
 
 function initLeoAccessTier(tier, profile){
+  _leoAccessInit = true;
   _leoAccessTier = (tier === 'free') ? 'free' : 'guest';
   _leoAccessProfile = (tier === 'free') ? (profile || null) : null;
 }

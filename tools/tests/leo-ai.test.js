@@ -154,5 +154,14 @@ test('datos incompletos o raros: no hay payload (y por lo tanto no hay botón)',
   assert.strictEqual(T.buildLeoAiPayload({ kind:'grammar', item:{ type:'otro' }, userAnswer:'x' }), null);
 });
 
+test('prueba gratis: el numero de explicaciones que dice la pagina coincide con la base y el miembro no cambia', ()=>{
+  const mig = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261016001253_leo_ai_trial.sql'), 'utf8');
+  const m = mig.match(/trial_credits\s+integer\s+not null default (\d+)/i) || mig.match(/trial_credits[^\n]*default\s+(\d+)/i);
+  const c = appSrc.match(/LEO_AI_TRIAL_CREDITS_COPY\s*=\s*(\d+)/);
+  assert.ok(m && c, 'no se encontro el numero en la migracion o en app.js');
+  assert.strictEqual(Number(c[1]), Number(m[1]), 'LEO_AI_TRIAL_CREDITS_COPY debe ser igual a trial_credits');
+  assert.ok(/if\(!isLeoAiEnabled\(\)\) return leoAiAttachFree\(host, ctx\);/.test(appSrc), 'la prueba solo entra cuando NO es miembro');
+});
+
 console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
 process.exit(failed ? 1 : 0);

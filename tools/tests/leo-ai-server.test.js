@@ -20,45 +20,58 @@ const CF_OK = { CLOUDFLARE_ACCOUNT_ID: 'acc', CLOUDFLARE_API_TOKEN: 'cf-token-se
    supabase_functions/leo-ai.sql (cada función corre entera, de una vez, como una
    transacción). Se comparte entre llamadas con { db }. */
 function newDb(opts){
-  const db = Object.assign({ rows:new Map(), usage:new Map(), limit:100, clock:()=> Date.now(), beginCalls:0, missing:false }, opts || {});
+  const db = Object.assign({ rows:new Map(), usage:new Map(), limit:100, clock:()=> Date.now(), beginCalls:0, missing:false, member:true,
+    trial:{ enabled:true, verified:true, credits:5, used:0, poolMax:400, poolUsed:0 } }, opts || {});
   const dayOf = ms => new Date(ms).toISOString().slice(0, 10);
-  db.reserve = (user, day)=>{
+  db.reserve = (user, day, trial)=>{
+    if(trial){ // replica leo_ai_reserve para cuentas que no son miembro (prueba gratis)
+      const t = db.trial;
+      if(!t.enabled) return 'trial_disabled';
+      if(!t.verified) return 'trial_unverified';
+      if(t.used >= t.credits) return 'trial_exhausted';
+      let inflight = 0; for(const r of db.rows.values()) if(r.trial && r.status === 'processing' && r.updated_at > db.clock() - 45000) inflight++;
+      if(t.used + inflight > t.credits) return 'trial_busy';
+      if(t.poolUsed >= t.poolMax) return 'trial_pool';
+      t.poolUsed++; return 'ok';
+    }
     const k = user + '|' + day, n = db.usage.get(k) || 0;
     if(n >= db.limit) return 'user_limit';
     db.usage.set(k, n + 1); return 'ok';
   };
   db.begin = (user, req)=>{
     db.beginCalls++;
-    const now = db.clock(), day = dayOf(now), key = user + '|' + req;
+    const now = db.clock(), day = dayOf(now), key = user + '|' + req, trial = db.member === false;
     for(const [k, r] of db.rows) if(r.created_at < now - 24*3600e3) db.rows.delete(k);
     if(!db.rows.has(key)){
-      db.rows.set(key, { day, status:'processing', answer:null, reason:null, attempts:0, created_at:now, updated_at:now });
-      const gate = db.reserve(user, day);
-      if(gate !== 'ok'){ db.rows.delete(key); return { status:gate, day }; }
-      db.rows.get(key).attempts = 1; return { status:'go', attempt:1, day };
+      db.rows.set(key, { day, status:'processing', answer:null, reason:null, attempts:0, created_at:now, updated_at:now, trial });
+      const gate = db.reserve(user, day, trial);
+      if(gate !== 'ok'){ db.rows.delete(key); return { status:gate, day, trial }; }
+      db.rows.get(key).attempts = 1; return { status:'go', attempt:1, day, trial };
     }
     const r = db.rows.get(key);
-    if(r.status === 'completed') return { status:'completed', answer:r.answer, day:r.day };
-    if(r.status === 'processing' && r.updated_at > now - 45000) return { status:'processing', day:r.day };
+    if(r.status === 'completed') return { status:'completed', answer:r.answer, day:r.day, trial:!!r.trial };
+    if(r.status === 'processing' && r.updated_at > now - 45000) return { status:'processing', day:r.day, trial:!!r.trial };
     if(r.attempts >= 2){
       if(r.status === 'processing'){ r.status = 'failed'; r.reason = r.reason || 'error'; }
-      return { status:'failed_final', reason:r.reason || 'error', day:r.day };
+      return { status:'failed_final', reason:r.reason || 'error', day:r.day, trial:!!r.trial };
     }
     r.status = 'processing'; r.attempts++; r.updated_at = now;
-    return { status:'go', attempt:r.attempts, day:r.day };
+    return { status:'go', attempt:r.attempts, day:r.day, trial:!!r.trial };
   };
   db.finish = (user, req, status, answer, reason, attempt)=>{
     const r = db.rows.get(user + '|' + req);
     if(!r || r.status === 'completed') return;
     if(status !== 'completed' && r.attempts !== attempt) return;
     r.status = status; r.answer = status === 'completed' ? answer : null; r.reason = status === 'failed' ? reason : null; r.updated_at = db.clock();
+    if(status === 'completed' && r.trial) db.trial.used++; // el credito se gasta al ENTREGAR (leo_ai_finish)
   };
+  db.trialStatus = ()=>{ const t = db.trial; return { enabled: t.enabled && t.verified && db.member === false, member: db.member !== false, credits:t.credits, used:Math.min(t.used, t.credits), remaining:Math.max(t.credits - t.used, 0) }; };
   return db;
 }
 const sleepReal = ms => new Promise(r => setTimeout(r, ms));
 async function call(o){
   o = o || {};
-  let handler; const calls = []; const recorded = []; const reserveArgs = [];
+  let handler; const calls = []; const recorded = []; const reserveArgs = []; const statusCalls = [];
   const envAll = Object.assign({ SUPABASE_URL:'x', SUPABASE_SERVICE_ROLE_KEY:'y' }, o.env === undefined ? CF_OK : o.env);
   const db = o.db || null;
   // Tiempo acelerado (1 s del servidor = 5 ms) y, si se pide, reloj falso para probar el día UTC.
@@ -75,7 +88,7 @@ async function call(o){
           if(c.exp * 1000 < Date.now()) return { data:null, error:{ message:'expired' } };
           return { data:{ claims:c }, error:null };
         } },
-      from: ()=>({ select:()=>({ eq:()=>({ maybeSingle: async()=>({ data:{ is_member: o.member !== false } }) }) }) }),
+      from: ()=>({ select:()=>({ eq:()=>({ maybeSingle: async()=>({ data: o.member === null ? null : { is_member: o.member !== false } }) }) }) }),
       rpc: async (fn, args)=>{
         if(fn === 'leo_ai_reserve'){ reserveArgs.push(args); if(db && !o.reserve) return { data: db.reserve(args.p_user, args.p_day), error:null }; return o.reserve || { data:'ok', error:null }; }
         if(fn === 'leo_ai_begin'){
@@ -84,6 +97,7 @@ async function call(o){
         }
         if(fn === 'leo_ai_finish'){ if(db) db.finish(args.p_user, args.p_request, args.p_status, args.p_answer, args.p_reason, args.p_attempt); return { data:null, error:null }; }
         if(fn === 'leo_ai_record'){ recorded.push(args); return { data:null, error:null }; }
+        if(fn === 'leo_ai_trial_status'){ statusCalls.push(args); return db ? { data: db.trialStatus(), error:null } : { data:null, error:{ message:'?' } }; }
         return { data:null, error:{ message:'?' } };
       }
     }),
@@ -93,7 +107,7 @@ async function call(o){
   const token = o.user === null ? (o.badToken || 'no-es-un-token') : MEMBER_TOKEN;
   const headers = Object.assign({ Authorization:'Bearer ' + token }, o.headers || {});
   const res = await handler({ method:'POST', headers:{ get:k=> headers[k] !== undefined ? headers[k] : (headers[k.toLowerCase()] !== undefined ? headers[k.toLowerCase()] : null) }, json: async()=> o.body || EXPLAIN });
-  return { status: res.status, out: await res.json(), calls, recorded, reserveArgs };
+  return { status: res.status, out: await res.json(), calls, recorded, reserveArgs, statusCalls };
 }
 const cfReply = (content, usage, status)=> async()=> new Response(JSON.stringify(
   status && status !== 200 ? { success:false, errors:[{ code:4006, message:'you have used up your daily free allocation' }] }
@@ -124,7 +138,8 @@ async function test(name, fn){
     r = await call({ user:null, badToken: jwt({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600 }, 'firma-falsa') }); assert.strictEqual(r.status, 401, 'token manipulado (firma falsa)'); assert.strictEqual(r.calls.length, 0);
     r = await call({ user:null, badToken: b64u({ alg:'none', typ:'JWT' }) + '.' + b64u({ sub:'u-123', role:'authenticated', exp: Math.floor(Date.now()/1000) + 3600 }) + '.' }); assert.strictEqual(r.status, 401, 'token sin firma (alg none)');
     r = await call({ user:null, badToken: jwt({ sub:'x', role:'anon', exp: Math.floor(Date.now()/1000) + 3600 }) }); assert.strictEqual(r.status, 401, 'token de visitante (anon)');
-    r = await call({ member:false }); assert.strictEqual(r.status, 403); assert.strictEqual(r.calls.length, 0);
+    r = await call({ member:null }); assert.strictEqual(r.status, 403); assert.strictEqual(r.calls.length, 0); // sin perfil
+    r = await call({ member:false }); assert.strictEqual(r.status, 400, 'cuenta gratis sin request_id: no entra a la prueba'); assert.strictEqual(r.calls.length, 0);
   });
   await test('datos incompletos o modo raro -> 400 sin llamadas', async()=>{
     let r = await call({ body:Object.assign({}, EXPLAIN, { correctAnswer:'' }) }); assert.strictEqual(r.status, 400);
@@ -415,6 +430,94 @@ async function test(name, fn){
     const db = newDb(); db.begin = ()=>{ throw new Error('no debe usarse'); };
     const r = await call({ db, body:Object.assign({}, EXPLAIN, { request_id:'x; drop table' }) });
     assert.strictEqual(r.out.ok, true);
+  });
+
+  // ---- Prueba gratis (cuentas que no son miembro) ----
+  const TRIAL_REQ = (id, extra) => Object.assign({}, EXPLAIN, { request_id: id || 'req-trial-0001' }, extra || {});
+  const trialDb = (over) => { const d = newDb({ member:false }); Object.assign(d.trial, over || {}); return d; };
+  await test('prueba: cuenta gratis que falla un ejercicio recibe la explicacion, con su contador y registrada aparte (cloudflare:trial)', async()=>{
+    const db = trialDb();
+    const r = await call({ db, member:false, body:TRIAL_REQ() });
+    assert.strictEqual(r.out.ok, true); assert.strictEqual(r.out.answer.explanation, 'Usamos went porque es pasado.');
+    assert.deepStrictEqual(r.out.trial, { enabled:true, credits:5, used:1, remaining:4 });
+    assert.strictEqual(r.calls.length, 1);
+    assert.strictEqual(r.recorded.length, 1); assert.strictEqual(r.recorded[0].p_provider, 'cloudflare:trial');
+    assert(!/u-123|alumno@mail|Juan|history|firma/.test(JSON.stringify(r.calls[0].body)), 'privacidad igual que con miembros');
+    assert.strictEqual(r.calls[0].body.max_completion_tokens, 220);
+  });
+  await test('prueba: solo "explain" de un ejercicio FALLADO. Writing, insight, diagnosis o un acierto -> members_only, 0 llamadas y sin gastar nada', async()=>{
+    for(const body of [Object.assign({}, WRITING, { request_id:'req-w-000001' }), Object.assign({}, INSIGHT, { request_id:'req-i-000001' }), Object.assign({}, DIAG, { request_id:'req-d-000001' }),
+        TRIAL_REQ('req-ok-00001', { isCorrect:true }), (()=>{ const b = TRIAL_REQ('req-nf-00001'); delete b.isCorrect; return b; })()]){
+      const db = trialDb();
+      const r = await call({ db, member:false, body });
+      assert.strictEqual(r.out.reason, 'members_only', body.mode + ' ' + body.isCorrect); assert.strictEqual(r.out.final, true); assert.strictEqual(r.status, 403);
+      assert.strictEqual(r.calls.length, 0); assert.strictEqual(db.beginCalls, 0, 'ni siquiera reserva'); assert.strictEqual(db.trial.used, 0);
+    }
+  });
+  await test('prueba: sin request_id (sin idempotencia) no entra', async()=>{
+    const db = trialDb(); const b = TRIAL_REQ(); delete b.request_id;
+    const r = await call({ db, member:false, body:b });
+    assert.strictEqual(r.status, 400); assert.strictEqual(r.out.reason, 'bad_input'); assert.strictEqual(r.calls.length, 0);
+  });
+  await test('prueba: las 5 se entregan; la 6a -> trial_exhausted (final) con el contador en 0, sin llamar al modelo', async()=>{
+    const db = trialDb();
+    for(let i = 1; i <= 5; i++){
+      const r = await call({ db, member:false, body:TRIAL_REQ('req-tr-0000' + i) });
+      assert.strictEqual(r.out.ok, true, 'explicacion ' + i); assert.strictEqual(r.out.trial.remaining, 5 - i);
+    }
+    const six = await call({ db, member:false, body:TRIAL_REQ('req-tr-00006') });
+    assert.strictEqual(six.out.ok, false); assert.strictEqual(six.out.reason, 'trial_exhausted'); assert.strictEqual(six.out.final, true);
+    assert.strictEqual(six.out.trial.remaining, 0); assert.strictEqual(six.calls.length, 0);
+    assert(six.recorded.some(x => x.p_provider === 'fail:trial_exhausted'), 'se mide cuantas veces chocan con la pared');
+    assert.strictEqual(db.trial.used, 5);
+  });
+  await test('prueba: un fallo del modelo NO gasta credito; reintentar el mismo id tras exito devuelve lo mismo sin cobrar', async()=>{
+    const db = trialDb();
+    const f = await call({ db, member:false, body:TRIAL_REQ('req-tf-00001'), provider: cfReply('{}', null, 429) });
+    assert.strictEqual(f.out.ok, false); assert.strictEqual(f.out.trial.used, 0); assert.strictEqual(db.trial.used, 0);
+    const ok = await call({ db, member:false, body:TRIAL_REQ('req-tf-00001') });
+    assert.strictEqual(ok.out.ok, true); assert.strictEqual(db.trial.used, 1);
+    const again = await call({ db, member:false, body:TRIAL_REQ('req-tf-00001') });
+    assert.strictEqual(again.calls.length, 0); assert.strictEqual(again.out.ok, true); assert.deepStrictEqual(again.out.answer, ok.out.answer); assert.strictEqual(db.trial.used, 1);
+  });
+  await test('prueba: con 1 credito, dos pedidos distintos a la vez -> solo uno llama al modelo; el otro recibe trial_busy (no final)', async()=>{
+    const db = trialDb({ used:4 });
+    const [a, b] = await Promise.all([call({ db, member:false, body:TRIAL_REQ('req-cc-00001'), delayMs:30 }), call({ db, member:false, body:TRIAL_REQ('req-cc-00002'), delayMs:30 })]);
+    assert.strictEqual(a.calls.length + b.calls.length, 1, 'una sola llamada al modelo');
+    const loser = a.out.ok ? b : a;
+    assert.strictEqual(loser.out.reason, 'trial_busy'); assert.strictEqual(loser.out.final, false);
+    assert.strictEqual(db.trial.used, 5, 'nunca mas de 5');
+  });
+  await test('prueba: interruptor apagado, correo sin confirmar y bolsa diaria llena -> motivos claros, sin llamadas', async()=>{
+    const cases = [[{ enabled:false }, 'trial_off', true], [{ verified:false }, 'trial_noverify', true], [{ poolUsed:400 }, 'trial_pool', true]];
+    for(const [over, reason, final] of cases){
+      const r = await call({ db:trialDb(over), member:false, body:TRIAL_REQ('req-g-' + reason) });
+      assert.strictEqual(r.out.reason, reason); assert.strictEqual(r.out.final, final); assert.strictEqual(r.calls.length, 0);
+      assert(r.recorded.some(x => x.p_provider === ('fail:' + reason).slice(0, 20)), reason);
+    }
+  });
+  await test('prueba: un miembro no recibe nada de la prueba (sin campo trial, proveedor "cloudflare" normal)', async()=>{
+    const r = await call({ db:newDb(), body:RID });
+    assert.strictEqual(r.out.ok, true); assert(!('trial' in r.out)); assert.strictEqual(r.recorded[0].p_provider, 'cloudflare');
+    assert.strictEqual(r.statusCalls.length, 0);
+    const w = await call({ db:newDb(), body:Object.assign({}, WRITING, { request_id:'req-mw-000001' }), provider: cfReply(JSON.stringify({ assessment:'correct', corrected:'I have a cat.', explanation:'x', tip:'' })) });
+    assert.strictEqual(w.out.ok, true, 'el miembro conserva Writing');
+  });
+  await test('trial_status: devuelve el contador sin llamar a la IA ni gastar cupo; a un miembro le dice que no aplica', async()=>{
+    const db = trialDb({ used:2 });
+    const r = await call({ db, member:false, body:{ mode:'trial_status' } });
+    assert.deepStrictEqual(r.out, { ok:true, trial:{ enabled:true, credits:5, used:2, remaining:3 } });
+    assert.strictEqual(r.calls.length, 0); assert.strictEqual(r.recorded.length, 0); assert.strictEqual(db.beginCalls, 0);
+    const m = await call({ db:newDb(), body:{ mode:'trial_status' } });
+    assert.deepStrictEqual(m.out, { ok:true, trial:{ enabled:false, member:true } }); assert.strictEqual(m.calls.length, 0);
+    const off = await call({ db:trialDb({ enabled:false }), member:false, body:{ mode:'trial_status' } });
+    assert.strictEqual(off.out.trial.enabled, false);
+    const noSession = await call({ user:null, body:{ mode:'trial_status' } }); assert.strictEqual(noSession.status, 401);
+    const noProfile = await call({ member:null, body:{ mode:'trial_status' } }); assert.strictEqual(noProfile.status, 403);
+  });
+  await test('apagado de emergencia (LEO_AI_ENABLED=false) tambien apaga la prueba', async()=>{
+    const r = await call({ db:trialDb(), member:false, body:TRIAL_REQ(), env:Object.assign({}, CF_OK, { LEO_AI_ENABLED:'false' }) });
+    assert.strictEqual(r.out.reason, 'disabled'); assert.strictEqual(r.calls.length, 0);
   });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);

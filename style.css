@@ -2219,6 +2219,13 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-ai-tip::before{content:"• ";}
 .leo-ai-example{background:var(--paper-dim);border-radius:var(--radius-sm);padding:8px 12px;margin:6px 0;}
 .leo-ai-note{margin:8px 0 0;font-size:0.76rem;color:var(--ink-faint);}
+/* Prueba gratis de Leo AI (cuentas gratis) y la invitación a invitados */
+.leo-ai-credits{margin:6px 2px 0;font-size:0.78rem;color:var(--ink-soft);}
+.leo-ai-upsell,.leo-ai.is-teaser{margin-top:10px;background:var(--blue-tint);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:var(--radius-sm);padding:12px 14px;text-align:left;}
+.leo-ai-upsell-title,.leo-ai-teaser-title{margin:0 0 4px;font-weight:800;font-size:0.9rem;color:var(--blue-deep);}
+.leo-ai-upsell-text,.leo-ai-teaser-text{margin:0 0 10px;font-size:0.88rem;line-height:1.5;color:var(--ink);}
+.leo-ai-upsell-cta{display:block;text-align:center;white-space:normal;box-sizing:border-box;max-width:100%;}
+.leo-ai[hidden]{display:none;}
 .diag-hl [data-leo-ai-weak] .leo-ai{margin-top:10px;}
 
 /* ---------- Leo AI como beneficio premium de la membresía ----------

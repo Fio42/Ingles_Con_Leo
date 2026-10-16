@@ -2,7 +2,16 @@
 // Inglés con Leo — Edge Function: leo-ai  ("Leo AI")
 //
 // Una sola función para toda la ayuda con IA de la zona de miembros.
-// Tres modos:
+// PRUEBA GRATIS (2026-10-15): las cuentas gratis (no miembros) reciben
+// trial_credits (hoy 5) explicaciones de bienvenida POR CUENTA, solo en modo
+// "explain" y solo cuando el alumno falló el ejercicio. Writing, insight y
+// diagnosis son solo de miembros. Todo se decide aquí y en la base (ver
+// supabase/migrations/20261016001253_leo_ai_trial.sql), nunca en el navegador:
+// el crédito se gasta al ENTREGAR la explicación (un fallo del modelo no cobra),
+// la prueba tiene su propia bolsa diaria (no le quita capacidad a los miembros)
+// y el interruptor es leo_ai_config.trial_enabled. También hay un modo
+// "trial_status" (sin IA, 0 neurons) para que la página muestre "Te quedan N".
+// Modos:
 //   explain    explicar un ejercicio ya calificado (Gramática,
 //              Vocabulario, Listening, Lectura; también desde Plan de
 //              estudio, Mixto, Mis errores y Reto diario).
@@ -120,6 +129,15 @@ const CORS_HEADERS = {
 }
 
 const MODES = ['explain', 'writing', 'diagnosis', 'insight']
+// Razones de la prueba gratis que la página sabe mostrar. Cortas a propósito: ai_usage_daily guarda
+// 'fail:<razón>' en 20 caracteres.
+const TRIAL_GATES: Record<string, { reason: string; final: boolean }> = {
+  trial_disabled: { reason: 'trial_off', final: true },
+  trial_unverified: { reason: 'trial_noverify', final: true },
+  trial_exhausted: { reason: 'trial_exhausted', final: true },
+  trial_pool: { reason: 'trial_pool', final: true },
+  trial_busy: { reason: 'trial_busy', final: false },
+}
 const INSIGHT_SCOPES: Record<string, string> = {
   session: 'Análisis de la sesión de práctica que el alumno acaba de terminar',
   mistakes: 'Resumen de los errores pendientes del alumno, agrupados por tema',
@@ -533,6 +551,17 @@ function isMissingFunction(err: any): boolean {
   return !!err && (err.code === 'PGRST202' || err.code === '42883' || /could not find the function|does not exist/i.test(msg))
 }
 
+// Estado de la prueba de una cuenta (créditos usados y restantes) para devolverlo a la página. Nunca lanza
+// errores ni bloquea: si falla, la respuesta sale sin ese dato.
+async function trialInfo(userId: string): Promise<Record<string, unknown> | null> {
+  try {
+    const { data, error } = await supabase.rpc('leo_ai_trial_status', { p_user: userId })
+    if (error || !data || typeof data !== 'object') return null
+    const d = data as Record<string, unknown>
+    return { enabled: d.enabled === true, credits: Number(d.credits) || 0, used: Number(d.used) || 0, remaining: Number(d.remaining) || 0 }
+  } catch (_) { return null }
+}
+
 // Cierra el intento en la base (respuesta ya validada o motivo del fallo).
 // Nunca lanza errores: si falla, el 'processing' se recupera solo a los 45 s.
 async function finishRequest(userId: string, requestId: string | null, status: 'completed' | 'failed', answer: unknown, reason: string, attempt: number) {
@@ -565,22 +594,34 @@ Deno.serve(async (req: Request) => {
 
   let claim: { userId: string; requestId: string; attempt: number } | null = null
   try {
-    // 1) Quién llama: sesión válida y miembro activo.
+    // 1) Quién llama: sesión válida. Miembro = Leo AI completo; cuenta gratis = solo la prueba (explain al fallar).
     const token = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
     const userId = token ? await userIdFromVerifiedToken(token) : null
     if (!userId) return json({ ok: false, reason: 'no_session' }, 401)
     const user = { id: userId }
     const { data: profile } = await supabase.from('profiles').select('is_member').eq('id', user.id).maybeSingle()
-    if (!profile || !profile.is_member) return json({ ok: false, reason: 'not_member' }, 403)
+    if (!profile) return json({ ok: false, reason: 'not_member' }, 403)
+    const isMember = !!profile.is_member
 
     // 2) Qué se pide, con los datos mínimos y recortados.
     const body = await req.json().catch(() => null)
+    // Estado de la prueba (sin IA, sin gastar nada): lo usa la página para mostrar "Te quedan N".
+    if (body && body.mode === 'trial_status') {
+      if (isMember) return json({ ok: true, trial: { enabled: false, member: true } })
+      return json({ ok: true, trial: (await trialInfo(user.id)) || { enabled: false } })
+    }
     const mode = body && MODES.includes(body.mode) ? body.mode : null
     // Writing: sin al menos 2 palabras reales no se revisa nada. Se rechaza ANTES de
     // reservar cupo y de llamar al modelo (0 tokens), aunque alguien se salte la página.
     if (mode === 'writing' && realWords(body.studentAnswer) < 2) return json({ ok: false, reason: 'insufficient_text' }, 400)
     const prompt = mode ? buildPrompt(mode, body) : null
     if (!mode || !prompt) return json({ ok: false, reason: 'bad_input' }, 400)
+    // Cuenta gratis: solo "explain" de un ejercicio FALLADO y siempre con request_id (idempotencia). Writing y los
+    // análisis son de miembros. Se rechaza ANTES de reservar nada y de llamar al modelo (0 neurons).
+    if (!isMember) {
+      if (mode !== 'explain' || body.isCorrect !== false) return json({ ok: false, reason: 'members_only', final: true }, 403)
+      if (!(typeof body.request_id === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body.request_id))) return json({ ok: false, reason: 'bad_input' }, 400)
+    }
 
     // 3) Proveedores: los públicos, o Gemini solo para el admin.
     const chain = (isAdminRequest(req) && body.provider === 'gemini') ? ['gemini'] : publicProviderChain()
@@ -595,6 +636,7 @@ Deno.serve(async (req: Request) => {
     const requestId = typeof body.request_id === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body.request_id) ? body.request_id : null
     let attempt = 0 // >0 solo con idempotencia por request_id
     let gate: unknown = null
+    let isTrial = false // lo decide la base (leo_ai_begin devuelve trial=true para cuentas que no son miembro)
     if (requestId) {
       // Un request_id = una pulsación = una explicación: el límite se descuenta
       // una vez, el proveedor se llama máximo 2 veces y, si ya terminó, se
@@ -609,14 +651,17 @@ Deno.serve(async (req: Request) => {
       if (!beginErr && begin && typeof begin.day === 'string') today = begin.day
       if (beginErr && !isMissingFunction(beginErr)) { console.error('leo_ai_begin error:', beginErr.message); await reportServerError('leo_ai', 'leo-ai', 'Leo AI: fallo al reservar cupo (leo_ai_begin)', 'usage_error', 'critical'); return json({ ok: false, reason: 'usage_error' }) }
       if (!beginErr && begin) {
-        if (begin.status === 'completed' && begin.answer && typeof begin.answer === 'object') return json({ ok: true, mode, answer: begin.answer })
+        isTrial = begin.trial === true
+        if (begin.status === 'completed' && begin.answer && typeof begin.answer === 'object') {
+          return json(isTrial ? { ok: true, mode, answer: begin.answer, trial: await trialInfo(user.id) } : { ok: true, mode, answer: begin.answer })
+        }
         if (begin.status === 'processing') { await logFailure(today, 'in_progress', mode); return json({ ok: false, reason: 'in_progress' }) }
         if (begin.status === 'failed_final') {
           await logFailure(today, 'retries_exhausted', mode, String(begin.reason || ''))
-          return json({ ok: false, reason: typeof begin.reason === 'string' && begin.reason ? begin.reason : 'error', final: true })
+          return json(Object.assign({ ok: false, reason: typeof begin.reason === 'string' && begin.reason ? begin.reason : 'error', final: true }, isTrial ? { trial: await trialInfo(user.id) } : {}))
         }
         if (begin.status === 'go') { attempt = Number(begin.attempt) || 1; claim = { userId: user.id, requestId, attempt } }
-        else gate = begin.status // disabled | not_allowed | user_limit | global_limit | neuron_budget
+        else gate = begin.status // disabled | not_allowed | user_limit | global_limit | neuron_budget | trial_*
       }
     }
     if (!attempt) {
@@ -625,10 +670,21 @@ Deno.serve(async (req: Request) => {
         if (r.error) { console.error('leo_ai_reserve error:', r.error.message); await reportServerError('leo_ai', 'leo-ai', 'Leo AI: fallo al reservar cupo (leo_ai_reserve)', 'usage_error', 'critical'); return json({ ok: false, reason: 'usage_error' }) }
         gate = r.data
       }
+      if (typeof gate === 'string' && TRIAL_GATES[gate]) {
+        const g = TRIAL_GATES[gate]
+        await logFailure(today, g.reason, mode)
+        return json({ ok: false, reason: g.reason, final: g.final, trial: await trialInfo(user.id) })
+      }
       if (gate === 'disabled') return json({ ok: false, reason: 'disabled', final: true })
       if (gate === 'not_allowed') return json({ ok: false, reason: 'not_allowed', final: true }, 403)
       if (gate === 'user_limit') { await logFailure(today, 'daily_limit', mode); return json({ ok: false, reason: 'daily_limit', final: true }) }
       if (gate !== 'ok') { await logFailure(today, 'busy', mode); return json({ ok: false, reason: 'busy', final: true }) } // tope global del sitio
+    }
+
+    // La base manda sobre el tipo de cuenta (por si cambió entre dos lecturas): una prueba solo es "explain".
+    if (isTrial && mode !== 'explain') {
+      if (attempt) await finishRequest(user.id, requestId, 'failed', null, 'members_only', attempt)
+      return json({ ok: false, reason: 'members_only', final: true }, 403)
     }
 
     // 5) Llamar al proveedor (y, si se configuró, al siguiente de la lista).
@@ -638,18 +694,19 @@ Deno.serve(async (req: Request) => {
       if (r.ok === false) { lastReason = r.reason; lastDetail = r.detail || ''; continue }
       // Solo cantidades: nunca el contenido.
       const neurons = name === 'cloudflare' ? estimateNeurons(r.usage) : 0
-      await supabase.rpc('leo_ai_record', { p_day: today, p_provider: name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
+      // La prueba se registra aparte ('cloudflare:trial') para medir y limitar su bolsa sin tocar la de los miembros.
+      await supabase.rpc('leo_ai_record', { p_day: today, p_provider: isTrial ? name + ':trial' : name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
         .then(() => {}, () => {})
       const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [])
       if (answer) {
         if (attempt) await finishRequest(user.id, requestId, 'completed', answer, '', attempt)
-        return json({ ok: true, mode, answer })
+        return json(isTrial ? { ok: true, mode, answer, trial: await trialInfo(user.id) } : { ok: true, mode, answer })
       }
       lastReason = 'bad_output'
     }
     if (attempt) await finishRequest(user.id, requestId, 'failed', null, lastReason, attempt)
     await logFailure(today, lastReason, mode, lastDetail)
-    return json({ ok: false, reason: lastReason })
+    return json(isTrial ? { ok: false, reason: lastReason, trial: await trialInfo(user.id) } : { ok: false, reason: lastReason })
   } catch (e) {
     console.error('leo-ai error:', e)
     if (claim) await finishRequest(claim.userId, claim.requestId, 'failed', null, 'error', claim.attempt) // no dejarlo en 'processing'

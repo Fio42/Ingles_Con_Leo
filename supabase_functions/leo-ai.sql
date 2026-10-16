@@ -1,4 +1,8 @@
 -- ============================================================
+-- NOTA 2026-10-15: leo_ai_reserve, leo_ai_begin y leo_ai_finish de este archivo fueron REEMPLAZADAS
+-- por la migracion supabase/migrations/20261016001253_leo_ai_trial.sql (prueba gratis de Leo AI).
+-- La version vigente esta ahi; este archivo queda como historial de la base original.
+--
 -- Inglés con Leo: configuración, probadores, consumo y topes de Leo AI
 -- (supabase_functions/leo-ai.ts)
 --
