@@ -2858,7 +2858,7 @@ const LEO_AI_TRIAL_CREDITS_COPY = 5;  // solo para el texto del invitado; debe c
 const LEO_AI_TRIAL_KINDS = { grammar:1, vocab:1, listening:1, reading:1 };
 // Un invitado no puede preguntarle nada al servidor, asi que la invitacion que PROMETE la prueba solo sale si esto es true.
 // Activar la prueba = trial_enabled=true en la base Y poner esto en true (y publicar). Apagada por defecto a proposito.
-var LEO_AI_TRIAL_PUBLIC = false;
+var LEO_AI_TRIAL_PUBLIC = true;
 const LEO_AI_TEASER_DAY_KEY = 'leo_ai_teaser_day';   // solo evita repetir la invitación el mismo día en este navegador
 let _leoTrial = null, _leoTrialPromise = null, _leoTeaserShownThisPage = false;
 
