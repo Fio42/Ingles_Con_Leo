@@ -159,12 +159,16 @@ const BASE_RULES = `Eres Leo AI, ayudante del profesor Leo, para alumnos hispano
 const EXPLAIN_RULES = `${BASE_RULES}
 - El ejercicio ya está calificado y la "respuesta correcta" es la correcta: no la discutas.
 - Longitud: 1 a 3 frases muy cortas (esto manda sobre lo anterior).
-- El alumno ya leyó la "Explicación del ejercicio": COMPLÉMENTALA, no la repitas ni la parafrasees. Tampoco repitas la pregunta ni la respuesta correcta.
-- Aporta UNA sola cosa nueva y útil. Elige la más útil: un error común relacionado, por qué una opción incorrecta parece correcta, cómo se usa en el inglés real/cotidiano, un truco para recordarlo, o un matiz importante.
-- Si falló, di brevemente qué confundió y, si cabe, una pista corta para no repetirlo. Si acertó, solo el detalle extra, sin volver a explicar la regla.
-- Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").
+- El alumno YA leyó la "Explicación que ya leyó" y YA ve los "Ejemplos que ya ve": no los repitas, no los parafrasees ni reutilices esas frases.
+- Si FALLÓ: habla de SU respuesta concreta, no de la regla en general. Di qué significa o cómo funciona esa opción y por qué no encaja en ESTA frase. Si era una elección razonable (porque se usa en otros contextos o en el inglés hablado), dilo con matiz. Aporta algo nuevo: el contraste de significado entre las opciones, un error común o un truco corto.
+- Si ACERTÓ: solo un matiz nuevo, sin volver a explicar la regla.
+- Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales. Si hay excepciones o usos informales, di "normalmente", "en general" o "en inglés formal".
+- Para aportar algo nuevo puedes usar tu conocimiento del inglés estándar (esto manda sobre "usa SOLO los datos"), pero solo con hechos de los que estés seguro. No inventes reglas ni colocaciones; si no estás seguro de un dato de uso, habla solo del significado.
+- No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice). Básate en las palabras de la pregunta.
+- Si la opción del alumno es válida en otro contexto o en el inglés hablado, dilo con matiz ("se oye en el inglés hablado, pero aquí...") en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
+- "example_en"/"example_es": SOLO si la frase usa la forma CORRECTA (nunca la del alumno) y CONTRASTA la opción del alumno con la correcta (misma estructura, cambia lo que importa) y es DISTINTA de los ejemplos ya mostrados. Un ejemplo que solo repite la forma correcta o que no tiene relación directa con el error no sirve: en ese caso deja ambos como "".
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
-- "example_en": una frase corta en inglés que muestre algo distinto a la explicación (no la repitas); "example_es": su traducción.`
+- Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
 
 const WRITING_RULES = `${BASE_RULES}
 - La página ya calificó la estructura y ya mostró el ejemplo y la regla. NO felicites, NO digas "está bien/correcta" y NO repitas la regla.
@@ -261,7 +265,7 @@ function cleanInt(v: unknown, min: number, max: number): number | null {
 
 // Arma el texto para el modelo SOLO con campos conocidos y recortados.
 // Devuelve null si faltan datos mínimos (no se llama al proveedor).
-export function buildPrompt(mode: string, b: any): { rules: string; text: string; candidates?: string[] } | null {
+export function buildPrompt(mode: string, b: any): { rules: string; text: string; candidates?: string[]; check?: ExplainCheck } | null {
   const level = LEVELS[cleanText(b.level, 20)] || 'no indicado'
   if (mode === 'insight') {
     const scope = INSIGHT_SCOPES[cleanText(b.scope, 20)]
@@ -345,16 +349,65 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
   if (context) lines.push(b.skill === 'reading' ? `Texto que leyó el alumno: ${context}` : `Transcripción del audio: ${context}`)
   lines.push(`Pregunta: ${question}`)
   if (options.length) lines.push(`Opciones: ${options.join(' | ')}`)
-  lines.push(`Respuesta del alumno: ${studentAnswer}`)
+  lines.push(`Respuesta del alumno (${b.isCorrect === true ? 'correcta' : 'INCORRECTA'}): ${studentAnswer}`)
   lines.push(`Respuesta correcta: ${correctAnswer}`)
   lines.push(`El alumno ${b.isCorrect === true ? 'ACERTÓ' : 'FALLÓ'}.`)
   const base = cleanText(b.baseExplanation, 500)
-  if (base) lines.push(`Explicación del ejercicio: ${base}`)
-  return { rules: EXPLAIN_RULES, text: lines.join('\n') }
+  if (base) lines.push(`Explicación que ya leyó (no la repitas): ${base}`)
+  const shown = Array.isArray(b.shownExamples) ? b.shownExamples.map((x: unknown) => cleanText(x, 140)).filter(Boolean).slice(0, 3) : []
+  if (shown.length) lines.push(`Ejemplos que ya ve en pantalla (no los repitas ni los reutilices): ${shown.join(' | ')}`)
+  return { rules: EXPLAIN_RULES, text: lines.join('\n'), check: { base, shown, skill: cleanText(b.skill, 20), correct: correctAnswer, chosen: studentAnswer, failed: b.isCorrect !== true } }
+}
+
+// ---- Control de calidad de "explain" (SOLO estructura y repetición; NO mide si la pedagogía es buena) ----
+// Si una explicación se descarta aquí, el flujo la trata como mala salida: no se entrega y NO se cobra el crédito de bienvenida.
+export type ExplainCheck = { base: string; shown: string[]; skill: string; correct?: string; chosen?: string; failed?: boolean }
+const normTxt = (v: unknown) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
+// Reglas absolutas dichas como regla de gramática ("siempre debes usar had", "es obligatorio"...).
+const ABSOLUTE_RULE = /\b(siempre|nunca|jamas)\s+(debes|debe|tienes que|hay que|se usa|usa|usas|se pone|se escribe|va|lleva|necesitas|es)\b|\b(debes|debe|tienes que|hay que)\s+(siempre|nunca)\b|\bes obligatori[oa]\b|\bobligatoriamente\b|\ben todos los casos\b|\bsin excepcion\b/
+export function hasAbsoluteRule(text: string): boolean { return ABSOLUTE_RULE.test(normTxt(text)) }
+const contentWords = (t: string) => new Set(normTxt(t).split(' ').filter(w => w.length >= 4))
+// ¿Repite (o casi copia) la explicación que el alumno ya leyó?
+export function repeatsExplanation(text: string, base: string): boolean {
+  const A = contentWords(text), B = contentWords(base)
+  if (A.size >= 6 && B.size) {
+    let hit = 0; A.forEach(w => { if (B.has(w)) hit++ })
+    if (hit / A.size >= 0.7) return true
+  }
+  const ta = normTxt(text).split(' '), tb = normTxt(base).split(' ')
+  for (let i = 0; i + 7 <= ta.length; i++) { // 7 palabras seguidas iguales = copia literal
+    const run = ta.slice(i, i + 7).join(' ')
+    if (tb.length >= 7 && (' ' + tb.join(' ') + ' ').includes(' ' + run + ' ')) return true
+  }
+  return false
+}
+const wordsOf = (t: string) => normTxt(t).split(' ').filter(Boolean)
+// El ejemplo inventado por el modelo NO se puede verificar como inglés correcto. Guarda determinista: solo se muestra si usa la forma
+// CORRECTA del ejercicio (las palabras que la distinguen de la elegida) y NO usa la forma errónea del alumno. Si no se puede comprobar, se quita.
+export function exampleContrasts(example: string, correct?: string, chosen?: string): boolean {
+  if (!example || !correct || !chosen) return false
+  const c = new Set(wordsOf(correct)), w = new Set(wordsOf(chosen)), ex = new Set(wordsOf(example))
+  const cTok = [...c].filter(x => !w.has(x)), wTok = [...w].filter(x => !c.has(x))
+  if (!cTok.length) return false
+  return cTok.some(x => ex.has(x)) && !wTok.some(x => ex.has(x))
+}
+const sameSentence = (a: string, b: string) => { const x = normTxt(a), y = normTxt(b); return !!x && !!y && (x === y || (Math.min(x.length, y.length) >= 12 && (x.includes(y) || y.includes(x)))) }
+export function checkExplain(out: { explanation: string; example_en: string; example_es: string }, check?: ExplainCheck) {
+  if (out.explanation.length < 25) return null
+  if (!check) return out
+  if (check.skill === 'grammar' && hasAbsoluteRule(out.explanation)) return null // regla absoluta: mejor no entregar nada que enseñar algo falso
+  if (check.base && repeatsExplanation(out.explanation, check.base)) return null
+  const ne = normTxt(out.explanation)
+  if (check.shown.some(s => normTxt(s).length >= 15 && ne.includes(normTxt(s)))) return null // cita un ejemplo ya mostrado
+  if (out.example_en) {
+    const bad = check.shown.some(s => sameSentence(out.example_en, s)) || !check.failed || !exampleContrasts(out.example_en, check.correct, check.chosen)
+    if (bad) return { explanation: out.explanation, example_en: '', example_es: '' } // ejemplo repetido o no verificable: se quita, la explicación sí vale
+  }
+  return out
 }
 
 // Valida la respuesta del modelo según el modo. null = descartar.
-export function validateOutput(mode: string, parsed: any, candidates: string[] = []) {
+export function validateOutput(mode: string, parsed: any, candidates: string[] = [], check?: ExplainCheck) {
   if (!parsed || typeof parsed !== 'object') return null
   if (mode === 'writing') {
     // Se devuelve a la página con el mismo formato de siempre
@@ -388,7 +441,7 @@ export function validateOutput(mode: string, parsed: any, candidates: string[] =
   const explanation = cleanText(parsed.explanation, 600)
   const example_en = cleanText(parsed.example_en, 200)
   const example_es = cleanText(parsed.example_es, 200)
-  return explanation ? { explanation, example_en, example_es } : null
+  return explanation ? checkExplain({ explanation, example_en, example_es }, check) : null
 }
 
 // Saca el primer objeto JSON del texto (por si el modelo agrega algo
@@ -697,7 +750,7 @@ Deno.serve(async (req: Request) => {
       // La prueba se registra aparte ('cloudflare:trial') para medir y limitar su bolsa sin tocar la de los miembros.
       await supabase.rpc('leo_ai_record', { p_day: today, p_provider: isTrial ? name + ':trial' : name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
         .then(() => {}, () => {})
-      const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [])
+      const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [], prompt.check)
       if (answer) {
         if (attempt) await finishRequest(user.id, requestId, 'completed', answer, '', attempt)
         return json(isTrial ? { ok: true, mode, answer, trial: await trialInfo(user.id) } : { ok: true, mode, answer })

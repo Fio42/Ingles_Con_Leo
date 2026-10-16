@@ -519,6 +519,56 @@ async function test(name, fn){
     const r = await call({ db:trialDb(), member:false, body:TRIAL_REQ(), env:Object.assign({}, CF_OK, { LEO_AI_ENABLED:'false' }) });
     assert.strictEqual(r.out.reason, 'disabled'); assert.strictEqual(r.calls.length, 0);
   });
+  // ---- Control de calidad de "explain": son pruebas de ESTRUCTURA y repetición. NO miden si la explicación es buena pedagógicamente
+  // (eso se evaluó aparte, leyendo respuestas reales del modelo: ver DEVLOG y tools/leo-ai-eval). ----
+  const QCM = (()=>{ const m = { exports:{} }; new Function('module','exports','require','Deno','createClient', js)(m, m.exports, require, { env:{ get:()=>'' }, serve:()=>{} }, ()=>({})); return m.exports; })();
+  const QC = { base:'El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado.', shown:['She had left before I called.','They had already eaten when we arrived.'], skill:'grammar', correct:'had already started', chosen:'already started', failed:true };
+  const ok = (e, x) => ({ explanation:e, example_en:x || '', example_es:x ? 'traducción' : '' });
+  await test('calidad: reglas absolutas de gramática se descartan (caso real "siempre debes usar had")', async()=>{
+    assert(QCM.hasAbsoluteRule('Si una acción ocurre antes que otra en el pasado, siempre debes usar had.'));
+    assert(QCM.hasAbsoluteRule('Con "enjoy" es obligatorio el gerundio.'));
+    assert(!QCM.hasAbsoluteRule('Normalmente se usa had cuando hay dos momentos pasados, aunque en inglés hablado se oye el pasado simple.'));
+    assert.strictEqual(QCM.checkExplain(ok('Si una acción ocurre antes que otra, siempre debes usar had.'), QC), null);
+    assert.strictEqual(QCM.checkExplain(ok('Sin límites absolutos: nunca debes usar el pasado simple aquí, ni hablando.'), Object.assign({}, QC, { skill:'vocab' })) !== null, true, 'el filtro absoluto solo aplica a gramática');
+  });
+  await test('calidad: repetir o parafrasear casi igual la explicación normal se descarta; una explicación nueva pasa', async()=>{
+    assert(QCM.repeatsExplanation('El pasado perfecto muestra que algo pasó antes de otro momento pasado.', QC.base));
+    assert.strictEqual(QCM.checkExplain(ok('El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado, por eso va ahí.'), QC), null);
+    const nuevo = 'Sin "had" la frase no deja claro que la película ya estaba empezada. En inglés hablado se oye el pasado simple, pero aquí había dos momentos.';
+    assert(!QCM.repeatsExplanation(nuevo, QC.base)); assert.strictEqual(QCM.checkExplain(ok(nuevo), QC).explanation, nuevo);
+    assert.strictEqual(QCM.checkExplain(ok('Corto.'), QC), null);
+  });
+  await test('calidad: citar un ejemplo ya mostrado descarta; ejemplo repetido solo se quita (la explicación se entrega)', async()=>{
+    assert.strictEqual(QCM.checkExplain(ok('Fíjate en "She had left before I called." para ver el orden de los hechos aquí.'), QC), null);
+    const r = QCM.checkExplain(ok('Piensa en cuál acción pasó primero y márcala con "had".', 'She had left before I called.'), QC);
+    assert(r && r.explanation && r.example_en === '');
+  });
+  await test('calidad: el ejemplo inventado solo se muestra si usa la forma CORRECTA y no la del alumno (real: "I did never try sushi")', async()=>{
+    assert(QCM.exampleContrasts('The train had left when I got there.', 'had already started', 'already started'));
+    assert(!QCM.exampleContrasts('I did never try sushi.', 'have', 'did'));
+    assert(!QCM.exampleContrasts('Please say the truth.', 'tell', 'say'));
+    assert(!QCM.exampleContrasts('Although the weather, we stayed home.', 'Despite the rain, we went out.', 'Although the rain, we went out.'));
+    assert(!QCM.exampleContrasts('The train had left.', '', 'x'), 'sin datos para comprobar: no se muestra');
+    const q2 = Object.assign({}, QC, { correct:'have', chosen:'did' });
+    const r = QCM.checkExplain(ok('Aquí buscas experiencia de vida, no un momento concreto.', 'I did never try sushi.'), q2);
+    assert(r && r.explanation && r.example_en === '' && r.example_es === '');
+    const bueno = QCM.checkExplain(ok('Hablas de tu experiencia, no de un momento.', 'I have never been to Rome.'), q2); assert.strictEqual(bueno.example_en, 'I have never been to Rome.');
+    const acerto = QCM.checkExplain(ok('Buen detalle: aquí también se oye bastante la forma corta.', 'I have never been to Rome.'), Object.assign({}, q2, { failed:false })); assert.strictEqual(acerto.example_en, '', 'si acertó no hay error que contrastar');
+  });
+  await test('calidad: buildPrompt envía lo necesario para comprobar (correcta, elegida) y NO datos personales', async()=>{
+    const p = QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { shownExamples:['I went home.'] }));
+    assert.strictEqual(p.check.correct, 'went'); assert.strictEqual(p.check.chosen, 'go'); assert.strictEqual(p.check.failed, true);
+    assert(p.text.includes('I went home.') && !/alumno@mail|Juan|u-123/.test(p.text + p.rules));
+  });
+  await test('calidad: explicación inválida => "bad_output", NO se cobra crédito de bienvenida y se puede reintentar', async()=>{
+    const db = trialDb();
+    const bad = cfReply(JSON.stringify({ explanation:'Si una acción pasa antes, siempre debes usar el pasado simple.', example_en:'', example_es:'' }));
+    const r = await call({ db, member:false, body:TRIAL_REQ('req-qc-000001'), provider: bad });
+    assert.strictEqual(r.out.ok, false); assert.strictEqual(r.out.reason, 'bad_output'); assert.strictEqual(db.trial.used, 0, 'sin cobro');
+    assert(r.recorded.some(x => x.p_provider === 'fail:bad_output'));
+    const r2 = await call({ db, member:false, body:TRIAL_REQ('req-qc-000001') });
+    assert.strictEqual(r2.out.ok, true); assert.strictEqual(db.trial.used, 1, 'el reintento válido sí cobra una sola vez');
+  });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);
 })();

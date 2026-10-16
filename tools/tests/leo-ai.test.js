@@ -83,7 +83,7 @@ test('encendido y público: lo ven todos los miembros, pero no los demás', ()=>
 
 const c = load(appSrc);
 const T = c.__t;
-const ALLOWED = ['mode','skill','level','topic','exerciseType','question','options','studentAnswer','correctAnswer','isCorrect','baseExplanation','context','target','example','unit','pageOk'];
+const ALLOWED = ['mode','skill','level','topic','exerciseType','question','options','studentAnswer','correctAnswer','isCorrect','baseExplanation','context','target','example','unit','pageOk','shownExamples'];
 const FORBIDDEN = /"(id|itemId|userId|user_id|email|name|token|access_token|history|sessions)"\s*:/;
 function checkPrivacy(p, name){
   Object.keys(p).forEach(k => assert(ALLOWED.indexOf(k) !== -1, name + ': campo no permitido ' + k));
@@ -152,6 +152,19 @@ test('datos incompletos o raros: no hay payload (y por lo tanto no hay botón)',
   assert.strictEqual(T.buildLeoAiPayload({ kind:'speaking', item:{} }), null);
   assert.strictEqual(T.buildLeoAiPayload({ kind:'diagnosis', unit:null }), null);
   assert.strictEqual(T.buildLeoAiPayload({ kind:'grammar', item:{ type:'otro' }, userAnswer:'x' }), null);
+});
+
+test('Leo AI recibe los ejemplos que la pantalla YA muestra (solo frases en inglés del banco) para no repetirlos', ()=>{
+  const c = load(onSrc); const T = c.__t;
+  const g = T.G.medio.flat().flatMap(t => t.items).find(i => i.id === 'g-medio-pp-1');
+  const p = T.buildLeoAiPayload({ kind:'grammar', item:g, userAnswer:g.options[0], isCorrect:false });
+  assert.strictEqual(JSON.stringify(p.shownExamples), JSON.stringify(g.examples.map(e => e.en)), 'las frases en inglés de "Mira otros ejemplos"');
+  assert.ok(!JSON.stringify(p.shownExamples).includes(g.examples[0].es), 'no viaja la traducción');
+  const v = T.V.medio.flat().find(w => w.id === 'v-medio-8');
+  const pv = T.buildLeoAiPayload({ kind:'vocab', item:v, userAnswer:v.quiz.options[1], isCorrect:false });
+  assert.strictEqual(JSON.stringify(pv.shownExamples), JSON.stringify(v.examples.map(e => e.en)));
+  const l = T.L.facil.flat()[0];
+  assert.strictEqual(T.buildLeoAiPayload({ kind:'listening', item:l, userAnswer:l.options[0], isCorrect:false }).shownExamples, undefined, 'listening/lectura no tienen ejemplos en pantalla');
 });
 
 test('prueba gratis: el numero de explicaciones que dice la pagina coincide con la base y el miembro no cambia', ()=>{

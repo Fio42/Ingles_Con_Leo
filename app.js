@@ -2666,6 +2666,8 @@ function buildLeoAiPayload(ctx){
   const level = (typeof getUserLevel === 'function') ? getUserLevel() : '';
   const it = ctx.item || {};
   const opts = arr => (Array.isArray(arr) ? arr : []).slice(0, 6).map(o => leoAiText(o, 120));
+  // Frases en inglés de "Mira otros ejemplos" que la pantalla YA le muestra al alumno: viajan solo para que Leo AI NO las repita.
+  const shownEx = arr => (Array.isArray(arr) ? arr : []).slice(0, 3).map(e => leoAiText(e && e.en, 140)).filter(Boolean);
   if(ctx.kind === 'diagnosis'){
     const u = ctx.unit;
     if(!u || typeof u.current !== 'number') return null;
@@ -2707,7 +2709,7 @@ function buildLeoAiPayload(ctx){
   if(ctx.kind === 'grammar'){
     let topic = '';
     try{ const f = getMistakesItemIndex().get(it.id); topic = f && f.topic ? f.topic : ''; }catch(e){}
-    Object.assign(base, { skill:'grammar', topic: leoAiText(topic, 120), baseExplanation: leoAiText(it.explain, 500) });
+    Object.assign(base, { skill:'grammar', topic: leoAiText(topic, 120), baseExplanation: leoAiText(it.explain, 500), shownExamples: shownEx(it.examples) });
     if(it.type === 'choice'){
       Object.assign(base, { exerciseType:'Elegir la opción correcta', question: leoAiText(it.prompt), options: opts(it.options), correctAnswer: leoAiText(it.options[it.correct], 200) });
     } else if(it.type === 'fill'){
@@ -2722,7 +2724,7 @@ function buildLeoAiPayload(ctx){
     const q = it.quiz || {};
     Object.assign(base, { skill:'vocab', topic: leoAiText('Palabra: ' + (it.word || ''), 120), exerciseType:'Significado de una palabra',
       question: leoAiText(q.prompt), options: opts(q.options), correctAnswer: leoAiText((q.options || [])[q.correct], 200),
-      baseExplanation: leoAiText(`${it.word} = ${it.translation}. ${q.explain || ''}`, 500) });
+      baseExplanation: leoAiText(`${it.word} = ${it.translation}. ${q.explain || ''}`, 500), shownExamples: shownEx(it.examples) });
   } else if(ctx.kind === 'listening'){
     Object.assign(base, { skill:'listening', exerciseType:'Comprensión auditiva', question: leoAiText(it.question), options: opts(it.options),
       correctAnswer: leoAiText((it.options || [])[it.correct], 200), baseExplanation: leoAiText(it.explain, 500), context: leoAiText(it.transcript, 1500) });

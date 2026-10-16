@@ -41,3 +41,5 @@ tools/e2e/.auth/
 *.tmp*.mp3
 tools/site-health/DEVLOG.txt
 tools/.kokoro-models/
+
+tools/leo-ai-eval/out/
