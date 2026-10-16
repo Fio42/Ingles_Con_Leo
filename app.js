@@ -350,7 +350,10 @@ async function initMemberHeader(){
   // práctica sin guardar progreso, pero el usuario ya está pagando su
   // membresía). Se deja como "Practicar" solo para miembros logeados;
   // para cualquier otra persona el link sigue diciendo "Practicar gratis".
-  document.querySelectorAll('.nav-links a[href="practica.html"]').forEach(a=>{
+  // Solo para miembros REALES. initMemberHeader tambien corre en miembros.html para cuentas gratis con sesion;
+  // a esas el enlace debe seguir llevando a la practica gratis (practica-miembros.html las rebota).
+  const isRealMember = (memberProfile && memberProfile.is_member === true) || window.__leoMemberVerified === true;
+  if(isRealMember) document.querySelectorAll('.nav-links a[href="practica.html"]').forEach(a=>{
     // Para un miembro logeado, "Practicar gratis" no debe ni existir: se
     // cambia el texto Y el destino, así el clic va directo a
     // practica-miembros.html (mismo selector de nivel + pestañas de
@@ -364,7 +367,7 @@ async function initMemberHeader(){
 
   // Mismo ajuste para el botón "Practicar" de la barra inferior en
   // móvil (usa onclick en vez de href, así que se sobreescribe distinto).
-  document.querySelectorAll('.mobile-nav .mnav-item').forEach(btn=>{
+  if(isRealMember) document.querySelectorAll('.mobile-nav .mnav-item').forEach(btn=>{
     if(btn.getAttribute('onclick') === "location.href='practica.html'"){
       btn.onclick = function(){ location.href = 'practica-miembros.html'; };
     }
