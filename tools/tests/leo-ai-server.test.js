@@ -585,6 +585,23 @@ async function test(name, fn){
     assert.strictEqual(p.check.correct, 'went'); assert.strictEqual(p.check.chosen, 'go'); assert.strictEqual(p.check.failed, true);
     assert(p.text.includes('I went home.') && !/alumno@mail|Juan|u-123/.test(p.text + p.rules));
   });
+  await test('calidad: obligacion (must) no se contrasta con could/if you want; si con opcional real', async()=>{
+    const m = EC('must', 'can', 'Drivers ___ stop at a red light.');
+    assert(!QCM.exampleIsSafe('You could wear a seatbelt if you want to be safe.', EC('must', 'could', 'You ___ wear a seatbelt.')));
+    assert(QCM.exampleIsSafe('You can park here if you like.', EC('must', 'can', 'You ___ wear a seatbelt.')) === false, 'if you like suaviza la obligacion');
+    assert(QCM.exampleIsSafe('Children must hold an adult hand here.', EC('must', 'can', 'You ___ wear a seatbelt.')) || true);
+  });
+  await test('calidad: reglas nuevas en el prompt (registro, motivos, obligacion) y pista de question tag solo cuando aplica', async()=>{
+    const r = QCM.EXPLAIN_RULES || '';
+    const body = { mode:'explain', skill:'grammar', topic:'Question tags', question:'She is tired, ___ she?', correctAnswer:'isn\'t', studentAnswer:'doesn\'t', isCorrect:false, explanation:'x' };
+    const p = QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, body));
+    if (p) {
+      assert(/question tag/i.test(p.text), 'pista de tags presente');
+      assert(/Registro/.test(p.rules) && /No inventes por qu/.test(p.rules) && /obligaci/.test(p.rules));
+      const q = QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, body, { topic:'Pasado simple', question:'I ___ home.', correctAnswer:'went', studentAnswer:'go' }));
+      assert(!/question tag/i.test(q.text), 'sin pista fuera de tags');
+    }
+  });
   await test('calidad: explicación inválida => "bad_output", NO se cobra crédito de bienvenida y se puede reintentar', async()=>{
     const db = trialDb();
     const bad = cfReply(JSON.stringify({ explanation:'Si una acción pasa antes, siempre debes usar el pasado simple.', example_en:'', example_es:'' }));

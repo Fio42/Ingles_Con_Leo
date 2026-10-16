@@ -76,7 +76,7 @@ const GRAMMAR_BANK = {
             bank:["cats","cat","cates"], correct:"cats",
             explain:"“Cats” es el plural de “cat” (gato).",
             examples:[
-              {en:"I have two cats.", es:"Tengo dos gatos."},
+              {en:"We have three dogs.", es:"Tenemos tres perros."},
               {en:"She has two books.", es:"Ella tiene dos libros."}
             ]},
           { id:'g-principiante-plural-3', translation:"¿Cómo se dice más de un \"libro\"?", type:'choice', prompt:"How do you say more than one \"book\"?",
@@ -102,7 +102,7 @@ const GRAMMAR_BANK = {
             options:["This","These","They"], correct:0,
             explain:"Usamos “this” para senalar UNA sola cosa cerca de ti.",
             examples:[
-              {en:"This is an apple.", es:"Esto es una manzana."},
+              {en:"This is a pencil.", es:"Esto es un lápiz."},
               {en:"This is my book.", es:"Este es mi libro."}
             ]},
           { id:'g-principiante-this-2', translation:"Este es mi libro.", type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
@@ -144,7 +144,7 @@ const GRAMMAR_BANK = {
             bank:["red","seven","house"], correct:"red",
             explain:"Las manzanas normalmente son “red” (rojas).",
             examples:[
-              {en:"The apple is red.", es:"La manzana es roja."},
+              {en:"The door is brown.", es:"La puerta es marrón."},
               {en:"Her dress is red.", es:"Su vestido es rojo."}
             ]},
           { id:'g-principiante2-color-3', translation:"¿Cómo se dice \"amarillo\" en inglés?", type:'choice', prompt:"How do you say \"amarillo\" in English?",
@@ -177,7 +177,7 @@ const GRAMMAR_BANK = {
             bank:["this","these","they"], correct:"this",
             explain:"Para preguntar por UNA cosa cerca de ti, usamos “this”.",
             examples:[
-              {en:"What is this?", es:"¿Qué es esto?"},
+              {en:"What is that?", es:"¿Qué es eso?"},
               {en:"This is a pen.", es:"Esto es un lapicero."}
             ]},
           { id:'g-principiante2-what-3', translation:"¿Cómo preguntas sobre UN objeto frente a ti?", type:'choice', prompt:"How do you ask about ONE object in front of you?",
@@ -247,7 +247,7 @@ const GRAMMAR_BANK = {
             bank:["Saturday","Sunday","Monday"], correct:"Saturday",
             explain:"“Saturday” es sábado.",
             examples:[
-              {en:"Today is Saturday.", es:"Hoy es sábado."},
+              {en:"Tomorrow is Sunday.", es:"Mañana es domingo."},
               {en:"We rest on Saturday.", es:"Descansamos el sábado."}
             ]},
           { id:'g-principiante3-days-3', translation:"¿Qué día es después del viernes?", type:'choice', prompt:"What day comes after Friday?",
@@ -280,14 +280,14 @@ const GRAMMAR_BANK = {
             bank:["your","you","yours"], correct:"your",
             explain:"“Your” va antes del sustantivo: “your pencil”.",
             examples:[
-              {en:"Is this your pencil?", es:"¿Es este tu lápiz?"},
+              {en:"Is that your phone?", es:"¿Ese es tu teléfono?"},
               {en:"Your bag is red.", es:"Tu bolsa es roja."}
             ]},
           { id:'g-principiante3-poss-3', translation:"Ana señala su propia casa y dice...", type:'choice', prompt:"Ana points at her own house and says ___",
             options:["This is my house.","This is your house.","This is his house."], correct:0,
             explain:"Cuando hablas de algo tuyo, usas “my”.",
             examples:[
-              {en:"This is my house.", es:"Esta es mi casa."},
+              {en:"That is my bike.", es:"Esa es mi bicicleta."},
               {en:"My house is small.", es:"Mi casa es pequeña."}
             ]},
           { id:'g-principiante3-poss-4', translation:"Tu perro es grande.", type:'error', wrong:"You dog is big.", wrongWord:"You",
@@ -350,8 +350,8 @@ const GRAMMAR_BANK = {
     "explain": "“Lend” (dar prestado) en pasado es “lent”. Ella me lo dio a mí.",
     "examples": [
      {
-      "en": "She lent me her bike.",
-      "es": "Ella me prestó su bicicleta."
+      "en": "My uncle lent me his car.",
+      "es": "Mi tío me prestó su carro."
      },
      {
       "en": "I lent him five dollars.",
@@ -373,8 +373,8 @@ const GRAMMAR_BANK = {
     "explain": "Cuando yo pido algo para usarlo, uso “borrow”.",
     "examples": [
      {
-      "en": "Can I borrow your umbrella?",
-      "es": "¿Me prestas tu paraguas?"
+      "en": "Can I borrow a pencil?",
+      "es": "¿Puedo pedir prestado un lápiz?"
      },
      {
       "en": "He borrowed my jacket.",
@@ -421,8 +421,8 @@ const GRAMMAR_BANK = {
     "explain": "“Well” describe cómo se hace una acción (verbo + well). “Good” describe una cosa o persona.",
     "examples": [
      {
-      "en": "She sings well.",
-      "es": "Ella canta bien."
+      "en": "My mom cooks well.",
+      "es": "Mi mamá cocina bien."
      },
      {
       "en": "She is a good singer.",
@@ -452,8 +452,8 @@ const GRAMMAR_BANK = {
     "explain": "“Good” va antes de un sustantivo como “book”.",
     "examples": [
      {
-      "en": "It is a good book.",
-      "es": "Es un buen libro."
+      "en": "She is a good teacher.",
+      "es": "Ella es una buena profesora."
      },
      {
       "en": "This is a good idea.",
@@ -475,8 +475,8 @@ const GRAMMAR_BANK = {
     "explain": "Para hablar de salud o estado, se usa “well” (I am well).",
     "examples": [
      {
-      "en": "I am well, thanks.",
-      "es": "Estoy bien, gracias."
+      "en": "They cook very well.",
+      "es": "Ellos cocinan muy bien."
      },
      {
       "en": "He is not feeling well.",
@@ -519,7 +519,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"Usamos “he” para hablar de un hombre o niño.",
               examples:[
-              {en:"He is my friend.", es:"Él es mi amigo."},
+              {en:"He is an engineer.", es:"Él es ingeniero."},
               {en:"He is tall.", es:"Él es alto."}
             ]},
           { id:'g-principiante6-2',
@@ -530,7 +530,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"Usamos “she” para hablar de una mujer o niña.",
               examples:[
-              {en:"She is my sister.", es:"Ella es mi hermana."},
+              {en:"She is a student.", es:"Ella es estudiante."},
               {en:"She is happy.", es:"Ella está feliz."}
             ]},
           { id:'g-principiante6-3',
@@ -620,7 +620,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“His” se usa para cosas de un hombre o niño.",
               examples:[
-              {en:"That is his book.", es:"Ese es su libro (de él)."},
+              {en:"His sister is a nurse.", es:"Su hermana es enfermera."},
               {en:"His name is Tom.", es:"Su nombre es Tom."}
             ]},
           { id:'g-principiante6-10',
@@ -631,7 +631,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Her” se usa para cosas de una mujer o niña.",
               examples:[
-              {en:"That is her bag.", es:"Esa es su bolsa (de ella)."},
+              {en:"Her brother is a student.", es:"Su hermano es estudiante."},
               {en:"Her name is Ana.", es:"Su nombre es Ana."}
             ]}
         ]
@@ -773,7 +773,7 @@ const GRAMMAR_BANK = {
             bank:["There","Their","They're"], correct:"There",
             explain:"Para decir que “hay” algo, usamos “there”.",
             examples:[
-              {en:"There are many people here.", es:"Hay mucha gente aquí."},
+              {en:"There are three books on the desk.", es:"Hay tres libros en el escritorio."},
               {en:"There is no time to waste.", es:"No hay tiempo que perder."}
             ]}
         ]
@@ -787,7 +787,7 @@ const GRAMMAR_BANK = {
             options:["a","an","some"], correct:1,
             explain:"Usamos “an” antes de sonido de vocal, como “elephant”.",
             examples:[
-              {en:"I saw an elephant.", es:"Vi un elefante."},
+              {en:"She ate an orange.", es:"Ella comió una naranja."},
               {en:"She has a dog.", es:"Ella tiene un perro."}
             ]},
           { id:'g-facil-art-2', micro:'a-an-sonido', translation:"Ella es enfermera.", type:'fill', sentence:["She","is","___","nurse","."], blankIndex:2,
@@ -801,7 +801,7 @@ const GRAMMAR_BANK = {
             options:["a","an","the"], correct:1,
             explain:"“Umbrella” empieza con sonido de vocal, entonces usamos “an”.",
             examples:[
-              {en:"That is an umbrella.", es:"Esa es una sombrilla."},
+              {en:"He has an old car.", es:"Él tiene un carro viejo."},
               {en:"This is a book.", es:"Este es un libro."}
             ]},
           { id:'g-facil-art-4', micro:'a-an-sonido', translation:"Necesito una hora para terminar.", type:'error', wrong:"I need a hour to finish.", wrongWord:"a",
@@ -820,21 +820,21 @@ const GRAMMAR_BANK = {
             options:["in","on","at"], correct:1,
             explain:"Usamos “on” para superficies, como una mesa.",
             examples:[
-              {en:"The keys are on the table.", es:"Las llaves están en la mesa."},
+              {en:"The phone is on the sofa.", es:"El teléfono está en el sofá."},
               {en:"There's a picture on the wall.", es:"Hay un cuadro en la pared."}
             ]},
           { id:'g-facil-prep-2', micro:'in-on-at-lugar', translation:"Vivo en Bogotá.", type:'fill', sentence:["I","live","___","Bogotá","."], blankIndex:2,
             bank:["in","on","at"], correct:"in",
             explain:"Usamos “in” para ciudades y países.",
             examples:[
-              {en:"I live in Bogotá.", es:"Vivo en Bogotá."},
+              {en:"They live in Mexico.", es:"Ellos viven en México."},
               {en:"She was born in Peru.", es:"Ella nació en Perú."}
             ]},
           { id:'g-facil-prep-3', micro:'in-on-at-tiempo', translation:"Nos encontraremos a las 5.", type:'choice', prompt:"We'll meet ___ 5 o'clock.",
             options:["in","on","at"], correct:2,
             explain:"Usamos “at” para horas exactas.",
             examples:[
-              {en:"We'll meet at 5 o'clock.", es:"Nos veremos a las cinco."},
+              {en:"The movie starts at eight.", es:"La película empieza a las ocho."},
               {en:"The class starts at nine.", es:"La clase empieza a las nueve."}
             ]},
           { id:'g-facil-prep-4', micro:'in-on-at-tiempo', translation:"Mi cumpleaños es el lunes.", type:'error', wrong:"My birthday is in Monday.", wrongWord:"in",
@@ -855,21 +855,21 @@ const GRAMMAR_BANK = {
             options:["some","any","much"], correct:1,
             explain:"En negaciones usamos “any”, no “some”.",
             examples:[
-              {en:"I don't have any money.", es:"No tengo nada de dinero."},
+              {en:"We don't have any chairs.", es:"No tenemos sillas."},
               {en:"There isn't any milk.", es:"No hay nada de leche."}
             ]},
           { id:'g-facil-some-2', micro:'some-any-pregunta-oferta', translation:"¿Me puedes dar un poco de agua?", type:'fill', sentence:["Can","I","have","___","water","?"], blankIndex:3,
             bank:["some","any","many"], correct:"some",
             explain:"En ofrecimientos y peticiones usamos “some”, aunque sea una pregunta.",
             examples:[
-              {en:"Can I have some water?", es:"¿Me das un poco de agua?"},
+              {en:"Can I have some bread?", es:"¿Puedo comer un poco de pan?"},
               {en:"Would you like some coffee?", es:"¿Quieres café?"}
             ]},
           { id:'g-facil-some-3', micro:'some-any-pregunta-oferta', translation:"¿Tienes alguna pregunta?", type:'choice', prompt:"Do you have ___ questions?",
             options:["some","any","much"], correct:1,
             explain:"En preguntas normales usamos “any”.",
             examples:[
-              {en:"Do you have any questions?", es:"¿Tienes alguna pregunta?"},
+              {en:"Do you have any brothers?", es:"¿Tienes hermanos?"},
               {en:"Is there any bread left?", es:"¿Queda algo de pan?"}
             ]},
           { id:'g-facil-some-4', micro:'some-any-afirm-neg', translation:"No queda nada de azúcar.", type:'error', wrong:"There isn't some sugar left.", wrongWord:"some",
@@ -888,21 +888,21 @@ const GRAMMAR_BANK = {
             options:["This","These","That"], correct:1,
             explain:"Para plural + cerca usamos “these”.",
             examples:[
-              {en:"These shoes are new.", es:"Estos zapatos son nuevos."},
+              {en:"These apples are fresh.", es:"Estas manzanas están frescas."},
               {en:"This book is mine.", es:"Este libro es mío."}
             ]},
           { id:'g-facil-this-2', translation:"Esa casa de allá es grande.", type:'fill', sentence:["___","house","over","there","is","big","."], blankIndex:0,
             bank:["This","That","These"], correct:"That",
             explain:"Para singular + lejos usamos “that”.",
             examples:[
-              {en:"That house over there is big.", es:"Esa casa de allá es grande."},
+              {en:"That man over there is my uncle.", es:"Ese hombre de allá es mi tío."},
               {en:"Those cars are expensive.", es:"Esos carros son caros."}
             ]},
           { id:'g-facil-this-3', translation:"Mira esos pájaros allá arriba (lejos).", type:'choice', prompt:"Look at ___ birds up there (far away).",
             options:["this","these","those"], correct:2,
             explain:"Para plural + lejos usamos “those”.",
             examples:[
-              {en:"Look at those birds.", es:"Mira esos pájaros."},
+              {en:"Look at those mountains.", es:"Mira esas montañas."},
               {en:"These flowers smell nice.", es:"Estas flores huelen bien."}
             ]},
           { id:'g-facil-this-4', translation:"Estos zapatos son muy pequeños.", type:'error', wrong:"This shoes are too small.", wrongWord:"This",
@@ -923,21 +923,21 @@ const GRAMMAR_BANK = {
             options:["What","Where","Who"], correct:0,
             explain:"Usamos “what” para preguntar por una cosa o información, como el nombre.",
             examples:[
-              {en:"What is your name?", es:"¿Cuál es tu nombre?"},
+              {en:"What is your phone number?", es:"¿Cuál es tu número de teléfono?"},
               {en:"What is your favorite color?", es:"¿Cuál es tu color favorito?"}
             ]},
           { id:'g-facil4-qw-2', translation:"¿Dónde vives?", type:'fill', sentence:["___","do","you","live","?"], blankIndex:0,
             bank:["Where","What","Who"], correct:"Where",
             explain:"“Where” se usa para preguntar por un lugar.",
             examples:[
-              {en:"Where do you live?", es:"¿Dónde vives?"},
+              {en:"Where do you work?", es:"¿Dónde trabajas?"},
               {en:"Where is the bathroom?", es:"¿Dónde está el baño?"}
             ]},
           { id:'g-facil4-qw-3', translation:"¿Cuándo es tu cumpleaños?", type:'choice', prompt:"___ is your birthday?",
             options:["When","Who","What"], correct:0,
             explain:"“When” se usa para preguntar por el momento o la fecha.",
             examples:[
-              {en:"When is your birthday?", es:"¿Cuándo es tu cumpleaños?"},
+              {en:"When is the party?", es:"¿Cuándo es la fiesta?"},
               {en:"When does the movie start?", es:"¿Cuándo empieza la película?"}
             ]},
           { id:'g-facil4-qw-4', translation:"¿Dónde está el baño?", type:'error', wrong:"Were is the bathroom?", wrongWord:"Were",
@@ -956,21 +956,21 @@ const GRAMMAR_BANK = {
             options:["always","never","yesterday"], correct:0,
             explain:"Los adverbios de frecuencia como “always” van antes del verbo principal.",
             examples:[
-              {en:"I always drink coffee in the morning.", es:"Siempre tomo café en la mañana."},
+              {en:"I always brush my teeth after dinner.", es:"Siempre me cepillo los dientes después de cenar."},
               {en:"She always arrives on time.", es:"Ella siempre llega a tiempo."}
             ]},
           { id:'g-facil4-freq-2', micro:'ps-adverbios-frecuencia', translation:"Ella siempre llega tarde.", type:'fill', sentence:["She","is","___","late","."], blankIndex:2,
             bank:["always","yesterday","tomorrow"], correct:"always",
             explain:"Con el verbo “to be”, el adverbio de frecuencia va después: “is always”.",
             examples:[
-              {en:"She is always late.", es:"Ella siempre llega tarde."},
+              {en:"He is always on time.", es:"Él siempre llega a tiempo."},
               {en:"He is never hungry in the morning.", es:"Él nunca tiene hambre en la mañana."}
             ]},
           { id:'g-facil4-freq-3', micro:'ps-adverbios-frecuencia', translation:"Normalmente vamos a la playa en verano.", type:'choice', prompt:"We ___ go to the beach in summer.",
             options:["usually","yesterday","tomorrow"], correct:0,
             explain:"“Usually” describe algo habitual; “yesterday” y “tomorrow” son momentos específicos, no frecuencia.",
             examples:[
-              {en:"We usually go to the beach in summer.", es:"Normalmente vamos a la playa en verano."},
+              {en:"We usually watch TV at night.", es:"Normalmente vemos televisión por la noche."},
               {en:"They usually eat dinner at eight.", es:"Ellos normalmente cenan a las ocho."}
             ]},
           { id:'g-facil4-freq-4', micro:'ps-adverbios-frecuencia', translation:"Ella nunca llega tarde.", type:'error', wrong:"She never is late.", wrongWord:"never is",
@@ -991,21 +991,21 @@ const GRAMMAR_BANK = {
             options:["Can","Do","Are"], correct:0,
             explain:"Usamos “can” para preguntar sobre habilidad, no “do” ni “are”.",
             examples:[
-              {en:"Can you swim?", es:"¿Sabes nadar?"},
+              {en:"Can you help me?", es:"¿Puedes ayudarme?"},
               {en:"I can ride a bike.", es:"Sé andar en bicicleta."}
             ]},
           { id:'g-facil5-can-2', micro:'can-verbo-base', translation:"Ella sabe tocar el piano.", type:'fill', sentence:["She","___","play","the","piano","."], blankIndex:1,
             bank:["can","cans","canning"], correct:"can",
             explain:"“Can” no cambia con la persona: siempre “can”, nunca “cans”.",
             examples:[
-              {en:"She can play the piano.", es:"Ella sabe tocar el piano."},
+              {en:"My dad can fix cars.", es:"Mi papá puede arreglar carros."},
               {en:"They can speak French.", es:"Ellos saben hablar francés."}
             ]},
           { id:'g-facil5-can-3', micro:'can-verbo-base', translation:"Él todavía no puede manejar, solo tiene 15 años.", type:'choice', prompt:"He ___ drive yet, he's only 15.",
             options:["can't","doesn't can","not can"], correct:0,
             explain:"La forma negativa de “can” es “can't” (o “cannot”), no “doesn't can”.",
             examples:[
-              {en:"He can't drive yet.", es:"Él todavía no sabe manejar."},
+              {en:"I can't hear you.", es:"No te puedo oír."},
               {en:"We can't come tonight.", es:"No podemos ir esta noche."}
             ]},
           { id:'g-facil5-can-4', micro:'can-verbo-base', translation:"Ella canta muy bien.", type:'error', wrong:"She can to sing very well.", wrongWord:"to",
@@ -1024,21 +1024,21 @@ const GRAMMAR_BANK = {
             options:["Her","His","Their"], correct:0,
             explain:"Ana es mujer, así que usamos “her”.",
             examples:[
-              {en:"This is Ana. Her car is red.", es:"Esta es Ana. Su carro es rojo."},
+              {en:"This is Ana. Her bag is new.", es:"Esta es Ana. Su mochila es nueva."},
               {en:"Her house is near the park.", es:"Su casa está cerca del parque."}
             ]},
           { id:'g-facil5-poss-2', translation:"Nos encanta nuestra casa nueva.", type:'fill', sentence:["We","love","___","new","house","."], blankIndex:2,
             bank:["our","us","we"], correct:"our",
             explain:"“Our” es el posesivo de “we”.",
             examples:[
-              {en:"We love our new house.", es:"Amamos nuestra casa nueva."},
+              {en:"We clean our room every week.", es:"Limpiamos nuestro cuarto cada semana."},
               {en:"Our team won the game.", es:"Nuestro equipo ganó el juego."}
             ]},
           { id:'g-facil5-poss-3', translation:"Ese es el perro de Tom y Lisa. Es su perro.", type:'choice', prompt:"That is Tom and Lisa's dog. It's ___ dog.",
             options:["their","his","your"], correct:0,
             explain:"Tom y Lisa son varias personas, así que usamos “their”.",
             examples:[
-              {en:"It's their dog.", es:"Es el perro de ellos."},
+              {en:"The kids love their school.", es:"A los niños les encanta su escuela."},
               {en:"Their kids go to my school.", es:"Sus hijos van a mi escuela."}
             ]},
           { id:'g-facil5-poss-4', translation:"A él le encanta su trabajo.", type:'error', wrong:"He loves he's job.", wrongWord:"he's",
@@ -1059,21 +1059,21 @@ const GRAMMAR_BANK = {
             options:["is raining","rains","rain"], correct:0,
             explain:"Para acciones que pasan ahora mismo usamos presente continuo: “is raining”.",
             examples:[
-              {en:"Look! It is raining outside.", es:"¡Mira! Está lloviendo afuera."},
+              {en:"Be quiet! The baby is sleeping.", es:"¡Silencio! El bebé está durmiendo."},
               {en:"She is watching TV right now.", es:"Ella está viendo tele ahora mismo."}
             ]},
           { id:'g-facil6-cont-2', translation:"Ellos están cocinando la cena en este momento.", type:'fill', sentence:["They","___","dinner","right","now","."], blankIndex:1,
             bank:["are cooking","cooks","cook"], correct:"are cooking",
             explain:"“They” + “are” + verbo-ing para acción en progreso.",
             examples:[
-              {en:"They are cooking dinner right now.", es:"Están cocinando la cena ahora mismo."},
+              {en:"The kids are playing in the garden now.", es:"Los niños están jugando en el jardín ahora."},
               {en:"We are waiting for the bus.", es:"Estamos esperando el autobús."}
             ]},
           { id:'g-facil6-cont-3', translation:"Estoy leyendo un libro en este momento.", type:'choice', prompt:"I ___ a book at the moment.",
             options:["am reading","read","reads"], correct:0,
             explain:"“At the moment” indica que la acción ocurre ahora: presente continuo.",
             examples:[
-              {en:"I am reading a book at the moment.", es:"Estoy leyendo un libro en este momento."},
+              {en:"I am studying English today.", es:"Hoy estoy estudiando inglés."},
               {en:"He is working at the moment.", es:"Él está trabajando en este momento."}
             ]},
           { id:'g-facil6-cont-4', translation:"Ella está estudiando inglés ahora.", type:'error', wrong:"She is study English now.", wrongWord:"study",
@@ -1092,21 +1092,21 @@ const GRAMMAR_BANK = {
             options:["interesting","more interesting","most interesting"], correct:1,
             explain:"Con adjetivos largos usamos “more + adjetivo” para comparar.",
             examples:[
-              {en:"This book is more interesting than that one.", es:"Este libro es más interesante que ese."},
+              {en:"This city is more beautiful than my town.", es:"Esta ciudad es más bonita que mi pueblo."},
               {en:"This movie is more exciting than the last one.", es:"Esta película es más emocionante que la anterior."}
             ]},
           { id:'g-facil6-comp-2', translation:"Mi hermano es más alto que yo.", type:'fill', sentence:["My","brother","is","___","than","me","."], blankIndex:3,
             bank:["taller","tall","tallest"], correct:"taller",
             explain:"Con adjetivos cortos agregamos “-er” para comparar: tall → taller.",
             examples:[
-              {en:"My brother is taller than me.", es:"Mi hermano es más alto que yo."},
+              {en:"My sister is older than me.", es:"Mi hermana es mayor que yo."},
               {en:"This road is shorter than that one.", es:"Este camino es más corto que ese."}
             ]},
           { id:'g-facil6-comp-3', translation:"Este ejercicio es más fácil que el anterior.", type:'choice', prompt:"This exercise is ___ than the last one.",
             options:["easyer","more easy","easier"], correct:2,
             explain:"“Easy” cambia la “y” por “i” y agrega “-er”: easier.",
             examples:[
-              {en:"This exercise is easier than the last one.", es:"Este ejercicio es más fácil que el anterior."},
+              {en:"This bag is heavier than that one.", es:"Esta mochila es más pesada que aquella."},
               {en:"This test was easier than I expected.", es:"Este examen fue más fácil de lo que esperaba."}
             ]},
           { id:'g-facil6-comp-4', translation:"Este carro es más rápido que el mío.", type:'error', wrong:"This car is more fast than mine.", wrongWord:"more fast",
@@ -1136,7 +1136,7 @@ const GRAMMAR_BANK = {
             bank:["cleaned","cleans","clean"], correct:"cleaned",
             explain:"“Clean” en pasado regular es “cleaned”.",
             examples:[
-              {en:"She cleaned the kitchen last night.", es:"Ella limpió la cocina anoche."},
+              {en:"He washed the car on Saturday.", es:"Él lavó el carro el sábado."},
               {en:"We cleaned the house on Sunday.", es:"Limpiamos la casa el domingo."}
             ]},
           { id:'g-facil7-ed-3', translation:"¿Cuál oración está en pasado correctamente?", type:'choice', prompt:"Which sentence is correctly in the past tense?",
@@ -1169,7 +1169,7 @@ const GRAMMAR_BANK = {
             bank:["Does","Do","Is"], correct:"Does",
             explain:"Con “she/he/it” usamos “Does”.",
             examples:[
-              {en:"Does she work on Saturdays?", es:"¿Ella trabaja los sábados?"},
+              {en:"Does he study at night?", es:"¿Él estudia de noche?"},
               {en:"Does he live near here?", es:"¿Él vive cerca de aquí?"}
             ]},
           { id:'g-facil7-dodoes-3', micro:'dodoes-elegir-sujeto', translation:"¿Cuál pregunta es correcta sobre tu hermano?", type:'choice', prompt:"Which question about your brother is correct?",
@@ -1190,14 +1190,14 @@ const GRAMMAR_BANK = {
             options:["Do","Does","Is"], correct:0,
             explain:"“Your friends” es plural (como “they”), así que usamos “Do”.",
             examples:[
-              {en:"Do your friends play video games on weekends?", es:"¿Tus amigos juegan videojuegos los fines de semana?"},
+              {en:"Do your parents work on Sundays?", es:"¿Tus padres trabajan los domingos?"},
               {en:"Do your cousins visit you often?", es:"¿Tus primos te visitan seguido?"}
             ]},
           { id:'g-facil7-dodoes-6', micro:'dodoes-elegir-sujeto', translation:"¿La tienda abre a las ocho?", type:'fill', sentence:["___","the","store","open","at","eight","?"], blankIndex:0,
             bank:["Does","Do","Are"], correct:"Does",
             explain:"“The store” es singular (como “it”), así que usamos “Does”.",
             examples:[
-              {en:"Does the store open at eight?", es:"¿La tienda abre a las ocho?"},
+              {en:"Does the school start at seven?", es:"¿La escuela empieza a las siete?"},
               {en:"Does the bank close early on Fridays?", es:"¿El banco cierra temprano los viernes?"}
             ]}
         ]
@@ -1222,8 +1222,8 @@ const GRAMMAR_BANK = {
     "explain": "“Its” (sin apóstrofe) es posesivo: de él/ella (una cosa o animal).",
     "examples": [
      {
-      "en": "The dog wagged its tail.",
-      "es": "El perro movió su cola."
+      "en": "The bird built its nest in the tree.",
+      "es": "El pájaro hizo su nido en el árbol."
      },
      {
       "en": "The cat licked its paw.",
@@ -1251,8 +1251,8 @@ const GRAMMAR_BANK = {
     "explain": "“It's” con apóstrofe es la contracción de “it is” o “it has”.",
     "examples": [
      {
-      "en": "It's raining today.",
-      "es": "Está lloviendo hoy."
+      "en": "It's cold today.",
+      "es": "Hoy hace frío."
      },
      {
       "en": "It's been a long day.",
@@ -1274,8 +1274,8 @@ const GRAMMAR_BANK = {
     "explain": "“Its cover” significa la portada de ÉL (del libro), por eso es posesivo sin apóstrofe.",
     "examples": [
      {
-      "en": "The book lost its cover.",
-      "es": "El libro perdió su portada."
+      "en": "The company changed its name.",
+      "es": "La empresa cambió su nombre."
      },
      {
       "en": "Every rule has its exception.",
@@ -1322,8 +1322,8 @@ const GRAMMAR_BANK = {
     "explain": "“Than” se usa para comparar (taller than, faster than).",
     "examples": [
      {
-      "en": "She is taller than her brother.",
-      "es": "Ella es más alta que su hermano."
+      "en": "My car is older than yours.",
+      "es": "Mi carro es más viejo que el tuyo."
      },
      {
       "en": "This is better than that.",
@@ -1354,8 +1354,8 @@ const GRAMMAR_BANK = {
     "explain": "“Then” indica el siguiente paso en el tiempo (después, luego).",
     "examples": [
      {
-      "en": "We ate, then we slept.",
-      "es": "Comimos, luego dormimos."
+      "en": "I washed the dishes, then I watched TV.",
+      "es": "Lavé los platos y luego vi televisión."
      },
      {
       "en": "First think, then act.",
@@ -1377,8 +1377,8 @@ const GRAMMAR_BANK = {
     "explain": "Al comparar dos cosas, usamos “than”.",
     "examples": [
      {
-      "en": "I prefer coffee more than tea.",
-      "es": "Prefiero café más que té."
+      "en": "Tea is cheaper than coffee here.",
+      "es": "Aquí el té es más barato que el café."
      },
      {
       "en": "He runs faster than me.",
@@ -1421,7 +1421,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“You’re” es la forma corta de “you are”.",
               examples:[
-              {en:"You're my best friend.", es:"Tú eres mi mejor amigo."},
+              {en:"You're very funny.", es:"Eres muy gracioso."},
               {en:"You're very smart.", es:"Eres muy inteligente."}
             ]},
           { id:'g-facil10-2',
@@ -1433,7 +1433,7 @@ const GRAMMAR_BANK = {
             correct:"your",
             explain:"“Your” muestra posesión (de ti).",
               examples:[
-              {en:"Is this your car?", es:"¿Es este tu carro?"},
+              {en:"Is that your sister?", es:"¿Esa es tu hermana?"},
               {en:"I like your shoes.", es:"Me gustan tus zapatos."}
             ]},
           { id:'g-facil10-3',
@@ -1472,7 +1472,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“To” se usa para indicar dirección o destino.",
               examples:[
-              {en:"I am going to the store.", es:"Voy a la tienda."},
+              {en:"We are going to the beach.", es:"Vamos a la playa."},
               {en:"She went to school.", es:"Ella fue a la escuela."}
             ]},
           { id:'g-facil10-6',
@@ -1483,7 +1483,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Too” significa “demasiado”.",
               examples:[
-              {en:"This soup is too hot.", es:"Esta sopa está demasiado caliente."},
+              {en:"This bag is too heavy for me.", es:"Esta bolsa es demasiado pesada para mí."},
               {en:"It's too late to call.", es:"Es demasiado tarde para llamar."}
             ]},
           { id:'g-facil10-7',
@@ -1494,7 +1494,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Two” es el número 2.",
               examples:[
-              {en:"I have two sisters.", es:"Tengo dos hermanas."},
+              {en:"He has three brothers.", es:"Él tiene tres hermanos."},
               {en:"She bought two shirts.", es:"Ella compró dos camisas."}
             ]},
           { id:'g-facil10-8',
@@ -1506,7 +1506,7 @@ const GRAMMAR_BANK = {
             correct:"too",
             explain:"“Too” al final de una frase significa “también”.",
               examples:[
-              {en:"I want to go too.", es:"Yo también quiero ir."},
+              {en:"I like pizza too.", es:"A mí también me gusta la pizza."},
               {en:"She likes coffee too.", es:"A ella también le gusta el café."}
             ]},
           { id:'g-facil10-9',
@@ -1672,7 +1672,7 @@ const GRAMMAR_BANK = {
             options:["used","use","using"], correct:0,
             explain:"“Used to” describe un hábito pasado que ya terminó.",
             examples:[
-              {en:"We used to walk to school every day.", es:"Antes caminábamos a la escuela todos los días."},
+              {en:"I used to play the guitar when I was a kid.", es:"Yo tocaba la guitarra cuando era niño."},
               {en:"They used to visit us every summer.", es:"Ellos solían visitarnos cada verano."}
             ]}
         ]
@@ -1686,14 +1686,14 @@ const GRAMMAR_BANK = {
             options:["have gone","went","have been"], correct:1,
             explain:"Con una fecha específica pasada (“last year”) usamos pasado simple, no presente perfecto.",
             examples:[
-              {en:"I went to Paris last year.", es:"Fui a París el año pasado."},
+              {en:"They moved to Chile in 2018.", es:"Se mudaron a Chile en 2018."},
               {en:"She has visited Paris twice.", es:"Ella ha visitado París dos veces."}
             ]},
           { id:'g-medio-pps-2', micro:'pp-experiencia-sin-fecha', type:'fill', sentence:["I","___","never","tried","sushi","before","."], blankIndex:1,
             bank:["have","did","was"], correct:"have",
             explain:"Sin fecha específica, hablando de experiencia de vida, usamos presente perfecto.",
             examples:[
-              {en:"I have never tried sushi before.", es:"Nunca he probado sushi."},
+              {en:"I have never been to Japan.", es:"Nunca he ido a Japón."},
               {en:"She has already seen that movie.", es:"Ella ya vio esa película."}
             ]},
           { id:'g-medio-pps-3', micro:'pp-experiencia-sin-fecha', type:'choice', prompt:"___ you finish the report yet?",
@@ -1719,21 +1719,21 @@ const GRAMMAR_BANK = {
             options:["since","for","from"], correct:0,
             explain:"Usamos “since” con un punto en el tiempo (un año, una fecha).",
             examples:[
-              {en:"I have lived here since 2015.", es:"Vivo aquí desde 2015."},
+              {en:"He has played the guitar since 2018.", es:"Él toca la guitarra desde 2018."},
               {en:"She has worked here for five years.", es:"Ella trabaja aquí desde hace cinco años."}
             ]},
           { id:'g-medio-sf-2', micro:'since-for-eleccion', type:'fill', sentence:["She","has","studied","English","___","three","years","."], blankIndex:4,
             bank:["for","since","ago"], correct:"for",
             explain:"Usamos “for” con una duración (una cantidad de tiempo).",
             examples:[
-              {en:"She has studied English for three years.", es:"Ella estudia inglés desde hace tres años."},
+              {en:"She has driven this bus for eight years.", es:"Ella ha manejado este bus por ocho años."},
               {en:"He has known her since childhood.", es:"Él la conoce desde la infancia."}
             ]},
           { id:'g-medio-sf-3', micro:'since-for-eleccion', type:'choice', prompt:"We haven't talked ___ Monday.",
             options:["for","since","during"], correct:1,
             explain:"“Monday” es un punto en el tiempo, así que usamos “since”.",
             examples:[
-              {en:"We haven't talked since Monday.", es:"No hemos hablado desde el lunes."},
+              {en:"I haven't eaten since breakfast.", es:"No he comido desde el desayuno."},
               {en:"I haven't seen him for two weeks.", es:"No lo he visto en dos semanas."}
             ]},
           { id:'g-medio-sf-4', micro:'since-for-eleccion', type:'error', wrong:"I've known him since five years.", wrongWord:"since",
@@ -1754,21 +1754,21 @@ const GRAMMAR_BANK = {
             options:["stay","will stay","would stay"], correct:1,
             explain:"Condicional tipo 1: “if” + presente, “will” + verbo base, para algo probable.",
             examples:[
-              {en:"If it rains, we will stay home.", es:"Si llueve, nos quedaremos en casa."},
+              {en:"If you study, you will pass the test.", es:"Si estudias, pasarás el examen."},
               {en:"If I have time, I will call you.", es:"Si tengo tiempo, te llamaré."}
             ]},
           { id:'g-medio-cond12-2', micro:'cond-2-imaginario', type:'fill', sentence:["If","I","won","the","lottery,","I","___","travel","the","world","."], blankIndex:6,
             bank:["would","will","had"], correct:"would",
             explain:"Condicional tipo 2: “if” + pasado, “would” + verbo base, para algo imaginario o poco probable.",
             examples:[
-              {en:"If I won the lottery, I would travel the world.", es:"Si ganara la lotería, viajaría por el mundo."},
+              {en:"If I had more time, I would learn French.", es:"Si tuviera más tiempo, aprendería francés."},
               {en:"If I were you, I would apologize.", es:"Si yo fuera tú, me disculparía."}
             ]},
           { id:'g-medio-cond12-3', micro:'cond-2-imaginario', type:'choice', prompt:"If I ___ you, I would apologize.",
             options:["am","was","were"], correct:2,
             explain:"En condicional tipo 2, con “I/he/she/it” usamos “were” en vez de “was” (más correcto).",
             examples:[
-              {en:"If I were you, I would apologize.", es:"Si yo fuera tú, me disculparía."},
+              {en:"If he were here, he would know what to do.", es:"Si él estuviera aquí, sabría qué hacer."},
               {en:"If she were here, she would help.", es:"Si ella estuviera aquí, ayudaría."}
             ]},
           { id:'g-medio-cond12-4', micro:'cond-2-imaginario', translation:"Si él fuera el gerente, cambiaría el horario.", type:'error', wrong:"If he were the manager, he will change the schedule.", wrongWord:"will",
@@ -1794,14 +1794,14 @@ const GRAMMAR_BANK = {
             bank:["would","will","can"], correct:"would",
             explain:"“Will” cambia a “would” en estilo indirecto.",
             examples:[
-              {en:"He told me he would come to the party.", es:"Él me dijo que vendría a la fiesta."},
+              {en:"She promised she would help me.", es:"Ella prometió que me ayudaría."},
               {en:"She said she would call later.", es:"Ella dijo que llamaría después."}
             ]},
           { id:'g-medio-rep-3', type:'choice', prompt:"She asked me where I ___.",
             options:["live","lived","living"], correct:1,
             explain:"En preguntas indirectas también cambiamos el tiempo verbal a pasado.",
             examples:[
-              {en:"She asked me where I lived.", es:"Ella me preguntó dónde vivía."},
+              {en:"He asked me what I wanted.", es:"Él me preguntó qué quería."},
               {en:"He asked if I was ready.", es:"Él preguntó si yo estaba lista."}
             ]},
           { id:'g-medio-rep-4', type:'error', wrong:"He said that he is busy yesterday.", wrongWord:"is",
@@ -1822,21 +1822,21 @@ const GRAMMAR_BANK = {
             options:["built","was built","is built"], correct:1,
             explain:"Voz pasiva en pasado: “was/were” + participio. La acción ocurrió en el pasado.",
             examples:[
-              {en:"This bridge was built in 1990.", es:"Este puente fue construido en 1990."},
+              {en:"This church was built in 1850.", es:"Esta iglesia fue construida en 1850."},
               {en:"The letter was written yesterday.", es:"La carta fue escrita ayer."}
             ]},
           { id:'g-medio4-pass-2', type:'fill', sentence:["English","___","spoken","all","over","the","world","."], blankIndex:1,
             bank:["is","was","are"], correct:"is",
             explain:"Voz pasiva en presente con sujeto singular: “is” + participio.",
             examples:[
-              {en:"English is spoken all over the world.", es:"El inglés se habla en todo el mundo."},
+              {en:"Rice is grown in many countries.", es:"El arroz se cultiva en muchos países."},
               {en:"This product is made in Mexico.", es:"Este producto se hace en México."}
             ]},
           { id:'g-medio4-pass-3', type:'choice', prompt:"The letters ___ every day.",
             options:["deliver","are delivered","delivered"], correct:1,
             explain:"Con sujeto plural en presente, la voz pasiva usa “are” + participio.",
             examples:[
-              {en:"The letters are delivered every day.", es:"Las cartas se entregan todos los días."},
+              {en:"The shops are cleaned every night.", es:"Las tiendas se limpian todas las noches."},
               {en:"These cars are made in Japan.", es:"Estos carros se fabrican en Japón."}
             ]},
           { id:'g-medio4-pass-4', type:'error', wrong:"The cake was make by my mom.", wrongWord:"make",
@@ -1855,21 +1855,21 @@ const GRAMMAR_BANK = {
             options:["must","should","could"], correct:0,
             explain:"“Must” expresa una obligación fuerte, como una regla o ley.",
             examples:[
-              {en:"You must wear a seatbelt.", es:"Debes usar cinturón de seguridad (es obligatorio)."},
+              {en:"Drivers must stop at a red light.", es:"Los conductores deben detenerse en un semáforo en rojo."},
               {en:"Employees must wash their hands.", es:"Los empleados deben lavarse las manos."}
             ]},
           { id:'g-medio4-mod-2', micro:'obligacion-vs-consejo', type:'choice', prompt:"You ___ see a doctor if you feel sick. It's a good idea.",
             options:["should","must","can"], correct:0,
             explain:"“Should” es un consejo, no una obligación estricta como “must”.",
             examples:[
-              {en:"You should see a doctor.", es:"Deberías ver a un doctor (es un consejo)."},
+              {en:"You should rest if you have a fever.", es:"Deberías descansar si tienes fiebre."},
               {en:"You should drink more water.", es:"Deberías tomar más agua."}
             ]},
           { id:'g-medio4-mod-3', micro:'mustnt-vs-dont-have-to', type:'fill', sentence:["I","___","go","to","work","tomorrow,","it's","a","holiday","."], blankIndex:1,
             bank:["don't have to","must","should"], correct:"don't have to",
             explain:"“Don't have to” significa que no hay obligación, es diferente de “mustn't” (prohibido).",
             examples:[
-              {en:"I don't have to go to work tomorrow.", es:"No tengo que ir a trabajar mañana."},
+              {en:"She doesn't have to wear a tie at work.", es:"Ella no tiene que usar corbata en el trabajo."},
               {en:"You don't have to bring anything, we have everything.", es:"No tienes que traer nada, ya tenemos de todo."}
             ]},
           { id:'g-medio4-mod-4', type:'error', wrong:"You must to be careful.", wrongWord:"to",
@@ -1890,21 +1890,21 @@ const GRAMMAR_BANK = {
             options:["will","am going to","would"], correct:1,
             explain:"Usamos “going to” para planes ya decididos, no “will” (más para decisiones espontáneas).",
             examples:[
-              {en:"I am going to start my own business next year.", es:"Voy a empezar mi propio negocio el próximo año."},
+              {en:"They are going to build a new school.", es:"Van a construir una escuela nueva."},
               {en:"We are going to move to a new city.", es:"Nos vamos a mudar a una nueva ciudad."}
             ]},
           { id:'g-medio5-fut-2', micro:'going-to-evidencia', type:'fill', sentence:["Look","at","those","clouds","It","___","rain","soon","."], blankIndex:5,
             bank:["is going to","will","would"], correct:"is going to",
             explain:"Cuando hay evidencia visible de que algo va a pasar, usamos “going to”, no “will”.",
             examples:[
-              {en:"Look at those clouds. It is going to rain soon.", es:"Mira esas nubes. Va a llover pronto."},
+              {en:"The sky is black. It's going to storm.", es:"El cielo está negro. Va a haber tormenta."},
               {en:"She is going to fall, look at her feet!", es:"Ella se va a caer, ¡mira sus pies!"}
             ]},
           { id:'g-medio5-fut-3', micro:'will-decision-espontanea', type:'choice', prompt:"A: \"The phone is ringing.\" B: \"I ___ get it!\"",
             options:["am going to","will","was going to"], correct:1,
             explain:"Para decisiones espontáneas, tomadas en el momento, usamos “will”.",
             examples:[
-              {en:"I will get it!", es:"¡Yo contesto!"},
+              {en:"I'm cold. I'll close the window.", es:"Tengo frío. Voy a cerrar la ventana."},
               {en:"I will help you with that.", es:"Te ayudaré con eso."}
             ]},
           { id:'g-medio5-fut-4', micro:'will-forma-verbo-base', type:'error', wrong:"I think it will to rain tomorrow.", wrongWord:"to",
@@ -1923,21 +1923,21 @@ const GRAMMAR_BANK = {
             options:["cook","to cook","cooking"], correct:2,
             explain:"“Enjoy” siempre va seguido de gerundio (-ing), nunca de infinitivo.",
             examples:[
-              {en:"She enjoys cooking new recipes.", es:"A ella le gusta cocinar recetas nuevas."},
+              {en:"He enjoys playing chess.", es:"Él disfruta jugar ajedrez."},
               {en:"I enjoy reading before bed.", es:"Me gusta leer antes de dormir."}
             ]},
           { id:'g-medio5-ger-2', type:'fill', sentence:["I","want","___","the","truth","."], blankIndex:2,
             bank:["to know","knowing","know"], correct:"to know",
             explain:"“Want” va seguido de infinitivo con “to”.",
             examples:[
-              {en:"I want to know the truth.", es:"Quiero saber la verdad."},
+              {en:"I want to learn Italian.", es:"Quiero aprender italiano."},
               {en:"They want to travel next year.", es:"Ellos quieren viajar el próximo año."}
             ]},
           { id:'g-medio5-ger-3', type:'choice', prompt:"He decided ___ a new job.",
             options:["looking for","to look for","look for"], correct:1,
             explain:"“Decide” va seguido de infinitivo con “to”.",
             examples:[
-              {en:"He decided to look for a new job.", es:"Él decidió buscar un nuevo trabajo."},
+              {en:"She decided to stay home.", es:"Ella decidió quedarse en casa."},
               {en:"We decided to leave early.", es:"Decidimos salir temprano."}
             ]},
           { id:'g-medio5-ger-4', type:'error', wrong:"I finished to read the book.", wrongWord:"to read",
@@ -1958,21 +1958,21 @@ const GRAMMAR_BANK = {
             options:["which","who","whose"], correct:1,
             explain:"Para personas usamos “who”, no “which”.",
             examples:[
-              {en:"The woman who lives next door is a doctor.", es:"La mujer que vive al lado es doctora."},
+              {en:"The girl who sits next to me is Maria.", es:"La chica que se sienta a mi lado es María."},
               {en:"The man who called you is my uncle.", es:"El hombre que te llamó es mi tío."}
             ]},
           { id:'g-medio6-rel-2', type:'fill', sentence:["This","is","the","book","___","I","told","you","about","."], blankIndex:4,
             bank:["that","who","whose"], correct:"that",
             explain:"“That” puede referirse a cosas; aquí se refiere a “the book”.",
             examples:[
-              {en:"This is the book that I told you about.", es:"Este es el libro del que te hablé."},
+              {en:"This is the song that I love.", es:"Esta es la canción que me encanta."},
               {en:"That's the movie that won the award.", es:"Esa es la película que ganó el premio."}
             ]},
           { id:'g-medio6-rel-3', type:'choice', prompt:"That's the man ___ car was stolen.",
             options:["who","whose","which"], correct:1,
             explain:"“Whose” muestra posesión: el carro de ese hombre.",
             examples:[
-              {en:"That's the man whose car was stolen.", es:"Ese es el hombre cuyo carro fue robado."},
+              {en:"I met a girl whose father is a pilot.", es:"Conocí a una chica cuyo padre es piloto."},
               {en:"She's the teacher whose class I love.", es:"Ella es la maestra cuya clase amo."}
             ]},
           { id:'g-medio6-rel-4', type:'error', wrong:"The house which I grew up was sold.", wrongWord:"which",
@@ -1991,21 +1991,21 @@ const GRAMMAR_BANK = {
             options:["looking for","looking at","looking after"], correct:0,
             explain:"“Look for” significa buscar algo.",
             examples:[
-              {en:"I'm looking for my keys.", es:"Estoy buscando mis llaves."},
+              {en:"He is looking for a job.", es:"Él está buscando trabajo."},
               {en:"She's looking for a new apartment.", es:"Ella está buscando un nuevo apartamento."}
             ]},
           { id:'g-medio6-phr-2', type:'fill', sentence:["Don't","___","now","you're","almost","done","!"], blankIndex:1,
             bank:["give up","give in","give away"], correct:"give up",
             explain:"“Give up” significa rendirse o dejar de intentar.",
             examples:[
-              {en:"Don't give up now, you're almost done!", es:"¡No te rindas ahora, ya casi terminas!"},
+              {en:"She almost gave up, but her teacher helped her.", es:"Casi se rinde, pero su profesora la ayudó."},
               {en:"He never gives up on his goals.", es:"Él nunca se rinde con sus metas."}
             ]},
           { id:'g-medio6-phr-3', type:'choice', prompt:"I need to ___ what time the train leaves.",
             options:["find out","find up","find for"], correct:0,
             explain:"“Find out” significa averiguar o descubrir información.",
             examples:[
-              {en:"I need to find out what time the train leaves.", es:"Necesito averiguar a qué hora sale el tren."},
+              {en:"Let's find out who won the game.", es:"Averigüemos quién ganó el partido."},
               {en:"We found out the news yesterday.", es:"Nos enteramos de la noticia ayer."}
             ]},
           { id:'g-medio6-phr-4', type:'error', wrong:"I will find out this problem tomorrow.", wrongWord:"find out",
@@ -2035,7 +2035,7 @@ const GRAMMAR_BANK = {
             bank:["could","must","is"], correct:"could",
             explain:"“Could” también expresa posibilidad.",
             examples:[
-              {en:"He could be in a meeting right now.", es:"Él podría estar en una reunión ahora."},
+              {en:"That could be the answer.", es:"Esa podría ser la respuesta."},
               {en:"She could be at home.", es:"Ella podría estar en casa."}
             ]},
           { id:'g-medio7-modal-3', translation:"¿Cuál oración expresa una posibilidad, no una obligación?", type:'choice', prompt:"Which sentence expresses a possibility, not an obligation?",
@@ -2068,7 +2068,7 @@ const GRAMMAR_BANK = {
             bank:["many","much","little"], correct:"many",
             explain:"“Friends” es contable, así que usamos “many”.",
             examples:[
-              {en:"We don't have many friends in this city.", es:"No tenemos muchos amigos en esta ciudad."},
+              {en:"She doesn't have many books.", es:"Ella no tiene muchos libros."},
               {en:"He has many hobbies.", es:"Él tiene muchos pasatiempos."}
             ]},
           { id:'g-medio7-quant-3', micro:'little-few-matiz', translation:"¿Cuál oración usa correctamente \"a few\"?", type:'choice', prompt:"Which sentence correctly uses \"a few\"?",
@@ -2089,14 +2089,14 @@ const GRAMMAR_BANK = {
             options:["a few","a little","little"], correct:0,
             explain:"“Seats” se cuenta y todavía quedan algunos: usamos “a few”.",
             examples:[
-              {en:"There are a few seats left, so book now.", es:"Quedan unos pocos asientos libres, así que reserva ya."},
+              {en:"I need a few minutes to think.", es:"Necesito unos minutos para pensar."},
               {en:"A few tickets are still available.", es:"Todavía quedan unos pocos boletos."}
             ]},
           { id:'g-medio7-quant-6', micro:'little-few-matiz', translation:"Muy pocos estudiantes entregaron la tarea a tiempo.", type:'fill', sentence:["Very","___","students","handed","in","the","homework","on","time","."], blankIndex:1,
             bank:["few","little","a little"], correct:"few",
             explain:"“Students” se cuenta y casi nadie la entregó: usamos “few” (sin “a”).",
             examples:[
-              {en:"Very few students handed in the homework on time.", es:"Muy pocos estudiantes entregaron la tarea a tiempo."},
+              {en:"Few people know the truth.", es:"Pocas personas saben la verdad."},
               {en:"Few cities have such clean air.", es:"Pocas ciudades tienen un aire tan limpio."}
             ]},
           { id:'g-medio7-quant-7', micro:'little-few-matiz', translation:"Nos queda un poco de gasolina, así que podemos llegar.", type:'error', wrong:"We have a few gas left, so we can make it.", wrongWord:"a few",
@@ -2135,8 +2135,8 @@ const GRAMMAR_BANK = {
     "explain": "“Who” es el sujeto de la oración (el que hace la acción).",
     "examples": [
      {
-      "en": "Who knocked on the door?",
-      "es": "¿Quién llamó a la puerta?"
+      "en": "Who broke the window?",
+      "es": "¿Quién rompió la ventana?"
      },
      {
       "en": "Who is coming to the party?",
@@ -2168,8 +2168,8 @@ const GRAMMAR_BANK = {
     "explain": "“Whom” es el objeto de la oración (recibe la acción). Aquí “you” ve a alguien, ese alguien es “whom”.",
     "examples": [
      {
-      "en": "Whom did you see at the store?",
-      "es": "¿A quién viste en la tienda?"
+      "en": "Whom did she invite to the wedding?",
+      "es": "¿A quién invitó ella a la boda?"
      },
      {
       "en": "To whom should I send this?",
@@ -2191,8 +2191,8 @@ const GRAMMAR_BANK = {
     "explain": "“I met whom” (yo conocí a quien), es objeto de “met”, por eso es “whom”.",
     "examples": [
      {
-      "en": "That is the man whom I met yesterday.",
-      "es": "Ese es el hombre a quien conocí ayer."
+      "en": "The woman whom I called was busy.",
+      "es": "La mujer a quien llamé estaba ocupada."
      },
      {
       "en": "She is the teacher whom we admire.",
@@ -2239,8 +2239,8 @@ const GRAMMAR_BANK = {
     "explain": "“Affect” es un verbo: influir en algo.",
     "examples": [
      {
-      "en": "The weather affects our mood.",
-      "es": "El clima afecta nuestro estado de ánimo."
+      "en": "Noise affects my sleep.",
+      "es": "El ruido afecta mi sueño."
      },
      {
       "en": "Stress can affect your health.",
@@ -2272,8 +2272,8 @@ const GRAMMAR_BANK = {
     "explain": "“Effect” es un sustantivo: el resultado de algo.",
     "examples": [
      {
-      "en": "The effect of the medicine was fast.",
-      "es": "El efecto del medicamento fue rápido."
+      "en": "The film had a strong effect on me.",
+      "es": "La película tuvo un fuerte efecto en mí."
      },
      {
       "en": "This has a positive effect.",
@@ -2295,8 +2295,8 @@ const GRAMMAR_BANK = {
     "explain": "La expresión fija es “take effect” (entrar en vigencia).",
     "examples": [
      {
-      "en": "The new change will take effect next week.",
-      "es": "El nuevo cambio tendrá efecto la próxima semana."
+      "en": "The medicine takes effect in twenty minutes.",
+      "es": "La medicina hace efecto en veinte minutos."
      },
      {
       "en": "The law takes effect in June.",
@@ -2339,7 +2339,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Tell” va seguido de la persona directamente (tell me).",
               examples:[
-              {en:"Please tell me the truth.", es:"Por favor dime la verdad."},
+              {en:"Tell me where you were.", es:"Dime dónde estabas."},
               {en:"He told me a secret.", es:"Él me contó un secreto."}
             ]},
           { id:'g-medio10-2',
@@ -2350,7 +2350,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Say” no necesita una persona después (say something).",
               examples:[
-              {en:"She didn't say anything.", es:"Ella no dijo nada."},
+              {en:"He didn't say a word.", es:"Él no dijo ni una palabra."},
               {en:"He said hello.", es:"Él dijo hola."}
             ]},
           { id:'g-medio10-3',
@@ -2362,7 +2362,7 @@ const GRAMMAR_BANK = {
             correct:"tell",
             explain:"“Tell” se usa con una persona como objeto directo.",
               examples:[
-              {en:"Can you tell me a story?", es:"¿Puedes contarme una historia?"},
+              {en:"My grandpa tells good jokes.", es:"Mi abuelo cuenta buenos chistes."},
               {en:"She told us the news.", es:"Ella nos contó la noticia."}
             ]},
           { id:'g-medio10-4',
@@ -2390,7 +2390,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Fewer” se usa con cosas contables (books).",
               examples:[
-              {en:"I have fewer books than you.", es:"Tengo menos libros que tú."},
+              {en:"There are fewer cars on Sundays.", es:"Hay menos carros los domingos."},
               {en:"There are fewer students this year.", es:"Hay menos estudiantes este año."}
             ]},
           { id:'g-medio10-6', micro:'fewer-less',
@@ -2401,7 +2401,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Less” se usa con cosas incontables (sugar).",
               examples:[
-              {en:"We should eat less sugar.", es:"Deberíamos comer menos azúcar."},
+              {en:"We should drink less soda.", es:"Deberíamos tomar menos refresco."},
               {en:"I have less time now.", es:"Tengo menos tiempo ahora."}
             ]},
           { id:'g-medio10-7', micro:'fewer-less',
@@ -2429,7 +2429,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Advice” es un sustantivo (el consejo).",
               examples:[
-              {en:"Can you give me some advice?", es:"¿Puedes darme un consejo?"},
+              {en:"I need some advice about my studies.", es:"Necesito un consejo sobre mis estudios."},
               {en:"Her advice was very helpful.", es:"Su consejo fue muy útil."}
             ]},
           { id:'g-medio10-9',
@@ -2551,7 +2551,7 @@ const GRAMMAR_BANK = {
             options:["did she arrive","she arrived","she did arrive"], correct:0,
             explain:"Después de “Not only” al inicio de la frase, el orden se invierte como en una pregunta.",
             examples:[
-              {en:"Not only did she arrive late, but she also forgot the documents.", es:"No solo llegó tarde, sino que también olvidó los documentos."},
+              {en:"Not only did he forget the keys, but he also lost his wallet.", es:"No solo olvidó las llaves, sino que también perdió su cartera."},
               {en:"Not only is he smart, but he's also kind.", es:"No solo es inteligente, sino también amable."}
             ]},
           { id:'g-avz-inv-3', type:'choice', prompt:"Rarely ___ such dedication.",
@@ -2579,21 +2579,21 @@ const GRAMMAR_BANK = {
             options:["therefore","nevertheless","because"], correct:1,
             explain:"“Nevertheless” conecta dos ideas en contraste (sin embargo).",
             examples:[
-              {en:"The results were poor; nevertheless, the team kept working.", es:"Los resultados fueron pobres; sin embargo, el equipo siguió trabajando."},
+              {en:"The road was closed; nevertheless, they arrived on time.", es:"La carretera estaba cerrada; aun así, llegaron a tiempo."},
               {en:"It was expensive; nevertheless, we bought it.", es:"Era caro; sin embargo, lo compramos."}
             ]},
           { id:'g-avz-conn-2', type:'fill', sentence:["He","was","tired;","___","he","finished","the","project","."], blankIndex:3,
             bank:["nonetheless","because","and"], correct:"nonetheless",
             explain:"“Nonetheless” (similar a “nevertheless”) muestra contraste a pesar de algo.",
             examples:[
-              {en:"He was tired; nonetheless, he finished the project.", es:"Estaba cansado; no obstante, terminó el proyecto."},
+              {en:"It was raining; nonetheless, the match continued.", es:"Llovía; aun así, el partido continuó."},
               {en:"She disagreed; nonetheless, she helped.", es:"No estaba de acuerdo; sin embargo, ayudó."}
             ]},
           { id:'g-avz-conn-3', type:'choice', prompt:"___ the delay, the event was a success.",
             options:["Despite","Although","Because"], correct:0,
             explain:"“Despite” va seguido de un sustantivo o gerundio, no de una oración completa con verbo conjugado.",
             examples:[
-              {en:"Despite the delay, the event was a success.", es:"A pesar del retraso, el evento fue un éxito."},
+              {en:"Despite the noise, he fell asleep.", es:"A pesar del ruido, se quedó dormido."},
               {en:"Although it was delayed, the event was a success.", es:"Aunque se retrasó, el evento fue un éxito."}
             ]},
           { id:'g-avz-conn-4', type:'error', wrong:"Despite it was raining, we went out.", wrongWord:"Despite",
@@ -2620,21 +2620,21 @@ const GRAMMAR_BANK = {
             options:["of","for","to"], correct:1,
             explain:"“Responsible for” es la combinación correcta: responsable de algo.",
             examples:[
-              {en:"She is responsible for the entire project.", es:"Ella es responsable de todo el proyecto."},
+              {en:"He is responsible for the final report.", es:"Él es responsable del informe final."},
               {en:"He is in charge of the budget.", es:"Él está a cargo del presupuesto."}
             ]},
           { id:'g-avz-prep2-2', type:'fill', sentence:["This","policy","is","different","___","the","previous","one","."], blankIndex:4,
             bank:["from","of","than"], correct:"from",
             explain:"“Different from” es la forma más neutral y aceptada; “than” es más informal y “of” es incorrecto.",
             examples:[
-              {en:"This policy is different from the previous one.", es:"Esta política es diferente a la anterior."},
+              {en:"My phone is different from yours.", es:"Mi teléfono es diferente al tuyo."},
               {en:"Her approach is different from mine.", es:"Su enfoque es diferente al mío."}
             ]},
           { id:'g-avz-prep2-3', type:'choice', prompt:"He is married ___ a doctor.",
             options:["with","to","for"], correct:1,
             explain:"“Married to” es la combinación fija; “married with” es un error común.",
             examples:[
-              {en:"He is married to a doctor.", es:"Él está casado con una doctora."},
+              {en:"She is married to an engineer.", es:"Ella está casada con un ingeniero."},
               {en:"She got engaged to her partner.", es:"Ella se comprometió con su pareja."}
             ]},
           { id:'g-avz-prep2-4', type:'error', wrong:"I'm interested on this topic.", wrongWord:"on",
@@ -2655,21 +2655,21 @@ const GRAMMAR_BANK = {
             options:["who standing","standing","stood"], correct:1,
             explain:"Una cláusula relativa reducida usa el gerundio (“standing”) en vez de “who is standing”.",
             examples:[
-              {en:"The man standing over there is my uncle.", es:"El hombre que está parado allá es mi tío."},
+              {en:"The girl sitting by the window is my cousin.", es:"La chica sentada junto a la ventana es mi prima."},
               {en:"The woman speaking now is the director.", es:"La mujer que está hablando ahora es la directora."}
             ]},
           { id:'g-avz-redrel-2', type:'fill', sentence:["The","report","___","by","the","team","was","well","received","."], blankIndex:2,
             bank:["written","wrote","writes"], correct:"written",
             explain:"Cláusula relativa reducida con voz pasiva: “written by” en vez de “which was written by”.",
             examples:[
-              {en:"The report written by the team was well received.", es:"El informe escrito por el equipo fue bien recibido."},
+              {en:"The email sent yesterday was very clear.", es:"El correo enviado ayer fue muy claro."},
               {en:"The house built in 1990 is still standing.", es:"La casa construida en 1990 sigue en pie."}
             ]},
           { id:'g-avz-redrel-3', type:'choice', prompt:"Anyone ___ has questions can email me.",
             options:["who","which","whom"], correct:0,
             explain:"Para personas usamos “who”, no “which” (que es para cosas).",
             examples:[
-              {en:"Anyone who has questions can email me.", es:"Cualquiera que tenga preguntas puede escribirme."},
+              {en:"Anyone who wants to join can sign up here.", es:"Quien quiera unirse puede inscribirse aquí."},
               {en:"The book which I read was great.", es:"El libro que leí fue genial."}
             ]},
           { id:'g-avz-redrel-4', type:'error', wrong:"The person which called you is my boss.", wrongWord:"which",
@@ -2695,7 +2695,7 @@ const GRAMMAR_BANK = {
             bank:["entails","has","gets"], correct:"entails",
             explain:"“Entails” (implica) es más preciso y formal que “has” en este contexto; “gets” es demasiado informal.",
             examples:[
-              {en:"The new policy entails significant changes.", es:"La nueva política implica cambios significativos."},
+              {en:"This job entails a lot of travel.", es:"Este trabajo implica muchos viajes."},
               {en:"This decision entails some risk.", es:"Esta decisión implica algo de riesgo."}
             ]},
           { id:'g-avz-formal-3', type:'choice', prompt:"¿Cuál es gramaticalmente posible pero suena poco natural para un nativo?",
@@ -2723,21 +2723,21 @@ const GRAMMAR_BANK = {
             options:["have","had","will have"], correct:1,
             explain:"“Wish” + pasado simple expresa un deseo sobre algo que no es cierto ahora.",
             examples:[
-              {en:"I wish I had more time to travel.", es:"Ojalá tuviera más tiempo para viajar."},
+              {en:"I wish I had a bigger kitchen.", es:"Ojalá tuviera una cocina más grande."},
               {en:"She wishes she lived closer to her family.", es:"Ella desearía vivir más cerca de su familia."}
             ]},
           { id:'g-avz4-wish-2', type:'choice', prompt:"If only she ___ arrived earlier!",
             options:["had","has","have"], correct:0,
             explain:"“If only” + pasado perfecto expresa un lamento sobre el pasado.",
             examples:[
-              {en:"If only she had arrived earlier!", es:"¡Ojalá hubiera llegado más temprano!"},
+              {en:"If only we had left earlier!", es:"¡Ojalá hubiéramos salido más temprano!"},
               {en:"If only I had known about the meeting.", es:"Ojalá hubiera sabido sobre la reunión."}
             ]},
           { id:'g-avz4-wish-3', type:'fill', sentence:["I","wish","I","___","how","to","swim","."], blankIndex:3,
             bank:["knew","know","will know"], correct:"knew",
             explain:"“Wish” + pasado simple para un deseo sobre el presente.",
             examples:[
-              {en:"I wish I knew how to swim.", es:"Ojalá supiera nadar."},
+              {en:"I wish I lived near the sea.", es:"Ojalá viviera cerca del mar."},
               {en:"He wishes he spoke French.", es:"Él desearía hablar francés."}
             ]},
           { id:'g-avz4-wish-4', type:'error', wrong:"I wish I am taller.", wrongWord:"am",
@@ -2756,21 +2756,21 @@ const GRAMMAR_BANK = {
             options:["would be","would have been","will be"], correct:0,
             explain:"Condicional mixto: condición en el pasado (“had studied”) con resultado en el presente (“would be”).",
             examples:[
-              {en:"If I had studied medicine, I would be a doctor now.", es:"Si hubiera estudiado medicina, ahora sería doctor."},
+              {en:"If he had saved money, he would be on vacation now.", es:"Si hubiera ahorrado dinero, estaría de vacaciones ahora."},
               {en:"If she had taken that job, she would live in Madrid now.", es:"Si hubiera tomado ese trabajo, ahora viviría en Madrid."}
             ]},
           { id:'g-avz4-mix-2', micro:'cond-mixto', type:'choice', prompt:"If she weren't so busy, she ___ to the party last night.",
             options:["would have gone","would go","will go"], correct:0,
             explain:"Condicional mixto: condición en el presente (“weren't busy”) con resultado en el pasado (“would have gone”).",
             examples:[
-              {en:"If she weren't so busy, she would have gone to the party last night.", es:"Si no estuviera tan ocupada, habría ido a la fiesta anoche."},
+              {en:"If I weren't so tired, I would have joined you yesterday.", es:"Si no estuviera tan cansado, me habría unido a ustedes ayer."},
               {en:"If he weren't so shy, he would have said something.", es:"Si no fuera tan tímido, habría dicho algo."}
             ]},
           { id:'g-avz4-mix-3', micro:'cond-mixto', type:'fill', sentence:["If","I","were","you,","I","___","have","accepted","the","offer","."], blankIndex:5,
             bank:["would","will","had"], correct:"would",
             explain:"“Would have” + participio expresa el resultado hipotético en el pasado.",
             examples:[
-              {en:"If I were you, I would have accepted the offer.", es:"Si yo fuera tú, habría aceptado la oferta."},
+              {en:"If I were her, I would have said yes.", es:"Si yo fuera ella, habría dicho que sí."},
               {en:"If I were rich, I would have bought that house.", es:"Si fuera rico, habría comprado esa casa."}
             ]},
           { id:'g-avz4-mix-4', micro:'cond-mixto', type:'error', wrong:"If I was rich, I would have bought that house years ago.", wrongWord:"was",
@@ -2791,21 +2791,21 @@ const GRAMMAR_BANK = {
             options:["is","be","was"], correct:1,
             explain:"En subjuntivo formal después de “it is essential that”, el verbo va en forma base: “be”, no “is”.",
             examples:[
-              {en:"It is essential that she be present at the meeting.", es:"Es esencial que ella esté presente en la reunión."},
+              {en:"It is necessary that the door be locked at night.", es:"Es necesario que la puerta esté cerrada con llave de noche."},
               {en:"It is essential that everyone be informed.", es:"Es esencial que todos estén informados."}
             ]},
           { id:'g-avz5-subj-2', type:'fill', sentence:["The","committee","recommended","that","he","___","the","proposal","."], blankIndex:5,
             bank:["reconsider","reconsiders","reconsidered"], correct:"reconsider",
             explain:"Después de verbos como “recommend that”, el subjuntivo usa la forma base del verbo.",
             examples:[
-              {en:"The committee recommended that he reconsider the proposal.", es:"El comité recomendó que él reconsiderara la propuesta."},
+              {en:"The doctor suggested that she rest for a week.", es:"El doctor sugirió que ella descansara una semana."},
               {en:"They insisted that she attend the ceremony.", es:"Insistieron en que ella asistiera a la ceremonia."}
             ]},
           { id:'g-avz5-subj-3', type:'choice', prompt:"It's important that everyone ___ on time.",
             options:["arrives","arrive","arrived"], correct:1,
             explain:"El subjuntivo formal no lleva “-s” en tercera persona: “arrive”, no “arrives”.",
             examples:[
-              {en:"It's important that everyone arrive on time.", es:"Es importante que todos lleguen a tiempo."},
+              {en:"It's crucial that every student submit the form.", es:"Es crucial que cada estudiante entregue el formulario."},
               {en:"It's vital that he understand the risks.", es:"Es vital que él entienda los riesgos."}
             ]},
           { id:'g-avz5-subj-4', type:'error', wrong:"It is vital that he attends the ceremony tomorrow.", wrongWord:"attends",
@@ -2824,21 +2824,21 @@ const GRAMMAR_BANK = {
             options:["do","make","have"], correct:1,
             explain:"“Make a decision” es la colocación correcta; “do” no se usa con “decision”.",
             examples:[
-              {en:"I need to make a decision by Friday.", es:"Necesito tomar una decisión para el viernes."},
+              {en:"I need to make an appointment with the dentist.", es:"Necesito hacer una cita con el dentista."},
               {en:"We made the right decision.", es:"Tomamos la decisión correcta."}
             ]},
           { id:'g-avz5-coll-2', type:'fill', sentence:["She","always","___","her","homework","before","dinner","."], blankIndex:2,
             bank:["does","makes","has"], correct:"does",
             explain:"“Do homework” es la colocación fija en inglés, aunque en español digamos “hacer la tarea”.",
             examples:[
-              {en:"She always does her homework before dinner.", es:"Ella siempre hace su tarea antes de cenar."},
+              {en:"My brother does exercise every morning.", es:"Mi hermano hace ejercicio todas las mañanas."},
               {en:"He does the dishes every night.", es:"Él lava los platos cada noche."}
             ]},
           { id:'g-avz5-coll-3', type:'choice', prompt:"They ___ a huge mistake by ignoring the warning.",
             options:["did","made","had"], correct:1,
             explain:"“Make a mistake” es la colocación correcta, no “do a mistake”.",
             examples:[
-              {en:"They made a huge mistake by ignoring the warning.", es:"Cometieron un gran error al ignorar la advertencia."},
+              {en:"He made a promise to his mother.", es:"Él le hizo una promesa a su mamá."},
               {en:"I made a mistake in my report.", es:"Cometí un error en mi informe."}
             ]},
           { id:'g-avz5-coll-4', type:'error', wrong:"He does a lot of progress in his English.", wrongWord:"does",
@@ -2859,21 +2859,21 @@ const GRAMMAR_BANK = {
             options:["was","is","has been"], correct:0,
             explain:"En discurso indirecto, el presente simple del original (“I am tired”) retrocede a pasado simple: “was”.",
             examples:[
-              {en:"She said she was tired the day before.", es:"Ella dijo que había estado cansada el día anterior."},
+              {en:"My boss said the office was closed that day.", es:"Mi jefe dijo que la oficina estaba cerrada ese día."},
               {en:"He said he was busy that week.", es:"Él dijo que estaba ocupado esa semana."}
             ]},
           { id:'g-avz6-rep-2', type:'fill', sentence:["He","told","me","he","___","finished","the","project","already","."], blankIndex:4,
             bank:["had","has","have"], correct:"had",
             explain:"El presente perfecto original (“I have finished”) retrocede a pasado perfecto (“had finished”) en discurso indirecto.",
             examples:[
-              {en:"He told me he had finished the project already.", es:"Él me dijo que ya había terminado el proyecto."},
+              {en:"She told me she had already eaten.", es:"Ella me dijo que ya había comido."},
               {en:"She said she had never seen that movie.", es:"Ella dijo que nunca había visto esa película."}
             ]},
           { id:'g-avz6-rep-3', type:'choice', prompt:"She asked me if I ___ come to the party the following week.",
             options:["would","will","can"], correct:0,
             explain:"“Will” retrocede a “would” cuando reportamos lo que alguien dijo en el pasado.",
             examples:[
-              {en:"She asked me if I would come to the party.", es:"Ella me preguntó si yo iría a la fiesta."},
+              {en:"He asked me if I would help him move.", es:"Él me preguntó si lo ayudaría con la mudanza."},
               {en:"He asked if she would help him.", es:"Él preguntó si ella lo ayudaría."}
             ]},
           { id:'g-avz6-rep-4', type:'error', wrong:"He said that he will call me later that day.", wrongWord:"will",
@@ -2892,21 +2892,21 @@ const GRAMMAR_BANK = {
             options:["arguably","argue","argument"], correct:0,
             explain:"“Arguably” es un adverbio que suaviza una afirmación fuerte: “se podría argumentar que”.",
             examples:[
-              {en:"This is arguably the best decision the company has ever made.", es:"Este es posiblemente el mejor decisión que la empresa ha tomado."},
+              {en:"Arguably, the second book is better than the first.", es:"Podría decirse que el segundo libro es mejor que el primero."},
               {en:"She is arguably the most talented player on the team.", es:"Ella es posiblemente la jugadora más talentosa del equipo."}
             ]},
           { id:'g-avz6-hedge-2', type:'fill', sentence:["Prices","___","to","rise","during","the","holiday","season","."], blankIndex:1,
             bank:["tend","tends","tended"], correct:"tend",
             explain:"“Prices” es plural, así que el verbo va sin “-s”: “tend”.",
             examples:[
-              {en:"Prices tend to rise during the holiday season.", es:"Los precios tienden a subir durante la temporada navideña."},
+              {en:"Cats tend to sleep during the day.", es:"Los gatos suelen dormir durante el día."},
               {en:"Sales tend to slow down in summer.", es:"Las ventas tienden a bajar en verano."}
             ]},
           { id:'g-avz6-hedge-3', type:'choice', prompt:"Given the current trend, the market ___ recover soon.",
             options:["is likely to","is like to","likely is"], correct:0,
             explain:"“Be likely to” es la estructura correcta para expresar probabilidad.",
             examples:[
-              {en:"The market is likely to recover soon.", es:"Es probable que el mercado se recupere pronto."},
+              {en:"She is likely to win the prize.", es:"Es probable que ella gane el premio."},
               {en:"It is likely to rain later.", es:"Es probable que llueva más tarde."}
             ]},
           { id:'g-avz6-hedge-4', type:'error', wrong:"It's arguable the best restaurant in town.", wrongWord:"arguable",
@@ -2936,7 +2936,7 @@ const GRAMMAR_BANK = {
             bank:["interested","interesting","interest"], correct:"interested",
             explain:"Para describir cómo se siente una persona, usamos “-ed”: “interested”.",
             examples:[
-              {en:"I am very interested in this topic.", es:"Estoy muy interesado en este tema."},
+              {en:"He is very interested in history.", es:"Él está muy interesado en la historia."},
               {en:"She is interested in art.", es:"Ella está interesada en el arte."}
             ]},
           { id:'g-avanzado7-edng-3', translation:"¿Cuál oración describe correctamente una noticia que sorprende a la gente?", type:'choice', prompt:"Which sentence correctly describes news that surprises people?",
@@ -2969,7 +2969,7 @@ const GRAMMAR_BANK = {
             bank:["that","which","what"], correct:"that",
             explain:"En esta estructura enfática usamos “that” para introducir la cláusula.",
             examples:[
-              {en:"It is the lack of time that causes the problem.", es:"Es la falta de tiempo lo que causa el problema."},
+              {en:"It was my sister that called me.", es:"Fue mi hermana la que me llamó."},
               {en:"It is honesty that matters most.", es:"Es la honestidad lo que más importa."}
             ]},
           { id:'g-avanzado7-cleft-3', translation:"¿Cuál oración enfatiza correctamente el lugar donde ocurrió algo?", type:'choice', prompt:"Which sentence correctly emphasizes where something happened?",
@@ -3008,8 +3008,8 @@ const GRAMMAR_BANK = {
     "explain": "“Quiet” significa silencioso, tranquilo.",
     "examples": [
      {
-      "en": "Please be quiet in the library.",
-      "es": "Por favor, guarda silencio en la biblioteca."
+      "en": "The street is quiet at night.",
+      "es": "La calle está tranquila de noche."
      },
      {
       "en": "The room was very quiet.",
@@ -3039,8 +3039,8 @@ const GRAMMAR_BANK = {
     "explain": "“Quite” significa bastante, un adverbio de grado.",
     "examples": [
      {
-      "en": "I am quite tired today.",
-      "es": "Estoy bastante cansado hoy."
+      "en": "The film was quite good.",
+      "es": "La película estuvo bastante bien."
      },
      {
       "en": "It's quite cold outside.",
@@ -3062,8 +3062,8 @@ const GRAMMAR_BANK = {
     "explain": "“Quit” es el verbo dejar/renunciar (pasado y presente tienen la misma forma).",
     "examples": [
      {
-      "en": "He quit his job last month.",
-      "es": "Él renunció a su trabajo el mes pasado."
+      "en": "She quit her job to travel.",
+      "es": "Ella dejó su trabajo para viajar."
      },
      {
       "en": "She wants to quit smoking.",
@@ -3110,8 +3110,8 @@ const GRAMMAR_BANK = {
     "explain": "“Farther” se usa para distancia física.",
     "examples": [
      {
-      "en": "The village is farther than the city.",
-      "es": "El pueblo está más lejos que la ciudad."
+      "en": "My house is farther from the school than yours.",
+      "es": "Mi casa está más lejos de la escuela que la tuya."
      },
      {
       "en": "We walked farther than planned.",
@@ -3142,8 +3142,8 @@ const GRAMMAR_BANK = {
     "explain": "“Further” se usa para ideas abstractas, como más información.",
     "examples": [
      {
-      "en": "We need further information before deciding.",
-      "es": "Necesitamos más información antes de decidir."
+      "en": "Do you have any further questions?",
+      "es": "¿Tienes más preguntas?"
      },
      {
       "en": "Let's discuss this further.",
@@ -3165,8 +3165,8 @@ const GRAMMAR_BANK = {
     "explain": "Cuando se habla de distancia real (avanzar en el camino), se prefiere “farther”.",
     "examples": [
      {
-      "en": "We cannot go any farther without a map.",
-      "es": "No podemos avanzar más lejos sin un mapa."
+      "en": "I can't run any farther.",
+      "es": "No puedo correr más lejos."
      },
      {
       "en": "How much farther is the beach?",
@@ -3209,7 +3209,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Lose” es un verbo: perder algo.",
               examples:[
-              {en:"Don't lose your passport.", es:"No pierdas tu pasaporte."},
+              {en:"Be careful not to lose your keys.", es:"Ten cuidado de no perder tus llaves."},
               {en:"He hates to lose.", es:"Él odia perder."}
             ]},
           { id:'g-avanzado10-2',
@@ -3232,7 +3232,7 @@ const GRAMMAR_BANK = {
             correct:"lose",
             explain:"“Lose” es el verbo perder.",
               examples:[
-              {en:"I don't want to lose the game.", es:"No quiero perder el juego."},
+              {en:"Our team could lose the final.", es:"Nuestro equipo podría perder la final."},
               {en:"We can't afford to lose this client.", es:"No podemos darnos el lujo de perder a este cliente."}
             ]},
           { id:'g-avanzado10-4',
@@ -3260,7 +3260,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Beside” significa “al lado de”.",
               examples:[
-              {en:"She sat beside me.", es:"Ella se sentó a mi lado."},
+              {en:"He parked his car beside mine.", es:"Él estacionó su carro al lado del mío."},
               {en:"The dog sleeps beside the bed.", es:"El perro duerme al lado de la cama."}
             ]},
           { id:'g-avanzado10-6',
@@ -3299,7 +3299,7 @@ const GRAMMAR_BANK = {
             correct:0,
             explain:"“Lie” (lie/lay/lain) significa recostarse uno mismo.",
               examples:[
-              {en:"I need to lie down.", es:"Necesito recostarme."},
+              {en:"The doctor told me to lie down.", es:"El doctor me dijo que me acostara."},
               {en:"He lay down and rested.", es:"Él se recostó y descansó."}
             ]},
           { id:'g-avanzado10-9',
@@ -10101,7 +10101,7 @@ GRAMMAR_BANK.principiante.push([
         correct: "These",
         explain: "“Shoes” es plural (varios zapatos), así que usamos “these”, no “this”.",
         examples: [
-          { en: "These are my shoes.", es: "Estos son mis zapatos." },
+          { en: "These are my glasses.", es: "Estos son mis lentes." },
           { en: "This is my shoe.", es: "Este es mi zapato." }
         ]
       },
@@ -10160,7 +10160,7 @@ GRAMMAR_BANK.principiante.push([
         correct: "Do",
         explain: "Con “you” siempre usamos “do”, nunca “does”.",
         examples: [
-          { en: "Do you like tea?", es: "¿Te gusta el té?" },
+          { en: "Do you speak English?", es: "¿Hablas inglés?" },
           { en: "Does he like tea?", es: "¿Le gusta el té a él?" }
         ]
       },
@@ -10215,7 +10215,7 @@ GRAMMAR_BANK.principiante.push([
         correct: "Does",
         explain: "“Your teacher” es una sola persona (como “he/she”), así que usamos “does”.",
         examples: [
-          { en: "Does your teacher speak Spanish?", es: "¿Tu profesor habla español?" },
+          { en: "Does your brother play soccer?", es: "¿Tu hermano juega fútbol?" },
           { en: "Does the doctor speak English?", es: "¿El doctor habla inglés?" }
         ]
       }
@@ -10250,7 +10250,7 @@ GRAMMAR_BANK.facil.push([
         correct: "any",
         explain: "En preguntas normalmente usamos “any”.",
         examples: [
-          { en: "Is there any milk in the fridge?", es: "¿Hay leche en el refrigerador?" },
+          { en: "Is there any juice in the bottle?", es: "¿Hay jugo en la botella?" },
           { en: "I have some questions.", es: "Tengo algunas preguntas." }
         ]
       },
@@ -10309,7 +10309,7 @@ GRAMMAR_BANK.facil.push([
         correct: "much",
         explain: "“Time” no se puede contar uno por uno, así que usamos “much”.",
         examples: [
-          { en: "I don't have much time.", es: "No tengo mucho tiempo." },
+          { en: "She doesn't have much money.", es: "Ella no tiene mucho dinero." },
           { en: "I have many friends.", es: "Tengo muchos amigos." }
         ]
       },
@@ -10371,7 +10371,7 @@ GRAMMAR_BANK.medio.push([
         correct: "currently",
         explain: "Para decir “actualmente / en este momento” se usa “currently”.",
         examples: [
-          { en: "I currently live in Spain.", es: "Actualmente vivo en España." },
+          { en: "She currently works from home.", es: "Actualmente ella trabaja desde casa." },
           { en: "Actually, I disagree.", es: "En realidad, no estoy de acuerdo." }
         ]
       },
@@ -10430,7 +10430,7 @@ GRAMMAR_BANK.medio.push([
         correct: "Despite",
         explain: "“Despite” + verbo en “-ing” (being) es la forma correcta aquí.",
         examples: [
-          { en: "Despite being tired, she finished the race.", es: "A pesar de estar cansada, terminó la carrera." },
+          { en: "Despite the cold, we went swimming.", es: "A pesar del frío, fuimos a nadar." },
           { en: "Although she was tired, she finished the race.", es: "Aunque estaba cansada, terminó la carrera." }
         ]
       },
@@ -10492,7 +10492,7 @@ GRAMMAR_BANK.avanzado.push([
         correct: "whom",
         explain: "Después de una preposición (“to”) siempre se usa “whom”, nunca “who”.",
         examples: [
-          { en: "To whom did you give the letter?", es: "¿A quién le diste la carta?" },
+          { en: "With whom did you travel?", es: "¿Con quién viajaste?" },
           { en: "Who gave you the letter?", es: "¿Quién te dio la carta?" }
         ]
       },
@@ -10551,7 +10551,7 @@ GRAMMAR_BANK.avanzado.push([
         correct: "Even though",
         explain: "Como sigue una oración completa (“she was nervous”, con sujeto y verbo), se necesita “even though”, no “despite” ni “in spite of”.",
         examples: [
-          { en: "Even though she was nervous, she gave a great speech.", es: "Aunque estaba nerviosa, dio un gran discurso." },
+          { en: "Even though it was late, we kept talking.", es: "Aunque era tarde, seguimos hablando." },
           { en: "Despite her nerves, she gave a great speech.", es: "A pesar de sus nervios, dio un gran discurso." }
         ]
       },
@@ -11466,8 +11466,8 @@ GRAMMAR_BANK.principiante.push(
         "explain": "Con \"I\" siempre usamos \"have\", nunca \"has\".",
         "examples": [
           {
-            "en": "I have a dog.",
-            "es": "Tengo un perro."
+            "en": "You have a nice bag.",
+            "es": "Tienes una bonita mochila."
           },
           {
             "en": "We have two cats.",
@@ -11519,8 +11519,8 @@ GRAMMAR_BANK.principiante.push(
         "explain": "Con \"they\" (igual que con I/you/we) usamos \"have\".",
         "examples": [
           {
-            "en": "They have a big house.",
-            "es": "Ellos tienen una casa grande."
+            "en": "You have a new phone.",
+            "es": "Ustedes tienen un teléfono nuevo."
           },
           {
             "en": "We have a small car.",
@@ -11562,8 +11562,8 @@ GRAMMAR_BANK.principiante.push(
         "explain": "Con \"it\" (o cualquier cosa/animal en singular) usamos \"has\", no \"have\".",
         "examples": [
           {
-            "en": "The dog has a red collar.",
-            "es": "El perro tiene un collar rojo."
+            "en": "My sister has a new phone.",
+            "es": "Mi hermana tiene un teléfono nuevo."
           },
           {
             "en": "The house has a garden.",
@@ -11595,8 +11595,8 @@ GRAMMAR_BANK.facil.push(
         "explain": "\"Went\" es el pasado irregular de \"go\".",
         "examples": [
           {
-            "en": "Yesterday I went to the park.",
-            "es": "Ayer fui al parque."
+            "en": "Last week we went to the cinema.",
+            "es": "La semana pasada fuimos al cine."
           },
           {
             "en": "She went to school.",
@@ -11627,8 +11627,8 @@ GRAMMAR_BANK.facil.push(
         "explain": "\"Ate\" es el pasado irregular de \"eat\".",
         "examples": [
           {
-            "en": "I ate an apple this morning.",
-            "es": "Comí una manzana esta mañana."
+            "en": "He ate rice for lunch.",
+            "es": "Él comió arroz en el almuerzo."
           },
           {
             "en": "We ate pizza last night.",
@@ -11650,8 +11650,8 @@ GRAMMAR_BANK.facil.push(
         "explain": "Después de \"did\", el verbo va en forma base: \"see\", no \"saw\".",
         "examples": [
           {
-            "en": "What did you see at the store?",
-            "es": "¿Qué viste en la tienda?"
+            "en": "Did you see my keys?",
+            "es": "¿Viste mis llaves?"
           },
           {
             "en": "I saw my friend yesterday.",
@@ -11701,8 +11701,8 @@ GRAMMAR_BANK.facil.push(
         "explain": "\"Had\" es el pasado irregular de \"have\".",
         "examples": [
           {
-            "en": "They had a great party.",
-            "es": "Ellos tuvieron una gran fiesta."
+            "en": "She had a headache yesterday.",
+            "es": "Ella tuvo dolor de cabeza ayer."
           },
           {
             "en": "We had a good time.",
@@ -11733,8 +11733,8 @@ GRAMMAR_BANK.medio.push(
         "explain": "Frase afirmativa con \"like\" (presente simple) pide un question tag negativo con \"don't\".",
         "examples": [
           {
-            "en": "You like coffee, don't you?",
-            "es": "Te gusta el café, ¿verdad?"
+            "en": "You speak French, don't you?",
+            "es": "Hablas francés, ¿verdad?"
           },
           {
             "en": "They live here, don't they?",
@@ -11763,8 +11763,8 @@ GRAMMAR_BANK.medio.push(
         "explain": "Con \"is\" en la frase, el tag usa \"isn't\".",
         "examples": [
           {
-            "en": "She is tired, isn't she?",
-            "es": "Ella está cansada, ¿verdad?"
+            "en": "She works here, doesn't she?",
+            "es": "Ella trabaja aquí, ¿verdad?"
           },
           {
             "en": "He is busy, isn't he?",
@@ -11785,8 +11785,8 @@ GRAMMAR_BANK.medio.push(
         "explain": "Frase negativa (\"haven't\") pide un question tag afirmativo: \"have you\".",
         "examples": [
           {
-            "en": "You haven't finished yet, have you?",
-            "es": "No has terminado todavía, ¿verdad?"
+            "en": "She hasn't called, has she?",
+            "es": "Ella no ha llamado, ¿verdad?"
           },
           {
             "en": "They haven't left, have they?",
@@ -11826,8 +11826,8 @@ GRAMMAR_BANK.medio.push(
         "explain": "Frase negativa (\"don't live\") pide un question tag afirmativo: \"do they\".",
         "examples": [
           {
-            "en": "They don't live here, do they?",
-            "es": "Ellos no viven aquí, ¿verdad?"
+            "en": "He doesn't like fish, does he?",
+            "es": "No le gusta el pescado, ¿verdad?"
           },
           {
             "en": "You don't smoke, do you?",
@@ -11858,8 +11858,8 @@ GRAMMAR_BANK.avanzado.push(
         "explain": "Modal + voz pasiva: \"should be\" + participio.",
         "examples": [
           {
-            "en": "The report should be finished by Friday.",
-            "es": "El informe debería estar terminado para el viernes."
+            "en": "The room should be cleaned every day.",
+            "es": "La habitación debería limpiarse todos los días."
           },
           {
             "en": "The decision must be made today.",
@@ -11890,8 +11890,8 @@ GRAMMAR_BANK.avanzado.push(
         "explain": "\"Must have been\" + participio expresa una suposición sobre algo pasado.",
         "examples": [
           {
-            "en": "The documents must have been sent already.",
-            "es": "Los documentos deben haber sido enviados ya."
+            "en": "The package must have been delivered by now.",
+            "es": "El paquete ya debe haber sido entregado."
           },
           {
             "en": "The email must have been deleted by mistake.",
@@ -11912,8 +11912,8 @@ GRAMMAR_BANK.avanzado.push(
         "explain": "\"Should be\" + participio es la forma pasiva con modal para una recomendación fuerte.",
         "examples": [
           {
-            "en": "This issue should be addressed immediately.",
-            "es": "Este problema debería abordarse de inmediato."
+            "en": "These errors should be fixed today.",
+            "es": "Estos errores deberían corregirse hoy."
           },
           {
             "en": "The policy should be reviewed annually.",
@@ -11965,8 +11965,8 @@ GRAMMAR_BANK.avanzado.push(
         "explain": "\"Might have been\" + participio expresa una posibilidad sobre algo pasado.",
         "examples": [
           {
-            "en": "The results might have been affected by the weather.",
-            "es": "Los resultados podrían haber sido afectados por el clima."
+            "en": "The flight might have been cancelled because of the storm.",
+            "es": "El vuelo podría haberse cancelado por la tormenta."
           },
           {
             "en": "The delay might have been caused by traffic.",
@@ -13270,7 +13270,7 @@ GRAMMAR_BANK.principiante.push(
             options:["am","is","are"], correct:0,
             explain:"Con \u201cI\u201d siempre se usa \u201cam\u201d.",
             examples:[
-              {en:"I am a teacher.", es:"Yo soy profesor."},
+              {en:"I am a student.", es:"Soy estudiante."},
               {en:"I am happy.", es:"Yo estoy feliz."}
             ]},
           { id:'g-principiante-m200-tobe-2', micro:'tobe-am-is-are', translation:"Él es mi hermano.", type:'choice', prompt:"He ___ my brother.",
@@ -13278,20 +13278,20 @@ GRAMMAR_BANK.principiante.push(
             explain:"Con \u201che / she / it\u201d se usa \u201cis\u201d.",
             examples:[
               {en:"She is my sister.", es:"Ella es mi hermana."},
-              {en:"He is my brother.", es:"Él es mi hermano."}
+              {en:"He is a good driver.", es:"Él es buen conductor."}
             ]},
           { id:'g-principiante-m200-tobe-3', micro:'tobe-am-is-are', translation:"Ellos son mis amigos.", type:'choice', prompt:"They ___ my friends.",
             options:["are","is","am"], correct:0,
             explain:"Con \u201cyou / we / they\u201d se usa \u201care\u201d.",
             examples:[
-              {en:"They are my friends.", es:"Ellos son mis amigos."},
+              {en:"They are very kind.", es:"Ellos son muy amables."},
               {en:"We are neighbors.", es:"Somos vecinos."}
             ]},
           { id:'g-principiante-m200-tobe-4', micro:'tobe-am-is-are', translation:"Nosotros somos doctores.", type:'fill', sentence:["We","___","doctors","."], blankIndex:1,
             bank:["are","is","am"], correct:"are",
             explain:"Con \u201cwe\u201d se usa \u201care\u201d.",
             examples:[
-              {en:"We are doctors.", es:"Nosotros somos doctores."},
+              {en:"We are students.", es:"Somos estudiantes."},
               {en:"We are ready.", es:"Estamos listos."}
             ]}
         ]},
@@ -13301,28 +13301,28 @@ GRAMMAR_BANK.principiante.push(
             options:["was","were","am"], correct:0,
             explain:"Con \u201cI / he / she / it\u201d en pasado se usa \u201cwas\u201d.",
             examples:[
-              {en:"I was tired yesterday.", es:"Yo estaba cansado ayer."},
+              {en:"She was sick last week.", es:"Ella estuvo enferma la semana pasada."},
               {en:"He was at home.", es:"Él estaba en casa."}
             ]},
           { id:'g-principiante-m200-tobepast-2', translation:"Tú fuiste muy amable.", type:'choice', prompt:"You ___ very kind.",
             options:["were","was","are"], correct:0,
             explain:"Con \u201cyou / we / they\u201d en pasado se usa \u201cwere\u201d.",
             examples:[
-              {en:"You were very kind.", es:"Tú fuiste muy amable."},
+              {en:"We were late yesterday.", es:"Ayer llegamos tarde."},
               {en:"You were right.", es:"Tú tenías razón."}
             ]},
           { id:'g-principiante-m200-tobepast-3', translation:"Hacía frío anoche.", type:'choice', prompt:"It ___ cold last night.",
             options:["was","were","is"], correct:0,
             explain:"Con \u201cit\u201d en pasado se usa \u201cwas\u201d.",
             examples:[
-              {en:"It was cold last night.", es:"Hacía frío anoche."},
+              {en:"The movie was long.", es:"La película fue larga."},
               {en:"It was a good day.", es:"Fue un buen día."}
             ]},
           { id:'g-principiante-m200-tobepast-4', translation:"Ellos estaban en la escuela.", type:'fill', sentence:["They","___","at","school","."], blankIndex:1,
             bank:["were","was","are"], correct:"were",
             explain:"Con \u201cthey\u201d en pasado se usa \u201cwere\u201d.",
             examples:[
-              {en:"They were at school.", es:"Ellos estaban en la escuela."},
+              {en:"The kids were in the park.", es:"Los niños estaban en el parque."},
               {en:"They were happy.", es:"Ellos estaban felices."}
             ]}
         ]}
@@ -13336,28 +13336,28 @@ GRAMMAR_BANK.facil.push(
             options:["by","until","since"], correct:0,
             explain:"\u201cBy\u201d indica una fecha límite: a más tardar el viernes.",
             examples:[
-              {en:"Please send me the report by Friday.", es:"Por favor envíame el reporte para el viernes."},
+              {en:"The students must finish by noon.", es:"Los estudiantes deben terminar antes del mediodía."},
               {en:"I need this by tomorrow.", es:"Necesito esto para mañana."}
             ]},
           { id:'g-facil-m200-byuntil-2', translation:"Te esperaré hasta las 5.", type:'choice', prompt:"I will wait for you ___ 5 o'clock.",
             options:["until","by","for"], correct:0,
             explain:"\u201cUntil\u201d indica que algo continúa hasta cierto momento.",
             examples:[
-              {en:"I will wait for you until 5 o'clock.", es:"Te esperaré hasta las 5."},
+              {en:"She waited until the rain stopped.", es:"Ella esperó hasta que paró la lluvia."},
               {en:"We stayed until midnight.", es:"Nos quedamos hasta la medianoche."}
             ]},
           { id:'g-facil-m200-byuntil-3', translation:"La tienda está abierta hasta las 9 PM.", type:'choice', prompt:"The store is open ___ 9 PM.",
             options:["until","by","since"], correct:0,
             explain:"\u201cUntil\u201d describe una duración que llega hasta ese momento.",
             examples:[
-              {en:"The store is open until 9 PM.", es:"La tienda está abierta hasta las 9 PM."},
+              {en:"The library is open until eight.", es:"La biblioteca está abierta hasta las ocho."},
               {en:"He studied until late.", es:"Él estudió hasta tarde."}
             ]},
           { id:'g-facil-m200-byuntil-4', translation:"Necesito esto para el lunes.", type:'fill', sentence:["I","need","this","___","Monday","."], blankIndex:3,
             bank:["by","until","since"], correct:"by",
             explain:"Una fecha límite se marca con \u201cby\u201d.",
             examples:[
-              {en:"I need this by Monday.", es:"Necesito esto para el lunes."},
+              {en:"The homework is due by Thursday.", es:"La tarea se entrega a más tardar el jueves."},
               {en:"Finish it by noon.", es:"Termínalo para el mediodía."}
             ]}
         ]},
@@ -13367,35 +13367,35 @@ GRAMMAR_BANK.facil.push(
             options:["a little","little","a few"], correct:0,
             explain:"\u201cA little\u201d significa un poco (positivo, sí tienes algo).",
             examples:[
-              {en:"I have a little money, so I can buy lunch.", es:"Tengo un poco de dinero, así que puedo comprar el almuerzo."},
+              {en:"There is a little sugar in my tea.", es:"Hay un poco de azúcar en mi té."},
               {en:"She has a little time to help.", es:"Ella tiene un poco de tiempo para ayudar."}
             ]},
           { id:'g-facil-m200-littlefew-2', micro:'little-few-matiz', translation:"Tengo muy poco dinero, no puedo comprar nada.", type:'choice', prompt:"I have ___ money, I can't buy anything.",
             options:["little","a little","a few"], correct:0,
             explain:"\u201cLittle\u201d (sin \u201ca\u201d) significa casi nada (negativo).",
             examples:[
-              {en:"I have little money, I can't buy anything.", es:"Tengo muy poco dinero, no puedo comprar nada."},
+              {en:"He eats little meat.", es:"Él come poca carne."},
               {en:"We have little time left.", es:"Nos queda muy poco tiempo."}
             ]},
           { id:'g-facil-m200-littlefew-3', micro:'little-few-matiz', translation:"Tengo algunos amigos aquí, podemos salir.", type:'choice', prompt:"I have ___ friends here, we can hang out.",
             options:["a few","few","a little"], correct:0,
             explain:"\u201cA few\u201d significa algunos (positivo, con sustantivos contables).",
             examples:[
-              {en:"I have a few friends here, we can hang out.", es:"Tengo algunos amigos aquí, podemos salir."},
+              {en:"I have a few ideas for the project.", es:"Tengo algunas ideas para el proyecto."},
               {en:"There are a few apples left.", es:"Quedan algunas manzanas."}
             ]},
           { id:'g-facil-m200-littlefew-4', micro:'little-few-matiz', translation:"Tengo muy pocos amigos aquí, me siento solo.", type:'choice', prompt:"I have ___ friends here, I feel lonely.",
             options:["few","a few","little"], correct:0,
             explain:"\u201cFew\u201d (sin \u201ca\u201d) significa casi ninguno (negativo).",
             examples:[
-              {en:"I have few friends here, I feel lonely.", es:"Tengo muy pocos amigos aquí, me siento solo."},
+              {en:"I know few people in this town.", es:"Conozco a pocas personas en este pueblo."},
               {en:"Few people came to the party.", es:"Poca gente vino a la fiesta."}
             ]},
           { id:'g-facil-m200-littlefew-5', micro:'little-few-matiz', translation:"Hay muy poca leche en el refrigerador, vamos a comprar más.", type:'fill', sentence:["There","is","___","milk","in","the","fridge",",","so","let's","buy","more","."], blankIndex:2,
             bank:["little","a few","few"], correct:"little",
             explain:"“Milk” es incontable y queda casi nada: usamos “little”.",
             examples:[
-              {en:"There is little milk in the fridge, so let's buy more.", es:"Hay muy poca leche en el refrigerador, vamos a comprar más."},
+              {en:"There is little water in the bottle.", es:"Hay poca agua en la botella."},
               {en:"We have little rice at home.", es:"Tenemos muy poco arroz en casa."}
             ]}
         ]}
@@ -13409,21 +13409,21 @@ GRAMMAR_BANK.medio.push(
             options:["as","like","for"], correct:0,
             explain:"\u201cAs\u201d describe un rol o función real.",
             examples:[
-              {en:"She works as a teacher.", es:"Ella trabaja como maestra."},
+              {en:"He works as a driver.", es:"Él trabaja como conductor."},
               {en:"He works as a doctor.", es:"Él trabaja como doctor."}
             ]},
           { id:'g-medio-m200-aslike-2', translation:"Él nada como un pez.", type:'choice', prompt:"He swims ___ a fish.",
             options:["like","as","for"], correct:0,
             explain:"\u201cLike\u201d compara: se parece a un pez, pero no lo es.",
             examples:[
-              {en:"He swims like a fish.", es:"Él nada como un pez."},
+              {en:"She runs like the wind.", es:"Ella corre como el viento."},
               {en:"She sings like an angel.", es:"Ella canta como un ángel."}
             ]},
           { id:'g-medio-m200-aslike-3', translation:"Hazlo como te mostré.", type:'choice', prompt:"Do it ___ I showed you.",
             options:["as","like","for"], correct:0,
             explain:"\u201cAs\u201d introduce una cláusula completa (de la forma en que...).",
             examples:[
-              {en:"Do it as I showed you.", es:"Hazlo como te mostré."},
+              {en:"Please do it as your teacher said.", es:"Hazlo como dijo tu profesor."},
               {en:"As I said before, we need to leave.", es:"Como dije antes, necesitamos irnos."}
             ]}
         ]},
@@ -13433,14 +13433,14 @@ GRAMMAR_BANK.medio.push(
             options:["by","until","for"], correct:0,
             explain:"Fecha límite en contexto laboral: \u201cby end of day\u201d.",
             examples:[
-              {en:"Submit the proposal by end of day.", es:"Entrega la propuesta antes de que termine el día."},
+              {en:"Please reply by tomorrow morning.", es:"Responde antes de mañana por la mañana."},
               {en:"The invoice is due by Friday.", es:"La factura vence el viernes."}
             ]},
           { id:'g-medio-m200-byuntilwork-2', translation:"Él seguirá trabajando hasta que el proyecto esté terminado.", type:'choice', prompt:"He will keep working ___ the project is finished.",
             options:["until","by","since"], correct:0,
             explain:"\u201cUntil\u201d describe una acción continua hasta el final.",
             examples:[
-              {en:"He will keep working until the project is finished.", es:"Él seguirá trabajando hasta que el proyecto esté terminado."},
+              {en:"I will wait here until you come back.", es:"Esperaré aquí hasta que vuelvas."},
               {en:"She stayed until the meeting ended.", es:"Ella se quedó hasta que terminó la reunión."}
             ]}
         ]}
@@ -13454,21 +13454,21 @@ GRAMMAR_BANK.avanzado.push(
             options:["bring","take","carry"], correct:0,
             explain:"\u201cBring\u201d se usa cuando algo se mueve hacia donde está o estará quien habla.",
             examples:[
-              {en:"Can you bring your laptop when you come to my office?", es:"¿Puedes traer tu laptop cuando vengas a mi oficina?"},
+              {en:"Please bring your ID to the exam.", es:"Trae tu identificación al examen."},
               {en:"Please bring a gift to the party.", es:"Por favor trae un regalo a la fiesta."}
             ]},
           { id:'g-avanzado-m200-bringtake-2', translation:"Necesito llevar este paquete a la oficina de correos.", type:'choice', prompt:"I need to ___ this package to the post office.",
             options:["take","bring","carry"], correct:0,
             explain:"\u201cTake\u201d se usa cuando algo se mueve lejos de donde está quien habla.",
             examples:[
-              {en:"I need to take this package to the post office.", es:"Necesito llevar este paquete a la oficina de correos."},
+              {en:"Take this form to the front desk.", es:"Lleva este formulario a la recepción."},
               {en:"She took the dog for a walk.", es:"Ella llevó al perro a pasear."}
             ]},
           { id:'g-avanzado-m200-bringtake-3', translation:"No olvides llevar tu paraguas cuando salgas de casa.", type:'choice', prompt:"Don't forget to ___ your umbrella when you leave home.",
             options:["take","bring","hold"], correct:0,
             explain:"Al alejarte de tu casa, usas \u201ctake\u201d.",
             examples:[
-              {en:"Don't forget to take your umbrella when you leave home.", es:"No olvides llevar tu paraguas cuando salgas de casa."},
+              {en:"Remember to take your medicine after lunch.", es:"Recuerda tomar tu medicina después del almuerzo."},
               {en:"He took his keys and left.", es:"Él tomó sus llaves y se fue."}
             ]}
         ]}
@@ -13841,7 +13841,7 @@ GRAMMAR_BANK.principiante.push([
         bank:["fourteen","forty","four"], correct:"fourteen",
         explain:"“Fourteen” es 14. “Forty” es 40.",
         examples:[
-          {en:"I am fourteen years old.", es:"Tengo catorce años."},
+          {en:"My sister is sixteen years old.", es:"Mi hermana tiene dieciséis años."},
           {en:"My brother is forty years old.", es:"Mi hermano tiene cuarenta años."}
         ]},
       { id:'g-principiante-numeros-3', translation:"¿Cuál número es \"ninety\"?", type:'choice', prompt:"Which number is \"ninety\"?",
@@ -14324,7 +14324,7 @@ GRAMMAR_BANK.medio[9].push({
     { id:'g-medio-fut-gtevid-5', micro:'going-to-evidencia', translation:"La corredora va muy por delante de todos y la meta está muy cerca. Va a ganar la carrera.", type:'choice', prompt:"The runner is far ahead of everyone and the finish line is very close. She ___ win the race.",
       options:["is going to","will","would"], correct:0,
       explain:"Lo que ves ahora (ventaja enorme, meta cerca) respalda la predicción: “going to”.",
-      examples:[{en:"She is going to win the race.",es:"Ella va a ganar la carrera."},{en:"We are going to arrive first.",es:"Vamos a llegar primero."}] }
+      examples:[{en:"The car is going too fast. It is going to crash.",es:"El carro va muy rápido. Va a chocar."},{en:"We are going to arrive first.",es:"Vamos a llegar primero."}] }
   ]
 });
 GRAMMAR_BANK.medio[10].push({
@@ -14337,11 +14337,11 @@ GRAMMAR_BANK.medio[10].push({
     { id:'g-medio-fut-willform-2', micro:'will-forma-verbo-base', translation:"Creo que él aprobará el examen.", type:'choice', prompt:"I think he ___ the exam.",
       options:["will pass","will passes","will to pass"], correct:0,
       explain:"Will + verbo base: sin -s y sin “to”.",
-      examples:[{en:"I think he will pass the exam.",es:"Creo que él aprobará el examen."},{en:"They will arrive soon.",es:"Ellos llegarán pronto."}] },
+      examples:[{en:"I think she will win.",es:"Creo que ella ganará."},{en:"They will arrive soon.",es:"Ellos llegarán pronto."}] },
     { id:'g-medio-fut-willform-3', micro:'will-forma-verbo-base', translation:"Te llamaremos mañana.", type:'fill', sentence:["We","will","___","you","tomorrow","."], blankIndex:2,
       bank:["call","calling","to call"], correct:"call",
       explain:"Después de “will” va el verbo base: “call”, no “calling” ni “to call”.",
-      examples:[{en:"We will call you tomorrow.",es:"Te llamaremos mañana."},{en:"I will send it tonight.",es:"Lo enviaré esta noche."}] },
+      examples:[{en:"I will visit you next week.",es:"Te visitaré la próxima semana."},{en:"I will send it tonight.",es:"Lo enviaré esta noche."}] },
     { id:'g-medio-fut-willform-4', micro:'will-forma-verbo-base', translation:"Él no vendrá a la reunión.", type:'error', wrong:"He won't comes to the meeting.", wrongWord:"comes",
       right:"He won't come to the meeting.", rightWord:"come",
       explain:"Después de “won’t” también va el verbo base, sin -s.",
@@ -14446,7 +14446,7 @@ GRAMMAR_BANK.medio[6].push({
     { id:'g-medio-cond2-2', micro:'cond-2-imaginario', translation:"Si él fuera más alto, jugaría baloncesto.", type:'fill', sentence:["If","he","were","taller",",","he","___","play","basketball","."], blankIndex:6,
       bank:["would","will","had"], correct:"would",
       explain:"Algo imaginario: pasado en el “if” y “would” + verbo base en el resultado.",
-      examples:[{en:"If he were taller, he would play basketball.",es:"Si fuera más alto, jugaría baloncesto."},{en:"If it were cheaper, I would buy it.",es:"Si fuera más barato, lo compraría."}] },
+      examples:[{en:"If I were rich, I would buy a house.",es:"Si fuera rico, compraría una casa."},{en:"If it were cheaper, I would buy it.",es:"Si fuera más barato, lo compraría."}] },
     { id:'g-medio-cond2-3', micro:'cond-2-imaginario', translation:"Si yo fuera un pájaro, volaría sobre la ciudad.", type:'error', wrong:"If I were a bird, I will fly over the city.", wrongWord:"will",
       right:"If I were a bird, I would fly over the city.", rightWord:"would",
       explain:"Si el “if” va en pasado (algo imaginario), el resultado lleva “would”, no “will”.",
@@ -14574,17 +14574,17 @@ GRAMMAR_BANK.medio[10].push({
   topic:"Presente perfecto: experiencias sin fecha",
   items:[
     {id:"g-medio-ppe-1",micro:"pp-experiencia-sin-fecha",translation:"¿Alguna vez has visitado un museo en Londres?",type:"choice",prompt:"___ you ever visited a museum in London?",options:["Has","Have","Did"],correct:1,explain:"Con “ever” (alguna vez) preguntamos por experiencias de vida sin fecha: “Have you ever visited...?”.",examples:[{en:"Have you ever visited London?",es:"¿Has visitado Londres alguna vez?"},{en:"I have visited London twice.",es:"He visitado Londres dos veces."}]},
-    {id:"g-medio-ppe-2",micro:"pp-experiencia-sin-fecha",translation:"Ella ya terminó su tarea.",type:"fill",sentence:["She","has","___","finished","her","homework","."],blankIndex:2,bank:["already","yesterday","ago"],correct:"already",explain:"“Already” (ya) va con presente perfecto, no con una fecha pasada como “yesterday” o “ago”.",examples:[{en:"She has already finished.",es:"Ella ya terminó."},{en:"They have already left.",es:"Ellos ya se fueron."}]},
+    {id:"g-medio-ppe-2",micro:"pp-experiencia-sin-fecha",translation:"Ella ya terminó su tarea.",type:"fill",sentence:["She","has","___","finished","her","homework","."],blankIndex:2,bank:["already","yesterday","ago"],correct:"already",explain:"“Already” (ya) va con presente perfecto, no con una fecha pasada como “yesterday” o “ago”.",examples:[{en:"I have already eaten.",es:"Ya comí."},{en:"They have already left.",es:"Ellos ya se fueron."}]},
     {id:"g-medio-ppe-3",micro:"pp-experiencia-sin-fecha",translation:"He visto esa serie tres veces.",type:"error",wrong:"I have see that series three times.",wrongWord:"see",right:"I have seen that series three times.",rightWord:"seen",explain:"Después de “have” va el participio: “seen”, no el verbo base “see”.",examples:[{en:"I have seen that series three times.",es:"He visto esa serie tres veces."},{en:"She has seen the sea.",es:"Ella ha visto el mar."}]},
-    {id:"g-medio-ppe-4",micro:"pp-experiencia-sin-fecha",translation:"Perdí mis llaves, así que no puedo abrir la puerta.",type:"choice",prompt:"I ___ my keys, so I can't open the door.",options:["was lost","have lost","did lost"],correct:1,explain:"Algo que pasó antes pero tiene un resultado ahora (no puedo abrir) usa presente perfecto: “have lost”.",examples:[{en:"I have lost my keys.",es:"He perdido mis llaves."},{en:"She has broken her phone.",es:"Ella rompió su teléfono (y sigue roto)."}]}
+    {id:"g-medio-ppe-4",micro:"pp-experiencia-sin-fecha",translation:"Perdí mis llaves, así que no puedo abrir la puerta.",type:"choice",prompt:"I ___ my keys, so I can't open the door.",options:["was lost","have lost","did lost"],correct:1,explain:"Algo que pasó antes pero tiene un resultado ahora (no puedo abrir) usa presente perfecto: “have lost”.",examples:[{en:"He has forgotten his password.",es:"Él olvidó su contraseña."},{en:"She has broken her phone.",es:"Ella rompió su teléfono (y sigue roto)."}]}
   ]
 });
 
 GRAMMAR_BANK.medio[9].push({
   topic:"Presente perfecto o pasado simple: con fecha terminada",
   items:[
-    {id:"g-medio-ppf-1",micro:"pasado-fecha-terminada",translation:"Ella perdió su teléfono hace dos días.",type:"choice",prompt:"She ___ her phone two days ago.",options:["has lost","lost","have lost"],correct:1,explain:"“Ago” marca un momento terminado del pasado. Con “ago” usamos pasado simple: “lost”.",examples:[{en:"She lost her phone two days ago.",es:"Ella perdió su teléfono hace dos días."},{en:"He arrived an hour ago.",es:"Él llegó hace una hora."}]},
-    {id:"g-medio-ppf-2",micro:"pasado-fecha-terminada",translation:"Vivimos en Madrid en 2019.",type:"fill",sentence:["We","___","in","Madrid","in","2019","."],blankIndex:1,bank:["lived","have lived","live"],correct:"lived",explain:"Con un año pasado concreto (“in 2019”) usamos pasado simple: “lived”.",examples:[{en:"We lived in Madrid in 2019.",es:"Vivimos en Madrid en 2019."},{en:"I visited Rome in 2020.",es:"Visité Roma en 2020."}]},
+    {id:"g-medio-ppf-1",micro:"pasado-fecha-terminada",translation:"Ella perdió su teléfono hace dos días.",type:"choice",prompt:"She ___ her phone two days ago.",options:["has lost","lost","have lost"],correct:1,explain:"“Ago” marca un momento terminado del pasado. Con “ago” usamos pasado simple: “lost”.",examples:[{en:"I broke my glasses last week.",es:"Rompí mis lentes la semana pasada."},{en:"He arrived an hour ago.",es:"Él llegó hace una hora."}]},
+    {id:"g-medio-ppf-2",micro:"pasado-fecha-terminada",translation:"Vivimos en Madrid en 2019.",type:"fill",sentence:["We","___","in","Madrid","in","2019","."],blankIndex:1,bank:["lived","have lived","live"],correct:"lived",explain:"Con un año pasado concreto (“in 2019”) usamos pasado simple: “lived”.",examples:[{en:"They met in 2015.",es:"Ellos se conocieron en 2015."},{en:"I visited Rome in 2020.",es:"Visité Roma en 2020."}]},
     {id:"g-medio-ppf-3",micro:"pasado-fecha-terminada",translation:"Compré este carro el mes pasado.",type:"error",wrong:"I have bought this car last month.",wrongWord:"have bought",right:"I bought this car last month.",rightWord:"bought",explain:"“Last month” es un momento terminado, así que va pasado simple: “bought”.",examples:[{en:"I bought this car last month.",es:"Compré este carro el mes pasado."},{en:"We sold the house last year.",es:"Vendimos la casa el año pasado."}]},
     {id:"g-medio-ppf-4",micro:"pasado-fecha-terminada",translation:"¿Cuándo compraste esa chaqueta?",type:"choice",prompt:"When ___ you buy that jacket?",options:["are","have","did"],correct:2,explain:"Si preguntas “cuándo” pasó algo, hablas de un momento concreto: usa pasado simple con “did”.",examples:[{en:"When did you buy it?",es:"¿Cuándo lo compraste?"},{en:"When did she call?",es:"¿Cuándo llamó ella?"}]}
   ]
@@ -14593,8 +14593,8 @@ GRAMMAR_BANK.medio[9].push({
 GRAMMAR_BANK.medio[8].push({
   topic:"Since / For: elegir bien",
   items:[
-    {id:"g-medio-sfe-1",micro:"since-for-eleccion",translation:"Somos amigos desde hace diez años.",type:"choice",prompt:"We have been friends ___ ten years.",options:["since","from","for"],correct:2,explain:"Diez años es una duración (cuánto tiempo), así que usamos “for”.",examples:[{en:"We have been friends for ten years.",es:"Somos amigos desde hace diez años."},{en:"We have been friends since 2015.",es:"Somos amigos desde 2015."}]},
-    {id:"g-medio-sfe-2",micro:"since-for-eleccion",translation:"Él trabaja aquí desde enero.",type:"fill",sentence:["He","has","worked","here","___","January","."],blankIndex:4,bank:["since","for","ago"],correct:"since",explain:"“January” es un punto en el tiempo (cuándo empezó), así que usamos “since”.",examples:[{en:"He has worked here since January.",es:"Él trabaja aquí desde enero."},{en:"He has worked here for two months.",es:"Él trabaja aquí desde hace dos meses."}]}
+    {id:"g-medio-sfe-1",micro:"since-for-eleccion",translation:"Somos amigos desde hace diez años.",type:"choice",prompt:"We have been friends ___ ten years.",options:["since","from","for"],correct:2,explain:"Diez años es una duración (cuánto tiempo), así que usamos “for”.",examples:[{en:"I have studied English for two years.",es:"He estudiado inglés por dos años."},{en:"We have been friends since 2015.",es:"Somos amigos desde 2015."}]},
+    {id:"g-medio-sfe-2",micro:"since-for-eleccion",translation:"Él trabaja aquí desde enero.",type:"fill",sentence:["He","has","worked","here","___","January","."],blankIndex:4,bank:["since","for","ago"],correct:"since",explain:"“January” es un punto en el tiempo (cuándo empezó), así que usamos “since”.",examples:[{en:"She has been sick since Tuesday.",es:"Ella ha estado enferma desde el martes."},{en:"He has worked here for two months.",es:"Él trabaja aquí desde hace dos meses."}]}
   ]
 });
 
@@ -14603,10 +14603,10 @@ GRAMMAR_BANK.medio[6].push({
   items:[
     {id:"g-medio-sfp-1",micro:"since-for-presente-perfecto",translation:"Vivo aquí desde 2018.",type:"error",wrong:"I live here since 2018.",wrongWord:"live",right:"I have lived here since 2018.",rightWord:"have lived",explain:"Con “since” o “for” el inglés usa presente perfecto, no presente: “have lived”.",examples:[{en:"I have lived here since 2018.",es:"Vivo aquí desde 2018."},{en:"She has lived here for a year.",es:"Ella vive aquí desde hace un año."}]},
     {id:"g-medio-sfp-2",micro:"since-for-presente-perfecto",translation:"Ella trabaja en esta empresa desde 2017.",type:"choice",prompt:"She ___ in this company since 2017.",options:["works","has worked","worked"],correct:1,explain:"Algo que empezó en 2017 y sigue hoy usa presente perfecto: “has worked”.",examples:[{en:"She has worked here since 2017.",es:"Ella trabaja aquí desde 2017."},{en:"He has studied here since March.",es:"Él estudia aquí desde marzo."}]},
-    {id:"g-medio-sfp-3",micro:"since-for-presente-perfecto",translation:"Nos conocemos desde hace seis años.",type:"fill",sentence:["We","___","each","other","for","six","years","now","."],blankIndex:1,bank:["have known","know","knew"],correct:"have known",explain:"Con “for six years now” la situación sigue hoy: presente perfecto, “have known”.",examples:[{en:"We have known each other for six years.",es:"Nos conocemos desde hace seis años."},{en:"They have known him for ages.",es:"Lo conocen desde hace mucho."}]},
+    {id:"g-medio-sfp-3",micro:"since-for-presente-perfecto",translation:"Nos conocemos desde hace seis años.",type:"fill",sentence:["We","___","each","other","for","six","years","now","."],blankIndex:1,bank:["have known","know","knew"],correct:"have known",explain:"Con “for six years now” la situación sigue hoy: presente perfecto, “have known”.",examples:[{en:"I have known him since high school.",es:"Lo conozco desde la secundaria."},{en:"They have known him for ages.",es:"Lo conocen desde hace mucho."}]},
     {id:"g-medio-sfp-4",micro:"since-for-presente-perfecto",translation:"¿Cuánto tiempo llevas estudiando inglés?",type:"choice",prompt:"How long ___ you studied English?",options:["did","have","do"],correct:1,explain:"Para preguntar “cuánto tiempo” hasta hoy usamos “How long have you...?”.",examples:[{en:"How long have you lived here?",es:"¿Cuánto tiempo llevas viviendo aquí?"},{en:"How long has she worked here?",es:"¿Cuánto tiempo lleva ella trabajando aquí?"}]},
     {id:"g-medio-sfp-5",micro:"since-for-presente-perfecto",translation:"Está enfermo desde el lunes.",type:"error",wrong:"He is sick since Monday.",wrongWord:"is",right:"He has been sick since Monday.",rightWord:"has been",explain:"Con “since Monday” hablamos de algo que empezó y continúa: “has been”, no “is”.",examples:[{en:"He has been sick since Monday.",es:"Está enfermo desde el lunes."},{en:"She has been busy since morning.",es:"Ella está ocupada desde la mañana."}]},
-    {id:"g-medio-sfp-6",micro:"since-for-presente-perfecto",translation:"Mi hermano vive en Canadá desde hace dos años.",type:"choice",prompt:"My brother ___ in Canada for two years.",options:["has lived","is living","lives"],correct:0,explain:"“For two years” con algo que sigue hoy pide presente perfecto: “has lived”.",examples:[{en:"My brother has lived in Canada for two years.",es:"Mi hermano vive en Canadá desde hace dos años."},{en:"We have lived here for a month.",es:"Vivimos aquí desde hace un mes."}]}
+    {id:"g-medio-sfp-6",micro:"since-for-presente-perfecto",translation:"Mi hermano vive en Canadá desde hace dos años.",type:"choice",prompt:"My brother ___ in Canada for two years.",options:["has lived","is living","lives"],correct:0,explain:"“For two years” con algo que sigue hoy pide presente perfecto: “has lived”.",examples:[{en:"She has worked here for a year.",es:"Ella ha trabajado aquí por un año."},{en:"We have lived here for a month.",es:"Vivimos aquí desde hace un mes."}]}
   ]
 });
 
@@ -14622,9 +14622,9 @@ GRAMMAR_BANK.medio[8].push({
 GRAMMAR_BANK.medio[9].push({
   topic:"Verbos modales: obligación (must / have to) vs consejo (should)",
   items:[
-    {id:"g-medio-ms-1",micro:"obligacion-vs-consejo",translation:"Debes manejar por la derecha en este país. Es la ley.",type:"choice",prompt:"You ___ drive on the right in this country. It's the law.",options:["might","must","would"],correct:1,explain:"Una ley es una obligación fuerte: “must” (o “have to”).",examples:[{en:"You must drive on the right.",es:"Debes manejar por la derecha."},{en:"We must stop at a red light.",es:"Debemos parar en la luz roja."}]},
-    {id:"g-medio-ms-2",micro:"obligacion-vs-consejo",translation:"Te ves cansado. Deberías acostarte temprano esta noche.",type:"choice",prompt:"You look tired. You ___ go to bed early tonight.",options:["should","must to","are"],correct:0,explain:"Es un consejo amable, no una obligación: “should”.",examples:[{en:"You should go to bed early.",es:"Deberías acostarte temprano."},{en:"He should drink more water.",es:"Él debería tomar más agua."}]},
-    {id:"g-medio-ms-3",micro:"obligacion-vs-consejo",translation:"En mi trabajo tengo que usar uniforme. Es la política de la empresa.",type:"fill",sentence:["In","my","job",",","I","___","wear","a","uniform",".","It's","company","policy","."],blankIndex:5,bank:["have to","would","might"],correct:"have to",explain:"Una regla de la empresa es una obligación: “have to”.",examples:[{en:"I have to wear a uniform.",es:"Tengo que usar uniforme."},{en:"She has to work on Saturdays.",es:"Ella tiene que trabajar los sábados."}]},
+    {id:"g-medio-ms-1",micro:"obligacion-vs-consejo",translation:"Debes manejar por la derecha en este país. Es la ley.",type:"choice",prompt:"You ___ drive on the right in this country. It's the law.",options:["might","must","would"],correct:1,explain:"Una ley es una obligación fuerte: “must” (o “have to”).",examples:[{en:"You must wear a helmet on a motorcycle.",es:"Debes usar casco en una moto."},{en:"We must stop at a red light.",es:"Debemos parar en la luz roja."}]},
+    {id:"g-medio-ms-2",micro:"obligacion-vs-consejo",translation:"Te ves cansado. Deberías acostarte temprano esta noche.",type:"choice",prompt:"You look tired. You ___ go to bed early tonight.",options:["should","must to","are"],correct:0,explain:"Es un consejo amable, no una obligación: “should”.",examples:[{en:"You should eat more fruit.",es:"Deberías comer más fruta."},{en:"He should drink more water.",es:"Él debería tomar más agua."}]},
+    {id:"g-medio-ms-3",micro:"obligacion-vs-consejo",translation:"En mi trabajo tengo que usar uniforme. Es la política de la empresa.",type:"fill",sentence:["In","my","job",",","I","___","wear","a","uniform",".","It's","company","policy","."],blankIndex:5,bank:["have to","would","might"],correct:"have to",explain:"Una regla de la empresa es una obligación: “have to”.",examples:[{en:"I have to be at work at eight.",es:"Tengo que estar en el trabajo a las ocho."},{en:"She has to work on Saturdays.",es:"Ella tiene que trabajar los sábados."}]},
     {id:"g-medio-ms-4",micro:"obligacion-vs-consejo",translation:"Creo que deberías hablar con tu jefe sobre el problema.",type:"choice",prompt:"I think you ___ talk to your boss about the problem.",options:["are","should","must to"],correct:1,explain:"“I think you...” introduce un consejo, no una orden: “should”.",examples:[{en:"I think you should talk to him.",es:"Creo que deberías hablar con él."},{en:"You should rest today.",es:"Deberías descansar hoy."}]}
   ]
 });
@@ -14632,20 +14632,20 @@ GRAMMAR_BANK.medio[9].push({
 GRAMMAR_BANK.medio[10].push({
   topic:"Verbos modales: must, mustn't y don't have to",
   items:[
-    {id:"g-medio-mnt-1",micro:"mustnt-vs-dont-have-to",translation:"No puedes estacionarte aquí. Está prohibido.",type:"choice",prompt:"You ___ park here. It's forbidden.",options:["don't have to","mustn't","doesn't have to"],correct:1,explain:"“Mustn’t” significa prohibido. “Don’t have to” significa que no es necesario.",examples:[{en:"You mustn't park here.",es:"No puedes estacionarte aquí."},{en:"We mustn't be late.",es:"No debemos llegar tarde."}]},
-    {id:"g-medio-mnt-2",micro:"mustnt-vs-dont-have-to",translation:"Mañana es feriado, así que no tenemos que ir a la escuela.",type:"choice",prompt:"Tomorrow is a holiday, so we ___ go to school.",options:["mustn't","must","don't have to"],correct:2,explain:"Si no hay obligación (pero tampoco está prohibido) usamos “don’t have to”.",examples:[{en:"We don't have to go to school.",es:"No tenemos que ir a la escuela."},{en:"You don't have to pay.",es:"No tienes que pagar."}]},
-    {id:"g-medio-mnt-3",micro:"mustnt-vs-dont-have-to",translation:"Los visitantes no deben tocar las pinturas. Se pueden dañar.",type:"fill",sentence:["Visitors","___","touch","the","paintings",".","They","can","be","damaged","."],blankIndex:1,bank:["mustn't","don't have to","aren't"],correct:"mustn't",explain:"Es una prohibición para evitar un daño: “mustn’t”.",examples:[{en:"Visitors mustn't touch the paintings.",es:"Los visitantes no deben tocar las pinturas."},{en:"You mustn't run here.",es:"No debes correr aquí."}]},
+    {id:"g-medio-mnt-1",micro:"mustnt-vs-dont-have-to",translation:"No puedes estacionarte aquí. Está prohibido.",type:"choice",prompt:"You ___ park here. It's forbidden.",options:["don't have to","mustn't","doesn't have to"],correct:1,explain:"“Mustn’t” significa prohibido. “Don’t have to” significa que no es necesario.",examples:[{en:"You mustn't use your phone in class.",es:"No debes usar el celular en clase."},{en:"We mustn't be late.",es:"No debemos llegar tarde."}]},
+    {id:"g-medio-mnt-2",micro:"mustnt-vs-dont-have-to",translation:"Mañana es feriado, así que no tenemos que ir a la escuela.",type:"choice",prompt:"Tomorrow is a holiday, so we ___ go to school.",options:["mustn't","must","don't have to"],correct:2,explain:"Si no hay obligación (pero tampoco está prohibido) usamos “don’t have to”.",examples:[{en:"We don't have to hurry. We have time.",es:"No tenemos que apurarnos. Hay tiempo."},{en:"You don't have to pay.",es:"No tienes que pagar."}]},
+    {id:"g-medio-mnt-3",micro:"mustnt-vs-dont-have-to",translation:"Los visitantes no deben tocar las pinturas. Se pueden dañar.",type:"fill",sentence:["Visitors","___","touch","the","paintings",".","They","can","be","damaged","."],blankIndex:1,bank:["mustn't","don't have to","aren't"],correct:"mustn't",explain:"Es una prohibición para evitar un daño: “mustn’t”.",examples:[{en:"Children mustn't play near the road.",es:"Los niños no deben jugar cerca de la calle."},{en:"You mustn't run here.",es:"No debes correr aquí."}]},
     {id:"g-medio-mnt-4",micro:"mustnt-vs-dont-have-to",translation:"No tienes que traer un regalo, es opcional.",type:"error",wrong:"You mustn't bring a gift, it's optional.",wrongWord:"mustn't",right:"You don't have to bring a gift, it's optional.",rightWord:"don't have to",explain:"Si es opcional, no está prohibido: se dice “don’t have to”.",examples:[{en:"You don't have to bring a gift.",es:"No tienes que traer un regalo."},{en:"We don't have to hurry.",es:"No tenemos que apurarnos."}]},
-    {id:"g-medio-mnt-5",micro:"mustnt-vs-dont-have-to",translation:"Ella no tiene que cocinar esta noche. Vamos a pedir pizza.",type:"choice",prompt:"She ___ cook tonight. We are ordering pizza.",options:["doesn't have to","mustn't","don't have to"],correct:0,explain:"Con “she” se dice “doesn’t have to”. No es obligatorio cocinar, no está prohibido.",examples:[{en:"She doesn't have to cook.",es:"Ella no tiene que cocinar."},{en:"He doesn't have to work today.",es:"Él no tiene que trabajar hoy."}]}
+    {id:"g-medio-mnt-5",micro:"mustnt-vs-dont-have-to",translation:"Ella no tiene que cocinar esta noche. Vamos a pedir pizza.",type:"choice",prompt:"She ___ cook tonight. We are ordering pizza.",options:["doesn't have to","mustn't","don't have to"],correct:0,explain:"Con “she” se dice “doesn’t have to”. No es obligatorio cocinar, no está prohibido.",examples:[{en:"He doesn't have to pay. It's free.",es:"Él no tiene que pagar. Es gratis."},{en:"He doesn't have to work today.",es:"Él no tiene que trabajar hoy."}]}
   ]
 });
 
 GRAMMAR_BANK.facil[6].push({
   topic:"In / On / At con tiempo (horas, días, meses)",
   items:[
-    {id:"g-facil-iot-1",micro:"in-on-at-tiempo",translation:"Mi clase empieza a las 7 p. m.",type:"choice",prompt:"My class starts ___ 7 p.m.",options:["on","at","in"],correct:1,explain:"Usamos “at” con horas exactas.",examples:[{en:"My class starts at 7.",es:"Mi clase empieza a las 7."},{en:"We eat at noon.",es:"Comemos al mediodía."}]},
-    {id:"g-facil-iot-2",micro:"in-on-at-tiempo",translation:"Nací en 1998.",type:"fill",sentence:["I","was","born","___","1998","."],blankIndex:3,bank:["in","on","at"],correct:"in",explain:"Usamos “in” con años, meses y estaciones.",examples:[{en:"I was born in 1998.",es:"Nací en 1998."},{en:"She was born in May.",es:"Ella nació en mayo."}]},
-    {id:"g-facil-iot-3",micro:"in-on-at-tiempo",translation:"Vamos a la iglesia los domingos.",type:"choice",prompt:"We go to church ___ Sundays.",options:["at","on","in"],correct:1,explain:"Usamos “on” con días de la semana.",examples:[{en:"We go to church on Sundays.",es:"Vamos a la iglesia los domingos."},{en:"I work on Fridays.",es:"Trabajo los viernes."}]},
+    {id:"g-facil-iot-1",micro:"in-on-at-tiempo",translation:"Mi clase empieza a las 7 p. m.",type:"choice",prompt:"My class starts ___ 7 p.m.",options:["on","at","in"],correct:1,explain:"Usamos “at” con horas exactas.",examples:[{en:"The bus leaves at six.",es:"El bus sale a las seis."},{en:"We eat at noon.",es:"Comemos al mediodía."}]},
+    {id:"g-facil-iot-2",micro:"in-on-at-tiempo",translation:"Nací en 1998.",type:"fill",sentence:["I","was","born","___","1998","."],blankIndex:3,bank:["in","on","at"],correct:"in",explain:"Usamos “in” con años, meses y estaciones.",examples:[{en:"He was born in 2005.",es:"Él nació en 2005."},{en:"She was born in May.",es:"Ella nació en mayo."}]},
+    {id:"g-facil-iot-3",micro:"in-on-at-tiempo",translation:"Vamos a la iglesia los domingos.",type:"choice",prompt:"We go to church ___ Sundays.",options:["at","on","in"],correct:1,explain:"Usamos “on” con días de la semana.",examples:[{en:"I visit my grandma on Saturdays.",es:"Visito a mi abuela los sábados."},{en:"I work on Fridays.",es:"Trabajo los viernes."}]},
     {id:"g-facil-iot-4",micro:"in-on-at-tiempo",translation:"Me despierto a las 6 en punto.",type:"error",wrong:"I wake up in 6 o'clock.",wrongWord:"in",right:"I wake up at 6 o'clock.",rightWord:"at",explain:"Con una hora exacta usamos “at”, no “in”.",examples:[{en:"I wake up at 6 o'clock.",es:"Me despierto a las 6 en punto."},{en:"The bus leaves at 8.",es:"El autobús sale a las 8."}]}
   ]
 });
@@ -14655,7 +14655,7 @@ GRAMMAR_BANK.facil[8].push({
   items:[
     {id:"g-facil-iol-1",micro:"in-on-at-lugar",translation:"Mi hermano vive en un apartamento pequeño.",type:"choice",prompt:"My brother lives ___ a small apartment.",options:["on","at","in"],correct:2,explain:"Usamos “in” para espacios cerrados, como un apartamento o un cuarto.",examples:[{en:"He lives in a small apartment.",es:"Él vive en un apartamento pequeño."},{en:"The cat is in the box.",es:"El gato está en la caja."}]},
     {id:"g-facil-iol-2",micro:"in-on-at-lugar",translation:"Ella te espera en la parada del autobús.",type:"fill",sentence:["She","is","waiting","for","you","___","the","bus","stop","."],blankIndex:5,bank:["at","in","on"],correct:"at",explain:"Usamos “at” para un punto o lugar de encuentro, como una parada.",examples:[{en:"She is at the bus stop.",es:"Ella está en la parada."},{en:"We are at the door.",es:"Estamos en la puerta."}]},
-    {id:"g-facil-iol-3",micro:"in-on-at-lugar",translation:"Hay una mosca en el techo.",type:"choice",prompt:"There is a fly ___ the ceiling.",options:["on","in","at"],correct:0,explain:"Usamos “on” para algo que está pegado a una superficie.",examples:[{en:"There is a fly on the ceiling.",es:"Hay una mosca en el techo."},{en:"The picture is on the wall.",es:"El cuadro está en la pared."}]},
+    {id:"g-facil-iol-3",micro:"in-on-at-lugar",translation:"Hay una mosca en el techo.",type:"choice",prompt:"There is a fly ___ the ceiling.",options:["on","in","at"],correct:0,explain:"Usamos “on” para algo que está pegado a una superficie.",examples:[{en:"There is a cup on the shelf.",es:"Hay una taza en el estante."},{en:"The picture is on the wall.",es:"El cuadro está en la pared."}]},
     {id:"g-facil-iol-4",micro:"in-on-at-lugar",translation:"Mi primo vive en España.",type:"error",wrong:"My cousin lives at Spain.",wrongWord:"at",right:"My cousin lives in Spain.",rightWord:"in",explain:"Con países y ciudades usamos “in”.",examples:[{en:"My cousin lives in Spain.",es:"Mi primo vive en España."},{en:"They live in Lima.",es:"Ellos viven en Lima."}]}
   ]
 });
@@ -14663,8 +14663,8 @@ GRAMMAR_BANK.facil[8].push({
 GRAMMAR_BANK.facil[10].push({
   topic:"Some / Any en frases afirmativas y negativas",
   items:[
-    {id:"g-facil-sa-1",micro:"some-any-afirm-neg",translation:"Hoy no tengo nada de dinero.",type:"choice",prompt:"I don't have ___ money today.",options:["some","any","a"],correct:1,explain:"En frases negativas usamos “any”: “don’t have any”.",examples:[{en:"I don't have any money.",es:"No tengo nada de dinero."},{en:"We don't have any milk.",es:"No tenemos nada de leche."}]},
-    {id:"g-facil-sa-2",micro:"some-any-afirm-neg",translation:"Hay algo de leche en el refrigerador.",type:"fill",sentence:["There","is","___","milk","in","the","fridge","."],blankIndex:2,bank:["some","any","many"],correct:"some",explain:"En una frase afirmativa usamos “some”.",examples:[{en:"There is some milk in the fridge.",es:"Hay algo de leche en el refrigerador."},{en:"I bought some bread.",es:"Compré algo de pan."}]}
+    {id:"g-facil-sa-1",micro:"some-any-afirm-neg",translation:"Hoy no tengo nada de dinero.",type:"choice",prompt:"I don't have ___ money today.",options:["some","any","a"],correct:1,explain:"En frases negativas usamos “any”: “don’t have any”.",examples:[{en:"She doesn't have any sisters.",es:"Ella no tiene hermanas."},{en:"We don't have any milk.",es:"No tenemos nada de leche."}]},
+    {id:"g-facil-sa-2",micro:"some-any-afirm-neg",translation:"Hay algo de leche en el refrigerador.",type:"fill",sentence:["There","is","___","milk","in","the","fridge","."],blankIndex:2,bank:["some","any","many"],correct:"some",explain:"En una frase afirmativa usamos “some”.",examples:[{en:"There is some juice on the table.",es:"Hay un poco de jugo en la mesa."},{en:"I bought some bread.",es:"Compré algo de pan."}]}
   ]
 });
 

@@ -165,7 +165,10 @@ const EXPLAIN_RULES = `${BASE_RULES}
 - Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales. Si hay excepciones o usos informales, di "normalmente", "en general" o "en inglés formal".
 - Para aportar algo nuevo puedes usar tu conocimiento del inglés estándar (esto manda sobre "usa SOLO los datos"), pero solo con hechos de los que estés seguro. No inventes reglas ni colocaciones; si no estás seguro de un dato de uso, habla solo del significado.
 - No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice). Básate en las palabras de la pregunta.
-- Si la opción del alumno es válida en otro contexto o en el inglés hablado, dilo con matiz ("se oye en el inglés hablado, pero aquí...") en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
+- Si la opción del alumno es válida en otro contexto, dilo con matiz en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
+- Registro (hablado, escrito, formal, informal): menciónalo SOLO si estás totalmente seguro de que es la diferencia real entre las opciones. Nunca presentes como propio del inglés hablado o escrito algo que se usa en ambos (por ejemplo, la pasiva en presente describe características tanto al hablar como al escribir). Ante la duda, no hables de registro.
+- No inventes por qué eligió esa opción ni su intención. Di solo qué significa su opción y por qué no encaja aquí. No añadas matices que no ayuden a resolver ESTA duda, solo para sonar avanzado.
+- El contraste (explicación y ejemplo) debe respetar la naturaleza de la frase: si expresa obligación, ley o prohibición, contrasta con una situación realmente opcional o distinta, nunca con una frase que suavice o contradiga esa obligación (no uses "could" ni "if you want" para contrastar con "must").
 - "example_en"/"example_es": SOLO si ayuda a ver la diferencia: una frase corta, natural y 100% correcta en inglés, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Puede usar la opción del alumno en un contexto donde SÍ es correcta (para mostrar cuándo se usa) o la forma correcta en otra frase. Si no estás totalmente seguro de que suena natural, o no aporta nada nuevo, deja ambos como "".
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
 - Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
@@ -356,6 +359,7 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
   if (base) lines.push(`Explicación que ya leyó (no la repitas): ${base}`)
   const shown = Array.isArray(b.shownExamples) ? b.shownExamples.map((x: unknown) => cleanText(x, 140)).filter(Boolean).slice(0, 3) : []
   if (shown.length) lines.push(`Ejemplos que ya ve en pantalla (no los repitas ni los reutilices): ${shown.join(' | ')}`)
+  if (/question tag|tag question|isn't she|doesn't she|\b(isn't|aren't|doesn't|don't|didn't|wasn't|weren't|hasn't|haven't|won't|can't) (it|he|she|they|you|we|i)\s*\?/i.test(`${b.topic || ''} ${question} ${correctAnswer}`)) lines.push('Pista: es un question tag. Si das ejemplo, contrasta directamente dos auxiliares con frases tipo "She is tired, isn\'t she?" y "She works here, doesn\'t she?" (el auxiliar del tag repite el de la frase; sin auxiliar usa do/does/did).')
   return { rules: EXPLAIN_RULES, text: lines.join('\n'), check: { base, shown, skill: cleanText(b.skill, 20), correct: correctAnswer, chosen: studentAnswer, failed: b.isCorrect !== true, question } }
 }
 
@@ -416,6 +420,8 @@ export function exampleIsSafe(example: string, check: ExplainCheck): boolean {
   const ex = normTxt(example)
   if (!ex) return false
   if (articleMismatch(example) || LEARNER_ERRORS.some(r => r.test(ex))) return false
+  // Obligación/prohibición: no contrastar con una frase que la suaviza ("could ... if you want").
+  if (/\b(must|mustn t|mustn't|have to|has to|need to|cannot|can t)\b/.test(normTxt(`${check.question || ''} ${check.correct || ''}`)) && /\bif you (want|like|wish)\b|\bcould\b|\bmight\b|\boptional\b/.test(ex)) return false
   // Relación con el error: el ejemplo usa lo que distingue la opción correcta de la del alumno (cualquiera de las dos) o, si una opción
   // contiene a la otra ("will stay" / "stay"), la frase más corta en otro contexto.
   const c = new Set(tokensOf(check.correct || '')), w = new Set(tokensOf(check.chosen || '')), words = new Set(tokensOf(example))
