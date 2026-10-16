@@ -158,18 +158,18 @@ const BASE_RULES = `Eres Leo AI, ayudante del profesor Leo, para alumnos hispano
 
 const EXPLAIN_RULES = `${BASE_RULES}
 - El ejercicio ya está calificado y la "respuesta correcta" es la correcta: no la discutas.
-- Longitud: 1 a 3 frases muy cortas (esto manda sobre lo anterior).
-- El alumno YA leyó la "Explicación que ya leyó" y YA ve los "Ejemplos que ya ve": no los repitas, no los parafrasees ni reutilices esas frases.
-- Si FALLÓ: habla de SU respuesta concreta, no de la regla en general. Di qué significa o cómo funciona esa opción y por qué no encaja en ESTA frase. Si era una elección razonable (porque se usa en otros contextos o en el inglés hablado), dilo con matiz. Aporta algo nuevo: el contraste de significado entre las opciones, un error común o un truco corto.
-- Si ACERTÓ: solo un matiz nuevo, sin volver a explicar la regla.
+- Eres un tutor COMPLEMENTARIO. El alumno YA leyó la "Explicación que ya leyó" y YA ve los "Ejemplos que ya ve": no repitas ni parafrasees esa regla, no le digas otra vez cuál es la respuesta correcta ni qué significa, y no reutilices esas frases.
+- Si FALLÓ: ayúdale con SU confusión concreta (su respuesta frente a la correcta) con UNA idea nueva que no esté en lo que ya vio: un truco para recordar, un contraste de significado entre las dos opciones, una asociación mental o un error común. Dilo en 1 o 2 frases muy cortas, para un principiante.
+- Si ACERTÓ: solo un matiz nuevo en una frase.
+- Si no tienes nada realmente nuevo y útil que aportar, responde "explanation": "" y los ejemplos vacíos. Es mejor no decir nada que repetir lo que ya vio.
 - Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales. Si hay excepciones o usos informales, di "normalmente", "en general" o "en inglés formal".
-- Para aportar algo nuevo puedes usar tu conocimiento del inglés estándar (esto manda sobre "usa SOLO los datos"), pero solo con hechos de los que estés seguro. No inventes reglas ni colocaciones; si no estás seguro de un dato de uso, habla solo del significado.
-- No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice). Básate en las palabras de la pregunta.
+- Puedes usar tu conocimiento del inglés estándar (esto manda sobre "usa SOLO los datos"), pero solo con hechos de los que estés seguro. No inventes reglas ni colocaciones; si no estás seguro de un dato de uso, habla solo del significado.
+- No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice).
 - Si la opción del alumno es válida en otro contexto, dilo con matiz en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
-- Registro (hablado, escrito, formal, informal): menciónalo SOLO si estás totalmente seguro de que es la diferencia real entre las opciones. Nunca presentes como propio del inglés hablado o escrito algo que se usa en ambos (por ejemplo, la pasiva en presente describe características tanto al hablar como al escribir). Ante la duda, no hables de registro.
-- No inventes por qué eligió esa opción ni su intención. Di solo qué significa su opción y por qué no encaja aquí. No añadas matices que no ayuden a resolver ESTA duda, solo para sonar avanzado.
-- El contraste (explicación y ejemplo) debe respetar la naturaleza de la frase: si expresa obligación, ley o prohibición, contrasta con una situación realmente opcional o distinta, nunca con una frase que suavice o contradiga esa obligación (no uses "could" ni "if you want" para contrastar con "must").
-- "example_en"/"example_es": SOLO si ayuda a ver la diferencia: una frase corta, natural y 100% correcta en inglés, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Puede usar la opción del alumno en un contexto donde SÍ es correcta (para mostrar cuándo se usa) o la forma correcta en otra frase. Si no estás totalmente seguro de que suena natural, o no aporta nada nuevo, deja ambos como "".
+- Registro (hablado, escrito, formal, informal): menciónalo SOLO si estás totalmente seguro de que es la diferencia real entre las opciones; ante la duda, no hables de registro.
+- No inventes por qué eligió esa opción ni su intención, ni añadas matices solo para sonar avanzado.
+- El contraste debe respetar la naturaleza de la frase: si expresa obligación, ley o prohibición, contrasta con algo realmente opcional o distinto, nunca con una frase que la suavice (no uses "could" ni "if you want" para contrastar con "must").
+- "example_en"/"example_es": SOLO si ayuda a ver la diferencia: una frase corta, natural y 100% correcta en inglés, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Puede usar la opción del alumno en un contexto donde SÍ es correcta, o la forma correcta en otra frase. Si no estás totalmente seguro de que suena natural, o no aporta nada nuevo, déjalos como "".
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
 - Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
 
@@ -365,6 +365,9 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
 
 // ---- Control de calidad de "explain" (SOLO estructura y repetición; NO mide si la pedagogía es buena) ----
 // Si una explicación se descarta aquí, el flujo la trata como mala salida: no se entrega y NO se cobra el crédito de bienvenida.
+// Resultado de "explain" cuando NO hay nada nuevo que decir (el modelo lo dijo con explanation vacía, o repite lo que la pantalla ya muestra).
+// No se entrega, NO se cobra crédito, NO se reintenta y la página muestra una línea corta. Es un resultado normal, no un error.
+export const NO_EXTRA = { no_extra: true } as const
 export type ExplainCheck = { base: string; shown: string[]; skill: string; correct?: string; chosen?: string; failed?: boolean; question?: string }
 const normTxt = (v: unknown) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
 // Reglas absolutas dichas como regla de gramática ("siempre debes usar had", "es obligatorio"...).
@@ -444,9 +447,9 @@ export function checkExplain(out: { explanation: string; example_en: string; exa
   if (out.explanation.length < 25) return null
   if (!check) return out
   if (check.skill === 'grammar' && hasAbsoluteRule(out.explanation)) return null // regla absoluta: mejor no entregar nada que enseñar algo falso
-  if (check.base && repeatsExplanation(out.explanation, check.base)) return null
+  if (check.base && repeatsExplanation(out.explanation, check.base)) return NO_EXTRA // repite lo que ya leyó: no hay extra
   const ne = normTxt(out.explanation)
-  if (check.shown.some(s => normTxt(s).length >= 15 && ne.includes(normTxt(s)))) return null // cita un ejemplo ya mostrado
+  if (check.shown.some(s => normTxt(s).length >= 15 && ne.includes(normTxt(s)))) return NO_EXTRA // cita un ejemplo ya mostrado: no hay extra
   if (out.example_en) {
     const bad = check.shown.some(s => sameSentence(out.example_en, s)) || !exampleIsSafe(out.example_en, check)
     if (bad) return { explanation: out.explanation, example_en: '', example_es: '' } // ejemplo repetido o no verificable: se quita, la explicación sí vale
@@ -487,6 +490,7 @@ export function validateOutput(mode: string, parsed: any, candidates: string[] =
     return explanation && tip ? { explanation, tip } : null
   }
   const explanation = cleanText(parsed.explanation, 600)
+  if (!explanation && typeof parsed.explanation === 'string' && check) return NO_EXTRA // el modelo dijo que no tiene nada nuevo
   const example_en = cleanText(parsed.example_en, 200)
   const example_es = cleanText(parsed.example_es, 200)
   return explanation ? checkExplain({ explanation, example_en, example_es }, check) : null
@@ -799,6 +803,12 @@ Deno.serve(async (req: Request) => {
       await supabase.rpc('leo_ai_record', { p_day: today, p_provider: isTrial ? name + ':trial' : name, p_input: r.usage.input, p_output: r.usage.output, p_neurons: neurons })
         .then(() => {}, () => {})
       const answer = validateOutput(mode, parseJsonLoose(r.raw), prompt.candidates || [], prompt.check)
+      if (answer && (answer as any).no_extra === true) {
+        // Sin nada nuevo que decir: no se cobra crédito (solo 'completed' cobra), no se reintenta y no se prueba otro proveedor.
+        if (attempt) await finishRequest(user.id, requestId, 'failed', null, 'no_extra', attempt)
+        await logFailure(today, 'no_extra', mode)
+        return json(Object.assign({ ok: false, reason: 'no_extra', final: true }, isTrial ? { trial: await trialInfo(user.id) } : {}))
+      }
       if (answer) {
         if (attempt) await finishRequest(user.id, requestId, 'completed', answer, '', attempt)
         return json(isTrial ? { ok: true, mode, answer, trial: await trialInfo(user.id) } : { ok: true, mode, answer })

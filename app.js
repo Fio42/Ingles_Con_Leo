@@ -2751,6 +2751,7 @@ const LEO_AI_FAIL_TEXT = {
   trial_busy: 'Leo AI sigue con tu pedido anterior. Espera un momento y vuelve a tocar el botón.',
   trial_noverify: 'Confirma tu correo para usar Leo AI. Revisa tu bandeja de entrada.',
   members_only: 'Esta ayuda de Leo AI es solo para miembros.',
+  no_extra: 'Con la explicación y los ejemplos de arriba ya tienes lo necesario para este error.',
   default: 'Leo AI no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo en un momento. La explicación de arriba sigue siendo válida.'
 };
 const _leoAiCache = new Map();
@@ -2833,7 +2834,7 @@ function leoAiAttach(host, ctx){
         if(!box.isConnected) return; // el alumno ya pasó a otro ejercicio
         if(res && res.ok){ _leoAiCache.set(key, res); if(isInsight) leoAiInsightCacheSet(key, res); }
         btn.remove();
-        renderLeoAiAnswer(out, payload, res);
+        renderLeoAiAnswer(out, payload, res, ctx);
       });
     });
     return box;
@@ -2991,7 +2992,7 @@ function leoAiAttachTrial(host, ctx){
         if(!cached && res && res.trial) leoAiTrialRemember(res.trial);
         if(res && res.ok){
           _leoAiCache.set(key, res);
-          renderLeoAiAnswer(out, payload, res);
+          renderLeoAiAnswer(out, payload, res, ctx);
           if(cached) return;
           const left = res.trial && typeof res.trial.remaining === 'number' ? res.trial.remaining : null;
           if(left === null) return;
@@ -3020,7 +3021,7 @@ function leoAiAttachTrial(host, ctx){
           return;
         }
         if(res && res.reason === 'trial_off'){ box.remove(); return; }
-        renderLeoAiAnswer(out, payload, res);
+        renderLeoAiAnswer(out, payload, res, ctx);
       });
     });
   });
@@ -3070,9 +3071,41 @@ function leoAiFocusLink(payload, a){
   }catch(e){ return null; }
 }
 
-function renderLeoAiAnswer(out, payload, res){
+/* Recomendación de práctica cuando un TEMA ya acumula errores (nunca por un solo error). No usa IA ni crea otro motor:
+   reutiliza diagMistakeSummary (mistake_stats o el historial local, igual que el diagnóstico) y contentForTema, cuyo
+   practiceHref es el Plan de estudio con foco en ese tema. Solo miembros (el Plan de estudio es de miembros).
+   Cuenta los errores pendientes de ESTE tema: el de ahora + los anteriores. Los de la sesión en curso aún no están
+   guardados, así que se recomienda un poco más tarde y nunca antes de tiempo. */
+const LEO_AI_REPEAT_MIN = 3;   // errores distintos en el mismo tema (contando el de ahora); 2 si ESTE ejercicio ya se había fallado
+function leoAiRepeatPractice(ctx){
+  try{
+    if(!ctx || ctx.isCorrect === true || window.__leoMemberVerified !== true) return null;
+    const id = ctx.item && ctx.item.id;
+    const index = id ? getDiagItemIndex() : null;
+    const found = index && index.get(id);
+    const temaId = found ? diagTemaIdForFound(found) : null;
+    if(!temaId) return null;
+    const stats = (typeof _mistakeStatsCache !== 'undefined' && _mistakeStatsCache instanceof Map) ? _mistakeStatsCache : null;
+    const inTema = diagMistakeSummary(collectDiagAttempts(loadProgress()), stats, Date.now()).active.filter(m => m.tema === temaId);
+    const total = inTema.filter(m => m.itemId !== id).length + 1;
+    const failedBefore = inTema.some(m => m.itemId === id);
+    if(!(total >= LEO_AI_REPEAT_MIN || (failedBefore && total >= 2))) return null;
+    const c = contentForTema(temaId);
+    if(!c || !/^plan-estudio\.html/.test(c.practiceHref)) return null;
+    return { href: c.practiceHref, text: 'Varios errores en ' + c.label + ': practícalo en tu Plan' };
+  }catch(e){ return null; }
+}
+
+function renderLeoAiAnswer(out, payload, res, ctx){
   out.innerHTML = '';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
+  if(res && !res.ok && res.reason === 'no_extra'){
+    // Nada nuevo que decir: solo una nota discreta (sin cabecera ni recuadro), más el enlace al Plan si ya hay un patrón de errores.
+    out.classList.add('is-quiet');
+    add('p', 'leo-ai-note', LEO_AI_FAIL_TEXT.no_extra);
+    if(payload.mode === 'explain'){ const r = leoAiRepeatPractice(ctx); if(r){ const link = add('a', 'leo-ai-focus', r.text); link.href = r.href; } }
+    return;
+  }
   const head = add('div', 'leo-ai-head', 'Leo AI');
   if(!LEO_AI_PUBLIC){ const beta = document.createElement('span'); beta.className = 'leo-ai-beta'; beta.textContent = 'Beta'; head.appendChild(beta); }
   const a = res && res.ok && res.answer;
@@ -3104,6 +3137,8 @@ function renderLeoAiAnswer(out, payload, res){
       if(a.example_es){ const es = document.createElement('div'); es.className = 'example-es'; es.textContent = a.example_es; ex.appendChild(es); }
       out.appendChild(ex);
     }
+    const rp = leoAiRepeatPractice(ctx);
+    if(rp){ const link = add('a', 'leo-ai-focus', rp.text); link.href = rp.href; }
   }
   add('p', 'leo-ai-note', payload.mode === 'insight'
     ? 'Análisis automático de tus resultados. No cambia tu progreso.'

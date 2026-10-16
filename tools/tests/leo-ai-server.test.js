@@ -533,13 +533,13 @@ async function test(name, fn){
   });
   await test('calidad: repetir o parafrasear casi igual la explicación normal se descarta; una explicación nueva pasa', async()=>{
     assert(QCM.repeatsExplanation('El pasado perfecto muestra que algo pasó antes de otro momento pasado.', QC.base));
-    assert.strictEqual(QCM.checkExplain(ok('El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado, por eso va ahí.'), QC), null);
+    assert.strictEqual(QCM.checkExplain(ok('El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado, por eso va ahí.'), QC), QCM.NO_EXTRA, 'repite lo que ya leyó: sin extra (no bad_output)');
     const nuevo = 'Sin "had" la frase no deja claro que la película ya estaba empezada. En inglés hablado se oye el pasado simple, pero aquí había dos momentos.';
     assert(!QCM.repeatsExplanation(nuevo, QC.base)); assert.strictEqual(QCM.checkExplain(ok(nuevo), QC).explanation, nuevo);
     assert.strictEqual(QCM.checkExplain(ok('Corto.'), QC), null);
   });
   await test('calidad: citar un ejemplo ya mostrado descarta; ejemplo repetido solo se quita (la explicación se entrega)', async()=>{
-    assert.strictEqual(QCM.checkExplain(ok('Fíjate en "She had left before I called." para ver el orden de los hechos aquí.'), QC), null);
+    assert.strictEqual(QCM.checkExplain(ok('Fíjate en "She had left before I called." para ver el orden de los hechos aquí.'), QC), QCM.NO_EXTRA);
     const r = QCM.checkExplain(ok('Piensa en cuál acción pasó primero y márcala con "had".', 'She had left before I called.'), QC);
     assert(r && r.explanation && r.example_en === '');
   });
@@ -610,6 +610,35 @@ async function test(name, fn){
     assert(r.recorded.some(x => x.p_provider === 'fail:bad_output'));
     const r2 = await call({ db, member:false, body:TRIAL_REQ('req-qc-000001') });
     assert.strictEqual(r2.out.ok, true); assert.strictEqual(db.trial.used, 1, 'el reintento válido sí cobra una sola vez');
+  });
+  await test('tutor complementario: las reglas piden una idea NUEVA (truco, contraste, asociación) y permiten no decir nada', async()=>{
+    const r = QCM.buildPrompt('explain', EXPLAIN).rules;
+    assert(/COMPLEMENTARIO/.test(r) && /truco/.test(r) && /contraste/.test(r) && /asociaci/.test(r), 'pide truco/contraste/asociación');
+    assert(/"explanation": ""/.test(r), 'permite explicación vacía si no hay nada nuevo');
+    assert(/no repitas ni parafrasees/.test(r) && /cuál es la respuesta correcta/.test(r), 'no repetir regla ni respuesta');
+    assert(r.length < 3200, 'las reglas no crecen (se pagan en cada pedido): ' + r.length);
+  });
+  await test('sin extra: explanation vacía => NO_EXTRA solo en explain; faltante o texto corto sigue siendo inválido', async()=>{
+    assert.strictEqual(QCM.validateOutput('explain', { explanation:'', example_en:'', example_es:'' }, [], QC), QCM.NO_EXTRA);
+    assert.strictEqual(QCM.validateOutput('explain', { example_en:'', example_es:'' }, [], QC), null, 'sin el campo = salida inválida');
+    assert.strictEqual(QCM.validateOutput('explain', { explanation:'Corto.' }, [], QC), null);
+    assert.strictEqual(QCM.validateOutput('insight', { explanation:'' }, []), null, 'insight no cambia');
+    assert.strictEqual(QCM.validateOutput('diagnosis', { explanation:'', tip:'' }, []), null, 'diagnosis no cambia');
+  });
+  await test('sin extra (prueba gratis): NO cobra crédito, responde final, NO reintenta y no llama al modelo dos veces', async()=>{
+    const db = trialDb(); let calls = 0;
+    const vacia = async()=>{ calls++; return cfReply(JSON.stringify({ explanation:'', example_en:'', example_es:'' }))(); };
+    const r = await call({ db, member:false, body:TRIAL_REQ('req-ne-000001'), provider: vacia });
+    assert.strictEqual(r.out.ok, false); assert.strictEqual(r.out.reason, 'no_extra'); assert.strictEqual(r.out.final, true);
+    assert.strictEqual(db.trial.used, 0, 'sin cobro'); assert.strictEqual(calls, 1, 'una sola llamada al modelo');
+    assert(r.recorded.some(x => x.p_provider === 'fail:no_extra'), 'queda contado para medir cuántas veces pasa');
+    assert(!r.recorded.some(x => x.p_provider === 'fail:bad_output'));
+  });
+  await test('sin extra (miembro): responde no_extra final y el flujo normal sigue igual con una explicación nueva', async()=>{
+    const r = await call({ body:Object.assign({}, EXPLAIN, { request_id:'req-ne-member1' }), provider: cfReply(JSON.stringify({ explanation:'', example_en:'', example_es:'' })) });
+    assert.strictEqual(r.out.reason, 'no_extra'); assert.strictEqual(r.out.final, true);
+    const r2 = await call({ body:Object.assign({}, EXPLAIN, { request_id:'req-ne-member2' }), provider: cfReply(JSON.stringify({ explanation:'Piensa en "yesterday" como una señal de pasado terminado: ayer ya no existe, por eso pasado simple.', example_en:'', example_es:'' })) });
+    assert.strictEqual(r2.out.ok, true);
   });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);
