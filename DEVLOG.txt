@@ -1533,3 +1533,8 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Guarda nueva en exampleIsSafe: si el ejercicio es de obligacion (must/have to...), se quita un ejemplo con "could", "might" o "if you want". La explicacion se entrega igual.
 - data.js: 223 ejemplos de "MIRA OTROS EJEMPLOS" que repetian la pregunta ya resuelta reemplazados por ejemplos nuevos. IDs, respuestas, opciones y explicaciones intactos (verificado con tools/leo-ai-eval/verify-data-diff.js). Cache data.js?v=20261016a.
 - Limite conocido: ningun control automatico juzga si una frase suena natural; se apoya en las reglas del prompt y en revision humana.
+
+=== 2026-10-16 · Menos clics hasta el pago ===
+- miembros.html: "Activar membresia" (vista previa y bienvenida) ahora muestra el pago Y baja hasta el (goToPayment). Antes cambiaba de pantalla y la persona quedaba arriba, cerca de Leo AI: un clic/scroll extra. Las tarjetas con candado tambien llevan al pago.
+- Enlace ?pagar=1: los botones "Hazte miembro" (index, juego, reto diario, resumen de practica) saltan bienvenida y vista previa. Con sesion abierta va directo al pago; sin sesion pide entrar y luego va al pago. Los demas enlaces a miembros.html no cambian.
+- Cache app.js?v=20261016b.

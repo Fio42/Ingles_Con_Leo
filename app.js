@@ -3917,7 +3917,7 @@ function renderFreeDailyLimitReachedBlock(){
         </ul>
         <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México, $37 MXN). Cancela cuando quieras.</p>
         <div class="summary-actions">
-          <a href="miembros.html" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
+          <a href="miembros.html?pagar=1" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
           <a href="index.html" class="btn btn-ghost">Volver mañana</a>
         </div>
         <p class="upgrade-note">Tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis se renuevan mañana.</p>
@@ -5471,7 +5471,7 @@ function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, o
     container.innerHTML = `
       <p class="daily-done-msg">${OK_ICON} Ya hiciste tu reto de hoy${scoreTxt ? ' · ' + scoreTxt : ''}.</p>
       <p class="daily-sub">Vuelve mañana para el siguiente, o hazte miembro para repetirlo las veces que quieras.</p>
-      <a href="miembros.html" class="daily-btn">Hazte miembro →</a>`;
+      <a href="miembros.html?pagar=1" class="daily-btn">Hazte miembro →</a>`;
     return;
   }
   // Si ya había un reto a medias (guardado con saveInflightSession),
@@ -5545,7 +5545,7 @@ function runDailyChallengeSession({ container, isFree, level }){
           <p class="summary-score">${correct} / ${graded.length} correctas</p>
           <p class="daily-sub" style="margin-top:10px;">Vuelve mañana para el siguiente reto, o hazte miembro para repetirlo las veces que quieras hoy mismo.</p>
           <div class="summary-actions">
-            <a href="miembros.html" class="btn btn-primary">Hazte miembro →</a>
+            <a href="miembros.html?pagar=1" class="btn btn-primary">Hazte miembro →</a>
           </div>
         </div>`;
     } else {

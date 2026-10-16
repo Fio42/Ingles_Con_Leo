@@ -32,8 +32,10 @@ test('El enlace de abajo de la pagina se conserva', () => {
   assert(/Mientras tanto, sigue practicando gratis/.test(preview));
 });
 test('Los pasos de pago y el regreso con ?volver= no cambiaron', () => {
-  assert(/welcomeActivateBtn\.addEventListener\('click', \(\)=>\{ showGate\(\); showLoginStep\(3\); \}\)/.test(html));
-  assert(/previewActivateBtn\.addEventListener\('click', \(\)=>\{ showGate\(\); showLoginStep\(3\); \}\)/.test(html));
+  assert(/welcomeActivateBtn\.addEventListener\('click', goToPayment\)/.test(html));
+  assert(/function goToPayment\(\)\{\s*showGate\(\); showLoginStep\(3\);[\s\S]*?scrollIntoView/.test(html), 'el pago se muestra y se baja hasta el');
+  assert(/previewActivateBtn\.addEventListener\('click', goToPayment\)/.test(html) && /get\('pagar'\) === '1'/.test(html));
+  /* el boton de la vista previa ahora usa goToPayment (ver arriba) */
   assert(/window\.location\.href = volver \+ '\?cuenta=nueva'/.test(html));
   assert(/else if\(fromSignup\)\{[\s\S]{0,200}free_signup_completed/.test(html));
 });

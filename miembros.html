@@ -683,7 +683,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
-<script src="app.js?v=20261016a"></script>
+<script src="app.js?v=20261016b"></script>
 <script src="backend.js?v=20261015a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -985,13 +985,18 @@
         setTimeout(function(){ window.location.href = volver + '?cuenta=nueva'; }, 700);
         return;
       }
+      if(wantsPay()){ goToPayment(); return; } // vino de un botón "Hazte miembro": directo al pago
       showGate();
       showLoginStep(5);
       maybeOnboard();
+    } else if(wantsPay()){
+      goToPayment();
     } else {
       showMemberPreview();
     }
   }
+  // ?pagar=1 en el enlace = la persona tocó un botón para hacerse miembro: se salta bienvenida y vista previa.
+  function wantsPay(){ try{ return new URLSearchParams(window.location.search).get('pagar') === '1'; }catch(e){ return false; } }
 
   function isValidEmail(str){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((str || '').trim());
@@ -1259,20 +1264,35 @@
     });
   }
 
+  // Un solo clic hasta el pago: muestra el paso de pago Y baja hasta él (antes el botón cambiaba de pantalla
+  // pero el alumno quedaba más arriba, en la parte de Leo AI, y necesitaba otro clic/scroll).
+  function goToPayment(){
+    showGate(); showLoginStep(3);
+    const target = document.getElementById('payChooser') || loginPending; if(loginPending) loginPending.style.scrollMarginTop = '90px';
+    const go = ()=>{ try{ (loginPending || target).scrollIntoView({ behavior:'smooth', block:'start' }); }catch(e){ window.scrollTo(0, 0); } };
+    if(window.requestAnimationFrame) requestAnimationFrame(()=>requestAnimationFrame(go)); else go();
+  }
+  // Las tarjetas con candado también llevan directo al pago (cualquier clic en lo bloqueado = pagar).
+  document.querySelectorAll('#memberPreview .locked-card').forEach(card=>{
+    card.style.cursor = 'pointer';
+    card.setAttribute('role', 'button'); card.setAttribute('tabindex', '0');
+    card.addEventListener('click', goToPayment);
+    card.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goToPayment(); } });
+  });
   const welcomeActivateBtn = document.getElementById('welcomeActivateBtn');
   const welcomeSkipBtn = document.getElementById('welcomeSkipBtn');
   const previewActivateBtn = document.getElementById('previewActivateBtn');
   const previewLogoutBtn = document.getElementById('previewLogoutBtn');
 
   if(welcomeActivateBtn){
-    welcomeActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
+    welcomeActivateBtn.addEventListener('click', goToPayment);
   }
   if(welcomeSkipBtn){
     // Es un enlace normal a practica.html?cuenta=nueva (misma ruta que ya usa quien se registra desde la practica).
     welcomeSkipBtn.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('welcome_free_practice_clicked'); });
   }
   if(previewActivateBtn){
-    previewActivateBtn.addEventListener('click', ()=>{ showGate(); showLoginStep(3); });
+    previewActivateBtn.addEventListener('click', goToPayment);
   }
   const previewPracticeBtn = document.getElementById('previewPracticeBtn');
   if(previewPracticeBtn){
@@ -1440,6 +1460,8 @@
           showGate();
           showLoginStep(3);
           startCheckoutConfirming();
+        } else if(wantsPay()){
+          goToPayment();
         } else {
           showMemberPreview();
         }
