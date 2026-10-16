@@ -118,6 +118,7 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
   { const srv = newServer(); const { ctx, page, errors } = await newPage(browser, null, srv, { w:360 });
     await openPractica(page, { keepLimits:true });
     // Con el interruptor APAGADO (valor por defecto) el invitado no ve ninguna promesa de la prueba
+    await page.evaluate(() => { LEO_AI_TRIAL_PUBLIC = false; });      // el código real ya viene en true: aquí se simula apagado
     const cardOff = await failOne(page); await page.waitForTimeout(300);
     assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'prueba apagada: ninguna invitación engañosa al invitado');
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('leo_ai_teaser_day')), null, 'apagada: ni siquiera se marca el día');
@@ -126,7 +127,8 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     const card = await failOne(page);
     assert.strictEqual(await page.locator('.leo-ai-btn').count(), 0, 'invitado: ningún botón de IA');
     const t = await aiText(page);
-    assert.ok(/¿Quieres saber por qué fallaste\?/.test(t) && /cuenta gratis/.test(t) && /5 explicaciones de bienvenida/.test(t) && /sin tarjeta/.test(t), t);
+    assert.ok(/¿Por qué te equivocaste\?/.test(t) && /Leo AI te ayuda a entender tus errores\. Crea tu cuenta gratis y prueba 5 explicaciones\./.test(t) && /Crear mi cuenta gratis/.test(t), t);
+    assert.ok(!/ilimitad|sin l[ií]mites?/i.test(t));
     assert.ok(!/ilimitad/i.test(t));
     assert.match(await page.locator('.leo-ai.is-teaser a').getAttribute('href'), /^miembros\.html\?modo=registro&volver=practica\.html$/);
     assert.strictEqual(srv.log.length, 0, 'invitado: ninguna llamada a Leo AI');
@@ -160,8 +162,10 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     await openPractica(page);
     const card1 = await failOne(page, { onCorrect: async () => { await page.waitForTimeout(250); assert.strictEqual(await page.locator('.leo-ai:not([hidden])').count(), 0, 'al acertar no se ofrece Leo AI'); } });
     const btn = page.locator('.leo-ai.is-trial .leo-ai-btn'); await btn.waitFor({ timeout: 4000 });
-    assert.match(await btn.innerText(), /Mira qué dice Leo AI de tu error/);
-    assert.match(await page.locator('.leo-ai-credits').innerText(), /Te quedan 5 explicaciones de bienvenida gratis\./);
+    assert.match(await btn.innerText(), /Explícame mi error con Leo AI/);
+    assert.match(await page.locator('.leo-ai-credits').innerText(), /Te quedan 5 explicaciones gratis para probarlo\./);
+    assert.strictEqual(await page.locator('.leo-ai-pitch-title').innerText(), '¿Por qué te equivocaste?');
+    assert.match(await page.locator('.leo-ai-pitch-text').innerText(), /No te quedes solo con la respuesta correcta\. Leo AI te ayuda a entender tu error para que aprendas de él\./);
     assert.strictEqual(explainCalls(srv).length, 0, 'ver el botón no gasta nada');
     assert.deepStrictEqual(srv.log.map(b => b.mode), ['trial_status'], 'solo se pregunta el estado');
     await overflow(page, 'gratis botón 375'); await shot(page, 'gratis-boton-375');
@@ -169,7 +173,8 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     await page.locator('.leo-ai-answer .leo-ai-text').waitFor({ timeout: 4000 });
     assert.match(await page.locator('.leo-ai-answer').innerText(), /Explicación de prueba número 1/);
     assert.match(await page.locator('.leo-ai-credits').innerText(), /Te quedan 4 explicaciones/);
-    assert.strictEqual(await page.locator('.leo-ai-upsell').count(), 0, 'con 4 restantes no se vende nada');
+    assert.strictEqual(await page.locator('.leo-ai-upsell').count(), 0, 'con 4 restantes no hay recuadro de venta');
+    assert.strictEqual(await page.locator('.leo-ai-soft').innerText(), 'Aprende de cada error con Leo AI. Incluido en tu membresía por solo $2 USD al mes.');
     const sent = explainCalls(srv)[0];
     assert.strictEqual(sent.mode, 'explain'); assert.strictEqual(sent.isCorrect, false); assert.ok(/^[A-Za-z0-9_-]{8,64}$/.test(sent.request_id));
     assert.ok(!/"u1"|token-de-prueba|@|user_id|email/i.test(JSON.stringify(sent)), 'sin datos personales: ' + JSON.stringify(sent));
@@ -180,21 +185,27 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     for(let n = 2; n <= 5; n++){
       const c = await failOne(page);
       const b = page.locator('.leo-ai.is-trial .leo-ai-btn'); await b.waitFor({ timeout: 4000 });
+      assert.strictEqual(await page.locator('.leo-ai-pitch-title').count(), 0, 'el texto largo de venta no se repite en cada ejercicio');
       assert.match(await page.locator('.leo-ai-credits').innerText(), new RegExp('Te quedan ' + (6 - n) + ' explicaciones|Te queda 1 explicación'));
       await b.click();
       await page.locator('.leo-ai-answer .leo-ai-text').waitFor({ timeout: 4000 });
       const txt = await aiText(page);
       assert.ok(!/ilimitad/i.test(txt), 'nunca se dice ilimitado: ' + txt);
-      if(n === 2){ assert.strictEqual(await page.locator('.leo-ai-upsell').count(), 0); }
+      if(n === 2){ assert.strictEqual(await page.locator('.leo-ai-upsell').count(), 0); assert.strictEqual(await page.locator('.leo-ai-soft').count(), 1); }
       if(n === 3 || n === 4){
         const up = page.locator('.leo-ai-upsell:not(.is-done)'); await up.waitFor({ timeout: 2000 });
-        assert.ok(/\$2 USD al mes/.test(await up.innerText()) && /cancela cuando quieras/.test(await up.innerText()));
+        const ut = await up.innerText();
+        assert.ok(/¿Te está ayudando Leo AI\?/.test(ut) && /Tu prueba está por terminar\. Sigue aprendiendo de tus errores con Leo AI, incluido en la membresía de \$2 USD al mes\./.test(ut) && /Conocer la membresía/.test(ut), ut);
+        assert.strictEqual(await page.locator('.leo-ai-soft').count(), 0, 'con 1 o 2 no se duplica el mensaje discreto');
+        assert.ok(/\d explicaci/.test(await page.locator('.leo-ai-credits').innerText()), 'los créditos siguen visibles');
+        assert.strictEqual(await up.locator('a').getAttribute('href'), 'miembros.html#leo-ai');
         await overflow(page, 'invitación suave ' + n); if(n === 3) await shot(page, 'gratis-invitacion-suave-375');
       }
       if(n === 5){
         const wall = page.locator('.leo-ai-upsell.is-done'); await wall.waitFor({ timeout: 2000 });
         const wt = await wall.innerText();
-        assert.ok(/Usaste tus explicaciones de bienvenida/.test(wt) && /\$2 USD al mes/.test(wt) && /cancelar cuando quieras/.test(wt), wt);
+        assert.ok(/¡Que tus errores sigan enseñándote!/.test(wt) && /Ya probaste Leo AI\. Hazte miembro y sigue recibiendo ayuda con tus errores, además de Writing con IA y otras herramientas para miembros\./.test(wt) && /\$2 USD \/ mes/.test(wt) && /Quiero seguir aprendiendo con Leo AI/.test(wt), wt);
+        assert.ok(!/ilimitad|sin l[ií]mites?|garantiz/i.test(wt));
         assert.strictEqual(await wall.locator('a').getAttribute('href'), 'miembros.html#leo-ai');
         assert.strictEqual(await page.locator('.leo-ai-credits').count(), 0, 'sin contador al llegar a 0');
         await overflow(page, 'muro 375'); await shot(page, 'gratis-muro-375');

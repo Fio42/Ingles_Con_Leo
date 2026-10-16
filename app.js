@@ -2901,7 +2901,7 @@ function leoAiTrialLoad(){
 }
 function leoAiTrialCountText(t){
   const n = Math.max(0, Number(t && t.remaining) || 0);
-  return n === 1 ? 'Te queda 1 explicación de bienvenida gratis.' : `Te quedan ${n} explicaciones de bienvenida gratis.`;
+  return n === 1 ? 'Te queda 1 explicación gratis para probarlo.' : `Te quedan ${n} explicaciones gratis para probarlo.`;
 }
 function leoAiTrialRemember(t){
   if(!t || typeof t !== 'object' || typeof t.remaining !== 'number') return;
@@ -2910,27 +2910,33 @@ function leoAiTrialRemember(t){
 }
 function leoAiMembershipHref(){ return 'miembros.html#leo-ai'; }
 
-/* Invitación a la membresía dentro del cuadro de Leo AI. 'soon' = quedan 1 o 2 (suave); 'done' = se acabaron. */
+/* Invitación a la membresía dentro del cuadro de Leo AI. 'soon' = quedan 1 o 2 (enlace discreto); 'done' = se acabaron
+   (precio visible y un botón). Los textos venden aprender de los errores, no la tecnología. Nunca "ilimitado". */
 function leoAiTrialUpsell(parent, variant, remaining){
   const wrap = document.createElement('div');
   wrap.className = 'leo-ai-upsell' + (variant === 'done' ? ' is-done' : '');
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; wrap.appendChild(el); return el; };
-  if(variant === 'done'){
-    add('p', 'leo-ai-upsell-title', 'Usaste tus explicaciones de bienvenida');
-    add('p', 'leo-ai-upsell-text', 'Si quieres que Leo AI te siga explicando tus errores mientras practicas, hazte miembro por $2 USD al mes. Tus errores y tu progreso quedan guardados y puedes cancelar cuando quieras.');
-  } else {
-    add('p', 'leo-ai-upsell-title', 'Así te acompaña Leo AI en cada error');
-    add('p', 'leo-ai-upsell-text', 'Como miembro, Leo AI te explica tus errores mientras practicas y el sistema los guarda para que no se repitan. $2 USD al mes, cancela cuando quieras.');
-  }
   const a = document.createElement('a');
-  a.className = 'btn btn-primary leo-ai-upsell-cta';
   a.href = leoAiMembershipHref();
-  a.textContent = variant === 'done' ? 'Seguir con Leo AI por $2 USD al mes' : 'Ver qué incluye la membresía';
+  if(variant === 'done'){
+    add('p', 'leo-ai-upsell-title', '¡Que tus errores sigan enseñándote!');
+    add('p', 'leo-ai-upsell-text', 'Ya probaste Leo AI. Hazte miembro y sigue recibiendo ayuda con tus errores, además de Writing con IA y otras herramientas para miembros.');
+    add('p', 'leo-ai-price', '$2 USD / mes');
+    a.className = 'btn btn-primary leo-ai-upsell-cta';
+    a.textContent = 'Quiero seguir aprendiendo con Leo AI';
+  } else {
+    add('p', 'leo-ai-upsell-title', '¿Te está ayudando Leo AI?');
+    add('p', 'leo-ai-upsell-text', 'Tu prueba está por terminar. Sigue aprendiendo de tus errores con Leo AI, incluido en la membresía de $2 USD al mes.');
+    a.className = 'leo-ai-upsell-link';
+    a.textContent = 'Conocer la membresía';
+  }
   a.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_cta_clicked', { variant, remaining }); });
   wrap.appendChild(a);
   parent.appendChild(wrap);
   return wrap;
 }
+
+var _leoPitchShown = false;   // el texto largo de venta sale una vez por página; en los demás fallos solo botón + contador
 
 function leoAiAttachTrial(host, ctx){
   const payload = buildLeoAiPayload(ctx);
@@ -2948,11 +2954,16 @@ function leoAiAttachTrial(host, ctx){
       leoAiTrialUpsell(box, 'done', 0);
       return;
     }
+    if(!_leoPitchShown){
+      _leoPitchShown = true;
+      const pt = document.createElement('p'); pt.className = 'leo-ai-pitch-title'; pt.textContent = '¿Por qué te equivocaste?'; box.appendChild(pt);
+      const px = document.createElement('p'); px.className = 'leo-ai-pitch-text'; px.textContent = 'No te quedes solo con la respuesta correcta. Leo AI te ayuda a entender tu error para que aprendas de él.'; box.appendChild(px);
+    }
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'leo-ai-btn leo-ai-btn-trial';
     btn.innerHTML = LEO_AI_ICON + '<span></span>';
-    btn.querySelector('span').textContent = 'Mira qué dice Leo AI de tu error';
+    btn.querySelector('span').textContent = 'Explícame mi error con Leo AI';
     const credits = document.createElement('p');
     credits.className = 'leo-ai-credits';
     credits.setAttribute('data-leo-credits', '1');
@@ -2987,6 +2998,12 @@ function leoAiAttachTrial(host, ctx){
             if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_trial_exhausted');
             leoAiTrialUpsell(box, 'done', 0);
           } else {
+            if(left > 2){                                      // mensaje comercial discreto (con 1 o 2 quedan el aviso de fin de prueba)
+              const soft = document.createElement('p');
+              soft.className = 'leo-ai-soft';
+              soft.textContent = 'Aprende de cada error con Leo AI. Incluido en tu membresía por solo $2 USD al mes.';
+              box.appendChild(soft);
+            }
             const left_p = document.createElement('p');
             left_p.className = 'leo-ai-credits';
             left_p.textContent = leoAiTrialCountText(res.trial);
@@ -3021,12 +3038,12 @@ function leoAiAttachGuestTeaser(host){
   const box = document.createElement('div');
   box.className = 'leo-ai is-teaser';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; box.appendChild(el); return el; };
-  add('p', 'leo-ai-teaser-title', '¿Quieres saber por qué fallaste?');
-  add('p', 'leo-ai-teaser-text', `Crea tu cuenta gratis y mira qué dice Leo AI de tus errores: ${LEO_AI_TRIAL_CREDITS_COPY} explicaciones de bienvenida, sin tarjeta.`);
+  add('p', 'leo-ai-teaser-title', '¿Por qué te equivocaste?');
+  add('p', 'leo-ai-teaser-text', `Leo AI te ayuda a entender tus errores. Crea tu cuenta gratis y prueba ${LEO_AI_TRIAL_CREDITS_COPY} explicaciones.`);
   const a = document.createElement('a');
   a.className = 'btn btn-primary leo-ai-upsell-cta';
   a.href = 'miembros.html?modo=registro&volver=' + volver;
-  a.textContent = 'Crear cuenta gratis';
+  a.textContent = 'Crear mi cuenta gratis';
   a.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_teaser_clicked'); });
   box.appendChild(a);
   host.appendChild(box);
