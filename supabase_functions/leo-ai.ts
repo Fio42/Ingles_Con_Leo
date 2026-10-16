@@ -166,7 +166,7 @@ const EXPLAIN_RULES = `${BASE_RULES}
 - Para aportar algo nuevo puedes usar tu conocimiento del inglés estándar (esto manda sobre "usa SOLO los datos"), pero solo con hechos de los que estés seguro. No inventes reglas ni colocaciones; si no estás seguro de un dato de uso, habla solo del significado.
 - No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice). Básate en las palabras de la pregunta.
 - Si la opción del alumno es válida en otro contexto o en el inglés hablado, dilo con matiz ("se oye en el inglés hablado, pero aquí...") en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
-- "example_en"/"example_es": SOLO si la frase usa la forma CORRECTA (nunca la del alumno) y CONTRASTA la opción del alumno con la correcta (misma estructura, cambia lo que importa) y es DISTINTA de los ejemplos ya mostrados. Un ejemplo que solo repite la forma correcta o que no tiene relación directa con el error no sirve: en ese caso deja ambos como "".
+- "example_en"/"example_es": SOLO si ayuda a ver la diferencia: una frase corta, natural y 100% correcta en inglés, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Puede usar la opción del alumno en un contexto donde SÍ es correcta (para mostrar cuándo se usa) o la forma correcta en otra frase. Si no estás totalmente seguro de que suena natural, o no aporta nada nuevo, deja ambos como "".
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
 - Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
 
@@ -356,16 +356,19 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
   if (base) lines.push(`Explicación que ya leyó (no la repitas): ${base}`)
   const shown = Array.isArray(b.shownExamples) ? b.shownExamples.map((x: unknown) => cleanText(x, 140)).filter(Boolean).slice(0, 3) : []
   if (shown.length) lines.push(`Ejemplos que ya ve en pantalla (no los repitas ni los reutilices): ${shown.join(' | ')}`)
-  return { rules: EXPLAIN_RULES, text: lines.join('\n'), check: { base, shown, skill: cleanText(b.skill, 20), correct: correctAnswer, chosen: studentAnswer, failed: b.isCorrect !== true } }
+  return { rules: EXPLAIN_RULES, text: lines.join('\n'), check: { base, shown, skill: cleanText(b.skill, 20), correct: correctAnswer, chosen: studentAnswer, failed: b.isCorrect !== true, question } }
 }
 
 // ---- Control de calidad de "explain" (SOLO estructura y repetición; NO mide si la pedagogía es buena) ----
 // Si una explicación se descarta aquí, el flujo la trata como mala salida: no se entrega y NO se cobra el crédito de bienvenida.
-export type ExplainCheck = { base: string; shown: string[]; skill: string; correct?: string; chosen?: string; failed?: boolean }
+export type ExplainCheck = { base: string; shown: string[]; skill: string; correct?: string; chosen?: string; failed?: boolean; question?: string }
 const normTxt = (v: unknown) => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
 // Reglas absolutas dichas como regla de gramática ("siempre debes usar had", "es obligatorio"...).
-const ABSOLUTE_RULE = /\b(siempre|nunca|jamas)\s+(debes|debe|tienes que|hay que|se usa|usa|usas|se pone|se escribe|va|lleva|necesitas|es)\b|\b(debes|debe|tienes que|hay que)\s+(siempre|nunca)\b|\bes obligatori[oa]\b|\bobligatoriamente\b|\ben todos los casos\b|\bsin excepcion\b/
-export function hasAbsoluteRule(text: string): boolean { return ABSOLUTE_RULE.test(normTxt(text)) }
+// Solo afirmaciones PRESCRIPTIVAS en español ("siempre debes usar", "es obligatorio"). Se ignora lo que va entre comillas (frases en inglés
+// como 'I have never tried sushi' no son una regla absoluta) y verbos descriptivos ("siempre va seguido de gerundio" puede ser un hecho cierto).
+const ABSOLUTE_RULE = /\b(siempre|nunca|jamas)\s+(debes|debe|tienes que|hay que|se usa|usa|usas|se pone|se escribe|necesitas)\b|\b(debes|debe|tienes que|hay que)\s+(siempre|nunca)\b|\bes obligatori[oa]\b|\bobligatoriamente\b|\ben todos los casos\b|\bsin excepcion\b/
+const stripQuoted = (t: string) => t.replace(/["\u201c\u201d\u00ab\u00bb][^"\u201c\u201d\u00ab\u00bb]*["\u201c\u201d\u00ab\u00bb]/g, ' ').replace(/(^|[\s(])'[^']{1,60}'(?=[\s.,;:!?)]|$)/g, '$1 ')
+export function hasAbsoluteRule(text: string): boolean { return ABSOLUTE_RULE.test(normTxt(stripQuoted(String(text || '')))) }
 const contentWords = (t: string) => new Set(normTxt(t).split(' ').filter(w => w.length >= 4))
 // ¿Repite (o casi copia) la explicación que el alumno ya leyó?
 export function repeatsExplanation(text: string, base: string): boolean {
@@ -382,14 +385,53 @@ export function repeatsExplanation(text: string, base: string): boolean {
   return false
 }
 const wordsOf = (t: string) => normTxt(t).split(' ').filter(Boolean)
-// El ejemplo inventado por el modelo NO se puede verificar como inglés correcto. Guarda determinista: solo se muestra si usa la forma
-// CORRECTA del ejercicio (las palabras que la distinguen de la elegida) y NO usa la forma errónea del alumno. Si no se puede comprobar, se quita.
-export function exampleContrasts(example: string, correct?: string, chosen?: string): boolean {
-  if (!example || !correct || !chosen) return false
-  const c = new Set(wordsOf(correct)), w = new Set(wordsOf(chosen)), ex = new Set(wordsOf(example))
-  const cTok = [...c].filter(x => !w.has(x)), wTok = [...w].filter(x => !c.has(x))
-  if (!cTok.length) return false
-  return cTok.some(x => ex.has(x)) && !wTok.some(x => ex.has(x))
+// ---- Guarda del ejemplo inventado por el modelo ----
+// NO es un corrector de gramática: no puede saber si una frase es inglés natural. Una opción "equivocada" para ESTE ejercicio puede ser perfecta
+// en otro contexto ("I have lived here FOR five years"), así que usar la palabra del alumno NO descarta el ejemplo. Solo se quita lo detectable:
+// (1) ejercicio fallado y que tenga relación con lo que se confundió, (2) eco exacto de la frase del ejercicio (con la opción correcta o la del alumno),
+// (3) errores típicos de estudiante (lista corta de abajo). Si se quita, la explicación se entrega igual.
+// Palabras para comparar: contracciones expandidas (I'll = I will) y plural/3a persona sin "s" final (effects = effect).
+const expandContr = (t: string) => t.replace(/n't\b/g, ' not').replace(/'ll\b/g, ' will').replace(/'m\b/g, ' am').replace(/'re\b/g, ' are').replace(/'ve\b/g, ' have')
+const tokensOf = (t: string) => expandContr(normTxt(t)).split(' ').filter(Boolean).map(x => x.length > 3 && x.endsWith('s') ? x.slice(0, -1) : x)
+const AN_EXC = /^(hour|hours|hourly|honest|honestly|honor|honour|heir|mba|fbi|mri|sms|x)$/
+const A_EXC = /^(university|universe|unit|united|uniform|union|unique|useful|usual|usually|user|use|used|using|european|euro|one|once|ukrainian|utensil|unicorn)$/
+function articleMismatch(example: string): boolean {
+  const w = wordsOf(example)
+  for (let i = 0; i + 1 < w.length; i++) {
+    if (w[i] === 'a' && /^[aeiou]/.test(w[i + 1]) && !A_EXC.test(w[i + 1])) return true
+    if (w[i] === 'an' && /^[bcdfgjklmnpqrstvwxyz]/.test(w[i + 1]) && !AN_EXC.test(w[i + 1])) return true
+  }
+  return false
+}
+const LEARNER_ERRORS: RegExp[] = [
+  /\b(did|does|do)\s+never\b/, // "I did never try" (natural: "I never tried")
+  /\bsay\s+the\s+truth\b/, // natural: "tell the truth"
+  /\balthough\s+(the|a|an|my|his|her|our|their|this|that)\s+\w+\s+(i|you|he|she|it|we|they)\b/, // "Although the rain, we..." (although + sujeto y verbo; la coma ya no existe tras normalizar)
+  /\bdespite\s+(i|you|he|she|it|we|they)\s+\w+/, // "Despite it rained" (despite + sustantivo o -ing)
+  /\b(many|a few)\s+(water|milk|money|traffic|information|advice|furniture|music|news|homework|rice|bread)\b/,
+  /\bmuch\s+(books|apples|friends|cars|people|pens|students|things|questions|children)\b/,
+]
+export function exampleIsSafe(example: string, check: ExplainCheck): boolean {
+  if (!example || !check.failed) return false
+  const ex = normTxt(example)
+  if (!ex) return false
+  if (articleMismatch(example) || LEARNER_ERRORS.some(r => r.test(ex))) return false
+  // Relación con el error: el ejemplo usa lo que distingue la opción correcta de la del alumno (cualquiera de las dos) o, si una opción
+  // contiene a la otra ("will stay" / "stay"), la frase más corta en otro contexto.
+  const c = new Set(tokensOf(check.correct || '')), w = new Set(tokensOf(check.chosen || '')), words = new Set(tokensOf(example))
+  const diff = [...c].filter(x => !w.has(x)).concat([...w].filter(x => !c.has(x)))
+  const subset = (!!c.size && !!w.size) && ([...c].every(x => w.has(x)) || [...w].every(x => c.has(x)))
+  const related = diff.some(x => words.has(x)) || (subset && [...(c.size <= w.size ? c : w)].every(x => words.has(x)))
+  if (!related) return false
+  // Eco exacto del ejercicio (rellenado con la correcta o con la del alumno): no aporta nada nuevo.
+  const q = String(check.question || '')
+  if (q.includes('___')) {
+    for (const fill of [check.correct, check.chosen]) {
+      const filled = normTxt(q.replace('___', fill || ''))
+      if (filled && filled.length >= 12 && (ex === filled || ex.includes(filled) || filled.includes(ex))) return false
+    }
+  }
+  return true
 }
 const sameSentence = (a: string, b: string) => { const x = normTxt(a), y = normTxt(b); return !!x && !!y && (x === y || (Math.min(x.length, y.length) >= 12 && (x.includes(y) || y.includes(x)))) }
 export function checkExplain(out: { explanation: string; example_en: string; example_es: string }, check?: ExplainCheck) {
@@ -400,7 +442,7 @@ export function checkExplain(out: { explanation: string; example_en: string; exa
   const ne = normTxt(out.explanation)
   if (check.shown.some(s => normTxt(s).length >= 15 && ne.includes(normTxt(s)))) return null // cita un ejemplo ya mostrado
   if (out.example_en) {
-    const bad = check.shown.some(s => sameSentence(out.example_en, s)) || !check.failed || !exampleContrasts(out.example_en, check.correct, check.chosen)
+    const bad = check.shown.some(s => sameSentence(out.example_en, s)) || !exampleIsSafe(out.example_en, check)
     if (bad) return { explanation: out.explanation, example_en: '', example_es: '' } // ejemplo repetido o no verificable: se quita, la explicación sí vale
   }
   return out

@@ -543,17 +543,42 @@ async function test(name, fn){
     const r = QCM.checkExplain(ok('Piensa en cuál acción pasó primero y márcala con "had".', 'She had left before I called.'), QC);
     assert(r && r.explanation && r.example_en === '');
   });
-  await test('calidad: el ejemplo inventado solo se muestra si usa la forma CORRECTA y no la del alumno (real: "I did never try sushi")', async()=>{
-    assert(QCM.exampleContrasts('The train had left when I got there.', 'had already started', 'already started'));
-    assert(!QCM.exampleContrasts('I did never try sushi.', 'have', 'did'));
-    assert(!QCM.exampleContrasts('Please say the truth.', 'tell', 'say'));
-    assert(!QCM.exampleContrasts('Although the weather, we stayed home.', 'Despite the rain, we went out.', 'Although the rain, we went out.'));
-    assert(!QCM.exampleContrasts('The train had left.', '', 'x'), 'sin datos para comprobar: no se muestra');
-    const q2 = Object.assign({}, QC, { correct:'have', chosen:'did' });
-    const r = QCM.checkExplain(ok('Aquí buscas experiencia de vida, no un momento concreto.', 'I did never try sushi.'), q2);
+  const EC = (correct, chosen, question) => ({ base:'', shown:[], skill:'grammar', correct, chosen, question, failed:true });
+  await test('calidad: un contraste valido que usa la palabra del alumno en otro contexto SE CONSERVA (caso real since/for)', async()=>{
+    const sf = EC('since', 'for', 'I have lived here ___ 2019.');
+    assert(QCM.exampleIsSafe('I have lived here for five years.', sf), 'for + duracion es el contraste que ayuda');
+    assert(QCM.exampleIsSafe('We have known her since 2015.', sf));
+    assert(!QCM.exampleIsSafe('I have lived here since 2019.', sf), 'copia el ejercicio resuelto');
+    assert(QCM.exampleIsSafe('He speaks like a teacher.', EC('as', 'like', 'She works ___ a teacher.')));
+    assert(QCM.exampleIsSafe('I will stay in the office until 6 p.m.', EC('by', 'until', 'Submit the proposal ___ end of day.')));
+    assert(QCM.exampleIsSafe('There are many cars on the road.', EC('A lot of traffic', 'Many traffic', 'How do you say "mucho tráfico" in English?')));
+    assert(QCM.exampleIsSafe("I'll help you with those bags!", EC('am going to', 'will', "I've already decided that I ___ start my own business.")), 'I\'ll = I will: contraste de decision en el momento');
+    assert(QCM.exampleIsSafe('The medicine had a positive effect on him.', EC('affects', 'effects', 'The weather ___ our mood.')), 'effect/effects: mismo vocabulario');
+    assert(QCM.exampleIsSafe('If it is sunny, we stay at home.', EC('will stay', 'stay', 'If it rains tomorrow, we ___ at home.')), 'la opcion del alumno es valida en otro contexto');
+    const r = QCM.checkExplain(ok('Usaste for, que mide cuánto tiempo; aquí hace falta el momento en que empezó.', 'I have lived here for five years.'), Object.assign({}, QC, { correct:'since', chosen:'for', question:'I have lived here ___ 2019.' }));
+    assert.strictEqual(r.example_en, 'I have lived here for five years.');
+  });
+  await test('calidad: se quita el ejemplo con errores tipicos de estudiante, eco del ejercicio o sin relacion (la explicacion se entrega)', async()=>{
+    assert(!QCM.exampleIsSafe('I did never try sushi.', EC('have', 'did', 'I ___ never tried sushi before .')));
+    assert(!QCM.exampleIsSafe('Please say the truth.', EC('tell', 'say', 'Please ___ me the truth.')));
+    assert(!QCM.exampleIsSafe('Although the weather, we stayed home.', EC('Despite the rain, we went out.', 'Although the rain, we went out.', '')));
+    assert(!QCM.exampleIsSafe('I ate a apple.', EC('an', 'a', 'I saw ___ elephant at the zoo.')));
+    assert(QCM.exampleIsSafe('I ate an apple.', EC('an', 'a', 'I saw ___ elephant at the zoo.')));
+    assert(QCM.exampleIsSafe('He goes to a university in Spain.', EC('a', 'an', 'She studies at ___ university.')), 'a university es correcto');
+    assert(!QCM.exampleIsSafe('I saw an elephant at the zoo.', EC('an', 'a', 'I saw ___ elephant at the zoo.')), 'copia la frase del ejercicio');
+    assert(!QCM.exampleIsSafe('The weather is nice today.', EC('went', 'go', 'Yesterday I ___ to the park.')), 'sin relacion con la confusion');
+    assert(!QCM.exampleIsSafe('', EC('went', 'go', '')) && !QCM.exampleIsSafe('I went home.', Object.assign(EC('went', 'go', ''), { failed:false })));
+    const q2 = Object.assign({}, QC, { correct:'have', chosen:'did', question:'I ___ never tried sushi before .' });
+    const r = QCM.checkExplain(ok('Hablas de tu experiencia, no de un momento.', 'I did never try sushi.'), q2);
     assert(r && r.explanation && r.example_en === '' && r.example_es === '');
-    const bueno = QCM.checkExplain(ok('Hablas de tu experiencia, no de un momento.', 'I have never been to Rome.'), q2); assert.strictEqual(bueno.example_en, 'I have never been to Rome.');
-    const acerto = QCM.checkExplain(ok('Buen detalle: aquí también se oye bastante la forma corta.', 'I have never been to Rome.'), Object.assign({}, q2, { failed:false })); assert.strictEqual(acerto.example_en, '', 'si acertó no hay error que contrastar');
+    const bueno = QCM.checkExplain(ok('Hablas de tu experiencia, no de un momento.', 'I have never traveled to Japan.'), q2); assert.strictEqual(bueno.example_en, 'I have never traveled to Japan.');
+  });
+  await test('calidad: la palabra "never" dentro de una frase en ingles NO cuenta como regla absoluta; una regla absoluta real si', async()=>{
+    assert(!QCM.hasAbsoluteRule('Con "I have never tried sushi" hablas de una experiencia, no de un momento concreto.'));
+    assert(!QCM.hasAbsoluteRule("Con 'never' normalmente se usa have para hablar de experiencias."));
+    assert(!QCM.hasAbsoluteRule('Después de enjoy normalmente va un verbo con -ing.'));
+    assert(QCM.hasAbsoluteRule('Con never siempre debes usar have.'));
+    assert(QCM.hasAbsoluteRule('Si una acción ocurre antes, siempre debes usar had.'));
   });
   await test('calidad: buildPrompt envía lo necesario para comprobar (correcta, elegida) y NO datos personales', async()=>{
     const p = QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { shownExamples:['I went home.'] }));
