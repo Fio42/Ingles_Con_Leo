@@ -92,21 +92,15 @@ test('explicación nueva: se muestra igual y SOLO añade el enlace al Plan cuand
   T.setStats(stats([stat(ids[1]), stat(ids[2])])); o = out(); T.renderLeoAiAnswer(o, payload, res, ctxFail);
   const a = kids(o, 'a'); assert.strictEqual(a.length, 1); assert(/plan-estudio\.html/.test(a[0].href)); assert(/leo-ai-focus/.test(a[0].className));
 });
-test('"no_extra": línea corta neutral (no es un error), sin ejemplos ni nota; el enlace al Plan solo si hay patrón', ()=>{
-  c.__leoMemberVerified = true;
-  const res = { ok:false, reason:'no_extra', final:true };
-  T.setStats(stats([])); let o = out(); T.renderLeoAiAnswer(o, payload, res, ctxFail);
-  assert(!/is-error/.test(o.className), 'no se pinta como fallo');
-  assert(/is-quiet/.test(o.className), 'sin recuadro grande');
-  assert(!kids(o, 'div').some(d => /leo-ai-head/.test(d.className)), 'sin cabecera Leo AI');
-  assert.strictEqual(kids(o, 'p').length, 1, 'solo una nota');
-  assert(kids(o, 'p').some(p => /leo-ai-note/.test(p.className) && /ya tienes lo necesario/.test(p.textContent)));
-  assert.strictEqual(kids(o, 'a').length, 0);
-  T.setStats(stats([stat(ids[1]), stat(ids[2])])); o = out(); T.renderLeoAiAnswer(o, payload, res, ctxFail);
-  assert.strictEqual(kids(o, 'a').length, 1);
-  o = out(); T.renderLeoAiAnswer(o, payload, { ok:false, reason:'timeout' }, ctxFail);
-  assert(/is-error/.test(o.className), 'un fallo real sí es error');
-  assert.strictEqual(kids(o, 'a').length, 0, 'un fallo real no recomienda nada');
+test('un fallo técnico (incluida una salida inválida) es un error, nunca un mensaje pedagógico, y no recomienda nada', ()=>{
+  c.__leoMemberVerified = true; T.setStats(stats([stat(ids[1]), stat(ids[2])]));
+  ['bad_output', 'timeout', 'no_extra'].forEach(reason => {
+    const o = out(); T.renderLeoAiAnswer(o, payload, { ok:false, reason }, ctxFail);
+    assert(/is-error/.test(o.className), reason + ' se muestra como error');
+    assert(!kids(o, 'p').some(p => /ya tienes lo necesario|suficiente/.test(p.textContent)), 'sin mensaje pedagógico');
+    assert.strictEqual(kids(o, 'a').length, 0);
+  });
+  assert(!/no_extra|ya tienes lo necesario/.test(read('app.js')), 'app.js ya no tiene el caso no_extra');
 });
 test('el payload que viaja al servidor NO cambia (sin ids de ejercicio, sin historial)', ()=>{
   const keys = Object.keys(payload).sort().join(',');

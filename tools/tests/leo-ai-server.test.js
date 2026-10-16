@@ -533,13 +533,13 @@ async function test(name, fn){
   });
   await test('calidad: repetir o parafrasear casi igual la explicación normal se descarta; una explicación nueva pasa', async()=>{
     assert(QCM.repeatsExplanation('El pasado perfecto muestra que algo pasó antes de otro momento pasado.', QC.base));
-    assert.strictEqual(QCM.checkExplain(ok('El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado, por eso va ahí.'), QC), QCM.NO_EXTRA, 'repite lo que ya leyó: sin extra (no bad_output)');
+    assert.strictEqual(QCM.checkExplain(ok('El pasado perfecto (“had started”) muestra que algo pasó antes de otro momento pasado, por eso va ahí.'), QC), null, 'repite lo que ya leyó: mala salida (se reintenta, no se muestra)');
     const nuevo = 'Sin "had" la frase no deja claro que la película ya estaba empezada. En inglés hablado se oye el pasado simple, pero aquí había dos momentos.';
     assert(!QCM.repeatsExplanation(nuevo, QC.base)); assert.strictEqual(QCM.checkExplain(ok(nuevo), QC).explanation, nuevo);
     assert.strictEqual(QCM.checkExplain(ok('Corto.'), QC), null);
   });
   await test('calidad: citar un ejemplo ya mostrado descarta; ejemplo repetido solo se quita (la explicación se entrega)', async()=>{
-    assert.strictEqual(QCM.checkExplain(ok('Fíjate en "She had left before I called." para ver el orden de los hechos aquí.'), QC), QCM.NO_EXTRA);
+    assert.strictEqual(QCM.checkExplain(ok('Fíjate en "She had left before I called." para ver el orden de los hechos aquí.'), QC), null);
     const r = QCM.checkExplain(ok('Piensa en cuál acción pasó primero y márcala con "had".', 'She had left before I called.'), QC);
     assert(r && r.explanation && r.example_en === '');
   });
@@ -611,34 +611,43 @@ async function test(name, fn){
     const r2 = await call({ db, member:false, body:TRIAL_REQ('req-qc-000001') });
     assert.strictEqual(r2.out.ok, true); assert.strictEqual(db.trial.used, 1, 'el reintento válido sí cobra una sola vez');
   });
-  await test('tutor complementario: las reglas piden una idea NUEVA (truco, contraste, asociación) y permiten no decir nada', async()=>{
+  await test('profesor particular: las reglas piden aprender algo NUEVO con estrategias, ejemplo nuevo y NUNCA decir "ya tienes suficiente"', async()=>{
     const r = QCM.buildPrompt('explain', EXPLAIN).rules;
-    assert(/COMPLEMENTARIO/.test(r) && /truco/.test(r) && /contraste/.test(r) && /asociaci/.test(r), 'pide truco/contraste/asociación');
-    assert(/"explanation": ""/.test(r), 'permite explicación vacía si no hay nada nuevo');
-    assert(/no repitas ni parafrasees/.test(r) && /cuál es la respuesta correcta/.test(r), 'no repetir regla ni respuesta');
-    assert(r.length < 3200, 'las reglas no crecen (se pagan en cada pedido): ' + r.length);
+    assert(/Explícame/.test(r) && /profesor particular/.test(r) && /nunca le digas que ya tiene suficiente/.test(r));
+    ['otro ángulo', 'cuándo y cómo se usa', 'otro uso frecuente', 'suele confundirse', 'truco sencillo', 'por qué no funciona'].forEach(k => assert(r.includes(k), 'estrategia: ' + k));
+    assert(/ejemplo NUEVO/.test(r) && /traducción natural/.test(r), 'ejemplo nuevo con traducción');
+    assert(/no repitas ni parafrasees/.test(r) && /No inventes reglas, excepciones, usos ni ejemplos/.test(r));
+    assert(/Registro/.test(r) && /obligaci/.test(r) && /reglas absolutas/.test(r), 'se conservan las guardas');
+    assert(!/"explanation": ""/.test(r), 'ya no se le dice que puede responder vacío');
+    assert(r.length < 3500, 'las reglas no crecen demasiado (v16: 3069): ' + r.length);
   });
-  await test('sin extra: explanation vacía => NO_EXTRA solo en explain; faltante o texto corto sigue siendo inválido', async()=>{
-    assert.strictEqual(QCM.validateOutput('explain', { explanation:'', example_en:'', example_es:'' }, [], QC), QCM.NO_EXTRA);
-    assert.strictEqual(QCM.validateOutput('explain', { example_en:'', example_es:'' }, [], QC), null, 'sin el campo = salida inválida');
-    assert.strictEqual(QCM.validateOutput('explain', { explanation:'Corto.' }, [], QC), null);
-    assert.strictEqual(QCM.validateOutput('insight', { explanation:'' }, []), null, 'insight no cambia');
-    assert.strictEqual(QCM.validateOutput('diagnosis', { explanation:'', tip:'' }, []), null, 'diagnosis no cambia');
+  await test('sin "no_extra": no existe en el servidor ni en la página', async()=>{
+    assert(!/no_extra|NO_EXTRA/.test(src), 'leo-ai.ts');
+    assert(!/no_extra/.test(fs.readFileSync(path.join(root, 'app.js'), 'utf8')), 'app.js');
+    assert.strictEqual(QCM.NO_EXTRA, undefined);
   });
-  await test('sin extra (prueba gratis): NO cobra crédito, responde final, NO reintenta y no llama al modelo dos veces', async()=>{
+  await test('respuesta vacía del modelo = mala salida recuperable: NO cobra crédito, reintenta y no inventa nada', async()=>{
+    assert.strictEqual(QCM.validateOutput('explain', { explanation:'', example_en:'', example_es:'' }, [], QC), null);
     const db = trialDb(); let calls = 0;
-    const vacia = async()=>{ calls++; return cfReply(JSON.stringify({ explanation:'', example_en:'', example_es:'' }))(); };
-    const r = await call({ db, member:false, body:TRIAL_REQ('req-ne-000001'), provider: vacia });
-    assert.strictEqual(r.out.ok, false); assert.strictEqual(r.out.reason, 'no_extra'); assert.strictEqual(r.out.final, true);
-    assert.strictEqual(db.trial.used, 0, 'sin cobro'); assert.strictEqual(calls, 1, 'una sola llamada al modelo');
-    assert(r.recorded.some(x => x.p_provider === 'fail:no_extra'), 'queda contado para medir cuántas veces pasa');
-    assert(!r.recorded.some(x => x.p_provider === 'fail:bad_output'));
+    const seq = [JSON.stringify({ explanation:'', example_en:'', example_es:'' }), JSON.stringify({ explanation:'Truco: piensa en "yesterday" como señal de pasado terminado; por eso se usa el pasado simple.', example_en:'', example_es:'' })];
+    const prov = async()=>{ const c = seq[Math.min(calls++, 1)]; return cfReply(c)(); };
+    const r = await call({ db, member:false, body:TRIAL_REQ('req-vacio-0001'), provider: prov });
+    assert.strictEqual(r.out.ok, false); assert.strictEqual(r.out.reason, 'bad_output'); assert.strictEqual(db.trial.used, 0, 'sin cobro');
+    const r2 = await call({ db, member:false, body:TRIAL_REQ('req-vacio-0001'), provider: prov });
+    assert.strictEqual(r2.out.ok, true); assert.strictEqual(db.trial.used, 1, 'el reintento válido cobra una sola vez'); assert.strictEqual(calls, 2, 'máximo 2 llamadas al modelo');
   });
-  await test('sin extra (miembro): responde no_extra final y el flujo normal sigue igual con una explicación nueva', async()=>{
-    const r = await call({ body:Object.assign({}, EXPLAIN, { request_id:'req-ne-member1' }), provider: cfReply(JSON.stringify({ explanation:'', example_en:'', example_es:'' })) });
-    assert.strictEqual(r.out.reason, 'no_extra'); assert.strictEqual(r.out.final, true);
-    const r2 = await call({ body:Object.assign({}, EXPLAIN, { request_id:'req-ne-member2' }), provider: cfReply(JSON.stringify({ explanation:'Piensa en "yesterday" como una señal de pasado terminado: ayer ya no existe, por eso pasado simple.', example_en:'', example_es:'' })) });
-    assert.strictEqual(r2.out.ok, true);
+  await test('los 4 casos del producto: explicación nueva + ejemplo nuevo con traducción se ENTREGAN completos (guardas no los rompen)', async()=>{
+    const casos = [
+      { c:{ base:'Para preguntar por UNA cosa cerca de ti, usamos “this”.', shown:['What is that?','This is a pen.'], skill:'grammar', correct:'this', chosen:'they', question:'What is ___ ?', failed:true },
+        o:{ explanation:'También puedes usar this para presentar a alguien o mostrar algo que tienes cerca.', example_en:'This is my friend Anna.', example_es:'Ella es mi amiga Anna.' } },
+      { c:{ base:'Para responder “sí” a una pregunta con “is”, contestamos “it is”.', shown:['Is this a book? Yes, it is.','Is this your bag? Yes, it is.'], skill:'grammar', correct:'is', chosen:'are', question:'Yes , it ___ .', failed:true },
+        o:{ explanation:'It también se usa para hablar del clima, la hora o una situación. En presente normalmente lo acompañamos de is.', example_en:'It is cold today.', example_es:'Hoy hace frío.' } },
+      { c:{ base:'“Yellow” significa amarillo.', shown:['The banana is yellow.','I like your yellow hat.'], skill:'vocab', correct:'Yellow', chosen:'Brown', question:'How do you say "amarillo" in English?', failed:true },
+        o:{ explanation:'Los colores en inglés normalmente van antes del objeto cuando lo describen.', example_en:'She has a yellow car.', example_es:'Ella tiene un auto amarillo.' } },
+      { c:{ base:'Usamos “so” para el resultado de algo.', shown:['It was late, so we left.','He was sick, so he stayed home.'], skill:'grammar', correct:'so', chosen:'because', question:'She was hungry, ___ she ate a sandwich.', failed:true },
+        o:{ explanation:'So también sirve para expresar el resultado o la consecuencia de algo. Conecta lo que pasó con lo que ocurrió después.', example_en:'I was tired, so I went home.', example_es:'Estaba cansado, así que me fui a casa.' } },
+    ];
+    casos.forEach(k => { const r = QCM.validateOutput('explain', k.o, [], k.c); assert(r && r.explanation === k.o.explanation && r.example_en === k.o.example_en && r.example_es === k.o.example_es, 'se entrega completo: ' + k.o.example_en); });
   });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);

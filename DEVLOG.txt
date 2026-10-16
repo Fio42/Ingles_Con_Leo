@@ -1548,3 +1548,12 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Pruebas: tools/tests/leo-ai-server.test.js (61), leo-ai.test.js (14), NUEVA leo-ai-complementario.test.js (9). Todas las demás en verde salvo error-monitor.test.js (2 fallos YA conocidos, ver entrada 2026-10-15). leo-ai-trial-sql se omite (falta pglite).
 - app.js ?v=20261016d (y style.css ?v=20261016a) en los .html. Respaldos antes del cambio en tools/leo-ai-eval/out/*before-complementario*.
 - PENDIENTE: desplegar leo-ai (v17) en Supabase. NO se probó con el modelo real (sin red en la sesión): al desplegar, revisar con tools/leo-ai-eval varios casos reales y mirar cuántas veces sale fail:no_extra (si pasa en la mayoría, el prompt es demasiado tímido).
+
+=== 2026-10-16 · Leo AI v18: profesor particular, SIN "no_extra" ===
+- Decision de Leo: si el alumno pulsa "Explicame", NUNCA se le dice que ya tiene suficiente. Se elimino "no_extra" (servidor y pagina).
+- leo-ai.ts v18: EXPLAIN_RULES = profesor particular paciente que ENSENA ALGO NUEVO: elige una estrategia (otro angulo, ampliar cuando/como se usa, otro uso frecuente, comparar con lo que se confunde, truco, o por que su opcion no funciona AQUI), ejemplo NUEVO con traduccion natural, nivel (principiante sencillo / intermedio-avanzado matiz), 2-4 frases, sin inventar. Si el ejercicio es muy simple: otra aplicacion real de la palabra. Reglas +8% vs v16 (3325 vs 3069 caracteres, ~+65 tokens de entrada por pedido).
+- Respuesta vacia, que repite la explicacion base o cita un ejemplo ya mostrado = mala salida (bad_output): no se entrega, NO cobra credito, mismo reintento de siempre (max 2 llamadas al modelo por pulsacion). Si se agota, error tecnico normal ("Leo AI no pudo responder ahora..."), nunca mensaje pedagogico.
+- Se conserva: recomendacion por errores repetidos (LEO_AI_REPEAT_MIN=3) y enlace al Plan; guardas de ejemplos y absolutos; limites, creditos, pagos, auth, progreso.
+- Pruebas: leo-ai-server 61, leo-ai 14, leo-ai-complementario 9 (incluye los 4 casos del producto: this/they, it is/are, yellow/brown, so). Resto en verde salvo error-monitor (2 fallos previos, ver 2026-10-15).
+- app.js ?v=20261016e, style.css ?v=20261016b. Respaldos: tools/leo-ai-eval/out/*.v17.* y *before-complementario*.
+- PENDIENTE: probar con el modelo real (la sesion no tiene red hacia Supabase/Cloudflare ni token de miembro). Medir fail:bad_output en ai_usage_daily: si sube mucho, el modelo esta devolviendo vacio/repetido y hay que ajustar el prompt.

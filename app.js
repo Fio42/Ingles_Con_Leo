@@ -2751,7 +2751,6 @@ const LEO_AI_FAIL_TEXT = {
   trial_busy: 'Leo AI sigue con tu pedido anterior. Espera un momento y vuelve a tocar el botón.',
   trial_noverify: 'Confirma tu correo para usar Leo AI. Revisa tu bandeja de entrada.',
   members_only: 'Esta ayuda de Leo AI es solo para miembros.',
-  no_extra: 'Con la explicación y los ejemplos de arriba ya tienes lo necesario para este error.',
   default: 'Leo AI no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo en un momento. La explicación de arriba sigue siendo válida.'
 };
 const _leoAiCache = new Map();
@@ -3099,13 +3098,6 @@ function leoAiRepeatPractice(ctx){
 function renderLeoAiAnswer(out, payload, res, ctx){
   out.innerHTML = '';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
-  if(res && !res.ok && res.reason === 'no_extra'){
-    // Nada nuevo que decir: solo una nota discreta (sin cabecera ni recuadro), más el enlace al Plan si ya hay un patrón de errores.
-    out.classList.add('is-quiet');
-    add('p', 'leo-ai-note', LEO_AI_FAIL_TEXT.no_extra);
-    if(payload.mode === 'explain'){ const r = leoAiRepeatPractice(ctx); if(r){ const link = add('a', 'leo-ai-focus', r.text); link.href = r.href; } }
-    return;
-  }
   const head = add('div', 'leo-ai-head', 'Leo AI');
   if(!LEO_AI_PUBLIC){ const beta = document.createElement('span'); beta.className = 'leo-ai-beta'; beta.textContent = 'Beta'; head.appendChild(beta); }
   const a = res && res.ok && res.answer;

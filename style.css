@@ -2209,7 +2209,6 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .leo-ai-btn:disabled{opacity:.6;cursor:default;}
 .leo-ai-answer{margin-top:10px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:var(--radius-sm);padding:12px 14px;color:var(--ink);text-align:left;}
 .leo-ai-answer.is-error{border-left-color:var(--line);}
-.leo-ai-answer.is-quiet{background:none;border:0;padding:0;margin-top:8px;}
 .leo-ai-head{font-weight:800;font-size:0.82rem;letter-spacing:0.03em;color:var(--blue-deep);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
 .leo-ai-beta{font-size:0.68rem;font-weight:700;letter-spacing:0;background:var(--blue-tint);color:var(--blue-deep);border-radius:999px;padding:2px 8px;}
 .leo-ai-loading{margin:0;color:var(--ink-soft);font-size:0.9rem;}
