@@ -54,14 +54,12 @@
   "url": "https://inglesconleo.com/"
 }
 </script>
-<!-- Google Analytics (gtag.js) + Meta Pixel, carga diferida.
-     Aqui solo se crean las colas (dataLayer/gtag y fbq), asi que
-     cualquier evento (PageView, trackLeoEvent...) se guarda desde el
-     primer momento. Los scripts pesados de Google y Meta se descargan
-     despues de window.load, cuando el navegador queda libre (o a los
-     3 s como maximo, o antes si la persona toca la pagina), y al
-     cargar procesan la cola completa. Asi no compiten con el primer
-     pintado de la Home. Mismo ID de GA y de Pixel que meta-pixel.js. -->
+<!-- Google Analytics (gtag.js) + Meta Pixel.
+     Se crean las colas (dataLayer/gtag y fbq) y los scripts de Google y
+     Meta se piden DE INMEDIATO (async, no bloquean el render), igual que
+     en el resto de paginas. Antes (28 sep) esperaban a window.load + idle
+     (hasta 3 s) y se perdian las visitas de anuncios que entran y se van
+     rapido. Mismo ID de GA y de Pixel que meta-pixel.js. -->
 <script src="error-monitor.js?v=20261007e"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -87,19 +85,10 @@
     function loadTags(){
       if(loaded) return;
       loaded = true;
-      removeEventListener('pointerdown', loadTags, true);
-      removeEventListener('keydown', loadTags, true);
       addScript('https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR');
       addScript('https://connect.facebook.net/en_US/fbevents.js');
     }
-    function scheduleTags(){
-      if('requestIdleCallback' in window) requestIdleCallback(loadTags, { timeout: 3000 });
-      else setTimeout(loadTags, 1500);
-    }
-    addEventListener('pointerdown', loadTags, true);
-    addEventListener('keydown', loadTags, true);
-    if(document.readyState === 'complete') scheduleTags();
-    else addEventListener('load', scheduleTags);
+    loadTags();
   })();
 </script>
 </head>
