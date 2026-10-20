@@ -1,15 +1,12 @@
 {
-  "lastRun": "2026-10-19T18:05:38.341Z",
+  "lastRun": "2026-10-20T16:09:44.932Z",
   "findingKeys": [
-    "IMPORTANT|lighthouse-performance|https://inglesconleo.com/|Lighthouse Performance = #/#.",
-    "IMPORTANT|lighthouse-performance|https://inglesconleo.com/articulo-verbo-to-be.html|Lighthouse Performance = #/#.",
-    "IMPORTANT|lighthouse-performance|https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html|Lighthouse Performance = #/#.",
     "IMPORTANT|lighthouse-performance|https://inglesconleo.com/miembros.html|Lighthouse Performance = #/#.",
     "IMPORTANT|lighthouse-bestPractices|https://inglesconleo.com/miembros.html|Lighthouse Best Practices = #/#.",
     "INFO|lighthouse-meta-pixel|https://inglesconleo.com|Best Practices se calculó sin la cookie de terceros del Meta Pixel (# página(s))."
   ],
   "pageSizes": {
-    "https://inglesconleo.com/": 37309,
+    "https://inglesconleo.com/": 37709,
     "https://inglesconleo.com/articulos.html": 74031,
     "https://inglesconleo.com/sobre-leo.html": 7967,
     "https://inglesconleo.com/clases-particulares.html": 20534,
@@ -173,74 +170,74 @@
   "lighthouse": {
     "https://inglesconleo.com/": {
       "label": "Home",
-      "performance": 76,
+      "performance": 82,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 3112.7599999999993,
+      "lcp": 3097.5545,
       "cls": 0.0007138476408626593,
-      "tbt": 675.5,
+      "tbt": 462.4360000000006,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/practica.html": {
       "label": "Práctica (gratis)",
-      "performance": 82,
+      "performance": 83,
       "seo": 100,
       "accessibility": 90,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1834.0804999999998,
+      "lcp": 1910.132,
       "cls": 0.0001349711926000826,
-      "tbt": 683.5,
+      "tbt": 622,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulos.html": {
       "label": "Artículos (índice)",
-      "performance": 80,
+      "performance": 84,
       "seo": 100,
       "accessibility": 96,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 2787.6364999999996,
+      "lcp": 2553.7925,
       "cls": 0.002367623477624209,
-      "tbt": 608.5,
+      "tbt": 472.99999999999955,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulo-verbo-to-be.html": {
       "label": "Artículo: verbo to be",
-      "performance": 78,
+      "performance": 84,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 2787.604,
+      "lcp": 1917.955,
       "cls": 0.0008729899738101776,
-      "tbt": 716,
+      "tbt": 591.5,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulo-presente-simple.html": {
       "label": "Artículo: presente simple",
-      "performance": 82,
+      "performance": 84,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 2939.92,
+      "lcp": 1958.3540000000005,
       "cls": 0.008559208850739628,
-      "tbt": 478,
+      "tbt": 594,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html": {
       "label": "Artículo: cómo aprender desde cero",
-      "performance": 76,
+      "performance": 83,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 2938.3934999999997,
+      "lcp": 2059.7545,
       "cls": 0,
-      "tbt": 773,
+      "tbt": 622,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/miembros.html": {
@@ -250,9 +247,9 @@
       "accessibility": 98,
       "bestPractices": 77,
       "metaPixelIgnored": false,
-      "lcp": 3457.1935,
-      "cls": 0.07854841271265894,
-      "tbt": 898.9999999999991,
+      "lcp": 3378.48,
+      "cls": 0.07874976831109898,
+      "tbt": 984,
       "consoleErrors": 0
     }
   }
