@@ -352,7 +352,9 @@ Deno.serve(async (req: Request) => {
       // ni ninguna otra columna.
       const billingAgreementId = resource.billing_agreement_id
       if (billingAgreementId) {
-        await refreshNextRenewal(billingAgreementId)
+        // onlyAdvance: un aviso repetido o atrasado nunca puede
+        // devolver la fecha a una anterior (ver refreshNextRenewal).
+        await refreshNextRenewal(billingAgreementId, undefined, true)
       }
     }
 
@@ -522,15 +524,25 @@ async function reactivateMemberFromPaypal(subscriptionId: string): Promise<strin
 // Acepta un "prefetched" opcional (el mismo detalle que ya se haya
 // consultado para el evento Subscribe de Meta) para no repetir la
 // llamada a la API de PayPal.
-async function refreshNextRenewal(subscriptionId: string, prefetched?: any | null) {
+async function refreshNextRenewal(subscriptionId: string, prefetched?: any | null, onlyAdvance = false) {
   try {
     const data = prefetched !== undefined ? prefetched : await fetchPaypalSubscriptionDetails(subscriptionId)
     const nextBillingTime = data && data.billing_info && data.billing_info.next_billing_time
     if (nextBillingTime) {
-      const { error } = await supabase
+      // La fecha es siempre la que devuelve PayPal en este momento,
+      // nunca una calculada a mano. Si no es una fecha valida, no se escribe.
+      if (Number.isNaN(Date.parse(String(nextBillingTime)))) return
+      let query = supabase
         .from('profiles')
         .update({ next_renewal_at: nextBillingTime })
         .eq('paypal_subscription_id', subscriptionId)
+      if (onlyAdvance) {
+        // Solo se escribe si la fecha nueva es POSTERIOR a la guardada
+        // (o no hay ninguna): evita que eventos duplicados o fuera de
+        // orden pisen una fecha correcta con una vieja.
+        query = query.or(`next_renewal_at.is.null,next_renewal_at.lt.${new Date(nextBillingTime).toISOString()}`)
+      }
+      const { error } = await query
       if (error) console.error('Error guardando next_renewal_at (PayPal):', error)
     }
   } catch (e) {

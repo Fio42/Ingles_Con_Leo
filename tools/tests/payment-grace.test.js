@@ -427,6 +427,47 @@ function sweepJs(row, nowSec, hours){
     await p2.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
     assert.strictEqual(p2.row().is_member, false);
   });
+  await test('Cobro mensual: next_renewal_at usa la fecha real de PayPal y avanza mes a mes', async()=>{
+    const p = paypal({ row: { next_renewal_at: '2026-11-01T10:00:00Z' } });
+    await p.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1', state: 'completed' });
+    assert.strictEqual(p.row().next_renewal_at, '2026-12-01T10:00:00Z', 'exactamente lo que devolvio PayPal');
+    assert.strictEqual(p.row().is_member, true);
+    assert.ok(p.net.calls.some(c => c.url.includes('/v1/billing/subscriptions/I-SUB1')), 'consulta a PayPal, no calcula');
+  });
+  await test('Aviso repetido o atrasado: no devuelve la fecha a una anterior ni la reescribe', async()=>{
+    // PayPal ya dice 2026-12-01, pero el perfil ya tiene una fecha MAS NUEVA (otro aviso mas reciente ya la guardo)
+    const p = paypal({ row: { next_renewal_at: '2027-01-01T10:00:00Z' } });
+    await p.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    assert.strictEqual(p.row().next_renewal_at, '2027-01-01T10:00:00Z');
+    // repetido con la misma fecha: queda igual
+    const q = paypal({ row: { next_renewal_at: '2026-12-01T10:00:00Z' } });
+    await q.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    await q.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    assert.strictEqual(q.row().next_renewal_at, '2026-12-01T10:00:00Z');
+  });
+  await test('Cobro sin fecha valida de PayPal, sin suscripcion o sin billing_agreement_id: no escribe nada ni toca is_member', async()=>{
+    const a = paypal({ row: { next_renewal_at: '2026-11-01T10:00:00Z' }, net: { paypalSubs: { 'I-SUB1': { id: 'I-SUB1', status: 'ACTIVE', plan_id: 'P-PLAN', billing_info: {} } } } });
+    await a.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    assert.strictEqual(a.row().next_renewal_at, '2026-11-01T10:00:00Z');
+    const b = paypal({ row: { next_renewal_at: '2026-11-01T10:00:00Z' }, net: { paypalSubs: { 'I-SUB1': { id: 'I-SUB1', status: 'ACTIVE', billing_info: { next_billing_time: 'basura' } } } } });
+    await b.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    assert.strictEqual(b.row().next_renewal_at, '2026-11-01T10:00:00Z');
+    const c = paypal({ row: { next_renewal_at: '2026-11-01T10:00:00Z' } });
+    c.net.paypalSubs = {};
+    const r = await c.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-SUB1' });
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(c.row().next_renewal_at, '2026-11-01T10:00:00Z');
+    const d = paypal({ row: { next_renewal_at: '2026-11-01T10:00:00Z' } });
+    await d.send('PAYMENT.SALE.COMPLETED', {});
+    assert.strictEqual(d.row().next_renewal_at, '2026-11-01T10:00:00Z');
+    for(const x of [a, b, c, d]) assert.strictEqual(x.row().is_member, true);
+  });
+  await test('Cobro de una suscripcion ajena (ningun perfil): no crea ni cambia perfiles', async()=>{
+    const p = paypal({ net: { paypalSubs: { 'I-OTRA': Object.assign({}, PP_SUB, { id: 'I-OTRA' }) } } });
+    await p.send('PAYMENT.SALE.COMPLETED', { billing_agreement_id: 'I-OTRA' });
+    assert.strictEqual(p.db.rows.length, 1);
+    assert.strictEqual(p.row().next_renewal_at, undefined);
+  });
   await test('Activacion nueva (ACTIVATED) sigue igual: activa y manda bienvenida', async()=>{
     const p = paypal({ row: { is_member: false, member_welcome_sent_at: null } });
     await p.send('BILLING.SUBSCRIPTION.ACTIVATED', { id: 'I-SUB1', custom_id: 'u1', subscriber: { email_address: 'ana@mail.com' }, billing_info: { last_payment: { amount: { value: '2.00', currency_code: 'USD' } } } });
