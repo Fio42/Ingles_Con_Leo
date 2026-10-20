@@ -20,7 +20,7 @@ const crypto = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE = 'https://inglesconleo.com';
-const CSS_V = '20261001g';
+const CSS_V = '20261005b';
 const GL_V = '20261002a';
 const TODAY = new Date().toISOString().slice(0, 10);
 const VOICE_A = 'en-US-AvaMultilingualNeural';
@@ -42,7 +42,7 @@ const extras = require('./glosario/extras.js');
 
 /* ---------- utilidades ---------- */
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const md = s => esc(s).replace(/_([^_]+)_/g, '<em>$1</em>');
+const md = s => esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\[([^\]]+)\]\((\/[^)\s]*)\)/g, '<a class="inline-link" href="$2">$1</a>').replace(/_([^_]+)_/g, '<em>$1</em>');
 const plain = s => String(s).replace(/_([^_]+)_/g, '$1');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 /* Misma clave que usa el buscador: evita duplicados que solo cambian por
@@ -240,7 +240,7 @@ function termPage(t) {
   const h1 = h1Of(t);
   const title = `${h1} - Inglés con Leo`;
   const suffix = t.tipo === 'diferencia' ? ' Con ejemplos, errores comunes y audio.' : ' Con ejemplos, pronunciación y audio.';
-  const desc = trunc(plain(t.resp) + suffix, 158);
+  const desc = trunc(plain(t.metaResp || t.resp) + suffix, 158);
   const hasAudio = exists(`audio/glosario/${t.slug}.mp3`);
   const hasDialogAudio = t.dialogo && exists(`audio/glosario/${t.slug}-dialogo.mp3`);
   const arts = [t.art, t.art2].filter(Boolean).map(articleInfo);

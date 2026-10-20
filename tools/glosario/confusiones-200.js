@@ -1004,4 +1004,7 @@ function ficha([slug, t, resp, pron, en, es]) {
 module.exports = fichas
   .filter(([slug]) => slug !== 'person-vs-people') // ya existe en el glosario anterior
   .slice(0, 200)
+  // Estas fichas se redactaron a mano y viven en terminos.js (no se regeneran desde la plantilla).
+  // El filtro va DESPUES del slice para que el lote siga siendo de 200 y no entren fichas de reserva.
+  .filter(([slug]) => !['bored-vs-boring', 'desert-vs-dessert', 'principal-vs-principle'].includes(slug))
   .map(ficha);
