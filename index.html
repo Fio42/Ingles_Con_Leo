@@ -587,8 +587,8 @@
     Miembros
   </button>
 </nav>
-<script src="app.js?v=20261016e"></script>
-<script src="mini-lecciones.js?v=20261010a"></script>
+<script defer src="app.js?v=20261016e"></script>
+<script defer src="mini-lecciones.js?v=20261010a"></script>
 <!-- LeoBot necesita LeoBackend para reportar bugs/soporte y saber si
      hay sesion iniciada. defer: no bloquea el primer render (esta
      pagina se optimizo para LCP), y de sobra esta listo antes de que
@@ -630,7 +630,16 @@
   else addEventListener('load', scheduleChatbot);
 })();
 </script>
-<script>personalizeNav(); renderDailyMiniLesson(); initScrollReveal();</script>
+<script>
+/* app.js y mini-lecciones.js ahora llevan defer (no bloquean el primer pintado).
+   Los scripts defer corren en orden, antes de DOMContentLoaded, asi que estas
+   tres funciones se llaman justo cuando ya existen. */
+(function(){
+  function initHome(){ personalizeNav(); renderDailyMiniLesson(); initScrollReveal(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHome);
+  else initHome();
+})();
+</script>
 <script>
   (function(){
     var form = document.getElementById('contactForm');
