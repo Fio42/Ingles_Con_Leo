@@ -1598,3 +1598,10 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - generar_glosario.js: md() admite [texto](/ruta/) y **negrita**; nuevo campo opcional metaResp (meta description distinta de la respuesta rapida); CSS_V = 20261005b (igual que el sitio en vivo).
   - fechas.json: dateModified fijado en 2026-10-20 para las 3 fichas.
   - Comprobado en copia temporal fuera del repo: la regeneracion reproduce las 3 fichas identicas byte a byte. El generador NO se ejecuto en el repo.
+
+2026-10-20 (Indexador: robot que pulsa "Solicitar indexacion" en Search Console)
+- Nuevo tools/indexador (Playwright + Chrome real con perfil persistente). Lee sitemap.xml, inspecciona cada URL en Search Console, y si no esta indexada pulsa el boton "Solicitar indexacion"; solo marca "solicitada" cuando Google muestra su confirmacion. NO usa la API ni envia el sitemap.
+- Cola persistente, registro CSV (fecha, URL, resultado), sin duplicados, limite de cuota (suspende 12 h y reintenta en la siguiente ejecucion), CAPTCHA / verificacion / sesion caducada = se detiene y avisa (toast de Windows + ALERTA.txt), sin intentar saltarse nada.
+- Sesion de Google, cola y registro viven en %LOCALAPPDATA%\InglesConLeo\indexador (fuera del repo y de OneDrive). Nada de credenciales en el repositorio.
+- Exclusiones iniciales en config.json: las 4 fichas con ventana de medicion hasta el 26-oct, sobre-leo, los 3 articulos "requiere revision" y los 8 pares espejo del glosario (todo pendiente de decision de Leo). Prioridad: las 10 URLs de SEO_URLS_INDEXACION_2026-10-20.md.
+- Pruebas: 13/13 contra una replica local de Search Console (tools/indexador/tests). Los selectores NO se han podido probar contra el Google real desde la nube: por eso existe probar.bat (inspecciona 1 URL sin pulsar nada).

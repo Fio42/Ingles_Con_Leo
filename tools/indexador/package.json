@@ -1,0 +1,16 @@
+{
+  "name": "indexador",
+  "private": true,
+  "description": "Robot que inspecciona las URLs del sitemap en Google Search Console y pulsa Solicitar indexacion. No forma parte del sitio publicado.",
+  "type": "commonjs",
+  "scripts": {
+    "ejecutar": "node indexador.js",
+    "probar": "node indexador.js --prueba",
+    "estado": "node indexador.js --estado",
+    "login": "node login.js",
+    "test": "node --test tests/indexador.test.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.56.0"
+  }
+}
