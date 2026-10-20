@@ -329,6 +329,22 @@ Deno.serve(async (req: Request) => {
           await reportServerError('payment', 'paypal-webhook', 'Error desactivando miembro', 'deactivate_' + (error.code || 'db'), 'error')
         }
       }
+    } else if (type === 'BILLING.SUBSCRIPTION.RE-ACTIVATED') {
+      // Una suscripción SUSPENDIDA (por ejemplo por cobros fallidos) que
+      // se vuelve a activar manda este evento, NO el de ACTIVATED. Antes
+      // se ignoraba y la persona se quedaba sin acceso aunque ya
+      // estuviera pagando (2026-10-20). Aquí solo se RECUPERA a quien ya
+      // era miembro: no crea perfiles, no manda bienvenida ni evento a Meta.
+      const subscriptionId = resource.id
+      if (subscriptionId) {
+        const resultado = await reactivateMemberFromPaypal(subscriptionId)
+        if (resultado === 'unavailable') {
+          // PayPal no pudo confirmarse en este momento: se responde 503
+          // para que PayPal reintente el aviso en vez de perder la
+          // reactivación para siempre.
+          return new Response('retry', { status: 503 })
+        }
+      }
     } else if (type === 'PAYMENT.SALE.COMPLETED') {
       // Se dispara en cada cobro recurrente ya hecho de una
       // suscripción (no solo en la activación). Se usa SOLO para
@@ -437,6 +453,64 @@ async function fetchPaypalSubscriptionDetails(subscriptionId: string): Promise<a
   } catch (e) {
     console.error('Error consultando la suscripción de PayPal:', e)
     return null
+  }
+}
+
+// Reactivación de una suscripción de PayPal que estaba suspendida.
+// NO se confía solo en el aviso: se le pregunta a PayPal en este
+// momento cómo está la suscripción, y solo se reactiva si:
+//   1. PayPal la reporta ACTIVE ahora mismo,
+//   2. es del plan de la tienda (PAYPAL_PLAN_ID, si está configurado),
+//   3. ya pertenece a un perfil que la tiene guardada
+//      (paypal_subscription_id): nunca se crea un perfil ni se adivina
+//      el usuario por el aviso.
+// Devuelve: 'reactivated' | 'already_member' | 'not_active' |
+//           'wrong_plan' | 'no_profile' | 'unavailable' (no se pudo
+//           consultar a PayPal o la base: conviene reintentar).
+// Solo toca is_member; la fecha de renovación se refresca aparte.
+async function reactivateMemberFromPaypal(subscriptionId: string): Promise<string> {
+  try {
+    const details = await fetchPaypalSubscriptionDetails(subscriptionId)
+    if (!details) return 'unavailable'
+    if (details.id && details.id !== subscriptionId) return 'not_active'
+    if (String(details.status || '').toUpperCase() !== 'ACTIVE') return 'not_active'
+    const expectedPlan = Deno.env.get('PAYPAL_PLAN_ID') || ''
+    if (expectedPlan && details.plan_id && details.plan_id !== expectedPlan) {
+      await reportServerError('payment', 'paypal-webhook', 'Reactivacion de un plan que no es el de la tienda', 'reactivate_wrong_plan', 'warning')
+      return 'wrong_plan'
+    }
+    const { data: profile, error: readError } = await supabase
+      .from('profiles')
+      .select('id, is_member')
+      .eq('paypal_subscription_id', subscriptionId)
+      .maybeSingle()
+    if (readError) {
+      console.error('Error buscando perfil para reactivar (PayPal):', readError)
+      return 'unavailable'
+    }
+    if (!profile) {
+      await reportServerError('payment', 'paypal-webhook', 'Reactivacion sin perfil que tenga esa suscripcion', 'reactivate_no_profile', 'warning')
+      return 'no_profile'
+    }
+    if (profile.is_member) {
+      await refreshNextRenewal(subscriptionId, details)
+      return 'already_member'
+    }
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_member: true })
+      .eq('paypal_subscription_id', subscriptionId)
+      .eq('is_member', false)
+    if (error) {
+      console.error('Error reactivando miembro (PayPal):', error)
+      await reportServerError('payment', 'paypal-webhook', 'Error reactivando miembro', 'reactivate_' + (error.code || 'db'), 'critical')
+      return 'unavailable'
+    }
+    await refreshNextRenewal(subscriptionId, details)
+    return 'reactivated'
+  } catch (e) {
+    console.error('Error reactivando miembro (PayPal):', e)
+    return 'unavailable'
   }
 }
 

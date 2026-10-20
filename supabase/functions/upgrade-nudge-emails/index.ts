@@ -630,8 +630,12 @@ Deno.serve(async (req: Request) => {
 
     const now = Date.now()
     const counts: Record<string, number> = {}
+    // Quien tiene una suscripción de Stripe con el cobro pendiente (gracia
+    // vencida o reintentos en curso) no recibe campañas de "hazte miembro".
+    const pendingPaymentIds = await loadPendingPaymentIds()
 
     for (const p of allProfiles as unknown as Profile[]) {
+      if (pendingPaymentIds.has(p.id)) continue
       // Antes de decidir, revisar si algún correo de la secuencia por
       // calendario ya "caducó" (pasó su SKIP_AFTER_DAYS) sin haberse
       // mandado. Si sí, se marca 'skipped' en lifecycle_emails (una sola
@@ -1180,6 +1184,48 @@ async function markExpiredAsSkipped(
 
 // ---------------- Mandar + registrar ----------------
 
+// ---- Cobro pendiente (2026-10-20) ----
+// stripe-webhook pone profiles.payment_failed_at cuando falla una renovación
+// y lo borra al recuperarse el pago o al cancelarse del todo. Mientras esa
+// fecha exista (hasta PENDING_PAYMENT_MAX_DAYS días, por si nunca llegara el
+// aviso de cancelación) la persona ya tiene una suscripción por cobrar y NO
+// debe recibir campañas de "hazte miembro". Se consulta aparte y a prueba de
+// fallos: si la columna aún no existe (migración sin aplicar) se ignora y el
+// envío funciona exactamente como antes.
+const PENDING_PAYMENT_MAX_DAYS = 45
+
+function pendingPaymentCutoffIso(): string {
+  return new Date(Date.now() - PENDING_PAYMENT_MAX_DAYS * 86400000).toISOString()
+}
+
+async function loadPendingPaymentIds(): Promise<Set<string>> {
+  const ids = new Set<string>()
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .not('payment_failed_at', 'is', null)
+      .gte('payment_failed_at', pendingPaymentCutoffIso())
+      .limit(1000)
+    if (!error) for (const r of data || []) ids.add(r.id as string)
+  } catch (_e) { /* sin la columna o sin red: no se excluye a nadie */ }
+  return ids
+}
+
+async function hasPendingPayment(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('payment_failed_at')
+      .eq('id', userId)
+      .maybeSingle()
+    if (error || !data || !data.payment_failed_at) return false
+    return Date.parse(data.payment_failed_at as string) >= Date.parse(pendingPaymentCutoffIso())
+  } catch (_e) {
+    return false
+  }
+}
+
 // Vuelve a leer is_member y lifecycle_emails EN ESTE MOMENTO (no el
 // valor que traía la lista original, que pudo quedar viejo mientras
 // se mandaban los correos anteriores de esta misma corrida), manda
@@ -1206,6 +1252,9 @@ async function sendIfStillEligible(
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
+  // Cobro pendiente en Stripe: no se le manda ninguna campaña de cuenta
+  // gratis (conversión, límite, checkout...). Salvo envío manual de Leo.
+  if (!manual && !expectedIsMember && (await hasPendingPayment(userId))) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de estos correos
   // Correo rebotado o marcado como spam (lo pone resend-webhook): ninguna
   // automatización le escribe más (2026-10-08).
