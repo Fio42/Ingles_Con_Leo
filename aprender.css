@@ -102,3 +102,6 @@
 .ap-tag-free{background:var(--green-tint);color:#0F6B40;}
 .ap-card-locked{background:var(--paper);}
 .ap-card-locked .ap-card-t{color:var(--ink-soft);}
+
+.ap-card-soon{background:var(--paper);opacity:.85;}
+.ap-card-soon .ap-card-t{color:var(--ink-soft);}

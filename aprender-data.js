@@ -95,6 +95,7 @@ const APRENDER_LESSONS = [
   },
   {
     id: 'do-does',
+    soon: true,   // 'Próximamente': no se puede abrir ni se recomienda hasta que tenga su audio (quitar esta línea para activarla)
     title: 'Do vs does',
     short: 'Cuándo usar do y cuándo does para preguntar y negar.',
     level: 'A1',
@@ -158,6 +159,7 @@ const APRENDER_LESSONS = [
   },
   {
     id: 'can-could-should',
+    soon: true,   // 'Próximamente': no se puede abrir ni se recomienda hasta que tenga su audio (quitar esta línea para activarla)
     title: 'Can, could y should',
     short: 'Poder, pedir con cortesía y dar consejos.',
     level: 'A2',
@@ -215,6 +217,7 @@ const APRENDER_LESSONS = [
   },
   {
     id: 'in-on-at',
+    soon: true,   // 'Próximamente': no se puede abrir ni se recomienda hasta que tenga su audio (quitar esta línea para activarla)
     title: 'In, on y at',
     short: 'Tres palabras para decir "en": cuándo usar cada una.',
     level: 'A1',
@@ -275,6 +278,7 @@ const APRENDER_LESSONS = [
   },
   {
     id: 'presente-simple-vs-continuo',
+    soon: true,   // 'Próximamente': no se puede abrir ni se recomienda hasta que tenga su audio (quitar esta línea para activarla)
     title: 'Presente simple vs presente continuo',
     short: 'Lo que haces cada día frente a lo que pasa ahora mismo.',
     level: 'A2',

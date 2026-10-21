@@ -25,7 +25,9 @@
   'use strict';
 
   var KEY = 'leo_aprender_v1';
-  var LESSONS = (typeof APRENDER_LESSONS !== 'undefined') ? APRENDER_LESSONS : [];
+  var ALL_LESSONS = (typeof APRENDER_LESSONS !== 'undefined') ? APRENDER_LESSONS : [];
+  var LESSONS = ALL_LESSONS.filter(function(l){ return !l.soon; });   // las que ya se pueden abrir
+  var SOON = ALL_LESSONS.filter(function(l){ return !!l.soon; });      // se muestran como 'Próximamente'
   var END_AUDIO = 'audio/aprender/fin.mp3';
   var END_SAY = '¡Muy bien! Ahora puedes practicar lo que aprendiste.';
   var SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
@@ -369,9 +371,9 @@
   }
   function upsellHtml(ctx){
     var h = '<div class="ap-upsell" id="apUpsell"><p class="ap-eyebrow">Solo para miembros</p>' +
-      '<h2 class="ap-upsell-h">' + (ctx && ctx.title ? esc(ctx.title) : 'Desbloquea las ' + LESSONS.length + ' microlecciones') + '</h2>';
+      '<h2 class="ap-upsell-h">' + (ctx && ctx.title ? esc(ctx.title) : (SOON.length ? 'Más microlecciones, en camino' : 'Desbloquea las ' + LESSONS.length + ' microlecciones')) + '</h2>';
     if(ctx && ctx.reason) h += '<p class="ap-upsell-reason">' + esc(ctx.reason) + '</p>';
-    h += '<ul class="ap-upsell-list"><li>Las ' + LESSONS.length + ' microlecciones, con audio, ejemplos y trucos para recordar</li>' +
+    h += '<ul class="ap-upsell-list"><li>' + (SOON.length ? 'Las nuevas microlecciones, con audio, ejemplos y trucos, a medida que se sumen' : 'Las ' + LESSONS.length + ' microlecciones, con audio, ejemplos y trucos para recordar') + '</li>' +
       '<li>Te recomendamos la que necesitas según tus errores</li>' +
       '<li>Práctica ilimitada, repaso de errores y Plan de estudio</li></ul>' +
       '<a class="btn btn-primary ap-big-btn" id="apPay" href="' + PAY_HREF + '" data-from="' + esc((ctx && ctx.from) || 'lista') + '">Hazte miembro</a>' +
@@ -390,7 +392,7 @@
     h += '<a class="btn btn-primary ap-practice" id="apPractice" href="' + esc(practiceHref(lesson)) + '">' + practiceLabel(lesson) + '</a>';
     h += '<p class="ap-note">Ver una lección te ayuda a entender. La práctica es la que comprueba que ya lo sabes.</p>';
     if(accessInfo.tier !== 'member'){
-      h += '<div class="ap-end-upsell">' + upsellHtml({ title: 'Te quedan ' + (LESSONS.length - 1) + ' microlecciones por desbloquear', from: 'fin' }) + '</div>';
+      h += '<div class="ap-end-upsell">' + upsellHtml({ title: SOON.length ? 'Vienen más microlecciones para miembros' : 'Te quedan ' + (LESSONS.length - 1) + ' microlecciones por desbloquear', from: 'fin' }) + '</div>';
     }
     h += '<div class="ap-end-links">';
     h += '<button type="button" class="ap-link" id="apAgain">Repetir esta lección</button>';
@@ -561,6 +563,10 @@
         (isReco ? ' <span class="ap-tag">Recomendada</span>' : '') + (x.free && accessInfo.tier !== 'member' ? ' <span class="ap-tag ap-tag-free">Gratis</span>' : '') + '</p>' +
         '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">' + (open ? esc(st.t) : 'Solo para miembros') + ' · 3 min</p></div>' +
         '<button type="button" class="btn ' + (open ? 'btn-ghost' : 'btn-ghost ap-locked-btn') + ' btn-sm" data-go="' + esc(x.id) + '" data-at="' + (open && st.k === 'cur' ? state.cur.i : 0) + '" data-src="lista">' + label + '</button></li>';
+    });
+    SOON.forEach(function(x){
+      h += '<li class="ap-card ap-card-soon"><div class="ap-card-main"><p class="ap-card-t">' + esc(x.title) + ' <span class="ap-tag">Próximamente</span></p>' +
+        '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">En preparación · 3 min</p></div></li>';
     });
     return h + '</ul>';
   }
