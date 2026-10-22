@@ -2149,6 +2149,18 @@ function shuffleOptions(options, correctIndex){
   return { options: shuffled, correct: newCorrect };
 }
 
+/* Pista corta ANTES de responder en ejercicios de escritura abierta.
+   Reutiliza item.hint; se omite si el enunciado ya trae esa misma estructura. */
+function writingPreHintHtml(item){
+  var h = String((item && item.hint) || '').trim();
+  if(!h) return '';
+  var norm = function(t){ return String(t).toLowerCase().replace(/[“”"'‘’.,;:!?_…]/g,'').replace(/\s+/g,' ').trim(); };
+  var quoted = h.match(/[“"]([^”"]+)[”"]/);
+  if(/^Estructura esperada/i.test(h) && quoted && norm(item.prompt).indexOf(norm(quoted[1])) !== -1) return '';
+  h = h.replace(/^Estructura esperada:\s*/i,''); h = h.charAt(0).toUpperCase() + h.slice(1);
+  return '<div class="writing-pre-hint"><b>Pista:</b> ' + h + '</div>';
+}
+
 function renderGrammarItemInto(container, item, onAnswered, aiOpts){
   if(item.type === 'choice'){
     container.innerHTML = `
@@ -3175,6 +3187,7 @@ function runWritingSession({ container, level, onExit }){
 
     card.innerHTML = `
       <div class="practice-prompt">${item.prompt}</div>
+      ${writingPreHintHtml(item)}
       <textarea id="writingInput" rows="3" class="writing-area" placeholder="Escribe tu frase en inglés aquí..."></textarea>
       <div class="next-row" style="justify-content:flex-start;">
         <button class="btn btn-primary btn-sm" id="reviewBtn">Revisar mi frase</button>
@@ -3521,6 +3534,7 @@ function renderMixItemInto(card, entry, onAnswered){
   if(entry.kind === 'writing'){
     card.innerHTML = `
       <div class="practice-prompt">${item.prompt}</div>
+      ${writingPreHintHtml(item)}
       <textarea id="writingInput" rows="3" class="writing-area" placeholder="Escribe tu frase en inglés aquí..."></textarea>
       <div class="next-row" style="justify-content:flex-start;">
         <button class="btn btn-primary btn-sm" id="reviewBtn">Revisar mi frase</button>
@@ -8602,6 +8616,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 
     card.innerHTML = `
       <div class="practice-prompt">${item.prompt}</div>
+      ${writingPreHintHtml(item)}
       <textarea id="writingInput" rows="3" class="writing-area" placeholder="Escribe tu frase en inglés aquí..."></textarea>
       <div class="next-row" style="justify-content:flex-start;">
         <button class="btn btn-primary btn-sm" id="reviewBtn">Revisar mi frase</button>

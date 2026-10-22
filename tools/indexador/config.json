@@ -5,10 +5,10 @@
   "gscBase": "https://search.google.com",
   "navegador": { "canal": "chrome", "rutaEjecutable": null, "headless": false },
   "limites": {
-    "solicitudesPorEjecucion": 10,
-    "inspeccionesPorEjecucion": 60,
+    "solicitudesPorEjecucion": 1000,
+    "inspeccionesPorEjecucion": 150,
     "esperaEntreUrlsSeg": [8, 18],
-    "enfriamientoCuotaHoras": 12,
+    "enfriamientoCuotaHoras": 4,
     "reinspeccionIndexadasDias": 30,
     "reinspeccionSolicitadasDias": 14,
     "noRepetirSolicitudDias": 30,
