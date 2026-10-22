@@ -114,7 +114,7 @@
   var PAGE_CONTEXT = {
     'index.html': { explain:'Esta es la página de inicio. Desde aquí puedes practicar gratis sin registrarte, hacer el test de nivel, leer las guías de Aprende inglés o conocer la membresía, que incluye Leo AI, tu profesor de apoyo con IA.', cta:{ label:'Practicar gratis →', href:'practica.html' } },
     'articulos.html': { explain:'Aquí están todas las guías y videos para aprender inglés, organizados por tema. Puedes filtrar por categoría o usar el buscador de arriba para encontrar un tema en particular (por ejemplo "preposiciones" o "pasado").', cta:null },
-    'practica.html': { explain:'Esta es la práctica gratis: eliges tu nivel y una habilidad, y haces una sesión corta sin necesidad de cuenta. También está el Reto diario. Si creas una cuenta gratis, tu progreso y tu racha quedan guardados.', cta:{ label:'¿Qué practicar?', to:'practice' } },
+    'practica.html': { explain:'Esta es la práctica gratis: eliges tu nivel y una habilidad, y haces una sesión corta sin necesidad de cuenta. Si creas una cuenta gratis, tu progreso y tu racha quedan guardados.', cta:{ label:'¿Qué practicar?', to:'practice' } },
     'practica-miembros.html': { explain:'Desde aquí eliges tu nivel y qué habilidad practicar dentro de tu cuenta: Gramática, Vocabulario, Listening, Writing, Speaking, Lectura o Mixto. Cada sesión trae ejercicios que todavía no has hecho, y si sales a la mitad, puedes continuar donde te quedaste.', cta:null },
     'miembros.html': { explain:'Este es tu panel. Arriba está lo que te conviene hacer hoy (tu Plan de estudio o la práctica que te recomienda tu diagnóstico) y la tarjeta para continuar donde te quedaste. Más abajo: Tu diagnóstico, tu Repaso personal (tus errores frecuentes), el Reto diario, tu racha y tus accesos a cada habilidad, clases y exámenes.', cta:null },
     'progreso.html': { explain:'Aquí ves tu progreso en orden: un resumen, lo que hoy te conviene practicar, tu diagnóstico (en qué vas bien y qué reforzar), tus habilidades, los temas a reforzar y tu resumen de la semana. Con el botón "Explícame mi progreso", Leo AI te lo explica en palabras simples.', cta:{ label:'¿Qué es Tu diagnóstico?', to:'diagnosis' } },
@@ -406,7 +406,7 @@
     },
 
     practice: {
-      text:'Puedes practicar 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), más Lectura, Mixto, el Reto diario y el juego English Rush. Los miembros también tienen clases interactivas y preparación para TOEFL, IELTS, TOEIC y Cambridge. ¿Sobre cuál quieres saber más?',
+      text:'Puedes practicar 5 habilidades (Gramática, Vocabulario, Listening, Writing y Speaking), más Lectura, Mixto y el juego English Rush. Los miembros también tienen el Reto diario, clases interactivas y preparación para TOEFL, IELTS, TOEIC y Cambridge. ¿Sobre cuál quieres saber más?',
       options:[
         { label:'Gramática', to:'practice_grammar' },
         { label:'Vocabulario', to:'practice_vocab' },
@@ -547,10 +547,16 @@
     },
 
     dailyChallenge: {
-      text:'El Reto diario son 5 ejercicios rápidos, distintos cada día. Está en Practicar gratis y en tu panel de Miembros. Es la forma más fácil de no cortar tu racha.',
-      options:[
-        { label:'Hacer el reto →', href:'practica.html' }
-      ]
+      text: function(){
+        return isMember()
+          ? 'El Reto diario son 5 ejercicios rápidos, distintos cada vez. Está en tu panel de Miembros y es la forma más fácil de no cortar tu racha.'
+          : 'El Reto diario son 5 ejercicios rápidos mezclados para no cortar tu racha. Es una función exclusiva para miembros: con la membresía lo tienes en tu panel, además de práctica sin límite diario. Mientras tanto, tienes tus ejercicios gratis de cada día en Practicar.';
+      },
+      options: function(){
+        return isMember()
+          ? [{ label:'Hacer el reto →', href:'miembros.html' }]
+          : [membersCta(), { label:'¿Cuánto cuesta y cómo pago?', to:'pricing' }, { label:'Practicar gratis', href:'practica.html' }];
+      }
     },
 
     members: {
@@ -617,7 +623,7 @@
     },
 
     studyTips: {
-      text:'Algunos tips que funcionan bien: practica poco pero seguido (5 a 10 min al día, el Reto diario es perfecto para eso), repite en voz alta lo que leas, y no te saltes las explicaciones: ahí está el porqué de cada respuesta.',
+      text:'Algunos tips que funcionan bien: practica poco pero seguido (5 a 10 min al día, y si eres miembro el Reto diario es perfecto para eso), repite en voz alta lo que leas, y no te saltes las explicaciones: ahí está el porqué de cada respuesta.',
       options:[
         { label:'Practicar ahora →', href:'practica.html' }
       ]

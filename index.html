@@ -416,7 +416,7 @@
           <ul class="home-plan-list">
             <li>Ejercicios de las 5 habilidades, sin registrarte</li>
             <li>Cuenta gratis para guardar tu progreso, sin tarjeta</li>
-            <li>Reto diario y juego de inglés</li>
+            <li>Juego de inglés gratis (English Rush)</li>
             <li>Test de nivel y todas las guías de Aprende inglés</li>
             <li>Modo aprender: la microlección «To be», gratis con tu cuenta</li>
           </ul>
@@ -433,6 +433,7 @@
             <li>Modo aprender: microlecciones de 3 minutos con audio; las nuevas lecciones se suman a la membresía</li>
             <li class="is-ai">Leo AI cuando necesitas ayuda extra <span class="ai-chip">IA</span></li>
             <li>Práctica ilimitada, repaso de errores y estadísticas</li>
+            <li>Reto diario de 5 ejercicios para cuidar tu racha</li>
             <li>Preparación para TOEFL, IELTS, TOEIC y Cambridge</li>
           </ul>
           <a href="miembros.html?pagar=1" class="btn btn-primary btn-block">Hazte miembro</a>
@@ -617,7 +618,7 @@
     Miembros
   </button>
 </nav>
-<script defer src="app.js?v=20261021a"></script>
+<script defer src="app.js?v=20261021b"></script>
 <script defer src="mini-lecciones.js?v=20261010a"></script>
 <!-- LeoBot necesita LeoBackend para reportar bugs/soporte y saber si
      hay sesion iniciada. defer: no bloquea el primer render (esta
@@ -638,13 +639,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261002a';
+    s.src = 'chatbot.js?v=20261021a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261002a&r=1';
+        r.src = 'chatbot.js?v=20261021a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };

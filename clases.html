@@ -160,7 +160,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
-<script src="app.js?v=20261021a"></script>
+<script src="app.js?v=20261021b"></script>
 <script src="backend.js?v=20261015a"></script>
 <script src="clases.js?v=20261014a"></script>
 <script>
@@ -176,13 +176,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261002a';
+    s.src = 'chatbot.js?v=20261021a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261002a&r=1';
+        r.src = 'chatbot.js?v=20261021a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };

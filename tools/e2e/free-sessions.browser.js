@@ -1,5 +1,5 @@
 /* Práctica gratis en un navegador REAL (Chromium) con la nube simulada: invitado, cuenta gratis con corte a los 6,
-   sesión a medias y reto diario. Necesita Playwright (no forma parte de run-all.js, que no usa dependencias):
+   sesión a medias y reto diario (ya solo para miembros: aquí se comprueba que NO aparece). Necesita Playwright (no forma parte de run-all.js, que no usa dependencias):
      node tools/e2e/free-sessions.browser.js            (desde la carpeta inglesconLeo)
    Sirve los archivos reales del sitio en un servidor local; todo lo externo se bloquea y supabase-js se reemplaza
    por un cliente falso que solo anota lo que el sitio intenta leer o guardar. */
@@ -53,6 +53,7 @@ async function newPage(browser, user, storage){
   page.on('pageerror', e => errors.push(String(e)));
   return { ctx, page, cloud, errors };
 }
+const reto0 = c => c.filter(x => x.table === 'progress_sessions' && x.op === 'insert' && x.payload.skill === 'reto-diario').length;
 const inserts = c => c.filter(x => x.table === 'progress_sessions' && x.op === 'insert').map(x => x.payload);
 // Responde `n` ejercicios de gramática (los 3 tipos). Las variantes tienen 3 u 8 ejercicios: si una sesión termina
 // antes, pulsa "Hacer otra sesión" y sigue. Devuelve cuántas sesiones se TERMINARON y si quedó una a medias.
@@ -138,23 +139,18 @@ async function doAnswers(page, n){
     assert.strictEqual(inserts(b.cloud).length, 1, 'recargar no la sube otra vez');
     assert.deepStrictEqual(b.errors, []);
     pass('sesión a medias: se sube al volver, una sola vez');
-    // 4) reto diario gratis (5 ejercicios, no cuenta para el límite)
-    await b.page.locator('#dailyChallengeBody button').first().click();
-    for(let i = 0; i < 12; i++){
-      const done = await b.page.evaluate(() => /Reto completado/.test(document.getElementById('dailyChallengeBody').textContent));
-      if(done) break;
-      const card = b.page.locator('#dailyChallengeBody .session-card');
-      const kind = await card.evaluate(c => c.querySelector('.option, .word-chip, .error-word') ? 'pick' : (c.querySelector('textarea, input[type=text]') ? 'write' : 'other'));
-      if(kind === 'pick'){ await card.locator('.option, .word-chip, .error-word').first().click(); }
-      else if(kind === 'write'){ await card.locator('textarea, input[type=text]').first().fill('I am a student.'); await card.locator('button').filter({ hasText: /Revisar/ }).first().click(); }
-      const next = card.locator('#nextRow .next-btn, #nextRow .btn-primary').last();
-      await next.waitFor({ timeout: 4000 }); await next.click();
-    }
-    await b.page.waitForTimeout(400);
-    const reto = inserts(b.cloud).filter(x => x.skill === 'reto-diario');
-    assert.strictEqual(reto.length, 1, 'reto diario: una fila'); assert.ok(reto[0].results.length >= 4, 'respuestas del reto: ' + reto[0].results.length);
+    // 4) el reto diario ya NO es gratis (2026-10-21): la cuenta gratis no ve la tarjeta, y con un enlace viejo solo ve la invitación
+    assert.strictEqual(await b.page.locator('#retoMiembrosInvite').isVisible(), false, 'sin enlace viejo, no hay tarjeta del reto');
+    assert.strictEqual(await b.page.locator('#dailyChallengeBody .daily-btn[id=dailyStartBtn]').count(), 0, 'ningún botón para empezar el reto');
+    await b.page.goto(base + '#reto'); await b.page.reload();
+    await b.page.waitForFunction(() => document.getElementById('practicaMain').style.visibility === 'visible');
+    await b.page.waitForFunction(() => document.querySelector('#dailyChallengeBody [data-daily-locked]'), null, { timeout: 4000 });
+    const lockedTxt = await b.page.locator('#dailyChallengeBody').innerText();
+    assert.ok(/solo para miembros/.test(lockedTxt) && /Hazte miembro/.test(lockedTxt), lockedTxt);
+    assert.strictEqual(await b.page.locator('#dailyChallengeBody .session-card, #dailyChallengeBody #dailyStartBtn').count(), 0, 'la invitación no ofrece ejercicios');
+    assert.strictEqual(reto0(b.cloud), 0, 'no se sube ninguna sesión de reto');
     assert.deepStrictEqual(b.errors, []);
-    pass('reto diario gratis: una fila al completarlo (' + reto[0].results.length + ' respuestas)');
+    pass('reto diario: la cuenta gratis no lo ve; con un enlace viejo solo ve la invitación a hacerse miembro');
     await b.ctx.close(); }
 
   await browser.close(); server.close();

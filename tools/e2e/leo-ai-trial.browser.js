@@ -136,6 +136,7 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     await next(card, page);
     await failOne(page);                                                  // 2o fallo: la invitación NO se repite
     assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'una sola invitación por página');
+    await page.evaluate(() => { localStorage.removeItem('leoLocalDailyCount:' + todayStr()); });   // con el tope real de 3 el contador del dia ya pudo llenarse; aqui se prueba la invitación, no el tope
     await page.reload(); await openPractica(page); await page.evaluate(() => { LEO_AI_TRIAL_PUBLIC = true; }); await failOne(page);
     assert.strictEqual(await page.locator('.leo-ai').count(), 0, 'ni al recargar el mismo día');
     assert.strictEqual(srv.log.length, 0);

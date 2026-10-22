@@ -3938,6 +3938,7 @@ function renderFreeDailyLimitReachedBlock(){
           <li>Un sistema que recuerda tus errores y te dice qué practicar después</li>
           <li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>
           <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
+          <li>Reto diario de 5 ejercicios para cuidar tu racha</li>
           <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
           <li>Clases interactivas del método del Profe Leo y repaso automático de tus errores</li>
           <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
@@ -5426,31 +5427,45 @@ function runMistakesSession({ container, mode, skillFilter }){
    RETO DIARIO — 5 ejercicios mezclados para tener una razón
    concreta de volver cada día.
    ------------------------------------------------------------
-   - Practicar gratis (sin cuenta): 1 reto al día, guardado en el
-     navegador de esa persona (no hay cuenta con la que guardarlo
-     en la nube). Al terminarlo, queda bloqueado hasta el día
-     siguiente (con una invitación a hacerse miembro para
-     repetirlo).
+   EXCLUSIVO PARA MIEMBROS DE PAGO (desde 2026-10-21). Visitantes y
+   cuentas gratis NO lo tienen: no aparece en practica.html y, si
+   alguien llega a un enlace viejo del reto, ve una invitación a
+   hacerse miembro (renderDailyChallengeLocked). La regla vive aquí,
+   en la lógica (isDailyChallengeAllowed), no solo en los botones:
+   initDailyChallenge y runDailyChallengeSession se niegan a correr
+   si window.__leoMemberVerified no es true (lo pone el panel de
+   miembros / backend.js SOLO después de que el servidor confirma
+   is_member). Igual que los topes 3/6, es una barrera de uso
+   normal, no un candado a prueba de trampas: el banco de ejercicios
+   es público en data.js.
    - Miembros: sin límite de repeticiones al día, cada vez con una
      mezcla nueva de 5 ejercicios. Usa el mismo guardado de "no
      perder el progreso al refrescar" que ya usan Mixto y Mis
      errores (loadInflightSession / saveInflightSession), y cada
      reto terminado se registra como una sesión normal (cuenta
      para la racha y las estadísticas ya existentes).
+   - Lo que ya existía no se borra: las filas 'reto-diario' que
+     cuentas que hoy son gratis dejaron en progress_sessions, y la
+     llave local leo_daily_challenge_free, quedan como estaban.
    ============================================================ */
-const DAILY_CHALLENGE_FREE_KEY = 'leo_daily_challenge_free';
 
 function todayStr(){ return localDateStr(); }
 
-function getDailyChallengeFreeStatus(){
-  try{
-    const raw = localStorage.getItem(DAILY_CHALLENGE_FREE_KEY);
-    const saved = raw ? JSON.parse(raw) : null;
-    return (saved && saved.date === todayStr()) ? saved : null;
-  }catch(e){ return null; }
+/* Único punto que decide quién puede usar el reto. */
+function isDailyChallengeAllowed(){
+  return window.__leoMemberVerified === true;
 }
-function markDailyChallengeFreeDone(score){
-  try{ localStorage.setItem(DAILY_CHALLENGE_FREE_KEY, JSON.stringify({ date: todayStr(), done:true, score })); }catch(e){}
+/* Invitación que ve quien NO es miembro de pago (enlace viejo, ejecución
+   directa de la función, etc.). No ofrece ningún ejercicio. */
+function renderDailyChallengeLocked(container){
+  if(!container) return;
+  container.innerHTML = `
+    <div class="daily-locked" data-daily-locked="1">
+      <p class="daily-done-msg">El Reto diario es solo para miembros.</p>
+      <p class="daily-sub">Son 5 ejercicios mezclados cada día, con una mezcla nueva cada vez, para cuidar tu racha. Con la membresía también practicas sin límite diario.</p>
+      <a href="miembros.html?pagar=1" class="daily-btn">Hazte miembro →</a>
+      <p class="daily-sub" style="margin-top:12px;"><a href="practica.html" style="color:var(--blue);font-weight:600;">Seguir con mis ejercicios gratis</a></p>
+    </div>`;
 }
 
 // Arma los 5 ejercicios del reto: uno de Gramática, uno de
@@ -5492,15 +5507,7 @@ function pickDailyChallengeItems(level, isFree){
   return picks;
 }
 
-function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, onStart }){
-  if(doneState){
-    const scoreTxt = doneState.score ? `${doneState.score.correct} / ${doneState.score.total} correctas` : '';
-    container.innerHTML = `
-      <p class="daily-done-msg">${OK_ICON} Ya hiciste tu reto de hoy${scoreTxt ? ' · ' + scoreTxt : ''}.</p>
-      <p class="daily-sub">Vuelve mañana para el siguiente, o hazte miembro para repetirlo las veces que quieras.</p>
-      <a href="miembros.html?pagar=1" class="daily-btn">Hazte miembro →</a>`;
-    return;
-  }
+function renderDailyChallengeIntro(container, { inProgress, onStart }){
   // Si ya había un reto a medias (guardado con saveInflightSession),
   // antes esta tarjeta saltaba directo al ejercicio a medio terminar
   // en cuanto se cargaba el panel. Leo pidió que el panel nunca
@@ -5523,8 +5530,8 @@ function renderDailyChallengeIntro(container, { isFree, doneState, inProgress, o
 }
 
 function runDailyChallengeSession({ container, isFree, level }){
+  if(isFree || !isDailyChallengeAllowed()){ renderDailyChallengeLocked(container); return; }
   level = level || getUserLevel();
-  if(isFree) freeSessionBegin('reto-diario');
   const saved = !isFree ? loadInflightSession('reto-diario', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : pickDailyChallengeItems(level, isFree);
@@ -5552,7 +5559,6 @@ function runDailyChallengeSession({ container, isFree, level }){
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
       results.push(Object.assign({ itemId: entry.item.id, isCorrect }, extra || null));
       showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
-        if(isFree) freeSessionAnswer('reto-diario', level, ['Reto diario'], results[results.length-1]);
         idx++;
         if(idx < total) renderItem(); else finish();
       }, idx+1 < total ? 'Siguiente →' : 'Ver resultado →');
@@ -5564,8 +5570,8 @@ function runDailyChallengeSession({ container, isFree, level }){
     const correct = graded.filter(r=>r.isCorrect).length;
     const score = { correct, total: graded.length };
     if(isFree){
-      markDailyChallengeFreeDone(score);
-      freeSessionEnd('reto-diario');
+      /* inalcanzable: la guardia de arriba ya bloquea isFree */
+      renderDailyChallengeLocked(container);
       container.innerHTML = `
         <div class="session-summary" style="padding:0;">
           <h2>¡Reto completado!</h2>
@@ -5632,25 +5638,15 @@ function setDailyChallengeCardAction(card, onStart){
 
 function initDailyChallenge(container, { isFree, card }){
   if(!container) return;
-  if(isFree){
-    const status = getDailyChallengeFreeStatus();
-    if(status && status.done){
-      setDailyChallengeCardAction(card, null);
-      renderDailyChallengeIntro(container, { isFree:true, doneState: status });
-      return;
-    }
-    const startChallenge = ()=>{
-      setDailyChallengeCardAction(card, null);
-      runDailyChallengeSession({ container, isFree:true });
-    };
-    setDailyChallengeCardAction(card, startChallenge);
-    renderDailyChallengeIntro(container, { isFree:true, doneState:null, onStart: startChallenge });
+  if(isFree || !isDailyChallengeAllowed()){
+    setDailyChallengeCardAction(card, null);
+    renderDailyChallengeLocked(container);
     return;
   }
   const level = getUserLevel();
   const saved = loadInflightSession('reto-diario', level);
   const inProgress = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
-  renderDailyChallengeIntro(container, { isFree:false, doneState:null, inProgress, onStart: ()=> runDailyChallengeSession({ container, isFree:false, level }) });
+  renderDailyChallengeIntro(container, { inProgress, onStart: ()=> runDailyChallengeSession({ container, isFree:false, level }) });
 }
 
 /* ---------- Resumen de sesión (compartido) ---------- */

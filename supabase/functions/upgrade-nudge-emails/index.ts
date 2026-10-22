@@ -1719,7 +1719,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   },
   final_onboarding: {
     subject: 'Unas semanas después: ¿cuánto has avanzado?',
-    preheader: 'Una forma rápida de medirlo, y un reto de 1 minuto al día.',
+    preheader: 'Una forma rápida de medirlo, y un hábito de unos minutos al día.',
     greeting: '¡Hola! 👋',
     title: 'Mide cuánto has avanzado',
     titleWithName: '{name}, mide cuánto has avanzado',
@@ -1730,8 +1730,8 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     <div style="${BOX}">
       <strong>1. Vuelve a hacer el test de nivel.</strong> Compara tu resultado
       con el de antes. Ver el avance en números motiva muchísimo.<br><br>
-      <strong>2. Haz el reto diario.</strong> Son 5 ejercicios, más o menos un
-      minuto. Está en la página de práctica, gratis.
+      <strong>2. Practica un poco cada día.</strong> Con tus ejercicios gratis de
+      hoy bastan unos minutos. Está en la página de práctica.
     </div>
     <p style="${P}">
       Y si quieres ir más rápido: con la membresía, Leo AI revisa tus
@@ -1741,7 +1741,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     <p style="${P}">
       <a href="${SITE}/test-de-nivel-de-ingles.html" style="${LINK}">Hacer el test de nivel</a>
     </p>`,
-    ctaText: 'Hacer el reto de hoy',
+    ctaText: 'Practicar hoy',
     ctaUrl: `${SITE}/practica.html`,
     footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },

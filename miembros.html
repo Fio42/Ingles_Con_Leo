@@ -320,7 +320,7 @@
         <li>No tienes que decidir qué estudiar: te muestra qué hacer después</li>
         <li>Método del Profe Leo: clases y explicaciones sencillas y prácticas</li>
         <li class="is-ai">Leo AI cuando necesitas ayuda extra</li>
-        <li>Práctica ilimitada en 5 habilidades y retos diarios</li>
+        <li>Práctica ilimitada en 5 habilidades y Reto diario de 5 ejercicios</li>
         <li>Preparación para el TOEFL, IELTS y más</li>
       </ul>
       <button type="button" class="btn btn-primary btn-block" id="pricingCtaBtn">Accede por $2 USD/mes <span aria-hidden="true">→</span></button>
@@ -706,7 +706,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
-<script src="app.js?v=20261021a"></script>
+<script src="app.js?v=20261021b"></script>
 <script src="backend.js?v=20261015a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -721,13 +721,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261002a';
+    s.src = 'chatbot.js?v=20261021a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261002a&r=1';
+        r.src = 'chatbot.js?v=20261021a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };
