@@ -96,18 +96,18 @@ function test(name, fn){
 }
 const inserts = () => CLOUD.calls.filter(c => c === 'insert progress_sessions').length;
 
-test('los límites gratis no cambian: 5 de invitado y 10 de cuenta gratis', async () => {
+test('los límites gratis son 3 de invitado y 6 de cuenta gratis (total del día, no se suman)', async () => {
   const B = makeBrowser({});
-  assert.strictEqual(B.run('GUEST_EXERCISE_LIMIT'), 5);
-  assert.strictEqual(B.run('FREE_USER_DAILY_LIMIT'), 10);
+  assert.strictEqual(B.run('GUEST_EXERCISE_LIMIT'), 3);
+  assert.strictEqual(B.run('FREE_USER_DAILY_LIMIT'), 6);
 });
 
-test('INVITADO: no sube nada, no guarda borradores y su límite sigue siendo 5', async () => {
+test('INVITADO: no sube nada, no guarda borradores y su límite es 3', async () => {
   const B = makeBrowser({});
   B.freeSessionResume();
   B.freeSessionBegin('gramatica');
-  for(let i = 1; i <= 5; i++) answer(B, 'gramatica', 'facil', 'g-facil-some-' + ((i % 4) + 1), i % 2 === 0, 'some');
-  assert.strictEqual(B.freeDailyLimitReached(), true, 'a los 5 el invitado llega a su límite');
+  for(let i = 1; i <= 3; i++) answer(B, 'gramatica', 'facil', 'g-facil-some-' + ((i % 4) + 1), i % 2 === 0, 'some');
+  assert.strictEqual(B.freeDailyLimitReached(), true, 'a los 3 el invitado llega a su límite');
   B.renderFreeDailyLimitReachedBlock();
   B.freeSessionEnd('gramatica');
   await B.settle();
@@ -171,21 +171,21 @@ test('no toca el progreso local, mistake_stats, microtemas ni last_practice_at',
   assert.ok(CLOUD.profileUpdates.some(u => /free_last_practice_at/.test(u)), 'la práctica gratis autenticada deja timestamp UTC en la misma actualización del contador');
 });
 
-test('LÍMITE DIARIO: al llegar a 10 la sesión se corta y se guarda lo respondido hasta ahí', async () => {
+test('LÍMITE DIARIO: al llegar a 6 la sesión se corta y se guarda lo respondido hasta ahí', async () => {
   const B = makeBrowser({ user:'u1', tier:'free' });
   B.freeSessionBegin('vocabulario');
-  for(let i = 1; i <= 8; i++) answer(B, 'vocabulario', 'facil', 'v-facil8-' + i, true);
-  B.freeSessionEnd('vocabulario');                       // terminó la primera sesión (8)
+  for(let i = 1; i <= 4; i++) answer(B, 'vocabulario', 'facil', 'v-facil8-' + i, true);
+  B.freeSessionEnd('vocabulario');                       // terminó la primera sesión (4)
   B.freeSessionBegin('listening');
   answer(B, 'listening', 'facil', 'l-facil6-1', true);
-  assert.strictEqual(B.freeDailyLimitReached(), false, 'con 9 todavía puede seguir');
+  assert.strictEqual(B.freeDailyLimitReached(), false, 'con 5 todavía puede seguir');
   answer(B, 'listening', 'facil', 'l-facil6-2', false);
-  assert.strictEqual(B.freeDailyLimitReached(), true, 'a los 10 llega al límite, como siempre');
+  assert.strictEqual(B.freeDailyLimitReached(), true, 'a los 6 llega al límite');
   const html = B.renderFreeDailyLimitReachedBlock();     // lo que pinta cada sesión gratis al toparse con el límite
-  assert.ok(/10 ejercicios gratis de hoy/.test(html));
+  assert.ok(/6 ejercicios gratis de hoy/.test(html));
   await B.settle();
   assert.strictEqual(CLOUD.sessions.length, 2);
-  assert.deepStrictEqual(CLOUD.sessions.map(s => s.skill + ':' + s.results.length), ['vocabulario:8', 'listening:2']);
+  assert.deepStrictEqual(CLOUD.sessions.map(s => s.skill + ':' + s.results.length), ['vocabulario:4', 'listening:2']);
   assert.strictEqual(B.pending().length, 0);
 });
 

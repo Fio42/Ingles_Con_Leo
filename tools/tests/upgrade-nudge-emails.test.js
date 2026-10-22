@@ -77,7 +77,7 @@ test('limit_reached usa ventana 30–90 minutos, una vez por episodio y conserva
   assert.notStrictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:ago(.49) })), 'limit_reached');
   assert.notStrictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:ago(1.51) })), 'limit_reached');
   assert.notStrictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:ago(1), lifecycle_emails:{ welcome:ago(30), limit_reached:ago(.8) } })), 'limit_reached');
-  assert.match(source, /Esperar a mañana:[\s\S]*tus 10 ejercicios se reinician solos/);
+  assert.match(source, /Esperar a mañana:[\s\S]*tus 6 ejercicios se reinician solos/);
 });
 
 test('limit_reset llega 24–28h solo si no volvió a practicar desde el límite', () => {
@@ -87,7 +87,7 @@ test('limit_reset llega 24–28h solo si no volvió a practicar desde el límite
   assert.notStrictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:ago(23.9) })), 'limit_reset');
   assert.notStrictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:ago(28.1) })), 'limit_reset');
   assert.strictEqual(decideChangedTrigger(free({ free_daily_limit_reached_at:hit, free_last_practice_at:ago(25.01), lifecycle_emails:{ welcome:ago(30), limit_reset:ago(24) } })), null);
-  assert.match(source, /ctaText: 'Practicar mis 10 ejercicios de hoy'/);
+  assert.match(source, /ctaText: 'Practicar mis 6 ejercicios de hoy'/);
 });
 
 test('miembro, baja y usuario convertido no reciben los disparadores gratis', () => {

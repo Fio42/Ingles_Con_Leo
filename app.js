@@ -2847,7 +2847,7 @@ function leoAiAttach(host, ctx){
    PRUEBA GRATIS DE LEO AI (cuentas gratis) + invitación a invitados
    ------------------------------------------------------------
    Producto (el SERVIDOR lo hace cumplir; aquí solo se muestra):
-     - Invitado: 5 ejercicios al día y SIN Leo AI. Si falla un ejercicio, una
+     - Invitado: 3 ejercicios al día y SIN Leo AI. Si falla un ejercicio, una
        sola invitación al día a crear su cuenta gratis (no es acceso a la IA).
      - Cuenta gratis: unas pocas explicaciones de bienvenida POR CUENTA (no por
        día; hoy 5, las fija leo_ai_config.trial_credits), solo de ejercicios
@@ -2857,7 +2857,7 @@ function leoAiAttach(host, ctx){
        leo_ai_config.trial_enabled). El contador viene del servidor, jamás de
        localStorage. Al gastar las del regalo se invita a la membresía.
      - Nunca se dice que Leo AI sea ilimitado.
-   Los ejercicios y sus límites (5 de invitado, 10 con cuenta) no cambian.
+   Los ejercicios y sus límites (3 de invitado, 6 con cuenta) no cambian.
    ============================================================ */
 const LEO_AI_TRIAL_CREDITS_COPY = 5;  // solo para el texto del invitado; debe coincidir con trial_credits (hay una prueba que lo vigila)
 const LEO_AI_TRIAL_KINDS = { grammar:1, vocab:1, listening:1, reading:1 };
@@ -3681,8 +3681,8 @@ function renderMixItemInto(card, entry, onAnswered){
    puede borrar, y el conteo de cuenta gratis se manda desde el
    navegador): son para frenar el uso normal y guiar hacia crear
    cuenta / hacerse miembro, no un candado de seguridad. */
-var GUEST_EXERCISE_LIMIT = 5;
-var FREE_USER_DAILY_LIMIT = 10;
+var GUEST_EXERCISE_LIMIT = 3;
+var FREE_USER_DAILY_LIMIT = 6;
 
 /* Estado del nivel de acceso para esta carga de página. practica.html
    llama a initLeoAccessTier() una sola vez, justo después de revisar
@@ -3811,7 +3811,7 @@ function bumpFreeDailyExerciseCount(){
 /* ---- Sesiones de PRÁCTICA GRATIS de una CUENTA (no miembro) -> progress_sessions ----
    Solo cuentas gratis con sesión iniciada (_leoAccessTier === 'free'). Un invitado nunca entra aquí: todas las
    funciones salen sin hacer nada si no hay cuenta, así que lo que hizo antes de registrarse no se sube.
-   No toca el progreso local (leo_progress), mistake_stats, las señales de microtemas ni el contador 5/10:
+   No toca el progreso local (leo_progress), mistake_stats, las señales de microtemas ni el contador 3/6:
    solo junta las respuestas de la sesión en curso y las manda como UNA fila (misma forma que las de Miembros:
    itemId, isCorrect y, en gramática, m/p/t/w). El servidor marca la fila con tier 'free'.
    El borrador vive en localStorage y se guarda en cada respuesta: la sesión se sube al terminar, al toparse con el
@@ -3960,7 +3960,7 @@ function renderFreeDailyLimitReachedBlock(){
   return `
     <div class="session-summary">
       <h2>¡Buen trabajo! Ya completaste tus ejercicios de prueba.</h2>
-      <p class="summary-score">Crea tu cuenta gratis y sigue ahora mismo: ${FREE_USER_DAILY_LIMIT} ejercicios cada día, con tu racha y tu progreso guardados. No pide tarjeta.</p>
+      <p class="summary-score">Crea tu cuenta gratis y sigue ahora mismo: tienes ${FREE_USER_DAILY_LIMIT - GUEST_EXERCISE_LIMIT} ejercicios más hoy (${FREE_USER_DAILY_LIMIT} al día en total), con tu racha y tu progreso guardados. No pide tarjeta.</p>
       <div class="summary-actions">
         <a href="miembros.html?modo=registro&volver=${volverPage}" class="btn btn-primary">Crear cuenta gratis</a>
         <a href="miembros.html" class="btn btn-ghost">Ya tengo cuenta</a>

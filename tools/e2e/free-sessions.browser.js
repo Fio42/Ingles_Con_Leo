@@ -1,4 +1,4 @@
-/* Práctica gratis en un navegador REAL (Chromium) con la nube simulada: invitado, cuenta gratis con corte a los 10,
+/* Práctica gratis en un navegador REAL (Chromium) con la nube simulada: invitado, cuenta gratis con corte a los 6,
    sesión a medias y reto diario. Necesita Playwright (no forma parte de run-all.js, que no usa dependencias):
      node tools/e2e/free-sessions.browser.js            (desde la carpeta inglesconLeo)
    Sirve los archivos reales del sitio en un servidor local; todo lo externo se bloquea y supabase-js se reemplaza
@@ -79,19 +79,19 @@ async function doAnswers(page, n){
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' }).catch(() => chromium.launch());
   let ok = 0; const pass = n => { ok++; console.log('  ok  ' + n); };
 
-  // 1) INVITADO: 5 ejercicios, bloque de "crea tu cuenta", cero subidas
+  // 1) INVITADO: 3 ejercicios, bloque de "crea tu cuenta", cero subidas
   { const { ctx, page, cloud, errors } = await newPage(browser, null);
     await page.goto(base); await page.waitForTimeout(800);
-    await doAnswers(page, 5);
+    await doAnswers(page, 3);
     await page.waitForFunction(() => /ejercicios de prueba/.test(document.querySelector('#skillBody').textContent));
     await page.waitForTimeout(300);
     assert.strictEqual(inserts(cloud).length, 0); assert.strictEqual(cloud.length, 0, 'invitado: ninguna llamada');
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('leo_free_pending_v1')), null);
     assert.deepStrictEqual(errors, []);
-    pass('invitado: límite de 5, sin subir nada');
+    pass('invitado: límite de 3, sin subir nada');
     await ctx.close(); }
 
-  // 2) CUENTA GRATIS: sesión completa de 8 -> 1 fila; otra sesión, el límite la corta a los 2 -> segunda fila
+  // 2) CUENTA GRATIS: sesión completa de 4 -> 1 fila; otra sesión, el límite la corta a los 2 -> segunda fila
   let storage;
   { const { ctx, page, cloud, errors } = await newPage(browser, 'u1');
     await page.goto(base);
@@ -99,21 +99,21 @@ async function doAnswers(page, n){
     const r1 = await doAnswers(page, 4);
     let ins = inserts(cloud);
     assert.strictEqual(ins.length, r1.finished, 'una fila por sesión TERMINADA (' + r1.finished + '), ninguna por la que sigue abierta');
-    const r2 = await doAnswers(page, 6);                                  // con esta llega a 10
-    await page.waitForFunction(() => /10 ejercicios gratis de hoy/.test(document.querySelector('#skillBody').textContent));
+    const r2 = await doAnswers(page, 2);                                  // con esta llega a 6
+    await page.waitForFunction(() => /6 ejercicios gratis de hoy/.test(document.querySelector('#skillBody').textContent));
     await page.waitForTimeout(350);
     ins = inserts(cloud);
     const total = ins.reduce((n, x) => n + x.results.length, 0);
-    assert.strictEqual(total, 10, 'las 10 respuestas del día quedan guardadas, también las de la sesión que cortó el límite');
+    assert.strictEqual(total, 6, 'las 6 respuestas del día quedan guardadas, también las de la sesión que cortó el límite');
     assert.strictEqual(new Set(ins.map(x => x.started_at)).size, ins.length, 'cada sesión con su propio inicio');
     assert.ok(ins.every(x => x.skill === 'gramatica' && x.user_id === 'u1' && !('tier' in x) && x.topics.length >= 1 && x.level === 'facil'));
     assert.ok(ins.every(x => x.results.every(r => typeof r.itemId === 'string' && typeof r.isCorrect === 'boolean' && typeof r.p === 'string' && !('f' in r))), JSON.stringify(ins[0].results[0]));
-    pass('cuenta gratis: ' + ins.length + ' sesiones = 10 respuestas instrumentadas (terminadas y cortada por el límite de 10)');
+    pass('cuenta gratis: ' + ins.length + ' sesiones = 6 respuestas instrumentadas (terminadas y cortada por el límite de 6)');
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('leo_free_pending_v1')), null, 'nada pendiente');
     assert.strictEqual(await page.evaluate(() => localStorage.getItem('leo_progress') || localStorage.getItem('leo_micro_stats_v1')), null, 'sin progreso local ni microtemas');
     assert.ok(!cloud.some(c => c.op === 'rpc'), 'sin mistake_stats');
     assert.ok(!cloud.some(c => c.table === 'profiles' && c.op === 'update' && 'last_practice_at' in c.payload));
-    assert.strictEqual(cloud.filter(c => c.table === 'profiles' && c.op === 'update' && 'free_daily_count' in c.payload).pop().payload.free_daily_count, 10, 'el contador gratis sigue igual: 10');
+    assert.strictEqual(cloud.filter(c => c.table === 'profiles' && c.op === 'update' && 'free_daily_count' in c.payload).pop().payload.free_daily_count, 6, 'el contador gratis llega a 6');
     assert.deepStrictEqual(errors, []);
     await ctx.close(); }
 

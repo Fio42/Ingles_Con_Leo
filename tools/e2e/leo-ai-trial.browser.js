@@ -114,9 +114,9 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
   const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined }).catch(() => chromium.launch());
   let ok = 0; const pass = n => { ok++; console.log('  ok  ' + n); };
 
-  // 1) INVITADO: sin Leo AI; UNA invitacion a crear cuenta (no es acceso a la IA); sus 5 ejercicios no cambian
+  // 1) INVITADO: sin Leo AI; UNA invitacion a crear cuenta (no es acceso a la IA); sus 3 ejercicios no cambian
   { const srv = newServer(); const { ctx, page, errors } = await newPage(browser, null, srv, { w:360 });
-    await openPractica(page, { keepLimits:true });
+    await openPractica(page);   // limites subidos a 500: esta prueba falla 2 ejercicios y el tope real de 3 (ver 1b) no deja margen
     // Con el interruptor APAGADO (valor por defecto) el invitado no ve ninguna promesa de la prueba
     await page.evaluate(() => { LEO_AI_TRIAL_PUBLIC = false; });      // el código real ya viene en true: aquí se simula apagado
     const cardOff = await failOne(page); await page.waitForTimeout(300);
@@ -143,10 +143,10 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     pass('invitado: sin IA, una sola invitación a crear cuenta gratis, sin llamadas al servidor');
     await ctx.close(); }
 
-  // 1b) INVITADO: el limite de 5 ejercicios y su bloque siguen igual
+  // 1b) INVITADO: el limite de 3 ejercicios y su bloque siguen igual
   { const { ctx, page, errors } = await newPage(browser, null, newServer());
     await openPractica(page, { keepLimits:true });
-    for(let i = 0; i < 5; i++){
+    for(let i = 0; i < 3; i++){
       if(await page.locator('#skillBody #freeAgainBtn').count()) await page.locator('#freeAgainBtn').click();
       const card = page.locator('#skillBody .session-card'); await card.waitFor({ timeout:6000 });
       await card.locator('.option:not([disabled]), .word-chip, .error-word').first().click();
@@ -154,7 +154,7 @@ const shot = async (page, name) => { if(SHOTS){ fs.mkdirSync(SHOTS, { recursive:
     }
     await page.waitForFunction(() => /ejercicios de prueba/.test(document.querySelector('#skillBody').textContent), null, { timeout:5000 });
     assert.deepStrictEqual(errors, []);
-    pass('invitado: sigue limitado a 5 ejercicios con su bloque de "crea tu cuenta"');
+    pass('invitado: sigue limitado a 3 ejercicios con su bloque de "crea tu cuenta"');
     await ctx.close(); }
 
   // 2) CUENTA GRATIS: boton solo al fallar, contador del servidor, invitacion suave y muro a los $2

@@ -141,8 +141,8 @@ test('Evento de medicion solo en Analytics (no esta en el mapa del Pixel de Meta
   assert(!/dash_hero/.test(map));
 });
 test('Limites gratis, pagos y reglas del motor adaptativo siguen intactos', () => {
-  assert(/var FREE_USER_DAILY_LIMIT = 10;/.test(app));
-  assert(/var GUEST_EXERCISE_LIMIT = 5;/.test(app));
+  assert(/var FREE_USER_DAILY_LIMIT = 6;/.test(app));
+  assert(/var GUEST_EXERCISE_LIMIT = 3;/.test(app));
   assert(/LEVEL_SUGGEST/.test(app));
 });
 test('Panel: etiqueta "Otras formas de practicar hoy" antes de la fila secundaria y CSS para el hueco de Continuar', () => {

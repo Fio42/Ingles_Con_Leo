@@ -277,7 +277,7 @@ async function unsubLinks(userId: string): Promise<{ page: string; oneClick: str
 // en app.js. Viven en dos archivos distintos (uno corre en el
 // navegador, este corre en Supabase) así que si cambias el límite
 // diario de ejercicios en un lado, cámbialo también aquí.
-const FREE_USER_DAILY_LIMIT = 10
+const FREE_USER_DAILY_LIMIT = 6
 
 // ---------------- Configuración centralizada ----------------
 // Todos los tiempos y cooldowns importantes están aquí. Para
@@ -1747,10 +1747,10 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
   },
   limit_reached: {
     subject: 'Llegaste al límite 💪 (y eso dice mucho de ti)',
-    preheader: 'Completaste tus 10 ejercicios gratis. Así puedes seguir.',
+    preheader: 'Completaste tus 6 ejercicios gratis. Así puedes seguir.',
     greeting: '¡Hola! 👋',
-    title: 'Completaste tus 10 ejercicios del día',
-    titleWithName: '¡Bien hecho, {name}! Completaste tus 10 ejercicios del día',
+    title: 'Completaste tus 6 ejercicios del día',
+    titleWithName: '¡Bien hecho, {name}! Completaste tus 6 ejercicios del día',
     bodyHtml: `
     <p style="${P}">
       La mayoría de la gente deja el inglés porque no practica. Tú hiciste
@@ -1758,7 +1758,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     </p>
     <p style="${P}">Tienes dos opciones:</p>
     <div style="${BOX}">
-      <strong>Esperar a mañana:</strong> tus 10 ejercicios se reinician solos.<br><br>
+      <strong>Esperar a mañana:</strong> tus 6 ejercicios se reinician solos.<br><br>
       <strong>Seguir sin límite:</strong> con la membresía practicas todo lo
       que quieras, por $2 USD al mes (o $20 USD al año). Cancelas cuando quieras.
     </div>
@@ -1776,14 +1776,14 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     footerNote: 'Si prefieres esperar a mañana, perfecto: aquí te esperan tus ejercicios.',
   },
   limit_reset: {
-    subject: 'Tus 10 ejercicios gratis ya están listos 🙌',
+    subject: 'Tus 6 ejercicios gratis ya están listos 🙌',
     preheader: 'Hoy puedes volver a practicar sin pagar nada.',
     greeting: '¡Hola! 👋',
-    title: 'Hoy tienes 10 ejercicios gratis de nuevo',
-    titleWithName: '{name}, hoy tienes 10 ejercicios gratis de nuevo',
+    title: 'Hoy tienes 6 ejercicios gratis de nuevo',
+    titleWithName: '{name}, hoy tienes 6 ejercicios gratis de nuevo',
     bodyHtml: `
     <p style="${P}">
-      Ayer completaste tus 10 ejercicios gratis. Hoy ya se renovaron, así que
+      Ayer completaste tus 6 ejercicios gratis. Hoy ya se renovaron, así que
       puedes seguir practicando desde donde quieras.
     </p>
     <div style="${BOX}">
@@ -1794,7 +1794,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       Tu cuenta gratis sigue funcionando igual; no necesitas activar nada para
       usar los ejercicios de hoy.
     </p>`,
-    ctaText: 'Practicar mis 10 ejercicios de hoy',
+    ctaText: 'Practicar mis 6 ejercicios de hoy',
     ctaUrl: `${SITE}/practica.html`,
     footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
