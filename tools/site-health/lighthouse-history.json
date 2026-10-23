@@ -1263,6 +1263,103 @@
      "finalUrl": "https://inglesconleo.com/",
      "durationMs": 8324
     }
+   },
+   {
+    "slug": "home",
+    "url": "https://inglesconleo.com/",
+    "fetchTime": "2026-10-23T16:11:49.763Z",
+    "performance": 59,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2888,
+     "lcp": 8079,
+     "tbt": 415,
+     "cls": 0.001,
+     "speedIndex": 4116,
+     "ttfb": 96,
+     "pageKb": 882
+    },
+    "lcpElement": {
+     "selector": "section.hero-v2 > div.wrap > div.hero-v2-copy > h1",
+     "snippet": "<h1>",
+     "label": "Aprende inglés con un sistema que se adapta a ti y el método del Profe Leo."
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 110,
+     "elementRenderDelay": 1212
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 603,
+      "bytes": 35708
+     },
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": 151,
+      "bytes": 6355
+     }
+    ],
+    "bestPracticesFails": [],
+    "slowestRequests": [
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 197,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "ms": 124,
+      "kb": 35,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/app.js",
+      "ms": 121,
+      "kb": 139,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/",
+      "ms": 109,
+      "kb": 11,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "fonts.googleapis.com/css2",
+      "ms": 105,
+      "kb": 1,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2465,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/",
+     "durationMs": 9136
+    }
    }
   ],
   "practica": [
@@ -2619,6 +2716,114 @@
      "finalUrl": "https://inglesconleo.com/practica.html",
      "durationMs": 7903
     }
+   },
+   {
+    "slug": "practica",
+    "url": "https://inglesconleo.com/practica.html",
+    "fetchTime": "2026-10-23T16:12:03.196Z",
+    "performance": 60,
+    "seo": 100,
+    "accessibility": 93,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 2799,
+     "lcp": 4096,
+     "tbt": 563,
+     "cls": 0.176,
+     "speedIndex": 2799,
+     "ttfb": 88,
+     "pageKb": 1059
+    },
+    "lcpElement": {
+     "selector": "section > div.wrap > p#practicaModoAprender > span",
+     "snippet": "<span>",
+     "label": "¿Prefieres que te expliquen antes de practicar? Prueba una microlección del Mod…"
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 102,
+     "elementRenderDelay": 222
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1231
+     },
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": 151,
+      "bytes": 6320
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 452,
+      "bytes": 35689
+     }
+    ],
+    "bestPracticesFails": [
+     {
+      "id": "valid-source-maps",
+      "title": "Missing source maps for large first-party JavaScript",
+      "items": 1
+     }
+    ],
+    "slowestRequests": [
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 328,
+      "kb": 146,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 298,
+      "kb": 112,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 215,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "inglesconleo.com/toefl-teaser.js",
+      "ms": 156,
+      "kb": 2,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     },
+     {
+      "url": "inglesconleo.com/data.js",
+      "ms": 128,
+      "kb": 234,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": false
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2444,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/practica.html",
+     "durationMs": 8470
+    }
    }
   ],
   "articulos": [
@@ -3927,6 +4132,108 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/articulos.html",
      "durationMs": 8631
+    }
+   },
+   {
+    "slug": "articulos",
+    "url": "https://inglesconleo.com/articulos.html",
+    "fetchTime": "2026-10-23T16:12:55.679Z",
+    "performance": 85,
+    "seo": 100,
+    "accessibility": 96,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1358,
+     "lcp": 2783,
+     "tbt": 418,
+     "cls": 0.002,
+     "speedIndex": 1358,
+     "ttfb": 3,
+     "pageKb": 991
+    },
+    "lcpElement": {
+     "selector": "div.wrap > a.article-featured > div.article-featured-body > p",
+     "snippet": "<p>",
+     "label": "La ruta completa de A1 a C1, qué aprender primero en cada habilidad y un plan d…"
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 12,
+     "elementRenderDelay": 128
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1133
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 302,
+      "bytes": 35679
+     },
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": null,
+      "bytes": 6373
+     }
+    ],
+    "bestPracticesFails": [],
+    "slowestRequests": [
+     {
+      "url": "img.youtube.com/vi/VjH45nwgf38/hqdefault.jpg",
+      "ms": 306,
+      "kb": 14,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/gf9T2K-zWcQ/hqdefault.jpg",
+      "ms": 300,
+      "kb": 13,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/IyPbbyuz1ho/hqdefault.jpg",
+      "ms": 285,
+      "kb": 22,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/JPq1KBBsbtI/hqdefault.jpg",
+      "ms": 264,
+      "kb": 19,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "img.youtube.com/vi/QqTghI1S9Ec/hqdefault.jpg",
+      "ms": 251,
+      "kb": 20,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2472,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulos.html",
+     "durationMs": 8648
     }
    }
   ],
@@ -5237,6 +5544,108 @@
      "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
      "durationMs": 8080
     }
+   },
+   {
+    "slug": "articulo-verbo-to-be",
+    "url": "https://inglesconleo.com/articulo-verbo-to-be.html",
+    "fetchTime": "2026-10-23T16:13:34.893Z",
+    "performance": 82,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1059,
+     "lcp": 2776,
+     "tbt": 549,
+     "cls": 0.001,
+     "speedIndex": 1076,
+     "ttfb": 4,
+     "pageKb": 821
+    },
+    "lcpElement": {
+     "selector": "body > main > article.article-body > p",
+     "snippet": "<p>",
+     "label": "Usa am con I, is con he, she e it, y are con you, we y they. El verbo to be sig…"
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 19,
+     "elementRenderDelay": 101
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": null,
+      "bytes": 6242
+     },
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1130
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 302,
+      "bytes": 35671
+     }
+    ],
+    "bestPracticesFails": [],
+    "slowestRequests": [
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 281,
+      "kb": 112,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 248,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 212,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 136,
+      "kb": 146,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "fonts.googleapis.com/css2",
+      "ms": 113,
+      "kb": 1,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2444,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-verbo-to-be.html",
+     "durationMs": 8375
+    }
    }
   ],
   "articulo-presente-simple": [
@@ -6546,6 +6955,108 @@
      "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
      "durationMs": 7932
     }
+   },
+   {
+    "slug": "articulo-presente-simple",
+    "url": "https://inglesconleo.com/articulo-presente-simple.html",
+    "fetchTime": "2026-10-23T16:14:14.041Z",
+    "performance": 85,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1058,
+     "lcp": 2785,
+     "tbt": 447,
+     "cls": 0.009,
+     "speedIndex": 1064,
+     "ttfb": 4,
+     "pageKb": 821
+    },
+    "lcpElement": {
+     "selector": "body > main > article.article-body > p",
+     "snippet": "<p>",
+     "label": "El presente simple es el tiempo verbal que más vas a usar en inglés cotidiano: …"
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 12,
+     "elementRenderDelay": 90
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1130
+     },
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": null,
+      "bytes": 6423
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 302,
+      "bytes": 35675
+     }
+    ],
+    "bestPracticesFails": [],
+    "slowestRequests": [
+     {
+      "url": "connect.facebook.net/en_US/fbevents.js",
+      "ms": 278,
+      "kb": 112,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 227,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "connect.facebook.net/signals/config/2182739922655837",
+      "ms": 136,
+      "kb": 146,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.facebook.com/tr/",
+      "ms": 136,
+      "kb": 0,
+      "type": "Image",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 122,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2432,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-presente-simple.html",
+     "durationMs": 8327
+    }
    }
   ],
   "articulo-como-aprender-desde-cero": [
@@ -7854,6 +8365,108 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
      "durationMs": 8251
+    }
+   },
+   {
+    "slug": "articulo-como-aprender-desde-cero",
+    "url": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+    "fetchTime": "2026-10-23T16:15:07.004Z",
+    "performance": 82,
+    "seo": 100,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "metrics": {
+     "fcp": 1053,
+     "lcp": 2621,
+     "tbt": 572,
+     "cls": 0,
+     "speedIndex": 1471,
+     "ttfb": 4,
+     "pageKb": 813
+    },
+    "lcpElement": {
+     "selector": "body > main > article.article-body > p",
+     "snippet": "<p>",
+     "label": "Si estás en cero (no reconoces estructuras básicas, no tienes vocabulario funci…"
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 12,
+     "elementRenderDelay": 106
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": null,
+      "bytes": 6373
+     },
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 301,
+      "bytes": 35679
+     },
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1144
+     }
+    ],
+    "bestPracticesFails": [],
+    "slowestRequests": [
+     {
+      "url": "fonts.googleapis.com/css2",
+      "ms": 1269,
+      "kb": 1,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 200,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 100,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     },
+     {
+      "url": "iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments",
+      "ms": 99,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.googletagmanager.com/gtag/js",
+      "ms": 88,
+      "kb": 177,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2425,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html",
+     "durationMs": 9132
     }
    }
   ],
@@ -9230,6 +9843,124 @@
      "runtimeError": null,
      "finalUrl": "https://inglesconleo.com/miembros.html",
      "durationMs": 8790
+    }
+   },
+   {
+    "slug": "miembros",
+    "url": "https://inglesconleo.com/miembros.html",
+    "fetchTime": "2026-10-23T16:15:34.349Z",
+    "performance": 70,
+    "seo": 100,
+    "accessibility": 98,
+    "bestPractices": 77,
+    "metrics": {
+     "fcp": 1747,
+     "lcp": 3443,
+     "tbt": 800,
+     "cls": 0.079,
+     "speedIndex": 1747,
+     "ttfb": 7,
+     "pageKb": 1567
+    },
+    "lcpElement": {
+     "selector": "main > div#gate > div > h1",
+     "snippet": "<h1 style=\"margin-top:14px;\">",
+     "label": "Un sistema que aprende contigo. El Profe Leo que te enseña."
+    },
+    "lcpPhases": {
+     "timeToFirstByte": 19,
+     "elementRenderDelay": 144
+    },
+    "renderBlocking": [
+     {
+      "url": "inglesconleo.com/style.css",
+      "wastedMs": 453,
+      "bytes": 35679
+     },
+     {
+      "url": "inglesconleo.com/meta-pixel.js",
+      "wastedMs": null,
+      "bytes": 1142
+     },
+     {
+      "url": "inglesconleo.com/error-monitor.js",
+      "wastedMs": 151,
+      "bytes": 6242
+     }
+    ],
+    "bestPracticesFails": [
+     {
+      "id": "third-party-cookies",
+      "title": "Uses third-party cookies",
+      "items": 1
+     },
+     {
+      "id": "valid-source-maps",
+      "title": "Missing source maps for large first-party JavaScript",
+      "items": 1
+     },
+     {
+      "id": "inspector-issues",
+      "title": "Issues were logged in the `Issues` panel in Chrome Devtools",
+      "items": 1
+     }
+    ],
+    "slowestRequests": [
+     {
+      "url": "xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events",
+      "ms": 213,
+      "kb": 0,
+      "type": "Fetch",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "accounts.google.com/gsi/button",
+      "ms": 190,
+      "kb": 56,
+      "type": "Document",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "accounts.google.com/gsi/client",
+      "ms": 154,
+      "kb": 100,
+      "type": "Script",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "fonts.googleapis.com/css2",
+      "ms": 117,
+      "kb": 1,
+      "type": "Stylesheet",
+      "status": 200,
+      "thirdParty": true
+     },
+     {
+      "url": "www.google-analytics.com/g/collect",
+      "ms": 99,
+      "kb": 1,
+      "type": "Fetch",
+      "status": 204,
+      "thirdParty": true
+     }
+    ],
+    "thirdParties": [],
+    "conditions": {
+     "lighthouse": "13.5.0",
+     "formFactor": "mobile",
+     "throttlingMethod": "simulate",
+     "rttMs": 150,
+     "throughputKbps": 1638,
+     "cpuSlowdown": 4,
+     "benchmarkIndex": 2456,
+     "chrome": "Chrome/155.0.0.0",
+     "warnings": [],
+     "runtimeError": null,
+     "finalUrl": "https://inglesconleo.com/miembros.html",
+     "durationMs": 8720
     }
    }
   ]
