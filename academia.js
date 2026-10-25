@@ -130,38 +130,74 @@
     return n;
   }
 
-  /* ---------------- Audio ---------------- */
-  var snd = null, sndBtn = null;
-  function stopAudio(){
-    if(snd){ try{ snd.pause(); }catch(e){} }
-    if(sndBtn){ sndBtn.classList.remove('is-on'); sndBtn.setAttribute('aria-pressed', 'false'); var l = sndBtn.querySelector('.ac-audio-label'); if(l) l.textContent = sndBtn.getAttribute('data-label'); }
-    sndBtn = null;
+  /* ---------------- Audio ----------------
+     Las grabaciones de Leo (screen.audio) se rotulan "Escuchar a Leo". Las frases en ingles usan voz sintetica
+     (Kokoro) y se rotulan "Escuchar" o "Escuchar los ejemplos". Nunca hay autoplay. Si falta el mp3, el boton se oculta. */
+  var snd = null, sndBtn = null, sndQueue = [], sndTimer = null;
+  function audioFor(text){ return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null; }
+  function resetBtn(b){
+    if(!b) return;
+    b.classList.remove('is-on'); b.setAttribute('aria-pressed', 'false');
+    var l = b.querySelector('.ac-audio-label'); if(l) l.textContent = b.getAttribute('data-label');
+    if(b.hasAttribute('data-icon')) b.firstChild.textContent = b.getAttribute('data-icon');
   }
-  function playAudio(btn, src){
+  function stopAudio(){
+    clearTimeout(sndTimer); sndQueue = [];
+    if(snd){ try{ snd.pause(); }catch(e){} }
+    resetBtn(sndBtn); sndBtn = null;
+  }
+  function playNext(){
+    if(!sndQueue.length){ var b = sndBtn; sndBtn = null; resetBtn(b); return; }
+    snd.src = sndQueue.shift();
+    var p = snd.play(); if(p && p.catch) p.catch(function(){ stopAudio(); });
+  }
+  function playList(btn, srcs){
     if(sndBtn === btn){ stopAudio(); return; }
     stopAudio();
-    if(!snd){ snd = new Audio(); snd.preload = 'auto'; snd.addEventListener('ended', stopAudio); }
-    snd.onerror = function(){ btn.hidden = true; if(sndBtn === btn) sndBtn = null; };
-    snd.src = src;
-    sndBtn = btn;
+    if(!snd){
+      snd = new Audio(); snd.preload = 'auto';
+      snd.addEventListener('ended', function(){ if(sndQueue.length){ sndTimer = setTimeout(playNext, 380); } else playNext(); });
+    }
+    snd.onerror = function(){ var b = btn; stopAudio(); if(b) b.hidden = true; };
+    sndQueue = srcs.slice(); sndBtn = btn;
     btn.classList.add('is-on'); btn.setAttribute('aria-pressed', 'true');
     var l = btn.querySelector('.ac-audio-label'); if(l) l.textContent = 'Detener';
-    var p = snd.play();
-    if(p && p.catch) p.catch(function(){ stopAudio(); });
+    if(btn.hasAttribute('data-icon')) btn.firstChild.textContent = '■';
+    playNext();
   }
   function leoButton(src){
     var b = el('button', { type: 'button', class: 'ac-leo', 'aria-pressed': 'false', 'data-label': 'Escuchar a Leo' }, [
       el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
       el('span', { class: 'ac-audio-label', text: 'Escuchar a Leo' })
     ]);
-    b.addEventListener('click', function(){ playAudio(b, src); });
+    b.addEventListener('click', function(){ playList(b, [src]); });
     return b;
   }
-  function itemPlay(src){
-    var b = el('button', { type: 'button', class: 'ac-item-play', 'aria-label': 'Escuchar la frase', 'aria-pressed': 'false', 'data-label': '' }, [
+  function listenButton(texts, label){
+    var srcs = texts.map(audioFor);
+    if(!srcs.length || srcs.some(function(s){ return !s; })) return null;
+    var b = el('button', { type: 'button', class: 'ac-leo ac-listen', 'aria-pressed': 'false', 'data-label': label || 'Escuchar los ejemplos' }, [
+      el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
+      el('span', { class: 'ac-audio-label', text: label || 'Escuchar los ejemplos' })
+    ]);
+    b.addEventListener('click', function(){ playList(b, srcs); });
+    return b;
+  }
+  function itemPlay(text, cls, label){
+    var src = audioFor(text); if(!src) return null;
+    var b = el('button', { type: 'button', class: cls || 'ac-item-play', 'aria-label': label || ('Escuchar: ' + text), 'aria-pressed': 'false', 'data-label': '', 'data-icon': '▶' }, [
       el('span', { 'aria-hidden': 'true', text: '▶' })
     ]);
-    b.addEventListener('click', function(){ playAudio(b, src); });
+    b.addEventListener('click', function(){ playList(b, [src]); });
+    return b;
+  }
+  function phraseButton(text){
+    var src = audioFor(text); if(!src) return null;
+    var b = el('button', { type: 'button', class: 'ac-phrase-btn', 'aria-pressed': 'false', 'data-label': 'Escuchar la frase' }, [
+      el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
+      el('span', { class: 'ac-audio-label', text: 'Escuchar la frase' })
+    ]);
+    b.addEventListener('click', function(){ playList(b, [src]); });
     return b;
   }
 
@@ -182,15 +218,24 @@
       sc.table.head.forEach(function(h){ trh.appendChild(el('th', { scope: 'col', text: h })); });
       thead.appendChild(trh); tb.appendChild(thead);
       var tbody = el('tbody');
-      sc.table.rows.forEach(function(r){ var tr = el('tr'); r.forEach(function(c, i){ tr.appendChild(el(i === 0 ? 'th' : 'td', i === 0 ? { scope: 'row', text: c } : { text: c })); }); tbody.appendChild(tr); });
+      sc.table.rows.forEach(function(r){
+        var tr = el('tr');
+        r.forEach(function(c, i){
+          var cell = el(i === 0 ? 'th' : 'td', i === 0 ? { scope: 'row' } : null);
+          var pb = itemPlay(c, 'ac-cell-play', 'Escuchar: ' + c);
+          if(pb) cell.appendChild(el('span', { class: 'ac-cell' }, [pb, el('span', { lang: 'en', text: c })])); else cell.appendChild(document.createTextNode(c));
+          tr.appendChild(cell);
+        });
+        tbody.appendChild(tr);
+      });
       tb.appendChild(tbody);
       box.appendChild(el('div', { class: 'ac-table-wrap' }, [tb]));
     }
     if(sc.change){
       box.appendChild(el('div', { class: 'ac-change' }, [
-        el('div', { class: 'ac-change-box' }, [el('span', { class: 'ac-change-l', text: sc.change.a.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.a.text })]),
+        el('div', { class: 'ac-change-box' }, [el('span', { class: 'ac-change-l', text: sc.change.a.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.a.text }), el('span', { class: 'ac-es', text: sc.change.a.es })]),
         el('span', { class: 'ac-change-arrow', 'aria-hidden': 'true', text: '↓' }),
-        el('div', { class: 'ac-change-box is-b' }, [el('span', { class: 'ac-change-l', text: sc.change.b.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.b.text })])
+        el('div', { class: 'ac-change-box is-b' }, [el('span', { class: 'ac-change-l', text: sc.change.b.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.b.text }), el('span', { class: 'ac-es', text: sc.change.b.es })])
       ]));
     }
     if(sc.compare){
@@ -203,7 +248,7 @@
       var ul2 = el('ul', { class: 'ac-items' });
       sc.items.forEach(function(it){
         var li = el('li', { class: 'ac-item' });
-        if(it.audio && CFG.exampleAudio) li.appendChild(itemPlay(it.audio));
+        var ip = itemPlay(it.en); if(ip) li.appendChild(ip);
         li.appendChild(el('span', { class: 'ac-item-txt' }, [el('span', { class: 'ac-en', lang: 'en', text: it.en }), el('span', { class: 'ac-es', text: it.es })]));
         ul2.appendChild(li);
       });
@@ -460,6 +505,8 @@
         if(item.why) fb.appendChild(el('p', { class: 'ac-fb-p', text: item.why }));
         if(willRetry) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Lo volveremos a ver al final para que lo practiques una vez más.' }));
         else if(!ok) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Guardamos este punto en tu repaso.' }));
+        var sent = academiaSentence(item), pbtn = sent ? phraseButton(sent) : null;
+        if(pbtn){ fb.appendChild(el('p', { class: 'ac-fb-p ac-fb-sent' }, [el('span', { lang: 'en', text: sent })])); fb.appendChild(pbtn); }
         fbHost.appendChild(fb);
         btnCheck.textContent = queue.length ? 'Continuar' : 'Terminar';
         btnCheck.disabled = false;
@@ -692,7 +739,7 @@
       var card = el('section', { class: 'ac-card', 'aria-labelledby': 'acH' }, [
         el('p', { class: 'ac-kicker', text: 'Lección ' + l.n + ' · ' + (run.idx + 1) + ' de ' + S }),
         el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: sc.title }),
-        sc.audio ? leoButton(sc.audio) : null,
+        el('div', { class: 'ac-audio-row' }, [sc.audio ? leoButton(sc.audio) : null, sc.listen ? listenButton(sc.listen.map(function(x){ return typeof x === 'string' ? x : x.t; }), sc.listen.length > 1 ? 'Escuchar los ejemplos' : 'Escuchar') : null]),
         renderScreen(sc)
       ]);
       var nav = el('div', { class: 'ac-nav' }, [
@@ -754,7 +801,7 @@
         el('p', { class: 'ac-text', text: 'Acertaste ' + res.firstOk + ' de ' + res.total + ' a la primera.' + (res.missedNow.length ? ' Guardamos ' + res.missedNow.length + (res.missedNow.length === 1 ? ' punto' : ' puntos') + ' para tu repaso.' : ' Sin errores, muy bien.') }),
         el('div', { class: 'ac-cansay' }, [
           el('p', { class: 'ac-cansay-h', text: 'Ahora puedes decir...' }),
-          el('ul', null, l.canSay.map(function(x){ return el('li', { lang: 'en', text: x }); }))
+          el('ul', { class: 'ac-cansay-list' }, l.canSay.map(function(x){ var pb = itemPlay(x, 'ac-item-play ac-item-play-sm'); return el('li', null, [pb, el('span', { lang: 'en', text: x })]); }))
         ])
       ]);
       var acts = el('div', { class: 'ac-nav ac-nav-col' });

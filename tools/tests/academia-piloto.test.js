@@ -4,7 +4,10 @@
 const fs = require('fs'), path = require('path'), assert = require('assert'), vm = require('vm');
 const root = path.join(__dirname, '..', '..');
 const ctx = {}; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';this.A=ACADEMIA;this.C=ACADEMIA_CONFIG;this.H=ACADEMIA_HOWTO;', ctx);
+vm.runInContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';this.A=ACADEMIA;this.C=ACADEMIA_CONFIG;this.H=ACADEMIA_HOWTO;this.T=academiaAudioTexts(ACADEMIA.courses["to-be"]);', ctx);
+const audioSrc = fs.readFileSync(path.join(root, 'academia-audio.js'), 'utf8');
+const MAN = (() => { const c2 = {}; vm.createContext(c2); vm.runInContext(audioSrc + ';this.M=ACADEMIA_AUDIO;', c2); return c2.M; })();
+const { execFileSync } = require('child_process');
 const A = ctx.A, C = ctx.C, H = ctx.H, course = A.courses['to-be'];
 let passed = 0;
 function test(n, f){ try{ f(); passed++; console.log('  ok  ' + n); }catch(e){ console.error('FALLA ' + n + '\n  ' + e.message); process.exitCode = 1; } }
@@ -56,9 +59,10 @@ test('las respuestas correctas de choice no estan siempre en la misma posicion',
   const pos = [0, 0, 0]; items.concat(bank).filter(a => a.type === 'choice').forEach(a => pos[a.answer]++);
   pos.forEach(n => assert.ok(n >= 3, 'posicion poco usada: ' + pos.join(',')));
 });
-test('la leccion 1 usa solo audios que existen; sin rayas largas en textos', () => {
+test('grabaciones de Leo existen; sin rayas largas en textos', () => {
   const files = [];
-  course.lessons.forEach(l => l.screens.forEach(s => { if(s.audio) files.push(s.audio); (s.items || []).forEach(i => { if(i.audio) files.push(i.audio); }); }));
+  course.lessons.forEach(l => l.screens.forEach(s => { if(s.audio) files.push(s.audio); }));
+  assert.ok(files.length === 4);
   files.forEach(f => assert.ok(fs.existsSync(path.join(root, f)), f));
   assert.ok(!/[—–]/.test(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8')), 'raya larga en el contenido');
 });
@@ -66,5 +70,34 @@ test('la evaluacion es de practica: configurable y sin insignias', () => {
   assert.ok(C.passPct > 0 && C.passPct <= 100);
   const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
   assert.ok(!/recordSession|leo_micro_stats|mistake_stats|supabase/i.test(js.replace(/\/\*[\s\S]*?\*\//g, '')), 'el piloto no debe tocar estadisticas reales');
+});
+test('audio: cada frase con boton tiene mp3 y el manifiesto coincide con el texto mostrado', () => {
+  const T = ctx.T;
+  assert.ok(T.length >= 80);
+  T.forEach(x => { const m = MAN[x.t]; assert.ok(m, 'sin audio: ' + x.t); assert.strictEqual(m.v, x.v, 'voz ' + x.t); assert.ok(fs.existsSync(path.join(root, m.f)), m.f); });
+  assert.strictEqual(Object.keys(MAN).length, T.length, 'el manifiesto tiene textos que ya no se usan');
+  const dir = path.join(root, 'audio/academia/to-be');
+  assert.strictEqual(fs.readdirSync(dir).filter(f => f.endsWith('.mp3')).length, T.length, 'mp3 sobrantes');
+});
+test('audio: todo lo que se muestra con ingles escuchable esta en el manifiesto', () => {
+  const need = [];
+  course.lessons.forEach(l => { l.screens.forEach(s => { (s.items || []).forEach(i => need.push(i.en)); (s.listen || []).forEach(x => need.push(typeof x === 'string' ? x : x.t)); }); l.canSay.forEach(x => need.push(x)); });
+  need.forEach(t => assert.ok(MAN[t], 'falta audio para: ' + t));
+});
+test('audio: voces coherentes (af_heart para todo, am_michael solo en el dialogo) y duracion acorde al texto', () => {
+  const male = ctx.T.filter(x => x.v === 'm').map(x => x.t);
+  const dl = course.lessons[4].screens[0].listen.filter(x => x.v === 'm').map(x => x.t);
+  assert.deepStrictEqual(male.sort(), dl.sort());
+  ctx.T.forEach(x => {
+    const f = path.join(root, MAN[x.t].f);
+    const dur = parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString());
+    const words = x.t.split(/\s+/).length;
+    assert.ok(dur >= 0.25 + words * 0.18 && dur <= 1.5 + words * 1.1, x.t + ' dura ' + dur + 's');
+  });
+});
+test('audio: las frases de las actividades se generan con la frase completa y correcta', () => {
+  const s = ctx.T.map(x => x.t);
+  assert.ok(s.includes('I am from Colombia.') && s.includes('Are they tired?') && s.includes('They aren\'t ready.'));
+  assert.ok(!s.some(t => t.includes('___')), 'no debe quedar un hueco en un audio');
 });
 console.log('\n' + passed + ' pruebas ok');

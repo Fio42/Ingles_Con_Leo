@@ -27,8 +27,7 @@ var ACADEMIA_CONFIG = {
   passPct: 80,        // porcentaje para superar la evaluacion (configurable)
   examSize: 15,       // preguntas por intento
   examPerTopic: 3,    // cuantas preguntas de cada tema entran en cada intento
-  weeklyGoals: [2, 3, 5],
-  exampleAudio: false // false = solo se usan las grabaciones de Leo; los ejemplos sin grabacion aprobada no muestran boton
+  weeklyGoals: [2, 3, 5]
 };
 
 /* Instrucciones guiadas: cada actividad dice QUE HACER y muestra un EJEMPLO corto.
@@ -95,19 +94,20 @@ var ACADEMIA = {
               title: 'Escucha tres ejemplos',
               text: 'La misma palabra sirve para ser y para estar.',
               items: [
-                { en: 'I am from Mexico.', es: 'Soy de México.', audio: 'audio/articulos/verbo-to-be/frase-01.mp3' },
-                { en: 'She is tired today.', es: 'Ella está cansada hoy.', audio: 'audio/articulos/verbo-to-be/frase-04.mp3' },
-                { en: 'They are at school.', es: 'Ellos están en la escuela.', audio: 'audio/articulos/verbo-to-be/frase-06.mp3' }
+                { en: 'I am from Mexico.', es: 'Soy de México.' },
+                { en: 'She is tired today.', es: 'Ella está cansada hoy.' },
+                { en: 'They are at school.', es: 'Ellos están en la escuela.' }
               ],
               audio: 'audio/aprender/to-be/exp-02.mp3'
             },
             {
               title: 'También sirve para preguntar',
               text: 'Para hacer una pregunta, pasa is al inicio de la frase. Lo veremos con calma en la lección 4.',
-              change: { a: { label: 'Afirmación', text: 'She is a nurse.  (Ella es enfermera.)' }, b: { label: 'Pregunta', text: 'Is she a nurse?  (¿Ella es enfermera?)' } },
+              change: { a: { label: 'Afirmación', text: 'She is a nurse.', es: 'Ella es enfermera.' }, b: { label: 'Pregunta', text: 'Is she a nurse?', es: '¿Ella es enfermera?' } },
+              listen: ['She is a nurse.', 'Is she a nurse?'],
               items: [
-                { en: 'He is my brother.', es: 'Él es mi hermano.', audio: 'audio/articulos/verbo-to-be/frase-03.mp3' },
-                { en: 'We are ready.', es: 'Estamos listos.', audio: 'audio/articulos/verbo-to-be/frase-05.mp3' }
+                { en: 'He is my brother.', es: 'Él es mi hermano.' },
+                { en: 'We are ready.', es: 'Estamos listos.' }
               ],
               audio: 'audio/aprender/to-be/exp-03.mp3'
             },
@@ -117,7 +117,7 @@ var ACADEMIA = {
               text: 'Solo I va con am. Una persona o una cosa (he, she, it) va con is. Varias personas, o tú, van con are.',
               note: "Al hablar se acorta: I'm, she's, they're. Las formas cortas completas están en la lección 2.",
               items: [
-                { en: "I'm not sure.", es: 'No estoy seguro.', audio: 'audio/articulos/verbo-to-be/frase-08.mp3' }
+                { en: "I'm not sure.", es: 'No estoy seguro.' }
               ],
               audio: 'audio/aprender/to-be/exp-04.mp3'
             }
@@ -155,6 +155,7 @@ var ACADEMIA = {
           screens: [
             {
               title: 'Una frase afirmativa',
+              listen: ['I am Ana.', 'She is happy.', 'We are at home.', 'They are from Peru.'],
               text: 'Después de am, is o are va la información: quién eres, cómo estás, dónde estás o de dónde eres.',
               table: {
                 head: ['Para decir', 'Ejemplo'],
@@ -168,7 +169,8 @@ var ACADEMIA = {
             },
             {
               title: 'Con nombres y cosas',
-              text: 'Piensa en el pronombre que reemplaza al nombre. Una sola cosa va con is. Varias cosas van con are.',
+              text: 'Piensa en el pronombre que reemplaza al nombre. Una sola persona o cosa va con is. Varias van con are.',
+              note: 'You sirve para una persona (tú) o varias (ustedes) y siempre va con are.',
               table: {
                 head: ['Dices', 'Piensas', 'Usas'],
                 rows: [
@@ -185,7 +187,8 @@ var ACADEMIA = {
             },
             {
               title: 'Las formas cortas',
-              text: 'Al hablar casi siempre usamos la forma corta. El apóstrofe ocupa el lugar de las letras que faltan. Al escribir con cuidado, o para dar énfasis, usa la forma completa.',
+              listen: ["I'm Ana.", "You're kind.", "He's tall.", "She's happy.", "It's cold.", "We're ready.", "They're at home."],
+              text: "Al hablar usamos la forma corta. El apóstrofe (') ocupa el lugar de las letras que faltan.",
               table: {
                 head: ['Completa', 'Corta'],
                 rows: [
@@ -198,13 +201,14 @@ var ACADEMIA = {
                   ['they are', "they're"]
                 ]
               },
-              note: "Se escribe junto: I'm, nunca I 'm.",
+              note: "Se escribe junto: I'm. La forma completa también es correcta, sobre todo al escribir con cuidado.",
               items: [
-                { en: 'You are very kind.', es: 'Eres muy amable.', audio: 'audio/articulos/verbo-to-be/frase-02.mp3' }
+                { en: 'You are very kind.', es: 'Eres muy amable.' }
               ]
             },
             {
               title: 'Con hambre, frío o años: usa to be',
+              listen: ['I am hungry.', 'I am cold.', 'I am afraid.', 'I am 25 years old.'],
               text: 'En español muchas veces decimos tener. En inglés estas ideas llevan to be.',
               compare: { wrong: 'I have hungry.', right: 'I am hungry.' },
               table: {
@@ -255,6 +259,7 @@ var ACADEMIA = {
           screens: [
             {
               title: 'Para decir que no, agrega not',
+              listen: ['I am not tired.', 'She is not here.', 'They are not ready.'],
               text: 'Pon not justo después de am, is o are. No cambia nada más en la frase.',
               table: {
                 head: ['Persona', 'Negación'],
@@ -267,6 +272,7 @@ var ACADEMIA = {
             },
             {
               title: 'Las formas cortas de la negación',
+              listen: ["I'm not tired.", "She isn't here.", "She's not here.", "They aren't ready.", "We're not ready."],
               text: 'Al hablar usamos formas cortas. Mira cuál va con cada persona.',
               table: {
                 head: ['Persona', 'Forma corta'],
@@ -322,7 +328,8 @@ var ACADEMIA = {
           screens: [
             {
               title: 'Para preguntar, cambia el orden',
-              text: 'Am, is o are pasa al inicio y el sujeto va después. Las palabras no cambian, solo su lugar.',
+              listen: ['You are ready.', 'Are you ready?', 'She is tired.', 'Is she tired?', 'I am late.', 'Am I late?'],
+              text: 'Am, is o are pasa al inicio y el sujeto va después.',
               table: {
                 head: ['Afirmación', 'Pregunta'],
                 rows: [
@@ -335,6 +342,7 @@ var ACADEMIA = {
             },
             {
               title: 'Respuestas cortas',
+              listen: ["Are you ready?", "Yes, I am.", "No, I'm not.", "Is she a doctor?", "Yes, she is.", "No, she isn't.", "Are they here?", "Yes, they are.", "No, they aren't."],
               text: 'Contesta con yes o no y repite el verbo. En el sí no se usa la forma corta.',
               table: {
                 head: ['Pregunta', 'Sí', 'No'],
@@ -348,6 +356,7 @@ var ACADEMIA = {
             },
             {
               title: 'Preguntas con what, where, who y how',
+              listen: ['What is your name?', 'Where are you from?', 'Who is she?', 'How are you?'],
               text: 'Primero la palabra de pregunta, luego is o are, luego el sujeto.',
               table: {
                 head: ['Palabra', 'Ejemplo'],
@@ -362,6 +371,7 @@ var ACADEMIA = {
             },
             {
               title: 'Responde con el mismo verbo',
+              listen: ['Are you ready?', 'How old is your sister?', 'Am I late?'],
               text: 'Si te preguntan con are, contestas con are. Si te preguntan con is, contestas con is.',
               compare: { wrong: 'Is you ready?', right: 'Are you ready?' },
               note: 'You siempre va con are, también en preguntas. Por eso es Are you, nunca Is you.',
@@ -406,6 +416,7 @@ var ACADEMIA = {
           screens: [
             {
               title: 'Una presentación completa',
+              listen: [{"t": "Hi! I'm Sofia. What's your name?", "v": "f"}, {"t": "I'm Daniel. Nice to meet you.", "v": "m"}, {"t": "Where are you from?", "v": "f"}, {"t": "I'm from Peru. And you?", "v": "m"}, {"t": "I'm from Chile. Are you a student?", "v": "f"}, {"t": "No, I'm not. I'm an engineer.", "v": "m"}],
               text: 'Mira cómo dos personas usan to be en una conversación real.',
               table: {
                 head: ['Frase', 'Significado'],
@@ -422,6 +433,7 @@ var ACADEMIA = {
             },
             {
               title: 'Frases que usarás cada día',
+              listen: ["How are you?", "I'm fine, thanks.", "She's a teacher.", "We're Colombian.", "I'm tired.", "Where's the bathroom?"],
               text: 'Con to be puedes hablar de casi todo lo básico.',
               table: {
                 head: ['Para...', 'Di...'],
@@ -522,3 +534,41 @@ var ACADEMIA = {
     }
   }
 };
+
+
+/* ============================================================
+   AUDIO: todas las frases en ingles que se pueden escuchar salen de aqui.
+   Lo usan la pagina (para saber que boton mostrar), tools/generar_audios_academia.py (para crear los mp3)
+   y la prueba (para comprobar que cada texto mostrado tiene su audio). Una sola fuente = el audio siempre
+   corresponde al texto.
+   Voces (Kokoro, local y gratis): f = af_heart (todas las frases), m = am_michael (solo el segundo hablante de un dialogo).
+   Las grabaciones de Leo (screen.audio) se usan donde existan y se rotulan "Escuchar a Leo".
+   ============================================================ */
+function academiaSentence(item){
+  if(item.say) return item.say;
+  var clean = function(s){ return s.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim(); };
+  var isEn = function(s){ return /^[A-Za-z0-9'.,?!: _-]+$/.test(s) && !/^[A-B]: /.test(s); };
+  if(item.type === 'choice'){
+    if(item.q.indexOf('___') !== -1){ var f = clean(item.q.replace('___', item.options[item.answer])); return isEn(f) ? f : null; }
+    var o = item.options[item.answer]; return isEn(o) && /[.?!]$/.test(o) ? o : null;
+  }
+  if(item.type === 'type'){
+    if(item.source && item.source.indexOf('___') !== -1){ var g = clean(item.source.replace('___', item.show)); return isEn(g) ? g : null; }
+    return item.source && /[.?!]$/.test(item.source) && /[.?!]$/.test(item.show) ? item.show : null;
+  }
+  if(item.type === 'order') return item.tokens.join(' ');
+  if(item.type === 'error') return item.fix;
+  return null;
+}
+function academiaAudioTexts(course){
+  var out = {}, add = function(t, v){ if(t && !out[t]) out[t] = v || 'f'; };
+  course.lessons.forEach(function(l){
+    l.screens.forEach(function(s){
+      (s.listen || []).forEach(function(x){ if(typeof x === 'string') add(x, 'f'); else add(x.t, x.v); });
+      (s.items || []).forEach(function(i){ add(i.en, 'f'); });
+    });
+    l.canSay.forEach(function(t){ add(t, 'f'); });
+    l.activities.forEach(function(a){ add(academiaSentence(a), 'f'); });
+  });
+  return Object.keys(out).map(function(t){ return { t: t, v: out[t] }; });
+}
