@@ -53,6 +53,30 @@
     try{ localStorage.setItem(KEY, JSON.stringify(memState)); }catch(e){}
   }
   function cloudFlush(){ if(NUBE && NUBE.ready){ NUBE.flushMistakes(); cloudPush(); } }
+  /* Estado de la conexion con la cuenta: pending (conectando) | ready | anon (sin sesion) | failed (sin red o error) | off */
+  var bootState = NUBE ? 'pending' : 'off';
+  var bootWaiters = [], bootTimer = null, bootTries = 0;
+  function bootCloud(){
+    if(!NUBE || bootState === 'ready') return;
+    clearTimeout(bootTimer);
+    NUBE.boot(loadState()).then(function(r){
+      if(r && r.ok){
+        bootState = 'ready';
+        applyMerged(AcademiaNube.mergeStates(r.state, loadState()));   // por si el alumno ya avanzo mientras conectabamos
+        if(r.changed || NUBE.dirty) cloudSchedule();
+        var first = hashParts().path.split('/').filter(Boolean);
+        // Solo se redibuja si NO esta en medio de una leccion, repaso o practica.
+        var busy = first[0] === 'curso' && (first[2] === 'leccion' || first[2] === 'repaso' || first[2] === 'practica');
+        var w = bootWaiters; bootWaiters = [];
+        if(w.length) w.forEach(function(f){ f(); }); else if(!busy) route();
+        return;
+      }
+      bootState = (r && r.reason === 'anon') ? 'anon' : ((r && r.reason === 'off') ? 'off' : 'failed');
+      var w2 = bootWaiters; bootWaiters = []; w2.forEach(function(f){ f(); });
+      if(bootState === 'failed' && bootTries < 6){ bootTries++; bootTimer = setTimeout(bootCloud, Math.min(60000, 4000 * bootTries * bootTries)); }
+    });
+  }
+  window.addEventListener('online', function(){ if(NUBE && bootState === 'failed'){ bootTries = 0; bootCloud(); } });
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') cloudFlush(); });
   window.addEventListener('pagehide', cloudFlush);
 
@@ -945,7 +969,20 @@
     return qs;
   }
   function viewExam(){
-    if(NUBE && NUBE.ready) return viewOfficialExam();
+    if(NUBE && bootState === 'ready') return viewOfficialExam();
+    if(NUBE && bootState === 'pending'){
+      setTabs(null); setTitle('Evaluación del curso'); root.textContent = '';
+      root.appendChild(el('div', null, [el('a', { href: '#/curso/to-be', class: 'ac-back', text: '← Curso' }), el('section', { class: 'ac-card' }, [el('p', { class: 'ac-text', role: 'status', text: 'Conectando con tu cuenta...' })])]));
+      bootWaiters.push(function(){ if(location.hash.indexOf('evaluacion') !== -1) viewExam(); });
+      return;
+    }
+    if(NUBE && bootState === 'failed'){
+      setTabs(null); setTitle('Evaluación del curso'); root.textContent = '';
+      root.appendChild(el('div', null, [el('a', { href: '#/curso/to-be', class: 'ac-back', text: '← Curso' }),
+        el('section', { class: 'ac-card' }, [el('h1', { class: 'ac-h1 ac-h1-sm', 'data-focus': '', text: 'La evaluación no está disponible ahora' }), el('p', { class: 'ac-text', text: 'No pudimos conectar con tu cuenta. Revisa tu conexión e inténtalo de nuevo. Tu avance está a salvo.' }),
+          el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: 'Reintentar', onclick: function(){ bootTries = 0; bootState = 'pending'; viewExam(); bootCloud(); } }), ' ', link('#/curso/to-be/practica', 'Hacer una práctica', 'ac-btn ac-btn-outline')])]));
+      focusMain(); return;
+    }
     return viewPracticeExam();
   }
   function viewPracticeExam(){
@@ -1016,7 +1053,7 @@
     root.textContent = '';
     var head = el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
       el('p', { class: 'ac-kicker', text: 'Resultado de la práctica' }),
-      el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: passed ? '¡Superaste la práctica!' : 'Todavía no, vas cerca' }),
+      el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: passed ? '¡Superaste la práctica!' : (pct >= 60 ? 'Todavía no, vas cerca' : 'Todavía no, sigue practicando') }),
       el('p', { class: 'ac-score', text: pct + ' %' }),
       el('p', { class: 'ac-text', text: 'Respondiste ' + correct + ' de ' + total + ' bien. Para superarla necesitas ' + CFG.passPct + ' %.' + (passed ? '' : ' Tus lecciones siguen completadas.') }),
       el('p', { class: 'ac-practice-tag', text: 'Es una práctica: no da insignia ni certificado.' })
@@ -1040,7 +1077,7 @@
     if(weak.length){
       var rec = el('section', { class: 'ac-review' }, [
         el('p', { class: 'ac-eyebrow ac-eyebrow-amber', text: 'Te recomendamos' }),
-        el('p', { class: 'ac-review-t', text: 'Repasar ' + weak.map(function(t){ return COURSE.topics[t].toLowerCase(); }).join(' y ') + ' y volver a intentarlo.' })
+        el('p', { class: 'ac-review-t', text: weak.length > 2 ? 'Repasa los temas marcados y vuelve a intentarlo.' : 'Repasar ' + weak.map(function(t){ return COURSE.topics[t].toLowerCase(); }).join(' y ') + ' y volver a intentarlo.' })
       ]);
       weak.forEach(function(t){
         var l = lessonOfTopic(t);
@@ -1192,7 +1229,7 @@
     root.textContent = '';
     root.appendChild(el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
       el('p', { class: 'ac-kicker', text: 'Resultado de la evaluación' }),
-      el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: res.passed ? '¡Superaste el curso!' : 'Todavía no, vas cerca' }),
+      el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: res.passed ? '¡Superaste el curso!' : (res.score_pct >= 60 ? 'Todavía no, vas cerca' : 'Todavía no, sigue practicando') }),
       el('p', { class: 'ac-score', text: res.score_pct + ' %' }),
       el('p', { class: 'ac-text', text: 'Respondiste ' + res.correct + ' de ' + res.total + ' bien. Para superarla necesitas ' + res.pass_pct + ' %.' + (res.passed ? '' : ' Tus lecciones siguen completadas.') }),
       res.passed ? el('p', { class: 'ac-badge-won', role: 'status', text: 'Insignia conseguida: Domina el verbo TO BE' }) : null
@@ -1213,7 +1250,7 @@
     if(weak.length && !res.passed){
       var rec = el('section', { class: 'ac-review' }, [
         el('p', { class: 'ac-eyebrow ac-eyebrow-amber', text: 'Te recomendamos' }),
-        el('p', { class: 'ac-review-t', text: 'Repasar ' + weak.map(function(t){ return COURSE.topics[t].toLowerCase(); }).join(' y ') + ' y volver a intentarlo.' })
+        el('p', { class: 'ac-review-t', text: weak.length > 2 ? 'Repasa las lecciones marcadas y vuelve a intentarlo.' : 'Repasar ' + weak.map(function(t){ return COURSE.topics[t].toLowerCase(); }).join(' y ') + ' y volver a intentarlo.' })
       ]);
       weak.forEach(function(t){
         var l = lessonOfTopic(t);
@@ -1305,15 +1342,5 @@
   }
   window.addEventListener('hashchange', route);
   route();
-  if(NUBE){
-    NUBE.boot(loadState()).then(function(r){
-      if(!r || !r.ok) return;
-      applyMerged(AcademiaNube.mergeStates(r.state, loadState()));   // por si el alumno ya avanzó mientras conectábamos
-      if(r.changed) cloudSchedule();
-      // Solo se redibuja si NO está en medio de una lección, repaso o evaluación.
-      var first = hashParts().path.split('/').filter(Boolean);
-      var busy = first[0] === 'curso' && (first[2] === 'leccion' || first[2] === 'repaso' || first[2] === 'practica' || first[2] === 'evaluacion');
-      if(!busy) route();
-    });
-  }
+  if(NUBE) bootCloud();
 })();

@@ -1653,3 +1653,14 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Pruebas: 13 unitarias, e2e (recorrido completo en 320/375/1280, retomar tras recargar, aislamiento sin llamadas externas, 65 comprobaciones de audio, variantes aceptadas), sin errores de consola de la app ni overflow horizontal.
 - No probado: dispositivos reales, reconocimiento de voz del audio (correspondencia garantizada por fuente unica + manifiesto).
 - No se tocaron: Aprender, practica, pagos, Supabase, estadisticas, GA/Meta.
+
+[2026-10-25] Academia: integracion aislada con el motor adaptativo y Supabase (rama academia/piloto-to-be, NO publicado, NADA aplicado en produccion)
+- Verificaciones del piloto: 95 mp3 existen, ffprobe ok, sin silencios/recortes; contracciones fonetizadas como una palabra (I'm, she's, isn't). No se pudo verificar la calidad auditiva ni con reconocimiento de voz (sin modelo disponible). Tablas en movil 320 corregidas (boton de audio sobre el texto).
+- Migracion preparada (NO aplicada): supabase/migrations/20261026120000_academia_integracion.sql. Tablas academia_courses, academia_progress (version optimista), academia_exam_items (banco privado), academia_exam_attempts, academia_badges. RPC academia_save_progress, academia_exam_status/start/submit. Insignia solo la crea el servidor.
+- Errores: sin tabla nueva. item_id 'ac:to-be:<actividad>' en mistake_stats via apply_mistake_results. Una leccion = una sesion normal (skill gramatica) en progress_sessions.
+- Cliente: academia-nube.js (fusion de dispositivos, cola de errores, examen oficial). academia-boot.js: interruptor CLOUD_ON=false. academia-motor.js (generado por tools/generar_academia_motor.js): puente a app.js, enabled=false.
+- app.js (3 cambios minimos, todos protegidos por typeof ACADEMIA_MOTOR): indice del diagnostico, cobertura sin ids 'ac:', enlace "Repasar la leccion N" en acciones del tema. Apagado = diagnostico identico.
+- Banco real del examen (30 preguntas) en private/ (ignorado por git; el repo es publico) + tools/academia_seed_examen.js.
+- academia.js: "volver a donde estabas" (?volver=), reintento de conexion, evaluacion oficial, insignia en Mis logros, marcas de tiempo en errores para fusionar.
+- Pruebas nuevas: academia-sql (27), academia-integracion (27), academia-e2e-nube (13, Chromium + PGlite). Doc: ACADEMIA_INTEGRACION.md.
+- Pruebas existentes: todas siguen pasando salvo 5 que necesitan el paquete typescript (checkout-abandonado, error-monitor, leo-ai-server, member-reactivation-e2e, payment-grace), que no depende de estos cambios.
