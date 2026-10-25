@@ -46,3 +46,6 @@ tools/leo-ai-eval/out/
 
 # Indexador: ajustes solo de este PC (p.ej. tema de ntfy). La sesion de Google, la cola y el registro viven en %LOCALAPPDATA%\InglesConLeo\indexador, fuera del repo.
 tools/indexador/config.local.json
+
+# Banco REAL del examen (el repo es publico): nunca subir. Ver tools/academia_seed_examen.js
+private/

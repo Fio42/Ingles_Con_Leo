@@ -251,3 +251,13 @@
 .ac-phrase-btn.is-on .ac-leo-ico{background:#fff;color:var(--ink);}
 .ac-fb-sent{font-weight:700;font-size:1.05rem;}
 .ac-change-box .ac-es{font-size:.9rem;color:var(--ink-soft);}
+@media (max-width:420px){
+  .ac-table th,.ac-table td{padding:8px;}
+  .ac-cell{flex-direction:column;align-items:flex-start;gap:4px;}
+  .ac-cell-play{width:30px;height:30px;}
+  .ac-cell>span{overflow-wrap:anywhere;}
+}
+
+.ac-badge-won{font-weight:700;color:var(--green,#14804a);}
+.ac-sync{margin:12px 0 0;text-align:center;}
+.ac-btn-back{margin-bottom:2px;}

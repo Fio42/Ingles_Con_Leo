@@ -1,0 +1,221 @@
+/* GENERADO por tools/generar_academia_motor.js desde academia-data.js. No editar a mano.
+   Puente entre la academia y el motor adaptativo (app.js). Sin contenido de lecciones: solo mapas.
+   enabled=false: mientras la academia no se lance, el sitio actual se ve y se comporta EXACTAMENTE igual. */
+var ACADEMIA_MOTOR = (function(){
+  var DATA = {
+ "to-be": {
+  "title": "Domina el verbo TO BE",
+  "tema": "to-be-presente",
+  "engineTopic": "Verbo \"to be\": am / is / are",
+  "level": "facil",
+  "topics": {
+   "forma": "Elegir am, is o are",
+   "afirm": "Frases afirmativas y formas cortas",
+   "neg": "Negaciones",
+   "preg": "Preguntas y respuestas cortas",
+   "vida": "To be en situaciones reales"
+  },
+  "lessons": [
+   {
+    "n": 1,
+    "title": "Am, is y are",
+    "topic": "forma"
+   },
+   {
+    "n": 2,
+    "title": "Afirmaciones",
+    "topic": "afirm"
+   },
+   {
+    "n": 3,
+    "title": "Negaciones",
+    "topic": "neg"
+   },
+   {
+    "n": 4,
+    "title": "Preguntas",
+    "topic": "preg"
+   },
+   {
+    "n": 5,
+    "title": "To be en la vida real",
+    "topic": "vida"
+   }
+  ],
+  "items": {
+   "l1-a1": 1,
+   "l1-a2": 1,
+   "l1-a3": 1,
+   "l1-a4": 1,
+   "l1-a5": 1,
+   "l1-a6": 1,
+   "l1-a7": 1,
+   "l1-a8": 1,
+   "l2-a1": 2,
+   "l2-a2": 2,
+   "l2-a3": 2,
+   "l2-a4": 2,
+   "l2-a5": 2,
+   "l2-a6": 2,
+   "l2-a7": 2,
+   "l2-a8": 2,
+   "l3-a1": 3,
+   "l3-a2": 3,
+   "l3-a3": 3,
+   "l3-a4": 3,
+   "l3-a5": 3,
+   "l3-a6": 3,
+   "l3-a7": 3,
+   "l3-a8": 3,
+   "l4-a1": 4,
+   "l4-a2": 4,
+   "l4-a3": 4,
+   "l4-a4": 4,
+   "l4-a5": 4,
+   "l4-a6": 4,
+   "l4-a7": 4,
+   "l4-a8": 4,
+   "l4-a9": 4,
+   "l5-a1": 5,
+   "l5-a2": 5,
+   "l5-a3": 5,
+   "l5-a4": 5,
+   "l5-a5": 5,
+   "l5-a6": 5,
+   "l5-a7": 5,
+   "l5-a8": 5,
+   "x-f1": 1,
+   "x-f2": 1,
+   "x-f3": 1,
+   "x-f4": 1,
+   "x-f5": 1,
+   "x-f6": 1,
+   "x-a1": 2,
+   "x-a2": 2,
+   "x-a3": 2,
+   "x-a4": 2,
+   "x-a5": 2,
+   "x-a6": 2,
+   "x-n1": 3,
+   "x-n2": 3,
+   "x-n3": 3,
+   "x-n4": 3,
+   "x-n5": 3,
+   "x-n6": 3,
+   "x-p1": 4,
+   "x-p2": 4,
+   "x-p3": 4,
+   "x-p4": 4,
+   "x-p5": 4,
+   "x-p6": 4,
+   "x-v1": 5,
+   "x-v2": 5,
+   "x-v3": 5,
+   "x-v4": 5,
+   "x-v5": 5,
+   "x-v6": 5,
+   "e-f1": 1,
+   "e-f2": 1,
+   "e-f3": 1,
+   "e-f4": 1,
+   "e-f5": 1,
+   "e-f6": 1,
+   "e-f7": 1,
+   "e-f8": 1,
+   "e-f9": 1,
+   "e-f10": 1,
+   "e-f11": 1,
+   "e-f12": 1,
+   "e-a1": 2,
+   "e-a2": 2,
+   "e-a3": 2,
+   "e-a4": 2,
+   "e-a5": 2,
+   "e-a6": 2,
+   "e-a7": 2,
+   "e-a8": 2,
+   "e-a9": 2,
+   "e-a10": 2,
+   "e-a11": 2,
+   "e-a12": 2,
+   "e-n1": 3,
+   "e-n2": 3,
+   "e-n3": 3,
+   "e-n4": 3,
+   "e-n5": 3,
+   "e-n6": 3,
+   "e-n7": 3,
+   "e-n8": 3,
+   "e-n9": 3,
+   "e-n10": 3,
+   "e-n11": 3,
+   "e-n12": 3,
+   "e-p1": 4,
+   "e-p2": 4,
+   "e-p3": 4,
+   "e-p4": 4,
+   "e-p5": 4,
+   "e-p6": 4,
+   "e-p7": 4,
+   "e-p8": 4,
+   "e-p9": 4,
+   "e-p10": 4,
+   "e-p11": 4,
+   "e-p12": 4,
+   "e-v1": 5,
+   "e-v2": 5,
+   "e-v3": 5,
+   "e-v4": 5,
+   "e-v5": 5,
+   "e-v6": 5,
+   "e-v7": 5,
+   "e-v8": 5,
+   "e-v9": 5,
+   "e-v10": 5,
+   "e-v11": 5,
+   "e-v12": 5
+  }
+ }
+};
+  var M = { enabled: false, page: 'academia.html', courses: DATA };
+  M.itemId = function(courseId, activityId){ return 'ac:' + courseId + ':' + activityId; };
+  M.parse = function(engineId){
+    var m = /^ac:([a-z0-9-]+):(.+)$/.exec(String(engineId || ''));
+    if(!m || !DATA[m[1]]) return null;
+    return { course: m[1], activity: m[2], lesson: DATA[m[1]].items[m[2]] || null };
+  };
+  /* Entradas para el indice de diagnostico de app.js (getDiagItemIndex). kind 'grammar' + el tema REAL del motor:
+     asi el diagnostico, las familias y el registro de temas funcionan igual que con cualquier ejercicio. */
+  M.indexEntries = function(){
+    var out = [];
+    Object.keys(DATA).forEach(function(cid){
+      var c = DATA[cid];
+      Object.keys(c.items).forEach(function(aid){
+        out.push([M.itemId(cid, aid), { kind: 'grammar', item: { id: M.itemId(cid, aid), academia: true }, topic: c.engineTopic, academia: { course: cid, lesson: c.items[aid] } }]);
+      });
+    });
+    return out;
+  };
+  M.courseForTema = function(temaId){
+    var ids = Object.keys(DATA);
+    for(var i = 0; i < ids.length; i++) if(DATA[ids[i]].tema === temaId) return ids[i];
+    return null;
+  };
+  /* Donde llevar al alumno para reforzar un tema: la leccion que mas errores activos acumula (empate: la menor).
+     failedEngineIds: ids del motor ('ac:to-be:l3-a2') con error activo. back: pagina a la que volver despues. */
+  M.linkForTema = function(temaId, failedEngineIds, back){
+    var cid = M.courseForTema(temaId);
+    if(!M.enabled || !cid) return null;
+    var count = {}, best = null;
+    (failedEngineIds || []).forEach(function(id){
+      var p = M.parse(id); if(!p || p.course !== cid || !p.lesson) return;
+      count[p.lesson] = (count[p.lesson] || 0) + 1;
+    });
+    Object.keys(count).forEach(function(n){ if(best === null || count[n] > count[best] || (count[n] === count[best] && +n < +best)) best = n; });
+    var c = DATA[cid];
+    var lesson = best ? +best : null;
+    var href = M.page + '#/curso/' + cid + (lesson ? '/leccion/' + lesson : '') + (back ? '?volver=' + encodeURIComponent(back) : '');
+    return { course: cid, lesson: lesson, href: href, label: lesson ? 'Repasar la lección ' + lesson + ' del curso ' + c.title.replace(/^Domina el verbo /, '') : 'Ver el curso ' + c.title.replace(/^Domina el verbo /, '') };
+  };
+  return M;
+})();

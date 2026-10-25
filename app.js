@@ -1176,7 +1176,7 @@ function attemptedItemIdsFor(p, skill){
   // asi que el comportamiento previo no cambia en nada.
   p.sessions.forEach(s=>{
     (s.results||[]).forEach(r=>{
-      if((r.skill || s.skill) === skill) ids.add(r.itemId);
+      if((r.skill || s.skill) === skill && !(typeof r.itemId === 'string' && r.itemId.indexOf('ac:') === 0)) ids.add(r.itemId);   // 'ac:' = academia: no es del banco, no infla la cobertura
     });
   });
   return ids;
@@ -6256,6 +6256,12 @@ function getDiagItemIndex(){
   LEVELS.forEach(level=>{
     READING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'reading', item, topic:null })));
   });
+  // Academia: las actividades de los cursos entran al MISMO diagnóstico (tema real del motor). Solo aquí, nunca en
+  // getMistakesItemIndex: así ningún repaso intenta reproducir una actividad de academia en el reproductor de gramática.
+  // Apagado (ACADEMIA_MOTOR.enabled=false) o sin academia-motor.js, todo queda exactamente como antes.
+  if(typeof ACADEMIA_MOTOR !== 'undefined' && ACADEMIA_MOTOR.enabled){
+    ACADEMIA_MOTOR.indexEntries().forEach(e=>{ if(!index.has(e[0])) index.set(e[0], e[1]); });
+  }
   _diagItemIndexCache = index;
   return index;
 }
@@ -6635,6 +6641,18 @@ function computeDiagnosis(p, statsMap){
   if(!diag.actions.length){
     push({ title:'Hacer tu plan de hoy', reason:'Vas bien en todo: tu plan mezcla tus habilidades según tu nivel.', href:'plan-estudio.html', cta:'Empezar', voice:'buen-trabajo' }, 'plan');
   }
+  // Academia: si el tema de la acción tiene curso, se ofrece repasar la lección exacta (la que más errores activos suma)
+  // y volver aquí después. Es un enlace extra: la acción principal no cambia.
+  if(typeof ACADEMIA_MOTOR !== 'undefined' && ACADEMIA_MOTOR.enabled){
+    let back = '';
+    try{ back = location.pathname.split('/').pop() + location.search; }catch(e){}
+    diag.actions.forEach(a=>{
+      if(!a || !a.tema) return;
+      const failed = mistakes.active.filter(m => m.tema === a.tema && String(m.itemId).indexOf('ac:') === 0).map(m => m.itemId);
+      const link = ACADEMIA_MOTOR.linkForTema(a.tema, failed, back);
+      if(link) a.course = link;
+    });
+  }
   diag.today = diag.actions[0];
   return diag;
 }
@@ -6879,6 +6897,7 @@ function diagActionBodyHtml(a){
       <div class="diag-action-title">${a.title}</div>
       <div class="diag-muted">${a.reason}</div>
       ${a.article ? `<a href="${a.article}" class="diag-action-article">${a.articleLabel || 'Leer la explicación'} →</a>` : ''}
+      ${a.course ? `<a href="${a.course.href}" class="diag-action-article">${a.course.label} →</a>` : ''}
     </div>`;
 }
 

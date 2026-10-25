@@ -170,7 +170,7 @@ var ACADEMIA = {
             {
               title: 'Con nombres y cosas',
               text: 'Piensa en el pronombre que reemplaza al nombre. Una sola persona o cosa va con is. Varias van con are.',
-              note: 'You sirve para una persona (tú) o varias (ustedes) y siempre va con are.',
+              note: 'La palabra you sirve para una persona (tú) o varias (ustedes) y siempre va con are.',
               table: {
                 head: ['Dices', 'Piensas', 'Usas'],
                 rows: [
