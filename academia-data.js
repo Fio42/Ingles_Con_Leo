@@ -28,7 +28,7 @@ var ACADEMIA_CONFIG = {
   examSize: 15,       // preguntas por intento
   examPerTopic: 3,    // cuantas preguntas de cada tema entran en cada intento
   weeklyGoals: [2, 3, 5],
-  exampleAudio: true  // false = solo la voz de Leo; los ejemplos quedan sin audio
+  exampleAudio: false // false = solo se usan las grabaciones de Leo; los ejemplos sin grabacion aprobada no muestran boton
 };
 
 /* Instrucciones guiadas: cada actividad dice QUE HACER y muestra un EJEMPLO corto.
@@ -104,11 +104,10 @@ var ACADEMIA = {
             {
               title: 'También sirve para preguntar',
               text: 'Para hacer una pregunta, pasa is al inicio de la frase. Lo veremos con calma en la lección 4.',
-              compare: { wrong: 'She is a nurse.', right: 'Is she a nurse?' },
+              change: { a: { label: 'Afirmación', text: 'She is a nurse.  (Ella es enfermera.)' }, b: { label: 'Pregunta', text: 'Is she a nurse?  (¿Ella es enfermera?)' } },
               items: [
                 { en: 'He is my brother.', es: 'Él es mi hermano.', audio: 'audio/articulos/verbo-to-be/frase-03.mp3' },
-                { en: 'We are ready.', es: 'Estamos listos.', audio: 'audio/articulos/verbo-to-be/frase-05.mp3' },
-                { en: 'Is she a nurse?', es: '¿Ella es enfermera?', audio: 'audio/articulos/verbo-to-be/frase-07.mp3' }
+                { en: 'We are ready.', es: 'Estamos listos.', audio: 'audio/articulos/verbo-to-be/frase-05.mp3' }
               ],
               audio: 'audio/aprender/to-be/exp-03.mp3'
             },
@@ -237,13 +236,13 @@ var ACADEMIA = {
             { id: 'l2-a7', type: 'error', topic: 'afirm', q: 'Una de estas frases tiene un error. Tócala.',
               options: ["He's a doctor.", "They's at home.", "It's cold."], wrong: 1, fix: "They're at home.",
               why: "They va con are, así que la forma corta es they're." },
-            { id: 'l2-a8', type: 'write', topic: 'afirm', q: 'Preséntate con una frase. Di tu nombre o de dónde eres.',
+            { id: 'l2-a8', type: 'write', topic: 'afirm', q: "Escribe una frase sobre ti con I am o I'm. Puedes decir tu nombre, de dónde eres o cómo estás.",
               example: "I'm Leo. I'm from Colombia.",
               checks: [
-                { re: "\\b(i am|i'm)\\s+\\S+", flags: 'i', msg: "Empieza con I am o I'm y sigue con tu nombre o tu país. Por ejemplo: I'm Ana." },
+                { re: "\\b(i am|i'm)\\s+\\S+", flags: 'i', msg: "Usa I am o I'm y sigue con tu nombre, tu país o cómo estás. Por ejemplo: I'm Ana." },
                 { re: "\\b(i am|i'm)\\b(?!\\s+not)", flags: 'i', msg: 'Escribe una frase afirmativa, sin not.' }
               ],
-              why: 'Una presentación sencilla usa I am o I\'m seguido de tu nombre o tu país.' }
+              why: 'Con I usamos am. Después puedes decir quién eres, de dónde eres o cómo estás.' }
           ]
         },
 
@@ -291,15 +290,15 @@ var ACADEMIA = {
           ],
           activities: [
             { id: 'l3-a1', type: 'choice', topic: 'neg', q: 'He ___ at work today. (negativo)', options: ["aren't", "isn't", "doesn't"], answer: 1,
-              why: "He va con is, y en negativo es isn't. Doesn't no se usa con to be." },
+              wrongWhy: {"aren't": "Aren't va con you, we y they. He va con is.", "doesn't": "Doesn't no se usa con to be. Con to be solo cambia is por isn't."}, why: "He va con is, y en negativo es isn't. Doesn't no se usa con to be." },
             { id: 'l3-a2', type: 'choice', topic: 'neg', q: 'Quiero decir "No tengo hambre": I ___ hungry.', options: ['not am', 'am not', 'no am'], answer: 1,
-              why: 'Not va después del verbo: I am not hungry.' },
-            { id: 'l3-a3', type: 'type', topic: 'neg', q: 'Escríbela en negativo con forma corta.', ex: "He is tall.  →  He isn't tall.", source: 'They are ready.',
-              accepted: ["they aren't ready", "they're not ready", "they aren't ready.", "they're not ready."],
-              show: "They aren't ready.", why: "Con they puedes usar aren't o they're not." },
+              wrongWhy: {"not am": "Not va después del verbo, no antes.", "no am": "En inglés no usamos no antes del verbo. Usamos not después de am."}, why: 'Not va después del verbo: I am not hungry.' },
+            { id: 'l3-a3', type: 'type', topic: 'neg', q: 'Escríbela en negativo.', ex: "He is tall.  →  He isn't tall.", source: 'They are ready.',
+              accepted: ["they aren't ready", "they're not ready", "they are not ready"],
+              show: "They aren't ready.", why: "Con they sirven they are not, they aren't y they're not. Todas están bien." },
             { id: 'l3-a4', type: 'type', topic: 'neg', q: 'Escríbela en negativo.', ex: "He is tall.  →  He isn't tall.", source: 'She is a nurse.',
               accepted: ["she isn't a nurse", "she is not a nurse", "she's not a nurse"],
-              show: "She isn't a nurse.", why: "Agrega not después de is: she is not, she isn't o she's not." },
+              show: "She isn't a nurse.", why: "Agrega not después de is. Sirven she is not, she isn't y she's not." },
             { id: 'l3-a5', type: 'error', topic: 'neg', q: 'Una de estas frases tiene un error. Tócala.',
               options: ['I no am tired.', "She isn't here.", "We aren't late."], wrong: 0, fix: 'I am not tired.',
               why: 'En inglés not va después de am.' },
@@ -308,7 +307,7 @@ var ACADEMIA = {
               why: 'Sujeto, are, not y luego el lugar.' },
             { id: 'l3-a7', type: 'choice', topic: 'neg', q: '¿Cómo se dice "Mi hermano no está en casa"?',
               options: ['My brother no is at home.', "My brother aren't at home.", "My brother isn't at home."], answer: 2,
-              why: "My brother es una persona (he), así que usamos isn't." },
+              wrongWhy: {"My brother no is at home.": "En inglés not va después de is, no antes.", "My brother aren't at home.": "My brother es una persona (he). Aren't se usa con you, we y they."}, why: "My brother es una persona (he), así que usamos isn't." },
             { id: 'l3-a8', type: 'type', topic: 'neg', q: 'Escribe la forma corta de I am not.', ex: "she is not  →  she isn't", source: 'I am not →',
               accepted: ["i'm not"], show: "I'm not", why: "Con I solo existe I'm not. Amn't no existe." }
           ]
@@ -359,7 +358,7 @@ var ACADEMIA = {
                   ['how (cómo)', 'How are you?']
                 ]
               },
-              note: "Con is se acorta mucho: What's your name? Where's the bank? Con are no se acorta."
+              note: "Con is se acorta mucho: What's your name? Where's the bank? Con are casi no se acorta al escribir."
             },
             {
               title: 'Responde con el mismo verbo',
@@ -368,7 +367,7 @@ var ACADEMIA = {
               note: 'You siempre va con are, también en preguntas. Por eso es Are you, nunca Is you.',
               items: [
                 { en: 'How old is your sister?', es: '¿Cuántos años tiene tu hermana?' },
-                { en: 'Am I late?', es: '¿Llegué tarde?' }
+                { en: 'Am I late?', es: '¿Voy tarde?' }
               ]
             }
           ],
@@ -382,9 +381,9 @@ var ACADEMIA = {
               accepted: ['are they tired', 'are they tired?'], show: 'Are they tired?',
               why: 'Pasa are al inicio: Are they tired?' },
             { id: 'l4-a4', type: 'choice', topic: 'preg', q: 'Is she a doctor? Yes, ___.', options: ["she's", 'she am', 'she is'], answer: 2,
-              why: "En una respuesta corta afirmativa no se usa la forma corta: Yes, she is." },
+              wrongWhy: {"she's": "En una respuesta corta afirmativa no se acorta. Se dice Yes, she is.", "she am": "Am solo va con I. Con she usamos is."}, why: "En una respuesta corta afirmativa no se usa la forma corta: Yes, she is." },
             { id: 'l4-a5', type: 'choice', topic: 'preg', q: 'Are they at school? No, ___.', options: ["they aren't", 'they not', "they don't"], answer: 0,
-              why: "En el no, repites el verbo con n't: No, they aren't." },
+              wrongWhy: {"they not": "No basta con not. Repite el verbo: aren't.", "they don't": "Don't no se usa con to be. Repite el verbo de la pregunta: aren't."}, why: "En el no, repites el verbo con n't: No, they aren't." },
             { id: 'l4-a6', type: 'choice', topic: 'preg', q: 'Where ___ your keys?', options: ['is', 'are', 'am'], answer: 1,
               why: 'Your keys son varias cosas (they), así que usamos are.' },
             { id: 'l4-a7', type: 'type', topic: 'preg', q: 'Completa la pregunta.', ex: "___ you happy?  →  Are", source: 'How old ___ you?',
@@ -419,7 +418,7 @@ var ACADEMIA = {
                   ["No, I'm not. I'm an engineer.", 'No. Soy ingeniero.']
                 ]
               },
-              note: 'Fíjate: las preguntas usan are y las respuestas usan la forma corta de am.'
+              note: "Fíjate: las preguntas usan is y are. Cuando hablas de ti, respondes con I'm."
             },
             {
               title: 'Frases que usarás cada día',
@@ -453,7 +452,7 @@ var ACADEMIA = {
             { id: 'l5-a1', type: 'choice', topic: 'vida', q: 'A: Where are you from? B: ___ from Spain.', options: ["I'm", "He's", 'Is'], answer: 0,
               why: "Respondes sobre ti, así que usas I'm." },
             { id: 'l5-a2', type: 'choice', topic: 'vida', q: 'A: Is Ana at home? B: No, ___. She is at work.', options: ["she isn't", "she aren't", "she's not is"], answer: 0,
-              why: "Ana es she. Respuesta corta negativa: No, she isn't." },
+              wrongWhy: {"she aren't": "Ana es she, así que no va con aren't. Va con isn't.", "she's not is": "Esa forma mezcla dos veces el verbo. Con she sirve isn't."}, why: "Ana es she. Respuesta corta negativa: No, she isn't." },
             { id: 'l5-a3', type: 'order', topic: 'vida', q: 'Ordena las palabras para formar una pregunta.',
               tokens: ['Where', 'is', 'the', 'bathroom?'],
               why: 'Palabra de pregunta, is, y luego el sujeto.' },
@@ -498,26 +497,26 @@ var ACADEMIA = {
           { id: 'x-a5', type: 'error', topic: 'afirm', q: 'Una de estas frases tiene un error. Tócala.', options: ["He's 40 years old.", "She's tired.", "We's late."], wrong: 2, fix: "We're late.", why: "We are se acorta como we're." },
           { id: 'x-a6', type: 'choice', topic: 'afirm', q: '¿Cómo se dice "Tengo 18 años"?', options: ['I have 18.', 'I am have 18.', 'I am 18.'], answer: 2, why: 'La edad se dice con to be: I am 18.' },
           /* neg */
-          { id: 'x-n1', type: 'choice', topic: 'neg', q: 'We ___ late. (negativo)', options: ["isn't", "aren't", "amn't"], answer: 1, why: "We va con are: aren't." },
+          { id: 'x-n1', type: 'choice', topic: 'neg', q: 'We ___ late. (negativo)', options: ["isn't", "aren't", "amn't"], answer: 1, wrongWhy: {"isn't": "Isn't va con he, she e it. We va con aren't.", "amn't": "Amn't no existe en inglés estándar."}, why: "We va con are: aren't." },
           { id: 'x-n2', type: 'type', topic: 'neg', q: 'Escríbela en negativo.', ex: "He is tall.  →  He isn't tall.", source: 'It is open.', accepted: ["it isn't open", "it is not open", "it's not open"], show: "It isn't open.", why: "Agrega not después de is." },
           { id: 'x-n3', type: 'error', topic: 'neg', q: 'Una de estas frases tiene un error. Tócala.', options: ['She not is here.', "He isn't ready.", "I'm not hungry."], wrong: 0, fix: 'She is not here.', why: 'Not va después de is.' },
-          { id: 'x-n4', type: 'type', topic: 'neg', q: 'Escribe la forma corta negativa.', ex: "she is not  →  she isn't", source: 'you are not →', accepted: ["you aren't", "you're not"], show: "you aren't", why: "Con you: aren't o you're not." },
+          { id: 'x-n4', type: 'type', topic: 'neg', q: 'Escribe la forma corta negativa.', ex: "she is not  →  she isn't", source: 'you are not →', accepted: ["you aren't", "you're not", "you are not"], show: "you aren't", why: "Con you sirven you aren't y you're not." },
           { id: 'x-n5', type: 'order', topic: 'neg', q: 'Ordena las palabras para formar una frase.', tokens: ['They', 'are', 'not', 'from', 'Brazil.'], why: 'Sujeto, are, not y luego el origen.' },
-          { id: 'x-n6', type: 'choice', topic: 'neg', q: '¿Cómo se dice "No estoy cansado"?', options: ["I amn't tired.", "I'm not tired.", 'I no tired.'], answer: 1, why: "Con I la negación es I'm not." },
+          { id: 'x-n6', type: 'choice', topic: 'neg', q: '¿Cómo se dice "No estoy cansado"?', options: ["I amn't tired.", "I'm not tired.", 'I no tired.'], answer: 1, wrongWhy: {"I amn't tired.": "Amn't no existe en inglés estándar. Con I se dice I'm not.", "I no tired.": "Falta el verbo. En inglés se dice I'm not tired."}, why: "Con I la negación es I'm not." },
           /* preg */
           { id: 'x-p1', type: 'type', topic: 'preg', q: 'Conviértela en pregunta.', ex: "He is happy.  →  Is he happy?", source: 'She is your teacher.', accepted: ['is she your teacher', 'is she your teacher?'], show: 'Is she your teacher?', why: 'Pasa is al inicio.' },
-          { id: 'x-p2', type: 'choice', topic: 'preg', q: 'Is Tom at work? No, ___.', options: ["he isn't", 'he not', "he don't"], answer: 0, why: "Respuesta corta negativa: No, he isn't." },
+          { id: 'x-p2', type: 'choice', topic: 'preg', q: 'Is Tom at work? No, ___.', options: ["he isn't", 'he not', "he don't"], answer: 0, wrongWhy: {"he not": "No basta con not. Repite el verbo: isn't.", "he don't": "Don't no se usa con to be. Repite el verbo de la pregunta: isn't."}, why: "Respuesta corta negativa: No, he isn't." },
           { id: 'x-p3', type: 'choice', topic: 'preg', q: '___ old are you?', options: ['What', 'How', 'Who'], answer: 1, why: 'How old are you? es la pregunta por la edad.' },
           { id: 'x-p4', type: 'order', topic: 'preg', q: 'Ordena las palabras para formar una pregunta.', tokens: ['Am', 'I', 'late?'], why: 'Am va primero en la pregunta.' },
           { id: 'x-p5', type: 'error', topic: 'preg', q: 'Una de estas frases tiene un error. Tócala.', options: ['Are you tired?', 'Is your parents at home?', 'Where is she?'], wrong: 1, fix: 'Are your parents at home?', why: 'Your parents son varias personas: are.' },
-          { id: 'x-p6', type: 'choice', topic: 'preg', q: 'Are you a student? Yes, ___.', options: ["I'm", 'I am', 'I is'], answer: 1, why: "En una respuesta corta afirmativa no se acorta: Yes, I am." },
+          { id: 'x-p6', type: 'choice', topic: 'preg', q: 'Are you a student? Yes, ___.', options: ["I'm", 'I am', 'I is'], answer: 1, wrongWhy: {"I'm": "En una respuesta corta afirmativa no se acorta. Se dice Yes, I am.", "I is": "Is no va con I. Con I usamos am."}, why: "En una respuesta corta afirmativa no se acorta: Yes, I am." },
           /* vida */
           { id: 'x-v1', type: 'choice', topic: 'vida', q: 'Nice to meet you. ___ Carla.', options: ["I'm", "He's", "You're"], answer: 0, why: "Hablas de ti: I'm Carla." },
           { id: 'x-v2', type: 'choice', topic: 'vida', q: 'How ___ you today?', options: ['is', 'am', 'are'], answer: 2, why: 'How are you? Con you usamos are.' },
           { id: 'x-v3', type: 'type', topic: 'vida', q: 'Completa con am, is o are.', ex: "He ___ happy.  →  is", source: 'Where ___ the keys?', accepted: ['are'], show: 'are', why: 'The keys son varias cosas: are.' },
           { id: 'x-v4', type: 'error', topic: 'vida', q: 'Una de estas frases tiene un error. Tócala.', options: ["She's a nurse.", "They're from Japan.", "I'm have a car."], wrong: 2, fix: 'I have a car.', why: "Con have no se usa to be: I have a car." },
           { id: 'x-v5', type: 'type', topic: 'vida', q: 'Escribe la pregunta.', ex: "He is happy.  →  Is he happy?", source: 'You are ready.', accepted: ['are you ready', 'are you ready?'], show: 'Are you ready?', why: 'Pasa are al inicio.' },
-          { id: 'x-v6', type: 'choice', topic: 'vida', q: 'A: Is he your brother? B: ___ He is my cousin.', options: ["No, he isn't.", 'Yes, he is.', "No, he aren't."], answer: 0, why: 'Es tu primo, así que la respuesta es No, he isn\'t.' }
+          { id: 'x-v6', type: 'choice', topic: 'vida', q: 'A: Is he your brother? B: ___ He is my cousin.', options: ["No, he isn't.", 'Yes, he is.', "No, he aren't."], answer: 0, wrongWhy: {"No, he aren't.": "He es una persona. Aren't se usa con you, we y they.", "Yes, he is.": "Es tu primo, no tu hermano. La respuesta es no."}, why: 'Es tu primo, así que la respuesta es No, he isn\'t.' }
         ]
       }
     }

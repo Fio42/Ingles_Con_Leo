@@ -20,12 +20,13 @@
   var COURSE = ACADEMIA.courses['to-be'];
   var KEY = 'leo_academia_piloto_v1';
   var root = document.getElementById('acRoot');
+  var SITE = (window.ACADEMIA_SITE || { practica: 'practica.html', plan: 'plan-estudio.html', progreso: 'progreso.html' });
   var tabs = document.getElementById('acTabs');
 
   /* ---------------- Almacenamiento (con respaldo en memoria) ---------------- */
   var memState = null;
   function blankState(){
-    return { v: 1, lessons: {}, resume: null, missed: {}, exam: { attempts: [], best: null },
+    return { v: 1, lessons: {}, resume: {}, last: null, missed: {}, exam: { attempts: [], best: null, lastIds: [] },
              goal: null, days: [], completions: [], snooze: null };
   }
   function loadState(){
@@ -33,6 +34,8 @@
     var s = null;
     try{ s = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ s = null; }
     if(!s || s.v !== 1) s = blankState();
+    if(!s.resume || typeof s.resume !== 'object' || s.resume.lessonId) s.resume = {};
+    if(!s.exam.lastIds) s.exam.lastIds = [];
     memState = s;
     return s;
   }
@@ -90,6 +93,13 @@
   function lessonById(id){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].id === id) return COURSE.lessons[i]; return null; }
   function lessonByN(n){ return COURSE.lessons[n - 1] || null; }
   function lessonOfTopic(t){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].topic === t) return COURSE.lessons[i]; return null; }
+  function pendingResume(){
+    var s = loadState(), id = s.last;
+    if(id && s.resume[id] && lessonById(id) && !(s.lessons[id] && s.lessons[id].done)) return lessonById(id);
+    var keys = Object.keys(s.resume);
+    for(var i = 0; i < keys.length; i++){ var l = lessonById(keys[i]); if(l && !(s.lessons[l.id] && s.lessons[l.id].done)) return l; }
+    return null;
+  }
   function doneCount(){ var s = loadState(), n = 0; COURSE.lessons.forEach(function(l){ if(s.lessons[l.id] && s.lessons[l.id].done) n++; }); return n; }
   function nextLesson(){
     var s = loadState();
@@ -176,6 +186,13 @@
       tb.appendChild(tbody);
       box.appendChild(el('div', { class: 'ac-table-wrap' }, [tb]));
     }
+    if(sc.change){
+      box.appendChild(el('div', { class: 'ac-change' }, [
+        el('div', { class: 'ac-change-box' }, [el('span', { class: 'ac-change-l', text: sc.change.a.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.a.text })]),
+        el('span', { class: 'ac-change-arrow', 'aria-hidden': 'true', text: '↓' }),
+        el('div', { class: 'ac-change-box is-b' }, [el('span', { class: 'ac-change-l', text: sc.change.b.label }), el('span', { class: 'ac-change-t', lang: 'en', text: sc.change.b.text })])
+      ]));
+    }
     if(sc.compare){
       box.appendChild(el('div', { class: 'ac-compare' }, [
         el('div', { class: 'ac-wrong' }, [el('span', { class: 'ac-mark', 'aria-hidden': 'true', text: '✕' }), el('span', { class: 'ac-sr', text: 'Incorrecto: ' }), sc.compare.wrong]),
@@ -244,7 +261,12 @@
       input.addEventListener('input', onChange);
       input.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); if(ctl.onEnter) ctl.onEnter(); } });
       ctl.answer = function(){ var v = norm(input.value); return v ? v : null; };
-      ctl.correct = function(a){ return item.accepted.some(function(x){ return norm(x) === a; }); };
+      ctl.correct = function(a){
+        return item.accepted.some(function(x){
+          if(norm(x) === a) return true;
+          return item.source && item.source.indexOf('___') !== -1 && norm(item.source.replace('___', x)) === a;
+        });
+      };
       ctl.text = function(a){ return a || ''; };
       ctl.right = function(){ return item.show; };
       ctl.reveal = function(a, ok){ input.classList.add(ok ? 'is-right' : 'is-wrong'); };
@@ -353,6 +375,23 @@
     return ctl;
   }
 
+  /* Explica POR QUE esa opcion no era la correcta (no solo cual era la correcta). */
+  var WORD_RULE = {
+    'am': 'Am solo va con I.',
+    'is': 'Is va con he, she, it y con una sola persona o cosa.',
+    'are': 'Are va con you, we, they y con varias personas o cosas.',
+    "isn't": "Isn't va con he, she, it y con una sola persona o cosa.",
+    "aren't": "Aren't va con you, we, they y con varias personas o cosas."
+  };
+  function wrongReason(item, mine){
+    if(item.wrongWhy && mine && item.wrongWhy[mine]) return item.wrongWhy[mine];
+    if(item.type === 'choice' && mine){
+      var w = norm(mine);
+      if(WORD_RULE[w] && item.options.every(function(o){ return WORD_RULE[norm(o)]; })) return 'Elegiste ' + mine + '. ' + WORD_RULE[w];
+    }
+    return '';
+  }
+
   /* ---------------- Ejecución de una serie de actividades ---------------- */
   /* opts: { items:[item], onDone(stats), onProgress(pos,total), mode:'practice'|'exam', startQueue? } */
   function runActivities(host, opts){
@@ -412,6 +451,12 @@
           if(extra) fb.appendChild(el('p', { class: 'ac-fb-p', text: extra }));
           fb.appendChild(el('p', { class: 'ac-fb-p' }, [(item.type === 'write' ? 'Un ejemplo: ' : (item.type === 'error' ? 'Debía ser: ' : 'Respuesta correcta: ')), el('strong', { lang: 'en', text: ctl.right() })]));
         }
+        if(!ok){
+          var mine = ctl.text(ans);
+          if((item.type === 'type' || item.type === 'write') && mine) fb.appendChild(el('p', { class: 'ac-fb-p' }, ['Escribiste: ', el('span', { lang: 'en', text: mine })]));
+          var ww = wrongReason(item, mine);
+          if(ww) fb.appendChild(el('p', { class: 'ac-fb-p', text: ww }));
+        }
         if(item.why) fb.appendChild(el('p', { class: 'ac-fb-p', text: item.why }));
         if(willRetry) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Lo volveremos a ver al final para que lo practiques una vez más.' }));
         else if(!ok) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Guardamos este punto en tu repaso.' }));
@@ -470,27 +515,27 @@
     root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Miembros' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Mi aprendizaje' })]));
     root.appendChild(pilotBanner());
 
-    var hero = el('section', { class: 'ac-hero', 'aria-label': 'Continuar' });
-    hero.appendChild(el('p', { class: 'ac-eyebrow', text: 'Ruta actual' }));
-    hero.appendChild(el('h2', { class: 'ac-hero-h', text: ACADEMIA.route.title }));
-    hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones del curso To be' }), el('strong', { text: Math.round(pct) + ' %' })]));
-    hero.appendChild(progressBar(pct, 'Avance del curso To be'));
-    var mid = el('div', { class: 'ac-hero-next' });
-    var resume = s.resume && lessonById(s.resume.lessonId) && !(s.lessons[s.resume.lessonId] && s.lessons[s.resume.lessonId].done) ? lessonById(s.resume.lessonId) : null;
+    var resume = pendingResume();
     var target = resume || nl;
+    var hero = el('section', { class: 'ac-hero', 'aria-label': 'Continuar' });
+    hero.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
+    hero.appendChild(el('h2', { class: 'ac-hero-h', text: COURSE.title }));
+    hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
+    hero.appendChild(progressBar(pct, 'Avance del curso'));
+    var mid = el('div', { class: 'ac-hero-next' });
     var cta;
     if(target){
-      mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Curso 2 de 8 · To be · Lección ' + target.n + ' de ' + COURSE.lessons.length + (resume ? ' · la dejaste a medias' : '') }));
+      mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Lección ' + target.n + ' de ' + COURSE.lessons.length + (resume ? ' · la dejaste a medias' : (dc === 0 ? ' · para empezar' : ' · sigue aquí')) }));
       mid.appendChild(el('p', { class: 'ac-hero-lesson', text: target.title }));
       mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Unos ' + target.minutes + ' minutos' }));
-      cta = link('#/curso/to-be/leccion/' + target.n, 'Continuar aprendiendo', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
     } else {
-      mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Curso 2 de 8 · To be' }));
-      mid.appendChild(el('p', { class: 'ac-hero-lesson', text: 'Terminaste las 5 lecciones' }));
+      mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Curso ' + COURSE.title }));
+      mid.appendChild(el('p', { class: 'ac-hero-lesson', text: 'Terminaste las ' + COURSE.lessons.length + ' lecciones' }));
       mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Ahora puedes probar la evaluación de práctica.' }));
-      cta = link('#/curso/to-be/evaluacion', 'Continuar aprendiendo', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
     }
+    cta = link(target ? '#/curso/to-be/leccion/' + target.n : '#/curso/to-be/evaluacion', 'Continuar aprendiendo', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
     hero.appendChild(mid); hero.appendChild(cta);
+    hero.appendChild(el('a', { href: '#/curso/to-be', class: 'ac-hero-link', text: 'Ver todas las lecciones del curso' }));
     root.appendChild(hero);
 
     /* Repaso recomendado */
@@ -499,7 +544,7 @@
       var weakest = topics.sort(function(a, b){ return mb[b].length - mb[a].length; })[0];
       var names = topics.slice(0, 2).map(function(t){ return COURSE.topics[t].toLowerCase(); }).join(' y ');
       var nItems = Math.min(8, mb[weakest].length);
-      var rev = el('section', { class: 'ac-review', 'aria-label': 'Repaso recomendado' }, [
+      root.appendChild(el('section', { class: 'ac-review', 'aria-label': 'Repaso recomendado' }, [
         el('p', { class: 'ac-eyebrow ac-eyebrow-amber', text: 'Repaso recomendado' }),
         el('p', { class: 'ac-review-t', text: 'Detectamos dificultades con: ' + names + '.' }),
         el('div', { class: 'ac-review-row' }, [
@@ -509,51 +554,55 @@
             link('#/curso/to-be/repaso/' + weakest, 'Repasar', 'ac-btn ac-btn-outline')
           ])
         ])
-      ]);
-      root.appendChild(rev);
+      ]));
     }
 
-    /* Meta semanal */
-    var goalBox = el('section', { class: 'ac-goal', 'aria-label': 'Meta semanal' });
+    /* Meta semanal: discreta, no compite con el boton principal */
+    var goalBox = el('div', { class: 'ac-goal', 'aria-label': 'Meta semanal opcional' });
     if(!s.goal){
-      goalBox.appendChild(el('p', { class: 'ac-goal-t', text: 'Meta de la semana (opcional)' }));
-      goalBox.appendChild(el('p', { class: 'ac-hero-meta', text: '¿Cuántas lecciones quieres completar por semana?' }));
-      var gr = el('div', { class: 'ac-goal-btns' });
-      CFG.weeklyGoals.forEach(function(g){ gr.appendChild(el('button', { type: 'button', class: 'ac-btn ac-btn-outline', text: g + ' lecciones', onclick: function(){ var st = loadState(); st.goal = g; saveState(); track('meta_semanal', { meta: g }); viewHome(); } })); });
-      goalBox.appendChild(gr);
+      goalBox.appendChild(el('span', { class: 'ac-goal-q', text: 'Meta semanal (opcional):' }));
+      CFG.weeklyGoals.forEach(function(g){ goalBox.appendChild(el('button', { type: 'button', class: 'ac-goal-opt', text: g + ' lecciones', onclick: function(){ var st = loadState(); st.goal = g; saveState(); track('meta_semanal', { meta: g }); viewHome(); } })); });
     } else {
       var wc = weekCount(), g = s.goal;
-      var segs = el('div', { class: 'ac-segs', 'aria-hidden': 'true' });
+      var segs = el('span', { class: 'ac-segs', 'aria-hidden': 'true' });
       for(var i = 0; i < g; i++) segs.appendChild(el('span', { class: i < wc ? 'is-on' : '' }));
-      goalBox.appendChild(el('div', { class: 'ac-goal-row' }, [
-        el('div', { class: 'ac-goal-left' }, [el('p', { class: 'ac-goal-t', text: 'Meta de la semana' }), segs]),
-        el('div', { class: 'ac-goal-right' }, [el('strong', { text: Math.min(wc, g) + ' de ' + g + ' lecciones' }), streak() >= 2 ? el('span', { class: 'ac-hero-meta', text: 'Racha: ' + streak() + ' días' }) : null])
-      ]));
-      goalBox.appendChild(el('button', { type: 'button', class: 'ac-link', text: 'Cambiar meta', onclick: function(){ var st = loadState(); st.goal = null; saveState(); viewHome(); } }));
+      goalBox.appendChild(el('span', { class: 'ac-goal-q', text: 'Meta semanal: ' + Math.min(wc, g) + ' de ' + g + ' lecciones' }));
+      goalBox.appendChild(segs);
+      if(streak() >= 2) goalBox.appendChild(el('span', { class: 'ac-goal-q', text: 'Racha: ' + streak() + ' días' }));
+      goalBox.appendChild(el('button', { type: 'button', class: 'ac-goal-opt', text: 'Cambiar', onclick: function(){ var st = loadState(); st.goal = null; saveState(); viewHome(); } }));
     }
     root.appendChild(goalBox);
 
-    /* Cursos de la ruta */
-    root.appendChild(el('h2', { class: 'ac-h2', text: 'Cursos de la ruta' }));
+    /* Lo que viene: sin dar la impresion de una ruta ya avanzada */
+    var soon = ACADEMIA.route.courses.filter(function(c){ return c.soon; });
+    var next = el('section', { class: 'ac-soon', 'aria-label': 'Próximos cursos' }, [
+      el('h2', { class: 'ac-h2 ac-h2-in', text: 'Lo que viene' }),
+      el('p', { class: 'ac-text', text: 'TO BE es el primer curso abierto de la academia. Estamos preparando la ruta ' + ACADEMIA.route.title + ', con estos cursos más:' }),
+      el('ul', { class: 'ac-soon-list' }, soon.map(function(c){ return el('li', { text: c.title }); }))
+    ]);
+    root.appendChild(next);
+    focusMain();
+  }
+
+  /* ---- Practicar ---- */
+  function viewPracticar(){
+    setTabs('practicar'); setTitle('Practicar');
+    var s = loadState(), mb = missedByTopic(), nMissed = Object.keys(s.missed).filter(function(id){ return itemIndex[id]; }).length;
+    root.textContent = '';
+    root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Miembros' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Practicar' })]));
+    root.appendChild(el('p', { class: 'ac-lead', text: 'Aquí sigues practicando con lo de siempre y repasas lo que fallaste en el curso.' }));
     var ul = el('ul', { class: 'ac-courses' });
-    ACADEMIA.route.courses.forEach(function(c, i){
-      var li = el('li', { class: 'ac-course' + (c.pilot ? ' is-open' : ' is-soon') });
-      var num = el('span', { class: 'ac-course-n', 'aria-hidden': 'true', text: String(i + 1) });
-      var body = el('span', { class: 'ac-course-b' });
-      if(c.pilot){
-        var st = dc === COURSE.lessons.length ? 'Lecciones completas' : (dc ? dc + ' de ' + COURSE.lessons.length + ' lecciones' : 'Sin empezar');
-        body.appendChild(el('span', { class: 'ac-course-t', text: c.title }));
-        body.appendChild(el('span', { class: 'ac-course-s', text: '5 lecciones y evaluación · ' + st }));
-        li.appendChild(el('a', { href: '#/curso/to-be', class: 'ac-course-a' }, [num, body, el('span', { class: 'ac-course-go', 'aria-hidden': 'true', text: '›' })]));
-      } else {
-        body.appendChild(el('span', { class: 'ac-course-t', text: c.title }));
-        body.appendChild(el('span', { class: 'ac-course-s', text: 'Próximamente · ' + c.blurb }));
-        li.appendChild(el('div', { class: 'ac-course-a' }, [num, body]));
-      }
-      ul.appendChild(li);
-    });
+    function card(href, t, sub, ext){
+      return el('li', { class: 'ac-course is-open' }, [el('a', { href: href, class: 'ac-course-a' }, [
+        el('span', { class: 'ac-course-b' }, [el('span', { class: 'ac-course-t', text: t }), el('span', { class: 'ac-course-s', text: sub })]),
+        el('span', { class: 'ac-course-go', 'aria-hidden': 'true', text: '›' })])]);
+    }
+    ul.appendChild(card(nMissed ? '#/curso/to-be/repaso/todo' : '#/curso/to-be', nMissed ? 'Repasar mis errores del curso' : 'Repasar mis errores del curso', nMissed ? nMissed + (nMissed === 1 ? ' punto guardado' : ' puntos guardados') + ' en TO BE' : 'Todavía no tienes errores guardados. Aquí aparecerán.'));
+    ul.appendChild(card(SITE.practica, 'Ejercicios de práctica', 'Gramática, vocabulario, listening, lectura, speaking y escritura, con corrección.'));
+    ul.appendChild(card(SITE.plan, 'Mi plan de estudio', 'Lo que te toca hoy según tus errores.'));
+    ul.appendChild(card(SITE.progreso, 'Mi progreso', 'Tus sesiones, rachas y temas.'));
     root.appendChild(ul);
-    root.appendChild(el('p', { class: 'ac-foot', text: 'Cada curso termina con una evaluación. Aquí solo está abierto el curso piloto.' }));
+    root.appendChild(el('p', { class: 'ac-foot', text: 'Los ejercicios del curso TO BE se guardan aparte mientras dure el piloto.' }));
     focusMain();
   }
 
@@ -563,7 +612,7 @@
     var s = loadState(), dc = doneCount(), pct = dc / COURSE.lessons.length * 100;
     root.textContent = '';
     root.appendChild(el('a', { href: '#/', class: 'ac-back', text: '← Mi ruta' }));
-    root.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso 2 de 8 · Fundamentos del inglés' }));
+    root.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
     root.appendChild(el('h1', { class: 'ac-h1', 'data-focus': '', text: COURSE.title }));
     root.appendChild(el('p', { class: 'ac-lead', text: COURSE.tagline }));
     root.appendChild(el('p', { class: 'ac-text', text: COURSE.goal }));
@@ -575,36 +624,32 @@
     COURSE.lessons.forEach(function(l){
       var st = s.lessons[l.id] || {};
       var done = !!st.done, isNext = nl && nl.id === l.id;
-      var resume = s.resume && s.resume.lessonId === l.id && !done;
-      var sub = done ? 'Completada' + (st.firstOk !== undefined ? ' · ' + st.firstOk + ' de ' + st.total + ' a la primera' : '') : (resume ? 'La dejaste a medias' : l.minutes + ' min · ' + l.summary);
+      var resume = !!s.resume[l.id];
+      var sub = done ? 'Completada' + (st.firstOk !== undefined ? ' · ' + st.firstOk + ' de ' + st.total + ' a la primera' : '') : (resume ? 'La dejaste a medias · sigue donde ibas' : l.minutes + ' min · ' + l.summary);
       var mark = el('span', { class: 'ac-ln' + (done ? ' is-done' : (isNext ? ' is-now' : '')), 'aria-hidden': 'true', text: done ? '✓' : String(l.n) });
-      var li = el('li', { class: 'ac-lesson' + (isNext ? ' is-next' : '') }, [
+      ol.appendChild(el('li', { class: 'ac-lesson' + (isNext ? ' is-next' : '') }, [
         el('a', { href: '#/curso/to-be/leccion/' + l.n, class: 'ac-lesson-a' }, [
           mark,
           el('span', { class: 'ac-lesson-b' }, [el('span', { class: 'ac-lesson-t', text: l.title }), el('span', { class: 'ac-lesson-s', text: sub })]),
-          el('span', { class: 'ac-course-go', 'aria-hidden': 'true', text: done ? 'Repasar' : '›' })
+          el('span', { class: 'ac-course-go', 'aria-hidden': 'true', text: done ? 'Repasar' : (resume ? 'Seguir' : '›') })
         ])
-      ]);
-      ol.appendChild(li);
+      ]));
     });
-    /* evaluación */
-    var attempts = s.exam.attempts, best = s.exam.best;
-    var examSub = best !== null ? 'Mejor práctica: ' + best + ' %' : CFG.examSize + ' preguntas · práctica, no certifica';
+    var best = s.exam.best;
     var ready = dc === COURSE.lessons.length;
-    ol.appendChild(el('li', { class: 'ac-lesson ac-lesson-exam' + (ready && !best ? ' is-next' : '') }, [
+    var examSub = best !== null ? 'Mejor práctica: ' + best + ' %' : CFG.examSize + ' preguntas · práctica, no certifica';
+    ol.appendChild(el('li', { class: 'ac-lesson ac-lesson-exam' + (ready && best === null ? ' is-next' : '') }, [
       el('a', { href: '#/curso/to-be/evaluacion', class: 'ac-lesson-a' }, [
         el('span', { class: 'ac-ln ac-ln-exam' + (best !== null && best >= CFG.passPct ? ' is-done' : ''), 'aria-hidden': 'true', text: best !== null && best >= CFG.passPct ? '✓' : '★' }),
-        el('span', { class: 'ac-lesson-b' }, [el('span', { class: 'ac-lesson-t', text: 'Evaluación final (práctica)' }), el('span', { class: 'ac-lesson-s', text: ready ? examSub : 'Se recomienda al terminar las 5 lecciones. Puedes presentarla antes.' })]),
+        el('span', { class: 'ac-lesson-b' }, [el('span', { class: 'ac-lesson-t', text: 'Evaluación final (práctica)' }), el('span', { class: 'ac-lesson-s', text: ready ? examSub : 'Se recomienda al terminar las lecciones. Puedes presentarla antes.' })]),
         el('span', { class: 'ac-course-go', 'aria-hidden': 'true', text: '›' })
       ])
     ]));
     root.appendChild(ol);
 
-    var target = nl;
-    var s2 = loadState();
-    if(s2.resume && lessonById(s2.resume.lessonId) && !(s2.lessons[s2.resume.lessonId] && s2.lessons[s2.resume.lessonId].done)) target = lessonById(s2.resume.lessonId);
+    var target = pendingResume() || nl;
     root.appendChild(el('div', { class: 'ac-sticky' }, [
-      target ? link('#/curso/to-be/leccion/' + target.n, 'Continuar: ' + target.title, 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl') : link('#/curso/to-be/evaluacion', 'Hacer la evaluación de práctica', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl')
+      target ? link('#/curso/to-be/leccion/' + target.n, (pendingResume() ? 'Seguir: ' : 'Continuar: ') + target.title, 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl') : link('#/curso/to-be/evaluacion', 'Hacer la evaluación de práctica', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl')
     ]));
     focusMain();
   }
@@ -618,14 +663,15 @@
     stopAudio();
     var s = loadState();
     var S = lesson.screens.length, A = lesson.activities.length;
-    var r = s.resume && s.resume.lessonId === lesson.id && !(s.lessons[lesson.id] && s.lessons[lesson.id].done) ? s.resume : null;
+    var r = s.resume[lesson.id] || null;
     run = { lesson: lesson, stage: r ? r.stage : 'learn', idx: r && r.stage === 'learn' ? Math.min(r.idx, S - 1) : 0, saved: r && r.stage === 'practice' ? r : null };
     if(!r) track('leccion_iniciada', { curso: 'to-be', leccion: lesson.n });
     drawLesson();
   }
   function saveResume(patch){
     var s = loadState();
-    s.resume = Object.assign({ lessonId: run.lesson.id }, patch);
+    s.resume[run.lesson.id] = Object.assign({ lessonId: run.lesson.id }, patch);
+    s.last = run.lesson.id;
     saveState();
   }
   function lessonShell(title, pos, total, content){
@@ -697,7 +743,7 @@
       var first = !(s.lessons[l.id] && s.lessons[l.id].done);
       s.lessons[l.id] = { done: true, doneAt: Date.now(), firstOk: res.firstOk, total: res.total };
       s.completions.push({ id: l.id, at: Date.now() });
-      s.resume = null;
+      delete s.resume[l.id]; if(s.last === l.id) s.last = null;
       markDay();
       saveState();
       track('leccion_completada', { curso: 'to-be', leccion: l.n, aciertos: res.firstOk, total: res.total, primera_vez: first });
@@ -765,11 +811,17 @@
   /* ---- Evaluación de práctica ---- */
   function buildExam(){
     var topics = Object.keys(COURSE.topics), picked = [];
+    var last = loadState().exam.lastIds || [];
     topics.forEach(function(t){
       var pool = COURSE.exam.bank.filter(function(x){ return x.topic === t; });
-      picked = picked.concat(shuffle(pool).slice(0, CFG.examPerTopic));
+      var fresh = pool.filter(function(x){ return last.indexOf(x.id) === -1; });
+      var pick = shuffle(fresh).slice(0, CFG.examPerTopic);
+      if(pick.length < CFG.examPerTopic){ pick = pick.concat(shuffle(pool.filter(function(x){ return pick.indexOf(x) === -1; })).slice(0, CFG.examPerTopic - pick.length)); }
+      picked = picked.concat(pick);
     });
-    return shuffle(picked).slice(0, CFG.examSize);
+    var qs = shuffle(picked).slice(0, CFG.examSize);
+    var st = loadState(); st.exam.lastIds = qs.map(function(q){ return q.id; }); saveState();
+    return qs;
   }
   function viewExam(){
     setTabs(null); setTitle('Evaluación de práctica');
@@ -898,30 +950,16 @@
     root.textContent = '';
     root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Miembros' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Mis logros' })]));
     root.appendChild(pilotBanner());
-
-    var cards = el('div', { class: 'ac-stats' }, [
-      el('div', { class: 'ac-stat' }, [el('strong', { text: dc + ' de ' + COURSE.lessons.length }), el('span', { text: 'lecciones completadas' })]),
+    root.appendChild(el('div', { class: 'ac-stats' }, [
+      el('div', { class: 'ac-stat' }, [el('strong', { text: dc + ' de ' + COURSE.lessons.length }), el('span', { text: 'lecciones de TO BE' })]),
       el('div', { class: 'ac-stat' }, [el('strong', { text: s.exam.best !== null ? s.exam.best + ' %' : 'Sin hacer' }), el('span', { text: 'mejor práctica' })]),
       el('div', { class: 'ac-stat' }, [el('strong', { text: String(streak()) }), el('span', { text: streak() === 1 ? 'día seguido' : 'días seguidos' })])
-    ]);
-    root.appendChild(cards);
-
-    root.appendChild(el('h2', { class: 'ac-h2', text: 'Insignias por curso' }));
-    var grid = el('ul', { class: 'ac-badges' });
-    ACADEMIA.route.courses.forEach(function(c){
-      grid.appendChild(el('li', { class: 'ac-badge' }, [el('span', { class: 'ac-badge-ico', 'aria-hidden': 'true', text: '·' }), el('span', { class: 'ac-badge-t', text: c.title }), el('span', { class: 'ac-badge-s', text: c.pilot ? 'Con la evaluación oficial' : 'Próximamente' })]));
-    });
-    root.appendChild(grid);
-    root.appendChild(el('p', { class: 'ac-text', text: 'Las insignias y el certificado de ruta se entregan solo cuando la evaluación oficial corrige tus respuestas en el servidor. En el piloto la evaluación es de práctica, por eso todavía no se entrega ninguna.' }));
-
-    var cert = el('section', { class: 'ac-card' }, [
-      el('h2', { class: 'ac-h2 ac-h2-in', text: 'Certificado de Fundamentos del inglés' }),
-      el('p', { class: 'ac-text', text: 'Se emite al aprobar los 8 cursos y la prueba integradora. Es un certificado propio de Inglés con Leo, con un enlace público para verificarlo. No equivale a un nivel oficial.' }),
-      progressBar(0, 'Cursos aprobados'),
-      el('p', { class: 'ac-hero-meta', text: '0 de 8 cursos aprobados' })
-    ]);
-    root.appendChild(cert);
-
+    ]));
+    root.appendChild(el('section', { class: 'ac-card' }, [
+      el('h2', { class: 'ac-h2 ac-h2-in', text: 'Insignia del curso TO BE' }),
+      el('p', { class: 'ac-text', text: 'Se entrega al aprobar la evaluación oficial del curso, que se corrige en el servidor. En el piloto la evaluación es de práctica, así que todavía no se entrega ninguna insignia.' }),
+      el('p', { class: 'ac-text', text: 'Cuando haya más cursos aparecerán aquí sus insignias y, al completar la ruta, un certificado propio de Inglés con Leo con enlace público para verificarlo. No equivale a un nivel oficial.' })
+    ]));
     var reset = el('div', { class: 'ac-reset' });
     function drawReset(confirm){
       reset.textContent = '';
@@ -945,6 +983,7 @@
     try{
       if(!parts.length) return viewHome();
       if(parts[0] === 'logros') return viewLogros();
+      if(parts[0] === 'practicar') return viewPracticar();
       if(parts[0] === 'curso' && parts[1] === 'to-be'){
         if(!parts[2]) return viewCourse();
         if(parts[2] === 'leccion') return viewLesson(parseInt(parts[3], 10) || 1);

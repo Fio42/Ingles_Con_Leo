@@ -212,3 +212,21 @@
 .ac-how{margin:0 0 14px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--blue-tint);font-size:.95rem;line-height:1.45;}
 .ac-how-t,.ac-how-ex{margin:0;}
 .ac-how-ex{margin-top:4px;color:var(--ink-soft);}
+
+/* Cambio de frase (afirmacion a pregunta): neutro, no es un error */
+.ac-change{display:grid;gap:6px;margin:16px 0 0;justify-items:stretch;}
+.ac-change-box{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--paper);border:1px solid var(--line);}
+.ac-change-box.is-b{background:var(--blue-tint);border-color:#D5DCFB;}
+.ac-change-l{font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);}
+.ac-change-t{font-size:1.2rem;font-weight:700;}
+.ac-change-arrow{text-align:center;color:var(--ink-faint);font-weight:700;}
+.ac-hero-link{display:inline-flex;align-items:center;min-height:44px;font-weight:600;color:var(--blue-deep);text-decoration:underline;text-underline-offset:3px;}
+/* Meta semanal discreta */
+.ac-goal{display:flex;flex-wrap:wrap;align-items:center;gap:0 12px;margin:10px 2px 0;padding:0;background:none;border:none;border-radius:0;font-size:.88rem;color:var(--ink-soft);}
+.ac-goal .ac-segs{display:inline-flex;gap:4px;margin:0;}
+.ac-goal .ac-segs span{flex:none;width:18px;height:5px;}
+.ac-goal-opt{background:none;border:none;font:inherit;font-size:.88rem;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;min-height:44px;padding:0 6px;cursor:pointer;}
+.ac-goal-opt:focus-visible{outline:3px solid var(--blue);outline-offset:2px;}
+.ac-soon{margin-top:22px;padding-top:6px;border-top:1px solid var(--line);}
+.ac-soon-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px;}
+.ac-soon-list li{padding:6px 12px;border-radius:999px;background:var(--paper-dim);color:var(--ink-soft);font-size:.88rem;font-weight:600;}
