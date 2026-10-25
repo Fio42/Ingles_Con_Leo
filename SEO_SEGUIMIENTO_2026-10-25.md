@@ -78,7 +78,24 @@ Consultas donde ya hay buena cuota (mantener sin tocar): "past simple explanatio
 Detalle útil: varias consultas están en inglés ("past simple explanation", "simple past structure"), así que un resumen corto con los términos en inglés al inicio de cada artículo puede ayudar. Hacerlo en un artículo, medir 4 semanas y copiar solo si mejora.
 Revisar cada semana la pestaña de consultas nuevas de Bing AI Performance: aparecen oportunidades antes que en Search Console.
 
-### Pendiente de decisión (no hecho a propósito)
+#
+
+## Artículo nuevo: Did vs was vs were (publicado 2026-10-25)
+
+URL: https://inglesconleo.com/articulo-did-was-were.html. Idea: responder "¿cuál de los tres elijo?", que ningún artículo del sitio respondía. Apuesta razonada, la demanda actual es muy pequeña.
+
+Línea base al publicar (todo en 0): impresiones 0, clics 0, citas de IA 0. Contexto de páginas vecinas (7 sep a 23 oct): glosario/was-vs-were/ 15 impresiones, posición 47,1; articulo-pasado-simple.html y articulo-verbo-to-be.html con 752 y 668 citas en Bing; la consulta "diferencia entre was y were" tiene 4 citas en Bing (13,79%).
+
+Cómo medir a los 30 días (hacia el 24 nov; antes de eso Google rara vez da datos estables):
+- Search Console, página exacta del artículo: impresiones, clics, posición y las 10 consultas principales.
+- Search Console, consultas "was were", "did was were", "diferencia entre was y were": mirar qué página recibe las impresiones (¿el glosario, pasado-simple o el artículo nuevo?). Si pasado-simple o glosario pierden impresiones y el nuevo no las gana, hay canibalización y se ajusta el enlazado, no se borra nada.
+- Bing AI Performance: citas de la URL nueva y si "diferencia entre was y were" sube su cuota.
+- GA4: sesiones de la landing, clics a practica.html y al test de nivel (eventos ya marcados).
+- Indexación: inspección de URL el día 3 y el día 14 (está en el sitemap y en IndexNow).
+
+Criterios (orientativos, sin garantías): bueno = indexada y más de 20 impresiones; fuerte = más de 100 impresiones o primeras citas de Bing; flojo = indexada pero 0 impresiones a los 45 días (revisar título y enlazado interno antes de tocar el contenido).
+
+## Pendiente de decisión (no hecho a propósito)
 
 - Excluir checkout.stripe.com y paypal.com de las referencias de GA4: la revisión indica que es seguro (1 persona probando en septiembre), pero ese cambio de configuración del tag no estaba dentro de lo autorizado y quedó sin hacer.
 - Poner el grupo de canales personalizado como principal, o cambiar utm_medium a paid_social en Meta.
