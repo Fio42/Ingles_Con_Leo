@@ -180,7 +180,7 @@ var ACADEMIA_MOTOR = (function(){
   }
  }
 };
-  var M = { enabled: false, page: 'academia.html', courses: DATA };
+  var M = { enabled: true, page: 'academia.html', courses: DATA };
   M.itemId = function(courseId, activityId){ return 'ac:' + courseId + ':' + activityId; };
   M.parse = function(engineId){
     var m = /^ac:([a-z0-9-]+):(.+)$/.exec(String(engineId || ''));

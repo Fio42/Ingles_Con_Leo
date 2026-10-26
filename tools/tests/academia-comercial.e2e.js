@@ -28,7 +28,9 @@ async function test(name, fn){ try{ await fn(); passed++; console.log('  ok  ' +
   const text = p => p.evaluate(() => document.body.innerText);
   const NAV_PAGES = ['index.html', 'miembros.html', 'practica.html', 'plan-estudio.html', 'progreso.html', 'articulos.html', 'articulo-verbo-to-be.html', 'toefl.html', 'clases.html'];
 
-  await test('SIN el interruptor: el sitio publico no anuncia la academia en ninguna pagina (nav, portada, miembros, practica, articulo)', async()=>{
+  const LANZADA = /var PUBLIC = true;/.test(fs.readFileSync(path.join(__dirname, '..', '..', 'academia-lanzamiento.js'), 'utf8'));
+  await test('SIN el interruptor: el sitio publico no anuncia la academia en ninguna pagina (nav, portada, miembros, practica, articulo)' + (LANZADA ? ' [omitida: la academia ya esta lanzada]' : ''), async()=>{
+    if(LANZADA) return;
     for(const u of NAV_PAGES){
       const { page, ctx } = await open(u, false);
       const t = await text(page);

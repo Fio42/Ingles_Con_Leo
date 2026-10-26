@@ -26,15 +26,16 @@ async function partA(){
   await test('academia.html no carga Supabase ni backend.js de forma fija; el interruptor viene apagado', async()=>{
     const html = read('academia.html'), boot = read('academia-boot.js');
     assert(!/supabase|backend\.js|app\.js|meta-pixel|chatbot/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'la pagina no debe cargar sistemas reales');
-    assert(/var CLOUD_ON = false;/.test(boot), 'CLOUD_ON debe venir en false');
+    assert(/var CLOUD_ON = (true|false);/.test(boot), 'CLOUD_ON debe ser un literal true/false');
+    assert.strictEqual(/var CLOUD_ON = true;/.test(boot), /var PUBLIC = true;/.test(read('academia-lanzamiento.js')), 'CLOUD_ON y PUBLIC deben ir juntos');
     assert(/localhost\|127\\\.0\\\.0\\\.1/.test(boot), 'el modo de prueba solo vale en localhost');
   });
   await test('ACADEMIA_MOTOR.enabled viene en false y academia-motor.js esta al dia con academia-data.js', async()=>{
     const M = vm.runInNewContext(read('academia-motor.js') + ';ACADEMIA_MOTOR');
-    assert.strictEqual(M.enabled, false);
-    assert.strictEqual(M.linkForTema('to-be-presente', [], 'x.html'), null, 'apagado: ningun enlace');
+    assert.strictEqual(M.enabled, /var PUBLIC = true;/.test(read('academia-lanzamiento.js')), 'el motor va junto con PUBLIC');
+    if(!M.enabled) assert.strictEqual(M.linkForTema('to-be-presente', [], 'x.html'), null, 'apagado: ningun enlace');
     const gen = require('../generar_academia_motor.js');
-    assert.strictEqual(gen.build(), read('academia-motor.js'), 'corre node tools/generar_academia_motor.js');
+    assert.strictEqual(M.enabled ? (process.env.ACADEMIA_MOTOR_ENABLED = '1', gen.build()) : gen.build(), read('academia-motor.js'), 'corre node tools/generar_academia_motor.js');
   });
   await test('la migracion NO se aplica sola: curso apagado por defecto y no esta mezclada en supabase_schema.sql', async()=>{
     const mig = read('supabase/migrations/20261026120000_academia_integracion.sql');

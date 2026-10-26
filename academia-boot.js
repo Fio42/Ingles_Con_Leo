@@ -3,7 +3,7 @@
    funciona como el piloto: avance solo en este navegador. Para probar en un equipo local: localhost + ?nube=1.
    Se carga ANTES de academia-audio.js / academia-data.js / academia.js (document.write mantiene el orden). */
 (function(){
-  var CLOUD_ON = false;   // Leo/Claude lo ponen en true al lanzar, junto con ACADEMIA_MOTOR.enabled y academia_courses.enabled
+  var CLOUD_ON = true;    // Leo/Claude lo ponen en true al lanzar, junto con ACADEMIA_MOTOR.enabled y academia_courses.enabled
   var local = false;
   try{ local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && /[?&]nube=1(&|$)/.test(location.search); }catch(e){}
   /* Prueba previa al lanzamiento: una cuenta de prueba activa la parte en la nube SOLO en su navegador

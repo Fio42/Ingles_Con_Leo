@@ -16,7 +16,7 @@ Object.keys(sw).forEach(k => { const ok = sw[k] === want; if(!ok) bad++; console
 const tracked = cp.execSync('git ls-files', { cwd: root }).toString().split('\n');
 const priv = tracked.filter(f => /^private\//.test(f) || /seed-academia-examen/.test(f));
 if(priv.length){ bad++; console.log('MAL  archivos privados en git: ' + priv.join(', ')); } else console.log(' ok  banco de examen y respuestas fuera de git');
-try{ cp.execSync('node tools/generar_academia_motor.js --check', { cwd: root, stdio: 'pipe' }); console.log(' ok  academia-motor.js al dia'); }catch(e){ bad++; console.log('MAL  academia-motor.js desactualizado'); }
+try{ cp.execSync('node tools/generar_academia_motor.js --check', { cwd: root, stdio: 'pipe', env: Object.assign({}, process.env, { ACADEMIA_MOTOR_ENABLED: want ? '1' : '0' }) }); console.log(' ok  academia-motor.js al dia'); }catch(e){ bad++; console.log('MAL  academia-motor.js desactualizado'); }
 const mig = rd('supabase/migrations/20261026120000_academia_integracion.sql');
 if(/insert into public\.academia_courses[^;]*false/.test(mig) && !/enabled\s*=\s*true/.test(mig)) console.log(' ok  la migracion deja el curso apagado'); else { bad++; console.log('MAL  la migracion no deja el curso apagado'); }
 const wf = fs.existsSync(path.join(root, '.github/workflows')) ? fs.readdirSync(path.join(root, '.github/workflows')).map(f => rd('.github/workflows/' + f)).join('\n') : '';

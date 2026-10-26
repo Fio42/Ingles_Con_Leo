@@ -446,7 +446,8 @@ async function until(fn, ms, what){
     const p = C.page;
     await db.exec(`update public.profiles set is_member = false where id = '${F}'`);
     await p.goto(base + '/academia.html'); await p.evaluate(() => localStorage.removeItem('leo_academia_canary')); await p.reload(); await p.waitForTimeout(800);
-    assert(!/Probar TO BE gratis|Desbloquear/.test(await p.innerText('#acRoot')), 'sin bandera debe ser el piloto local');
+    const LANZADA = /var CLOUD_ON = true;/.test(fs.readFileSync(path.join(__dirname, '..', '..', 'academia-boot.js'), 'utf8'));
+    if(!LANZADA) assert(!/Probar TO BE gratis|Desbloquear/.test(await p.innerText('#acRoot')), 'sin bandera debe ser el piloto local');
     await p.evaluate(() => localStorage.setItem('leo_academia_canary', '1')); await p.reload();
     await until(async () => /Desbloquear mi academia/.test(await p.innerText('#acRoot')), 9000, 'con bandera se conecta');
     await p.evaluate(() => localStorage.removeItem('leo_academia_canary'));
