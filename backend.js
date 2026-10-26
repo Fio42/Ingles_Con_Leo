@@ -573,23 +573,37 @@ const LeoBackend = (function(){
      markPurchaseIntent(), al hacer clic en "Activar membresia". */
   async function startStripeCheckout(plan, opts){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
-    const session = await getSession();
-    if(!session) return { ok:false, error:'no_session' };
-    try{
-      const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + session.access_token,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly', ...(opts && opts.track === false ? { track:false } : {}) })
-      });
-      const data = await res.json();
-      if(!res.ok || !data.client_secret) return { ok:false, error: (data && data.error) || 'checkout_error' };
-      return { ok:true, clientSecret: data.client_secret };
-    }catch(e){
-      return { ok:false, error: String(e) };
+    let last = { ok:false, error:'no_session' };
+    // Hasta 2 intentos: si el primero falla (sesion vencida tras mucho rato con la pestana abierta, o un corte
+    // de red puntual), se renueva la sesion y se reintenta una vez antes de mostrar error.
+    for(let attempt = 0; attempt < 2; attempt++){
+      let session = await getSession();
+      if(attempt === 1){
+        try{
+          const sb = getClient();
+          const r = sb ? await sb.auth.refreshSession() : null;
+          if(r && r.data && r.data.session) session = r.data.session;
+        }catch(e){}
+      }
+      if(!session) return { ok:false, error:'no_session' };
+      try{
+        const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + session.access_token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly', ...(opts && opts.track === false ? { track:false } : {}) })
+        });
+        const data = await res.json();
+        if(res.ok && data.client_secret) return { ok:true, clientSecret: data.client_secret };
+        last = { ok:false, error: (data && data.error) || 'checkout_error' };
+        if(last.error === 'annual_not_configured') return last; // no tiene sentido reintentar
+      }catch(e){
+        last = { ok:false, error: String(e) };
+      }
     }
+    return last;
   }
 
   /* Registra la INTENCION de compra (checkout_started_at) cuando una persona ya
