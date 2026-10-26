@@ -17,7 +17,45 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261021c">
+<!-- Google Analytics (gtag.js) + Meta Pixel.
+     Se crean las colas (dataLayer/gtag y fbq) y los scripts de Google y
+     Meta se piden DE INMEDIATO (async, no bloquean el render), igual que
+     en el resto de paginas. Antes (28 sep) esperaban a window.load + idle
+     (hasta 3 s) y se perdian las visitas de anuncios que entran y se van
+     rapido. Mismo ID de GA y de Pixel que meta-pixel.js. -->
+<script src="error-monitor.js?v=20261007e"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-0DRL810MYR');
+
+  !function(f){if(f.fbq)return;var n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];}(window);
+  fbq('init', '2182739922655837');
+  fbq('track', 'PageView');
+
+  (function(){
+    var loaded = false;
+    function addScript(src){
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = src;
+      document.head.appendChild(s);
+    }
+    function loadTags(){
+      if(loaded) return;
+      loaded = true;
+      addScript('https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR');
+      addScript('https://connect.facebook.net/en_US/fbevents.js');
+    }
+    loadTags();
+  })();
+</script>
+<script src="academia-lanzamiento.js?v=20261026a"></script>
+<link rel="stylesheet" href="style.css?v=20261026a">
 <link rel="stylesheet" href="academia.css?v=20261025e">
 </head>
 <body class="ac-body">

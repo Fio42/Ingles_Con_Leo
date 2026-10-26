@@ -26,7 +26,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261021c">
+<script src="academia-lanzamiento.js?v=20261026a"></script>
+<link rel="stylesheet" href="style.css?v=20261026a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -55,7 +56,8 @@
       <a href="articulos.html">Aprende inglés</a>
       <a href="practica.html">Practicar gratis</a>
       <a href="miembros.html" class="current">Miembros</a>
-      <a href="aprender.html">Modo aprender</a>
+      <a href="aprender.html" class="ac-pre">Modo aprender</a>
+      <a href="academia.html" class="ac-live-only">Academia</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -201,6 +203,14 @@
             <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span class="welcome-benefit-text">Estadísticas y progreso</span>
           </div>
+          <div class="welcome-benefit ac-live-only">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Cursos de la academia (hoy, TO BE) con evaluaciones e insignias</span>
+          </div>
+          <div class="welcome-benefit ac-live-only">
+            <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="welcome-benefit-text">Progreso guardado y recomendaciones personalizadas</span>
+          </div>
           <div class="welcome-benefit">
             <span class="welcome-benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             <span class="welcome-benefit-text">Método del Profe Leo: clases interactivas</span>
@@ -218,6 +228,7 @@
         <p class="gate-hint" style="margin-top:4px;">Cancela cuando quieras</p>
         <!-- Salida clara a la practica gratis (antes era un enlace gris al final de una pantalla muy larga que
              llevaba a otra pantalla de pago). El boton principal sigue siendo Activar membresia. -->
+        <a href="academia.html" class="btn btn-ghost btn-block ac-live-only" id="welcomeAcademiaBtn" style="margin-top:12px;">Probar el curso TO BE gratis</a>
         <a href="practica.html?cuenta=nueva" class="btn btn-ghost btn-block" id="welcomeSkipBtn" style="margin-top:12px;">Practicar gratis ahora</a>
       </div>
       <div id="loginPending" style="display:none;text-align:center;">
@@ -308,7 +319,8 @@
     </div>
 
     <div class="pricing-card" style="margin-top:14px;">
-      <span class="pricing-kicker">Sistema completo + método del Profe Leo</span>
+      <span class="pricing-kicker ac-pre">Sistema completo + método del Profe Leo</span>
+      <span class="pricing-kicker ac-live-only">Academia Inglés con Leo + sistema completo</span>
       <h2>Todo para avanzar de verdad</h2>
       <div class="pricing-price">
         <span class="pricing-amount">$2</span>
@@ -316,6 +328,8 @@
       </div>
       <p class="pricing-annual">o <strong>$20 USD al año</strong> (2 meses gratis)</p>
       <ul class="pricing-features">
+        <li class="ac-live-only">Acceso a los cursos publicados de la academia (hoy, TO BE)</li>
+        <li class="ac-live-only">Evaluaciones e insignias de los cursos que apruebes</li>
         <li>Un sistema que aprende contigo: detecta tus errores y puntos débiles</li>
         <li>No tienes que decidir qué estudiar: te muestra qué hacer después</li>
         <li>Método del Profe Leo: clases y explicaciones sencillas y prácticas</li>
@@ -373,15 +387,22 @@
         <p class="upgrade-banner-note">Stripe · PayPal · Mercado Pago · Cancela cuando quieras</p>
       </div>
 
-      <a href="aprender.html" class="two-ways-card" id="previewModoAprender" style="margin:0 auto 18px;">
+      <a href="aprender.html" class="two-ways-card ac-pre" id="previewModoAprender" style="margin:0 auto 18px;">
         <span class="two-ways-tag">Prueba gratis · Modo aprender</span>
         <h3>Tu primera microlección es gratis</h3>
         <p>3 minutos, solo mirando y escuchando. Es la primera del Modo aprender. Vamos sumando más lecciones y se incluyen en la membresía.</p>
         <span class="two-ways-go">Probar la microlección →</span>
       </a>
+      <a href="academia.html" class="two-ways-card ac-live-only" id="previewAcademia" style="margin:0 auto 18px;">
+        <span class="two-ways-tag">Prueba gratis · Academia</span>
+        <h3>Prueba el curso TO BE gratis</h3>
+        <p>Una explicación y tres ejercicios, una sola vez con tu cuenta gratis. Después, el curso completo con evaluación e insignia se incluye en la membresía.</p>
+        <span class="two-ways-go">Explorar la academia →</span>
+      </a>
+
 
       <div class="locked-grid">
-        <div class="locked-card">
+        <div class="locked-card ac-pre">
           <div class="locked-card-top">
             <span class="stat-card-icon" style="background:var(--green-tint);color:var(--green);"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M10 8.5v7l5.5-3.5L10 8.5z" fill="currentColor"/></svg></span>
             <span class="locked-badge"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
@@ -499,12 +520,19 @@
           </div>
         </a>
 
-        <a href="aprender.html" class="two-ways-card" id="dashModoAprender" style="margin:0 0 18px;">
+        <a href="aprender.html" class="two-ways-card ac-pre" id="dashModoAprender" style="margin:0 0 18px;">
           <span class="two-ways-tag">Nuevo · Modo aprender</span>
           <h3>Tu lección de hoy, en 3 minutos</h3>
           <p>¿Hoy no tienes ganas de contestar? Mira y escucha una microlección de 3 minutos.</p>
           <span class="two-ways-go">Empezar a aprender →</span>
         </a>
+        <a href="academia.html" class="two-ways-card ac-live-only" id="dashAcademia" style="margin:0 0 18px;">
+          <span class="two-ways-tag">Academia</span>
+          <h3>Sigue tu curso TO BE</h3>
+          <p>Aprende paso a paso, practica, corrige tus errores y consigue tu insignia.</p>
+          <span class="two-ways-go">Ir a la academia →</span>
+        </a>
+
 
         <p class="dash-more-label">Otras formas de practicar hoy</p>
         <div class="dash-top-grid">

@@ -75,7 +75,7 @@ async function until(fn, ms, what){
     const ctx = await browser.newContext({ viewport: vp || { width: 390, height: 800 } });
     await ctx.route('**/supabase.js', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
     await ctx.route('**/backend.js*', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: FAKE_BACKEND }));
-    await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort());
+    await ctx.route(/fonts\.(googleapis|gstatic)\.com|googletagmanager|connect\.facebook/, r => r.abort());
     const page = await ctx.newPage();
     await page.exposeFunction('__rpc', (fn, args) => client.rpc(fn, args));
     await page.exposeFunction('__select', (table, cols, eq) => { let b = client.from(table).select(cols); Object.keys(eq).forEach(k => { b = b.eq(k, eq[k]); }); return b.maybeSingle(); });
@@ -350,6 +350,9 @@ async function until(fn, ms, what){
     assert(/Acertaste 2 de 3 a la primera/.test(txt) && /Desbloquea la academia por \$2 USD al mes/.test(txt), txt.slice(0, 400));
     const ctas = await p.$$eval('#acRoot a', as => as.filter(a => /pagar=1/.test(a.getAttribute('href'))).map(a => a.textContent.trim()));
     assert.deepStrictEqual(ctas, ['Desbloquear mi academia']);
+    const ev = await p.evaluate(() => (window.dataLayer || []).filter(a => a[0] === 'event').map(a => a[1]));
+    assert.strictEqual(ev.filter(e => e === 'academia_demo_iniciada').length, 1); assert.strictEqual(ev.filter(e => e === 'academia_demo_completada').length, 1);
+    assert(!ev.includes('membership_purchase_completed') && !ev.includes('purchase'), 'la academia no dispara compras');
     await until(async () => (await q('select demo_done_at from public.academia_progress where user_id = $1', [F]))[0].demo_done_at, 9000, 'prueba terminada en el servidor');
     assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3, 'descuenta 3 del limite diario');
     const ses = await sessions(); assert.strictEqual(ses.length, 1); assert.strictEqual(ses[0].tier, 'free');

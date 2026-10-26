@@ -25,7 +25,7 @@ async function partA(){
   console.log('A. Apagado por defecto');
   await test('academia.html no carga Supabase ni backend.js de forma fija; el interruptor viene apagado', async()=>{
     const html = read('academia.html'), boot = read('academia-boot.js');
-    assert(!/supabase|backend\.js|app\.js|gtag|meta-pixel|chatbot/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'la pagina no debe cargar sistemas reales');
+    assert(!/supabase|backend\.js|app\.js|meta-pixel|chatbot/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'la pagina no debe cargar sistemas reales');
     assert(/var CLOUD_ON = false;/.test(boot), 'CLOUD_ON debe venir en false');
     assert(/localhost\|127\\\.0\\\.0\\\.1/.test(boot), 'el modo de prueba solo vale en localhost');
   });

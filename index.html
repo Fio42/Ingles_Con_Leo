@@ -27,7 +27,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="style.css?v=20261021c">
+<script src="academia-lanzamiento.js?v=20261026a"></script>
+<link rel="stylesheet" href="style.css?v=20261026a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -104,7 +105,7 @@
       <a href="index.html" class="current">Inicio</a>
       <a href="articulos.html">Aprende inglés</a>
       <a href="practica.html">Practicar gratis</a>
-      <a href="miembros.html">Miembros</a>
+      <a href="miembros.html">Miembros</a><a href="academia.html" class="ac-live-only">Academia</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -119,12 +120,23 @@
   <section class="hero-v2">
     <div class="wrap hero-v2-grid">
       <div class="hero-v2-copy">
-        <h1><span class="h1-l">Aprende inglés con un</span> <span class="h1-l">sistema que se adapta a ti</span> <span class="h1-l">y el método del Profe Leo.</span></h1>
-        <p class="hero-v2-sub">Practica a tu nivel o aprende mirando y escuchando. El sistema detecta tus errores, te dice qué conviene reforzar y aprendes con el método del Profe Leo.</p>
-        <div class="hero-v2-actions">
+        <h1 class="ac-pre"><span class="h1-l">Aprende inglés con un</span> <span class="h1-l">sistema que se adapta a ti</span> <span class="h1-l">y el método del Profe Leo.</span></h1>
+        <p class="hero-v2-sub ac-pre">Practica a tu nivel o aprende mirando y escuchando. El sistema detecta tus errores, te dice qué conviene reforzar y aprendes con el método del Profe Leo.</p>
+        <div class="hero-v2-actions ac-pre">
           <div class="hero-v2-cta-group">
             <a href="practica.html" class="btn btn-primary hero-cta-main">Practicar gratis <span aria-hidden="true">→</span></a>
             <span class="hero-v2-cta-note">Sin registro. ¿No sabes tu nivel? <a href="test-de-nivel-de-ingles.html" style="color:var(--blue);text-decoration:underline;">Haz el test gratis</a></span>
+          </div>
+        </div>
+        <h1 class="ac-live-only"><span class="h1-l">Aprende inglés paso a paso</span> <span class="h1-l">con Inglés con Leo.</span></h1>
+        <p class="hero-v2-sub ac-live-only">Cursos interactivos, explicaciones sencillas, ejercicios y un sistema que detecta tus errores para ayudarte a mejorar.</p>
+        <div class="hero-v2-actions ac-live-only">
+          <div class="hero-v2-cta-group">
+            <div class="ac-hero-actions">
+              <a href="academia.html" class="btn btn-primary hero-cta-main" id="heroAcademiaCta">Explorar la academia <span aria-hidden="true">→</span></a>
+              <a href="practica.html" class="btn btn-ghost">Practicar gratis</a>
+            </div>
+            <span class="hero-v2-cta-note">Primer curso: TO BE. ¿No sabes tu nivel? <a href="test-de-nivel-de-ingles.html" style="color:var(--blue);text-decoration:underline;">Haz el test gratis</a></span>
           </div>
         </div>
         <div class="hero-v2-benefits">
@@ -216,12 +228,19 @@
         <p>Hay días para practicar y días en que solo quieres mirar y escuchar. Aquí haces las dos cosas, y el sistema las conecta con tus errores.</p>
       </div>
       <div class="two-ways-grid reveal-stagger">
-        <a href="aprender.html" class="two-ways-card" id="homeModoAprender">
+        <a href="aprender.html" class="two-ways-card ac-pre" id="homeModoAprender">
           <span class="two-ways-tag">Nuevo · Modo aprender</span>
           <h3>Mira y escucha</h3>
           <p>Empieza con una microlección de 3 minutos, con la voz de Leo, ejemplos y un truco para recordar. Sin escribir ni contestar. Ya puedes probar «To be» con una cuenta gratis, y vamos sumando más lecciones, incluidas en la membresía.</p>
           <span class="two-ways-go">Probar una microlección con cuenta gratis →</span>
         </a>
+        <a href="academia.html" class="two-ways-card ac-live-only" id="homeAcademia">
+          <span class="two-ways-tag">Nuevo · Academia</span>
+          <h3>Sigue un curso paso a paso</h3>
+          <p>TO BE es el primer curso: explicaciones sencillas, ejercicios y evaluación con insignia. Prueba una demostración con una cuenta gratis. Más cursos, próximamente.</p>
+          <span class="two-ways-go">Explorar la academia →</span>
+        </a>
+
         <a href="practica.html" class="two-ways-card is-practice">
           <span class="two-ways-tag">Practicar</span>
           <h3>Practica y mejora</h3>
@@ -418,7 +437,8 @@
             <li>Cuenta gratis para guardar tu progreso, sin tarjeta</li>
             <li>Juego de inglés gratis (English Rush)</li>
             <li>Test de nivel y todas las guías de Aprende inglés</li>
-            <li>Modo aprender: la microlección «To be», gratis con tu cuenta</li>
+            <li class="ac-pre">Modo aprender: la microlección «To be», gratis con tu cuenta</li>
+            <li class="ac-live-only">Academia: una demostración gratis del curso TO BE con tu cuenta</li>
           </ul>
           <a href="practica.html" class="btn btn-ghost btn-block">Practicar gratis</a>
         </div>
@@ -430,7 +450,9 @@
             <li>Un sistema que aprende contigo: detecta tus errores y puntos débiles</li>
             <li>Te dice qué practicar después, sin que decidas tú</li>
             <li>Método del Profe Leo: clases interactivas y explicaciones sencillas</li>
-            <li>Modo aprender: microlecciones de 3 minutos con audio; las nuevas lecciones se suman a la membresía</li>
+            <li class="ac-pre">Modo aprender: microlecciones de 3 minutos con audio; las nuevas lecciones se suman a la membresía</li>
+            <li class="ac-live-only">Academia: los cursos publicados (hoy TO BE), con evaluaciones e insignias</li>
+            <li class="ac-live-only">Progreso guardado y recomendaciones personalizadas</li>
             <li class="is-ai">Leo AI cuando necesitas ayuda extra <span class="ai-chip">IA</span></li>
             <li>Práctica ilimitada, repaso de errores y estadísticas</li>
             <li>Reto diario de 5 ejercicios para cuidar tu racha</li>
@@ -461,11 +483,19 @@
           <summary>¿De verdad es gratis?</summary>
           <p>Sí. Puedes empezar a practicar sin registrarte. Si creas una cuenta gratis (no pide tarjeta), tu progreso y tu racha se guardan. Las guías de Aprende inglés y el test de nivel también son gratis.</p>
         </details>
-        <details>
+        <details class="ac-live-only">
+          <summary>¿Qué gano si me hago miembro?</summary>
+          <p>Acceso a los cursos publicados de la academia (hoy, TO BE), práctica ilimitada, evaluaciones e insignias de los cursos que apruebes, progreso guardado, recomendaciones personalizadas, refuerzo de tus errores, Leo AI para dudas y las demás funciones premium, por $2 USD al mes.</p>
+        </details>
+        <details class="ac-live-only">
+          <summary>¿Qué es la Academia Inglés con Leo?</summary>
+          <p>Son cursos interactivos con explicaciones sencillas, ejercicios corregidos y un sistema que detecta tus errores para reforzarlos. Empezamos con TO BE (am, is y are). Con una cuenta gratis puedes hacer una demostración de tres ejercicios, una sola vez; los demás cursos llegarán más adelante.</p>
+        </details>
+        <details class="ac-pre">
           <summary>¿Qué gano si me hago miembro?</summary>
           <p>Un sistema completo: practicas sin límite, el sistema recuerda tus errores y te dice qué reforzar, tienes las clases interactivas del método del Profe Leo y el Modo aprender (microlecciones de 3 minutos que se irán sumando), Leo AI para dudas y preparación para TOEFL, IELTS, TOEIC y Cambridge.</p>
         </details>
-        <details>
+        <details class="ac-pre">
           <summary>¿Qué es el Modo aprender?</summary>
           <p>Es una forma más tranquila de estudiar: microlecciones de 3 minutos donde solo miras y escuchas, sin escribir ni contestar. Ya puedes probar la primera microlección, «To be», con una cuenta gratis. Estamos preparando más y se sumarán a la membresía. Ver una lección no gasta tus ejercicios del día.</p>
         </details>

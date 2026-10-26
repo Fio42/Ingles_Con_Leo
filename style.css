@@ -2371,3 +2371,11 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .ap-callout a{font-weight:700;color:#0F6B40;text-decoration:underline;text-underline-offset:3px;}
 
 .writing-pre-hint{margin:-6px 0 12px;padding:8px 12px;border-left:3px solid var(--brand,#2f6fed);background:rgba(47,111,237,.08);border-radius:8px;font-size:.92rem;line-height:1.4;color:var(--ink-soft,#444);}
+
+/* Lanzamiento de la Academia: lo que solo se muestra con el interruptor (academia-lanzamiento.js) y lo que se oculta al lanzar */
+html:not(.ac-live) .ac-live-only{display:none !important;}
+html.ac-live .ac-pre{display:none !important;}
+.ac-hero-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;}
+.ac-next-note{margin:10px 0 0;font-size:.9rem;color:var(--ink-soft,#5b6478);}
+.ac-benefit-list{margin:10px 0 0;padding-left:20px;text-align:left;}
+.ac-benefit-list li{margin:4px 0;}
