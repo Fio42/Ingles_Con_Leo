@@ -1685,3 +1685,32 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Precio Mercado Pago: el codigo cobra 40 MXN fijos (create-checkout.ts); 37 MXN es el texto de tarjeta. Textos corregidos en app.js y miembros.html (sin tocar cobros).
 - Prueba: cuenta gratis con bandera, cache de miembro falsa y llamadas directas a las funciones: el servidor responde "members" y la base no cambia.
 - tools/prelanzamiento.js (--off / --on) y ACADEMIA_MOTOR_ENABLED=1 para regenerar el puente.
+
+
+2026-10-26 - Apple Pay en Stripe (cuenta InglesConLeo)
+- Revision: el pago de membresia usa Stripe Embedded Checkout (supabase_functions/stripe-checkout.ts, ui_mode=embedded_page, sin payment_method_types fijos), asi que Apple Pay aparece solo cuando Stripe lo habilita.
+- Apple Pay ya estaba habilitado en la configuracion de metodos de pago (Default). Faltaba registrar el dominio.
+- Hecho en el panel de Stripe: se agrego inglesconleo.com en "Dominios de los metodos de pago" (pmd_1UUoq5A7RWb74UAAGvfmJAJ2). Quedo Habilitado y aparece con el filtro "Apple Pay habilitado".
+- Sin cambios de codigo ni de otros metodos de pago. No hace falta despliegue.
+- Pendiente: prueba real en un iPhone/Mac con Safari y tarjeta en Wallet.
+- Verificacion por API (Stripe Shell, solo lectura, produccion): payment_method_domains -> inglesconleo.com enabled=true, livemode=true, apple_pay.status=active (tambien google_pay, link, paypal, amazon_pay, klarna: active).
+- Sesion de Checkout real (ui_mode=embedded_page, mode=subscription, config de metodos de pago pmc_1UE9ELA...): Apple Pay va dentro de "card" como billetera, no aparece como tipo aparte. Sin allowed_payment_method_types ni wallet_options que lo bloqueen. Sin CSP ni Permissions-Policy en la web que bloqueen el pago.
+- Precios activos: USD 2.00/mes (price_1UEB7m...), MXN 37.00/mes (price_1UHoEm...), MXN 370/anio (price_1UIunI...). Sin cambios.
+- Pendiente: prueba en dispositivo Apple (ver el boton de Apple Pay en el formulario).
+
+2026-10-26 (2) - Google Pay habilitado en Stripe (cuenta InglesConLeo)
+- Pedido de Leo: mas medios de pago recurrentes, sin efectivo. Se reviso el filtro "Pagos recurrentes" de la configuracion pmc_1UE9ELA7RWb74UAAAGYqql8B: recurrentes = Tarjetas, Apple Pay, Google Pay, Link, iDEAL|Wero, SEPA, Transferencias.
+- Hecho: se habilito Google Pay (dominio inglesconleo.com ya tenia google_pay.status=active). Sin cambios de codigo, precios ni otros metodos. No hace falta despliegue.
+- Decision de Leo: iDEAL|Wero y SEPA quedan sin activar por ahora. Transferencias, OXXO, MB WAY/Bancontact/EPS (solo pagos unicos) no se tocan.
+- Pendiente: probar Google Pay en Android/Chrome con una tarjeta guardada en Google.
+
+2026-10-26 (3) - Formulario de tarjeta directo (sin el clic en "Pagar con tarjeta")
+- Pedido de Leo: ahorrar el clic. Ahora el formulario de Stripe (Embedded Checkout: tarjeta, Link, Apple Pay, Google Pay) aparece solo, debajo del selector Mensual/Anual. "Otras formas de pago" (Mercado Pago, PayPal) sigue debajo. Misma integracion, mismo webhook, mismos precios.
+- Definicion de intencion de compra (Leo): checkout_started_at se registra SOLO cuando una persona identificada (con sesion) hace clic en "Activar membresia", o llega con ese clic desde otra pagina (?pagar=1) y luego inicia sesion (la marca se conserva en sessionStorage, tambien al volver de Google). NO se registra por solo visitar, ni para anonimos, ni para miembros activos, ni por tocar el formulario de Stripe, ni por tiempo (no hay respaldo de 20 s). Antirrebote: 10 min en el navegador y en el servidor; recargar la pagina no cuenta.
+- supabase_functions/stripe-checkout.ts (copia identica en supabase/functions/stripe-checkout/index.ts): acepta { track:false } (crea el formulario sin registrar) y { action:'mark' } (solo registra la intencion, sin sesion de Stripe, y omite a quien ya es is_member). Valida el token del usuario con supabase.auth.getUser (401 sin token o token invalido), por eso es seguro con la verificacion JWT de plataforma apagada (no se cambio ese ajuste). La funcion vieja sigue sirviendo a la pagina vieja.
+- Recuperacion de abandonos: sin cambios. upgrade-nudge-emails sigue leyendo solo checkout_started_at (2 a 4 h) e is_member. Hay un unico checkout_started_at por perfil, asi que cambiar de Mensual a Anual no genera un segundo abandono (el plan va en la metadata de la suscripcion). Pagar (Stripe, PayPal o Mercado Pago) pone is_member y corta los correos.
+- Cambiar de plan recrea el formulario con el precio correcto; doble clic en Activar reutiliza el formulario vivo (sin sesiones duplicadas). Al volver de un pago (?stripe=success) no se crea formulario.
+- Archivos: miembros.html, backend.js (startStripeCheckout(plan,opts), markPurchaseIntent), la funcion, tools/tests/checkout-abandonado.test.js y primera-sesion-gratis.test.js, ?v= de backend.js (20261026a) en los HTML.
+- Verificacion CON SIMULACIONES (Playwright con Stripe y Supabase falsos, base de datos falsa): checkout-abandonado 62 ok / 0 fallan, primera-sesion-gratis 8, payment-grace 41, member-reactivation 54; escenarios de visitante, usuario que no paga, que paga, cambio de plan, reapertura y miembro activo; 320/360/375 px sin desbordes. Falla preexistente y ajena: error-monitor (2 pruebas, error-alert.ts).
+- NO verificado con servicios reales: pagos reales, Apple Pay/Google Pay en dispositivo, correo de recuperacion real. Apple Pay y Google Pay estan activos por API (livemode) para inglesconleo.com; falta probar en Safari con Wallet y en Chrome/Android.
+- Despliegue: funcion desplegada primero desde el panel de Supabase, despues push de la pagina.

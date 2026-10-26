@@ -33,7 +33,9 @@ test('El enlace de abajo de la pagina se conserva', () => {
 });
 test('Los pasos de pago y el regreso con ?volver= no cambiaron', () => {
   assert(/welcomeActivateBtn\.addEventListener\('click', goToPayment\)/.test(html));
-  assert(/function goToPayment\(\)\{\s*showGate\(\); showLoginStep\(3\);[\s\S]*?scrollIntoView/.test(html), 'el pago se muestra y se baja hasta el');
+  // 2026-10-26: el paso de pago vive en showPaymentStep(); goToPayment() (clic en Activar membresia) ademas registra la intencion.
+  assert(/function showPaymentStep\(\)\{\s*showGate\(\); showLoginStep\(3\);[\s\S]*?scrollIntoView/.test(html), 'el pago se muestra y se baja hasta el');
+  assert(/function goToPayment\(\)\{ registerPurchaseIntent\(\); showPaymentStep\(\); \}/.test(html));
   assert(/previewActivateBtn\.addEventListener\('click', goToPayment\)/.test(html) && /get\('pagar'\) === '1'/.test(html));
   /* el boton de la vista previa ahora usa goToPayment (ver arriba) */
   assert(/window\.location\.href = volver \+ '\?cuenta=nueva'/.test(html));

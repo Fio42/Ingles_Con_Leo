@@ -83,17 +83,43 @@ Deno.serve(async (req: Request) => {
     }
     const user = userData.user
 
+    // Cuerpo de la llamada (todo opcional, por compatibilidad con la pagina vieja):
+    //   plan:   'monthly' (default) o 'annual'.
+    //   track:  false = crear el formulario SIN registrar checkout_started_at
+    //           (lo usa miembros.html desde 2026-10-26: el formulario de tarjeta
+    //           ahora se muestra solo, sin clic, y no debe contar como intento).
+    //   action: 'mark' = solo registrar la INTENCION de compra (checkout_started_at)
+    //           cuando una persona ya identificada hace clic en "Activar membresia";
+    //           NO crea sesion de Stripe y NO registra nada si ya es miembro.
+    let plan = 'monthly'
+    let track = true
+    let action = ''
+    try {
+      const reqBody = await req.json()
+      if (reqBody && reqBody.plan === 'annual') plan = 'annual'
+      if (reqBody && reqBody.track === false) track = false
+      if (reqBody && reqBody.action === 'mark') action = 'mark'
+    } catch (_e) { /* cuerpo vacio o no-JSON: plan mensual, con registro */ }
+
     // Registra que este usuario llegó hasta el proceso de pago (aunque
     // no lo termine). Es solo para analítica (ver punto 9 del pedido de
     // Leo): no afecta el pago ni is_member, así que si esto falla por lo
     // que sea, seguimos con el checkout normal de todas formas.
-    if (SUPABASE_SERVICE_ROLE_KEY) {
+    if (SUPABASE_SERVICE_ROLE_KEY && (track || action === 'mark')) {
       try {
-        // checkout_started_at = ULTIMO intento real (2026-10-08). Cada
-        // llamada a esta función es un clic explícito en un botón de pago
-        // (recargar la página no la llama). Antirrebote de 10 min: un doble
-        // clic o un reintento inmediato no cuenta como intento nuevo.
+        // checkout_started_at = ULTIMO intento real (2026-10-08). Antirrebote
+        // de 10 min: un doble clic o un reintento inmediato no cuenta como
+        // intento nuevo.
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        if (action === 'mark') {
+          // Un miembro activo nunca cuenta como intento de compra.
+          const { data: prof } = await supabaseAdmin
+            .from('profiles')
+            .select('is_member')
+            .eq('id', user.id)
+            .maybeSingle()
+          if (prof && prof.is_member) return json({ ok: true, skipped: 'member' }, 200)
+        }
         const debounceCutoff = new Date(Date.now() - 10 * 60000).toISOString()
         await supabaseAdmin
           .from('profiles')
@@ -104,16 +130,13 @@ Deno.serve(async (req: Request) => {
         console.error('No se pudo registrar checkout_started_at:', e)
       }
     }
+    if (action === 'mark') {
+      return json({ ok: true }, 200)
+    }
 
-    // Plan elegido en miembros.html: 'monthly' (default) o 'annual'.
     // Si alguien pide el anual y el precio anual aun no esta
     // configurado, respondemos error en vez de cobrarle el mensual
     // (la persona vio "$20 al año" y no debe recibir otro cobro).
-    let plan = 'monthly'
-    try {
-      const reqBody = await req.json()
-      if (reqBody && reqBody.plan === 'annual') plan = 'annual'
-    } catch (_e) { /* cuerpo vacio o no-JSON: plan mensual */ }
     if (plan === 'annual' && !STRIPE_PRICE_ID_ANNUAL) {
       return json({ error: 'annual_not_configured' }, 400)
     }

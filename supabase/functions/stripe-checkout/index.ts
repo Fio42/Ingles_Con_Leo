@@ -1,0 +1,172 @@
+// ============================================================
+// Inglés con Leo — Edge Function: stripe-checkout
+//
+// La llama el navegador de un usuario YA LOGUEADO (con su sesión
+// de Supabase) cuando hace clic en "Pagar con tarjeta (Stripe)".
+// Crea una sesión de Checkout de Stripe en modo suscripción,
+// ligada al id de ese usuario (client_reference_id), en modo
+// "embedded_page" (ui_mode=embedded_page): en vez de devolver un link al que
+// hay que redirigir, devuelve un client_secret que el navegador usa
+// para mostrar el formulario de tarjeta incrustado en la propia
+// página (miembros.html), sin salir del sitio. El webhook
+// (stripe-webhook.ts) NO cambia: Stripe sigue mandando exactamente
+// el mismo aviso checkout.session.completed al terminar, sea
+// embedded o redirigido, así que la activación de membresía sigue
+// funcionando igual que siempre.
+//
+// Es el equivalente de create-checkout.ts pero para Stripe en vez
+// de Mercado Pago. Se pensó para las personas que pagan desde
+// fuera de México (o con una tarjeta que Mercado Pago no acepta).
+//
+// Variables de entorno que necesita (se configuran en Supabase
+// -> Edge Functions -> Secrets, NUNCA se pegan en este archivo):
+//   STRIPE_SECRET_KEY     la "Secret key" de tu cuenta de Stripe
+//                         (Stripe -> Developers -> API keys). Empieza
+//                         con sk_live_... en producción.
+//   STRIPE_PRICE_ID       el id del "Price" recurrente que crees en
+//                         Stripe para la membresía (empieza con
+//                         price_...). Ver DEVLOG para instrucciones.
+//   STRIPE_PRICE_ID_ANNUAL  el id del "Price" ANUAL ($20 USD/año,
+//                         recurrente cada año). Si falta, el plan
+//                         anual responde error y el mensual sigue
+//                         funcionando igual que siempre.
+//   SUPABASE_URL          (ya viene puesta sola en Supabase)
+//   SUPABASE_ANON_KEY     (ya viene puesta sola en Supabase)
+//   SUPABASE_SERVICE_ROLE_KEY  la "service_role" key (Project Settings -> API).
+//                              Se usa SOLO para registrar checkout_started_at
+//                              (analitica). Si ya la usas en los webhooks de
+//                              pago, es la misma, no hay que crear una nueva.
+// ============================================================
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')!
+const STRIPE_PRICE_ID = Deno.env.get('STRIPE_PRICE_ID')!
+// Sin "!" a proposito: si todavia no existe, NO debe tumbar el mensual.
+const STRIPE_PRICE_ID_ANNUAL = Deno.env.get('STRIPE_PRICE_ID_ANNUAL') || ''
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
+// OJO: a proposito SIN el "!" al final (a diferencia de las otras
+// constantes de este archivo). Si todavia no pegaste este secreto en
+// Supabase, esto NO debe tumbar el checkout real: mas abajo se revisa
+// que no este vacio antes de usarlo, y si esta vacio simplemente se
+// salta el registro de checkout_started_at (analitica), sin afectar
+// el pago.
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+
+const BACK_URL = 'https://inglesconleo.com/miembros.html'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const authHeader = req.headers.get('Authorization') || ''
+    const token = authHeader.replace('Bearer ', '').trim()
+    if (!token) {
+      return json({ error: 'no_token' }, 401)
+    }
+
+    // Verifica el token del usuario contra Supabase Auth para
+    // saber quién es (y que la sesión sea real).
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    const { data: userData, error: userError } = await supabase.auth.getUser(token)
+    if (userError || !userData || !userData.user) {
+      return json({ error: 'invalid_session' }, 401)
+    }
+    const user = userData.user
+
+    // Cuerpo de la llamada (todo opcional, por compatibilidad con la pagina vieja):
+    //   plan:   'monthly' (default) o 'annual'.
+    //   track:  false = crear el formulario SIN registrar checkout_started_at
+    //           (lo usa miembros.html desde 2026-10-26: el formulario de tarjeta
+    //           ahora se muestra solo, sin clic, y no debe contar como intento).
+    //   action: 'mark' = solo registrar el intento (checkout_started_at) cuando
+    //           la persona de verdad toca el formulario; NO crea sesion de Stripe.
+    let plan = 'monthly'
+    let track = true
+    let action = ''
+    try {
+      const reqBody = await req.json()
+      if (reqBody && reqBody.plan === 'annual') plan = 'annual'
+      if (reqBody && reqBody.track === false) track = false
+      if (reqBody && reqBody.action === 'mark') action = 'mark'
+    } catch (_e) { /* cuerpo vacio o no-JSON: plan mensual, con registro */ }
+
+    // Registra que este usuario llegó hasta el proceso de pago (aunque
+    // no lo termine). Es solo para analítica (ver punto 9 del pedido de
+    // Leo): no afecta el pago ni is_member, así que si esto falla por lo
+    // que sea, seguimos con el checkout normal de todas formas.
+    if (SUPABASE_SERVICE_ROLE_KEY && (track || action === 'mark')) {
+      try {
+        // checkout_started_at = ULTIMO intento real (2026-10-08). Antirrebote
+        // de 10 min: un doble clic o un reintento inmediato no cuenta como
+        // intento nuevo.
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+        const debounceCutoff = new Date(Date.now() - 10 * 60000).toISOString()
+        await supabaseAdmin
+          .from('profiles')
+          .update({ checkout_started_at: new Date().toISOString() })
+          .eq('id', user.id)
+          .or(`checkout_started_at.is.null,checkout_started_at.lt.${debounceCutoff}`)
+      } catch (e) {
+        console.error('No se pudo registrar checkout_started_at:', e)
+      }
+    }
+    if (action === 'mark') {
+      return json({ ok: true }, 200)
+    }
+
+    // Si alguien pide el anual y el precio anual aun no esta
+    // configurado, respondemos error en vez de cobrarle el mensual
+    // (la persona vio "$20 al año" y no debe recibir otro cobro).
+    if (plan === 'annual' && !STRIPE_PRICE_ID_ANNUAL) {
+      return json({ error: 'annual_not_configured' }, 400)
+    }
+    const priceId = plan === 'annual' ? STRIPE_PRICE_ID_ANNUAL : STRIPE_PRICE_ID
+
+    const body = new URLSearchParams()
+    body.set('mode', 'subscription')
+    body.set('line_items[0][price]', priceId)
+    body.set('subscription_data[metadata][plan]', plan)
+    body.set('line_items[0][quantity]', '1')
+    body.set('client_reference_id', user.id)
+    if (user.email) body.set('customer_email', user.email)
+    body.set('ui_mode', 'embedded_page')
+    body.set('return_url', BACK_URL + '?stripe=success')
+
+    const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    })
+
+    const stripeData = await stripeRes.json()
+    if (!stripeRes.ok) {
+      console.error('Error de Stripe:', stripeData)
+      return json({ error: 'stripe_error', detail: stripeData }, 500)
+    }
+
+    return json({ client_secret: stripeData.client_secret }, 200)
+  } catch (e) {
+    console.error(e)
+    return json({ error: 'server_error' }, 500)
+  }
+})
+
+function json(body: unknown, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}

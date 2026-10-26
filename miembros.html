@@ -259,9 +259,16 @@
               <span class="plan-note">Pagas 10, usas 12</span>
             </button>
           </div>
-          <button class="btn btn-primary btn-block" id="payStripeBtn">💳 Pagar con tarjeta</button>
-          <p class="gate-hint" style="margin-top:8px;" id="payStripeHint">Visa, Mastercard y otras tarjetas · Cobro automático mensual</p>
+          <!-- 2026-10-26: el formulario de tarjeta (Stripe Embedded Checkout: tarjeta,
+               Apple Pay, Google Pay, Link) se muestra directo aquí, sin el clic previo
+               en "Pagar con tarjeta". Es la misma integración de siempre. -->
+          <div id="stripeEmbeddedWrap" style="display:none;">
+            <p class="gate-hint" style="margin:0 0 10px;text-align:left;" id="stripePriceHint">El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).</p>
+            <p class="gate-hint" id="stripeInlineLoading" style="margin:0 0 10px;">Preparando el pago...</p>
+            <div id="stripeEmbeddedContainer"></div>
+          </div>
           <div class="gate-error" id="payStripeError">No pudimos generar el formulario de pago. Intenta de nuevo en un momento.</div>
+          <button type="button" class="btn btn-primary btn-block" id="payStripeRetryBtn" style="display:none;margin-top:10px;">Intentar de nuevo</button>
 
           <p class="gate-hint pay-annual-note" id="payAnnualNote" hidden>El plan anual se paga solo con tarjeta. ¿Prefieres PayPal o Mercado Pago? Elige el plan mensual.</p>
           <div id="payOtherMethods">
@@ -272,17 +279,6 @@
           </div>
 
           <p class="gate-hint" style="margin-top:14px;">🔒 Pago seguro procesado por Stripe, PayPal o Mercado Pago.</p>
-        </div>
-
-        <!-- Formulario de tarjeta de Stripe incrustado aquí mismo (no redirige
-             a otra página): se muestra al elegir "Pagar con tarjeta" y se
-             oculta el resto mientras tanto. Sigue siendo exactamente la
-             misma integración de Stripe (Embedded Checkout, suscripción
-             mensual) de antes: aquí solo cambió el texto/orden visual. -->
-        <div id="stripeEmbeddedWrap" style="display:none;">
-          <p class="gate-hint" style="margin:0 0 6px;text-align:left;"><a href="#" id="backFromStripeEmbedded" style="color:var(--blue);font-weight:600;">‹ Elegir otra forma de pago</a></p>
-          <p class="gate-hint" style="margin:0 0 10px;text-align:left;" id="stripePriceHint">El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).</p>
-          <div id="stripeEmbeddedContainer"></div>
         </div>
 
         <div id="mpEmailStep" style="display:none;">
@@ -736,7 +732,7 @@
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
 <script src="app.js?v=20261021c"></script>
-<script src="backend.js?v=20261015a"></script>
+<script src="backend.js?v=20261026a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga
@@ -814,7 +810,8 @@
   const payError = document.getElementById('payError');
   const mpEmailInput = document.getElementById('mpEmailInput');
   const mpEmailError = document.getElementById('mpEmailError');
-  const payStripeBtn = document.getElementById('payStripeBtn');
+  const payStripeRetryBtn = document.getElementById('payStripeRetryBtn');
+  const stripeInlineLoading = document.getElementById('stripeInlineLoading');
   const payStripeError = document.getElementById('payStripeError');
   const payPaypalBtn = document.getElementById('payPaypalBtn');
   const payPaypalError = document.getElementById('payPaypalError');
@@ -827,9 +824,10 @@
   const backToPayChooser = document.getElementById('backToPayChooser');
   const stripeEmbeddedWrap = document.getElementById('stripeEmbeddedWrap');
   const stripeEmbeddedContainer = document.getElementById('stripeEmbeddedContainer');
-  const backFromStripeEmbedded = document.getElementById('backFromStripeEmbedded');
   const STRIPE_PUBLISHABLE_KEY = 'pk_live_51UE99HA7RWb74UAAsMOMTUyfTtGtsuFo2TEeNNFSBQXO7OlVCCpe6ZA7Vhma2h2kzEdXtdZMCVmzu61gNtul5Wam00fAO4BXea';
   let stripeEmbeddedInstance = null;
+  let stripeMountedPlan = '';
+  let stripeMountToken = 0;      // evita que una carga vieja pise a una nueva (cambio de plan, volver, etc.)
   let lastEmailSent = '';
   let authMode = 'login'; // 'login' | 'signup'
   // Si llega con ?modo=registro (por ejemplo desde el aviso de "ya
@@ -878,20 +876,27 @@
     mpEmailError.classList.remove('show');
     if(paypalConfirming) paypalConfirming.style.display = 'none';
     if(paypalDelayed) paypalDelayed.style.display = 'none';
-    hideStripeEmbedded();
+    // El formulario de tarjeta aparece solo (sin clic), salvo al volver de un pago.
+    // Si ya hay uno armado para el plan elegido se reutiliza (no se crean sesiones de mas).
+    if(cameFromCheckoutReturn) hideStripeEmbedded(); else mountStripeInline();
   }
 
   // Desmonta el formulario de tarjeta embebido de Stripe (si había uno) y
   // vuelve a mostrar las opciones de pago. destroy() es lo que pide Stripe
   // para liberar esa sesión de checkout embebida al salir de ella sin
   // terminar de pagar (ver docs de Embedded Checkout).
-  function hideStripeEmbedded(){
-    if(stripeEmbeddedWrap) stripeEmbeddedWrap.style.display = 'none';
+  function destroyStripeEmbedded(){
+    stripeMountToken++;
     if(stripeEmbeddedInstance){
       try{ stripeEmbeddedInstance.destroy(); }catch(e){}
       stripeEmbeddedInstance = null;
     }
+    stripeMountedPlan = '';
     if(stripeEmbeddedContainer) stripeEmbeddedContainer.innerHTML = '';
+  }
+  function hideStripeEmbedded(){
+    destroyStripeEmbedded();
+    if(stripeEmbeddedWrap) stripeEmbeddedWrap.style.display = 'none';
   }
 
   // Después de pagar (con PayPal, Stripe o Mercado Pago), el
@@ -1037,18 +1042,32 @@
         setTimeout(function(){ window.location.href = volver + '?cuenta=nueva'; }, 700);
         return;
       }
-      if(wantsPay()){ goToPayment(); return; } // vino de un botón "Hazte miembro": directo al pago
+      if(wantsPay()){ goToPaymentAuto(); return; } // vino de un botón "Hazte miembro": directo al pago
       showGate();
       showLoginStep(5);
       maybeOnboard();
     } else if(wantsPay()){
-      goToPayment();
+      goToPaymentAuto();
     } else {
       showMemberPreview();
     }
   }
   // ?pagar=1 en el enlace = la persona tocó un botón para hacerse miembro: se salta bienvenida y vista previa.
-  function wantsPay(){ try{ return new URLSearchParams(window.location.search).get('pagar') === '1'; }catch(e){ return false; } }
+  // La marca queda guardada mientras dure la pestaña, para no perder la intencion si hay que iniciar
+  // sesion (por ejemplo al volver de Google). Sin ?pagar=1 y sin volver de Google se borra.
+  function persistWantsPay(){
+    try{
+      const q = new URLSearchParams(window.location.search).get('pagar') === '1';
+      if(q) sessionStorage.setItem('leoWantsPay', '1');
+      else if(!cameFromGoogle) sessionStorage.removeItem('leoWantsPay');
+    }catch(e){}
+  }
+  function wantsPay(){
+    try{
+      if(new URLSearchParams(window.location.search).get('pagar') === '1') return true;
+      return sessionStorage.getItem('leoWantsPay') === '1';
+    }catch(e){ return false; }
+  }
 
   function isValidEmail(str){
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((str || '').trim());
@@ -1099,6 +1118,7 @@
   const payOtherMethods = document.getElementById('payOtherMethods');
   const stripePriceHint = document.getElementById('stripePriceHint');
   function setPlan(plan){
+    const previousPlan = selectedPlan;
     selectedPlan = (plan === 'annual') ? 'annual' : 'monthly';
     const annual = selectedPlan === 'annual';
     planOptions.forEach(function(o){
@@ -1115,6 +1135,8 @@
       ? 'El precio se ajusta automáticamente a tu país (en México: $370 MXN al año, equivalen a $20 USD).'
       : 'El precio se ajusta automáticamente a tu país (en México: $37 MXN, equivalen a $2 USD).';
     payStripeError.classList.remove('show');
+    // El formulario depende del plan: al cambiar de plan se vuelve a crear con el precio correcto.
+    if(selectedPlan !== previousPlan && payChooser.style.display !== 'none' && stripeEmbeddedWrap && stripeEmbeddedWrap.style.display === 'block') mountStripeInline(true);
   }
   planOptions.forEach(function(o){
     o.addEventListener('click', function(){ setPlan(o.getAttribute('data-plan')); });
@@ -1130,41 +1152,54 @@
       : { value: 2, currency: 'USD', plan: 'monthly' };
   }
 
-  async function goToStripeCheckout(btn){
+  // Formulario de tarjeta directo (sin clic previo). Crea la sesion de Stripe SIN
+  // contar un "intento de pago" (track:false): mirar la pantalla de pago no debe
+  // disparar correos de pago abandonado. La intencion de compra se registra al
+  // hacer clic en "Activar membresia" (registerPurchaseIntent, mas abajo).
+  async function mountStripeInline(force){
+    if(!stripeEmbeddedWrap || !stripeEmbeddedContainer) return;
+    if(!force && stripeEmbeddedInstance && stripeMountedPlan === selectedPlan){
+      stripeEmbeddedWrap.style.display = 'block'; // ya esta listo para este plan
+      return;
+    }
+    destroyStripeEmbedded();
+    const token = stripeMountToken;
     payStripeError.classList.remove('show');
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = 'Preparando el pago...';
+    if(payStripeRetryBtn) payStripeRetryBtn.style.display = 'none';
+    stripeEmbeddedWrap.style.display = 'block';
+    if(stripeInlineLoading) stripeInlineLoading.style.display = 'block';
+    function fail(msg){
+      if(stripeInlineLoading) stripeInlineLoading.style.display = 'none';
+      payStripeError.textContent = msg;
+      payStripeError.classList.add('show');
+      if(payStripeRetryBtn) payStripeRetryBtn.style.display = 'block';
+    }
     const plan = selectedPlan;
     try{ sessionStorage.setItem('leoCheckoutPlan', plan); }catch(e){}
-    const res = await LeoBackend.startStripeCheckout(plan);
-    btn.disabled = false;
-    btn.textContent = originalText;
+    const res = await LeoBackend.startStripeCheckout(plan, { track:false });
+    if(token !== stripeMountToken) return; // la persona cambio de plan o de pantalla
     if(!res.ok){
-      payStripeError.textContent = (res.error === 'annual_not_configured')
+      fail((res.error === 'annual_not_configured')
         ? 'El plan anual todavía no está disponible. Elige el plan mensual o intenta más tarde.'
-        : 'No pudimos generar el formulario de pago. Intenta de nuevo en un momento.';
-      payStripeError.classList.add('show');
+        : 'No pudimos generar el formulario de pago. Intenta de nuevo en un momento.');
       return;
     }
     try{
       const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-      stripeEmbeddedInstance = await stripe.initEmbeddedCheckout({ clientSecret: res.clientSecret });
-      payChooser.style.display = 'none';
-      stripeEmbeddedWrap.style.display = 'block';
-      stripeEmbeddedInstance.mount('#stripeEmbeddedContainer');
+      const instance = await stripe.initEmbeddedCheckout({ clientSecret: res.clientSecret });
+      if(token !== stripeMountToken){ try{ instance.destroy(); }catch(e){} return; }
+      stripeEmbeddedInstance = instance;
+      stripeMountedPlan = plan;
+      if(stripeInlineLoading) stripeInlineLoading.style.display = 'none';
+      instance.mount('#stripeEmbeddedContainer');
     }catch(e){
       console.error('Error montando el checkout embebido de Stripe:', e);
-      payStripeError.textContent = 'No pudimos mostrar el formulario de pago. Intenta de nuevo en un momento.';
-      payStripeError.classList.add('show');
+      if(token === stripeMountToken) fail('No pudimos mostrar el formulario de pago. Intenta de nuevo en un momento.');
     }
   }
 
-  if(backFromStripeEmbedded){
-    backFromStripeEmbedded.addEventListener('click', function(e){
-      e.preventDefault();
-      resetPayChooser();
-    });
+  if(payStripeRetryBtn){
+    payStripeRetryBtn.addEventListener('click', function(){ mountStripeInline(true); });
   }
 
   // Igual que goToStripeCheckout, pero para PayPal: tampoco pide un
@@ -1318,12 +1353,36 @@
 
   // Un solo clic hasta el pago: muestra el paso de pago Y baja hasta él (antes el botón cambiaba de pantalla
   // pero el alumno quedaba más arriba, en la parte de Leo AI, y necesitaba otro clic/scroll).
-  function goToPayment(){
+  function showPaymentStep(){
     showGate(); showLoginStep(3);
     const target = document.getElementById('payChooser') || loginPending; if(loginPending) loginPending.style.scrollMarginTop = '90px';
     const go = ()=>{ try{ (loginPending || target).scrollIntoView({ behavior:'smooth', block:'start' }); }catch(e){ window.scrollTo(0, 0); } };
     if(window.requestAnimationFrame) requestAnimationFrame(()=>requestAnimationFrame(go)); else go();
   }
+  // INTENCION DE COMPRA: se registra cuando una persona ya identificada hace clic en "Activar membresía"
+  // (o llega con ese clic desde otra pagina, ?pagar=1, e inicia sesion). Solo mirar la pagina no cuenta, un
+  // visitante anonimo no se puede identificar, y el servidor ignora a los miembros y las repeticiones de
+  // menos de 10 min (la misma regla de siempre para los correos de pago abandonado).
+  function registerPurchaseIntent(opts){
+    try{
+      if(!hasSession) return;
+      try{ sessionStorage.removeItem('leoWantsPay'); }catch(e){}
+      if(opts && opts.fromLoad){
+        // Recargar la pagina no es un clic nuevo.
+        const nav = (window.performance && performance.getEntriesByType) ? performance.getEntriesByType('navigation')[0] : null;
+        if(nav && nav.type === 'reload') return;
+      }
+      let last = 0;
+      try{ last = parseInt(sessionStorage.getItem('leoIntentAt') || '0', 10) || 0; }catch(e){}
+      if(Date.now() - last < 10 * 60000) return;
+      try{ sessionStorage.setItem('leoIntentAt', String(Date.now())); }catch(e){}
+      LeoBackend.markPurchaseIntent();
+    }catch(e){}
+  }
+  // Clic en un boton de "Activar membresía".
+  function goToPayment(){ registerPurchaseIntent(); showPaymentStep(); }
+  // Llegada automatica al pago (vino de "Hazte miembro" en otra pagina o regreso de iniciar sesion).
+  function goToPaymentAuto(opts){ registerPurchaseIntent(opts); showPaymentStep(); }
   // Las tarjetas con candado también llevan directo al pago (cualquier clic en lo bloqueado = pagar).
   document.querySelectorAll('#memberPreview .locked-card').forEach(card=>{
     card.style.cursor = 'pointer';
@@ -1361,6 +1420,7 @@
   if(pricingCtaBtn){
     pricingCtaBtn.addEventListener('click', ()=>{
       if(hasSession){
+        registerPurchaseIntent();
         resetPayChooser();
         loginPending.scrollIntoView({ behavior:'smooth', block:'center' });
       } else {
@@ -1372,10 +1432,6 @@
 
   if(payBtn){
     payBtn.addEventListener('click', ()=>{ goToCheckout(payBtn); });
-  }
-
-  if(payStripeBtn){
-    payStripeBtn.addEventListener('click', ()=>{ goToStripeCheckout(payStripeBtn); });
   }
 
   if(payPaypalBtn){
@@ -1476,6 +1532,7 @@
   const cameFromGoogle = (function(){
     try{ return new URLSearchParams(window.location.search).get('oauth') === 'google'; }catch(e){ return false; }
   })();
+  persistWantsPay();
 
   // Si el enlace con el que llegó a la página trae "type=recovery"
   // (viene de un correo de "olvidé mi contraseña"), lo detectamos
@@ -1513,7 +1570,7 @@
           showLoginStep(3);
           startCheckoutConfirming();
         } else if(wantsPay()){
-          goToPayment();
+          goToPaymentAuto({ fromLoad:true });
         } else {
           showMemberPreview();
         }

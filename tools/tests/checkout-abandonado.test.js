@@ -154,19 +154,63 @@ for(const [file, label] of [['create-checkout.ts', 'Mercado Pago'], ['stripe-che
     reset(() => [user()]); await click(mk()); assert.strictEqual(P().is_member, false);
   });
 }
-test('Recargar o navegar NO cuenta como intento: start*Checkout solo se llama desde clics en miembros.html', () => {
+test('Recargar o navegar NO cuenta como intento: MP y PayPal solo por clic; Stripe se muestra solo pero SIN registrar (track:false)', () => {
   const html = read('miembros.html');
   const calls = [...html.matchAll(/LeoBackend\.(startCheckout|startStripeCheckout|startPaypalCheckout)\(/g)];
   assert.strictEqual(calls.length, 3, 'una llamada por proveedor');
-  for(const fn of ['goToCheckout', 'goToStripeCheckout', 'goToPaypalCheckout']){
+  for(const fn of ['goToCheckout', 'goToPaypalCheckout']){
     const uses = [...html.matchAll(new RegExp(fn + '\\(', 'g'))].map(m => html.slice(Math.max(0, m.index - 40), m.index));
     const external = uses.filter(u => !/async function\s+$/.test(u) && !/addEventListener\('click',\s*\(\)=>\{\s*$/.test(u));
     assert.strictEqual(external.length, 0, fn + ' solo se invoca dentro de un listener de clic');
   }
-  for(const f of ['app.js', 'backend.js', 'practica.html', 'index.html']){
-    if(fs.existsSync(path.join(root, f))) assert(!/LeoBackend\.start(Stripe|Paypal)?Checkout\(/.test(read(f)), f + ' no inicia checkouts');
+  // Stripe (desde 2026-10-26): el formulario aparece solo, asi que la carga automatica SIEMPRE debe ir con track:false.
+  const stripeCall = html.match(/LeoBackend\.startStripeCheckout\([^)]*\)/)[0];
+  assert(/track\s*:\s*false/.test(stripeCall), 'startStripeCheckout automatico debe usar { track:false }: ' + stripeCall);
+  // La INTENCION de compra se registra solo al hacer clic en "Activar membresia" (o al llegar con ese clic
+  // desde otra pagina e iniciar sesion), nunca por mirar el formulario: sin logica de espera ni de toque.
+  assert(!/watchStripeIntent|dwellTimer|addEventListener\('blur'/.test(html), 'sin registro por espera de 20 s ni por toque en el formulario');
+  const marks = [...html.matchAll(/LeoBackend\.markPurchaseIntent\(/g)];
+  assert.strictEqual(marks.length, 1, 'markPurchaseIntent se llama en un solo lugar (registerPurchaseIntent)');
+  assert(/function registerPurchaseIntent[\s\S]*?markPurchaseIntent/.test(html));
+  for(const caller of ['goToPayment', 'goToPaymentAuto']) assert(new RegExp('function ' + caller + '\\([^)]*\\)\\{[^}]*registerPurchaseIntent').test(html), caller + ' registra la intencion');
+  assert(!/function showPaymentStep[\s\S]{0,600}registerPurchaseIntent/.test(html.slice(html.indexOf('function showPaymentStep'), html.indexOf('function showPaymentStep') + 700).split('function registerPurchaseIntent')[0]), 'mostrar el paso de pago por si solo no registra');
+  for(const f of ['app.js', 'practica.html', 'index.html']){
+    if(fs.existsSync(path.join(root, f))) assert(!/LeoBackend\.(start(Stripe|Paypal)?Checkout|markPurchaseIntent)\(/.test(read(f)), f + ' no inicia checkouts');
   }
 });
+{
+  const click = async (m, body) => { return await m.handler(new Request('https://x/f', { method: 'POST', headers: { Authorization: 'Bearer tok', 'Content-Type': 'application/json' }, body: JSON.stringify(body) })); };
+  const mk = () => loadTs('stripe-checkout.ts', { env: { SUPABASE_SERVICE_ROLE_KEY: 'srk', STRIPE_PRICE_ID: 'price_x' } });
+  test('Stripe: track:false crea el formulario pero NO guarda checkout_started_at (ver la pantalla no es un intento)', async () => {
+    reset(() => [user({ checkout_started_at: null })]); const r = await click(mk(), { plan: 'monthly', track: false });
+    assert.strictEqual(P().checkout_started_at, null);
+  });
+  test('Intencion (action mark): guarda checkout_started_at, con antirrebote de 10 min, y NO crea sesion de Stripe', async () => {
+    reset(() => [user({ checkout_started_at: null })]); const r = await click(mk(), { action: 'mark' });
+    assert.strictEqual(P().checkout_started_at, iso(state.now));
+    const j = await r.json(); assert.strictEqual(j.ok, true); assert(!j.client_secret, 'no devuelve client_secret');
+    reset(() => [user({ checkout_started_at: ago(0.05) })]); const before = P().checkout_started_at; await click(mk(), { action: 'mark' });
+    assert.strictEqual(P().checkout_started_at, before, 'dentro de 10 min no crea intento nuevo');
+    reset(() => [user({ checkout_started_at: ago(5) })]); await click(mk(), { action: 'mark' });
+    assert.strictEqual(P().checkout_started_at, iso(state.now), 'pasados 10 min si cuenta como nuevo');
+  });
+  test('Intencion: un miembro activo NO se registra (ni se cambia checkout_started_at)', async () => {
+    reset(() => [user({ is_member: true, checkout_started_at: null })]); const r = await click(mk(), { action: 'mark' });
+    assert.strictEqual(P().checkout_started_at, null); assert.strictEqual((await r.json()).skipped, 'member');
+  });
+  test('Intencion sin sesion valida: rechazada (401) y no toca nada', async () => {
+    reset(() => [user()]); const m = mk();
+    const r = await m.handler(new Request('https://x/f', { method: 'POST', headers: { Authorization: 'Bearer malo', 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark' }) }));
+    assert.strictEqual(r.status, 401); assert.strictEqual(P().checkout_started_at, null);
+    const r2 = await m.handler(new Request('https://x/f', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'mark' }) }));
+    assert.strictEqual(r2.status, 401);
+  });
+  test('Cambiar de plan no crea otro intento: el plan se guarda en la suscripcion de Stripe (metadata), no en profiles', async () => {
+    reset(() => [user({ checkout_started_at: ago(0.02) })]); const before = P().checkout_started_at;
+    await click(mk(), { plan: 'annual', track: false }); await click(mk(), { plan: 'monthly', track: false });
+    assert.strictEqual(P().checkout_started_at, before);
+  });
+}
 
 /* ---------------- 2. correo 1 y correo 2 ---------------- */
 test('Correo 1 sale entre 2 y 4 h, con el asunto, el CTA y el Reply-To pedidos', async () => {

@@ -567,7 +567,11 @@ const LeoBackend = (function(){
      { ok:true, clientSecret } o { ok:false, error }. Depende de que
      la función de Supabase "stripe-checkout" esté desplegada (ver
      supabase_functions/stripe-checkout.ts). */
-  async function startStripeCheckout(plan){
+  /* opts.track === false: crea el formulario SIN contar un "intento de pago"
+     (checkout_started_at). Lo usa miembros.html al mostrar el formulario de
+     tarjeta automaticamente. La intencion de compra se registra aparte, con
+     markPurchaseIntent(), al hacer clic en "Activar membresia". */
+  async function startStripeCheckout(plan, opts){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
     const session = await getSession();
     if(!session) return { ok:false, error:'no_session' };
@@ -578,13 +582,36 @@ const LeoBackend = (function(){
           'Authorization': 'Bearer ' + session.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly' })
+        body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly', ...(opts && opts.track === false ? { track:false } : {}) })
       });
       const data = await res.json();
       if(!res.ok || !data.client_secret) return { ok:false, error: (data && data.error) || 'checkout_error' };
       return { ok:true, clientSecret: data.client_secret };
     }catch(e){
       return { ok:false, error: String(e) };
+    }
+  }
+
+  /* Registra la INTENCION de compra (checkout_started_at) cuando una persona ya
+     identificada hace clic en "Activar membresia". Misma regla de siempre: el
+     servidor ignora a los miembros y no cuenta repeticiones en menos de 10 min.
+     No crea ninguna sesion de Stripe y NUNCA lanza error: si falla, nada se rompe. */
+  async function markPurchaseIntent(){
+    try{
+      if(!isConfigured()) return { ok:false };
+      const session = await getSession();
+      if(!session) return { ok:false };
+      const res = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + session.access_token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action:'mark' })
+      });
+      return { ok: res.ok };
+    }catch(e){
+      return { ok:false };
     }
   }
 
@@ -890,7 +917,7 @@ const LeoBackend = (function(){
   return {
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
-    getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, startPaypalCheckout,
+    getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, markPurchaseIntent, startPaypalCheckout,
     getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
     getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI, getLeoAiTrial,
     feedbackCardStatus, submitMemberFeedback, dismissMemberFeedback
