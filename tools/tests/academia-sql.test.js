@@ -14,6 +14,7 @@
    - la migracion se puede aplicar dos veces. */
 const fs = require('fs'), path = require('path'), assert = require('assert');
 const { createRequire } = require('module'), { pathToFileURL } = require('url');
+const H = require('./academia-pg-helpers.js');
 const root = path.join(__dirname, '..', '..');
 const read = f => fs.readFileSync(path.join(process.env.LEO_ROOT || root, f), 'utf8');
 
@@ -72,17 +73,7 @@ function answersFor(items, bank, mode){
   async function fresh(opts){
     opts = opts || {};
     const db = new PGlite();
-    await db.exec(`
-      create role anon; create role authenticated; create role service_role;
-      create schema auth;
-      create table auth.users (id uuid primary key);
-      create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-      create table public.profiles (id uuid primary key references auth.users(id), is_member boolean not null default false);
-      grant usage on schema public to anon, authenticated;
-      insert into auth.users values ('${U.mem}'), ('${U.mem2}'), ('${U.free}');
-      insert into public.profiles values ('${U.mem}', true), ('${U.mem2}', true), ('${U.free}', false);
-    `);
-    await db.exec(MISTAKES);
+    await H.baseSchema(db, [[U.mem, true], [U.mem2, true], [U.free, false]]);
     await db.exec(MIG);
     if(opts.enable !== false) await db.exec(`update public.academia_courses set enabled = true where course_id = 'to-be'`);
     const bank = syntheticBank();
@@ -288,7 +279,9 @@ function answersFor(items, bank, mode){
   });
   await test('la migracion no toca profiles, progress_sessions ni cambia mistake_stats existente', async()=>{
     const cols = await sys(db, "select column_name from information_schema.columns where table_name = 'profiles' order by 1");
-    assert.deepStrictEqual(cols.map(c => c.column_name), ['id', 'is_member']);
+    assert.deepStrictEqual(cols.map(c => c.column_name), ['free_daily_count', 'free_daily_date', 'free_daily_limit_reached_at', 'free_first_exercise_at', 'free_last_practice_at', 'id', 'is_member', 'last_practice_at']);   // las de produccion, ninguna nueva
+    const ps = await sys(db, "select count(*)::int n from information_schema.columns where table_name = 'progress_sessions'");
+    assert.strictEqual(ps[0].n, 11);
   });
 
   const seedLib = require('../academia_seed_examen.js');

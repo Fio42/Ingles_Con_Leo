@@ -17,26 +17,54 @@ async function loadPglite(){
 }
 const U = { a:'00000000-0000-4000-8000-0000000000a1', b:'00000000-0000-4000-8000-0000000000a2', free:'00000000-0000-4000-8000-0000000000f1' };
 
-/* Base con el esquema minimo de Supabase + mistake_stats REAL + la migracion de academia REAL. */
-async function freshDb(PGlite, bank){
-  const db = new PGlite();
+/* Esquema minimo de Supabase con las piezas REALES de produccion que la academia usa (verificadas en solo lectura el 2026-10-25):
+   profiles (con las columnas del limite gratis y last_practice_at), progress_sessions (con tier, indice unico y el trigger de limites
+   leido de supabase_schema.sql) y mistake_stats + apply_mistake_results (de supabase_schema.sql). */
+async function baseSchema(db, users){
+  users = users || [[U.a, true], [U.b, true], [U.free, false]];
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
     create schema auth;
     create table auth.users (id uuid primary key);
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    create table public.profiles (id uuid primary key references auth.users(id), is_member boolean not null default false);
+    create table public.profiles (id uuid primary key references auth.users(id), is_member boolean not null default false,
+      free_daily_count integer not null default 0, free_daily_date date, free_first_exercise_at timestamptz,
+      free_daily_limit_reached_at timestamptz, free_last_practice_at timestamptz, last_practice_at timestamptz);
     grant usage on schema public to anon, authenticated;
     grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
-    insert into auth.users values ('${U.a}'), ('${U.b}'), ('${U.free}');
-    insert into public.profiles values ('${U.a}', true), ('${U.b}', true), ('${U.free}', false);
+    create table public.progress_sessions (
+      id bigint generated always as identity primary key,
+      user_id uuid not null references auth.users(id) on delete cascade,
+      skill text not null, level text not null, topics jsonb not null default '[]'::jsonb, date date not null,
+      started_at bigint, duration_ms bigint, results jsonb not null default '[]'::jsonb, created_at timestamptz not null default now(), tier text);
+    create index progress_sessions_user_id_idx on public.progress_sessions(user_id);
+    alter table public.progress_sessions add constraint progress_sessions_tier_chk check (tier is null or tier = 'free');
+    alter table public.progress_sessions add constraint progress_sessions_results_chk check (
+      case when jsonb_typeof(results) = 'array' then jsonb_array_length(results) <= 500 and octet_length(results::text) <= 100000 else false end);
+    alter table public.progress_sessions add constraint progress_sessions_topics_chk check (jsonb_typeof(topics) = 'array' and octet_length(topics::text) <= 4000);
+    alter table public.progress_sessions add constraint progress_sessions_labels_chk check (char_length(skill) between 1 and 40 and char_length(level) between 1 and 20);
+    create unique index progress_sessions_user_started_skill_uidx on public.progress_sessions (user_id, started_at, skill) where started_at is not null;
+    create index progress_sessions_user_created_idx on public.progress_sessions (user_id, created_at desc);
+    alter table public.progress_sessions enable row level security;
+    create policy "progress_sessions: select own" on public.progress_sessions for select using (auth.uid() = user_id);
+    create policy "progress_sessions: insert own" on public.progress_sessions for insert with check (auth.uid() = user_id);
+    grant select, insert on public.progress_sessions to authenticated;
   `);
   const schema = read('supabase_schema.sql');
+  const g0 = schema.indexOf('create or replace function public.progress_sessions_guard');
+  const gEnd = 'for each row execute function public.progress_sessions_guard();';
+  await db.exec(schema.slice(g0, schema.indexOf(gEnd, g0) + gEnd.length));
+  for(const [id, mem] of users){
+    await db.exec(`insert into auth.users values ('${id}'); insert into public.profiles (id, is_member) values ('${id}', ${mem});`);
+  }
   const a0 = schema.indexOf('create table if not exists public.mistake_stats');
   const end = 'grant execute on function public.apply_mistake_results(jsonb) to authenticated;';
   await db.exec(schema.slice(a0, schema.indexOf(end) + end.length));
-  // Supabase da estos permisos por defecto a las tablas de public; aqui se imitan solo para mistake_stats.
   await db.exec('grant select, insert, update on public.mistake_stats to authenticated; grant usage on all sequences in schema public to authenticated;');
+}
+async function freshDb(PGlite, bank){
+  const db = new PGlite();
+  await baseSchema(db);
   await db.exec(read('supabase/migrations/20261026120000_academia_integracion.sql'));
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'to-be'`);
   for(const b of (bank || [])){
@@ -88,4 +116,4 @@ function fakeClient(db, uid, net){
     }
   };
 }
-module.exports = { loadPglite, freshDb, asUser, fakeClient, U, read, root };
+module.exports = { loadPglite, baseSchema, freshDb, asUser, fakeClient, U, read, root };

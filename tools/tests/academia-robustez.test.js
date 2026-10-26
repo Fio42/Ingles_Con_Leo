@@ -35,11 +35,6 @@ const BANK = [];
   async function fresh(){
     const db = await H.freshDb(PGlite, BANK);
     await db.exec(`update public.academia_courses set exam_size = 6, per_topic = 3, max_attempts_day = 20`);
-    await db.exec(`
-      create table public.progress_sessions (id bigint generated always as identity primary key, user_id uuid not null, skill text not null,
-        level text not null, topics jsonb, date date, started_at bigint, duration_ms bigint, results jsonb);
-      create unique index progress_sessions_user_started_skill_uidx on public.progress_sessions (user_id, started_at, skill) where started_at is not null;
-      grant select, insert on public.progress_sessions to authenticated;`);
     return db;
   }
   /* Un "dispositivo": cliente de la nube sobre la base, con almacenamiento propio (o compartido) y red controlable. */
@@ -53,15 +48,7 @@ const BANK = [];
       enabled: true, courseId: 'to-be', meta: META, getClient: () => lossy,
       getSession: async () => (uid ? { user: { id: uid } } : null),
       storage: opt.storage || MEM(),
-      pushSessionStatus: async (s, expectedUser) => {
-        if(net.down) return 'fail';
-        try{
-          await H.asUser(db, uid, () => db.query('insert into public.progress_sessions (user_id, skill, level, topics, date, started_at, duration_ms, results) values ($1,$2,$3,$4,$5,$6,$7,$8)',
-            [uid, s.skill, s.level, JSON.stringify(s.topics), s.date, s.startedAt, s.durationMs, JSON.stringify(s.results)]));
-          if(net.loseReply && net.loseReply('session')) return 'fail';   // se guardo, pero el navegador cree que fallo
-          return 'ok';
-        }catch(e){ return e.code === '23505' || /duplicate key/.test(String(e.message)) ? 'ok' : 'fail'; }
-      }
+      localDailyCount: () => opt.local || 0, setLocalDailyCount: n => { opt.local = n; }
     };
     return { n: Nube.create(env), storage: env.storage, net };
   }
@@ -126,7 +113,7 @@ const BANK = [];
     const anon = await H.fakeClient(db, '').rpc('academia_apply_mistakes', { p_batch: '55555555-5555-4555-8555-555555555555', p_items: [{ item_id: 'ac:to-be:l1-a1', is_correct: false }] });
     assert.strictEqual(anon.data && anon.data.error, 'auth');
     await db.exec(`update public.academia_courses set enabled = false`);
-    assert.strictEqual((await c.rpc('academia_apply_mistakes', { p_batch: '66666666-6666-4666-8666-666666666666', p_items: [{ item_id: 'ac:to-be:l1-a1', is_correct: false }] })).data.error, 'bad');
+    assert.strictEqual((await c.rpc('academia_apply_mistakes', { p_batch: '66666666-6666-4666-8666-666666666666', p_items: [{ item_id: 'ac:to-be:l1-a1', is_correct: false }] })).data.error, 'course');
   });
   await test('nadie lee ni escribe la tabla de envios desde el navegador', async()=>{
     const db = await fresh(); const c = H.fakeClient(db, A);
@@ -316,11 +303,11 @@ const BANK = [];
   });
 
   /* ---------- 5. sesiones ---------- */
-  const lessonRes = [{ id: 'l1-a1', ok: true }, { id: 'l1-a2', ok: false }];
+  const lessonRes = [{ id: 'l1-a1', ok: true }, { id: 'l1-a2', ok: false }, { id: 'l1-a3', ok: true }];
   await test('terminar la leccion: UNA sesion; reintentar la misma no la duplica (ni con respuesta perdida)', async()=>{
     const db = await fresh(); const d = device(db, A); await d.n.boot({});
     const t0 = 1790000000000;
-    d.net.loseReply = fn => fn === 'session';                // la base guarda, el navegador cree que fallo
+    d.net.loseReply = fn => fn === 'academia_record_session';                // la base guarda, el navegador cree que fallo
     await d.n.recordLesson({ n: 1 }, lessonRes, t0);
     assert.strictEqual(d.n.pendingSessions, 1);
     assert.strictEqual((await q(db, 'select count(*)::int n from public.progress_sessions'))[0].n, 1);
@@ -360,30 +347,37 @@ const BANK = [];
   });
 
   /* ---------- 6. cuentas gratuitas y compatibilidad ---------- */
-  await test('cuenta gratuita: descubre la academia, guarda avance y errores, pero la evaluacion oficial es solo de miembros', async()=>{
+  await test('cuenta gratuita: ve el curso, pero no guarda avance en la nube ni hace la evaluacion oficial', async()=>{
     const db = await fresh(); const F = H.U.free; const c = H.fakeClient(db, F);
     const st = (await c.rpc('academia_exam_status', { p_course: 'to-be' })).data;
     assert.deepStrictEqual([st.ok, st.can_take, st.members_only], [true, false, true]);
     assert.strictEqual((await c.rpc('academia_exam_start', { p_course: 'to-be' })).data.error, 'members');
-    assert.strictEqual((await q(db, 'select count(*)::int n from public.academia_exam_attempts'))[0].n, 0);
     const d = device(db, F); const b = await d.n.boot({ v: 1, lessons: { 'am-is-are': { done: true } } });
-    assert.strictEqual((await d.n.save(() => b.state)).ok, true);
-    d.n.recordAnswer('l1-a1', false); assert.strictEqual((await d.n.flushMistakes()).ok, true);
-    assert.strictEqual((await stat(db, F, 'ac:to-be:l1-a1')).fail_count, 1);
-    // si Leo abre el examen a todos (members_only = false) tambien funciona, sin tocar codigo
+    assert.strictEqual(b.ok, true);
+    const sv = await d.n.save(() => b.state);
+    assert.deepStrictEqual([sv.ok, sv.reason], [false, 'members']);
+    assert.strictEqual((await q(db, 'select count(*)::int n from public.academia_progress'))[0].n, 0);
+    // aunque Leo pusiera members_only = false en la tabla, la evaluacion sigue siendo solo de miembros
     await db.exec(`update public.academia_courses set members_only = false`);
-    assert.strictEqual((await c.rpc('academia_exam_start', { p_course: 'to-be' })).data.ok, true);
+    assert.strictEqual((await c.rpc('academia_exam_start', { p_course: 'to-be' })).data.error, 'members');
   });
-  await test('apagado rapido: con el curso deshabilitado la base deja de aceptar guardados, examen y errores, y vuelve al reactivarlo', async()=>{
+  await test('apagado rapido: con el curso deshabilitado la base deja de aceptar guardados, examen y errores; NADA se pierde y todo sale al reactivarlo', async()=>{
     const db = await fresh(); const d = device(db, A); const b = await d.n.boot({ v: 1 });
     assert.strictEqual((await d.n.save(() => b.state)).ok, true);
     await db.exec(`update public.academia_courses set enabled = false`);
     assert.strictEqual((await d.n.save(() => ({ v: 1, goal: 3 }))).reason, 'course');
     assert.strictEqual((await H.fakeClient(db, A).rpc('academia_exam_start', { p_course: 'to-be' })).data.error, 'course');
-    d.n.recordAnswer('l1-a1', false); await d.n.flushMistakes();
+    d.n.recordAnswer('l1-a1', false); await d.n.recordLesson({ n: 1 }, lessonRes, 1790000000000);
+    const f = await d.n.flushAll();
+    assert.strictEqual(f.ok, false);
     assert.strictEqual(await stat(db, A, 'ac:to-be:l1-a1'), undefined);
-    assert.strictEqual(d.n.dropped, 1, 'el cliente lo suelta y lo cuenta');
+    assert.strictEqual(d.n.pendingMistakes, 1); assert.strictEqual(d.n.pendingSessions, 1); assert.strictEqual(d.n.dropped, 0, 'no se suelta nada');
+    // el progreso ya guardado sigue legible aunque este apagado (no se borra nada)
+    assert.strictEqual((await q(db, 'select count(*)::int n from public.academia_progress'))[0].n, 1);
     await db.exec(`update public.academia_courses set enabled = true`);
+    assert.strictEqual((await d.n.flushAll()).ok, true);
+    assert.strictEqual((await stat(db, A, 'ac:to-be:l1-a1')).fail_count, 1);
+    assert.strictEqual((await q(db, 'select count(*)::int n from public.progress_sessions'))[0].n, 1);
     assert.strictEqual((await d.n.save(() => ({ v: 1, goal: 3 }))).ok, true);
   });
   await test('la migracion se detiene sin crear nada si falta una pieza base de produccion; y se puede aplicar dos veces', async()=>{

@@ -3,9 +3,10 @@
 
    Une la academia con lo que ya existe, sin crear sistemas paralelos:
    - Progreso del curso   -> tabla academia_progress (RPC academia_save_progress, con versión).
-   - Errores de actividades -> el motor ACTUAL: LeoBackend.applyMistakeResults (mistake_stats), item_id 'ac:<curso>:<actividad>'.
-   - Lección completada   -> LeoBackend.pushSession (progress_sessions, skill 'gramatica'): cuenta para racha, precisión
-                             semanal y diagnóstico igual que cualquier práctica.
+   - Errores de actividades -> el motor ACTUAL (mistake_stats) vía academia_apply_mistakes, item_id 'ac:<curso>:<actividad>'.
+   - Lección completada   -> RPC academia_record_session (progress_sessions, skill 'gramatica'): cuenta para racha, precisión
+                             semanal y diagnóstico, y marca last_practice_at si es un miembro.
+   - Acceso y prueba gratis -> academia_access / academia_demo_start / academia_demo_finish (todo lo decide el servidor).
    - Evaluación oficial   -> RPC academia_exam_start / academia_exam_submit (la nota y la insignia las decide el servidor).
    - Insignias            -> lectura de academia_badges (solo el servidor las crea).
 
@@ -229,23 +230,23 @@ var AcademiaNube = (function(){
           res = r && !r.error ? r.data : null;
         }catch(e){ res = null; }
         if(res && res.ok){ sent += b.items.length; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }
-        if(res && res.error === 'bad'){ S.dropped += b.items.length; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }   // el servidor lo rechaza para siempre
+        if(res && (res.error === 'bad' || res.error === 'members' || res.error === 'limit')){ S.dropped += b.items.length; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }   // el servidor lo rechaza para siempre
         if(res && res.error === 'engine'){ S.queuedServer++; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }  // el servidor lo guardó pendiente y lo reintenta
         failed = true; break;                         // sin red o sin función: se queda en la cola y se reintenta
       }
       return { ok: !failed, n: sent, pending: qCount(qRead()) };
     }
     /* Una lección terminada = UNA sesión de práctica normal (misma tabla y forma que las demás).
-       Se encola con su hora de inicio fija: la tabla rechaza una segunda sesión con el mismo inicio,
-       así que reintentar el envío (o terminar dos veces la misma pantalla) no duplica nada. */
+       Se encola con su hora de inicio fija y la guarda el SERVIDOR (academia_record_session): valida, no duplica
+       (regla única usuario + inicio + skill) y, si es estudio real de un miembro, marca profiles.last_practice_at.
+       Reintentar el envío, o terminar dos veces la misma pantalla, no duplica nada. */
     function recordLesson(lesson, results, startedAt){
-      if(!S.user || !(env.pushSessionStatus || env.pushSession)) return Promise.resolve({ ok: false });
+      if(!S.user) return Promise.resolve({ ok: false });
       var now = env.now ? env.now() : Date.now();
       var d = new Date(now);
       var date = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
       var st = startedAt || now;
       var session = {
-        skill: 'gramatica', level: meta ? meta.level : 'facil', topics: [meta ? meta.engineTopic : 'academia'],
         date: date, startedAt: st, durationMs: Math.max(0, now - st),
         results: results.map(function(r){ return { itemId: engineId(r.id), isCorrect: !!r.ok }; })
       };
@@ -262,13 +263,18 @@ var AcademiaNube = (function(){
       if(!S.ready || !S.user) return { ok: false };
       var list = qRead().sessions.slice(), failed = false;
       for(var i = 0; i < list.length; i++){
-        var ss = list[i], st = 'fail';
+        var ss = list[i], res = null;
         try{
-          if(env.pushSessionStatus) st = await env.pushSessionStatus(ss, S.user);
-          else { await env.pushSession(ss); st = 'ok'; }
-        }catch(e){ st = 'fail'; }
-        if(st === 'ok' || st === 'drop'){ qMutate(function(q){ q.sessions = q.sessions.filter(function(x){ return x.startedAt !== ss.startedAt; }); }); if(st === 'drop') S.dropped++; continue; }
-        failed = true; break;                         // 'fail' o 'skip': se reintenta más tarde
+          var r = await client().rpc('academia_record_session', { p_course: courseId, p_session: ss });
+          res = r && !r.error ? r.data : null;
+        }catch(e){ res = null; }
+        var done = res && (res.ok || res.error === 'bad' || res.error === 'members' || res.error === 'limit');
+        if(done){
+          qMutate(function(q){ q.sessions = q.sessions.filter(function(x){ return x.startedAt !== ss.startedAt; }); });
+          if(!res.ok) S.dropped++;
+          continue;
+        }
+        failed = true; break;                         // sin red, curso apagado o error del servidor: se reintenta más tarde
       }
       return { ok: !failed };
     }
@@ -281,7 +287,25 @@ var AcademiaNube = (function(){
       return { ok: a.ok && b.ok };
     }
 
+    /* ---- acceso y demostración gratuita (todo lo decide el servidor) ---- */
+    function localDay(){ var d = new Date(env.now ? env.now() : Date.now()); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+    function localCount(){ try{ return env.localDailyCount ? (env.localDailyCount() || 0) : 0; }catch(e){ return 0; } }
+    async function access(){
+      if(!S.ready) return { ok: false, error: S.user ? 'net' : 'anon' };
+      var r = await rpcCall('academia_access', { p_course: courseId, p_today: localDay(), p_local_count: localCount() });
+      if(r && r.ok){ S.access = r; }
+      return r;
+    }
+    async function demoStart(){
+      if(!S.ready) return { ok: false, error: S.user ? 'net' : 'anon' };
+      var r = await rpcCall('academia_demo_start', { p_course: courseId, p_today: localDay(), p_local_count: localCount() });
+      if(r && r.ok && r.daily && env.setLocalDailyCount){ try{ env.setLocalDailyCount(r.daily.count); }catch(e){} }
+      return r;
+    }
+    function demoFinish(){ return S.ready ? rpcCall('academia_demo_finish', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
+
     /* ---- examen oficial ---- */
+    function rpcCall(name, args){ return rpc(name, args); }
     async function rpc(name, args){
       try{
         var r = await client().rpc(name, args);
@@ -300,7 +324,7 @@ var AcademiaNube = (function(){
       }catch(e){ return null; }
     }
 
-    return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson, flushAll: flushAll, flushSessions: flushSessions,
+    return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson, flushAll: flushAll, flushSessions: flushSessions, access: access, demoStart: demoStart, demoFinish: demoFinish,
       examStatus: examStatus, examStart: examStart, examSubmit: examSubmit, badge: badge,
       get ready(){ return S.ready; }, get dirty(){ return S.dirty; }, get online(){ return S.online; }, get version(){ return S.version; },
       get pendingMistakes(){ return S.user ? qCount(qRead()) : pre.length; }, get pendingSessions(){ return S.user ? qRead().sessions.length : 0; },

@@ -472,6 +472,56 @@ test('FRENO DE 14 DÍAS: no bloquea la bienvenida de pago de un miembro nuevo (b
   assert.strictEqual(logs('sent').length, 0);
 });
 
+
+/* ---- Academia: un miembro que SOLO estudia en la academia cuenta como activo ----
+   academia_record_session (servidor) deja exactamente esto: una fila gramatica en progress_sessions y profiles.last_practice_at = ahora
+   (ver tools/tests/academia-modelo.test.js, que prueba la funcion real). Aqui se prueba lo que hacen los correos con ese estado. */
+test('ACADEMIA: miembro que estudia una leccion cada dia durante 60 dias no recibe reactivacion ni activacion', async () => {
+  reset(); add('ac1', { last_practice_at: ago(0.2), member_since: ago(200) });
+  for(let d = 0; d < 60; d++){
+    row('ac1').last_practice_at = iso(state.now - 2 * H);   // la leccion de hoy
+    state.db.progress_sessions.push({ user_id: 'ac1', created_at: iso(state.now - 2 * H), skill: 'gramatica' });
+    state.providers.stripe.cus_ac1 = [stripeSub(endsIn(20))];
+    await run(); state.now += D;
+  }
+  assert.strictEqual(mailsTo('ac1').length, 0);
+  assert.strictEqual(logs('sent', 'ac1').length, 0);
+});
+
+test('ACADEMIA: miembro nuevo que empieza por la academia dentro de las primeras horas NO recibe "pagaste y no has practicado"', async () => {
+  reset(); add('ac2', { member_since: ago(1.3), last_practice_at: iso(state.now - 0.5 * D), lifecycle_emails: {} });   // estudio ~12 h antes
+  state.db.progress_sessions.push({ user_id: 'ac2', created_at: iso(state.now - 0.5 * D), skill: 'gramatica' });
+  await run();
+  assert.strictEqual(mailsTo('ac2').length, 0);
+});
+
+test('ACADEMIA: contraste: miembro nuevo SIN actividad (ni academia ni nada) sigue recibiendo su correo de activacion', async () => {
+  reset(); add('ac3', { member_since: ago(1.3), last_practice_at: null, lifecycle_emails: {} });
+  await run();
+  assert.strictEqual(mailsTo('ac3').length, 1);
+  assert.match(mailsTo('ac3')[0].subject, /Ya tienes todo listo/);
+});
+
+test('ACADEMIA: inactivo que recibio el correo 1 y vuelve estudiando SOLO en la academia: el ciclo se cierra y no sale mas', async () => {
+  reset(); add('ac4', { last_practice_at: ago(15) });
+  await run();
+  assert.strictEqual(mailsTo('ac4').length, 1);
+  state.now += 2 * D;
+  row('ac4').last_practice_at = iso(state.now - H);         // estudia una leccion de la academia
+  state.db.progress_sessions.push({ user_id: 'ac4', created_at: iso(state.now - H), skill: 'gramatica' });
+  state.providers.stripe.cus_ac4 = [stripeSub(endsIn(20))];
+  await run();
+  assert.strictEqual(logs('cancelled_returned', 'ac4').length, 1);
+  for(let d = 0; d < 40; d++){ state.now += D; state.providers.stripe.cus_ac4 = [stripeSub(endsIn(20))]; row('ac4').last_practice_at = iso(state.now - H); await run(); }
+  assert.strictEqual(mailsTo('ac4').length, 1, 'ningun correo mas mientras sigue estudiando');
+});
+
+test('ACADEMIA: cuenta gratis que hace la demostracion no entra al flujo de miembros (la funcion sigue sin tocar a no miembros)', async () => {
+  reset(); state.db.profiles.push(mem('fr1', { is_member: false, member_since: null, last_practice_at: null, stripe_customer_id: null, member_welcome_sent_at: null }));
+  await run();
+  assert.strictEqual(mailsTo('fr1').filter(m => /Ya tienes todo listo|Practicamos/.test(m.subject)).length, 0);
+});
+
 (async () => {
   for(const t of queue){
     try { await t.fn(); passed++; console.log('  ok   ' + t.name); }

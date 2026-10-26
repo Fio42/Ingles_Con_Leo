@@ -34,7 +34,7 @@ var LeoBackend = (function(){
   };
   return {
     isConfigured: function(){ return true; }, getClient: function(){ return CLIENT; },
-    getSession: function(){ return Promise.resolve({ user:{ id: window.__UID } }); },
+    getSession: function(){ return Promise.resolve(window.__UID ? { user:{ id: window.__UID } } : null); },
     applyMistakeResults: function(items){ return CLIENT.rpc('apply_mistake_results', { p_items: items }).then(function(r){ return { ok: !r.error }; }); },
     pushFreeSession: function(s){ return window.__pushSession(s).then(function(){ return 'ok'; }); }
   };
@@ -63,15 +63,15 @@ async function until(fn, ms, what){
   const db = await H.freshDb(PGlite, exam);
   await db.exec(`update public.academia_courses set exam_size = 15, per_topic = 3, pass_pct = 80, max_attempts_day = 5`);
   const UID = H.U.a, net = { down: false };
-  const client = H.fakeClient(db, UID, net);
-  const pushed = [];
+  let client = H.fakeClient(db, UID, net);
+  let CUR_UID = UID;
   const q = async (sql, p) => (await db.query(sql, p)).rows;
 
   const srv = await serve();
   const base = 'http://127.0.0.1:' + srv.address().port;
   const browser = await chromium.launch();
   const errors = [];
-  async function newDevice(label, vp){
+  async function newDevice(label, vp, uid){
     const ctx = await browser.newContext({ viewport: vp || { width: 390, height: 800 } });
     await ctx.route('**/supabase.js', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
     await ctx.route('**/backend.js*', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: FAKE_BACKEND }));
@@ -79,8 +79,7 @@ async function until(fn, ms, what){
     const page = await ctx.newPage();
     await page.exposeFunction('__rpc', (fn, args) => client.rpc(fn, args));
     await page.exposeFunction('__select', (table, cols, eq) => { let b = client.from(table).select(cols); Object.keys(eq).forEach(k => { b = b.eq(k, eq[k]); }); return b.maybeSingle(); });
-    await page.exposeFunction('__pushSession', s => { pushed.push(s); });
-    await page.addInitScript(uid => { window.__UID = uid; }, UID);
+        await page.addInitScript(uid => { window.__UID = uid; }, uid === undefined ? UID : uid);
     page.on('console', m => { if(m.type() === 'error' && !/ERR_FAILED|fonts|ERR_BLOCKED/.test(m.text())) errors.push(label + ' ' + m.text()); });
     page.on('pageerror', e => errors.push(label + ' PAGEERR ' + e.message));
     return { ctx, page, label };
@@ -125,6 +124,7 @@ async function until(fn, ms, what){
     await p.waitForSelector('#acSync', { timeout: 8000 });
   }
   const shot = async (p, name) => { if(process.env.SHOTS) await p.screenshot({ path: path.join(process.env.SHOTS, name + '.png'), fullPage: true }); };
+  const sessions = async () => q('select skill, results, tier from public.progress_sessions where user_id = $1 order by started_at', [CUR_UID]);
   const prog = async () => (await q('select state, version from public.academia_progress where user_id = $1', [UID]))[0];
 
   const A = await newDevice('telefono', { width: 390, height: 800 });
@@ -141,9 +141,12 @@ async function until(fn, ms, what){
     const ms = await q("select item_id, status, kind from public.mistake_stats where user_id = $1 order by item_id", [UID]);
     assert(ms.length >= 2, 'esperaba errores en mistake_stats: ' + JSON.stringify(ms));
     assert(ms.every(m => m.kind === 'academia' && m.item_id.indexOf('ac:to-be:l1-') === 0 && m.status === 'active'));
-    await until(() => pushed.length >= 1, 6000, 'sesion de la leccion');
-    assert.strictEqual(pushed[0].skill, 'gramatica'); assert(pushed[0].results.length === 8 && pushed[0].results.every(r => r.itemId.indexOf('ac:to-be:l1-a') === 0));
-    assert(pushed[0].results.filter(r => !r.isCorrect).length === 2);
+    await until(async () => (await sessions()).length >= 1, 6000, 'sesion de la leccion');
+    const ss = (await sessions())[0];
+    assert.strictEqual(ss.skill, 'gramatica'); assert(ss.results.length === 8 && ss.results.every(r => r.itemId.indexOf('ac:to-be:l1-a') === 0));
+    assert(ss.results.filter(r => !r.isCorrect).length === 2);
+    const lp = (await q('select last_practice_at from public.profiles where id = $1', [UID]))[0].last_practice_at;
+    assert(lp && Date.now() - new Date(lp).getTime() < 120000, 'estudiar en la academia cuenta como practica real (last_practice_at)');
   });
   await test('lección 2 a medias en el telefono: queda guardada para otro dispositivo', async()=>{
     await doLesson(A.page, 2, [], 3);
@@ -191,14 +194,14 @@ async function until(fn, ms, what){
   await test('sin red: el alumno sigue, nada se pierde y al volver la conexión se sincroniza', async()=>{
     const p = B.page;
     const failSum = async () => (await q(`select coalesce(sum(fail_count),0)::int n from public.mistake_stats where item_id like 'ac:to-be:%'`))[0].n;
-    const f0 = await failSum(), s0 = pushed.length;
+    const f0 = await failSum(), s0 = (await sessions()).length;
     net.down = true;
     await doLesson(p, 3, [0]);
     await p.waitForSelector('.ac-card-end');
     const cola = await p.evaluate(() => Object.keys(localStorage).filter(k => /leo_academia_cola_v1/.test(k)).map(k => JSON.parse(localStorage.getItem(k))));
     assert(cola.length === 1 && (cola[0].open.length + cola[0].batches.length) > 0, 'los errores esperan guardados en el dispositivo');
     assert.strictEqual(cola[0].sessions.length, 1, 'y la sesion de la leccion tambien');
-    assert.strictEqual(await failSum(), f0); assert.strictEqual(pushed.length, s0);
+    assert.strictEqual(await failSum(), f0); assert.strictEqual((await sessions()).length, s0);
     const local = await p.evaluate(() => JSON.parse(localStorage.getItem('leo_academia_piloto_v1')));
     assert(local.lessons.negaciones && local.lessons.negaciones.done, 'se guardo en el navegador');
     assert(!(await prog()).state.lessons.negaciones, 'la nube aun no lo tiene');
@@ -207,10 +210,10 @@ async function until(fn, ms, what){
     net.down = false;
     await p.evaluate(() => window.dispatchEvent(new Event('online')));   // el navegador avisa que volvio la red
     await until(async () => (await prog()).state.lessons.negaciones, 20000, 'sincronizar al volver la red');
-    await until(async () => pushed.length === s0 + 1, 12000, 'la sesion de la leccion llega a la nube');
+    await until(async () => (await sessions()).length === s0 + 1, 12000, 'la sesion de la leccion llega a la nube');
     await until(async () => (await failSum()) === f0 + 1, 12000, 'el error llega al motor actual');
     await new Promise(r => setTimeout(r, 1500));
-    assert.strictEqual(pushed.length, s0 + 1, 'una sola sesion'); assert.strictEqual(await failSum(), f0 + 1, 'un solo error, sin duplicados');
+    assert.strictEqual((await sessions()).length, s0 + 1, 'una sola sesion'); assert.strictEqual(await failSum(), f0 + 1, 'un solo error, sin duplicados');
     assert.strictEqual(await p.evaluate(() => Object.keys(localStorage).filter(k => /leo_academia_cola_v1/.test(k)).map(k => { const c = JSON.parse(localStorage.getItem(k)); return c.open.length + c.batches.length + c.sessions.length; })[0]), 0, 'la cola quedo vacia');
     const st = (await prog()).state;
     assert(st.lessons['am-is-are'] && st.lessons.negaciones && st.resume.afirmaciones, 'no se perdio nada de lo anterior al fusionar');
@@ -297,7 +300,124 @@ async function until(fn, ms, what){
     assert(/^100 %/.test(await p.innerText('.ac-score')));
     assert.strictEqual(await p.evaluate(() => localStorage.getItem('leo_academia_exam_draft_v1')), null);
   });
-  await test('sin errores de consola en ninguno de los dos dispositivos', async()=>{ assert.deepStrictEqual(errors, []); });
+
+  /* ================= cuenta gratis y visitante ================= */
+  const F = H.U.free;
+  client = H.fakeClient(db, F, net); CUR_UID = F;
+  await db.exec(`update public.academia_courses set demo_items = array['d1','d2','d3']`);
+  const C = await newDevice('gratis', { width: 390, height: 800 }, F);
+  const demoItem = (p, id) => p.evaluate(id => ACADEMIA.courses['to-be'].demo.activities.find(a => a.id === id), id);
+  await test('GRATIS: ve la presentacion (curso, temario, proximamente) pero NINGUN enlace a lecciones ni evaluacion', async()=>{
+    await C.page.goto(base + '/academia.html?nube=1#/'); await C.page.reload();
+    await until(async () => /Probar TO BE gratis/.test(await C.page.innerText('#acRoot')), 9000, 'presentacion de cuenta gratis');
+    const txt = await C.page.innerText('#acRoot');
+    assert(/Próximamente/.test(txt) && /Domina el verbo TO BE/.test(txt) && /Desbloquear mi academia/.test(txt));
+    const hrefs = await C.page.$$eval('#acRoot a', as => as.map(a => a.getAttribute('href')));
+    assert(!hrefs.some(h => /leccion|evaluacion|practica|repaso/.test(h || '')), 'enlaces premium visibles: ' + hrefs);
+    assert(hrefs.includes('miembros.html?pagar=1'), 'usa el pago actual');
+    assert.strictEqual(hrefs.filter(h => /pagar=1/.test(h)).length, 1, 'una sola invitacion a pagar');
+    await shot(C.page, 'gratis-presentacion');
+  });
+  await test('GRATIS: entrar a mano a una leccion, la evaluacion, la practica o el repaso muestra la presentacion, no el contenido', async()=>{
+    for(const h of ['#/curso/to-be/leccion/1', '#/curso/to-be/leccion/3', '#/curso/to-be/evaluacion', '#/curso/to-be/practica', '#/curso/to-be/repaso/forma', '#/logros']){
+      await C.page.goto(base + '/academia.html?nube=1' + h); await C.page.reload();
+      await until(async () => /Probar TO BE gratis|Desbloquear/.test(await C.page.innerText('#acRoot')), 9000, 'presentacion en ' + h);
+      assert.strictEqual(await C.page.$('.ac-card-act'), null, 'ejercicio visible en ' + h);
+      assert.strictEqual(await C.page.$('.ac-cansay'), null);
+    }
+    assert.strictEqual((await q("select count(*)::int n from public.academia_progress where user_id = $1 and state <> '{}'::jsonb", [F]))[0].n, 0);
+  });
+  await test('GRATIS: la prueba (explicacion + 3 ejercicios, 1 error) descuenta 3 del limite, guarda sesion y errores, y termina con UNA invitacion', async()=>{
+    const p = C.page;
+    await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
+    await until(async () => /Probar TO BE gratis/.test(await p.innerText('#acRoot')), 9000, 'boton de prueba');
+    await p.click('#acRoot >> text=Probar TO BE gratis');
+    await p.waitForSelector('text=Prueba gratis · explicación');
+    await shot(p, 'gratis-demo-explicacion');
+    await p.click('#acRoot >> text=Practicar');
+    await p.waitForSelector('.ac-card-act');
+    let n = 0;
+    while(await p.$('.ac-card-act')){
+      const item = await demoItem(p, await p.$eval('.ac-card-act', e => e.dataset.id));
+      await answerPublic(p, item, n !== 1);
+      await p.click('.ac-actions button'); await p.click('.ac-actions button'); n++;
+      assert(n < 8);
+    }
+    assert.strictEqual(n, 4, '3 ejercicios + 1 repeticion del fallado');
+    await p.waitForSelector('.ac-card-end');
+    await shot(p, 'gratis-demo-final');
+    const txt = await p.innerText('#acRoot');
+    assert(/Acertaste 2 de 3 a la primera/.test(txt) && /Desbloquea la academia por USD 1\.99 al mes/.test(txt), txt.slice(0, 400));
+    const ctas = await p.$$eval('#acRoot a', as => as.filter(a => /pagar=1/.test(a.getAttribute('href'))).map(a => a.textContent.trim()));
+    assert.deepStrictEqual(ctas, ['Desbloquear mi academia']);
+    await until(async () => (await q('select demo_done_at from public.academia_progress where user_id = $1', [F]))[0].demo_done_at, 9000, 'prueba terminada en el servidor');
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3, 'descuenta 3 del limite diario');
+    const ses = await sessions(); assert.strictEqual(ses.length, 1); assert.strictEqual(ses[0].tier, 'free');
+    const ms = await q("select item_id, status, kind from public.mistake_stats where user_id = $1", [F]);
+    assert(ms.some(m => m.item_id === 'ac:to-be:d2' && m.status === 'active'), JSON.stringify(ms));
+    assert.strictEqual((await q('select last_practice_at from public.profiles where id = $1', [F]))[0].last_practice_at, null);
+    assert.strictEqual(await p.evaluate(() => localStorage.getItem('leoLocalDailyCount:' + (d => d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2))(new Date()))), '3', 'el contador del navegador queda igual que el de la cuenta');
+    const loc = await p.evaluate(() => JSON.parse(localStorage.getItem('leo_academia_piloto_v1') || '{"lessons":{},"missed":{},"cleared":{}}'));
+    assert.deepStrictEqual([Object.keys(loc.lessons).length, Object.keys(loc.missed).length, Object.keys(loc.cleared).length], [0, 0, 0], 'la prueba no escribe progreso de lecciones ni errores locales');
+  });
+  await test('GRATIS: repetir la prueba (boton, enlace directo, recarga, borrando el navegador) no es posible ni cobra de nuevo', async()=>{
+    const p = C.page;
+    await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
+    await until(async () => /Ya hiciste tu prueba gratis/.test(await p.innerText('#acRoot')), 9000, 'estado de prueba usada');
+    assert.strictEqual(await p.$('#acRoot >> text=Probar TO BE gratis'), null);
+    for(const clear of [false, true]){
+      if(clear) await p.evaluate(() => localStorage.clear());
+      await p.goto(base + '/academia.html?nube=1#/curso/to-be/demo'); await p.reload();
+      await p.waitForSelector('text=Ya hiciste tu prueba gratis', { timeout: 9000 });
+      assert.strictEqual(await p.$('.ac-card-act'), null);
+    }
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3);
+    assert.strictEqual((await sessions()).length, 1);
+  });
+  await test('GRATIS: sin ejercicios suficientes hoy, la prueba no se gasta y se explica con claridad', async()=>{
+    const p = C.page;
+    await db.exec(`update public.academia_progress set demo_started_at = null, demo_done_at = null, demo_session_at = null where user_id = '${F}'; update public.profiles set free_daily_count = 5, free_daily_date = current_date where id = '${F}'`);
+    await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
+    await until(async () => /no te alcanzan los ejercicios gratis/.test(await p.innerText('#acRoot')), 9000, 'aviso de limite');
+    assert.strictEqual(await p.$('#acRoot >> text=Probar TO BE gratis'), null);
+    await p.goto(base + '/academia.html?nube=1#/curso/to-be/demo'); await p.reload();
+    await p.waitForSelector('text=no te alcanzan los ejercicios gratis', { timeout: 9000 });
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 5);
+  });
+  await test('MEMBRESIA: al volverse miembro la misma cuenta ve TODO el curso (sin recargar la cuenta ni perder la prueba)', async()=>{
+    const p = C.page;
+    await db.exec(`update public.profiles set is_member = true where id = '${F}'`);
+    await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
+    await until(async () => /Continuar aprendiendo/.test(await p.innerText('#acRoot')), 9000, 'vista de miembro');
+    await p.goto(base + '/academia.html?nube=1#/curso/to-be/leccion/1'); await p.reload(); await p.waitForSelector('.ac-card');
+    assert(/lecci[oó]n 1/i.test(await p.innerText('#acRoot')));
+    // vence otra vez: vuelve a la presentacion de inmediato
+    await db.exec(`update public.profiles set is_member = false where id = '${F}'`);
+    await p.goto(base + '/academia.html?nube=1#/curso/to-be/leccion/1'); await p.reload();
+    await until(async () => /Desbloquear mi academia/.test(await p.innerText('#acRoot')), 9000, 'bloqueo al vencer');
+    assert.strictEqual(await p.$('.ac-card-act'), null);
+  });
+  await test('VISITANTE sin cuenta: informacion e invitacion a crear cuenta, sin demostracion extra', async()=>{
+    const V = await newDevice('visitante', { width: 390, height: 800 }, '');
+    await V.page.goto(base + '/academia.html?nube=1#/'); await V.page.reload();
+    await until(async () => /Crear mi cuenta gratis/.test(await V.page.innerText('#acRoot')), 9000, 'invitacion a crear cuenta');
+    const hrefs = await V.page.$$eval('#acRoot a', as => as.map(a => a.getAttribute('href')));
+    assert(hrefs.some(h => /miembros\.html\?modo=registro/.test(h)));
+    assert(!hrefs.some(h => /demo|leccion|evaluacion/.test(h || '')));
+    await V.page.goto(base + '/academia.html?nube=1#/curso/to-be/demo'); await V.page.reload();
+    await until(async () => /Crear mi cuenta gratis/.test(await V.page.innerText('#acRoot')), 9000, 'la demo directa no abre para visitantes');
+    assert.strictEqual(await V.page.$('.ac-card-act'), null);
+    await V.ctx.close();
+  });
+  await test('sin horizontal overflow en 320 px: presentacion de cuenta gratis y final de la prueba', async()=>{
+    await db.exec(`update public.profiles set free_daily_count = 0 where id = '${F}'; update public.academia_progress set demo_started_at = null, demo_done_at = null, demo_session_at = null where user_id = '${F}'`);
+    const p = C.page; await p.setViewportSize({ width: 320, height: 640 });
+    for(const h of ['#/', '#/curso/to-be/demo']){
+      await p.goto(base + '/academia.html?nube=1' + h); await p.reload(); await p.waitForTimeout(700);
+      assert.strictEqual(await p.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false, 'overflow en ' + h);
+    }
+  });
+  await test('sin errores de consola en ninguno de los dispositivos', async()=>{ assert.deepStrictEqual(errors, []); });
   await test('sin horizontal overflow en el telefono durante la evaluacion y los logros', async()=>{
     await A.page.setViewportSize({ width: 320, height: 640 });
     for(const h of ['#/logros', '#/curso/to-be/evaluacion', '#/curso/to-be']){

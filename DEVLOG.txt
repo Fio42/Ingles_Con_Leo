@@ -1671,3 +1671,11 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Cola persistente en el navegador (errores y sesiones): sobrevive a cerrar el navegador y a la falta de red; dos pestanas y reintentos no duplican. run.recorded evita registrar dos veces la pantalla final.
 - Migracion con comprobacion previa y supabase/rollback/. Esquema de produccion leido en solo lectura: compatible (ver ACADEMIA_INTEGRACION.md).
 - Pruebas nuevas: tools/tests/academia-robustez.test.js (23) y e2e con cierre del navegador sin red.
+
+2026-10-26 Academia TO BE: modelo comercial en el servidor (rama academia/piloto-to-be, nada en produccion)
+- Cuenta gratis: presentacion + UNA prueba (explicacion + 3 ejercicios) que descuenta 3 del limite diario existente (6); unica por cuenta, no se reinicia al recargar/limpiar/cambiar de dispositivo. Visitante: invitacion a crear cuenta. Un solo boton "Desbloquear mi academia" -> miembros.html?pagar=1.
+- Miembros: todo. Servidor valida membresia en cada llamada (guardado, errores, sesiones, examen, insignia). Al vencer se bloquea al instante y lo ganado se conserva.
+- last_practice_at: ahora lo marca el servidor al guardar una sesion nueva de leccion de un miembro (sin duplicados ni acciones triviales); pruebas con los correos de reactivacion (member-reactivation-e2e: 32 ok).
+- Sesiones de lecciones: rpc academia_record_session (idempotente por usuario+inicio+skill). Ya no usa pushFreeSession.
+- Pruebas: academia-modelo (25), e2e navegador (21, incluye cuenta gratis, visitante, vencimiento, 320 px), sql 27, integracion 27, robustez 23, piloto 13.
+- Documentado: proteccion real vs barrera de pantalla, limite de 6/dia controlado por el navegador (previo), apagado no destructivo, lanzamiento en 11 pasos.

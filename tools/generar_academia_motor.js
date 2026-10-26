@@ -23,6 +23,8 @@ function build(){
     const items = {};
     c.lessons.forEach(l => l.activities.forEach(a => { items[a.id] = l.n; }));
     c.exam.bank.forEach(a => { items[a.id] = byTopic[a.topic]; });
+    // Demostracion gratuita: sus ejercicios alimentan el mismo motor de errores y refuerzan la leccion 1.
+    ((c.demo && c.demo.activities) || []).forEach(a => { items[a.id] = byTopic[a.topic]; });
     // Examen OFICIAL (banco privado, ids e-<letra><n>): la letra es la inicial del tema. Solo se reservan los ids; no hay contenido.
     const letters = {}; Object.keys(c.topics).forEach(k => { if(letters[k[0]]) throw new Error('inicial repetida en temas: ' + k); letters[k[0]] = byTopic[k]; });
     Object.keys(letters).forEach(L => { for(let i = 1; i <= 12; i++) items['e-' + L + i] = letters[L]; });

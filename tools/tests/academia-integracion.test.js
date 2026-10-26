@@ -226,11 +226,13 @@ async function partC(PGlite){
     const db = await H.freshDb(PGlite, exam);
     const d = await device(db, H.U.a, null, { now: () => new Date(2026, 9, 25, 18, 0, 0).getTime() }); await d.n.boot({});
     const t0 = new Date(2026, 9, 25, 17, 50, 0).getTime();
-    const r = await d.n.recordLesson({ n: 3 }, [{ id: 'l3-a1', ok: true }, { id: 'l3-a2', ok: false }], t0);
-    assert.strictEqual(r.ok, true); assert.strictEqual(d.pushed.length, 1);
-    const s = d.pushed[0];
-    assert.deepStrictEqual([s.skill, s.level, s.date, s.durationMs, s.topics], ['gramatica', 'facil', '2026-10-25', 600000, ['Verbo "to be": am / is / are']]);
-    assert.deepStrictEqual(s.results, [{ itemId: 'ac:to-be:l3-a1', isCorrect: true }, { itemId: 'ac:to-be:l3-a2', isCorrect: false }]);
+    const r = await d.n.recordLesson({ n: 3 }, [{ id: 'l3-a1', ok: true }, { id: 'l3-a2', ok: false }, { id: 'l3-a3', ok: true }], t0);
+    assert.strictEqual(r.ok, true);
+    const rows = (await db.query('select skill, level, date, duration_ms, topics, results from public.progress_sessions')).rows;
+    assert.strictEqual(rows.length, 1);
+    const s = rows[0];
+    assert.deepStrictEqual([s.skill, s.level, s.duration_ms, s.topics], ['gramatica', 'facil', 600000, ['Verbo "to be": am / is / are']]);
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(s.results)), [{ itemId: 'ac:to-be:l3-a1', isCorrect: true }, { itemId: 'ac:to-be:l3-a2', isCorrect: false }, { itemId: 'ac:to-be:l3-a3', isCorrect: true }]);
   });
   await test('evaluacion oficial por el cliente: empieza, entrega sin respuestas, envia, califica el servidor y da insignia', async()=>{
     const db = await H.freshDb(PGlite, exam);

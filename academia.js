@@ -24,6 +24,12 @@
   var SITE = (window.ACADEMIA_SITE || { practica: 'practica.html', plan: 'plan-estudio.html', progreso: 'progreso.html' });
   var tabs = document.getElementById('acTabs');
 
+  /* Contador diario del navegador: el MISMO que usa la practica gratis (app.js, leoLocalDailyCount:<dia>).
+     El servidor toma el mayor entre este y el de la cuenta, y nunca los suma. */
+  function ymd(){ var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function localDailyCount(){ try{ return parseInt(localStorage.getItem('leoLocalDailyCount:' + ymd()), 10) || 0; }catch(e){ return 0; } }
+  function setLocalDailyCount(n){ try{ var k = 'leoLocalDailyCount:' + ymd(); if(n > (parseInt(localStorage.getItem(k), 10) || 0)) localStorage.setItem(k, String(n)); }catch(e){} }
+
   /* ---------------- Nube (opcional) ---------------- */
   var NUBE = null;
   try{
@@ -31,7 +37,8 @@
       NUBE = AcademiaNube.create({
         enabled: true, courseId: 'to-be', meta: (typeof ACADEMIA_MOTOR !== 'undefined' ? ACADEMIA_MOTOR.courses['to-be'] : null),
         getClient: LeoBackend.getClient, getSession: LeoBackend.getSession,
-        storage: window.localStorage, pushSessionStatus: LeoBackend.pushFreeSession
+        storage: window.localStorage,
+        localDailyCount: localDailyCount, setLocalDailyCount: setLocalDailyCount
       });
     }
   }catch(e){ NUBE = null; }
@@ -43,7 +50,7 @@
   }
   function cloudPush(){
     clearTimeout(cloudTimer);
-    if(!NUBE || !NUBE.ready) return Promise.resolve();
+    if(!NUBE || !NUBE.ready || mode !== 'member') return Promise.resolve();
     return NUBE.save(function(){ return memState; }, function(merged){ applyMerged(merged); }).then(function(r){
       if(!r.ok && NUBE.dirty) cloudTimer = setTimeout(cloudPush, 15000);   // sin red: se reintenta solo
     });
@@ -52,9 +59,25 @@
     memState = Object.assign(blankState(), memState || {}, merged);
     try{ localStorage.setItem(KEY, JSON.stringify(memState)); }catch(e){}
   }
-  function cloudFlush(){ if(NUBE && NUBE.ready){ NUBE.flushAll(); cloudPush(); } }
+  function cloudFlush(){ if(NUBE && NUBE.ready && mode === 'member'){ NUBE.flushAll(); cloudPush(); } }
   /* Estado de la conexion con la cuenta: pending (conectando) | ready | anon (sin sesion) | failed (sin red o error) | off */
   var bootState = NUBE ? 'pending' : 'off';
+  /* Quien es el alumno para la academia: member (todo) | free (presentacion + una demostracion) | anon (sin cuenta)
+     | unknown (sin conexion y sin dato reciente) | pending (conectando). Sin nube (piloto local) todo queda abierto.
+     Esto es SOLO lo que se muestra: cada accion premium la vuelve a validar el servidor. */
+  var mode = NUBE ? 'pending' : 'member';
+  var ACC = null;
+  var MEMBER_KEY = 'leo_academia_member_v1', MEMBER_TTL = 14 * 86400000;
+  function cachedMember(){ try{ var m = JSON.parse(localStorage.getItem(MEMBER_KEY) || 'null'); return !!(m && m.m === 1 && Date.now() - m.at < MEMBER_TTL); }catch(e){ return false; } }
+  function cacheMember(v){ try{ if(v) localStorage.setItem(MEMBER_KEY, JSON.stringify({ m: 1, at: Date.now() })); else localStorage.removeItem(MEMBER_KEY); }catch(e){} }
+  function refreshAccess(){
+    return NUBE.access().then(function(a){
+      if(a && a.ok){ ACC = a; mode = a.member ? 'member' : 'free'; cacheMember(a.member); }
+      else if(a && a.error === 'course'){ mode = 'off'; }
+      else if(mode === 'pending' || mode === 'unknown') mode = cachedMember() ? 'member' : 'unknown';
+      return a;
+    });
+  }
   var bootWaiters = [], bootTimer = null, bootTries = 0;
   function bootCloud(){
     if(!NUBE || bootState === 'ready') return;
@@ -62,22 +85,30 @@
     NUBE.boot(loadState()).then(function(r){
       if(r && r.ok){
         bootState = 'ready';
-        NUBE.flushAll();                                  // errores y sesiones que quedaron pendientes (sin red, navegador cerrado)
+        refreshAccess().then(function(){ afterReady(r); });
+        return;
+      }
+      bootState = (r && r.reason === 'anon') ? 'anon' : ((r && r.reason === 'off') ? 'off' : 'failed');
+      if(bootState === 'anon'){ mode = 'anon'; cacheMember(false); }
+      else if(bootState === 'failed') mode = cachedMember() ? 'member' : 'unknown';
+      else mode = 'off';
+      var w2 = bootWaiters; bootWaiters = []; w2.forEach(function(f){ f(); });
+      if(bootState === 'failed' && bootTries < 6){ bootTries++; bootTimer = setTimeout(bootCloud, Math.min(60000, 4000 * bootTries * bootTries)); }
+    });
+  }
+  function afterReady(r){
+      {
+        if(mode === 'member') NUBE.flushAll();                                  // errores y sesiones que quedaron pendientes (sin red, navegador cerrado)
         applyMerged(AcademiaNube.mergeStates(r.state, loadState()));   // por si el alumno ya avanzo mientras conectabamos
         if(r.changed || NUBE.dirty) cloudSchedule();
         var first = hashParts().path.split('/').filter(Boolean);
         // Solo se redibuja si NO esta en medio de una leccion, repaso o practica.
         var busy = first[0] === 'curso' && (first[2] === 'leccion' || first[2] === 'repaso' || first[2] === 'practica');
         var w = bootWaiters; bootWaiters = [];
-        if(w.length) w.forEach(function(f){ f(); }); else if(!busy) route();
-        return;
+        if(w.length) w.forEach(function(f){ f(); }); else if(!busy || mode !== 'member') route();
       }
-      bootState = (r && r.reason === 'anon') ? 'anon' : ((r && r.reason === 'off') ? 'off' : 'failed');
-      var w2 = bootWaiters; bootWaiters = []; w2.forEach(function(f){ f(); });
-      if(bootState === 'failed' && bootTries < 6){ bootTries++; bootTimer = setTimeout(bootCloud, Math.min(60000, 4000 * bootTries * bootTries)); }
-    });
   }
-  window.addEventListener('online', function(){ if(!NUBE) return; if(bootState === 'failed'){ bootTries = 0; bootCloud(); } else if(bootState === 'ready'){ NUBE.flushAll(); cloudPush(); } });
+  window.addEventListener('online', function(){ if(!NUBE) return; if(bootState === 'failed'){ bootTries = 0; bootCloud(); } else if(bootState === 'ready' && mode === 'member'){ NUBE.flushAll(); cloudPush(); } });
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') cloudFlush(); });
   window.addEventListener('pagehide', cloudFlush);
 
@@ -569,10 +600,10 @@
         }
         ctl.lock(); ctl.reveal(ans, ok);
         var s2 = loadState();
-        if(cur.attempt === 1){ shown++; if(ok) firstOk++; else { missedNow.push(item.id); s2.missed[item.id] = Date.now(); } }
-        if(ok){ delete s2.missed[item.id]; s2.cleared[item.id] = Date.now(); }
+        if(cur.attempt === 1){ shown++; if(ok) firstOk++; else { missedNow.push(item.id); if(!opts.demo) s2.missed[item.id] = Date.now(); } }
+        if(ok && !opts.demo){ delete s2.missed[item.id]; s2.cleared[item.id] = Date.now(); }
         if(NUBE){ NUBE.recordAnswer(item.id, ok); if(NUBE.pendingMistakes >= 8) NUBE.flushMistakes(); }
-        saveState();
+        if(!opts.demo) saveState();
         queue.shift();
         var willRetry = !ok && cur.attempt === 1;
         if(willRetry) queue.push({ it: item, attempt: 2 });
@@ -1323,12 +1354,180 @@
     focusMain();
   }
 
+
+  /* ---------------- Cuenta gratis y visitantes: presentacion + una demostracion ---------------- */
+  var DEMO = COURSE.demo;
+  var SALE_TEXT = '¡Muy bien! Ya empezaste a utilizar AM, IS y ARE. Continúa con afirmaciones, negaciones y preguntas. Completa el curso TO BE, practica sin límites y consigue tu primera insignia con Inglés con Leo. Desbloquea la academia por USD 1.99 al mes.';
+  var PAY_URL = 'miembros.html?pagar=1';
+  function msgCard(title, text, actions){
+    setTabs('ruta'); root.textContent = '';
+    root.appendChild(el('section', { class: 'ac-card' }, [el('h1', { class: 'ac-h1 ac-h1-sm', 'data-focus': '', text: title }), el('p', { class: 'ac-text', role: 'status', text: text })].concat(actions || [])));
+    focusMain();
+  }
+  function viewPresentation(){
+    setTabs('ruta'); setTitle('Academia');
+    root.textContent = '';
+    root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Academia' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Academia Inglés con Leo' })]));
+    root.appendChild(el('p', { class: 'ac-lead', text: 'Cursos cortos, con explicación sencilla, práctica corregida y un repaso que se adapta a tus errores. Es parte de la membresía.' }));
+    var course = el('section', { class: 'ac-hero', 'aria-label': 'Curso disponible' });
+    course.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
+    course.appendChild(el('h2', { class: 'ac-hero-h', text: COURSE.title }));
+    course.appendChild(el('p', { class: 'ac-text', text: COURSE.goal }));
+    var ul = el('ol', { class: 'ac-lessons' });
+    COURSE.lessons.forEach(function(l){
+      ul.appendChild(el('li', { class: 'ac-lesson' }, [el('div', { class: 'ac-lesson-a' }, [
+        el('span', { class: 'ac-ln', 'aria-hidden': 'true', text: String(l.n) }),
+        el('span', { class: 'ac-lesson-b' }, [el('span', { class: 'ac-lesson-t', text: l.title }), el('span', { class: 'ac-lesson-s', text: l.minutes + ' min · ' + l.summary })])
+      ])]));
+    });
+    course.appendChild(ul);
+    course.appendChild(el('p', { class: 'ac-hero-meta', text: 'Al final, una evaluación corregida por el servidor y tu primera insignia de Inglés con Leo.' }));
+    root.appendChild(course);
+
+    var box = el('section', { class: 'ac-card', 'aria-label': 'Cómo empezar' });
+    if(mode === 'anon'){
+      box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Prueba el curso gratis' }));
+      box.appendChild(el('p', { class: 'ac-text', text: 'Crea tu cuenta gratis y haz una prueba corta de TO BE: una explicación y tres ejercicios.' }));
+      box.appendChild(el('a', { href: 'miembros.html?modo=registro&volver=academia.html', class: 'ac-btn ac-btn-primary ac-btn-wide', text: 'Crear mi cuenta gratis' }));
+    } else if(mode === 'free'){
+      var d = ACC && ACC.demo ? ACC.demo : null, left = ACC && ACC.daily ? ACC.daily.remaining : null;
+      if(d && d.available || (d && d.resumable)){
+        box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Prueba TO BE gratis' }));
+        box.appendChild(el('p', { class: 'ac-text', text: 'Una explicación y tres ejercicios. Usa 3 de tus ' + (ACC.daily.limit || 6) + ' ejercicios gratis de hoy y solo se puede hacer una vez.' }));
+        box.appendChild(link('#/curso/to-be/demo', 'Probar TO BE gratis', 'ac-btn ac-btn-primary ac-btn-wide'));
+      } else if(d && d.used){
+        box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Ya hiciste tu prueba gratis' }));
+        box.appendChild(el('p', { class: 'ac-text', text: 'Para seguir con las lecciones, la práctica sin límites, la evaluación y tu insignia, desbloquea la academia.' }));
+      } else {
+        box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Tu prueba gratis está lista' }));
+        box.appendChild(el('p', { class: 'ac-text', text: 'Hoy no te alcanzan los ejercicios gratis para la prueba (necesita 3' + (left !== null ? ' y te quedan ' + left : '') + '). Vuelve mañana, o desbloquea la academia y practica sin límites.' }));
+      }
+      box.appendChild(link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-' + ((d && (d.available || d.resumable)) ? 'outline' : 'primary') + ' ac-btn-wide'));
+    } else if(mode === 'unknown'){
+      box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'No pudimos conectar con tu cuenta' }));
+      box.appendChild(el('p', { class: 'ac-text', text: 'Revisa tu conexión e inténtalo de nuevo. Tu avance está a salvo.' }));
+      box.appendChild(el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: 'Reintentar', onclick: function(){ bootTries = 0; mode = 'pending'; bootState = 'pending'; route(); bootCloud(); } }));
+    } else {
+      box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'La academia no está disponible ahora' }));
+      box.appendChild(el('p', { class: 'ac-text', text: 'Mientras tanto, puedes seguir practicando gratis.' }));
+      box.appendChild(el('a', { href: SITE.practica, class: 'ac-btn ac-btn-primary', text: 'Practicar gratis' }));
+    }
+    root.appendChild(box);
+
+    var soon = ACADEMIA.route.courses.filter(function(c){ return c.soon; });
+    if(soon.length){
+      var sl = el('ul', { class: 'ac-soon' });
+      soon.forEach(function(c){ sl.appendChild(el('li', null, [el('strong', { text: c.title }), ' · Próximamente. ', c.blurb])); });
+      root.appendChild(el('section', { class: 'ac-card' }, [el('h2', { class: 'ac-h2 ac-h2-in', text: 'Próximamente' }), sl]));
+    }
+    root.appendChild(el('section', { class: 'ac-card' }, [
+      el('h2', { class: 'ac-h2 ac-h2-in', text: 'Tus logros' }),
+      el('p', { class: 'ac-text', text: 'Al aprobar la evaluación de un curso consigues su insignia, y cuando haya más cursos podrás completar rutas con un certificado propio de Inglés con Leo. No equivale a un nivel oficial.' })
+    ]));
+    focusMain();
+    // Al volver (por ejemplo despues de la prueba) se actualiza el estado real desde el servidor, una sola vez por dibujo.
+    if(NUBE && NUBE.ready && mode === 'free' && !viewPresentation.fresh){
+      var before = JSON.stringify(ACC && ACC.demo), mine = ++viewPresentation.seq;
+      refreshAccess().then(function(a){
+        if(viewPresentation.seq !== mine || !a || !a.ok || JSON.stringify(a.demo) === before || (mode === 'free' && /demo|curso/.test(location.hash))) return;
+        viewPresentation.fresh = true; viewPresentation(); viewPresentation.fresh = false;
+      });
+    }
+  }
+  viewPresentation.seq = 0; viewPresentation.fresh = false;
+
+  function viewDemo(){
+    if(mode === 'member'){ location.hash = '#/curso/to-be'; return; }
+    if(mode !== 'free'){ viewPresentation(); return; }
+    setTabs(null); setTitle(DEMO.title); stopAudio();
+    msgCard('Preparando tu prueba', 'Un momento...');
+    var token = {}; viewDemo.token = token;
+    NUBE.demoStart().then(function(r){
+      if(viewDemo.token !== token || location.hash.indexOf('/demo') === -1) return;
+      if(!r || !r.ok){
+        var m = r && r.error;
+        if(m === 'members'){ mode = 'member'; return route(); }
+        var text = m === 'limit' ? 'Hoy no te alcanzan los ejercicios gratis para esta prueba. Vuelve mañana, o desbloquea la academia y practica sin límites.'
+          : (m === 'demo_used' ? 'Ya hiciste tu prueba gratis. Para seguir con el curso completo, desbloquea la academia.' : 'No pudimos empezar la prueba ahora. Revisa tu conexión e inténtalo de nuevo.');
+        msgCard(m === 'demo_used' ? 'Ya hiciste tu prueba gratis' : 'La prueba no está disponible ahora', text, [
+          (m === 'demo_used' || m === 'limit') ? link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-primary ac-btn-wide') : el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: 'Reintentar', onclick: viewDemo }),
+          ' ', link('#/', 'Volver', 'ac-btn ac-btn-outline')
+        ]);
+        return;
+      }
+      track('demo_iniciada', { curso: 'to-be', retomada: !!r.resumed });
+      drawDemo(0);
+    });
+  }
+  function drawDemo(stage){
+    root.textContent = '';
+    stopAudio();
+    var topbar = el('div', { class: 'ac-top' }, [el('a', { href: '#/', class: 'ac-exit', onclick: stopAudio, text: '← Salir' }), el('span', { class: 'ac-top-t', text: DEMO.title })]);
+    if(stage === 0){
+      var sc = DEMO.screen;
+      var card = el('section', { class: 'ac-card', 'aria-labelledby': 'acH' }, [
+        el('p', { class: 'ac-kicker', text: 'Prueba gratis · explicación' }),
+        el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: sc.title }),
+        el('div', { class: 'ac-audio-row' }, [sc.audio ? leoButton(sc.audio) : null]),
+        renderScreen(sc)
+      ]);
+      root.appendChild(el('div', null, [topbar, progressBar(0, 'Progreso de la prueba'), card, el('div', { class: 'ac-nav' }, [el('button', { type: 'button', class: 'ac-btn ac-btn-primary ac-btn-wide', text: 'Practicar', onclick: function(){ drawDemo(1); } })])]));
+      focusMain(); return;
+    }
+    var host = el('div'), A = DEMO.activities.length, startedAt = Date.now();
+    var shell = el('div', null, [topbar, progressBar(0, 'Progreso de la prueba'), el('p', { class: 'ac-step', 'aria-live': 'polite', text: 'Ejercicio 1 de ' + A }), host]);
+    root.appendChild(shell);
+    runActivities(host, {
+      items: DEMO.activities, mode: 'practice', demo: true,
+      onProgress: function(pos){
+        var bar = shell.querySelector('.ac-bar span'); if(bar) bar.style.width = (pos / A * 100) + '%';
+        var st = shell.querySelector('.ac-step'); if(st) st.textContent = 'Ejercicio ' + Math.min(pos + 1, A) + ' de ' + A;
+      },
+      onDone: function(res){ finishDemo(res, startedAt); }
+    });
+  }
+  function finishDemo(res, startedAt){
+    var list = DEMO.activities.map(function(a){ return { id: a.id, ok: res.missedNow.indexOf(a.id) === -1 }; });
+    NUBE.flushMistakes().then(function(){ return NUBE.recordLesson({ n: 0 }, list, startedAt); }).then(function(){ return NUBE.demoFinish(); }).then(function(){ if(ACC && ACC.demo){ ACC.demo.used = true; ACC.demo.available = false; ACC.demo.resumable = false; } }, function(){});
+    track('demo_completada', { curso: 'to-be', aciertos: res.firstOk, total: res.total });
+    root.textContent = '';
+    stopAudio();
+    root.appendChild(el('div', null, [
+      el('div', { class: 'ac-top' }, [el('a', { href: '#/', class: 'ac-exit', text: '← Salir' }), el('span', { class: 'ac-top-t', text: DEMO.title })]),
+      progressBar(100, 'Prueba completa'),
+      el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
+        el('p', { class: 'ac-kicker', text: 'Prueba completa' }),
+        el('h1', { class: 'ac-h1 ac-h1-end', id: 'acH', 'data-focus': '', text: 'Acertaste ' + res.firstOk + ' de ' + res.total + ' a la primera' }),
+        el('p', { class: 'ac-text', text: SALE_TEXT })
+      ]),
+      el('div', { class: 'ac-nav ac-nav-col' }, [
+        el('a', { href: PAY_URL, class: 'ac-btn ac-btn-primary ac-btn-wide', onclick: function(){ track('demo_cta_desbloquear', { curso: 'to-be' }); }, text: 'Desbloquear mi academia' }),
+        link('#/', 'Volver a la academia', 'ac-btn ac-btn-quiet ac-btn-wide')
+      ])
+    ]));
+    focusMain();
+  }
+
+  /* Que vista corresponde a este alumno. Devuelve true si ya dibujo algo (el router no sigue). */
+  function gate(parts){
+    if(!NUBE || mode === 'member') return false;
+    if(mode === 'pending'){
+      msgCard('Conectando con tu cuenta', 'Un momento...');
+      bootWaiters.push(route);
+      return true;
+    }
+    if(parts[0] === 'curso' && parts[1] === 'to-be' && parts[2] === 'demo'){ viewDemo(); return true; }
+    viewPresentation();
+    return true;
+  }
+
   /* ---------------- Router ---------------- */
   function route(){
     var h = hashParts().path;
     var parts = h.split('/').filter(Boolean);
     stopAudio();
     try{
+      if(gate(parts)) return;
       if(!parts.length) return viewHome();
       if(parts[0] === 'logros') return viewLogros();
       if(parts[0] === 'practicar') return viewPracticar();

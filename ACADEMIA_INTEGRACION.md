@@ -50,6 +50,14 @@ Las sesiones de lección van por la misma cola y usan la regla ya existente de `
 - Miembros de pago: además la evaluación oficial con insignia (`members_only = true`, lo decide el servidor mirando `profiles.is_member`).
 - El contenido de las lecciones es público (el sitio es estático), así que "gratis" aquí es una decisión de producto, no una barrera técnica. Lo que sí se protege en el servidor es el examen y la insignia.
 
+## Modelo comercial (decisión de Leo, 2026-10-25)
+- La academia es beneficio de la membresía (USD 1.99/mes hoy). Cuenta gratis: presentación, temario, "Próximamente" y UNA prueba de TO BE (explicación + 3 ejercicios). Visitante: información e invitación a crear cuenta.
+- La prueba se descuenta del límite diario existente (6): el servidor cobra 3 a `profiles.free_daily_count` al empezar (usa el MAYOR entre cuenta y navegador, nunca suma). Se registra en `academia_progress.demo_*`: no se repite al recargar, borrar el navegador ni cambiar de dispositivo. Si hoy no alcanzan los ejercicios, no se gasta.
+- Servidor: guardado de progreso, errores de lecciones, sesiones de lecciones, evaluación e insignias son solo de miembros (`profiles.is_member`, leído en cada llamada, así que al vencer se bloquea al instante y al reactivar todo vuelve). Insignias y progreso ya ganados se conservan y se pueden leer.
+- Honestidad sobre protección: el texto y audio de las lecciones son archivos estáticos de un repositorio público, ya presentes en el historial de la rama; ocultarlos en pantalla es una barrera comercial, no protección real. Lo que el servidor protege de verdad: banco de evaluación, notas, insignias, progreso, sesiones y `last_practice_at`.
+- Límite de 6/día: lo controla el navegador (y `profiles.free_*` es escribible por la cuenta). Es una limitación previa del sitio, documentada en app.js; la prueba única sí es autoritativa en el servidor.
+- `last_practice_at`: lo actualiza `academia_record_session` solo cuando se inserta una sesión NUEVA de un miembro (≥3 ejercicios distintos del curso, datos válidos, dentro del tope diario). Reintentos, abrir la página o guardar progreso no cuentan. Así los correos de reactivación/renovación no tratan como inactivo al miembro que solo estudia en la academia.
+
 ## Apagado rápido
 
 1. Inmediato, sin publicar nada: `update public.academia_courses set enabled = false where course_id = 'to-be';` La base deja de aceptar guardados, examen y errores de academia; el navegador sigue con el piloto local. Para volver: `enabled = true`.
@@ -61,7 +69,11 @@ Las sesiones de lección van por la misma cola y usan la regla ya existente de `
 PostgreSQL 17.6. `mistake_stats` con `unique (user_id, item_id)` y sin CHECK sobre `kind`/`status` (admite `kind = 'academia'`); `apply_mistake_results(jsonb)` con el mismo cuerpo que `supabase_schema.sql` (security invoker, `search_path=public`); `progress_sessions` con `tier`, índice único `(user_id, started_at, skill)` y trigger de límites; `profiles.is_member`; RLS activo en las tres. No existe ningún objeto `academia*` (sin colisiones). La migración tiene una comprobación previa que se detiene sin crear nada si falta una pieza.
 No verificado: el cuerpo de `progress_sessions_guard` línea por línea, ni los permisos de columnas de `profiles`.
 
-## Lanzamiento (cada paso lo autoriza Leo; ninguno está hecho)
+## Apagado normal vs. rollback destructivo
+Apagar = `update public.academia_courses set enabled = false;` (más `CLOUD_ON=false`). No borra tablas, progreso ni insignias; todo sigue legible. El archivo de rollback destruye datos: solo excepcional, con autorización y respaldo verificado.
+
+## Lanzamiento controlado (cada paso lo autoriza Leo; ninguno está hecho)
+Orden: 1 respaldo de Supabase verificado; 2 reverificar dependencias de producción (solo lectura); 3 validar la migración aislada; 4 cargar el banco protegido (`private/seed-academia-examen-to-be.sql`); 5 revisar funciones, RLS y permisos; 6 pruebas gratis y miembro en entorno seguro; 7 preparar código; 8 publicar con el curso apagado; 9 encender TO BE (`enabled=true`, `CLOUD_ON=true`, `ACADEMIA_MOTOR.enabled=true`); 10 vigilar errores, sync, sesiones, actividad y pagos (sin tocar la lógica de pagos); 11 desactivación rápida probada. Detalle anterior:
 
 1. Backup/punto de control de Supabase.
 2. SQL Editor: correr `supabase/migrations/20261026120000_academia_integracion.sql` (con `enabled = false` no cambia nada visible).

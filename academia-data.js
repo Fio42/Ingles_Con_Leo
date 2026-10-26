@@ -530,6 +530,32 @@ var ACADEMIA = {
           { id: 'x-v5', type: 'type', topic: 'vida', q: 'Escribe la pregunta.', ex: "He is happy.  →  Is he happy?", source: 'You are ready.', accepted: ['are you ready', 'are you ready?'], show: 'Are you ready?', why: 'Pasa are al inicio.' },
           { id: 'x-v6', type: 'choice', topic: 'vida', q: 'A: Is he your brother? B: ___ He is my cousin.', options: ["No, he isn't.", 'Yes, he is.', "No, he aren't."], answer: 0, wrongWhy: {"No, he aren't.": "He es una persona. Aren't se usa con you, we y they.", "Yes, he is.": "Es tu primo, no tu hermano. La respuesta es no."}, why: 'Es tu primo, así que la respuesta es No, he isn\'t.' }
         ]
+      },
+
+      /* ---------------------------------------------------------- Demostración gratuita
+         Una sola vez por cuenta. Cuesta 3 ejercicios del limite diario gratis (el servidor lo cobra).
+         Las frases ya tienen audio publicado; los ids d1..d3 deben coincidir con academia_courses.demo_items. */
+      demo: {
+        title: 'Prueba TO BE gratis',
+        intro: 'Una prueba corta: una explicación y tres ejercicios.',
+        screen: {
+          title: 'Am, is y are: ser o estar',
+          text: 'En inglés, ser y estar se dicen igual: to be. Solo cambia según quién habla.',
+          chips: [
+            { a: 'I', b: 'am' },
+            { a: 'he · she · it', b: 'is' },
+            { a: 'you · we · they', b: 'are' }
+          ],
+          audio: 'audio/aprender/to-be/exp-01.mp3'
+        },
+        activities: [
+          { id: 'd1', type: 'choice', topic: 'forma', q: 'I ___ Ana.', options: ['am', 'is', 'are'], answer: 0,
+            why: 'Con I siempre usamos am: I am.' },
+          { id: 'd2', type: 'choice', topic: 'forma', q: 'She ___ happy.', options: ['am', 'is', 'are'], answer: 1,
+            why: 'She es una sola persona, así que va con is.' },
+          { id: 'd3', type: 'choice', topic: 'forma', q: 'They ___ from Peru.', options: ['is', 'am', 'are'], answer: 2,
+            why: 'They son varias personas, así que va con are.' }
+        ]
       }
     }
   }

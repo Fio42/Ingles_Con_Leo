@@ -1,4 +1,6 @@
 -- ============================================================
+-- ATENCION: el APAGADO NORMAL es el Paso 0 y NO borra nada. Este archivo borra tablas con progreso, insignias e intentos de alumnos:
+-- solo para un caso excepcional, con autorizacion de Leo y un respaldo de Supabase verificado.
 -- Deshacer la academia (SOLO si algo sale mal). NO está en supabase/migrations a propósito: nada lo corre solo.
 -- Quita únicamente objetos de academia. No toca profiles, progress_sessions ni mistake_stats ni sus funciones.
 --
@@ -12,6 +14,14 @@
 --   Las sesiones de lecciones (progress_sessions, skill 'gramatica', topics = 'Verbo "to be": am / is / are') se pueden dejar:
 --   son práctica real del alumno.
 -- ============================================================
+-- drop function if exists public.academia_record_session(text, jsonb);
+-- drop function if exists public.academia_demo_finish(text);
+-- drop function if exists public.academia_demo_start(text, date, int);
+-- drop function if exists public.academia_access(text, date, int);
+-- drop function if exists public.academia_free_count(uuid, date, int);
+-- drop function if exists public.academia_today(date);
+-- drop function if exists public.academia_is_member(uuid);
+-- drop function if exists public.academia_free_daily_limit();
 -- drop function if exists public.academia_retry_pending();
 -- drop function if exists public.academia_apply_mistakes(uuid, jsonb);
 -- drop function if exists public.academia_apply_batch(uuid, uuid, text, jsonb);
