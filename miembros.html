@@ -1164,6 +1164,30 @@
   // contar un "intento de pago" (track:false): mirar la pantalla de pago no debe
   // disparar correos de pago abandonado. La intencion de compra se registra al
   // hacer clic en "Activar membresia" (registerPurchaseIntent, mas abajo).
+  // ADELANTO: al acercar el mouse o tocar «Activar membresía» (solo con sesion iniciada) se pide ya la sesion de
+  // Stripe del plan mensual (track:false: NO registra intencion). Si la persona hace clic, mountStripeInline usa
+  // esa misma sesion (no se crea otra); si no, queda sin usar y vence sola en Stripe. Sin cobro ni correo.
+  let prefetchedSession = null;
+  function prefetchStripeSession(){
+    try{
+      if(!hasSession || stripeEmbeddedInstance) return;
+      if(prefetchedSession && (Date.now() - prefetchedSession.at) < 10*60000) return;
+      prefetchedSession = { plan:'monthly', at:Date.now(), promise: LeoBackend.startStripeCheckout('monthly', { track:false }) };
+    }catch(e){ prefetchedSession = null; }
+  }
+  async function takePrefetchedSession(plan){
+    const p = prefetchedSession; prefetchedSession = null;
+    if(!p || p.plan !== plan || (Date.now() - p.at) > 10*60000) return null;
+    try{ const r = await p.promise; return (r && r.ok) ? r : null; }catch(e){ return null; }
+  }
+  ['previewActivateBtn','welcomeActivateBtn','pricingCtaBtn'].forEach(function(id){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('pointerenter', prefetchStripeSession, { passive:true });
+    el.addEventListener('touchstart', prefetchStripeSession, { passive:true });
+    el.addEventListener('focus', prefetchStripeSession);
+  });
+
   async function mountStripeInline(force){
     if(!stripeEmbeddedWrap || !stripeEmbeddedContainer) return;
     if(!force && stripeEmbeddedInstance && stripeMountedPlan === selectedPlan){
@@ -1187,7 +1211,8 @@
     // Stripe.js se prepara en paralelo a la creacion de la sesion (antes iba uno despues del otro).
     let stripe = null;
     try{ if(typeof Stripe === 'function') stripe = Stripe(STRIPE_PUBLISHABLE_KEY); }catch(e){}
-    const res = await LeoBackend.startStripeCheckout(plan, { track:false });
+    let res = await takePrefetchedSession(plan);
+    if(!res) res = await LeoBackend.startStripeCheckout(plan, { track:false });
     if(token !== stripeMountToken) return; // la persona cambio de plan o de pantalla
     if(!res.ok){
       fail((res.error === 'annual_not_configured')
