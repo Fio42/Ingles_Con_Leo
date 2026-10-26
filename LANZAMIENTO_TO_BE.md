@@ -19,6 +19,11 @@ Estado comprobado el 2026-10-25 (solo lectura, desde el navegador de Claude):
 2. SQL Editor (solo SELECT): `select count(*) from profiles; select count(*) from progress_sessions; select count(*) from mistake_stats;` Guardar los 3 números.
 3. Precio: abrir en Stripe el producto/precio de `STRIPE_PRICE_ID` (y el anual), en PayPal el plan `PAYPAL_PLAN_ID`, y confirmar $2/mes y $20/año. Mercado Pago cobra 40 MXN fijos (`create-checkout.ts`). Claude no puede ver esos paneles.
 
+## 0b. Respaldo (obligatorio, antes de la migración)
+Supabase Free no trae respaldos. Desde un computador con Docker (o PostgreSQL 17): en Supabase > Connect copia la URL "Session pooler" (lleva la contraseña de la base; si no la recuerdas, Database > Settings > Reset password) y corre
+`SUPABASE_DB_URL='<url>' bash tools/respaldo_supabase.sh`
+Genera esquema + datos fuera del repositorio (`~/respaldos-supabase/`), lo restaura en una base temporal y compara conteos. Solo si termina con "RESPALDO VERIFICADO" se sigue. El script no guarda ni imprime la contraseña ni los datos.
+
 ## 1. Migración (con la academia APAGADA)
 1. SQL Editor: pegar `supabase/migrations/20261026120000_academia_integracion.sql` y ejecutar. Tiene comprobación previa: si falta algo, se detiene sin crear nada. Solo crea objetos `academia_*`; no modifica datos ni tablas existentes. Deja `enabled=false`.
 2. Cargar el banco: pegar `private/seed-academia-examen-to-be.sql` (archivo local, NO está en git) y ejecutar. Verificar: `select count(*) from academia_exam_items;` (30).
