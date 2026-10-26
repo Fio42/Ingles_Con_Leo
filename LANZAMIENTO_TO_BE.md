@@ -58,3 +58,9 @@ Merge de `academia/piloto-to-be` a main (lo autoriza Leo). `CLOUD_ON=false` y `A
 - Verificación: RLS activo, sin escrituras directas, conteos de profiles/sesiones/errores intactos (129/377/297). Única nota: `academia_norm` (función pura de texto) es ejecutable por anon; sin riesgo.
 - Código publicado en main con todos los interruptores apagados (comprobado en el dominio real).
 - Pendiente: prueba privada con la señal canary y cuentas de prueba (requiere iniciar sesión), luego activación pública.
+
+## Lanzamiento publico (2026-10-26)
+- Interruptores en true: PUBLIC, CLOUD_ON, ACADEMIA_MOTOR.enabled, y academia_courses.enabled (Supabase).
+- Pruebas en el dominio real con cuentas de Leo: gratis (demo una vez, 3 de 6 del limite, premium bloqueado), miembro (5 lecciones, progreso en la nube que vuelve al borrar el navegador, error registrado una vez, evaluacion 15/15, una insignia, escrituras directas 403), audios 4/4, movil 390 px sin desbordes.
+- APAGADO DE EMERGENCIA (rapido, sin tocar datos): en Supabase SQL Editor `update public.academia_courses set enabled=false where course_id='to-be';` y, si hace falta ocultar tambien la presentacion, revertir el commit de lanzamiento. NO usar supabase/rollback/ (destructivo).
+- Siguiente respaldo: incluir las tablas academia_* (ya con datos de alumnos).
