@@ -222,6 +222,8 @@ async function until(fn, ms, what){
     await doLesson(B.page, 2, []); await B.page.waitForSelector('.ac-card-end');
     await doLesson(B.page, 4, []); await B.page.waitForSelector('.ac-card-end');
     await doLesson(B.page, 5, []); await B.page.waitForSelector('.ac-card-end');
+    const evB = await B.page.evaluate(() => (window.dataLayer || []).filter(x => x[0] === 'event').map(x => x[1]));
+    assert.strictEqual(evB.filter(e => e === 'academia_curso_lecciones_completas').length, 1, 'la ultima leccion termina el curso: un solo evento curso_lecciones_completas');
     await until(async () => Object.keys((await prog()).state.lessons).length === 5, 12000, '5 lecciones en la nube');
     await A.page.goto(base + '/academia.html?nube=1#/'); await A.page.reload();
     await until(async () => /5 de 5 lecciones/.test(await A.page.innerText('#acRoot')), 8000, 'el telefono ve 5 de 5');
@@ -272,6 +274,8 @@ async function until(fn, ms, what){
     await shot(p, 'oficial-resultado-bien');
     assert(/^100 %/.test(await p.innerText('.ac-score')));
     assert(/Superaste el curso/.test(await p.innerText('#acRoot')) && /Insignia conseguida/.test(await p.innerText('#acRoot')));
+    const evx = await p.evaluate(() => (window.dataLayer || []).filter(a => a[0] === 'event').map(a => a[1]));
+    assert.strictEqual(evx.filter(e => e === 'academia_evaluacion_oficial_aprobada').length, 1, 'aprobar dispara un evento de aprobada');
     const b = await q('select course_id, score_pct from public.academia_badges where user_id = $1', [UID]);
     assert.deepStrictEqual(b, [{ course_id: 'to-be', score_pct: 100 }]);
     for(const dev of [A, B]){
@@ -353,6 +357,11 @@ async function until(fn, ms, what){
     const ev = await p.evaluate(() => (window.dataLayer || []).filter(a => a[0] === 'event').map(a => a[1]));
     assert.strictEqual(ev.filter(e => e === 'academia_demo_iniciada').length, 1); assert.strictEqual(ev.filter(e => e === 'academia_demo_completada').length, 1);
     assert(!ev.includes('membership_purchase_completed') && !ev.includes('purchase'), 'la academia no dispara compras');
+    await p.$eval('#acRoot a[href*="pagar=1"]', a => { a.addEventListener('click', e => e.preventDefault(), true); a.click(); });
+    const ev2 = await p.evaluate(() => (window.dataLayer || []).filter(a => a[0] === 'event').map(a => a[1]));
+    assert.strictEqual(ev2.filter(e => e === 'academia_cta_membresia').length, 1, 'un clic hacia la membresia = un evento cta_membresia');
+    assert.strictEqual(ev2.filter(e => e === 'academia_demo_cta_desbloquear').length, 1);
+    assert(!ev2.includes('membership_purchase_completed') && !ev2.includes('purchase') && !ev2.includes('begin_checkout'), 'el clic no dispara compra ni checkout');
     await until(async () => (await q('select demo_done_at from public.academia_progress where user_id = $1', [F]))[0].demo_done_at, 9000, 'prueba terminada en el servidor');
     assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3, 'descuenta 3 del limite diario');
     const ses = await sessions(); assert.strictEqual(ses.length, 1); assert.strictEqual(ses[0].tier, 'free');

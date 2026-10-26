@@ -204,6 +204,11 @@
   function track(name, params){
     try{ if(typeof window.gtag === 'function') window.gtag('event', 'academia_' + name, params || {}); }catch(e){}
   }
+  /* Clics hacia la membresia desde cualquier pantalla de la academia (un solo evento, sin tocar el flujo de compra ni los eventos de compra del sitio). */
+  if(root) root.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if(a && /miembros\.html\?pagar=1/.test(a.getAttribute('href') || '')) track('cta_membresia', { origen: (location.hash || '#/').split('/').slice(0, 4).join('/') });
+  });
 
   var itemIndex = {};
   COURSE.lessons.forEach(function(l){ l.activities.forEach(function(a){ itemIndex[a.id] = a; }); });
@@ -770,7 +775,7 @@
     ul.appendChild(card(SITE.plan, 'Mi plan de estudio', 'Lo que te toca hoy según tus errores.'));
     ul.appendChild(card(SITE.progreso, 'Mi progreso', 'Tus sesiones, rachas y temas.'));
     root.appendChild(ul);
-    root.appendChild(el('p', { class: 'ac-foot', text: 'Los ejercicios del curso TO BE se guardan aparte mientras dure el piloto.' }));
+    root.appendChild(el('p', { class: 'ac-foot', text: NUBE ? 'Tus errores del curso TO BE se suman a tu plan de estudio y a tu progreso.' : 'Los ejercicios del curso TO BE se guardan en este navegador.' }));
     focusMain();
   }
 
@@ -925,6 +930,7 @@
           cloudPush();
         }
         track('leccion_completada', { curso: 'to-be', leccion: l.n, aciertos: res.firstOk, total: res.total, primera_vez: first });
+        if(first && COURSE.lessons.every(function(x){ return s.lessons[x.id] && s.lessons[x.id].done; })) track('curso_lecciones_completas', { curso: 'to-be' });
       }
       var nxt = nextLesson();
       var card2 = el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
@@ -1033,7 +1039,7 @@
       el('p', { class: 'ac-kicker', text: 'Curso To be · Evaluación final' }),
       el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: 'Evaluación de práctica' }),
       el('p', { class: 'ac-practice-tag', text: 'Práctica: no da insignia ni certificado' }),
-      el('p', { class: 'ac-text', text: 'Sirve para ver cómo vas antes de la evaluación oficial. Es parte del piloto.' }),
+      el('p', { class: 'ac-text', text: 'Sirve para ver cómo vas antes de la evaluación oficial.' }),
       el('ul', { class: 'ac-rules' }, [
         el('li', { text: CFG.examSize + ' preguntas de los 5 temas del curso.' }),
         el('li', { text: 'Para superarla necesitas ' + CFG.passPct + ' %, es decir ' + Math.ceil(CFG.examSize * CFG.passPct / 100) + ' de ' + CFG.examSize + '.' }),
@@ -1264,6 +1270,7 @@
     var s = loadState();
     markDay(); saveState();
     track('evaluacion_oficial_terminada', { curso: 'to-be', porcentaje: res.score_pct, aprobada: !!res.passed });
+    if(res.passed) track('evaluacion_oficial_aprobada', { curso: 'to-be', porcentaje: res.score_pct });
     root.textContent = '';
     root.appendChild(el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
       el('p', { class: 'ac-kicker', text: 'Resultado de la evaluación' }),

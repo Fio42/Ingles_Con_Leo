@@ -30,6 +30,11 @@ async function partA(){
     assert.strictEqual(/var CLOUD_ON = true;/.test(boot), /var PUBLIC = true;/.test(read('academia-lanzamiento.js')), 'CLOUD_ON y PUBLIC deben ir juntos');
     assert(/localhost\|127\\\.0\\\.0\\\.1/.test(boot), 'el modo de prueba solo vale en localhost');
   });
+  await test('el titulo y la descripcion publicos de la academia no dicen piloto', async()=>{
+    const html = read('academia.html');
+    assert(!/<title>[^<]*piloto/i.test(html) && !/name="description" content="[^"]*piloto/i.test(html));
+    assert(!/mientras dure el piloto|Es parte del piloto/.test(read('academia.js')));
+  });
   await test('ACADEMIA_MOTOR.enabled viene en false y academia-motor.js esta al dia con academia-data.js', async()=>{
     const M = vm.runInNewContext(read('academia-motor.js') + ';ACADEMIA_MOTOR');
     assert.strictEqual(M.enabled, /var PUBLIC = true;/.test(read('academia-lanzamiento.js')), 'el motor va junto con PUBLIC');
