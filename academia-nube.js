@@ -107,7 +107,7 @@ var AcademiaNube = (function(){
   function create(env){
     var courseId = env.courseId || 'to-be';
     var meta = env.meta || null;           // ACADEMIA_MOTOR.courses[courseId]
-    var S = { ready: false, user: null, version: 0, remote: null, saving: false, dirty: false, timer: null, mistakeBuf: [], online: true };
+    var S = { ready: false, user: null, version: 0, remote: null, saving: false, dirty: false, timer: null, online: true, dropped: 0, queuedServer: 0 };
 
     function client(){ try{ return env.getClient ? env.getClient() : null; }catch(e){ return null; } }
     function enabled(){ return !!env.enabled && !!client(); }
@@ -118,6 +118,7 @@ var AcademiaNube = (function(){
       try{ sess = await env.getSession(); }catch(e){}
       if(!sess || !sess.user){ return { ok: false, reason: 'anon' }; }
       S.user = sess.user.id;
+      adoptPre();
       var row = null;
       try{
         var r = await client().from('academia_progress').select('state,version').eq('course_id', courseId).maybeSingle();
@@ -157,33 +158,127 @@ var AcademiaNube = (function(){
       finally { S.saving = false; }
     }
 
+    /* ---- Cola de envíos (sobrevive a cerrar el navegador) ----
+       La fuente de verdad es el almacenamiento: cada operación lee, cambia y escribe en un solo bloque
+       síncrono, así dos pestañas no se pisan. Un envío de errores se "sella" con un identificador ANTES de
+       mandarlo y el servidor recuerda cuáles ya aplicó: reintentar, o que dos pestañas manden lo mismo,
+       nunca cuenta dos veces. */
+    var MAX_ITEMS = 3000;
+    var mem = {};                                   // respaldo si el almacenamiento no está disponible
+    function qKey(){ return 'leo_academia_cola_v1:' + S.user + ':' + courseId; }
+    function qRead(){
+      var raw = null;
+      try{ raw = env.storage ? env.storage.getItem(qKey()) : null; }catch(e){ raw = null; }
+      var q = null;
+      if(raw){ try{ q = JSON.parse(raw); }catch(e){ q = null; } }
+      if(!q && mem[qKey()]) q = JSON.parse(mem[qKey()]);
+      if(!isObj(q)) q = {};
+      if(!Array.isArray(q.open)) q.open = [];
+      if(!Array.isArray(q.batches)) q.batches = [];
+      if(!Array.isArray(q.sessions)) q.sessions = [];
+      return q;
+    }
+    function qWrite(q){
+      var txt = JSON.stringify(q);
+      mem[qKey()] = txt;
+      try{ if(env.storage) env.storage.setItem(qKey(), txt); }catch(e){}
+    }
+    function qMutate(fn){ var q = qRead(); var out = fn(q); qWrite(q); return out; }
+    function qCount(q){ var n = q.open.length; q.batches.forEach(function(b){ n += b.items.length; }); return n; }
+    function newId(){
+      if(env.uuid) return env.uuid();
+      try{ if(typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+      var h = '0123456789abcdef', o = '';
+      for(var i = 0; i < 36; i++){ o += (i === 8 || i === 13 || i === 18 || i === 23) ? '-' : (i === 14 ? '4' : h[Math.floor(Math.random() * 16)]); }
+      return o;
+    }
+    var pre = [];                                   // respuestas dadas antes de saber qué cuenta es
+    function adoptPre(){
+      if(S.user && pre.length){ var p = pre; pre = []; qMutate(function(q){ q.open = q.open.concat(p); }); }
+    }
+
     /* ---- errores al motor actual ---- */
     function engineId(activityId){ return 'ac:' + courseId + ':' + activityId; }
     function recordAnswer(activityId, isCorrect){
-      if(!S.ready) return;
-      S.mistakeBuf.push({ item_id: engineId(activityId), kind: 'academia', topic: meta ? meta.engineTopic : null, is_correct: !!isCorrect });
+      var it = { item_id: engineId(activityId), kind: 'academia', topic: meta ? meta.engineTopic : null, is_correct: !!isCorrect };
+      if(!S.user){ if(enabled() && pre.length < 500) pre.push(it); return; }
+      qMutate(function(q){
+        q.open.push(it);
+        while(qCount(q) > MAX_ITEMS){ if(q.batches.length){ q.batches.shift(); } else { q.open.shift(); } S.dropped++; }
+      });
     }
-    async function flushMistakes(){
-      if(!S.ready || !S.mistakeBuf.length || !env.applyMistakeResults) return { ok: true, n: 0 };
-      var items = S.mistakeBuf.slice(0, 200);
-      S.mistakeBuf = S.mistakeBuf.slice(items.length);
-      var r;
-      try{ r = await env.applyMistakeResults(items); }catch(e){ r = { ok: false }; }
-      if(!r || !r.ok){ S.mistakeBuf = items.concat(S.mistakeBuf); return { ok: false }; }   // se reintenta en el próximo flush
-      return { ok: true, n: items.length };
+    function seal(){
+      return qMutate(function(q){
+        while(q.open.length){ q.batches.push({ id: newId(), items: q.open.splice(0, 200) }); }
+      });
     }
-    /* Una lección terminada = UNA sesión de práctica normal (misma tabla y forma que las demás). */
-    async function recordLesson(lesson, results, startedAt){
-      if(!S.ready || !env.pushSession) return { ok: false };
+    var flushChain = Promise.resolve();
+    function flushMistakes(){
+      flushChain = flushChain.then(doFlushMistakes, doFlushMistakes);
+      return flushChain;
+    }
+    async function doFlushMistakes(){
+      if(!S.ready || !S.user) return { ok: true, n: 0, pending: S.user ? qCount(qRead()) : 0 };
+      seal();
+      var sent = 0, failed = false;
+      var batches = qRead().batches.slice();
+      for(var i = 0; i < batches.length; i++){
+        var b = batches[i], res = null;
+        try{
+          var r = await client().rpc('academia_apply_mistakes', { p_batch: b.id, p_items: b.items });
+          res = r && !r.error ? r.data : null;
+        }catch(e){ res = null; }
+        if(res && res.ok){ sent += b.items.length; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }
+        if(res && res.error === 'bad'){ S.dropped += b.items.length; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }   // el servidor lo rechaza para siempre
+        if(res && res.error === 'engine'){ S.queuedServer++; qMutate(function(q){ q.batches = q.batches.filter(function(x){ return x.id !== b.id; }); }); continue; }  // el servidor lo guardó pendiente y lo reintenta
+        failed = true; break;                         // sin red o sin función: se queda en la cola y se reintenta
+      }
+      return { ok: !failed, n: sent, pending: qCount(qRead()) };
+    }
+    /* Una lección terminada = UNA sesión de práctica normal (misma tabla y forma que las demás).
+       Se encola con su hora de inicio fija: la tabla rechaza una segunda sesión con el mismo inicio,
+       así que reintentar el envío (o terminar dos veces la misma pantalla) no duplica nada. */
+    function recordLesson(lesson, results, startedAt){
+      if(!S.user || !(env.pushSessionStatus || env.pushSession)) return Promise.resolve({ ok: false });
       var now = env.now ? env.now() : Date.now();
       var d = new Date(now);
       var date = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      var st = startedAt || now;
       var session = {
         skill: 'gramatica', level: meta ? meta.level : 'facil', topics: [meta ? meta.engineTopic : 'academia'],
-        date: date, startedAt: startedAt || now, durationMs: Math.max(0, now - (startedAt || now)),
+        date: date, startedAt: st, durationMs: Math.max(0, now - st),
         results: results.map(function(r){ return { itemId: engineId(r.id), isCorrect: !!r.ok }; })
       };
-      try{ await env.pushSession(session); return { ok: true }; }catch(e){ return { ok: false }; }
+      qMutate(function(q){
+        var dup = q.sessions.some(function(x){ return x.startedAt === session.startedAt; });
+        if(!dup) q.sessions.push(session);
+        if(q.sessions.length > 50) q.sessions.shift();
+      });
+      return flushSessions();
+    }
+    var sessChain = Promise.resolve();
+    function flushSessions(){ sessChain = sessChain.then(doFlushSessions, doFlushSessions); return sessChain; }
+    async function doFlushSessions(){
+      if(!S.ready || !S.user) return { ok: false };
+      var list = qRead().sessions.slice(), failed = false;
+      for(var i = 0; i < list.length; i++){
+        var ss = list[i], st = 'fail';
+        try{
+          if(env.pushSessionStatus) st = await env.pushSessionStatus(ss, S.user);
+          else { await env.pushSession(ss); st = 'ok'; }
+        }catch(e){ st = 'fail'; }
+        if(st === 'ok' || st === 'drop'){ qMutate(function(q){ q.sessions = q.sessions.filter(function(x){ return x.startedAt !== ss.startedAt; }); }); if(st === 'drop') S.dropped++; continue; }
+        failed = true; break;                         // 'fail' o 'skip': se reintenta más tarde
+      }
+      return { ok: !failed };
+    }
+    /* Todo lo pendiente de la cuenta: errores, sesiones y envíos que el servidor dejó en espera. */
+    async function flushAll(){
+      if(!S.ready) return { ok: false };
+      var a = await flushMistakes();
+      var b = await flushSessions();
+      try{ await client().rpc('academia_retry_pending'); }catch(e){}
+      return { ok: a.ok && b.ok };
     }
 
     /* ---- examen oficial ---- */
@@ -205,12 +300,13 @@ var AcademiaNube = (function(){
       }catch(e){ return null; }
     }
 
-    return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson,
+    return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson, flushAll: flushAll, flushSessions: flushSessions,
       examStatus: examStatus, examStart: examStart, examSubmit: examSubmit, badge: badge,
       get ready(){ return S.ready; }, get dirty(){ return S.dirty; }, get online(){ return S.online; }, get version(){ return S.version; },
-      get pendingMistakes(){ return S.mistakeBuf.length; }, enabled: enabled };
+      get pendingMistakes(){ return S.user ? qCount(qRead()) : pre.length; }, get pendingSessions(){ return S.user ? qRead().sessions.length : 0; },
+      get dropped(){ return S.dropped; }, get queuedInServer(){ return S.queuedServer; }, enabled: enabled };
   }
 
-  return { create: create, mergeStates: mergeStates, cleanState: cleanState, sameState: sameState };
+  return { create: create, mergeStates: mergeStates, cleanState: cleanState, sameState: sameState, KEYS: CLEAN_KEYS.slice() };
 })();
 if(typeof module !== 'undefined' && module.exports) module.exports = AcademiaNube;

@@ -31,7 +31,7 @@
       NUBE = AcademiaNube.create({
         enabled: true, courseId: 'to-be', meta: (typeof ACADEMIA_MOTOR !== 'undefined' ? ACADEMIA_MOTOR.courses['to-be'] : null),
         getClient: LeoBackend.getClient, getSession: LeoBackend.getSession,
-        applyMistakeResults: LeoBackend.applyMistakeResults, pushSession: LeoBackend.pushSession
+        storage: window.localStorage, pushSessionStatus: LeoBackend.pushFreeSession
       });
     }
   }catch(e){ NUBE = null; }
@@ -52,7 +52,7 @@
     memState = Object.assign(blankState(), memState || {}, merged);
     try{ localStorage.setItem(KEY, JSON.stringify(memState)); }catch(e){}
   }
-  function cloudFlush(){ if(NUBE && NUBE.ready){ NUBE.flushMistakes(); cloudPush(); } }
+  function cloudFlush(){ if(NUBE && NUBE.ready){ NUBE.flushAll(); cloudPush(); } }
   /* Estado de la conexion con la cuenta: pending (conectando) | ready | anon (sin sesion) | failed (sin red o error) | off */
   var bootState = NUBE ? 'pending' : 'off';
   var bootWaiters = [], bootTimer = null, bootTries = 0;
@@ -62,6 +62,7 @@
     NUBE.boot(loadState()).then(function(r){
       if(r && r.ok){
         bootState = 'ready';
+        NUBE.flushAll();                                  // errores y sesiones que quedaron pendientes (sin red, navegador cerrado)
         applyMerged(AcademiaNube.mergeStates(r.state, loadState()));   // por si el alumno ya avanzo mientras conectabamos
         if(r.changed || NUBE.dirty) cloudSchedule();
         var first = hashParts().path.split('/').filter(Boolean);
@@ -76,7 +77,7 @@
       if(bootState === 'failed' && bootTries < 6){ bootTries++; bootTimer = setTimeout(bootCloud, Math.min(60000, 4000 * bootTries * bootTries)); }
     });
   }
-  window.addEventListener('online', function(){ if(NUBE && bootState === 'failed'){ bootTries = 0; bootCloud(); } });
+  window.addEventListener('online', function(){ if(!NUBE) return; if(bootState === 'failed'){ bootTries = 0; bootCloud(); } else if(bootState === 'ready'){ NUBE.flushAll(); cloudPush(); } });
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') cloudFlush(); });
   window.addEventListener('pagehide', cloudFlush);
 
@@ -876,18 +877,23 @@
       var res = run.result || { firstOk: 0, total: A, missedNow: [] };
       var s = loadState();
       var first = !(s.lessons[l.id] && s.lessons[l.id].done);
-      s.lessons[l.id] = { done: true, doneAt: Date.now(), firstOk: res.firstOk, total: res.total };
-      s.completions.push({ id: l.id, at: Date.now() });
-      var t0 = s.resume[l.id] && s.resume[l.id].t0;
-      delete s.resume[l.id]; if(s.last === l.id) s.last = null;
-      markDay();
-      saveState();
-      if(NUBE){
-        var resList = l.activities.map(function(a){ return { id: a.id, ok: res.missedNow.indexOf(a.id) === -1 }; });
-        NUBE.flushMistakes().then(function(){ return NUBE.recordLesson(l, resList, (t0 && Date.now() - t0 < 10800000) ? t0 : Date.now() - 300000); });
-        cloudPush();
+      if(!run.recorded){                       // la pantalla final puede redibujarse: registrar la lección UNA sola vez por intento
+        run.recorded = true;
+        s.lessons[l.id] = { done: true, doneAt: Date.now(), firstOk: res.firstOk, total: res.total };
+        s.completions.push({ id: l.id, at: Date.now() });
+        var t0 = s.resume[l.id] && s.resume[l.id].t0;
+        run.startedAt = (t0 && Date.now() - t0 < 10800000) ? t0 : Date.now() - 300000;
+        delete s.resume[l.id]; if(s.last === l.id) s.last = null;
+        markDay();
+        saveState();
+        if(NUBE){
+          var resList = l.activities.map(function(a){ return { id: a.id, ok: res.missedNow.indexOf(a.id) === -1 }; });
+          NUBE.flushMistakes();
+          NUBE.recordLesson(l, resList, run.startedAt);
+          cloudPush();
+        }
+        track('leccion_completada', { curso: 'to-be', leccion: l.n, aciertos: res.firstOk, total: res.total, primera_vez: first });
       }
-      track('leccion_completada', { curso: 'to-be', leccion: l.n, aciertos: res.firstOk, total: res.total, primera_vez: first });
       var nxt = nextLesson();
       var card2 = el('section', { class: 'ac-card ac-card-end', 'aria-labelledby': 'acH' }, [
         el('p', { class: 'ac-kicker', text: 'Lección ' + l.n + ' completa' }),

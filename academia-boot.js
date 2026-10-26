@@ -8,7 +8,7 @@
   try{ local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && /[?&]nube=1(&|$)/.test(location.search); }catch(e){}
   if(!CLOUD_ON && !local) return;
   window.ACADEMIA_CLOUD = true;
-  var v = '?v=20261026a';
+  var v = '?v=20261026c';
   document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
   document.write('<script src="backend.js' + v + '"><\/script>');
   document.write('<script src="academia-motor.js' + v + '"><\/script>');

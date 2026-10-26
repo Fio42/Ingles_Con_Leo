@@ -36,7 +36,7 @@ var LeoBackend = (function(){
     isConfigured: function(){ return true; }, getClient: function(){ return CLIENT; },
     getSession: function(){ return Promise.resolve({ user:{ id: window.__UID } }); },
     applyMistakeResults: function(items){ return CLIENT.rpc('apply_mistake_results', { p_items: items }).then(function(r){ return { ok: !r.error }; }); },
-    pushSession: function(s){ return window.__pushSession(s); }
+    pushFreeSession: function(s){ return window.__pushSession(s).then(function(){ return 'ok'; }); }
   };
 })();`;
 
@@ -190,15 +190,28 @@ async function until(fn, ms, what){
   });
   await test('sin red: el alumno sigue, nada se pierde y al volver la conexión se sincroniza', async()=>{
     const p = B.page;
+    const failSum = async () => (await q(`select coalesce(sum(fail_count),0)::int n from public.mistake_stats where item_id like 'ac:to-be:%'`))[0].n;
+    const f0 = await failSum(), s0 = pushed.length;
     net.down = true;
     await doLesson(p, 3, [0]);
     await p.waitForSelector('.ac-card-end');
+    const cola = await p.evaluate(() => Object.keys(localStorage).filter(k => /leo_academia_cola_v1/.test(k)).map(k => JSON.parse(localStorage.getItem(k))));
+    assert(cola.length === 1 && (cola[0].open.length + cola[0].batches.length) > 0, 'los errores esperan guardados en el dispositivo');
+    assert.strictEqual(cola[0].sessions.length, 1, 'y la sesion de la leccion tambien');
+    assert.strictEqual(await failSum(), f0); assert.strictEqual(pushed.length, s0);
     const local = await p.evaluate(() => JSON.parse(localStorage.getItem('leo_academia_piloto_v1')));
     assert(local.lessons.negaciones && local.lessons.negaciones.done, 'se guardo en el navegador');
     assert(!(await prog()).state.lessons.negaciones, 'la nube aun no lo tiene');
+    await p.reload();                                           // cierra y reabre el navegador SIN red: nada debe perderse
+    await p.waitForSelector('#acRoot');
     net.down = false;
     await p.evaluate(() => window.dispatchEvent(new Event('online')));   // el navegador avisa que volvio la red
     await until(async () => (await prog()).state.lessons.negaciones, 20000, 'sincronizar al volver la red');
+    await until(async () => pushed.length === s0 + 1, 12000, 'la sesion de la leccion llega a la nube');
+    await until(async () => (await failSum()) === f0 + 1, 12000, 'el error llega al motor actual');
+    await new Promise(r => setTimeout(r, 1500));
+    assert.strictEqual(pushed.length, s0 + 1, 'una sola sesion'); assert.strictEqual(await failSum(), f0 + 1, 'un solo error, sin duplicados');
+    assert.strictEqual(await p.evaluate(() => Object.keys(localStorage).filter(k => /leo_academia_cola_v1/.test(k)).map(k => { const c = JSON.parse(localStorage.getItem(k)); return c.open.length + c.batches.length + c.sessions.length; })[0]), 0, 'la cola quedo vacia');
     const st = (await prog()).state;
     assert(st.lessons['am-is-are'] && st.lessons.negaciones && st.resume.afirmaciones, 'no se perdio nada de lo anterior al fusionar');
   });

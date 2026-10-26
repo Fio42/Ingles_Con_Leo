@@ -19,6 +19,24 @@
 -- apply_mistake_results) con item_id 'ac:<curso>:<actividad>' y kind 'academia'.
 -- ============================================================
 
+-- ---------- Comprobación previa (si algo base falta, se detiene ANTES de crear nada) ----------
+-- Verificado contra producción el 2026-10-25 (solo lectura): PostgreSQL 17.6; mistake_stats con unique (user_id, item_id)
+-- y sin CHECK de kind/status; apply_mistake_results(jsonb) con el mismo cuerpo que supabase_schema.sql;
+-- progress_sessions con tier, índice único (user_id, started_at, skill) y trigger de límites; profiles.is_member.
+do $$
+begin
+  if to_regclass('auth.users') is null or to_regclass('public.profiles') is null
+     or to_regclass('public.mistake_stats') is null or to_regprocedure('public.apply_mistake_results(jsonb)') is null then
+    raise exception 'academia: faltan objetos base (auth.users, profiles, mistake_stats o apply_mistake_results). No se aplica nada.';
+  end if;
+  if (select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'mistake_stats'
+        and column_name in ('user_id','item_id','kind','topic','fail_count','correct_streak','status')) <> 7
+     or not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'is_member') then
+    raise exception 'academia: mistake_stats o profiles no tienen las columnas esperadas. No se aplica nada.';
+  end if;
+end
+$$;
+
 create table if not exists public.academia_courses (
   course_id text primary key check (course_id ~ '^[a-z0-9-]{2,40}$'),
   title text not null,
@@ -68,7 +86,7 @@ declare
   clean jsonb := '{}'::jsonb;
   k text;
   cur public.academia_progress%rowtype;
-  allowed text[] := array['v','lessons','resume','last','missed','exam','goal','days','completions','snooze','returnTo'];
+  allowed text[] := array['v','lessons','resume','last','missed','cleared','exam','goal','goalAt','days','completions','snooze','returnTo'];
 begin
   if uid is null then return jsonb_build_object('ok', false, 'error', 'auth'); end if;
   select * into c from public.academia_courses where course_id = p_course and enabled;
@@ -103,6 +121,117 @@ end;
 $$;
 revoke all on function public.academia_save_progress(text, jsonb, int) from public, anon;
 grant execute on function public.academia_save_progress(text, jsonb, int) to authenticated;
+
+-- ---------- Errores de cursos hacia el motor actual: exactamente una vez ----------
+-- apply_mistake_results NO es idempotente (cada llamada suma fallos y aciertos seguidos), así que
+-- repetir un envío (corte de red tras confirmar, dos pestañas, reintento del navegador) contaría doble.
+-- Cada envío lleva un identificador (batch_id) y esta tabla recuerda cuáles ya se aplicaron.
+-- Si el motor falla, el envío queda 'pending' con el error a la vista y se reintenta solo
+-- (academia_retry_pending). Nada se pierde ni se silencia: select * from academia_mistake_batches where status = 'pending'.
+create table if not exists public.academia_mistake_batches (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  batch_id uuid not null,
+  source text not null default 'lesson' check (source in ('lesson', 'exam')),
+  status text not null default 'pending' check (status in ('pending', 'applied')),
+  n int not null default 0,
+  items jsonb,                       -- solo mientras está pendiente
+  error text,
+  tries int not null default 0,
+  created_at timestamptz not null default now(),
+  last_try_at timestamptz,
+  applied_at timestamptz,
+  primary key (user_id, batch_id)
+);
+create index if not exists academia_mistake_batches_pending_idx on public.academia_mistake_batches (status, created_at) where status = 'pending';
+alter table public.academia_mistake_batches enable row level security;
+revoke all on public.academia_mistake_batches from anon, authenticated;
+
+-- Interna (sin permisos para el navegador). Devuelve 'applied' | 'duplicate' | 'pending'.
+create or replace function public.academia_apply_batch(p_uid uuid, p_batch uuid, p_source text, p_items jsonb)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  b public.academia_mistake_batches%rowtype;
+  err text;
+begin
+  insert into public.academia_mistake_batches (user_id, batch_id, source, n, items)
+  values (p_uid, p_batch, p_source, jsonb_array_length(p_items), p_items)
+  on conflict (user_id, batch_id) do nothing;
+  select * into b from public.academia_mistake_batches where user_id = p_uid and batch_id = p_batch for update;
+  if b.status = 'applied' then return 'duplicate'; end if;
+  begin
+    perform public.apply_mistake_results(b.items);
+    update public.academia_mistake_batches
+       set status = 'applied', items = null, error = null, tries = b.tries + 1, last_try_at = now(), applied_at = now()
+     where user_id = p_uid and batch_id = p_batch;
+    return 'applied';
+  exception when others then
+    err := left(sqlstate || ': ' || sqlerrm, 300);
+  end;
+  -- el bloque anterior se deshizo por completo (nada a medias); se deja constancia del fallo
+  update public.academia_mistake_batches set error = err, tries = b.tries + 1, last_try_at = now()
+   where user_id = p_uid and batch_id = p_batch;
+  return 'pending';
+end;
+$$;
+revoke all on function public.academia_apply_batch(uuid, uuid, text, jsonb) from public, anon, authenticated;
+
+-- Para el navegador: solo ejercicios de cursos ('ac:<curso>:<actividad>'); el tema sale del curso, no del cliente.
+create or replace function public.academia_apply_mistakes(p_batch uuid, p_items jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  clean jsonb;
+  r text;
+begin
+  if uid is null then return jsonb_build_object('ok', false, 'error', 'auth'); end if;
+  if p_batch is null or p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0
+     or jsonb_array_length(p_items) > 200 then
+    return jsonb_build_object('ok', false, 'error', 'bad');
+  end if;
+  select coalesce(jsonb_agg(jsonb_build_object('item_id', x.item_id, 'kind', 'academia', 'topic', c.engine_topic, 'is_correct', x.is_correct)), '[]'::jsonb)
+    into clean
+    from jsonb_to_recordset(p_items) as x(item_id text, is_correct boolean)
+    join public.academia_courses c on c.course_id = split_part(x.item_id, ':', 2) and c.enabled
+   where x.item_id ~ '^ac:[a-z0-9-]{2,40}:[a-z0-9_-]{1,40}$' and x.is_correct is not null;
+  if jsonb_array_length(clean) = 0 then return jsonb_build_object('ok', false, 'error', 'bad'); end if;
+  r := public.academia_apply_batch(uid, p_batch, 'lesson', clean);
+  if r = 'pending' then return jsonb_build_object('ok', false, 'error', 'engine', 'queued', true); end if;
+  return jsonb_build_object('ok', true, 'duplicate', r = 'duplicate');
+end;
+$$;
+revoke all on function public.academia_apply_mistakes(uuid, jsonb) from public, anon;
+grant execute on function public.academia_apply_mistakes(uuid, jsonb) to authenticated;
+
+-- Reintenta los envíos pendientes de la cuenta (el navegador la llama al abrir la academia).
+create or replace function public.academia_retry_pending()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  b record; applied int := 0; still int := 0; r text;
+begin
+  if uid is null then return jsonb_build_object('ok', false, 'error', 'auth'); end if;
+  for b in select batch_id, source, items from public.academia_mistake_batches
+            where user_id = uid and status = 'pending' and tries < 20 order by created_at limit 20 loop
+    r := public.academia_apply_batch(uid, b.batch_id, b.source, b.items);
+    if r = 'pending' then still := still + 1; else applied := applied + 1; end if;
+  end loop;
+  return jsonb_build_object('ok', true, 'applied', applied, 'pending', still);
+end;
+$$;
+revoke all on function public.academia_retry_pending() from public, anon;
+grant execute on function public.academia_retry_pending() to authenticated;
 
 -- ---------- Examen oficial (banco privado) ----------
 create table if not exists public.academia_exam_items (
@@ -268,7 +397,7 @@ declare
   given jsonb; given_t text; ok boolean; right_t text;
   total int := 0; good int := 0; pct int; v_passed boolean;
   per jsonb := '{}'::jsonb; review jsonb := '[]'::jsonb; mist jsonb := '[]'::jsonb;
-  k text; acc text; src text;
+  k text; acc text; src text; engine_ok boolean;
 begin
   if uid is null then return jsonb_build_object('ok', false, 'error', 'auth'); end if;
   select * into a from public.academia_exam_attempts where id = p_attempt and user_id = uid for update;
@@ -321,13 +450,14 @@ begin
     insert into public.academia_badges (user_id, course_id, score_pct, attempt_id) values (uid, a.course_id, pct, a.id)
     on conflict (user_id, course_id) do update set score_pct = greatest(public.academia_badges.score_pct, excluded.score_pct);
   end if;
-  -- Los errores del examen alimentan el MISMO motor de errores (no hay tabla paralela).
-  begin
-    perform public.apply_mistake_results(mist);
-  exception when others then null;   -- el motor de errores nunca debe impedir entregar la nota
-  end;
+  -- Los errores del examen alimentan el MISMO motor de errores (no hay tabla paralela). Si el motor falla,
+  -- la nota se entrega igual y el envío queda 'pending' con su error en academia_mistake_batches (se reintenta).
+  engine_ok := true;
+  if jsonb_array_length(mist) > 0 then
+    engine_ok := public.academia_apply_batch(uid, a.id, 'exam', mist) <> 'pending';
+  end if;
   return jsonb_build_object('ok', true, 'score_pct', pct, 'correct', good, 'total', total, 'passed', v_passed,
-    'pass_pct', c.pass_pct, 'per_topic', per, 'review', review, 'badge', v_passed);
+    'pass_pct', c.pass_pct, 'per_topic', per, 'review', review, 'badge', v_passed, 'engine_ok', engine_ok);
 end;
 $$;
 revoke all on function public.academia_exam_submit(uuid, jsonb) from public, anon;

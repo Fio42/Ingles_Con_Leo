@@ -1,0 +1,25 @@
+-- ============================================================
+-- Deshacer la academia (SOLO si algo sale mal). NO está en supabase/migrations a propósito: nada lo corre solo.
+-- Quita únicamente objetos de academia. No toca profiles, progress_sessions ni mistake_stats ni sus funciones.
+--
+-- Paso 0 (apagado rápido, sin borrar nada, reversible en un segundo):
+--   update public.academia_courses set enabled = false where course_id = 'to-be';
+--   (las funciones dejan de aceptar guardados y exámenes; la academia sigue funcionando en el navegador)
+--
+-- Paso 1 (opcional) borrar todo lo de academia:  quita los comentarios de abajo y córrelo.
+-- Paso 2 (opcional) borrar los errores de cursos que ya entraron al motor (los del examen y las lecciones):
+--   delete from public.mistake_stats where item_id like 'ac:%';
+--   Las sesiones de lecciones (progress_sessions, skill 'gramatica', topics = 'Verbo "to be": am / is / are') se pueden dejar:
+--   son práctica real del alumno.
+-- ============================================================
+-- drop function if exists public.academia_retry_pending();
+-- drop function if exists public.academia_apply_mistakes(uuid, jsonb);
+-- drop function if exists public.academia_apply_batch(uuid, uuid, text, jsonb);
+-- drop function if exists public.academia_exam_submit(uuid, jsonb);
+-- drop function if exists public.academia_exam_start(text);
+-- drop function if exists public.academia_exam_status(text);
+-- drop function if exists public.academia_item_public(public.academia_exam_items);
+-- drop function if exists public.academia_norm(text);
+-- drop function if exists public.academia_save_progress(text, jsonb, int);
+-- drop table if exists public.academia_mistake_batches, public.academia_badges, public.academia_exam_attempts,
+--   public.academia_exam_items, public.academia_progress, public.academia_courses;

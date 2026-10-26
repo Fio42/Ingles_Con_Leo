@@ -1664,3 +1664,10 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - academia.js: "volver a donde estabas" (?volver=), reintento de conexion, evaluacion oficial, insignia en Mis logros, marcas de tiempo en errores para fusionar.
 - Pruebas nuevas: academia-sql (27), academia-integracion (27), academia-e2e-nube (13, Chromium + PGlite). Doc: ACADEMIA_INTEGRACION.md.
 - Pruebas existentes: todas siguen pasando salvo 5 que necesitan el paquete typescript (checkout-abandonado, error-monitor, leo-ai-server, member-reactivation-e2e, payment-grace), que no depende de estos cambios.
+
+2026-10-25 (noche) Academia TO BE: robustez antes del lanzamiento (rama academia/piloto-to-be, nada en produccion)
+- Corregido: academia_save_progress descartaba "cleared" y "goalAt" (lista de campos desfasada del cliente). Ahora la prueba compara ambas listas.
+- Errores de cursos: envio exactamente una vez (academia_apply_mistakes + academia_mistake_batches). Si el motor falla, la nota se entrega y el fallo queda registrado y se reintenta (academia_retry_pending). apply_mistake_results no se toco.
+- Cola persistente en el navegador (errores y sesiones): sobrevive a cerrar el navegador y a la falta de red; dos pestanas y reintentos no duplican. run.recorded evita registrar dos veces la pantalla final.
+- Migracion con comprobacion previa y supabase/rollback/. Esquema de produccion leido en solo lectura: compatible (ver ACADEMIA_INTEGRACION.md).
+- Pruebas nuevas: tools/tests/academia-robustez.test.js (23) y e2e con cierre del navegador sin red.
