@@ -10,6 +10,11 @@
 Nada de esto está ejecutado. Cada paso lo autoriza Leo. Precio en toda la academia: **$2 USD al mes**.
 
 ## 0. Antes de tocar nada (solo lectura)
+Estado comprobado el 2026-10-25 (solo lectura, desde el navegador de Claude):
+- Supabase (InglesconLeo): el panel Database > Backups dice "Free Plan does not include project backups". NO hay respaldo recuperable automático.
+- Stripe: la sesión abierta es la cuenta "Spanish by Leo" (producto "Spanish by Leo Membership", 2 precios), no una cuenta de Inglés con Leo. Falta ver la cuenta que usa inglesconleo.com.
+- PayPal: sin sesión iniciada; no se pudo ver el plan.
+
 1. Supabase, Project Settings, Database, Backups: confirmar que hay un respaldo de hoy (o crear uno con "Create backup" si el plan lo permite) y anotar su hora. Sin respaldo verificado no se sigue.
 2. SQL Editor (solo SELECT): `select count(*) from profiles; select count(*) from progress_sessions; select count(*) from mistake_stats;` Guardar los 3 números.
 3. Precio: abrir en Stripe el producto/precio de `STRIPE_PRICE_ID` (y el anual), en PayPal el plan `PAYPAL_PLAN_ID`, y confirmar $2/mes y $20/año. Mercado Pago cobra 40 MXN fijos (`create-checkout.ts`). Claude no puede ver esos paneles.
