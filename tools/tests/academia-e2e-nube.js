@@ -412,6 +412,36 @@ async function until(fn, ms, what){
     assert.strictEqual(await V.page.$('.ac-card-act'), null);
     await V.ctx.close();
   });
+  await test('GRATIS manipulando el navegador (bandera, cache de "miembro", llamadas directas): lo premium sigue cerrado en el servidor', async()=>{
+    const p = C.page;
+    await db.exec(`update public.profiles set is_member = false where id = '${F}'`);
+    const before = async () => JSON.stringify([
+      (await q("select count(*)::int n from public.mistake_stats where user_id = $1 and item_id like 'ac:to-be:l%'", [F]))[0].n,
+      (await q('select count(*)::int n from public.progress_sessions where user_id = $1', [F]))[0].n,
+      (await q('select count(*)::int n from public.academia_badges where user_id = $1', [F]))[0].n,
+      (await q("select count(*)::int n from public.academia_progress where user_id = $1 and state <> '{}'::jsonb", [F]))[0].n]);
+    const b0 = await before();
+    await p.goto(base + '/academia.html'); await p.evaluate(() => { localStorage.setItem('leo_academia_canary', '1'); localStorage.setItem('leo_academia_member_v1', JSON.stringify({ m: 1, at: Date.now() })); });
+    // sin conexion, la cache falsa solo cambia lo que se VE; con conexion el servidor manda
+    net.down = true; await p.goto(base + '/academia.html#/curso/to-be/leccion/1'); await p.reload(); await p.waitForTimeout(1500);
+    net.down = false; await p.evaluate(() => window.dispatchEvent(new Event('online')));
+    await until(async () => /Desbloquear mi academia/.test(await p.innerText('#acRoot')), 15000, 'el servidor corrige la cache falsa');
+    assert.strictEqual(await p.$('.ac-card-act'), null);
+    // llamadas directas a las funciones premium
+    const calls = await p.evaluate(async () => {
+      const r = {}; const c = LeoBackend.getClient();
+      r.exam = (await c.rpc('academia_exam_start', { p_course: 'to-be' })).data;
+      r.sess = (await c.rpc('academia_record_session', { p_course: 'to-be', p_session: { date: '2026-10-25', startedAt: Date.now() - 600000, durationMs: 60000, results: [1, 2, 3].map(i => ({ itemId: 'ac:to-be:l1-a' + i, isCorrect: true })) } })).data;
+      r.mist = (await c.rpc('academia_apply_mistakes', { p_batch: '90000000-0000-4000-8000-000000000001', p_items: [{ item_id: 'ac:to-be:l1-a1', is_correct: false }] })).data;
+      r.save = (await c.rpc('academia_save_progress', { p_course: 'to-be', p_state: { v: 1, lessons: { 'am-is-are': { done: true } } }, p_base_version: 0 })).data;
+      r.submit = (await c.rpc('academia_exam_submit', { p_attempt: '90000000-0000-4000-8000-000000000002', p_answers: {} })).data;
+      return r;
+    });
+    assert.deepStrictEqual([calls.exam.error, calls.sess.error, calls.mist.error, calls.save.error], ['members', 'members', 'members', 'members']);
+    assert(calls.submit.ok !== true);
+    assert.strictEqual(await before(), b0, 'la base no cambio');
+    await p.evaluate(() => { localStorage.removeItem('leo_academia_canary'); localStorage.removeItem('leo_academia_member_v1'); });
+  });
   await test('PRUEBA PREVIA: sin interruptor ni bandera la pagina es el piloto local; con la bandera de la cuenta de prueba se conecta (sin ?nube=1)', async()=>{
     const p = C.page;
     await db.exec(`update public.profiles set is_member = false where id = '${F}'`);

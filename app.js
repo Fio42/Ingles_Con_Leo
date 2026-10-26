@@ -397,7 +397,7 @@ async function initMemberHeader(){
       if(memberProfile && memberProfile.stripe_customer_id){
         window.alert('Tu membresía es de $2 USD / mes vía tarjeta internacional (Stripe).\n\nPara cambiar tu método de pago o cancelarla, escríbenos a hola@inglesconleo.com y con gusto te ayudamos.');
       } else if(memberProfile && memberProfile.mp_preapproval_id){
-        window.alert('Tu membresía es de $2 USD / mes (≈$40 MXN) vía Mercado Pago.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
+        window.alert('Tu membresía es de $2 USD / mes vía Mercado Pago, que se cobra como $40 MXN al mes.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de Mercado Pago → Actividad → Suscripciones.');
       } else if(memberProfile && memberProfile.paypal_subscription_id){
         window.alert('Tu membresía es de $2 USD / mes vía PayPal.\n\nPara cambiar tu método de pago o cancelarla, entra a tu cuenta de PayPal → Configuración → Pagos → Pagos automáticos.');
       } else {
@@ -3958,7 +3958,7 @@ function renderFreeDailyLimitReachedBlock(){
           <li>Clases interactivas del método del Profe Leo y repaso automático de tus errores</li>
           <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
         </ul>
-        <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México, $37 MXN). Cancela cuando quieras.</p>
+        <p class="upgrade-price"><strong>$2 USD al mes</strong> (en México: $37 MXN con tarjeta o $40 MXN con Mercado Pago). Cancela cuando quieras.</p>
         <div class="summary-actions">
           <a href="miembros.html?pagar=1" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
           <a href="index.html" class="btn btn-ghost">Volver mañana</a>

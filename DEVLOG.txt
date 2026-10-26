@@ -1679,3 +1679,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Sesiones de lecciones: rpc academia_record_session (idempotente por usuario+inicio+skill). Ya no usa pushFreeSession.
 - Pruebas: academia-modelo (25), e2e navegador (21, incluye cuenta gratis, visitante, vencimiento, 320 px), sql 27, integracion 27, robustez 23, piloto 13.
 - Documentado: proteccion real vs barrera de pantalla, limite de 6/dia controlado por el navegador (previo), apagado no destructivo, lanzamiento en 11 pasos.
+
+2026-10-26 Academia TO BE: cierre de preparacion (rama academia/piloto-to-be, nada en produccion)
+- Portada con un solo H1 (dos spans segun el interruptor). Comparadas 93 paginas contra el sitio actual con todo apagado: title, canonical, meta, JSON-LD y H1 identicos; ninguna peticion nueva salvo academia-lanzamiento.js; el resto son nombres/ejercicios aleatorios.
+- Precio Mercado Pago: el codigo cobra 40 MXN fijos (create-checkout.ts); 37 MXN es el texto de tarjeta. Textos corregidos en app.js y miembros.html (sin tocar cobros).
+- Prueba: cuenta gratis con bandera, cache de miembro falsa y llamadas directas a las funciones: el servidor responde "members" y la base no cambia.
+- tools/prelanzamiento.js (--off / --on) y ACADEMIA_MOTOR_ENABLED=1 para regenerar el puente.

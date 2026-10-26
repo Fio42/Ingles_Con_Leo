@@ -23,6 +23,7 @@ Nada de esto está ejecutado. Cada paso lo autoriza Leo. Precio en toda la acade
 4. Repetir los 3 conteos del paso 0.2: deben ser iguales.
 
 ## 2. Código con la academia apagada
+Antes: `node tools/prelanzamiento.js --off` (debe decir "Todo en orden"; revisa interruptores, que el banco de examen no esté en git y que ningún workflow aplique migraciones).
 Merge de `academia/piloto-to-be` a main (lo autoriza Leo). `CLOUD_ON=false` y `ACADEMIA_MOTOR.enabled=false`: el sitio se ve igual que hoy.
 
 ## 3. Prueba previa con cuentas de prueba (nadie más la ve)
@@ -33,7 +34,7 @@ Merge de `academia/piloto-to-be` a main (lo autoriza Leo). `CLOUD_ON=false` y `A
 5. Si algo falla: apagar (sección 5).
 
 ## 4. Activación para todos
-1. `academia-lanzamiento.js`: `PUBLIC=true` y `academia-boot.js`: `CLOUD_ON=true`; `academia-motor.js` se regenera con `enabled=true` (cambiar `enabled` en `tools/generar_academia_motor.js`). Publicar.
+1. `academia-lanzamiento.js`: `PUBLIC=true` y `academia-boot.js`: `CLOUD_ON=true`; `ACADEMIA_MOTOR_ENABLED=1 node tools/generar_academia_motor.js` regenera `academia-motor.js` con `enabled=true`. Comprobar con `node tools/prelanzamiento.js --on`. Publicar.
 2. Vigilar 48 horas: errores (error-monitor), `select * from academia_mistake_batches where status='pending'` (debe quedar vacío), sesiones nuevas en `progress_sessions`, pagos. Sin tocar la lógica de pagos.
 
 ## 5. Apagado si algo falla (no borra nada)

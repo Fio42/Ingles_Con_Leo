@@ -39,11 +39,13 @@ async function test(name, fn){ try{ await fn(); passed++; console.log('  ok  ' +
     }
     const { page, ctx } = await open('index.html', false);
     assert(/sistema que se adapta a ti/.test(await page.innerText('h1')) && /Modo aprender/.test(await text(page)));
+    assert.strictEqual(await page.$$eval('h1', h => h.length), 1, 'un solo H1 con la academia apagada');
     await ctx.close();
   });
   await test('CON la bandera: portada con el mensaje nuevo, boton principal "Explorar la academia" y secundario "Practicar gratis"', async()=>{
     const { page, ctx, errs } = await open('index.html', true);
-    assert.strictEqual((await page.innerText('h1.ac-live-only')).replace(/\s+/g, ' '), 'Aprende inglés paso a paso con Inglés con Leo.');
+    assert.strictEqual(await page.$$eval('h1', h => h.length), 1, 'un solo H1 con la academia encendida');
+    assert.strictEqual((await page.innerText('h1')).replace(/\s+/g, ' '), 'Aprende inglés paso a paso con Inglés con Leo.');
     assert(/Cursos interactivos, explicaciones sencillas, ejercicios y un sistema que detecta tus errores/.test(await text(page)));
     const main = await page.$('#heroAcademiaCta'); assert.strictEqual(await main.getAttribute('href'), 'academia.html'); assert((await main.innerText()).startsWith('Explorar la academia'));
     assert(await vis(page, '.hero-v2-actions.ac-live-only a.btn-ghost'));

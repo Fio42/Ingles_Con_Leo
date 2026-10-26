@@ -35,7 +35,7 @@ function build(){
    enabled=false: mientras la academia no se lance, el sitio actual se ve y se comporta EXACTAMENTE igual. */
 var ACADEMIA_MOTOR = (function(){
   var DATA = ${JSON.stringify(courses, null, 1)};
-  var M = { enabled: false, page: 'academia.html', courses: DATA };
+  var M = { enabled: ${process.env.ACADEMIA_MOTOR_ENABLED === '1' ? 'true' : 'false'}, page: 'academia.html', courses: DATA };
   M.itemId = function(courseId, activityId){ return 'ac:' + courseId + ':' + activityId; };
   M.parse = function(engineId){
     var m = /^ac:([a-z0-9-]+):(.+)$/.exec(String(engineId || ''));
