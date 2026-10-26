@@ -2379,3 +2379,6 @@ html.ac-live .ac-pre{display:none !important;}
 .ac-next-note{margin:10px 0 0;font-size:.9rem;color:var(--ink-soft,#5b6478);}
 .ac-benefit-list{margin:10px 0 0;padding-left:20px;text-align:left;}
 .ac-benefit-list li{margin:4px 0;}
+
+/* Academia visible: con el enlace extra, el menu queda pegado al logo en pantallas medianas. Solo aplica con ac-live. */
+@media(min-width:1100px) and (max-width:1279px){html.ac-live .nav-links{gap:16px;font-size:0.92rem;}}
