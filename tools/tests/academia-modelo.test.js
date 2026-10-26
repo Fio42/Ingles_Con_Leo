@@ -385,6 +385,28 @@ const demoSession = t0 => ({ date: today(), startedAt: t0 || T0 + 5, durationMs:
     assert.strictEqual((await q(db, 'select tier from public.progress_sessions'))[0].tier, 'free');
   });
 
+
+  await test('SEGURIDAD con permisos por defecto de Supabase: anon no ejecuta nada de la academia; nadie lee respuestas, ni escribe cursos, insignias, intentos o progreso', async()=>{
+    const db = await fresh();
+    const fns = ['academia_access(text,date,int)', 'academia_demo_start(text,date,int)', 'academia_demo_finish(text)', 'academia_save_progress(text,jsonb,int)', 'academia_apply_mistakes(uuid,jsonb)', 'academia_retry_pending()', 'academia_record_session(text,jsonb)', 'academia_exam_status(text)', 'academia_exam_start(text)', 'academia_exam_submit(uuid,jsonb)'];
+    for(const f of fns){
+      const priv = (await q(db, `select has_function_privilege('anon', '${'public.' + f}', 'execute') a, has_function_privilege('authenticated', '${'public.' + f}', 'execute') u`))[0];
+      assert.strictEqual(priv.a, false, 'anon puede ejecutar ' + f); assert.strictEqual(priv.u, true, 'authenticated debe poder ' + f);
+    }
+    for(const f of ['academia_apply_batch(uuid,uuid,text,jsonb)', 'academia_is_member(uuid)', 'academia_free_count(uuid,date,int)', 'academia_free_daily_limit()', 'academia_today(date)']){
+      const priv = (await q(db, `select has_function_privilege('anon', '${'public.' + f}', 'execute') a, has_function_privilege('authenticated', '${'public.' + f}', 'execute') u`))[0];
+      assert.deepStrictEqual([priv.a, priv.u], [false, false], 'funcion interna expuesta: ' + f);
+    }
+    for(const t of ['academia_exam_items', 'academia_mistake_batches']) for(const r of ['anon', 'authenticated']) for(const op of ['select', 'insert', 'update', 'delete'])
+      assert.strictEqual((await q(db, `select has_table_privilege('${r}', 'public.${t}', '${op}') x`))[0].x, false, r + ' ' + op + ' ' + t);
+    for(const t of ['academia_courses', 'academia_progress', 'academia_badges', 'academia_exam_attempts']) for(const op of ['insert', 'update', 'delete'])
+      for(const r of ['anon', 'authenticated']) assert.strictEqual((await q(db, `select has_table_privilege('${r}', 'public.${t}', '${op}') x`))[0].x, false, r + ' ' + op + ' ' + t);
+    // el intento abierto no expone la respuesta ni al dueño
+    assert.strictEqual((await q(db, `select has_column_privilege('authenticated', 'public.academia_exam_attempts', 'item_ids', 'select') x`))[0].x, false);
+    const st = await rpc(db, A, 'academia_exam_start', { p_course: 'to-be' });
+    assert(!/correct|accepted|why|answer/i.test(JSON.stringify(st)), 'la evaluacion revela respuestas antes de calificar');
+  });
+
   console.log('\n' + passed + ' pruebas ok' + (failed ? ', ' + failed + ' FALLARON' : ''));
   process.exit(failed ? 1 : 0);
 })();

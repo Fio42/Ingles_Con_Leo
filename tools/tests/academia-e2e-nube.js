@@ -347,7 +347,7 @@ async function until(fn, ms, what){
     await p.waitForSelector('.ac-card-end');
     await shot(p, 'gratis-demo-final');
     const txt = await p.innerText('#acRoot');
-    assert(/Acertaste 2 de 3 a la primera/.test(txt) && /Desbloquea la academia por USD 1\.99 al mes/.test(txt), txt.slice(0, 400));
+    assert(/Acertaste 2 de 3 a la primera/.test(txt) && /Desbloquea la academia por \$2 USD al mes/.test(txt), txt.slice(0, 400));
     const ctas = await p.$$eval('#acRoot a', as => as.filter(a => /pagar=1/.test(a.getAttribute('href'))).map(a => a.textContent.trim()));
     assert.deepStrictEqual(ctas, ['Desbloquear mi academia']);
     await until(async () => (await q('select demo_done_at from public.academia_progress where user_id = $1', [F]))[0].demo_done_at, 9000, 'prueba terminada en el servidor');
@@ -408,6 +408,15 @@ async function until(fn, ms, what){
     await until(async () => /Crear mi cuenta gratis/.test(await V.page.innerText('#acRoot')), 9000, 'la demo directa no abre para visitantes');
     assert.strictEqual(await V.page.$('.ac-card-act'), null);
     await V.ctx.close();
+  });
+  await test('PRUEBA PREVIA: sin interruptor ni bandera la pagina es el piloto local; con la bandera de la cuenta de prueba se conecta (sin ?nube=1)', async()=>{
+    const p = C.page;
+    await db.exec(`update public.profiles set is_member = false where id = '${F}'`);
+    await p.goto(base + '/academia.html'); await p.evaluate(() => localStorage.removeItem('leo_academia_canary')); await p.reload(); await p.waitForTimeout(800);
+    assert(!/Probar TO BE gratis|Desbloquear/.test(await p.innerText('#acRoot')), 'sin bandera debe ser el piloto local');
+    await p.evaluate(() => localStorage.setItem('leo_academia_canary', '1')); await p.reload();
+    await until(async () => /Desbloquear mi academia/.test(await p.innerText('#acRoot')), 9000, 'con bandera se conecta');
+    await p.evaluate(() => localStorage.removeItem('leo_academia_canary'));
   });
   await test('sin horizontal overflow en 320 px: presentacion de cuenta gratis y final de la prueba', async()=>{
     await db.exec(`update public.profiles set free_daily_count = 0 where id = '${F}'; update public.academia_progress set demo_started_at = null, demo_done_at = null, demo_session_at = null where user_id = '${F}'`);

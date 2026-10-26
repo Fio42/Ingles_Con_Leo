@@ -6,7 +6,11 @@
   var CLOUD_ON = false;   // Leo/Claude lo ponen en true al lanzar, junto con ACADEMIA_MOTOR.enabled y academia_courses.enabled
   var local = false;
   try{ local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && /[?&]nube=1(&|$)/.test(location.search); }catch(e){}
-  if(!CLOUD_ON && !local) return;
+  /* Prueba previa al lanzamiento: una cuenta de prueba activa la parte en la nube SOLO en su navegador
+     (localStorage.leo_academia_canary = '1'). El servidor sigue decidiendo todo; esto solo carga el cliente. */
+  var canary = false;
+  try{ canary = localStorage.getItem('leo_academia_canary') === '1'; }catch(e){}
+  if(!CLOUD_ON && !local && !canary) return;
   window.ACADEMIA_CLOUD = true;
   var v = '?v=20261026d';
   document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');

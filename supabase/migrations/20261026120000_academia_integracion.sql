@@ -67,6 +67,8 @@ create table if not exists public.academia_courses (
 alter table public.academia_courses enable row level security;
 drop policy if exists "academia_courses: read" on public.academia_courses;
 create policy "academia_courses: read" on public.academia_courses for select to authenticated using (true);
+revoke all on public.academia_courses from anon;
+revoke insert, update, delete, truncate, references, trigger on public.academia_courses from authenticated;
 
 insert into public.academia_courses (course_id, title, enabled, engine_topic, demo_items)
 values ('to-be', 'Domina el verbo TO BE', false, 'Verbo "to be": am / is / are', array['d1','d2','d3'])
@@ -497,7 +499,7 @@ alter table public.academia_exam_attempts enable row level security;
 drop policy if exists "academia_exam_attempts: select own" on public.academia_exam_attempts;
 create policy "academia_exam_attempts: select own" on public.academia_exam_attempts for select to authenticated using (auth.uid() = user_id);
 revoke all on public.academia_exam_attempts from anon;
-revoke insert, update, delete, truncate, references, trigger on public.academia_exam_attempts from authenticated;
+revoke all on public.academia_exam_attempts from authenticated;   -- (incluye el SELECT de tabla completa que Supabase da por defecto; abajo solo se devuelven columnas concretas)
 grant select (id, course_id, started_at, submitted_at, score_pct, passed, per_topic) on public.academia_exam_attempts to authenticated;
 
 create table if not exists public.academia_badges (

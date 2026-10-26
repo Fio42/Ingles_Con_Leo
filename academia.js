@@ -668,6 +668,7 @@
     });
   }
   function pilotBanner(){
+    if(NUBE) return document.createTextNode('');     // con la cuenta conectada el avance sí se guarda y cuenta: el aviso del piloto ya no aplica
     return el('p', { class: 'ac-pilot' }, [el('strong', { text: 'Piloto de prueba. ' }), 'Tu avance se guarda solo en este navegador y no cuenta en tus estadísticas. La evaluación es práctica y no da insignia ni certificado.']);
   }
 
@@ -1357,7 +1358,7 @@
 
   /* ---------------- Cuenta gratis y visitantes: presentacion + una demostracion ---------------- */
   var DEMO = COURSE.demo;
-  var SALE_TEXT = '¡Muy bien! Ya empezaste a utilizar AM, IS y ARE. Continúa con afirmaciones, negaciones y preguntas. Completa el curso TO BE, practica sin límites y consigue tu primera insignia con Inglés con Leo. Desbloquea la academia por USD 1.99 al mes.';
+  var SALE_TEXT = '¡Muy bien! Ya empezaste a utilizar AM, IS y ARE. Continúa con afirmaciones, negaciones y preguntas. Completa el curso TO BE, practica sin límites y consigue tu primera insignia con Inglés con Leo. Desbloquea la academia por $2 USD al mes.';
   var PAY_URL = 'miembros.html?pagar=1';
   function msgCard(title, text, actions){
     setTabs('ruta'); root.textContent = '';

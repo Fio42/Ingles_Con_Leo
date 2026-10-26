@@ -31,6 +31,9 @@ async function baseSchema(db, users){
       free_daily_count integer not null default 0, free_daily_date date, free_first_exercise_at timestamptz,
       free_daily_limit_reached_at timestamptz, free_last_practice_at timestamptz, last_practice_at timestamptz);
     grant usage on schema public to anon, authenticated;
+    -- como Supabase: toda tabla/funcion nueva de public nace con permisos para anon/authenticated; la migracion debe quitarlos ella misma
+    alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+    alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
     grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;
     create table public.progress_sessions (
       id bigint generated always as identity primary key,
