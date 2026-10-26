@@ -51,3 +51,10 @@ Merge de `academia/piloto-to-be` a main (lo autoriza Leo). `CLOUD_ON=false` y `A
 - Inmediato, en Supabase: `update academia_courses set enabled=false where course_id='to-be';` Se bloquea toda operación nueva (guardado, errores, sesiones, evaluación, prueba) y todo lo aprendido, insignias y progreso se conserva.
 - Después, en el código: `CLOUD_ON=false` y publicar. La práctica, Leo AI, pagos y correos no se ven afectados.
 - `supabase/rollback/academia_integracion_rollback.sql` BORRA tablas de alumnos: solo en un caso excepcional, con autorización de Leo y un respaldo verificado.
+
+## Estado de ejecución (2026-10-26)
+- Respaldo completo (esquema + datos, 19 tablas + auth) descargado a la computadora de Leo, fuera del repo; conteos verificados contra la base y prueba de restauración sin fallas.
+- Migración de la academia aplicada en Supabase real; banco de examen (30 preguntas) cargado; curso `to-be` con enabled=false.
+- Verificación: RLS activo, sin escrituras directas, conteos de profiles/sesiones/errores intactos (129/377/297). Única nota: `academia_norm` (función pura de texto) es ejecutable por anon; sin riesgo.
+- Código publicado en main con todos los interruptores apagados (comprobado en el dominio real).
+- Pendiente: prueba privada con la señal canary y cuentas de prueba (requiere iniciar sesión), luego activación pública.
