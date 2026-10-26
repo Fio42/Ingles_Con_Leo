@@ -35,7 +35,15 @@
 <script src="error-monitor.js?v=20261007e"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
 <script src="meta-pixel.js"></script>
+<link rel="preconnect" href="https://iviksyhzhiygkuaojply.supabase.co" crossorigin>
+<link rel="preconnect" href="https://js.stripe.com" crossorigin>
+<link rel="preconnect" href="https://api.stripe.com" crossorigin>
+<link rel="preconnect" href="https://m.stripe.network" crossorigin>
 <script defer src="https://js.stripe.com/v3/"></script>
+<script>
+  // Calienta la funcion de pago (arranque en frio) sin crear nada: un OPTIONS no registra intencion ni sesion.
+  try{ window.addEventListener('load', function(){ setTimeout(function(){ try{ fetch('https://iviksyhzhiygkuaojply.supabase.co/functions/v1/stripe-checkout', { method:'OPTIONS' }).catch(function(){}); }catch(e){} }, 300); }); }catch(e){}
+</script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -1176,6 +1184,9 @@
     }
     const plan = selectedPlan;
     try{ sessionStorage.setItem('leoCheckoutPlan', plan); }catch(e){}
+    // Stripe.js se prepara en paralelo a la creacion de la sesion (antes iba uno despues del otro).
+    let stripe = null;
+    try{ if(typeof Stripe === 'function') stripe = Stripe(STRIPE_PUBLISHABLE_KEY); }catch(e){}
     const res = await LeoBackend.startStripeCheckout(plan, { track:false });
     if(token !== stripeMountToken) return; // la persona cambio de plan o de pantalla
     if(!res.ok){
@@ -1185,7 +1196,7 @@
       return;
     }
     try{
-      const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+      if(!stripe) stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
       const instance = await stripe.initEmbeddedCheckout({ clientSecret: res.clientSecret });
       if(token !== stripeMountToken){ try{ instance.destroy(); }catch(e){} return; }
       stripeEmbeddedInstance = instance;
