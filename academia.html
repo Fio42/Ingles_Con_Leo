@@ -56,7 +56,7 @@
 </script>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
 <link rel="stylesheet" href="style.css?v=20261026a">
-<link rel="stylesheet" href="academia.css?v=20261025e">
+<link rel="stylesheet" href="academia.css?v=20261027c">
 </head>
 <body class="ac-body">
 
@@ -70,9 +70,12 @@
       <a href="index.html">Inicio</a>
       <a href="articulos.html">Aprende inglés</a>
       <a href="practica.html">Practicar gratis</a>
-      <a href="miembros.html">Miembros</a>
-      <a href="academia.html" class="current">Academia</a>
+      <a href="miembros.html">Miembros</a><a href="academia.html" class="current">Academia</a>
+      <a href="clases-particulares.html" >Clases particulares</a>
+      <a href="index.html#contacto">Contacto</a>
     </nav>
+    <a href="miembros.html" class="btn btn-primary btn-sm nav-cta">Entrar a miembros</a>
+    <button class="nav-burger" aria-label="Abrir menú"><span></span></button>
   </div>
 </header>
 
@@ -81,6 +84,36 @@
     <noscript><p class="ac-text">La academia necesita JavaScript.</p></noscript>
   </div>
 </main>
+
+<footer>
+  <div class="wrap foot-row">
+    <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
+    <div class="foot-links">
+      <a href="index.html">Inicio</a>
+      <a href="articulos.html">Aprende inglés</a>
+      <a href="practica.html">Practicar</a>
+      <a href="miembros.html">Miembros</a>
+      <a href="academia-de-ingles.html">Academia</a>
+      <a href="clases-particulares.html">Clases con Leo</a>
+      <a href="privacidad.html">Privacidad</a>
+    </div>
+    <div class="foot-social">
+      <a href="https://www.youtube.com/@inglesconleooficial" target="_blank" rel="noopener" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 00-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 00-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 002 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 002-2C22 15.2 22 12 22 12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9.5l5 2.5-5 2.5v-5z" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@inglesconleooficial?_r=1&_t=ZS-99Y9bGwp6HM" target="_blank" rel="noopener" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M16 3c.4 2.2 1.9 3.8 4 4v3c-1.5 0-2.9-.4-4-1.2v6.1a5.9 5.9 0 11-5-5.8v3.1a2.9 2.9 0 102.4 2.8V3H16z" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.instagram.com/inglesconleooficial?stkn=em1pMWdwbWtxczRn" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor"/></svg>
+      </a>
+      <a href="https://www.facebook.com/share/19c4zQLsEn/" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M14 8.5h2.5V5H14c-2.2 0-4 1.8-4 4v2H8v3.5h2V21h3.5v-6.5H16l.5-3.5h-3V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+      </a>
+    </div>
+    <div class="foot-copy">© 2026 Inglés con Leo</div>
+  </div>
+</footer>
 
 <nav class="ac-tabs" id="acTabs" aria-label="Academia" hidden>
   <a href="#/" data-tab="ruta">
@@ -97,6 +130,18 @@
   </a>
 </nav>
 
+<script>
+(function(){
+  var burger = document.querySelector('.nav-burger'), links = document.querySelector('.nav-links');
+  if(!burger || !links) return;
+  burger.setAttribute('aria-expanded','false');
+  var setOpen = function(o){ links.classList.toggle('mnav-open', o); burger.setAttribute('aria-expanded', o ? 'true' : 'false'); };
+  burger.addEventListener('click', function(e){ e.stopPropagation(); setOpen(!links.classList.contains('mnav-open')); });
+  links.addEventListener('click', function(e){ if(e.target.closest('a')) setOpen(false); });
+  document.addEventListener('click', function(e){ if(!e.target.closest('.nav-links') && !e.target.closest('.nav-burger')) setOpen(false); });
+  window.addEventListener('resize', function(){ if(window.innerWidth >= 900) setOpen(false); });
+})();
+</script>
 <script src="academia-boot.js?v=20261027b"></script>
 <script src="academia-audio.js?v=20261027b"></script>
 <script src="academia-data.js?v=20261027b"></script>

@@ -261,3 +261,6 @@
 .ac-badge-won{font-weight:700;color:var(--green,#14804a);}
 .ac-sync{margin:12px 0 0;text-align:center;}
 .ac-btn-back{margin-bottom:2px;}
+
+/* Pie de pagina del sitio: que la barra inferior fija no lo tape */
+.ac-body footer{padding-bottom:calc(92px + env(safe-area-inset-bottom));}
