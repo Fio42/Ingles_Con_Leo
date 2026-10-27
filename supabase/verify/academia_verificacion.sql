@@ -28,3 +28,10 @@ select p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 -- F) Con las cuentas de prueba (despues de la prueba previa): una insignia por cuenta como maximo y sin lotes pendientes.
 select user_id, count(*) from public.academia_badges group by 1 having count(*) > 1;
 select count(*) pendientes from public.academia_mistake_batches where status = 'pending';
+
+-- G) Curso PRONOMBRES (despues de su migracion y de cargar su banco, aun apagado):
+-- 1 fila, enabled=false, demo_items vacio. Banco: 50 preguntas en 5 temas (10 por tema).
+select course_id, enabled, demo_items, pass_pct, engine_topic from public.academia_courses where course_id = 'pronombres';
+select topic, count(*) from public.academia_exam_items where course_id = 'pronombres' group by 1 order by 1;
+-- TO BE no cambio: sigue con su banco y sus datos.
+select course_id, count(*) from public.academia_exam_items group by 1;

@@ -4,7 +4,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert'), vm = require('vm');
 const root = path.join(__dirname, '..', '..');
 const ctx = {}; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';this.A=ACADEMIA;this.C=ACADEMIA_CONFIG;this.H=ACADEMIA_HOWTO;this.T=academiaAudioTexts(ACADEMIA.courses["to-be"]);', ctx);
+vm.runInContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';this.A=ACADEMIA;this.C=ACADEMIA_CONFIG;this.H=ACADEMIA_HOWTO;this.T=(function(){ var seen = {}, out = []; Object.keys(ACADEMIA.courses).forEach(function(id){ academiaAudioTexts(ACADEMIA.courses[id]).forEach(function(x){ if(!seen[x.t]){ seen[x.t] = 1; out.push(x); } }); }); return out; })();', ctx);
 const audioSrc = fs.readFileSync(path.join(root, 'academia-audio.js'), 'utf8');
 const MAN = (() => { const c2 = {}; vm.createContext(c2); vm.runInContext(audioSrc + ';this.M=ACADEMIA_AUDIO;', c2); return c2.M; })();
 const { execFileSync } = require('child_process');
@@ -76,8 +76,9 @@ test('audio: cada frase con boton tiene mp3 y el manifiesto coincide con el text
   assert.ok(T.length >= 80);
   T.forEach(x => { const m = MAN[x.t]; assert.ok(m, 'sin audio: ' + x.t); assert.strictEqual(m.v, x.v, 'voz ' + x.t); assert.ok(fs.existsSync(path.join(root, m.f)), m.f); });
   assert.strictEqual(Object.keys(MAN).length, T.length, 'el manifiesto tiene textos que ya no se usan');
-  const dir = path.join(root, 'audio/academia/to-be');
-  assert.strictEqual(fs.readdirSync(dir).filter(f => f.endsWith('.mp3')).length, T.length, 'mp3 sobrantes');
+  let n = 0;
+  Object.keys(A.courses).forEach(id => { n += fs.readdirSync(path.join(root, 'audio/academia/' + id)).filter(f => f.endsWith('.mp3')).length; });
+  assert.strictEqual(n, T.length, 'mp3 sobrantes');
 });
 test('audio: todo lo que se muestra con ingles escuchable esta en el manifiesto', () => {
   const need = [];

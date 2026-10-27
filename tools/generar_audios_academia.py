@@ -1,4 +1,4 @@
-"""Genera los audios en ingles de la Academia (curso TO BE) con Kokoro TTS: local, gratis, sin internet.
+"""Genera los audios en ingles de la Academia (todos los cursos) con Kokoro TTS: local, gratis, sin internet.
 
 Fuente unica: academiaAudioTexts() de academia-data.js (los textos que la pagina muestra con boton de audio).
 Asi el audio SIEMPRE corresponde al texto mostrado. Escribe tambien academia-audio.js (texto -> archivo),
@@ -23,13 +23,13 @@ MODELOS = os.environ.get("KOKORO_DIR") or os.path.join(AQUI, ".kokoro-models")
 VOCES = {"f": "af_heart", "m": "am_michael"}
 VELOCIDAD = 0.9
 RMS_OBJETIVO = 0.07
-CARPETA = "audio/academia/to-be"
+CURSOS = os.environ.get("ACADEMIA_CURSOS", "to-be,pronombres").split(",")
 
 
-def textos():
+def textos(curso):
     js = ("const fs=require('fs'),vm=require('vm');const c={};vm.createContext(c);"
-          "vm.runInContext(fs.readFileSync(%s,'utf8')+';this.L=academiaAudioTexts(ACADEMIA.courses[\"to-be\"]);',c);"
-          "console.log(JSON.stringify(c.L));") % json.dumps(os.path.join(RAIZ, "academia-data.js"))
+          "vm.runInContext(fs.readFileSync(%s,'utf8')+';this.L=academiaAudioTexts(ACADEMIA.courses[%s]);',c);"
+          "console.log(JSON.stringify(c.L));") % (json.dumps(os.path.join(RAIZ, "academia-data.js")), json.dumps(curso))
     return json.loads(subprocess.check_output(["node", "-e", js], text=True, encoding="utf-8"))
 
 
@@ -46,37 +46,45 @@ def a_mp3(samples, sr):
 
 def main():
     force = "--force" in sys.argv[1:]
-    lista = textos()
     k = Kokoro(os.path.join(MODELOS, "kokoro-v1.0.onnx"), os.path.join(MODELOS, "voices-v1.0.bin"))
-    destino_dir = os.path.join(RAIZ, CARPETA)
-    os.makedirs(destino_dir, exist_ok=True)
-    manifest, usados, hechos = {}, set(), 0
-    for it in lista:
-        t, v = it["t"], it["v"]
-        f = nombre(v, t)
-        usados.add(f)
-        ruta = os.path.join(destino_dir, f)
-        manifest[t] = {"f": CARPETA + "/" + f, "v": v}
-        if os.path.exists(ruta) and not force:
-            continue
-        s, sr = k.create(t, voice=VOCES[v], speed=VELOCIDAD, lang="en-us")
-        rms = float(np.sqrt(np.mean(np.square(s)))) or 1.0
-        s = s * (RMS_OBJETIVO / rms)
-        pico = float(np.max(np.abs(s))) or 1.0
-        if pico > 0.92:
-            s = s * (0.92 / pico)
-        audio = np.concatenate([np.zeros(int(sr * 0.05), dtype=np.float32), s, np.zeros(int(sr * 0.2), dtype=np.float32)])
-        with open(ruta, "wb") as fh:
-            fh.write(a_mp3(audio, sr))
-        hechos += 1
-        print("[OK] %-45s %.1fs" % (t[:45], len(audio) / sr))
-    for viejo in os.listdir(destino_dir):
-        if viejo.endswith(".mp3") and viejo not in usados:
-            os.remove(os.path.join(destino_dir, viejo)); print("[quitado] " + viejo)
+    manifest, hechos, total = {}, 0, 0
+    usados_por_curso = {}
+    for curso in CURSOS:
+        carpeta = "audio/academia/" + curso
+        destino_dir = os.path.join(RAIZ, carpeta)
+        os.makedirs(destino_dir, exist_ok=True)
+        usados = usados_por_curso.setdefault(carpeta, set())
+        for it in textos(curso):
+            t, v = it["t"], it["v"]
+            if t in manifest:           # un texto que ya tiene audio (de otro curso) se reutiliza: el audio no cambia
+                continue
+            total += 1
+            f = nombre(v, t)
+            usados.add(f)
+            ruta = os.path.join(destino_dir, f)
+            manifest[t] = {"f": carpeta + "/" + f, "v": v}
+            if os.path.exists(ruta) and not force:
+                continue
+            s, sr = k.create(t, voice=VOCES[v], speed=VELOCIDAD, lang="en-us")
+            rms = float(np.sqrt(np.mean(np.square(s)))) or 1.0
+            s = s * (RMS_OBJETIVO / rms)
+            pico = float(np.max(np.abs(s))) or 1.0
+            if pico > 0.92:
+                s = s * (0.92 / pico)
+            audio = np.concatenate([np.zeros(int(sr * 0.05), dtype=np.float32), s, np.zeros(int(sr * 0.2), dtype=np.float32)])
+            with open(ruta, "wb") as fh:
+                fh.write(a_mp3(audio, sr))
+            hechos += 1
+            print("[OK] %-45s %.1fs" % (t[:45], len(audio) / sr))
+    for carpeta, usados in usados_por_curso.items():
+        d = os.path.join(RAIZ, carpeta)
+        for viejo in os.listdir(d):
+            if viejo.endswith(".mp3") and viejo not in usados:
+                os.remove(os.path.join(d, viejo)); print("[quitado] " + viejo)
     with open(os.path.join(RAIZ, "academia-audio.js"), "w", encoding="utf-8") as fh:
         fh.write("/* Generado por tools/generar_audios_academia.py. No editar a mano. */\nvar ACADEMIA_AUDIO = "
                  + json.dumps(manifest, ensure_ascii=False, indent=1) + ";\n")
-    print("Listo: %d creados, %d textos en total." % (hechos, len(lista)))
+    print("Listo: %d creados, %d textos en total." % (hechos, total))
 
 
 if __name__ == "__main__":

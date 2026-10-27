@@ -10,7 +10,9 @@ const OUT = path.join(root, 'academia-motor.js');
 
 // Conexion con el registro de temas (temas.js) y con GRAMMAR_BANK: etiqueta EXACTA.
 const COURSES = {
-  'to-be': { tema: 'to-be-presente', engineTopic: 'Verbo "to be": am / is / are', level: 'facil' }
+  'to-be': { tema: 'to-be-presente', engineTopic: 'Verbo "to be": am / is / are', level: 'facil', open: true },
+  // open=false: el curso existe en el codigo pero el sitio todavia no lo recomienda (planes, progreso, errores). Se pone en true al lanzarlo.
+  'pronombres': { tema: 'pronombres', engineTopic: 'He / She / It (pronombres)', level: 'facil', open: false }
 };
 
 function build(){
@@ -28,7 +30,7 @@ function build(){
     // Examen OFICIAL (banco privado, ids e-<letra><n>): la letra es la inicial del tema. Solo se reservan los ids; no hay contenido.
     const letters = {}; Object.keys(c.topics).forEach(k => { if(letters[k[0]]) throw new Error('inicial repetida en temas: ' + k); letters[k[0]] = byTopic[k]; });
     Object.keys(letters).forEach(L => { for(let i = 1; i <= 12; i++) items['e-' + L + i] = letters[L]; });
-    courses[cid] = { title: c.title, tema: cfg.tema, engineTopic: cfg.engineTopic, level: cfg.level, topics: c.topics, lessons, items };
+    courses[cid] = { title: c.title, tema: cfg.tema, engineTopic: cfg.engineTopic, level: cfg.level, open: !!cfg.open, topics: c.topics, lessons, items };
   });
   return `/* GENERADO por tools/generar_academia_motor.js desde academia-data.js. No editar a mano.
    Puente entre la academia y el motor adaptativo (app.js). Sin contenido de lecciones: solo mapas.
@@ -56,7 +58,7 @@ var ACADEMIA_MOTOR = (function(){
   };
   M.courseForTema = function(temaId){
     var ids = Object.keys(DATA);
-    for(var i = 0; i < ids.length; i++) if(DATA[ids[i]].tema === temaId) return ids[i];
+    for(var i = 0; i < ids.length; i++) if(DATA[ids[i]].open && DATA[ids[i]].tema === temaId) return ids[i];
     return null;
   };
   /* Donde llevar al alumno para reforzar un tema: la leccion que mas errores activos acumula (empate: la menor).

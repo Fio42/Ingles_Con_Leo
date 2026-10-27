@@ -379,5 +379,229 @@ var ACADEMIA_AUDIO = {
  "It's very hot today. I am thirsty.": {
   "f": "audio/academia/to-be/703e73a759.mp3",
   "v": "f"
+ },
+ "I": {
+  "f": "audio/academia/pronombres/5a4977ecb7.mp3",
+  "v": "f"
+ },
+ "you": {
+  "f": "audio/academia/pronombres/2398d12a88.mp3",
+  "v": "f"
+ },
+ "he": {
+  "f": "audio/academia/pronombres/22823c1650.mp3",
+  "v": "f"
+ },
+ "she": {
+  "f": "audio/academia/pronombres/26c4a96be0.mp3",
+  "v": "f"
+ },
+ "it": {
+  "f": "audio/academia/pronombres/35b5cb8791.mp3",
+  "v": "f"
+ },
+ "we": {
+  "f": "audio/academia/pronombres/97ed5337f4.mp3",
+  "v": "f"
+ },
+ "they": {
+  "f": "audio/academia/pronombres/c44f203a0f.mp3",
+  "v": "f"
+ },
+ "I am at home.": {
+  "f": "audio/academia/pronombres/38bb18fb1c.mp3",
+  "v": "f"
+ },
+ "I am tired.": {
+  "f": "audio/academia/pronombres/8918635045.mp3",
+  "v": "f"
+ },
+ "You are tired.": {
+  "f": "audio/academia/pronombres/428bc74d16.mp3",
+  "v": "f"
+ },
+ "You are kind.": {
+  "f": "audio/academia/pronombres/bad9e218de.mp3",
+  "v": "f"
+ },
+ "She is my sister.": {
+  "f": "audio/academia/pronombres/2f30925004.mp3",
+  "v": "f"
+ },
+ "It is new.": {
+  "f": "audio/academia/pronombres/ea5c20748c.mp3",
+  "v": "f"
+ },
+ "It is cold.": {
+  "f": "audio/academia/pronombres/cd59334996.mp3",
+  "v": "f"
+ },
+ "It is 5 o'clock.": {
+  "f": "audio/academia/pronombres/f612921368.mp3",
+  "v": "f"
+ },
+ "It is cold today.": {
+  "f": "audio/academia/pronombres/ab4427caab.mp3",
+  "v": "f"
+ },
+ "My brother is tall. He is 18.": {
+  "f": "audio/academia/pronombres/e933c10c6b.mp3",
+  "v": "f"
+ },
+ "Ana is my friend. She is kind.": {
+  "f": "audio/academia/pronombres/966ed66353.mp3",
+  "v": "f"
+ },
+ "The phone is new. It is blue.": {
+  "f": "audio/academia/pronombres/ed45db4f1e.mp3",
+  "v": "f"
+ },
+ "It is sunny.": {
+  "f": "audio/academia/pronombres/9b4689f30d.mp3",
+  "v": "f"
+ },
+ "Carlos is my friend. He is from Peru.": {
+  "f": "audio/academia/pronombres/b538d15d00.mp3",
+  "v": "f"
+ },
+ "It is very cold.": {
+  "f": "audio/academia/pronombres/d99c2c8559.mp3",
+  "v": "f"
+ },
+ "It is very cold today.": {
+  "f": "audio/academia/pronombres/4b8fddeca0.mp3",
+  "v": "f"
+ },
+ "We are friends.": {
+  "f": "audio/academia/pronombres/50d61b98a3.mp3",
+  "v": "f"
+ },
+ "We are at school.": {
+  "f": "audio/academia/pronombres/2ee4f57fd7.mp3",
+  "v": "f"
+ },
+ "They are my parents.": {
+  "f": "audio/academia/pronombres/87f25d206b.mp3",
+  "v": "f"
+ },
+ "They are new.": {
+  "f": "audio/academia/pronombres/5b77989f01.mp3",
+  "v": "f"
+ },
+ "You are my friends.": {
+  "f": "audio/academia/pronombres/1e8407e70a.mp3",
+  "v": "f"
+ },
+ "My friend and I are students. We are in class.": {
+  "f": "audio/academia/pronombres/0ea2b3117a.mp3",
+  "v": "f"
+ },
+ "Carlos and Ana are my cousins. They are tall.": {
+  "f": "audio/academia/pronombres/23be56e976.mp3",
+  "v": "f"
+ },
+ "My keys are on the table. They are small.": {
+  "f": "audio/academia/pronombres/aa697b99f2.mp3",
+  "v": "f"
+ },
+ "Tom and I are neighbors. We are friends.": {
+  "f": "audio/academia/pronombres/3182688d8f.mp3",
+  "v": "f"
+ },
+ "They are my shoes.": {
+  "f": "audio/academia/pronombres/35d26601a2.mp3",
+  "v": "f"
+ },
+ "They are my cousins.": {
+  "f": "audio/academia/pronombres/342f0c1249.mp3",
+  "v": "f"
+ },
+ "Ana is tired. Ana is hungry.": {
+  "f": "audio/academia/pronombres/18d5d0ede0.mp3",
+  "v": "f"
+ },
+ "Ana is tired. She is hungry.": {
+  "f": "audio/academia/pronombres/087adb8756.mp3",
+  "v": "f"
+ },
+ "My sister is at work. She is tired.": {
+  "f": "audio/academia/pronombres/6b6daead20.mp3",
+  "v": "f"
+ },
+ "The car is new. It is red.": {
+  "f": "audio/academia/pronombres/da3a5d0874.mp3",
+  "v": "f"
+ },
+ "I am ready.": {
+  "f": "audio/academia/pronombres/4a7300c655.mp3",
+  "v": "f"
+ },
+ "Mr. Smith is my teacher. He is kind.": {
+  "f": "audio/academia/pronombres/4fd48cb696.mp3",
+  "v": "f"
+ },
+ "My sister and I are at the park. We are happy.": {
+  "f": "audio/academia/pronombres/65697ab8eb.mp3",
+  "v": "f"
+ },
+ "He is a doctor.": {
+  "f": "audio/academia/pronombres/6c9444bf96.mp3",
+  "v": "f"
+ },
+ "I am Ana. I am from Lima.": {
+  "f": "audio/academia/pronombres/c618572585.mp3",
+  "v": "f"
+ },
+ "He is my brother. He is 20.": {
+  "f": "audio/academia/pronombres/41e965077a.mp3",
+  "v": "f"
+ },
+ "She is my friend. She is from Chile.": {
+  "f": "audio/academia/pronombres/d802127ac3.mp3",
+  "v": "f"
+ },
+ "She is my mother.": {
+  "f": "audio/academia/pronombres/4679666f93.mp3",
+  "v": "f"
+ },
+ "He is my father.": {
+  "f": "audio/academia/pronombres/c244c92886.mp3",
+  "v": "f"
+ },
+ "They are my grandparents.": {
+  "f": "audio/academia/pronombres/88f26ff9f3.mp3",
+  "v": "f"
+ },
+ "We are brothers.": {
+  "f": "audio/academia/pronombres/9092364f85.mp3",
+  "v": "f"
+ },
+ "It is a good phone.": {
+  "f": "audio/academia/pronombres/d8b925110c.mp3",
+  "v": "f"
+ },
+ "It is hot today.": {
+  "f": "audio/academia/pronombres/ef0a42966d.mp3",
+  "v": "f"
+ },
+ "It is 8 o'clock.": {
+  "f": "audio/academia/pronombres/aad50a679f.mp3",
+  "v": "f"
+ },
+ "They are very big.": {
+  "f": "audio/academia/pronombres/86766cdfbd.mp3",
+  "v": "f"
+ },
+ "My grandparents are at home. They are happy.": {
+  "f": "audio/academia/pronombres/8aa8457b49.mp3",
+  "v": "f"
+ },
+ "Ana and Sofia are sisters. They are tall.": {
+  "f": "audio/academia/pronombres/ffd306cab8.mp3",
+  "v": "f"
+ },
+ "He is my uncle.": {
+  "f": "audio/academia/pronombres/97acd57f84.mp3",
+  "v": "f"
  }
 };

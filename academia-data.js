@@ -61,6 +61,7 @@ var ACADEMIA = {
     'to-be': {
       id: 'to-be',
       title: 'Domina el verbo TO BE',
+      name: 'TO BE',
       short: 'Am, is y are',
       tagline: 'Aprende a decir quién eres, cómo estás y dónde estás.',
       goal: 'Al terminar podrás presentarte, hablar de otras personas y hacer y contestar preguntas con am, is y are.',
@@ -557,6 +558,486 @@ var ACADEMIA = {
             why: 'They son varias personas, así que va con are.' }
         ]
       }
+    },
+
+    'pronombres': {
+      id: 'pronombres',
+      title: 'Pronombres personales',
+      name: 'Pronombres personales',
+      short: 'I, you, he, she, it, we, they',
+      tagline: 'Aprende a decir quién eres tú, quién es otra persona y quiénes son varios.',
+      goal: 'Al terminar podrás elegir el pronombre correcto, cambiar nombres por pronombres y armar frases básicas sobre ti y sobre otras personas.',
+      topics: {
+        yotu: 'I y you',
+        hesheit: 'He, she e it',
+        plural: 'We, they y you en plural',
+        sustituir: 'Cambiar nombres por pronombres',
+        vida: 'Pronombres en situaciones reales'
+      },
+
+      lessons: [
+        /* ------------------------------------------------------------ 1 */
+        {
+          id: 'i-you', n: 1, minutes: 5, topic: 'yotu',
+          title: 'I y you',
+          summary: 'Hablar de ti y hablar con otra persona.',
+          canSay: ['I am Ana.', 'You are my friend.', 'I am at home.'],
+          screens: [
+            {
+              title: 'Los siete pronombres',
+              text: 'Un pronombre personal reemplaza a la persona o la cosa que hace algo. En inglés hay siete. Aquí vemos los que van al inicio de la frase.',
+              chips: [
+                { a: 'yo', b: 'I' },
+                { a: 'tú · usted', b: 'you' },
+                { a: 'él', b: 'he' },
+                { a: 'ella', b: 'she' },
+                { a: 'cosa · clima', b: 'it' },
+                { a: 'nosotros', b: 'we' },
+                { a: 'ellos · ellas', b: 'they' }
+              ],
+              listen: ['I', 'you', 'he', 'she', 'it', 'we', 'they']
+            },
+            {
+              title: 'I: yo',
+              text: 'I significa yo y siempre se escribe con mayúscula. En español puedes decir solo "Soy Ana". En inglés casi siempre se dice el pronombre.',
+              compare: { wrong: 'Am Ana.', right: 'I am Ana.' },
+              items: [
+                { en: 'I am Ana.', es: 'Yo soy Ana.' },
+                { en: 'I am at home.', es: 'Estoy en casa.' },
+                { en: 'I am tired.', es: 'Estoy cansado.' }
+              ]
+            },
+            {
+              title: 'You: tú o usted',
+              text: 'You significa tú y también usted. En inglés no hay una palabra distinta para hablar con más respeto: you sirve para las dos.',
+              items: [
+                { en: 'You are my friend.', es: 'Tú eres mi amigo.' },
+                { en: 'You are very kind.', es: 'Usted es muy amable.' }
+              ]
+            },
+            {
+              title: 'I habla de mí, you habla contigo',
+              text: 'Para cambiar de persona, solo cambia el pronombre. Lo demás se queda igual.',
+              change: { a: { label: 'Hablo de mí', text: 'I am tired.', es: 'Estoy cansado.' }, b: { label: 'Hablo con otra persona', text: 'You are tired.', es: 'Estás cansado.' } },
+              listen: ['I am tired.', 'You are tired.'],
+              note: 'En la lección 3 verás que you también sirve para hablar con varias personas.'
+            }
+          ],
+          activities: [
+            { id: 'l1-a1', type: 'choice', topic: 'yotu', q: '___ am Ana.', options: ['I', 'You', 'He'], answer: 0,
+              why: 'Hablas de ti, así que usas I (yo): I am Ana.' },
+            { id: 'l1-a2', type: 'choice', say: 'You are kind.', topic: 'yotu', q: 'Le hablas a tu amigo: ___ are kind.', options: ['I', 'You', 'She'], answer: 1,
+              why: 'Hablas con tu amigo, así que usas you: You are kind.' },
+            { id: 'l1-a3', type: 'choice', topic: 'yotu', q: '¿Cómo se dice "Yo estoy cansado"?',
+              options: ['I am tired.', 'You am tired.', 'Am tired.'], answer: 0,
+              wrongWhy: { 'You am tired.': 'You significa tú. Para decir yo se usa I.', 'Am tired.': 'Falta el pronombre. En inglés se dice I am tired.' },
+              why: 'Yo se dice I, y no se omite: I am tired.' },
+            { id: 'l1-a4', type: 'match', topic: 'yotu', q: 'Relaciona cada frase con su traducción.',
+              pairs: [['Yo soy Ana.', 'I am Ana.'], ['Tú eres Ana.', 'You are Ana.'], ['Yo estoy en casa.', 'I am at home.']],
+              why: 'Yo se dice I y tú se dice you.' },
+            { id: 'l1-a5', type: 'type', topic: 'yotu', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: '___ are my friend.',
+              accepted: ['you'], show: 'you', why: 'Hablas con tu amigo, así que usas you.' },
+            { id: 'l1-a6', type: 'error', topic: 'yotu', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['I am a teacher.', 'You are very kind.', 'Am at home.'], wrong: 2, fix: 'I am at home.',
+              why: 'Falta el pronombre. En inglés no se dice "Am at home", se dice I am at home.' },
+            { id: 'l1-a7', type: 'order', topic: 'yotu', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['I', 'am', 'at', 'home.'],
+              why: 'Primero el pronombre I, luego am y luego dónde estás.' },
+            { id: 'l1-a8', type: 'write', topic: 'yotu', q: 'Escribe una frase sobre ti que empiece con I. Puedes decir tu nombre o cómo estás.',
+              example: 'I am Ana. I am happy.',
+              checks: [
+                { re: '(^|[.!?]\\s*)(I\\s+\\S+|I.m\\s+\\S+)', msg: 'Empieza con I, con mayúscula, y sigue con am o con lo que quieras decir. Por ejemplo: I am Ana.' }
+              ],
+              why: 'Para hablar de ti empiezas con I, siempre con mayúscula.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 2 */
+        {
+          id: 'he-she-it', n: 2, minutes: 5, topic: 'hesheit',
+          title: 'He, she e it',
+          summary: 'Hablar de un hombre, una mujer o una cosa.',
+          canSay: ['He is my brother.', 'She is a nurse.', 'It is cold today.'],
+          screens: [
+            {
+              title: 'He y she: una persona',
+              text: 'He es él y she es ella. Los dos se usan para una sola persona. Elige según sea hombre o mujer.',
+              chips: [
+                { a: 'él', b: 'he' },
+                { a: 'ella', b: 'she' }
+              ],
+              items: [
+                { en: 'He is my brother.', es: 'Él es mi hermano.' },
+                { en: 'She is my sister.', es: 'Ella es mi hermana.' }
+              ]
+            },
+            {
+              title: 'It: una cosa, el clima o la hora',
+              text: 'It se usa para una cosa, para el clima, para la hora y para hablar de una situación. Para una persona que conoces, usa he o she.',
+              table: {
+                head: ['Hablo de', 'Digo'],
+                rows: [
+                  ['Una cosa: the phone', 'It is new.'],
+                  ['El clima', 'It is cold.'],
+                  ['La hora', "It is 5 o'clock."]
+                ]
+              },
+              items: [
+                { en: 'It is new.', es: 'Es nuevo.' },
+                { en: 'It is cold.', es: 'Hace frío.' },
+                { en: "It is 5 o'clock.", es: 'Son las cinco.' }
+              ],
+              note: 'Con los animales también se usa it. Si es tu mascota y sabes si es macho o hembra, muchas personas dicen he o she.'
+            },
+            {
+              title: 'Elige: he, she o it',
+              text: 'Piensa en quién o qué es, no en cómo suena la palabra.',
+              table: {
+                head: ['Dices', 'Usas'],
+                rows: [
+                  ['Carlos', 'he'],
+                  ['Ana', 'she'],
+                  ['my mother', 'she'],
+                  ['the table', 'it'],
+                  ['the weather', 'it']
+                ]
+              }
+            },
+            {
+              title: 'En inglés no se omite el sujeto',
+              text: 'En español dices "Hace frío" sin decir quién. En inglés necesitas it.',
+              compare: { wrong: 'Is cold.', right: 'It is cold.' },
+              items: [
+                { en: 'It is cold today.', es: 'Hoy hace frío.' },
+                { en: 'She is tired.', es: 'Ella está cansada.' }
+              ]
+            }
+          ],
+          activities: [
+            { id: 'l2-a1', type: 'choice', topic: 'hesheit', q: 'My brother is tall. ___ is 18.', options: ['He', 'She', 'It'], answer: 0,
+              why: 'My brother es un hombre, así que usamos he.' },
+            { id: 'l2-a2', type: 'choice', topic: 'hesheit', q: 'Ana is my friend. ___ is kind.', options: ['He', 'She', 'It'], answer: 1,
+              why: 'Ana es una mujer, así que usamos she.' },
+            { id: 'l2-a3', type: 'choice', topic: 'hesheit', q: 'The phone is new. ___ is blue.', options: ['He', 'She', 'It'], answer: 2,
+              why: 'The phone es una cosa, así que usamos it.' },
+            { id: 'l2-a4', type: 'choice', say: 'It is sunny.', topic: 'hesheit', q: 'Hablas del clima: ___ is sunny.', options: ['She', 'It', 'He'], answer: 1,
+              why: 'Para hablar del clima usamos it: It is sunny.' },
+            { id: 'l2-a5', type: 'match', topic: 'hesheit', q: 'Relaciona cada palabra con su pronombre.',
+              pairs: [['Mi padre', 'he'], ['Mi hermana', 'she'], ['La mesa', 'it']],
+              why: 'Un hombre es he, una mujer es she y una cosa es it.' },
+            { id: 'l2-a6', type: 'type', topic: 'hesheit', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'Carlos is my friend. ___ is from Peru.',
+              accepted: ['he'], show: 'he', why: 'Carlos es un hombre, así que usamos he.' },
+            { id: 'l2-a7', type: 'error', topic: 'hesheit', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['She is my sister.', 'Is very cold.', 'He is my teacher.'], wrong: 1, fix: 'It is very cold.',
+              why: 'Falta el pronombre. Para el clima se dice It is very cold.' },
+            { id: 'l2-a8', type: 'order', topic: 'hesheit', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['It', 'is', 'very', 'cold', 'today.'],
+              why: 'Primero it, luego is y luego la información.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 3 */
+        {
+          id: 'we-they-you', n: 3, minutes: 5, topic: 'plural',
+          title: 'We, they y you en plural',
+          summary: 'Hablar de varias personas o cosas.',
+          canSay: ['We are friends.', 'They are my parents.', 'You are my friends.'],
+          screens: [
+            {
+              title: 'We: nosotros',
+              text: 'We significa nosotros o nosotras. Lo usas cuando tú estás dentro del grupo.',
+              table: {
+                head: ['Dices', 'Usas'],
+                rows: [
+                  ['Ana and I', 'we'],
+                  ['My friend and I', 'we'],
+                  ['You and I', 'we']
+                ]
+              },
+              items: [
+                { en: 'We are friends.', es: 'Somos amigos.' },
+                { en: 'We are at school.', es: 'Estamos en la escuela.' }
+              ]
+            },
+            {
+              title: 'They: ellos o ellas',
+              text: 'They sirve para varias personas o varias cosas. No distingue entre ellos y ellas.',
+              table: {
+                head: ['Dices', 'Usas'],
+                rows: [
+                  ['Carlos and Ana', 'they'],
+                  ['my shoes', 'they'],
+                  ['the keys', 'they']
+                ]
+              },
+              items: [
+                { en: 'They are my parents.', es: 'Ellos son mis padres.' },
+                { en: 'They are new.', es: 'Son nuevos.' }
+              ]
+            },
+            {
+              title: 'You también es plural',
+              text: 'You significa tú, usted y también ustedes. Si hablas con varias personas, sigue siendo you.',
+              items: [
+                { en: 'You are my friend.', es: 'Tú eres mi amigo.' },
+                { en: 'You are my friends.', es: 'Ustedes son mis amigos.' }
+              ],
+              note: 'En inglés no hay una palabra especial para ustedes. Se entiende por el contexto.'
+            },
+            {
+              title: 'El mapa completo',
+              text: 'A la izquierda, una persona o cosa. A la derecha, varias. Fíjate en que you no cambia.',
+              table: {
+                head: ['Una', 'Varias'],
+                rows: [
+                  ['I', 'we'],
+                  ['you', 'you'],
+                  ['he · she · it', 'they']
+                ]
+              }
+            }
+          ],
+          activities: [
+            { id: 'l3-a1', type: 'choice', topic: 'plural', q: 'My friend and I are students. ___ are in class.', options: ['We', 'They', 'It'], answer: 0,
+              why: 'My friend and I incluye a quien habla, así que usamos we.' },
+            { id: 'l3-a2', type: 'choice', topic: 'plural', q: 'Carlos and Ana are my cousins. ___ are tall.', options: ['We', 'They', 'He'], answer: 1,
+              why: 'Carlos and Ana son varias personas, así que usamos they.' },
+            { id: 'l3-a3', type: 'choice', topic: 'plural', q: 'My keys are on the table. ___ are small.', options: ['It', 'He', 'They'], answer: 2,
+              why: 'My keys son varias cosas, así que usamos they.' },
+            { id: 'l3-a4', type: 'choice', topic: 'plural', q: '¿Cómo se dice "Ustedes son mis amigos"?',
+              options: ['You are my friends.', 'They are my friends.', 'Ustedes are my friends.'], answer: 0,
+              wrongWhy: { 'They are my friends.': 'They significa ellos. Si hablas con ellos, se usa you.', 'Ustedes are my friends.': 'Ustedes no existe en inglés. Se usa you.' },
+              why: 'Para hablar con varias personas se usa you.' },
+            { id: 'l3-a5', type: 'match', topic: 'plural', q: 'Relaciona cada palabra con su pronombre.',
+              pairs: [['nosotros', 'we'], ['ellos o ellas', 'they'], ['tú, usted o ustedes', 'you']],
+              why: 'Nosotros es we, ellos o ellas es they y you sirve para tú, usted y ustedes.' },
+            { id: 'l3-a6', type: 'type', topic: 'plural', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'Tom and I are neighbors. ___ are friends.',
+              accepted: ['we'], show: 'we', why: 'Tom and I incluye a quien habla, así que usamos we.' },
+            { id: 'l3-a7', type: 'error', topic: 'plural', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['They are my parents.', 'We are at home.', 'It are my shoes.'], wrong: 2, fix: 'They are my shoes.',
+              why: 'My shoes son varias cosas, así que usamos they, no it.' },
+            { id: 'l3-a8', type: 'order', topic: 'plural', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['They', 'are', 'my', 'cousins.'],
+              why: 'Primero they, luego are y luego quiénes son.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 4 */
+        {
+          id: 'cambiar-nombres', n: 4, minutes: 6, topic: 'sustituir',
+          title: 'Cambiar nombres por pronombres',
+          summary: 'Elegir el pronombre y armar frases completas.',
+          canSay: ['She is a doctor.', 'We are at school.', 'They are new.'],
+          screens: [
+            {
+              title: 'Para no repetir el nombre',
+              text: 'Un pronombre evita repetir el nombre una y otra vez. Compara.',
+              change: { a: { label: 'Repite el nombre', text: 'Ana is tired. Ana is hungry.', es: 'Ana está cansada. Ana tiene hambre.' }, b: { label: 'Con pronombre', text: 'Ana is tired. She is hungry.', es: 'Ana está cansada. Ella tiene hambre.' } },
+              listen: ['Ana is tired. Ana is hungry.', 'Ana is tired. She is hungry.']
+            },
+            {
+              title: 'Cómo elegir el pronombre',
+              text: 'Primero pregunta: ¿es una persona o son varias? Si es una sola, pregunta: ¿es un hombre, una mujer o una cosa?',
+              table: {
+                head: ['Hablo de', 'Uso'],
+                rows: [
+                  ['Un hombre', 'he'],
+                  ['Una mujer', 'she'],
+                  ['Una cosa, el clima o la hora', 'it'],
+                  ['Yo y otras personas', 'we'],
+                  ['Varias personas o cosas', 'they']
+                ]
+              }
+            },
+            {
+              title: 'Cambia el nombre',
+              text: 'Solo se reemplaza el sujeto, que es lo que va antes del verbo. El resto de la frase se queda igual.',
+              table: {
+                head: ['Dices', 'Usas'],
+                rows: [
+                  ['Mr. Smith', 'he'],
+                  ['Ms. Brown', 'she'],
+                  ['the car', 'it'],
+                  ['Tom and Ana', 'they'],
+                  ['my sister and I', 'we']
+                ]
+              },
+              items: [
+                { en: 'My sister is at work. She is tired.', es: 'Mi hermana está en el trabajo. Está cansada.' },
+                { en: 'The car is new. It is red.', es: 'El carro es nuevo. Es rojo.' }
+              ]
+            },
+            {
+              title: 'Una frase básica',
+              text: 'Primero quién, luego am, is o are, y al final la información. Estos verbos los practicas en el curso TO BE.',
+              table: {
+                head: ['Pronombre', 'Verbo', 'Información'],
+                rows: [
+                  ['I', 'am', 'ready.'],
+                  ['She', 'is', 'a doctor.'],
+                  ['It', 'is', 'cold.'],
+                  ['We', 'are', 'at school.']
+                ]
+              },
+              listen: ['I am ready.', 'She is a doctor.', 'It is cold.', 'We are at school.']
+            }
+          ],
+          activities: [
+            { id: 'l4-a1', type: 'choice', topic: 'sustituir', q: 'Mr. Smith is my teacher. ___ is kind.', options: ['He', 'She', 'They'], answer: 0,
+              why: 'Mr. Smith es un hombre, así que usamos he.' },
+            { id: 'l4-a2', type: 'choice', topic: 'sustituir', q: 'My sister and I are at the park. ___ are happy.', options: ['They', 'We', 'She'], answer: 1,
+              why: 'My sister and I incluye a quien habla, así que usamos we.' },
+            { id: 'l4-a3', type: 'choice', topic: 'sustituir', q: '¿Qué pronombre reemplaza a "the windows"?', options: ['it', 'they', 'we'], answer: 1,
+              why: 'The windows son varias cosas, así que usamos they.' },
+            { id: 'l4-a4', type: 'choice', topic: 'sustituir', q: '¿Qué pronombre reemplaza a "Tom and Ana"?', options: ['they', 'we', 'she'], answer: 0,
+              why: 'Tom and Ana son dos personas, así que usamos they.' },
+            { id: 'l4-a5', type: 'type', topic: 'sustituir', q: 'Cambia el nombre por un pronombre.', ex: 'Ana is tired.  →  She is tired.', source: 'My father is a doctor.',
+              accepted: ['he is a doctor', "he's a doctor"], show: 'He is a doctor.', why: 'My father es un hombre, así que va he.' },
+            { id: 'l4-a6', type: 'type', topic: 'sustituir', q: 'Cambia el nombre por un pronombre.', ex: 'Ana is tired.  →  She is tired.', source: 'The books are new.',
+              accepted: ['they are new', "they're new"], show: 'They are new.', why: 'The books son varias cosas, así que va they.' },
+            { id: 'l4-a7', type: 'error', topic: 'sustituir', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['They are my friends.', 'He is my sister.', 'It is very cold.'], wrong: 1, fix: 'She is my sister.',
+              why: 'My sister es una mujer, así que usamos she, no he.' },
+            { id: 'l4-a8', type: 'write', topic: 'sustituir', q: 'Escribe dos frases: una sobre ti con I y otra sobre un amigo o familiar con he o she.',
+              example: 'I am happy. She is my sister.',
+              checks: [
+                { re: '(^|[.!?]\\s*)(I\\s+\\S+|I.m\\s+\\S+)', msg: 'Falta una frase sobre ti que empiece con I. Por ejemplo: I am happy.' },
+                { re: "\\b(he|she)(\\s+is|.s)\\s+\\S+", flags: 'i', msg: 'Falta una frase con he o she. Por ejemplo: She is my sister.' }
+              ],
+              why: 'Para ti usas I y para otra persona usas he o she.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 5 */
+        {
+          id: 'vida-real', n: 5, minutes: 6, topic: 'vida',
+          title: 'Pronombres en la vida real',
+          summary: 'Presentarte, hablar de tu familia y de las cosas.',
+          canSay: ['I am Ana.', 'She is my mother.', 'They are my grandparents.'],
+          screens: [
+            {
+              title: 'Preséntate y presenta a otros',
+              text: 'Cuando hablas de ti usas I. Cuando presentas a otra persona usas he o she.',
+              items: [
+                { en: 'I am Ana. I am from Lima.', es: 'Soy Ana. Soy de Lima.' },
+                { en: 'He is my brother. He is 20.', es: 'Él es mi hermano. Tiene 20 años.' },
+                { en: 'She is my friend. She is from Chile.', es: 'Ella es mi amiga. Es de Chile.' }
+              ]
+            },
+            {
+              title: 'En la foto familiar',
+              text: 'El pronombre cambia según de quién hablas.',
+              table: {
+                head: ['Hablo de', 'Digo'],
+                rows: [
+                  ['Tu mamá', 'She is my mother.'],
+                  ['Tu papá', 'He is my father.'],
+                  ['Tus abuelos', 'They are my grandparents.'],
+                  ['Tú y tu hermano', 'We are brothers.']
+                ]
+              },
+              listen: ['She is my mother.', 'He is my father.', 'They are my grandparents.', 'We are brothers.']
+            },
+            {
+              title: 'Cosas, clima y hora',
+              text: 'It y they también sirven para cosas, para el clima y para la hora.',
+              items: [
+                { en: 'It is a good phone.', es: 'Es un buen teléfono.' },
+                { en: 'It is hot today.', es: 'Hoy hace calor.' },
+                { en: "It is 8 o'clock.", es: 'Son las ocho.' },
+                { en: 'They are very big.', es: 'Son muy grandes.' }
+              ]
+            },
+            {
+              title: 'Repaso antes de practicar',
+              text: 'Estos son los siete pronombres y cuándo usarlos.',
+              table: {
+                head: ['Pronombre', 'Lo uso para'],
+                rows: [
+                  ['I', 'yo'],
+                  ['you', 'tú, usted o ustedes'],
+                  ['he', 'un hombre'],
+                  ['she', 'una mujer'],
+                  ['it', 'una cosa, el clima o la hora'],
+                  ['we', 'nosotros'],
+                  ['they', 'varias personas o cosas']
+                ]
+              },
+              note: 'Si dudas, piensa de quién hablas y si es uno o son varios.'
+            }
+          ],
+          activities: [
+            { id: 'l5-a1', type: 'choice', topic: 'vida', q: 'Hablas con tus compañeros de clase: ___ are ready.', options: ['You', 'We', 'They'], answer: 0,
+              why: 'Hablas con ellos, así que usas you, aunque sean varias personas.' },
+            { id: 'l5-a2', type: 'choice', topic: 'vida', q: 'My grandparents are at home. ___ are happy.', options: ['He', 'They', 'We'], answer: 1,
+              why: 'My grandparents son varias personas, así que usamos they.' },
+            { id: 'l5-a3', type: 'choice', say: 'It is 8 o\'clock.', topic: 'vida', q: 'Hablas de la hora: ___ is 8 o\'clock.', options: ['She', 'It', 'They'], answer: 1,
+              why: 'Para hablar de la hora usamos it: It is 8 o\'clock.' },
+            { id: 'l5-a4', type: 'choice', topic: 'vida', q: '¿Cómo se dice "Ella es mi mamá"?',
+              options: ['She is my mother.', 'He is my mother.', 'It is my mother.'], answer: 0,
+              wrongWhy: { 'He is my mother.': 'He se usa para un hombre. Tu mamá es una mujer: she.', 'It is my mother.': 'It se usa para cosas. Para una persona usa he o she.' },
+              why: 'Tu mamá es una mujer: She is my mother.' },
+            { id: 'l5-a5', type: 'type', topic: 'vida', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'Ana and Sofia are sisters. ___ are tall.',
+              accepted: ['they'], show: 'they', why: 'Ana and Sofia son dos personas, así que usamos they.' },
+            { id: 'l5-a6', type: 'error', topic: 'vida', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['She is my uncle.', 'We are friends.', 'They are at home.'], wrong: 0, fix: 'He is my uncle.',
+              why: 'My uncle es un hombre, así que usamos he.' },
+            { id: 'l5-a7', type: 'order', topic: 'vida', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['They', 'are', 'my', 'grandparents.'],
+              why: 'Primero they, luego are y luego quiénes son.' },
+            { id: 'l5-a8', type: 'write', topic: 'vida', q: 'Escribe una frase sobre una persona de tu familia. Usa he o she.',
+              example: 'She is my sister. She is 20.',
+              checks: [
+                { re: "\\b(he|she)(\\s+is|.s)\\s+\\S+", flags: 'i', msg: 'Usa he o she y sigue con is. Por ejemplo: She is my sister.' }
+              ],
+              why: 'Para una persona de tu familia usas he si es hombre y she si es mujer.' }
+          ]
+        }
+      ],
+
+      /* ---------------------------------------------------------- Evaluación (práctica, en el navegador) */
+      exam: {
+        id: 'pronombres-final', n: 6,
+        title: 'Evaluación final (práctica)',
+        bank: [
+          /* yotu */
+          { id: 'x-y1', type: 'choice', topic: 'yotu', q: '___ am a student.', options: ['You', 'I', 'She'], answer: 1, why: 'Hablas de ti: I am a student.' },
+          { id: 'x-y2', type: 'choice', say: 'You are very kind.', topic: 'yotu', q: 'Hablas con tu profesor: ___ are very kind.', options: ['You', 'I', 'We'], answer: 0, why: 'Hablas con tu profesor, así que usas you. Sirve para tú y para usted.' },
+          { id: 'x-y3', type: 'choice', topic: 'yotu', q: '¿Cómo se dice "Estoy en casa"?', options: ['Am at home.', 'I am at home.', 'You am at home.'], answer: 1,
+            wrongWhy: { 'Am at home.': 'Falta el pronombre. En inglés se dice I am at home.', 'You am at home.': 'You significa tú. Para decir yo usa I.' }, why: 'Estoy en casa se dice I am at home.' },
+          { id: 'x-y4', type: 'error', topic: 'yotu', q: 'Una de estas frases tiene un error. Tócala.', options: ['You are my friend.', 'Am very happy.', 'I am from Peru.'], wrong: 1, fix: 'I am very happy.', why: 'Falta el pronombre: I am very happy.' },
+          { id: 'x-y5', type: 'type', topic: 'yotu', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: '___ am hungry.', accepted: ['i'], show: 'I', why: 'Hablas de ti: I am hungry.' },
+          { id: 'x-y6', type: 'order', topic: 'yotu', q: 'Ordena las palabras para formar una frase.', tokens: ['You', 'are', 'very', 'kind.'], why: 'Primero you, luego are y luego la información.' },
+          /* hesheit */
+          { id: 'x-h1', type: 'choice', topic: 'hesheit', q: 'My uncle is a pilot. ___ is tall.', options: ['She', 'He', 'It'], answer: 1, why: 'My uncle es un hombre: he.' },
+          { id: 'x-h2', type: 'choice', topic: 'hesheit', q: 'My mother is at work. ___ is tired.', options: ['She', 'He', 'It'], answer: 0, why: 'My mother es una mujer: she.' },
+          { id: 'x-h3', type: 'choice', topic: 'hesheit', q: 'The car is old. ___ is red.', options: ['He', 'She', 'It'], answer: 2, why: 'The car es una cosa: it.' },
+          { id: 'x-h4', type: 'type', topic: 'hesheit', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'Look outside. ___ is rainy.', accepted: ['it'], show: 'it', why: 'Para el clima usamos it.' },
+          { id: 'x-h5', type: 'error', topic: 'hesheit', q: 'Una de estas frases tiene un error. Tócala.', options: ['She is a doctor.', 'He is my cousin.', 'Is very late.'], wrong: 2, fix: 'It is very late.', why: 'Falta el pronombre: It is very late.' },
+          { id: 'x-h6', type: 'order', topic: 'hesheit', q: 'Ordena las palabras para formar una frase.', tokens: ['She', 'is', 'my', 'teacher.'], why: 'Primero she, luego is y luego quién es.' },
+          /* plural */
+          { id: 'x-p1', type: 'choice', topic: 'plural', q: 'My brother and I are at home. ___ are tired.', options: ['They', 'We', 'You'], answer: 1, why: 'My brother and I incluye a quien habla: we.' },
+          { id: 'x-p2', type: 'choice', topic: 'plural', q: 'Pablo and Marta are students. ___ are in class.', options: ['They', 'We', 'He'], answer: 0, why: 'Pablo and Marta son dos personas: they.' },
+          { id: 'x-p3', type: 'choice', say: 'You are great.', topic: 'plural', q: 'Hablas con tres amigos: ___ are great.', options: ['They', 'We', 'You'], answer: 2, why: 'Hablas con ellos, así que usas you.' },
+          { id: 'x-p4', type: 'type', topic: 'plural', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'The apples are red. ___ are sweet.', accepted: ['they'], show: 'they', why: 'The apples son varias cosas: they.' },
+          { id: 'x-p5', type: 'error', topic: 'plural', q: 'Una de estas frases tiene un error. Tócala.', options: ['We are friends.', 'It are my books.', 'They are at home.'], wrong: 1, fix: 'They are my books.', why: 'My books son varias cosas: they, no it.' },
+          { id: 'x-p6', type: 'order', topic: 'plural', q: 'Ordena las palabras para formar una frase.', tokens: ['We', 'are', 'at', 'school.'], why: 'Primero we, luego are y luego dónde estamos.' },
+          /* sustituir */
+          { id: 'x-s1', type: 'choice', topic: 'sustituir', q: '¿Qué pronombre reemplaza a "Ms. Lee"?', options: ['he', 'she', 'it'], answer: 1, why: 'Ms. Lee es una mujer: she.' },
+          { id: 'x-s2', type: 'choice', topic: 'sustituir', q: '¿Qué pronombre reemplaza a "the dishes"?', options: ['it', 'we', 'they'], answer: 2, why: 'The dishes son varias cosas: they.' },
+          { id: 'x-s3', type: 'choice', topic: 'sustituir', q: '¿Qué pronombre reemplaza a "my friend and I"?', options: ['we', 'they', 'you'], answer: 0, why: 'My friend and I incluye a quien habla: we.' },
+          { id: 'x-s4', type: 'type', topic: 'sustituir', q: 'Cambia el nombre por un pronombre.', ex: 'Ana is tired.  →  She is tired.', source: 'My mother is a nurse.', accepted: ['she is a nurse', "she's a nurse"], show: 'She is a nurse.', why: 'My mother es una mujer: she.' },
+          { id: 'x-s5', type: 'error', topic: 'sustituir', q: 'Una de estas frases tiene un error. Tócala.', options: ['It is my phone.', 'They are my parents.', 'He is my aunt.'], wrong: 2, fix: 'She is my aunt.', why: 'My aunt es una mujer: she.' },
+          { id: 'x-s6', type: 'order', topic: 'sustituir', q: 'Ordena las palabras para formar una frase.', tokens: ['He', 'is', 'a', 'doctor.'], why: 'Primero he, luego is y luego la información.' },
+          /* vida */
+          { id: 'x-v1', type: 'choice', say: 'I am Pablo.', topic: 'vida', q: 'Te presentas: ___ am Pablo.', options: ['He', 'I', 'It'], answer: 1, why: 'Hablas de ti: I am Pablo.' },
+          { id: 'x-v2', type: 'choice', say: 'She is Laura.', topic: 'vida', q: 'Presentas a tu hermana: ___ is Laura.', options: ['She', 'He', 'They'], answer: 0, why: 'Tu hermana es una mujer: she.' },
+          { id: 'x-v3', type: 'choice', say: 'It is 9 o\'clock.', topic: 'vida', q: 'Hablas de la hora: ___ is 9 o\'clock.', options: ['She', 'We', 'It'], answer: 2, why: 'Para la hora usamos it.' },
+          { id: 'x-v4', type: 'type', topic: 'vida', q: 'Escribe el pronombre que falta.', ex: '___ is happy.  →  she', source: 'My parents are at home. ___ are happy.', accepted: ['they'], show: 'they', why: 'My parents son varias personas: they.' },
+          { id: 'x-v5', type: 'error', topic: 'vida', q: 'Una de estas frases tiene un error. Tócala.', options: ['I am from Chile.', 'She is my brother.', 'We are neighbors.'], wrong: 1, fix: 'He is my brother.', why: 'My brother es un hombre: he, no she.' },
+          { id: 'x-v6', type: 'order', topic: 'vida', q: 'Ordena las palabras para formar una frase.', tokens: ['He', 'is', 'my', 'brother.'], why: 'Primero he, luego is y luego quién es.' }
+        ]
+      }
     }
   }
 };
@@ -572,7 +1053,10 @@ var ACADEMIA = {
    ============================================================ */
 function academiaSentence(item){
   if(item.say) return item.say;
-  var clean = function(s){ return s.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim(); };
+  var clean = function(s){
+    s = s.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+    return s.replace(/(^|[.!?]\s+)([a-z])/g, function(m, a, b){ return a + b.toUpperCase(); });   // una frase empieza con mayuscula
+  };
   var isEn = function(s){ return /^[A-Za-z0-9'.,?!: _-]+$/.test(s) && !/^[A-B]: /.test(s); };
   if(item.type === 'choice'){
     if(item.q.indexOf('___') !== -1){ var f = clean(item.q.replace('___', item.options[item.answer])); return isEn(f) ? f : null; }
