@@ -46,7 +46,7 @@ var ACADEMIA = {
     id: 'fundamentos',
     title: 'Fundamentos del inglés',
     courses: [
-      { id: 'pronombres', title: 'Pronombres personales', soon: true, blurb: 'I, you, he, she, it, we, they.' },
+      { id: 'pronombres', title: 'Pronombres personales', soon: false, blurb: 'I, you, he, she, it, we, they.' },
       { id: 'to-be', title: 'TO BE completo', pilot: true },
       { id: 'articulos', title: 'Artículos y plurales', soon: true, blurb: 'A, an, the y cómo formar plurales.' },
       { id: 'posesivos', title: 'Posesivos y demostrativos', soon: true, blurb: 'My, your, this, that.' },

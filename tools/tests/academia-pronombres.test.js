@@ -174,13 +174,13 @@ function englishTexts(c){
     });
   });
 
-  await test('motor: generado al dia, el curso existe pero NO se recomienda hasta abrirlo, y TO BE sigue igual', () => {
+  await test('motor: generado al dia, el curso esta abierto y se recomienda, y TO BE sigue igual', () => {
     const out = execFileSync('node', [path.join(root, 'tools', 'generar_academia_motor.js'), '--check'], { env: Object.assign({}, process.env, { ACADEMIA_MOTOR_ENABLED: '1' }) }).toString();
     assert.ok(/al dia/.test(out));
     const c = {}; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(root, 'academia-motor.js'), 'utf8') + ';this.M=ACADEMIA_MOTOR;', c);
     const M = c.M, P = M.courses.pronombres;
-    assert.strictEqual(P.engineTopic, 'He / She / It (pronombres)'); assert.strictEqual(P.open, false); assert.strictEqual(M.courses['to-be'].open, true);
-    assert.strictEqual(M.linkForTema('pronombres', [], 'x.html'), null, 'cerrado: ningun enlace');
+    assert.strictEqual(P.engineTopic, 'He / She / It (pronombres)'); assert.strictEqual(P.open, true); assert.strictEqual(M.courses['to-be'].open, true);
+    assert.ok(M.linkForTema('pronombres', [], 'x.html'), 'abierto: la practica libre recomienda el curso');
     assert.ok(M.linkForTema('to-be-presente', [], null), 'TO BE sigue enlazado');
     const p = M.parse('ac:pronombres:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['pronombres', 3]);
     assert.strictEqual(M.parse('ac:pronombres:e-s4').lesson, 4);       // examen oficial: la letra del tema es la leccion

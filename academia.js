@@ -746,6 +746,15 @@
     root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Miembros' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Mi aprendizaje' })]));
     root.appendChild(pilotBanner());
     var apps = [api].concat(otherOpenApps());       // TO BE primero; despues los demas cursos abiertos
+    /* Sugerencia suave solo para quien aun no empezo NINGUN curso: no cambia el historial ni obliga a nadie. */
+    if(apps.length > 1 && apps.every(function(a){ return a.doneCount() === 0 && !a.started(); })){
+      var alt = apps[1];
+      root.appendChild(el('section', { class: 'ac-card', 'aria-label': 'Por dónde empezar' }, [
+        el('p', { class: 'ac-eyebrow', text: 'Por dónde empezar' }),
+        el('p', { class: 'ac-text', text: 'Si estás empezando desde cero, puedes hacer primero ' + alt.title + ': es una base útil para ' + NAME + '. No es obligatorio, elige el que prefieras.' }),
+        link(alt.cb, 'Ver ' + alt.title, 'ac-btn ac-btn-outline')
+      ]));
+    }
     apps.forEach(function(a){
       root.appendChild(a.heroSection());
       var r = a.reviewSection(); if(r) root.appendChild(r);
@@ -1361,7 +1370,7 @@
     var badgeCard = el('section', { class: 'ac-card', id: 'acBadge' + (PRIMARY ? '' : '-' + courseId) }, [
       el('h2', { class: 'ac-h2 ac-h2-in', text: 'Insignia del curso ' + NAME }),
       el('p', { class: 'ac-text', id: 'acBadgeT' + (PRIMARY ? '' : '-' + courseId), text: NUBE && NUBE.ready ? 'Se entrega al superar la evaluación del curso. La corrige el servidor, así que no se puede copiar ni cambiar.' : 'Se entrega al aprobar la evaluación oficial del curso, que se corrige en el servidor. En el piloto la evaluación es de práctica, así que todavía no se entrega ninguna insignia.' }),
-      many ? null : el('p', { class: 'ac-text', text: 'Cuando haya más cursos aparecerán aquí sus insignias y, al completar la ruta, un certificado propio de Inglés con Leo con enlace público para verificarlo. No equivale a un nivel oficial.' })
+      many ? null : el('p', { class: 'ac-text', text: 'Cuando haya más cursos aparecerán aquí sus insignias. Las insignias no equivalen a un nivel oficial.' })
     ]);
     out.push(badgeCard);
     if(NUBE && NUBE.ready){
@@ -1474,7 +1483,7 @@
     }
     if(PRIMARY) root.appendChild(el('section', { class: 'ac-card' }, [
       el('h2', { class: 'ac-h2 ac-h2-in', text: 'Tus logros' }),
-      el('p', { class: 'ac-text', text: 'Al aprobar la evaluación de un curso consigues su insignia, y cuando haya más cursos podrás completar rutas con un certificado propio de Inglés con Leo. No equivale a un nivel oficial.' })
+      el('p', { class: 'ac-text', text: 'Al aprobar la evaluación de un curso consigues su insignia. Las insignias no equivalen a un nivel oficial.' })
     ]));
     focusMain();
     // Al volver (por ejemplo despues de la prueba) se actualiza el estado real desde el servidor, una sola vez por dibujo.
@@ -1592,7 +1601,7 @@
       el('p', { class: 'ac-eyebrow', text: 'Otro curso de la academia' }),
       el('h2', { class: 'ac-h2 ac-h2-in', text: COURSE.title }),
       el('p', { class: 'ac-text', text: COURSE.goal }),
-      el('p', { class: 'ac-hero-meta', text: COURSE.lessons.length + ' lecciones y evaluación final. Incluido en la membresía, sin prueba gratis.' }),
+      el('p', { class: 'ac-hero-meta', text: COURSE.lessons.length + ' lecciones y evaluación final. Incluido en la membresía, sin prueba gratis. Es una buena base si empiezas desde cero.' }),
       el('div', { class: 'ac-nav ac-nav-col' }, [
         link(CB, 'Ver el temario', 'ac-btn ac-btn-outline ac-btn-wide'),
         link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-primary ac-btn-wide')
@@ -1620,7 +1629,9 @@
   var api = {
     id: courseId, primary: PRIMARY, dispatch: dispatch, stopAudio: stopAudio, visible: visible,
     mode: function(){ return mode; }, boot: function(){ if(NUBE) bootCloud(); },
-    heroSection: heroSection, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard
+    heroSection: heroSection, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard,
+    title: COURSE.title, cb: CB, doneCount: doneCount,
+    started: function(){ var st = loadState(); return Object.keys(st.resume || {}).length > 0 || (st.days || []).length > 0; }
   };
   return api;
   }

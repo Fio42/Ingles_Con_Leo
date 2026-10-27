@@ -185,7 +185,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "pronombres",
   "engineTopic": "He / She / It (pronombres)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "yotu": "I y you",
    "hesheit": "He, she e it",

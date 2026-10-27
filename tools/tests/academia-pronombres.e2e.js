@@ -136,16 +136,14 @@ async function until(fn, ms, what){
   /* ============ 1. Sin canario (como esta hoy en produccion): el curso NO existe para nadie ============ */
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'pronombres'`);
   const N = await newDevice('sin-canario', { width: 390, height: 800 }, UID, false);
-  await test('antes del lanzamiento (soon:true) el curso no se muestra aunque el servidor lo tenga encendido, y el enlace directo vuelve al inicio', async()=>{
-    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
+  await test('publicado (soon:false): SIN canario el miembro ve el curso nuevo, con la sugerencia suave para quien empieza, y ya no esta en Proximamente', async()=>{
+    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && /Pronombres personales/.test(r.innerText); }, null, { timeout: 9000 });
     const txt = await N.page.innerText('#acRoot');
-    const pi = txt.indexOf('Pronombres personales');
-    assert(pi === -1 || /preparando|Próximamente/.test(txt.slice(Math.max(0, pi - 200), pi)), 'solo puede aparecer en la lista de proximos cursos');
-    assert(!/I y you|Cambiar nombres por pronombres/.test(txt), 'sin lecciones del curso nuevo');
-    assert.strictEqual(await N.page.$('a[href="#/curso/pronombres"]'), null, 'ningun enlace al curso nuevo');
-    await N.page.goto(base + '/academia.html?nube=1#/curso/pronombres/leccion/1'); await N.page.reload(); await N.page.waitForSelector('#acRoot');
-    await until(async () => (await N.page.evaluate(() => location.hash)) === '#/' || (await N.page.evaluate(() => location.hash)) === '', 6000, 'redirige al inicio');
-    assert.strictEqual(await N.page.$('.ac-card-act'), null);
+    assert(/Por dónde empezar/i.test(txt) && /No es obligatorio/.test(txt), 'sugerencia: ' + JSON.stringify(txt.slice(0, 700)));
+    assert(await N.page.$('a[href="#/curso/pronombres"]'), 'enlace al curso nuevo');
+    assert(!/Pronombres personales · Próximamente/.test(txt), 'ya no esta en Proximamente');
+    assert(/Artículos y plurales/.test(txt), 'los demas siguen como proximos');
+    assert(!/certificado/i.test(txt), 'no se promete certificado');
   });
   await N.ctx.close();
 

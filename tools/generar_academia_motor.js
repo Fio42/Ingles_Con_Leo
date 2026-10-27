@@ -12,7 +12,7 @@ const OUT = path.join(root, 'academia-motor.js');
 const COURSES = {
   'to-be': { tema: 'to-be-presente', engineTopic: 'Verbo "to be": am / is / are', level: 'facil', open: true },
   // open=false: el curso existe en el codigo pero el sitio todavia no lo recomienda (planes, progreso, errores). Se pone en true al lanzarlo.
-  'pronombres': { tema: 'pronombres', engineTopic: 'He / She / It (pronombres)', level: 'facil', open: false }
+  'pronombres': { tema: 'pronombres', engineTopic: 'He / She / It (pronombres)', level: 'facil', open: true }
 };
 
 function build(){
