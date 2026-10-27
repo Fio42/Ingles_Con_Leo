@@ -4,8 +4,8 @@
    y el motor de errores real (leidos de supabase_schema.sql, verificados contra produccion en solo lectura).
    Corre con:  node tools/tests/academia-modelo.test.js
 
-   Decision de Leo: la academia es beneficio de la membresia. Cuenta gratis = una demostracion de TO BE (3 ejercicios) que se
-   descuenta del limite diario existente (6). Evaluaciones, insignias, progreso en la nube y sesiones de lecciones = miembros.
+   Decision de Leo: la academia es beneficio de la membresia. Cuenta gratis = una demostracion de TO BE (3 ejercicios), independiente
+   del limite diario de practica (6), una sola vez por cuenta. Evaluaciones, insignias, progreso en la nube y sesiones de lecciones = miembros.
    Esto se prueba como lo haria alguien que manipula el navegador: llamando a las funciones directamente. */
 const fs = require('fs'), assert = require('assert'), vm = require('vm');
 const H = require('./academia-pg-helpers.js');
@@ -66,47 +66,42 @@ const demoSession = t0 => ({ date: today(), startedAt: t0 || T0 + 5, durationMs:
     const a = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
     assert.deepStrictEqual(plain([a.ok, a.member, a.demo.available, a.demo.used, a.demo.cost, a.daily.count, a.daily.limit, a.daily.remaining]), [true, false, true, false, 3, 0, 6, 6]);
   });
-  await test('la demostracion descuenta sus 3 ejercicios del limite existente (profiles) y marca la primera practica', async()=>{
+  await test('la demostracion NO descuenta nada del limite diario (ni contador, ni fecha, ni hora de limite alcanzado)', async()=>{
     const db = await fresh();
     await setProf(db, F, `free_daily_count = 1, free_daily_date = '${today()}'`);
+    const before = await prof(db, F);
     const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
-    assert.deepStrictEqual(plain([r.ok, r.resumed, r.daily.count]), [true, false, 4]);
+    assert.deepStrictEqual(plain([r.ok, r.resumed, r.cost]), [true, false, 3]);
     const p = await prof(db, F);
-    assert.strictEqual(p.free_daily_count, 4); assert(p.free_first_exercise_at && p.free_last_practice_at);
-    assert.strictEqual(p.free_daily_limit_reached_at, null, '4 de 6: todavia no llego al limite');
+    assert.strictEqual(p.free_daily_count, 1);
+    assert.strictEqual(String(p.free_daily_date), String(before.free_daily_date));
+    assert.strictEqual(p.free_daily_limit_reached_at, null);
+    assert.strictEqual(p.free_first_exercise_at, before.free_first_exercise_at);
     const a = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
-    assert.strictEqual(a.daily.remaining, 2);
+    assert.strictEqual(a.daily.remaining, 5);
   });
-  await test('si la demostracion lleva al limite diario, queda marcada la hora (la usan los correos) igual que con la practica normal', async()=>{
+  await test('CON EL LIMITE AGOTADO (6 de 6) la demostracion se puede hacer igual, y despues el limite sigue en 6', async()=>{
     const db = await fresh();
-    await setProf(db, F, `free_daily_count = 3, free_daily_date = '${today()}'`);
-    assert.strictEqual((await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 })).ok, true);
-    const p = await prof(db, F);
-    assert.strictEqual(p.free_daily_count, 6); assert(p.free_daily_limit_reached_at, 'limit_reached_at');
-  });
-  await test('si hoy no alcanzan los ejercicios libres NO se gasta la demostracion; otro dia si', async()=>{
-    const db = await fresh();
-    await setProf(db, F, `free_daily_count = 4, free_daily_date = '${today()}'`);
-    const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
-    assert.deepStrictEqual(plain([r.ok, r.error, r.remaining]), [false, 'limit', 2]);
-    assert.strictEqual((await prof(db, F)).free_daily_count, 4, 'no cobra nada');
-    assert.strictEqual((await q(db, 'select count(*)::int n from public.academia_progress where demo_started_at is not null'))[0].n, 0);
+    await setProf(db, F, `free_daily_count = 6, free_daily_date = '${today()}', free_daily_limit_reached_at = now()`);
     const a = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
-    assert.strictEqual(a.demo.available, false); assert.strictEqual(a.demo.used, false);
-    await setProf(db, F, `free_daily_date = '${today()}'::date - 1`);           // "ayer": hoy empieza en 0
-    assert.strictEqual((await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 })).ok, true);
-    assert.strictEqual((await prof(db, F)).free_daily_count, 3);
-  });
-  await test('lo que el navegador ya contó hoy (visitante, otra pestana) tambien cuenta: se usa el MAYOR, nunca se suma de mas ni de menos', async()=>{
-    const db = await fresh();
-    const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 5 });
-    assert.deepStrictEqual(plain([r.ok, r.error]), [false, 'limit']);
-    const r2 = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 2 });
-    assert.strictEqual(r2.ok, true); assert.strictEqual((await prof(db, F)).free_daily_count, 5, 'max(remoto 0, local 2) + 3');
+    assert.deepStrictEqual(plain([a.demo.available, a.daily.remaining]), [true, 0]);
+    const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 6 });
+    assert.deepStrictEqual(plain([r.ok, r.resumed]), [true, false]);
+    assert.strictEqual((await prof(db, F)).free_daily_count, 6);
     await rpc(db, F, 'academia_demo_finish', { p_course: 'to-be' });
-    // un valor absurdo desde el navegador no rompe nada ni baja el contador
-    const a = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: -50 });
-    assert.strictEqual(a.daily.count, 5);
+    const a2 = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: 6 });
+    assert.deepStrictEqual(plain([a2.demo.available, a2.demo.used, a2.demo.done, a2.daily.remaining]), [false, true, true, 0]);
+  });
+  await test('un valor falso del navegador (contador local, fecha) no abre ni cierra la demostracion', async()=>{
+    const db = await fresh();
+    for(const [d, n] of [[today(), 99], ['2001-01-01', -50], [null, null]]){
+      const a = await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: d, p_local_count: n });
+      assert.strictEqual(a.demo.available, true);
+    }
+    const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: '2001-01-01', p_local_count: 99 });
+    assert.strictEqual(r.ok, true);
+    const p = await prof(db, F);
+    assert.strictEqual(p.free_daily_count, 0, 'la demo no escribe en el contador diario');
   });
   await test('UNA SOLA VEZ: repetir, recargar, otra pestana u otro dispositivo no la reinicia ni regala ejercicios', async()=>{
     const db = await fresh();
@@ -114,7 +109,7 @@ const demoSession = t0 => ({ date: today(), startedAt: t0 || T0 + 5, durationMs:
     // mientras no la termine, retomarla NO vuelve a cobrar (recargar la pagina, otro dispositivo)
     const again = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
     assert.deepStrictEqual(plain([again.ok, again.resumed]), [true, true]);
-    assert.strictEqual((await prof(db, F)).free_daily_count, 3, 'sigue en 3');
+    assert.strictEqual((await prof(db, F)).free_daily_count, 0, 'la demo no toca el contador');
     await rpc(db, F, 'academia_demo_finish', { p_course: 'to-be' });
     for(let i = 0; i < 3; i++){
       const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 });
@@ -149,10 +144,10 @@ const demoSession = t0 => ({ date: today(), startedAt: t0 || T0 + 5, durationMs:
     assert.strictEqual((await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: today(), p_local_count: 0 })).error, 'course');
     assert.strictEqual((await rpc(db, F, 'academia_access', { p_course: 'to-be', p_today: today(), p_local_count: 0 })).error, 'course');
     await db.exec(`update public.academia_courses set enabled = true`);
-    // una fecha de otro año se ignora: se usa la del servidor
-    await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: '2001-01-01', p_local_count: 0 });
-    const p = await prof(db, F); assert.strictEqual(String(p.free_daily_date.toISOString().slice(0, 10)).length, 10);
-    assert(Math.abs(new Date(p.free_daily_date).getTime() - Date.now()) < 2 * 86400000, 'fecha del servidor');
+    // una fecha de otro año no cambia nada: la demo no usa fecha ni contador
+    const r = await rpc(db, F, 'academia_demo_start', { p_course: 'to-be', p_today: '2001-01-01', p_local_count: 0 });
+    assert.strictEqual(r.ok, true);
+    assert.strictEqual((await prof(db, F)).free_daily_date, null);
   });
 
   /* ---------- lo que una cuenta gratis NO puede hacer (llamando directo a la base) ---------- */

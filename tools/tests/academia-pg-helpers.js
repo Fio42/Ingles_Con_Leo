@@ -69,6 +69,7 @@ async function freshDb(PGlite, bank){
   const db = new PGlite();
   await baseSchema(db);
   await db.exec(read('supabase/migrations/20261026120000_academia_integracion.sql'));
+  await db.exec(read('supabase/migrations/20261027180000_academia_demo_independiente.sql'));
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'to-be'`);
   for(const b of (bank || [])){
     await db.query('insert into public.academia_exam_items (course_id, id, topic, type, public, answer) values ($1,$2,$3,$4,$5,$6)',

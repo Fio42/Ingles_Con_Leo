@@ -2065,6 +2065,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .upgrade-benefits li{margin-bottom:4px;}
 .upgrade-price{color:var(--ink-soft);margin:0 0 16px;}
 .upgrade-note{color:var(--ink-faint);font-size:0.85rem;margin-top:12px;}
+.academia-demo-offer{margin:18px auto 0;max-width:420px;padding:16px 18px;border:1px solid var(--line,#e3dccd);border-radius:14px;background:var(--bg-soft,rgba(0,0,0,.03));text-align:center;}
+.academia-demo-offer[hidden]{display:none;}
+.academia-demo-offer h3{margin:0 0 6px;font-size:1.05rem;}
+.academia-demo-offer p{margin:0 0 12px;color:var(--ink-soft);line-height:1.5;}
 
 /* ---- Plan mensual / anual (miembros.html) ---- */
 .plan-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 16px;}
