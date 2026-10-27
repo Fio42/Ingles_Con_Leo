@@ -5986,7 +5986,7 @@ function renderStatCards(container){
         </svg>
       </div>
       <div>
-        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-label">Tu nivel de práctica</div>
         <div class="stat-card-value">${LEVEL_META[level].label} ${LEVEL_META[level].range}</div>
       </div>
     </div>
@@ -7706,10 +7706,6 @@ function renderTodayHero(el){
     card.id = el.id || '';
     card.dataset.heroState = hero.state;
     card.innerHTML = `
-      <span class="plan-feature-badge">Recomendado</span>
-      <div class="plan-feature-icon">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-      </div>
       <div class="today-hero-eyebrow">${hero.eyebrow}</div>
       <h2>${hero.title}</h2>
       <p class="plan-feature-desc">${hero.reason}</p>
@@ -8111,7 +8107,7 @@ function renderProgressStatCards(container, stats, streak, level){
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
       <div>
-        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-label">Tu nivel de práctica</div>
         <div class="stat-card-value">${LEVEL_META[level].label}</div>
         <button type="button" class="stat-card-link" id="statChangeLevelBtn">Ajustar nivel →</button>
       </div>
