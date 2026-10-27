@@ -19,6 +19,7 @@
   },
   "tiempos": { "inspeccionMs": 90000, "solicitudMs": 240000, "cargaMs": 45000 },
   "prioridad": [
+    "/academia-de-ingles.html",
     "/articulo-condicionales-1-y-2.html",
     "/articulo-do-vs-does.html",
     "/articulo-hora-en-ingles.html",
