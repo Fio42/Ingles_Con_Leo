@@ -42,12 +42,11 @@
       Inglés con <span class="leo">Leo</span>
     </a>
     <nav class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
-      <a href="practica.html">Practicar gratis</a>
-      <a href="miembros.html" class="current">Miembros</a>
-      <a href="aprender.html" class="ac-pre">Modo aprender</a>
+      <a href="miembros.html">Inicio</a>
       <a href="academia.html" class="ac-live-only">Academia</a>
+      <a href="practica.html">Practicar</a>
+      <a href="progreso.html" class="current">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -102,12 +101,25 @@
   <section class="page-hero" style="padding-bottom:8px;">
     <div class="wrap wrap-dash">
       <span class="badge badge-members">Miembros</span>
-      <a href="miembros.html" class="back-to-panel-link">← Volver a tu panel</a>
+      <a href="miembros.html" class="back-to-panel-link">← Volver al Inicio</a>
     </div>
   </section>
 
   <section style="padding-top:8px;">
     <div class="wrap wrap-dash" id="progressRoot"></div>
+  </section>
+
+  <section style="padding-top:0;">
+    <div class="wrap wrap-dash">
+      <h2 class="home-h" id="misCursos">Tus cursos de la Academia</h2>
+      <p class="home-hint">El avance de los cursos va aparte de tus estadísticas de práctica.</p>
+      <ul class="home-more" id="progressCourses"></ul>
+      <h2 class="home-h" id="misErrores">Mis errores</h2>
+      <ul class="home-more">
+        <li><a href="errores.html"><strong>Repasar mis errores</strong><span>Los ejercicios que fallaste, por prioridad, hasta recuperarlos.</span></a></li>
+        <li><a href="plan-estudio.html"><strong>Mi plan de estudio</strong><span>Tu práctica recomendada de hoy.</span></a></li>
+      </ul>
+    </div>
   </section>
 </main>
 
@@ -115,11 +127,11 @@
   <div class="wrap foot-row">
     <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
     <div class="foot-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
+      <a href="miembros.html">Inicio</a>
+      <a href="academia.html">Academia</a>
       <a href="practica.html">Practicar</a>
-      <a href="miembros.html">Miembros</a>
-      <a href="academia-de-ingles.html">Academia</a>
+      <a href="progreso.html">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases con Leo</a>
       <a href="privacidad.html">Privacidad</a>
     </div>
@@ -141,28 +153,34 @@
   </div>
 </footer>
 
-<nav class="mobile-nav">
-  <button class="mnav-item" onclick="location.href='index.html'">
+<nav class="mobile-nav" aria-label="Navegación principal">
+  <button class="mnav-item" onclick="location.href='miembros.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     Inicio
   </button>
-  <button class="mnav-item" onclick="location.href='articulos.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    Aprende inglés
+  <button class="mnav-item" onclick="location.href='academia.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 4L2 9l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Academia
   </button>
   <button class="mnav-item" onclick="location.href='practica.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
     Practicar
   </button>
-  <button class="mnav-item active" onclick="location.href='miembros.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
-    Miembros
+  <button class="mnav-item active" onclick="location.href='progreso.html'" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Progreso
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Aprende
   </button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
+<script src="academia-cursos.js?v=20261027a"></script>
+<script src="inicio-alumno.js?v=20261027a"></script>
 <script src="app.js?v=20261021c"></script>
 <script src="backend.js?v=20261026b"></script>
 <script>
@@ -203,6 +221,7 @@
 <script>
   function refreshProgressPage(){
     renderProgressPage(document.getElementById('progressRoot'));
+    if(window.InicioAlumno) InicioAlumno.renderCourses(document.getElementById('progressCourses'));
   }
   /* guardMemberPage deja que la sincronización continúe en segundo plano.
      Si llegan sesiones de otro dispositivo, el panel se actualiza solo. */

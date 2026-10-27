@@ -60,12 +60,11 @@
       Inglés con <span class="leo">Leo</span>
     </a>
     <nav class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
-      <a href="practica.html">Practicar gratis</a>
-      <a href="miembros.html" class="current">Miembros</a>
-      <a href="aprender.html" class="ac-pre">Modo aprender</a>
+      <a href="miembros.html" class="current">Inicio</a>
       <a href="academia.html" class="ac-live-only">Academia</a>
+      <a href="practica.html">Practicar</a>
+      <a href="progreso.html">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -493,6 +492,39 @@
           </div>
         </div>
 
+        <div class="stat-cards" id="statCards"></div>
+
+        <div class="home-main">
+          <a href="academia.html" class="home-card home-academia ac-live-only" id="dashAcademia" data-academia-state="start">
+            <span class="home-eyebrow">Academia</span>
+            <h2>Aprende inglés paso a paso</h2>
+            <p class="home-line" data-slot="line">Cursos cortos, lección por lección.</p>
+            <p class="home-meta" data-slot="meta" hidden></p>
+            <span class="btn btn-primary btn-block" data-slot="cta">Ir a la Academia</span>
+          </a>
+          <a href="plan-estudio.html" class="home-card home-practicar" id="dashPracticar">
+            <span class="home-eyebrow">Practicar</span>
+            <h2>Practica y mejora tu inglés</h2>
+            <p class="home-line">Tu plan personalizado, el repaso de tus errores y ejercicios por habilidad.</p>
+            <span class="btn btn-primary btn-block">Practicar ahora</span>
+          </a>
+        </div>
+        <p class="home-sub-link"><a href="practica-miembros.html">Ver todas las formas de practicar →</a></p>
+
+        <div class="level-suggest" id="levelSuggest" hidden></div>
+        <div class="fb-wrap" id="feedbackCard" hidden></div>
+
+        <h2 class="home-h">Tu siguiente paso</h2>
+        <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero" id="todayHero">
+          <div class="today-hero-eyebrow">Hoy te conviene</div>
+          <h2>Tu práctica de hoy</h2>
+          <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores. Tú eliges la duración (5-25 min).</p>
+          <span class="btn btn-primary btn-block">Empezar →</span>
+        </a>
+
+        <h2 class="home-h">Tu progreso</h2>
+        <div class="progress-summary-card" id="progressSummaryCard"></div>
+
         <div class="dash-announce" id="dashAnnounce" hidden>
           <span class="dash-announce-badge">Nuevo</span>
           <div class="dash-announce-text"><strong>Preparación TOEIC</strong> El examen de inglés que más piden las empresas: Listening con varios acentos, Reading, Speaking con cronómetro y Writing.</div>
@@ -500,189 +532,14 @@
           <button type="button" class="dash-announce-close" id="dashAnnounceClose" aria-label="Cerrar aviso">×</button>
         </div>
 
-        <div class="stat-cards" id="statCards"></div>
-
-        <div class="section-head section-head-center">
-          <h2>Tu aprendizaje hoy</h2>
-          <p>Tu plan personalizado y tus accesos rápidos.</p>
-        </div>
-
-        <div class="level-suggest" id="levelSuggest" hidden></div>
-        <div class="fb-wrap" id="feedbackCard" hidden></div>
-
-        <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero" id="todayHero">
-          <span class="plan-feature-badge">Recomendado</span>
-          <div class="plan-feature-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-          </div>
-          <h2>Plan de estudio</h2>
-          <p class="plan-feature-sub">Tu práctica recomendada de hoy.</p>
-          <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores.</p>
-          <span class="btn btn-primary btn-block">Empezar →</span>
-          <div class="plan-feature-meta">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span>5-25 min · Tú eliges la duración.</span>
-          </div>
-        </a>
-
-        <a href="aprender.html" class="two-ways-card ac-pre" id="dashModoAprender" style="margin:0 0 18px;">
-          <span class="two-ways-tag">Nuevo · Modo aprender</span>
-          <h3>Tu lección de hoy, en 3 minutos</h3>
-          <p>¿Hoy no tienes ganas de contestar? Mira y escucha una microlección de 3 minutos.</p>
-          <span class="two-ways-go">Empezar a aprender →</span>
-        </a>
-        <a href="academia.html" class="two-ways-card ac-live-only" id="dashAcademia" style="margin:0 0 18px;">
-          <span class="two-ways-tag">Academia</span>
-          <h3>Sigue tu curso TO BE</h3>
-          <p>Aprende paso a paso, practica, corrige tus errores y consigue tu insignia.</p>
-          <span class="two-ways-go">Ir a la academia →</span>
-        </a>
-
-
-        <p class="dash-more-label">Otras formas de practicar hoy</p>
-        <div class="dash-top-grid">
-          <div id="continueCard"></div>
-
-          <div class="mistakes-card" id="mistakesSection">
-            <div class="mistakes-card-top">
-              <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-              <span class="mistakes-eyebrow">Repaso personal</span>
-            </div>
-            <h2>Tus errores frecuentes</h2>
-            <p class="mistakes-sub" id="mistakesBannerText">Ejercicios para reforzar, elegidos por prioridad.</p>
-            <p class="mistakes-recovered-note" id="mistakesRecoveredNote" style="display:none;"></p>
-            <div class="mistakes-chips" id="mistakesChips"></div>
-            <div class="mistakes-actions">
-              <a href="errores.html?modo=rapido" class="mistakes-btn">Repaso rápido →</a>
-              <a href="errores.html" class="mistakes-btn-all">Ver todos</a>
-            </div>
-          </div>
-
-          <div class="daily-card" id="dailyChallengeCard">
-            <div class="daily-card-top">
-              <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-              </div>
-              <span class="daily-eyebrow">Reto diario</span>
-            </div>
-            <h2>5 ejercicios rápidos al día</h2>
-            <div id="dailyChallengeBody"></div>
-          </div>
-        </div>
-
-        <div class="progress-summary-card" id="progressSummaryCard"></div>
-      </div>
-    </section>
-
-    <section>
-      <div class="wrap wrap-dash">
-        <div class="section-head section-head-center">
-          <h2>Practicar por habilidad</h2>
-          <p>Elige una habilidad y empieza tu próxima sesión.</p>
-        </div>
-        <div class="skill-cards-grid">
-          <a href="gramatica.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-gramatica"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <h3>Gramática</h3>
-            <p>Ejercicios cortos para entender estructuras.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="vocabulario.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-vocabulario"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 17a3 3 0 013-3h11" stroke="currentColor" stroke-width="2"/></svg></span>
-            <h3>Vocabulario</h3>
-            <p>Palabras útiles siempre dentro de contexto.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="listening.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-listening"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 13v-1a8 8 0 0116 0v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="3" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="17" y="13" width="4" height="6" rx="1.5" stroke="currentColor" stroke-width="2"/></svg></span>
-            <h3>Listening</h3>
-            <p>Escucha inglés y comprueba qué entendiste.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="lectura.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-lectura"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 6c-1.5-1.3-3.5-2-6-2H4v14h2c2.5 0 4.5.7 6 2 1.5-1.3 3.5-2 6-2h2V4h-2c-2.5 0-4.5.7-6 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 6v14" stroke="currentColor" stroke-width="2"/></svg></span>
-            <h3>Lectura</h3>
-            <p>Lee textos cortos con traducción y comprueba qué entendiste.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="writing.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-writing"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M4 20l1-4L16 5l3 3-11 11-4 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
-            <h3>Writing</h3>
-            <p>Escribe frases y compáralas con buenos ejemplos.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="speaking.html" class="skill-card-link">
-            <span class="skill-icon-wrap tint-speaking"><svg class="skill-icon violet" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <h3>Speaking</h3>
-            <p>Escucha, grábate y compara tu pronunciación.</p>
-            <span class="go">Practicar →</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="wrap wrap-dash">
-        <div class="section-head section-head-center">
-          <h2>Explorar</h2>
-          <p>Clases guiadas, un juego y preparación para exámenes oficiales.</p>
-        </div>
-        <div class="skill-cards-grid">
-          <a href="clases.html" class="skill-card-link featured-clases">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-clases"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M10 9l5 3-5 3V9z" fill="currentColor"/></svg></span>
-            <h3>Clases interactivas</h3>
-            <p>Situaciones reales: aeropuerto, restaurante, trabajo y más.</p>
-            <span class="go">Explorar →</span>
-          </a>
-          <a href="juego.html" class="skill-card-link featured-juego">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-juego" style="background:var(--coral-tint);color:var(--coral);"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
-            <h3>English Rush</h3>
-            <p>Preguntas rápidas con dificultad progresiva. Como miembro, juega sin límites.</p>
-            <span class="go">Jugar →</span>
-          </a>
-          <a href="toefl.html" class="skill-card-link featured-toefl">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-toefl"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación TOEFL</h3>
-            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="ielts.html" class="skill-card-link featured-ielts">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-ielts"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3L2 8l10 5 8-4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación IELTS</h3>
-            <p>Práctica enfocada en Reading, Listening, Speaking y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="cambridge.html" class="skill-card-link featured-cambridge">
-            <span class="card-badge">Examen</span>
-            <span class="skill-icon-wrap tint-cambridge"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V7l7-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9.5 12l1.8 1.8L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-            <h3>Preparación Cambridge English</h3>
-            <p>B1 Preliminary (PET), B2 First (FCE) y C1 Advanced (CAE): Reading & Use of English, Listening, Writing y Speaking.</p>
-            <span class="go">Practicar →</span>
-          </a>
-          <a href="toeic.html" class="skill-card-link featured-toeic">
-            <span class="card-badge">Nuevo</span>
-            <span class="skill-icon-wrap tint-toeic"><svg class="skill-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-            <h3>Preparación TOEIC</h3>
-            <p>El examen que más piden las empresas: Listening, Reading, Speaking con cronómetro y Writing.</p>
-            <span class="go">Practicar →</span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="wrap wrap-dash">
-        <div class="activity-section-head">
-          <h2>Tu actividad reciente</h2>
-          <a href="progreso.html" class="see-all">Ver toda tu actividad →</a>
-        </div>
-        <div class="activity-card-full" id="recentActivity"></div>
+        <h2 class="home-h">Explorar más</h2>
+        <ul class="home-more">
+          <li><a href="aprender.html"><strong>Modo aprender</strong><span>Microlecciones de 3 minutos para mirar y escuchar.</span></a></li>
+          <li><a href="clases.html"><strong>Clases interactivas</strong><span>Situaciones reales: aeropuerto, restaurante, trabajo.</span></a></li>
+          <li><a href="juego.html"><strong>English Rush</strong><span>Preguntas rápidas con dificultad progresiva.</span></a></li>
+          <li><a href="practica-miembros.html#examenes"><strong>Preparación de exámenes</strong><span>TOEFL, IELTS, TOEIC y Cambridge.</span></a></li>
+          <li><a href="articulos.html"><strong>Guías y artículos gratis</strong><span>Gramática y vocabulario explicados en español.</span></a></li>
+        </ul>
       </div>
     </section>
   </div>
@@ -692,11 +549,11 @@
   <div class="wrap foot-row">
     <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
     <div class="foot-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
+      <a href="miembros.html">Inicio</a>
+      <a href="academia.html">Academia</a>
       <a href="practica.html">Practicar</a>
-      <a href="miembros.html">Miembros</a>
-      <a href="academia-de-ingles.html">Academia</a>
+      <a href="progreso.html">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases con Leo</a>
       <a href="privacidad.html">Privacidad</a>
     </div>
@@ -718,28 +575,34 @@
   </div>
 </footer>
 
-<nav class="mobile-nav">
-  <button class="mnav-item" onclick="location.href='index.html'">
+<nav class="mobile-nav" aria-label="Navegación principal">
+  <button class="mnav-item active" onclick="location.href='miembros.html'" aria-current="page">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     Inicio
   </button>
-  <button class="mnav-item" onclick="location.href='articulos.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    Aprende inglés
+  <button class="mnav-item" onclick="location.href='academia.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 4L2 9l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Academia
   </button>
   <button class="mnav-item" onclick="location.href='practica.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
     Practicar
   </button>
-  <button class="mnav-item active" onclick="location.href='miembros.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
-    Miembros
+  <button class="mnav-item" onclick="location.href='progreso.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Progreso
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Aprende
   </button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
+<script src="academia-cursos.js?v=20261027a"></script>
+<script src="inicio-alumno.js?v=20261027a"></script>
 <script src="app.js?v=20261021c"></script>
 <script src="backend.js?v=20261026b"></script>
 <script>
@@ -991,12 +854,11 @@
     })();
     applyDashboardGreeting(document.getElementById('greetLine'));
     renderStatCards(document.getElementById('statCards'));
-    renderContinueCard(document.getElementById('continueCard'));
+    if(window.InicioAlumno) InicioAlumno.render(document.getElementById('dashAcademia'));
     renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
     renderTodayHero(document.getElementById('todayHero'));
     renderLevelSuggestion(document.getElementById('levelSuggest'));
     renderFeedbackCard(document.getElementById('feedbackCard'), ['levelSuggest', 'dashAnnounce']);
-    renderRecentActivityV2(document.getElementById('recentActivity'));
     // Igual que progreso.html: si llegan sesiones de otro dispositivo,
     // se redibujan los números y "Tu diagnóstico" con los datos completos.
     if(!window._dashSyncListener){
@@ -1006,15 +868,10 @@
         renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
         renderTodayHero(document.getElementById('todayHero'));
         renderLevelSuggestion(document.getElementById('levelSuggest'));
-        renderRecentActivityV2(document.getElementById('recentActivity'));
+        if(window.InicioAlumno) InicioAlumno.render(document.getElementById('dashAcademia'));
       });
       window.addEventListener('leo-profile-synced', function(){ renderLevelSuggestion(document.getElementById('levelSuggest')); });
     }
-    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
-    initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
-    // renderMistakesBanner es async (consulta Supabase) y ya se encarga
-    // de mostrar/ocultar la tarjeta y avisarle a la fila de 3 columnas
-    // (clase no-mistakes) cuando termine, así que no hace falta repetirlo aquí.
   }
 
   function unlock(){

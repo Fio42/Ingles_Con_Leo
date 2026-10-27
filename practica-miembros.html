@@ -42,10 +42,11 @@
       Inglés con <span class="leo">Leo</span>
     </a>
     <nav class="nav-links">
-      <a href="index.html">Inicio</a>
+      <a href="miembros.html">Inicio</a>
+      <a href="academia.html" class="ac-live-only">Academia</a>
+      <a href="practica.html" class="current">Practicar</a>
+      <a href="progreso.html">Mi progreso</a>
       <a href="articulos.html">Aprende inglés</a>
-      <a href="practica-miembros.html" class="current">Practicar</a>
-      <a href="miembros.html">Miembros</a><a href="academia.html" class="ac-live-only">Academia</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -100,14 +101,52 @@
   <section class="page-hero" style="padding-bottom:8px;">
     <div class="wrap">
       <span class="badge badge-members">Miembros</span>
-      <a href="miembros.html" class="back-to-panel-link">← Volver a tu panel</a>
-      <h1 style="margin-top:10px;">Elige tu nivel y practica</h1>
-      <p class="lead">Elige tu nivel y una habilidad, y haz una sesión real de varios ejercicios. Tu progreso se guarda.</p>
+      <h1 style="margin-top:10px;">Practicar</h1>
+      <p class="lead">Tu plan de estudio, el repaso de tus errores y ejercicios por habilidad. Tu progreso se guarda.</p>
     </div>
   </section>
 
   <section style="padding-top:8px;">
     <div class="wrap">
+      <a href="plan-estudio.html" class="plan-feature-card plan-feature-hero">
+        <div class="today-hero-eyebrow">Plan de estudio personalizado</div>
+        <h2>Tu práctica recomendada de hoy</h2>
+        <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores. Tú eliges la duración: 5 a 25 minutos.</p>
+        <span class="btn btn-primary btn-block">Empezar mi plan →</span>
+      </a>
+
+      <div class="hub-grid dash-top-grid">
+        <div class="mistakes-card" id="mistakesSection">
+            <div class="mistakes-card-top">
+              <div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="mistakes-eyebrow">Repaso personal</span>
+            </div>
+            <h2>Tus errores frecuentes</h2>
+            <p class="mistakes-sub" id="mistakesBannerText">Ejercicios para reforzar, elegidos por prioridad.</p>
+            <p class="mistakes-recovered-note" id="mistakesRecoveredNote" style="display:none;"></p>
+            <div class="mistakes-chips" id="mistakesChips"></div>
+            <div class="mistakes-actions">
+              <a href="errores.html?modo=rapido" class="mistakes-btn">Repaso rápido →</a>
+              <a href="errores.html" class="mistakes-btn-all">Ver todos</a>
+            </div>
+          </div>
+
+          <div class="daily-card" id="dailyChallengeCard">
+            <div class="daily-card-top">
+              <div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+              <span class="daily-eyebrow">Reto diario</span>
+            </div>
+            <h2>5 ejercicios rápidos al día</h2>
+            <div id="dailyChallengeBody"></div>
+          </div>
+      </div>
+
+      <h2 class="home-h" id="porHabilidad">Practicar por habilidad</h2>
+      <p class="home-hint">Elige tu nivel y una habilidad, y haz una sesión de varios ejercicios.</p>
       <div class="levels" id="levelSelector"></div>
 
       <div class="skill-tabs" id="skillTabs" role="tablist" aria-label="Elige qué practicar"></div>
@@ -116,6 +155,22 @@
         <div class="skill-section-head" id="skillHead"></div>
         <div class="skill-section-body" id="skillBody"></div>
       </div>
+      <p class="home-hint" style="margin-top:14px;">¿Prefieres leer? <a href="lectura.html">Practica Lectura</a>.</p>
+
+      <h2 class="home-h" id="masFormas">Más formas de practicar</h2>
+      <ul class="home-more">
+        <li><a href="aprender.html"><strong>Modo aprender</strong><span>Microlecciones de 3 minutos para mirar y escuchar.</span></a></li>
+        <li><a href="clases.html"><strong>Clases interactivas</strong><span>Situaciones reales: aeropuerto, restaurante, trabajo.</span></a></li>
+        <li><a href="juego.html"><strong>English Rush</strong><span>Preguntas rápidas con dificultad progresiva.</span></a></li>
+      </ul>
+
+      <h2 class="home-h" id="examenes">Preparación de exámenes</h2>
+      <ul class="home-more">
+        <li><a href="toefl.html"><strong>TOEFL</strong><span>Reading, Listening, Speaking y Writing.</span></a></li>
+        <li><a href="ielts.html"><strong>IELTS</strong><span>Reading, Listening, Speaking y Writing.</span></a></li>
+        <li><a href="toeic.html"><strong>TOEIC</strong><span>El examen que más piden las empresas.</span></a></li>
+        <li><a href="cambridge.html"><strong>Cambridge English</strong><span>B1 Preliminary, B2 First y C1 Advanced.</span></a></li>
+      </ul>
     </div>
   </section>
 </main>
@@ -124,11 +179,11 @@
   <div class="wrap foot-row">
     <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
     <div class="foot-links">
-      <a href="index.html">Inicio</a>
+      <a href="miembros.html">Inicio</a>
+      <a href="academia.html">Academia</a>
+      <a href="practica.html">Practicar</a>
+      <a href="progreso.html">Mi progreso</a>
       <a href="articulos.html">Aprende inglés</a>
-      <a href="practica-miembros.html">Practicar</a>
-      <a href="miembros.html">Miembros</a>
-      <a href="academia-de-ingles.html">Academia</a>
       <a href="clases-particulares.html">Clases con Leo</a>
       <a href="privacidad.html">Privacidad</a>
     </div>
@@ -150,22 +205,26 @@
   </div>
 </footer>
 
-<nav class="mobile-nav">
-  <button class="mnav-item" onclick="location.href='index.html'">
+<nav class="mobile-nav" aria-label="Navegación principal">
+  <button class="mnav-item" onclick="location.href='miembros.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     Inicio
   </button>
-  <button class="mnav-item" onclick="location.href='articulos.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    Aprende inglés
+  <button class="mnav-item" onclick="location.href='academia.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 4L2 9l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Academia
   </button>
-  <button class="mnav-item active" onclick="location.href='practica-miembros.html'">
+  <button class="mnav-item active" onclick="location.href='practica.html'" aria-current="page">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
     Practicar
   </button>
-  <button class="mnav-item" onclick="location.href='miembros.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
-    Miembros
+  <button class="mnav-item" onclick="location.href='progreso.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Progreso
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Aprende
   </button>
 </nav>
 
@@ -217,6 +276,8 @@
       headEl: document.getElementById('skillHead'),
       bodyEl: document.getElementById('skillBody')
     });
+    renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
+    initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
   });
 </script>
 
