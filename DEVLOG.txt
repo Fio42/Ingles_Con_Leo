@@ -1723,3 +1723,6 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 2026-10-26 (5) - Reintento automatico del formulario de pago
 - Leo vio una vez "No pudimos generar el formulario de pago" (la funcion respondia bien al revisarla: mensual y anual 200). Causa probable: fallo puntual o sesion vencida con la pestana abierta mucho rato; antes no se reintentaba.
 - backend.js: startStripeCheckout hace hasta 2 intentos; el segundo renueva la sesion (refreshSession). No reintenta si el plan anual no esta configurado. ?v= de backend.js -> 20261026b.
+
+## 2026-10-26 - Audio del test de nivel (A1, Sofia)
+- El audio lt-a1.mp3 sonaba raro al inicio ("Hi, I'm Sofia"). Se cambio el texto a "My name is Sofia. ..." en tools/lista_audios.csv y en la transcripcion de test-de-nivel-de-ingles.html. Falta regenerar el mp3 (python generar_audios.py audio/test-nivel/lt-a1.mp3).
