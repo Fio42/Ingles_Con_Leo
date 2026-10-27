@@ -1038,6 +1038,522 @@ var ACADEMIA = {
           { id: 'x-v6', type: 'order', topic: 'vida', q: 'Ordena las palabras para formar una frase.', tokens: ['He', 'is', 'my', 'brother.'], why: 'Primero he, luego is y luego quién es.' }
         ]
       }
+    },
+
+    'articulos': {
+      id: 'articulos',
+      title: 'Artículos y plurales',
+      name: 'Artículos y plurales',
+      short: 'A, an, the y plurales',
+      tagline: 'Aprende cuándo usar a, an, the o ningún artículo, y cómo formar el plural.',
+      goal: 'Al terminar podrás elegir entre a, an, the o ningún artículo, y formar plurales regulares e irregulares con seguridad.',
+      topics: {
+        aan: 'A y an',
+        the: 'The',
+        general: 'A, an, the o ningún artículo',
+        plurales: 'Plurales regulares',
+        irregulares: 'Plurales irregulares'
+      },
+
+      lessons: [
+        /* ------------------------------------------------------------ 1 */
+        {
+          id: 'a-an', n: 1, minutes: 6, topic: 'aan',
+          title: 'A y an',
+          summary: 'Decir "un" o "una" y elegir entre a y an.',
+          canSay: ['I have a book.', 'She eats an apple.', 'He is a university student.'],
+          screens: [
+            {
+              title: 'A y an: un y una',
+              text: 'A y an significan un o una. Se usan antes de un nombre en singular que puedes contar, cuando hablas de uno cualquiera. En inglés no cambian por género: a book es un libro, a house es una casa.',
+              items: [
+                { en: 'a book', es: 'un libro' },
+                { en: 'a house', es: 'una casa' },
+                { en: 'an apple', es: 'una manzana' }
+              ],
+              listen: ['A book', 'A house', 'An apple']
+            },
+            {
+              title: 'A o an: depende del sonido',
+              text: 'Usa a antes de un sonido de consonante. Usa an antes de un sonido de vocal. La decisión se toma al escuchar la palabra que sigue, no al mirar cómo se escribe.',
+              table: {
+                head: ['Sonido', 'Artículo', 'Ejemplo'],
+                rows: [
+                  ['Consonante', 'a', 'a book'],
+                  ['Vocal', 'an', 'an apple'],
+                  ['Vocal', 'an', 'an egg']
+                ]
+              },
+              listen: ['A book', 'An apple', 'An egg']
+            },
+            {
+              title: 'Cuenta el sonido, no la letra',
+              text: 'Algunas palabras empiezan con una vocal escrita, pero suenan como consonante: university suena "yuniversiti", así que va con a. Otras empiezan con h, pero la h no se pronuncia: hour suena "auer", así que va con an.',
+              items: [
+                { en: 'a university', es: 'una universidad' },
+                { en: 'a uniform', es: 'un uniforme' },
+                { en: 'an hour', es: 'una hora' },
+                { en: 'an honest person', es: 'una persona honesta' }
+              ],
+              listen: ['A university', 'A uniform', 'An hour', 'An honest person'],
+              note: 'La mayoría de las palabras con h sí se pronuncian: a house, a hat, a horse.'
+            },
+            {
+              title: 'Manda la palabra que sigue',
+              text: 'Si pones un adjetivo entre el artículo y el nombre, el artículo se decide por el adjetivo, porque es la palabra que viene justo después.',
+              items: [
+                { en: 'an old car', es: 'un coche viejo' },
+                { en: 'a new car', es: 'un coche nuevo' },
+                { en: 'an easy test', es: 'una prueba fácil' },
+                { en: 'a difficult test', es: 'una prueba difícil' }
+              ],
+              listen: ['An old car', 'A new car', 'An easy test', 'A difficult test']
+            },
+            {
+              title: 'A y an solo van con uno',
+              text: 'A y an significan uno, así que no se usan con plurales. Con varios, no se pone a ni an.',
+              compare: { wrong: 'a books', right: 'a book' },
+              items: [
+                { en: 'a book', es: 'un libro' },
+                { en: 'books', es: 'libros' }
+              ],
+              listen: ['A book', 'Books']
+            }
+          ],
+          activities: [
+            { id: 'l1-a1', type: 'choice', topic: 'aan', q: 'I eat ___ apple.', options: ['a', 'an'], answer: 1,
+              wrongWhy: { 'a': 'Apple empieza con sonido de vocal, así que no lleva a.' },
+              why: 'Apple empieza con sonido de vocal, así que lleva an: I eat an apple.' },
+            { id: 'l1-a2', type: 'choice', topic: 'aan', q: 'She has ___ book.', options: ['a', 'an'], answer: 0,
+              wrongWhy: { 'an': 'Book empieza con sonido de consonante, así que no lleva an.' },
+              why: 'Book empieza con sonido de consonante, así que lleva a: She has a book.' },
+            { id: 'l1-a3', type: 'choice', topic: 'aan', q: 'He is ___ university student.', options: ['a', 'an'], answer: 0,
+              wrongWhy: { 'an': 'University se escribe con u, pero suena "yuniversiti", con sonido de consonante. No lleva an.' },
+              why: 'University suena como "yuniversiti", con sonido de consonante, así que lleva a: He is a university student.' },
+            { id: 'l1-a4', type: 'choice', topic: 'aan', q: 'We wait for ___ hour.', options: ['a', 'an'], answer: 1,
+              wrongWhy: { 'a': 'Hour se escribe con h, pero la h no suena: se dice "auer". Empieza con sonido de vocal, así que no lleva a.' },
+              why: 'En hour la h no suena, así que la palabra empieza con sonido de vocal y lleva an: We wait for an hour.' },
+            { id: 'l1-a5', type: 'match', topic: 'aan', q: 'Relaciona cada palabra en español con su frase en inglés.',
+              pairs: [['una manzana', 'an apple'], ['una universidad', 'a university'], ['una hora', 'an hour']],
+              why: 'Apple y hour empiezan con sonido de vocal y llevan an. University empieza con sonido de consonante y lleva a.' },
+            { id: 'l1-a6', type: 'type', topic: 'aan', q: 'Escribe a o an.', ex: 'I have ___ pen.  →  a', source: 'I need ___ umbrella. Do you have one?',
+              accepted: ['an'], show: 'an', why: 'Umbrella empieza con sonido de vocal, así que lleva an.' },
+            { id: 'l1-a7', type: 'error', topic: 'aan', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['I have a orange.', 'She is a teacher.', 'He has a dog.'], wrong: 0, fix: 'I have an orange.',
+              why: 'Orange empieza con sonido de vocal, así que lleva an: I have an orange.' },
+            { id: 'l1-a8', type: 'order', topic: 'aan', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['She', 'has', 'an', 'umbrella.'],
+              why: 'Primero quién, luego has, luego an y luego lo que tiene.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 2 */
+        {
+          id: 'the', n: 2, minutes: 6, topic: 'the',
+          title: 'The',
+          summary: 'Hablar de algo concreto: el, la, los y las.',
+          canSay: ['The sun is hot.', 'I have a cat. The cat is black.', 'Please open the door.'],
+          screens: [
+            {
+              title: 'The: el, la, los, las',
+              text: 'The significa el, la, los o las. Es la misma palabra para singular y plural, y para masculino y femenino. Se usa cuando hablas de algo concreto, que tú y la otra persona ya pueden identificar.',
+              items: [
+                { en: 'the book', es: 'el libro' },
+                { en: 'the books', es: 'los libros' },
+                { en: 'the house', es: 'la casa' },
+                { en: 'the houses', es: 'las casas' }
+              ],
+              listen: ['The book', 'The books', 'The house', 'The houses']
+            },
+            {
+              title: 'Cuándo usas the',
+              text: 'Hay tres situaciones muy comunes. La primera, cuando ya lo mencionaste: primero dices a y luego the. La segunda, cuando los dos saben cuál es. La tercera, cuando solo hay uno.',
+              items: [
+                { en: 'I have a cat. The cat is black.', es: 'Tengo un gato. El gato es negro.' },
+                { en: 'Please close the door.', es: 'Por favor, cierra la puerta.' },
+                { en: 'The sun is hot.', es: 'El sol es caliente.' },
+                { en: 'Look at the moon.', es: 'Mira la luna.' }
+              ],
+              listen: ['I have a cat. The cat is black.', 'Please close the door.', 'The sun is hot.', 'Look at the moon.'],
+              note: 'En Please close the door, los dos están en el mismo lugar y saben qué puerta es.'
+            },
+            {
+              title: 'A es uno cualquiera, the es uno concreto',
+              text: 'Si no importa cuál, usa a o an. Si es uno en particular, usa the.',
+              change: { a: { label: 'Uno cualquiera', text: 'I need a pen.', es: 'Necesito un bolígrafo (cualquiera).' }, b: { label: 'Uno concreto', text: 'I need the pen.', es: 'Necesito el bolígrafo (uno que ya conocemos).' } },
+              listen: ['I need a pen.', 'I need the pen.']
+            },
+            {
+              title: 'The no es solo para lo ya mencionado',
+              text: 'Mencionar algo antes es solo una razón. También usas the cuando es obvio cuál es o cuando es único en su tipo.',
+              items: [
+                { en: 'The teacher is here.', es: 'El profesor está aquí (el de nuestra clase).' },
+                { en: 'The Earth is round.', es: 'La Tierra es redonda.' },
+                { en: 'The president is in Paris.', es: 'El presidente está en París.' }
+              ],
+              listen: ['The teacher is here.', 'The Earth is round.', 'The president is in Paris.']
+            },
+            {
+              title: 'Cómo suena the',
+              text: 'Antes de un sonido de consonante, the suena parecido a "de": the book. Antes de un sonido de vocal, suena parecido a "di": the apple, the hour. Es un detalle de pronunciación: se escribe igual.',
+              items: [
+                { en: 'the book', es: 'el libro' },
+                { en: 'the apple', es: 'la manzana' },
+                { en: 'the hour', es: 'la hora' }
+              ],
+              listen: ['The book', 'The apple', 'The hour']
+            }
+          ],
+          activities: [
+            { id: 'l2-a1', type: 'choice', topic: 'the', q: 'I have a cat. ___ cat is black.', options: ['a', 'the'], answer: 1,
+              wrongWhy: { 'a': 'Ya dijiste a cat. Ahora hablas de ese mismo gato, así que usas the.' },
+              why: 'Ya mencionaste el gato en la primera frase. Ahora es un gato concreto: The cat is black.' },
+            { id: 'l2-a2', type: 'choice', topic: 'the', q: '___ sun is hot today.', options: ['A', 'The'], answer: 1,
+              wrongWhy: { 'A': 'Solo hay un sol. Al ser único, lleva the.' },
+              why: 'Solo hay un sol, así que lleva the: The sun is hot today.' },
+            { id: 'l2-a3', type: 'choice', topic: 'the', q: 'Look at ___ moon! It is big tonight.', options: ['a', 'the'], answer: 1,
+              wrongWhy: { 'a': 'Solo hay una luna. Al ser única, lleva the.' },
+              why: 'Solo hay una luna, así que lleva the: Look at the moon!' },
+            { id: 'l2-a4', type: 'choice', topic: 'the', q: 'I need ___ pen. Do you have one?', options: ['a', 'the'], answer: 0,
+              wrongWhy: { 'the': 'No hablas de un bolígrafo en particular. Pides uno cualquiera, así que usas a.' },
+              why: 'Pides uno cualquiera, no uno en particular, así que usas a: I need a pen.' },
+            { id: 'l2-a5', type: 'match', topic: 'the', q: 'Relaciona cada palabra en español con su frase en inglés.',
+              pairs: [['el sol', 'the sun'], ['los libros', 'the books'], ['la luna', 'the moon']],
+              why: 'The sirve para el, la, los y las.' },
+            { id: 'l2-a6', type: 'type', topic: 'the', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'I have an apple. ___ apple is red.',
+              accepted: ['the'], show: 'the', why: 'Ya mencionaste la manzana en la primera frase, así que usas the.' },
+            { id: 'l2-a7', type: 'error', topic: 'the', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['I have a car. A car is blue.', 'The moon is white.', 'She is a nurse.'], wrong: 0, fix: 'I have a car. The car is blue.',
+              why: 'En la segunda frase hablas del mismo coche que ya mencionaste, así que lleva the.' },
+            { id: 'l2-a8', type: 'order', topic: 'the', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['The', 'sun', 'is', 'hot.'],
+              why: 'Primero the sun, luego is y luego cómo es.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 3 */
+        {
+          id: 'a-an-the-nada', n: 3, minutes: 7, topic: 'general',
+          title: 'A, an, the o ningún artículo',
+          summary: 'Elegir bien entre las tres opciones, incluida la de no poner artículo.',
+          canSay: ['She is a nurse.', 'I like dogs.', 'I speak English.'],
+          screens: [
+            {
+              title: 'Tres decisiones',
+              text: 'Antes de un nombre, piensa en qué quieres decir. Si es uno cualquiera y está en singular, usa a o an. Si es uno concreto, usa the. Si hablas de varios o de algo en general, no pongas artículo.',
+              table: {
+                head: ['Quieres decir', 'Usas', 'Ejemplo'],
+                rows: [
+                  ['Uno cualquiera', 'a / an', 'I have a dog.'],
+                  ['Uno concreto', 'the', 'The dog is black.'],
+                  ['Varios, en general', 'ningún artículo', 'Dogs are friendly.']
+                ]
+              },
+              listen: ['I have a dog.', 'The dog is black.', 'Dogs are friendly.']
+            },
+            {
+              title: 'Cuándo no se pone artículo',
+              text: 'No uses artículo cuando hablas en general de varias cosas (plural), de cosas que no cuentas (music, water, rice), de idiomas y de deportes.',
+              items: [
+                { en: 'I like apples.', es: 'Me gustan las manzanas.' },
+                { en: 'I like music.', es: 'Me gusta la música.' },
+                { en: 'I speak Spanish.', es: 'Hablo español.' },
+                { en: 'We play soccer.', es: 'Jugamos fútbol.' }
+              ],
+              listen: ['I like apples.', 'I like music.', 'I speak Spanish.', 'We play soccer.'],
+              note: 'Cuidado con el español: aquí decimos "la música" y "los perros", pero en inglés, al hablar en general, no se pone the.'
+            },
+            {
+              title: 'La profesión lleva a o an',
+              text: 'En español decimos "Soy enfermera", sin artículo. En inglés, al decir qué profesión tienes, sí se usa a o an.',
+              compare: { wrong: 'She is nurse.', right: 'She is a nurse.' },
+              items: [
+                { en: 'He is a doctor.', es: 'Él es doctor.' },
+                { en: 'I am an engineer.', es: 'Soy ingeniero.' }
+              ],
+              listen: ['She is a nurse.', 'He is a doctor.', 'I am an engineer.']
+            },
+            {
+              title: 'Errores frecuentes',
+              text: 'Hay tres errores muy comunes. No pongas the con un idioma. No pongas a con un plural. No dejes sin artículo una profesión en singular.',
+              items: [
+                { en: 'I speak English.', es: 'Hablo inglés. (no: the English)' },
+                { en: 'I have dogs.', es: 'Tengo perros. (no: a dogs)' },
+                { en: 'He is a teacher.', es: 'Es profesor. (no: He is teacher)' }
+              ],
+              listen: ['I speak English.', 'I have dogs.', 'He is a teacher.']
+            }
+          ],
+          activities: [
+            { id: 'l3-a1', type: 'choice', topic: 'general', say: 'She is a nurse.', q: 'She is ___ nurse.', options: ['a', 'an', 'sin artículo'], answer: 0,
+              wrongWhy: { 'an': 'Nurse empieza con sonido de consonante, así que no lleva an.', 'sin artículo': 'La profesión en singular lleva a o an en inglés: She is a nurse.' },
+              why: 'Nurse empieza con sonido de consonante y la profesión lleva artículo: She is a nurse.' },
+            { id: 'l3-a2', type: 'choice', topic: 'general', say: 'I like music.', q: 'Me gusta la música, en general: I like ___ music.', options: ['a', 'the', 'sin artículo'], answer: 2,
+              wrongWhy: { 'a': 'A va con un nombre que puedes contar en singular. Music no se cuenta.', 'the': 'Hablas de la música en general, no de una canción o un disco en concreto. Sin artículo.' },
+              why: 'Hablas de la música en general, así que no se pone artículo: I like music.' },
+            { id: 'l3-a3', type: 'choice', topic: 'general', say: 'My sister speaks French.', q: 'My sister speaks ___ French.', options: ['a', 'the', 'sin artículo'], answer: 2,
+              wrongWhy: { 'a': 'French es un idioma, no se pone a.', 'the': 'Con los idiomas no se usa the.' },
+              why: 'Con los idiomas no se pone artículo: My sister speaks French.' },
+            { id: 'l3-a4', type: 'choice', topic: 'general', q: 'I have a dog. ___ dog is brown.', options: ['a', 'the', 'sin artículo'], answer: 1,
+              wrongWhy: { 'a': 'Ya dijiste a dog. Ahora hablas de ese mismo perro, así que usas the.', 'sin artículo': 'Dog está en singular y es un perro concreto, así que necesita artículo: the.' },
+              why: 'Hablas del mismo perro que ya mencionaste: The dog is brown.' },
+            { id: 'l3-a5', type: 'match', topic: 'general', q: 'Relaciona cada frase en español con su frase en inglés.',
+              pairs: [['Soy enfermera.', 'I am a nurse.'], ['Hablo inglés.', 'I speak English.'], ['Me gustan los perros.', 'I like dogs.']],
+              why: 'La profesión en singular lleva a o an, y los idiomas y las cosas en general no llevan artículo.' },
+            { id: 'l3-a6', type: 'type', topic: 'general', q: 'Escribe a o an.', ex: 'I have ___ pen.  →  a', source: 'Look! There is ___ elephant.',
+              accepted: ['an'], show: 'an', why: 'Elephant empieza con sonido de vocal y es uno cualquiera, así que lleva an.' },
+            { id: 'l3-a7', type: 'error', topic: 'general', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['I like dogs.', 'She is teacher.', 'We play soccer.'], wrong: 1, fix: 'She is a teacher.',
+              why: 'La profesión en singular necesita a o an: She is a teacher.' },
+            { id: 'l3-a8', type: 'write', topic: 'general', q: 'Escribe una frase que empiece con I like y diga algo que te gusta, en plural y sin artículo.',
+              example: 'I like apples.',
+              checks: [
+                { re: '^\\s*I like\\s+(?!(a|an|the)\\b)[a-z]+', flags: 'i', msg: 'Empieza con I like y sigue directo con lo que te gusta, sin a, an ni the. Por ejemplo: I like apples.' }
+              ],
+              why: 'Cuando hablas en general de varias cosas, no pones artículo: I like apples.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 4 */
+        {
+          id: 'plurales-regulares', n: 4, minutes: 7, topic: 'plurales',
+          title: 'Plurales regulares',
+          summary: 'Formar el plural con -s, -es y -ies, y los casos con -o y -f.',
+          canSay: ['I have two boxes.', 'She has three babies.', 'We have four cars.'],
+          screens: [
+            {
+              title: 'Lo normal: añade -s',
+              text: 'La mayoría de los nombres forman el plural añadiendo -s al final. Con varios ya no se usa a ni an.',
+              items: [
+                { en: 'a book → two books', es: 'un libro → dos libros' },
+                { en: 'a car → three cars', es: 'un coche → tres coches' },
+                { en: 'a dog → four dogs', es: 'un perro → cuatro perros' }
+              ],
+              listen: ['Two books', 'Three cars', 'Four dogs']
+            },
+            {
+              title: 'Si termina en s, x, ch o sh: añade -es',
+              text: 'Cuando la palabra termina en un sonido de silbido, añadir solo -s sería difícil de pronunciar. Por eso se añade -es.',
+              table: {
+                head: ['Singular', 'Plural'],
+                rows: [
+                  ['bus', 'buses'],
+                  ['box', 'boxes'],
+                  ['watch', 'watches'],
+                  ['dish', 'dishes']
+                ]
+              },
+              listen: ['Two buses', 'Two boxes', 'Two watches', 'Two dishes']
+            },
+            {
+              title: 'Consonante + y: la y cambia a -ies',
+              text: 'Si antes de la y hay una consonante, quitas la y y pones -ies. Si antes hay una vocal (a, e, o, u), solo añades -s.',
+              table: {
+                head: ['Singular', 'Plural', 'Por qué'],
+                rows: [
+                  ['baby', 'babies', 'b + y'],
+                  ['city', 'cities', 't + y'],
+                  ['day', 'days', 'a + y'],
+                  ['key', 'keys', 'e + y']
+                ]
+              },
+              listen: ['Two babies', 'Two cities', 'Two days', 'Two keys']
+            },
+            {
+              title: 'Palabras con -o, -f y -fe: aprende cada una',
+              text: 'No hay una regla segura. Algunas palabras con -o toman -es y otras solo -s. Algunas con -f o -fe cambian a -ves y otras solo toman -s. Lo mejor es aprender cada palabra.',
+              table: {
+                head: ['Singular', 'Plural'],
+                rows: [
+                  ['potato', 'potatoes'],
+                  ['photo', 'photos'],
+                  ['knife', 'knives'],
+                  ['leaf', 'leaves'],
+                  ['roof', 'roofs']
+                ]
+              },
+              listen: ['Two potatoes', 'Two photos', 'Two knives', 'Two leaves', 'Two roofs'],
+              note: 'Otros ejemplos: tomato, tomatoes; piano, pianos; wife, wives; chef, chefs.'
+            },
+            {
+              title: 'Con varios, el nombre va en plural',
+              text: 'Cuando hay más de uno, el nombre también va en plural. En español pasa lo mismo: dos libros, no dos libro.',
+              compare: { wrong: 'two book', right: 'two books' },
+              items: [
+                { en: 'I have two boxes.', es: 'Tengo dos cajas.' },
+                { en: 'She has three babies.', es: 'Ella tiene tres bebés.' }
+              ],
+              listen: ['I have two boxes.', 'She has three babies.']
+            }
+          ],
+          activities: [
+            { id: 'l4-a1', type: 'choice', topic: 'plurales', q: 'El plural de "box" es:', options: ['boxs', 'boxes', 'boxies'], answer: 1,
+              wrongWhy: { 'boxs': 'Box termina en x, así que se añade -es para poder pronunciarlo.', 'boxies': 'Box no termina en y. Con -x se añade -es.' },
+              why: 'Las palabras que terminan en x toman -es: boxes.' },
+            { id: 'l4-a2', type: 'choice', topic: 'plurales', q: 'El plural de "baby" es:', options: ['babys', 'babies', 'babyes'], answer: 1,
+              wrongWhy: { 'babys': 'Antes de la y hay una consonante (b), así que la y cambia a -ies.', 'babyes': 'Con consonante + y, se quita la y y se pone -ies, no -yes.' },
+              why: 'Baby termina en consonante + y, así que la y cambia a -ies: babies.' },
+            { id: 'l4-a3', type: 'choice', topic: 'plurales', q: 'El plural de "day" es:', options: ['days', 'daies', 'dayes'], answer: 0,
+              wrongWhy: { 'daies': 'Antes de la y hay una vocal (a), así que la y no cambia.', 'dayes': 'Con vocal + y solo se añade -s.' },
+              why: 'Day termina en vocal + y, así que solo se añade -s: days.' },
+            { id: 'l4-a4', type: 'choice', topic: 'plurales', q: 'El plural de "potato" es:', options: ['potatos', 'potatoes', 'potatoies'], answer: 1,
+              wrongWhy: { 'potatos': 'Potato es una de las palabras con -o que toman -es.', 'potatoies': 'La -o no cambia a -ies. Se añade -es.' },
+              why: 'Potato es una de las palabras con -o que toman -es: potatoes.' },
+            { id: 'l4-a5', type: 'match', topic: 'plurales', q: 'Relaciona cada palabra con su plural.',
+              pairs: [['dish', 'dishes'], ['city', 'cities'], ['watch', 'watches']],
+              why: 'Sh y ch toman -es y consonante + y cambia a -ies.' },
+            { id: 'l4-a6', type: 'type', topic: 'plurales', q: 'Escribe el plural.', ex: 'one dog, two ___  →  dogs', source: 'One bus, two ___.',
+              accepted: ['buses'], show: 'buses', why: 'Bus termina en s, así que toma -es: buses.' },
+            { id: 'l4-a7', type: 'error', topic: 'plurales', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['I have two boxes.', 'She has three babys.', 'We have four cars.'], wrong: 1, fix: 'She has three babies.',
+              why: 'Baby termina en consonante + y, así que su plural es babies.' },
+            { id: 'l4-a8', type: 'order', topic: 'plurales', q: 'Ordena las palabras para formar una frase.',
+              tokens: ['We', 'have', 'three', 'boxes.'],
+              why: 'Primero quién, luego have, luego la cantidad y por último el nombre en plural.' }
+          ]
+        },
+
+        /* ------------------------------------------------------------ 5 */
+        {
+          id: 'plurales-irregulares', n: 5, minutes: 7, topic: 'irregulares',
+          title: 'Plurales irregulares y repaso',
+          summary: 'Los plurales que cambian de forma y un repaso de todo el curso.',
+          canSay: ['The children are happy.', 'Two women are here.', 'The people are kind.'],
+          screens: [
+            {
+              title: 'Plurales irregulares',
+              text: 'Algunas palabras muy comunes no forman el plural con -s. Cambian por dentro o son totalmente distintas. Hay que aprenderlas.',
+              table: {
+                head: ['Singular', 'Plural'],
+                rows: [
+                  ['man', 'men'],
+                  ['woman', 'women'],
+                  ['child', 'children'],
+                  ['person', 'people']
+                ]
+              },
+              listen: ['Man', 'Men', 'Woman', 'Women', 'Child', 'Children', 'Person', 'People'],
+              note: 'Women se escribe con e, y suena distinto de woman: "wimin".'
+            },
+            {
+              title: 'Foot, tooth y mouse',
+              text: 'Estas tres palabras también cambian de forma.',
+              items: [
+                { en: 'one foot, two feet', es: 'un pie, dos pies' },
+                { en: 'one tooth, two teeth', es: 'un diente, dos dientes' },
+                { en: 'one mouse, two mice', es: 'un ratón, dos ratones' }
+              ],
+              listen: ['One foot, two feet', 'One tooth, two teeth', 'One mouse, two mice']
+            },
+            {
+              title: 'Sheep, deer y fish no cambian',
+              text: 'Estas palabras tienen la misma forma en singular y en plural. Sabes si es uno o varios por el resto de la frase.',
+              items: [
+                { en: 'one sheep, two sheep', es: 'una oveja, dos ovejas' },
+                { en: 'one deer, two deer', es: 'un ciervo, dos ciervos' },
+                { en: 'one fish, two fish', es: 'un pez, dos peces' }
+              ],
+              listen: ['One sheep, two sheep', 'One deer, two deer', 'One fish, two fish']
+            },
+            {
+              title: 'People ya es plural',
+              text: 'People significa personas y ya es un plural. No le añadas -s ni uses a. Va con are, no con is.',
+              compare: { wrong: 'The peoples are kind.', right: 'The people are kind.' },
+              items: [
+                { en: 'Many people are here.', es: 'Mucha gente está aquí.' },
+                { en: 'A person is here.', es: 'Una persona está aquí.' }
+              ],
+              listen: ['The people are kind.', 'Many people are here.', 'A person is here.']
+            },
+            {
+              title: 'Repaso: cómo elegir',
+              text: 'Primero decide si hablas de uno o de varios, y de algo concreto o general.',
+              table: {
+                head: ['Quieres decir', 'Cómo lo dices'],
+                rows: [
+                  ['Uno cualquiera', 'a book, an apple'],
+                  ['Uno concreto', 'the book'],
+                  ['Varios', 'books, boxes, babies'],
+                  ['Varios irregulares', 'men, women, children'],
+                  ['En general', 'I like music.']
+                ]
+              },
+              listen: ['A book, an apple', 'The book', 'Books, boxes, babies', 'Men, women, children', 'I like music.']
+            }
+          ],
+          activities: [
+            { id: 'l5-a1', type: 'choice', topic: 'irregulares', q: 'El plural de "woman" es:', options: ['womans', 'womens', 'women'], answer: 2,
+              wrongWhy: { 'womans': 'Woman es irregular: no se forma con -s.', 'womens': 'Women ya es el plural. No se le añade otra -s.' },
+              why: 'Woman es irregular: su plural es women.' },
+            { id: 'l5-a2', type: 'choice', topic: 'irregulares', q: 'El plural de "child" es:', options: ['childs', 'children', 'childrens'], answer: 1,
+              wrongWhy: { 'childs': 'Child es irregular: no se forma con -s.', 'childrens': 'Children ya es el plural. No se le añade otra -s.' },
+              why: 'Child es irregular: su plural es children.' },
+            { id: 'l5-a3', type: 'choice', topic: 'irregulares', q: 'I see two ___ in the field.', options: ['sheeps', 'sheep', 'sheepes'], answer: 1,
+              wrongWhy: { 'sheeps': 'Sheep no cambia en plural.', 'sheepes': 'Sheep no cambia en plural.' },
+              why: 'Sheep tiene la misma forma en singular y en plural: two sheep.' },
+            { id: 'l5-a4', type: 'choice', topic: 'irregulares', q: 'Many ___ are at the park.', options: ['person', 'peoples', 'people'], answer: 2,
+              wrongWhy: { 'person': 'Person es singular y Many pide un plural.', 'peoples': 'People ya es un plural, no se le añade -s.' },
+              why: 'People es el plural de person: Many people are at the park.' },
+            { id: 'l5-a5', type: 'match', topic: 'irregulares', q: 'Relaciona cada palabra con su plural.',
+              pairs: [['man', 'men'], ['mouse', 'mice'], ['foot', 'feet']],
+              why: 'Son plurales irregulares: hay que aprenderlos.' },
+            { id: 'l5-a6', type: 'type', topic: 'irregulares', q: 'Escribe el plural.', ex: 'one dog, two ___  →  dogs', source: 'One mouse, two ___.',
+              accepted: ['mice'], show: 'mice', why: 'Mouse es irregular: su plural es mice.' },
+            { id: 'l5-a7', type: 'error', topic: 'irregulares', q: 'Una de estas frases tiene un error. Tócala.',
+              options: ['The men are tall.', 'My childs are happy.', 'Two women are here.'], wrong: 1, fix: 'My children are happy.',
+              why: 'El plural de child es children, no childs.' },
+            { id: 'l5-a8', type: 'write', topic: 'irregulares', q: 'Escribe una frase con un plural irregular: men, women, children, people, feet, teeth o mice.',
+              example: 'The children are happy.',
+              checks: [
+                { re: '\\b(men|women|children|people|feet|teeth|mice)\\b', flags: 'i', msg: 'Usa uno de estos plurales: men, women, children, people, feet, teeth o mice. Por ejemplo: The children are happy.' }
+              ],
+              why: 'Men, women, children, people, feet, teeth y mice son plurales irregulares.' }
+          ]
+        }
+      ],
+
+      /* ---------------------------------------------------------- Evaluación (práctica, en el navegador) */
+      exam: {
+        id: 'articulos-final', n: 6,
+        title: 'Evaluación final (práctica)',
+        bank: [
+          /* aan */
+          { id: 'x-a1', type: 'choice', topic: 'aan', q: 'She has ___ egg.', options: ['a', 'an'], answer: 1, why: 'Egg empieza con sonido de vocal: an egg.' },
+          { id: 'x-a2', type: 'choice', topic: 'aan', q: 'He works at ___ university.', options: ['a', 'an'], answer: 0, why: 'University suena "yuniversiti", con sonido de consonante: a university.' },
+          { id: 'x-a3', type: 'choice', topic: 'aan', q: 'She is ___ honest woman.', options: ['a', 'an'], answer: 1, why: 'En honest la h no suena: se dice "onest". Empieza con sonido de vocal: an honest woman.' },
+          { id: 'x-a4', type: 'type', topic: 'aan', q: 'Escribe a o an.', ex: 'I have ___ pen.  →  a', source: 'He wants ___ orange. Do you have one?', accepted: ['an'], show: 'an', why: 'Orange empieza con sonido de vocal: an orange.' },
+          { id: 'x-a5', type: 'error', topic: 'aan', q: 'Una de estas frases tiene un error. Tócala.', options: ['I see a elephant.', 'She has a cat.', 'He is a student.'], wrong: 0, fix: 'I see an elephant.', why: 'Elephant empieza con sonido de vocal: an elephant.' },
+          { id: 'x-a6', type: 'order', topic: 'aan', q: 'Ordena las palabras para formar una frase.', tokens: ['I', 'have', 'a', 'new', 'phone.'], why: 'Primero quién, luego have, luego a new y por último el nombre.' },
+          /* the */
+          { id: 'x-t1', type: 'choice', topic: 'the', q: 'I have a bike. ___ bike is red.', options: ['a', 'the'], answer: 1, why: 'Ya mencionaste la bicicleta: The bike is red.' },
+          { id: 'x-t2', type: 'choice', topic: 'the', q: '___ Earth is round.', options: ['A', 'The'], answer: 1, why: 'Solo hay una Tierra: The Earth is round.' },
+          { id: 'x-t3', type: 'choice', topic: 'the', q: 'I need ___ pencil. Do you have one?', options: ['a', 'the'], answer: 0, why: 'Pides un lápiz cualquiera: a pencil.' },
+          { id: 'x-t4', type: 'type', topic: 'the', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'She has a son. ___ son is five.', accepted: ['the'], show: 'the', why: 'Ya mencionaste al hijo: the son.' },
+          { id: 'x-t5', type: 'error', topic: 'the', q: 'Una de estas frases tiene un error. Tócala.', options: ['The sun is hot.', 'I have a dog. A dog is black.', 'She is a nurse.'], wrong: 1, fix: 'I have a dog. The dog is black.', why: 'Hablas del mismo perro, así que lleva the.' },
+          { id: 'x-t6', type: 'order', topic: 'the', q: 'Ordena las palabras para formar una frase.', tokens: ['The', 'teacher', 'is', 'here.'], why: 'Primero the teacher, luego is y luego dónde.' },
+          /* general */
+          { id: 'x-g1', type: 'choice', topic: 'general', say: 'My brother is a doctor.', q: 'My brother is ___ doctor.', options: ['a', 'an', 'sin artículo'], answer: 0, why: 'La profesión en singular lleva artículo y doctor empieza con consonante: a doctor.' },
+          { id: 'x-g2', type: 'choice', topic: 'general', say: 'I like coffee.', q: 'Me gusta el café, en general: I like ___ coffee.', options: ['a', 'the', 'sin artículo'], answer: 2, why: 'Hablas del café en general: I like coffee.' },
+          { id: 'x-g3', type: 'choice', topic: 'general', say: 'We play soccer on Sundays.', q: 'We play ___ soccer on Sundays.', options: ['a', 'the', 'sin artículo'], answer: 2, why: 'Con los deportes no se pone artículo: We play soccer.' },
+          { id: 'x-g4', type: 'type', topic: 'general', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'I need ___ umbrella. Do you have one?', accepted: ['an'], show: 'an', why: 'Umbrella empieza con sonido de vocal y pides uno cualquiera: an umbrella.' },
+          { id: 'x-g5', type: 'error', topic: 'general', q: 'Una de estas frases tiene un error. Tócala.', options: ['We speak English.', 'He is engineer.', 'I like cats.'], wrong: 1, fix: 'He is an engineer.', why: 'La profesión en singular lleva a o an.' },
+          { id: 'x-g6', type: 'order', topic: 'general', q: 'Ordena las palabras para formar una frase.', tokens: ['They', 'play', 'soccer', 'at', 'school.'], why: 'Primero quién, luego play, luego soccer sin artículo y por último dónde.' },
+          /* plurales */
+          { id: 'x-p1', type: 'choice', topic: 'plurales', q: 'El plural de "bus" es:', options: ['buss', 'buses', 'busies'], answer: 1, why: 'Las palabras que terminan en s toman -es: buses.' },
+          { id: 'x-p2', type: 'choice', topic: 'plurales', q: 'El plural de "city" es:', options: ['citys', 'cities', 'cityes'], answer: 1, why: 'City termina en consonante + y: cities.' },
+          { id: 'x-p3', type: 'choice', topic: 'plurales', q: 'El plural de "key" es:', options: ['keys', 'kies', 'keies'], answer: 0, why: 'Key termina en vocal + y, así que solo se añade -s: keys.' },
+          { id: 'x-p4', type: 'type', topic: 'plurales', q: 'Escribe el plural.', ex: 'one dog, two ___  →  dogs', source: 'One watch, two ___.', accepted: ['watches'], show: 'watches', why: 'Watch termina en ch, así que toma -es: watches.' },
+          { id: 'x-p5', type: 'error', topic: 'plurales', q: 'Una de estas frases tiene un error. Tócala.', options: ['I have two dogs.', 'She has three boxs.', 'He has four pens.'], wrong: 1, fix: 'She has three boxes.', why: 'Box termina en x, así que su plural es boxes.' },
+          { id: 'x-p6', type: 'order', topic: 'plurales', q: 'Ordena las palabras para formar una frase.', tokens: ['We', 'have', 'two', 'dishes.'], why: 'Primero quién, luego have, luego la cantidad y por último el plural.' },
+          /* irregulares */
+          { id: 'x-i1', type: 'choice', topic: 'irregulares', q: 'El plural de "man" es:', options: ['mans', 'men', 'mens'], answer: 1, why: 'Man es irregular: men.' },
+          { id: 'x-i2', type: 'choice', topic: 'irregulares', q: 'Four ___ are in the room.', options: ['woman', 'womans', 'women'], answer: 2, why: 'Four pide un plural, y el plural de woman es women.' },
+          { id: 'x-i3', type: 'choice', topic: 'irregulares', q: 'The ___ are in the park.', options: ['child', 'childs', 'children'], answer: 2, why: 'Are pide un plural, y el plural de child es children.' },
+          { id: 'x-i4', type: 'type', topic: 'irregulares', q: 'Escribe el plural.', ex: 'one dog, two ___  →  dogs', source: 'One tooth, two ___.', accepted: ['teeth'], show: 'teeth', why: 'Tooth es irregular: teeth.' },
+          { id: 'x-i5', type: 'error', topic: 'irregulares', q: 'Una de estas frases tiene un error. Tócala.', options: ['The people are kind.', 'Two mouses are here.', 'My feet are cold.'], wrong: 1, fix: 'Two mice are here.', why: 'El plural de mouse es mice.' },
+          { id: 'x-i6', type: 'order', topic: 'irregulares', q: 'Ordena las palabras para formar una frase.', tokens: ['The', 'children', 'are', 'happy.'], why: 'Primero the children, luego are y luego cómo están.' }
+        ]
+      }
     }
   }
 };

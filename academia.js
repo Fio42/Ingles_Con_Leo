@@ -6,7 +6,7 @@
    - Una sola pagina con rutas por hash:
        #/                              Mi ruta
        #/logros                        Mis logros
-       #/curso/<curso>                 Curso (to-be, pronombres)
+       #/curso/<curso>                 Curso (to-be, pronombres, articulos)
        #/curso/to-be/leccion/3         Leccion (explicacion + actividades)
        #/curso/to-be/evaluacion        Evaluacion de PRACTICA (no certifica)
        #/curso/to-be/repaso/<tema>     Repaso de errores guardados
@@ -1646,7 +1646,7 @@
   }
 
   /* ---------------- Router de la pagina ---------------- */
-  ['to-be', 'pronombres'].forEach(function(id){ if(ACADEMIA.courses[id]) SHELL.apps[id] = makeApp(id); });
+  ['to-be', 'pronombres', 'articulos'].forEach(function(id){ if(ACADEMIA.courses[id]) SHELL.apps[id] = makeApp(id); });
   SHELL.primary = SHELL.apps['to-be'];
   SHELL.route = function(){
     var parts = hashParts().path.split('/').filter(Boolean);

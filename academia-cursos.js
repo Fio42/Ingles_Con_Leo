@@ -11,6 +11,11 @@ var ACADEMIA_CURSOS = {
    "title": "Pronombres personales",
    "open": true,
    "lessons": 5
+  },
+  "articulos": {
+   "title": "Artículos y plurales",
+   "open": false,
+   "lessons": 5
   }
  }
 };

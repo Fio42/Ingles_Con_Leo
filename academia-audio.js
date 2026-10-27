@@ -603,5 +603,533 @@ var ACADEMIA_AUDIO = {
  "He is my uncle.": {
   "f": "audio/academia/pronombres/97acd57f84.mp3",
   "v": "f"
+ },
+ "A book": {
+  "f": "audio/academia/articulos/96c131a335.mp3",
+  "v": "f"
+ },
+ "A house": {
+  "f": "audio/academia/articulos/5dba070125.mp3",
+  "v": "f"
+ },
+ "An apple": {
+  "f": "audio/academia/articulos/014158dea2.mp3",
+  "v": "f"
+ },
+ "a book": {
+  "f": "audio/academia/articulos/bd82667503.mp3",
+  "v": "f"
+ },
+ "a house": {
+  "f": "audio/academia/articulos/660e72584d.mp3",
+  "v": "f"
+ },
+ "an apple": {
+  "f": "audio/academia/articulos/a65f26cf90.mp3",
+  "v": "f"
+ },
+ "An egg": {
+  "f": "audio/academia/articulos/c5dd7bd91e.mp3",
+  "v": "f"
+ },
+ "A university": {
+  "f": "audio/academia/articulos/4444ce6cf8.mp3",
+  "v": "f"
+ },
+ "A uniform": {
+  "f": "audio/academia/articulos/efd29d2435.mp3",
+  "v": "f"
+ },
+ "An hour": {
+  "f": "audio/academia/articulos/0ffa4450e4.mp3",
+  "v": "f"
+ },
+ "An honest person": {
+  "f": "audio/academia/articulos/989aca82ab.mp3",
+  "v": "f"
+ },
+ "a university": {
+  "f": "audio/academia/articulos/a18ebf5b55.mp3",
+  "v": "f"
+ },
+ "a uniform": {
+  "f": "audio/academia/articulos/61c295794d.mp3",
+  "v": "f"
+ },
+ "an hour": {
+  "f": "audio/academia/articulos/5cb2141378.mp3",
+  "v": "f"
+ },
+ "an honest person": {
+  "f": "audio/academia/articulos/4bd66d832f.mp3",
+  "v": "f"
+ },
+ "An old car": {
+  "f": "audio/academia/articulos/8b0f82b1ce.mp3",
+  "v": "f"
+ },
+ "A new car": {
+  "f": "audio/academia/articulos/5d0b1b84a2.mp3",
+  "v": "f"
+ },
+ "An easy test": {
+  "f": "audio/academia/articulos/3f264a9e7b.mp3",
+  "v": "f"
+ },
+ "A difficult test": {
+  "f": "audio/academia/articulos/3253304649.mp3",
+  "v": "f"
+ },
+ "an old car": {
+  "f": "audio/academia/articulos/d8c0e139d1.mp3",
+  "v": "f"
+ },
+ "a new car": {
+  "f": "audio/academia/articulos/994f561951.mp3",
+  "v": "f"
+ },
+ "an easy test": {
+  "f": "audio/academia/articulos/cea20afdd8.mp3",
+  "v": "f"
+ },
+ "a difficult test": {
+  "f": "audio/academia/articulos/db1d86ab9a.mp3",
+  "v": "f"
+ },
+ "Books": {
+  "f": "audio/academia/articulos/79b58a8dbc.mp3",
+  "v": "f"
+ },
+ "books": {
+  "f": "audio/academia/articulos/8317c0f356.mp3",
+  "v": "f"
+ },
+ "I have a book.": {
+  "f": "audio/academia/articulos/571fe43d01.mp3",
+  "v": "f"
+ },
+ "She eats an apple.": {
+  "f": "audio/academia/articulos/33cbbe748e.mp3",
+  "v": "f"
+ },
+ "He is a university student.": {
+  "f": "audio/academia/articulos/10462f21f3.mp3",
+  "v": "f"
+ },
+ "I eat an apple.": {
+  "f": "audio/academia/articulos/3b2b66a4e4.mp3",
+  "v": "f"
+ },
+ "She has a book.": {
+  "f": "audio/academia/articulos/2818d1e147.mp3",
+  "v": "f"
+ },
+ "We wait for an hour.": {
+  "f": "audio/academia/articulos/3452a08289.mp3",
+  "v": "f"
+ },
+ "I need an umbrella. Do you have one?": {
+  "f": "audio/academia/articulos/7913aa753d.mp3",
+  "v": "f"
+ },
+ "I have an orange.": {
+  "f": "audio/academia/articulos/c32ead21f5.mp3",
+  "v": "f"
+ },
+ "She has an umbrella.": {
+  "f": "audio/academia/articulos/6e950e0594.mp3",
+  "v": "f"
+ },
+ "The book": {
+  "f": "audio/academia/articulos/3e0146b123.mp3",
+  "v": "f"
+ },
+ "The books": {
+  "f": "audio/academia/articulos/3c7ce5c9b1.mp3",
+  "v": "f"
+ },
+ "The house": {
+  "f": "audio/academia/articulos/0c56ca4a2c.mp3",
+  "v": "f"
+ },
+ "The houses": {
+  "f": "audio/academia/articulos/643368b2eb.mp3",
+  "v": "f"
+ },
+ "the book": {
+  "f": "audio/academia/articulos/ae39723a81.mp3",
+  "v": "f"
+ },
+ "the books": {
+  "f": "audio/academia/articulos/cf2e636517.mp3",
+  "v": "f"
+ },
+ "the house": {
+  "f": "audio/academia/articulos/14f3df5110.mp3",
+  "v": "f"
+ },
+ "the houses": {
+  "f": "audio/academia/articulos/fd63c23cc3.mp3",
+  "v": "f"
+ },
+ "I have a cat. The cat is black.": {
+  "f": "audio/academia/articulos/9d4a74c8b9.mp3",
+  "v": "f"
+ },
+ "Please close the door.": {
+  "f": "audio/academia/articulos/5758b9b805.mp3",
+  "v": "f"
+ },
+ "The sun is hot.": {
+  "f": "audio/academia/articulos/4504fd87f7.mp3",
+  "v": "f"
+ },
+ "Look at the moon.": {
+  "f": "audio/academia/articulos/4ee28e5f7f.mp3",
+  "v": "f"
+ },
+ "I need a pen.": {
+  "f": "audio/academia/articulos/ccb0157f10.mp3",
+  "v": "f"
+ },
+ "I need the pen.": {
+  "f": "audio/academia/articulos/a410c1763b.mp3",
+  "v": "f"
+ },
+ "The teacher is here.": {
+  "f": "audio/academia/articulos/0a5439479d.mp3",
+  "v": "f"
+ },
+ "The Earth is round.": {
+  "f": "audio/academia/articulos/cc79b56d21.mp3",
+  "v": "f"
+ },
+ "The president is in Paris.": {
+  "f": "audio/academia/articulos/6c60ae1a2d.mp3",
+  "v": "f"
+ },
+ "The apple": {
+  "f": "audio/academia/articulos/4c4ca7ad31.mp3",
+  "v": "f"
+ },
+ "The hour": {
+  "f": "audio/academia/articulos/b1af7931e8.mp3",
+  "v": "f"
+ },
+ "the apple": {
+  "f": "audio/academia/articulos/89ae75cb8c.mp3",
+  "v": "f"
+ },
+ "the hour": {
+  "f": "audio/academia/articulos/d5b915ce4c.mp3",
+  "v": "f"
+ },
+ "Please open the door.": {
+  "f": "audio/academia/articulos/9b01947264.mp3",
+  "v": "f"
+ },
+ "The sun is hot today.": {
+  "f": "audio/academia/articulos/c8d1c8a3f4.mp3",
+  "v": "f"
+ },
+ "Look at the moon! It is big tonight.": {
+  "f": "audio/academia/articulos/76f26f7e38.mp3",
+  "v": "f"
+ },
+ "I need a pen. Do you have one?": {
+  "f": "audio/academia/articulos/43ccee1414.mp3",
+  "v": "f"
+ },
+ "I have an apple. The apple is red.": {
+  "f": "audio/academia/articulos/717a1b04ca.mp3",
+  "v": "f"
+ },
+ "I have a car. The car is blue.": {
+  "f": "audio/academia/articulos/fbf7e5d778.mp3",
+  "v": "f"
+ },
+ "I have a dog.": {
+  "f": "audio/academia/articulos/d77d429628.mp3",
+  "v": "f"
+ },
+ "The dog is black.": {
+  "f": "audio/academia/articulos/41fd5fa70f.mp3",
+  "v": "f"
+ },
+ "Dogs are friendly.": {
+  "f": "audio/academia/articulos/f2305723b5.mp3",
+  "v": "f"
+ },
+ "I like apples.": {
+  "f": "audio/academia/articulos/943b4fb6fd.mp3",
+  "v": "f"
+ },
+ "I like music.": {
+  "f": "audio/academia/articulos/4e21c6c8f2.mp3",
+  "v": "f"
+ },
+ "I speak Spanish.": {
+  "f": "audio/academia/articulos/8d35b48f97.mp3",
+  "v": "f"
+ },
+ "We play soccer.": {
+  "f": "audio/academia/articulos/afd5c79d5b.mp3",
+  "v": "f"
+ },
+ "I am an engineer.": {
+  "f": "audio/academia/articulos/c20d347e61.mp3",
+  "v": "f"
+ },
+ "I speak English.": {
+  "f": "audio/academia/articulos/f71a2bd26c.mp3",
+  "v": "f"
+ },
+ "I have dogs.": {
+  "f": "audio/academia/articulos/aee8f2c962.mp3",
+  "v": "f"
+ },
+ "He is a teacher.": {
+  "f": "audio/academia/articulos/0a2874f578.mp3",
+  "v": "f"
+ },
+ "I like dogs.": {
+  "f": "audio/academia/articulos/36c7b91ce0.mp3",
+  "v": "f"
+ },
+ "My sister speaks French.": {
+  "f": "audio/academia/articulos/ab2fb479c6.mp3",
+  "v": "f"
+ },
+ "I have a dog. The dog is brown.": {
+  "f": "audio/academia/articulos/679f0d53cf.mp3",
+  "v": "f"
+ },
+ "Look! There is an elephant.": {
+  "f": "audio/academia/articulos/7123e7dec6.mp3",
+  "v": "f"
+ },
+ "Two books": {
+  "f": "audio/academia/articulos/b942287584.mp3",
+  "v": "f"
+ },
+ "Three cars": {
+  "f": "audio/academia/articulos/7e02d97508.mp3",
+  "v": "f"
+ },
+ "Four dogs": {
+  "f": "audio/academia/articulos/f0cf37222d.mp3",
+  "v": "f"
+ },
+ "a book → two books": {
+  "f": "audio/academia/articulos/eb36c34e37.mp3",
+  "v": "f"
+ },
+ "a car → three cars": {
+  "f": "audio/academia/articulos/d1240b4e8a.mp3",
+  "v": "f"
+ },
+ "a dog → four dogs": {
+  "f": "audio/academia/articulos/f5713d3395.mp3",
+  "v": "f"
+ },
+ "Two buses": {
+  "f": "audio/academia/articulos/08f19f0ba2.mp3",
+  "v": "f"
+ },
+ "Two boxes": {
+  "f": "audio/academia/articulos/076b5807c7.mp3",
+  "v": "f"
+ },
+ "Two watches": {
+  "f": "audio/academia/articulos/9139de6c0e.mp3",
+  "v": "f"
+ },
+ "Two dishes": {
+  "f": "audio/academia/articulos/721447afad.mp3",
+  "v": "f"
+ },
+ "Two babies": {
+  "f": "audio/academia/articulos/f325f02214.mp3",
+  "v": "f"
+ },
+ "Two cities": {
+  "f": "audio/academia/articulos/06d713f380.mp3",
+  "v": "f"
+ },
+ "Two days": {
+  "f": "audio/academia/articulos/2a71341942.mp3",
+  "v": "f"
+ },
+ "Two keys": {
+  "f": "audio/academia/articulos/215b16fdfd.mp3",
+  "v": "f"
+ },
+ "Two potatoes": {
+  "f": "audio/academia/articulos/d53d627a35.mp3",
+  "v": "f"
+ },
+ "Two photos": {
+  "f": "audio/academia/articulos/ef2d7f7bc8.mp3",
+  "v": "f"
+ },
+ "Two knives": {
+  "f": "audio/academia/articulos/f56f782baa.mp3",
+  "v": "f"
+ },
+ "Two leaves": {
+  "f": "audio/academia/articulos/3ba1f0399c.mp3",
+  "v": "f"
+ },
+ "Two roofs": {
+  "f": "audio/academia/articulos/78cfc42763.mp3",
+  "v": "f"
+ },
+ "I have two boxes.": {
+  "f": "audio/academia/articulos/4bbcd897c7.mp3",
+  "v": "f"
+ },
+ "She has three babies.": {
+  "f": "audio/academia/articulos/2fe07cc111.mp3",
+  "v": "f"
+ },
+ "We have four cars.": {
+  "f": "audio/academia/articulos/1b439a62d5.mp3",
+  "v": "f"
+ },
+ "One bus, two buses.": {
+  "f": "audio/academia/articulos/b433b9384a.mp3",
+  "v": "f"
+ },
+ "We have three boxes.": {
+  "f": "audio/academia/articulos/9fd3d3e31e.mp3",
+  "v": "f"
+ },
+ "Man": {
+  "f": "audio/academia/articulos/f4d4239e32.mp3",
+  "v": "f"
+ },
+ "Men": {
+  "f": "audio/academia/articulos/1dcc593b24.mp3",
+  "v": "f"
+ },
+ "Woman": {
+  "f": "audio/academia/articulos/5325784e35.mp3",
+  "v": "f"
+ },
+ "Women": {
+  "f": "audio/academia/articulos/c8dbfa5850.mp3",
+  "v": "f"
+ },
+ "Child": {
+  "f": "audio/academia/articulos/8d2bf7d438.mp3",
+  "v": "f"
+ },
+ "Children": {
+  "f": "audio/academia/articulos/5809eaacc0.mp3",
+  "v": "f"
+ },
+ "Person": {
+  "f": "audio/academia/articulos/dc0469a646.mp3",
+  "v": "f"
+ },
+ "People": {
+  "f": "audio/academia/articulos/328c4ec9d3.mp3",
+  "v": "f"
+ },
+ "One foot, two feet": {
+  "f": "audio/academia/articulos/4f97046631.mp3",
+  "v": "f"
+ },
+ "One tooth, two teeth": {
+  "f": "audio/academia/articulos/9e813b9a95.mp3",
+  "v": "f"
+ },
+ "One mouse, two mice": {
+  "f": "audio/academia/articulos/97cbd240dc.mp3",
+  "v": "f"
+ },
+ "one foot, two feet": {
+  "f": "audio/academia/articulos/faf68e6bed.mp3",
+  "v": "f"
+ },
+ "one tooth, two teeth": {
+  "f": "audio/academia/articulos/721046a180.mp3",
+  "v": "f"
+ },
+ "one mouse, two mice": {
+  "f": "audio/academia/articulos/775bf496f6.mp3",
+  "v": "f"
+ },
+ "One sheep, two sheep": {
+  "f": "audio/academia/articulos/7fd007ad0e.mp3",
+  "v": "f"
+ },
+ "One deer, two deer": {
+  "f": "audio/academia/articulos/77ae201d03.mp3",
+  "v": "f"
+ },
+ "One fish, two fish": {
+  "f": "audio/academia/articulos/032e8d9c4a.mp3",
+  "v": "f"
+ },
+ "one sheep, two sheep": {
+  "f": "audio/academia/articulos/b32788265b.mp3",
+  "v": "f"
+ },
+ "one deer, two deer": {
+  "f": "audio/academia/articulos/5c4e16be56.mp3",
+  "v": "f"
+ },
+ "one fish, two fish": {
+  "f": "audio/academia/articulos/3fcd178c22.mp3",
+  "v": "f"
+ },
+ "The people are kind.": {
+  "f": "audio/academia/articulos/b85e4af947.mp3",
+  "v": "f"
+ },
+ "Many people are here.": {
+  "f": "audio/academia/articulos/1e29102346.mp3",
+  "v": "f"
+ },
+ "A person is here.": {
+  "f": "audio/academia/articulos/53541aa85b.mp3",
+  "v": "f"
+ },
+ "A book, an apple": {
+  "f": "audio/academia/articulos/b4205a5f96.mp3",
+  "v": "f"
+ },
+ "Books, boxes, babies": {
+  "f": "audio/academia/articulos/60fd058326.mp3",
+  "v": "f"
+ },
+ "Men, women, children": {
+  "f": "audio/academia/articulos/3597829ce8.mp3",
+  "v": "f"
+ },
+ "The children are happy.": {
+  "f": "audio/academia/articulos/372ac74d2a.mp3",
+  "v": "f"
+ },
+ "Two women are here.": {
+  "f": "audio/academia/articulos/d764d19f70.mp3",
+  "v": "f"
+ },
+ "I see two sheep in the field.": {
+  "f": "audio/academia/articulos/66c4a4c944.mp3",
+  "v": "f"
+ },
+ "Many people are at the park.": {
+  "f": "audio/academia/articulos/f3d855edca.mp3",
+  "v": "f"
+ },
+ "One mouse, two mice.": {
+  "f": "audio/academia/articulos/a1e11a4c10.mp3",
+  "v": "f"
+ },
+ "My children are happy.": {
+  "f": "audio/academia/articulos/d17efb9331.mp3",
+  "v": "f"
  }
 };
