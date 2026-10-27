@@ -11,22 +11,25 @@ SQL primero, frontend después.
 - Frontend viejo + SQL nuevo: funciona. Solo cambia el texto viejo "usa 3 de tus 6 ejercicios", que deja de ser cierto durante unos minutos. `demoStart` ya tolera que no llegue `daily`.
 - Frontend nuevo + SQL viejo (si se publica al revés): sin daño. La invitación solo aparece si el servidor dice "disponible", y con el SQL viejo no lo dice al llegar al límite. Los 3 ejercicios se seguirían cobrando.
 
-## 1. Antes de empezar
-1. Confirmar `main` limpio y que la rama de integración pasa las pruebas (ver informe).
-2. Copia de seguridad en Supabase (Database > Backups; si no hay plan con copias, exportar con `pg_dump` o desde el SQL Editor):
-   - `select * from public.academia_progress;`
-   - `select id, free_daily_count, free_daily_date, free_daily_limit_reached_at from public.profiles where free_daily_date >= current_date - 2;`
-3. Guardar la definición actual de las dos funciones (para comparar y para revertir):
-   `select pg_get_functiondef('public.academia_demo_start(text,date,int)'::regprocedure), pg_get_functiondef('public.academia_access(text,date,int)'::regprocedure);`
-4. Línea base de analítica (informe de 24 h) para comparar después.
+## 1. Antes de empezar (verificado en solo lectura el 27 oct 2026)
+**Respaldo.** El proyecto de Supabase es plan Free: NO tiene copias automáticas ni recuperación a un punto en el tiempo. Por eso el respaldo es este, y es suficiente porque la migración solo reemplaza dos funciones y no escribe datos:
+- **Funciones actuales de producción = `supabase/rollback/academia_demo_independiente_rollback.sql`.** Se comprobó que las huellas md5 de las 7 funciones de Academia en producción son idénticas a las de la migración original, y que el rollback las reproduce byte por byte (`academia_demo_start` 07a6e34a55, `academia_access` 605e714538).
+- **Huella de datos antes del cambio** (para comparar después; no contiene datos personales):
+  - `academia_progress`: 3 filas, 1 demo iniciada, 1 terminada, md5 af9b8b5cbb
+  - `academia_courses`: md5 6c2def2002 (to-be habilitado con 3 ejercicios de demo, pronombres habilitado sin demo)
+  - `profiles`: 135 cuentas, 15 miembros (los contadores cambian a diario: solo comparar cuentas y miembros)
+  - `mistake_stats` 302, `progress_sessions` 393, `academia_badges` 1, `academia_exam_attempts` 1 (solo pueden crecer)
+- Antes de aplicar, repetir la consulta de huellas (archivo `supabase/verify/academia_demo_independiente_huellas.sql`) y comprobar que sigue igual.
+- Línea base de analítica (informe de 24 h).
 
 ## 2. Aplicar la migración (SQL Editor, una sola ejecución)
-Pegar el contenido de `20261027180000_academia_demo_independiente.sql`. Es `create or replace` de dos funciones: no toca tablas ni datos.
+Pegar `20261027180000_academia_demo_independiente.sql`. Es `create or replace` de dos funciones: no toca tablas ni datos. Quedará como las anteriores (aplicadas a mano, sin registro en el historial de migraciones).
 
 ## 3. Verificar las funciones
-1. Definiciones: `pg_get_functiondef` muestra que `academia_demo_start` ya no menciona `free_daily_count`.
-2. Permisos: `select has_function_privilege('anon','public.academia_demo_start(text,date,int)','execute')` debe dar `false`; con `authenticated`, `true`.
-3. Prueba funcional con una cuenta de prueba propia (no de clientes): con el contador en 6/6, `academia_access('to-be')` devuelve `demo.available = true`; después de la demo, el contador sigue en 6 y `used = true`.
+1. Huellas esperadas después de aplicar (`md5(pg_get_functiondef(...))`, primeros 10 caracteres): `academia_demo_start` = b326e1a3e9, `academia_access` = c6df7efa56. Las otras 5 funciones no deben cambiar (329db34855, edc3a0cc4a, ce015d3892, 7c808ffaef, 1fe6f83bfb).
+2. Permisos: `proacl` de ambas debe ser `{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}` (anon sin permiso), como ahora.
+3. Prueba controlada con tu cuenta de prueba: correr `supabase/verify/academia_demo_independiente_prueba.sql` (cambiando el correo). No guarda nada: todo se deshace; debe mostrar 11 pasos en `true`.
+4. Prueba real en pantalla con tu cuenta de prueba (ver `docs/prueba-controlada-supabase.md`).
 
 ## 4. Publicar el frontend
 Merge de `integracion/embudo-y-rediseno` a `main` (sin force) y esperar a GitHub Pages. Los HTML ya traen versiones nuevas (`app.js`, `backend.js`, `style.css`, `academia.js` = `20261027c`), así que no hay caché vieja.
