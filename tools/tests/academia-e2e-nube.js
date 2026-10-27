@@ -331,7 +331,7 @@ async function until(fn, ms, what){
     }
     assert.strictEqual((await q("select count(*)::int n from public.academia_progress where user_id = $1 and state <> '{}'::jsonb", [F]))[0].n, 0);
   });
-  await test('GRATIS: la prueba (explicacion + 3 ejercicios, 1 error) descuenta 3 del limite, guarda sesion y errores, y termina con UNA invitacion', async()=>{
+  await test('GRATIS: la prueba (explicacion + 3 ejercicios, 1 error) NO gasta ejercicios del limite diario, guarda sesion y errores, y termina con UNA invitacion', async()=>{
     const p = C.page;
     await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
     await until(async () => /Probar TO BE gratis/.test(await p.innerText('#acRoot')), 9000, 'boton de prueba');
@@ -363,12 +363,12 @@ async function until(fn, ms, what){
     assert.strictEqual(ev2.filter(e => e === 'academia_demo_cta_desbloquear').length, 1);
     assert(!ev2.includes('membership_purchase_completed') && !ev2.includes('purchase') && !ev2.includes('begin_checkout'), 'el clic no dispara compra ni checkout');
     await until(async () => (await q('select demo_done_at from public.academia_progress where user_id = $1', [F]))[0].demo_done_at, 9000, 'prueba terminada en el servidor');
-    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3, 'descuenta 3 del limite diario');
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 0, 'la prueba no toca el limite diario');
     const ses = await sessions(); assert.strictEqual(ses.length, 1); assert.strictEqual(ses[0].tier, 'free');
     const ms = await q("select item_id, status, kind from public.mistake_stats where user_id = $1", [F]);
     assert(ms.some(m => m.item_id === 'ac:to-be:d2' && m.status === 'active'), JSON.stringify(ms));
     assert.strictEqual((await q('select last_practice_at from public.profiles where id = $1', [F]))[0].last_practice_at, null);
-    assert.strictEqual(await p.evaluate(() => localStorage.getItem('leoLocalDailyCount:' + (d => d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2))(new Date()))), '3', 'el contador del navegador queda igual que el de la cuenta');
+    assert.notStrictEqual(await p.evaluate(() => localStorage.getItem('leoLocalDailyCount:' + (d => d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2))(new Date()))), '3', 'el contador del navegador no sube por la prueba');
     const loc = await p.evaluate(() => JSON.parse(localStorage.getItem('leo_academia_piloto_v1') || '{"lessons":{},"missed":{},"cleared":{}}'));
     assert.deepStrictEqual([Object.keys(loc.lessons).length, Object.keys(loc.missed).length, Object.keys(loc.cleared).length], [0, 0, 0], 'la prueba no escribe progreso de lecciones ni errores locales');
   });
@@ -383,18 +383,19 @@ async function until(fn, ms, what){
       await p.waitForSelector('text=Ya hiciste tu prueba gratis', { timeout: 9000 });
       assert.strictEqual(await p.$('.ac-card-act'), null);
     }
-    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 3);
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 0);
     assert.strictEqual((await sessions()).length, 1);
   });
-  await test('GRATIS: sin ejercicios suficientes hoy, la prueba no se gasta y se explica con claridad', async()=>{
+  await test('GRATIS con el limite diario AGOTADO (6 de 6): la prueba sigue disponible, se hace completa y no cambia el contador', async()=>{
     const p = C.page;
-    await db.exec(`update public.academia_progress set demo_started_at = null, demo_done_at = null, demo_session_at = null where user_id = '${F}'; update public.profiles set free_daily_count = 5, free_daily_date = current_date where id = '${F}'`);
+    await db.exec(`update public.academia_progress set demo_started_at = null, demo_done_at = null, demo_session_at = null where user_id = '${F}'; update public.profiles set free_daily_count = 6, free_daily_date = current_date, free_daily_limit_reached_at = now() where id = '${F}'`);
     await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
-    await until(async () => /no te alcanzan los ejercicios gratis/.test(await p.innerText('#acRoot')), 9000, 'aviso de limite');
-    assert.strictEqual(await p.$('#acRoot >> text=Probar TO BE gratis'), null);
+    await until(async () => /Probar TO BE gratis/.test(await p.innerText('#acRoot')), 9000, 'oferta visible con limite agotado');
+    assert(!/no te alcanzan/.test(await p.innerText('#acRoot')));
     await p.goto(base + '/academia.html?nube=1#/curso/to-be/demo'); await p.reload();
-    await p.waitForSelector('text=no te alcanzan los ejercicios gratis', { timeout: 9000 });
-    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 5);
+    await p.waitForSelector('.ac-card-act, .ac-btn', { timeout: 9000 });
+    assert((await q('select demo_started_at from public.academia_progress where user_id = $1', [F]))[0].demo_started_at, 'queda registrada en el servidor');
+    assert.strictEqual((await q('select free_daily_count n from public.profiles where id = $1', [F]))[0].n, 6);
   });
   await test('MEMBRESIA: al volverse miembro la misma cuenta ve TODO el curso (sin recargar la cuenta ni perder la prueba)', async()=>{
     const p = C.page;

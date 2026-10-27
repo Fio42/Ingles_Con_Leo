@@ -72,6 +72,13 @@
   function track(name, params){
     try{ if(typeof window.gtag === 'function') window.gtag('event', 'academia_' + name, params || {}); }catch(e){}
   }
+  /* Eventos que no deben repetirse al volver a pintar la pantalla: uno por pestana y clave. */
+  var SENT = {};
+  function trackOnce(name, params, key){
+    var k = 'leo_ac_ev_' + name + '_' + (key || '');
+    try{ if(SENT[k] || sessionStorage.getItem(k)) return; sessionStorage.setItem(k, '1'); }catch(e){ if(SENT[k]) return; }
+    SENT[k] = 1; track(name, params);
+  }
   /* Clics hacia la membresia desde cualquier pantalla de la academia (un solo evento, sin tocar el flujo de compra ni los eventos de compra del sitio). */
   if(root) root.addEventListener('click', function(e){
     var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
@@ -1453,14 +1460,15 @@
       var d = ACC && ACC.demo ? ACC.demo : null, left = ACC && ACC.daily ? ACC.daily.remaining : null;
       if(d && d.available || (d && d.resumable)){
         box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Prueba TO BE gratis' }));
-        box.appendChild(el('p', { class: 'ac-text', text: 'Una explicación y tres ejercicios. Usa 3 de tus ' + (ACC.daily.limit || 6) + ' ejercicios gratis de hoy y solo se puede hacer una vez.' }));
-        box.appendChild(link(CB + '/demo', 'Probar TO BE gratis', 'ac-btn ac-btn-primary ac-btn-wide'));
+        box.appendChild(el('p', { class: 'ac-text', text: 'Una explicación y tres ejercicios. No gasta tus ejercicios gratis de cada día y solo se puede hacer una vez por cuenta.' }));
+        trackOnce('demo_oferta_vista', { curso: courseId, origen: 'academia' }, courseId);
+        box.appendChild(el('a', { href: CB + '/demo', class: 'ac-btn ac-btn-primary ac-btn-wide', text: 'Probar TO BE gratis', onclick: function(){ track('demo_clic', { curso: courseId, origen: 'academia' }); } }));
       } else if(d && d.used){
         box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Ya hiciste tu prueba gratis' }));
         box.appendChild(el('p', { class: 'ac-text', text: 'Para seguir con las lecciones, la práctica sin límites, la evaluación y tu insignia, desbloquea la academia.' }));
       } else {
         box.appendChild(el('h2', { class: 'ac-h2 ac-h2-in', text: 'Tu prueba gratis está lista' }));
-        box.appendChild(el('p', { class: 'ac-text', text: 'Hoy no te alcanzan los ejercicios gratis para la prueba (necesita 3' + (left !== null ? ' y te quedan ' + left : '') + '). Vuelve mañana, o desbloquea la academia y practica sin límites.' }));
+        box.appendChild(el('p', { class: 'ac-text', text: 'La prueba gratis no está disponible ahora. Puedes desbloquear la academia y practicar sin límites.' }));
       }
       box.appendChild(link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-' + ((d && (d.available || d.resumable)) ? 'outline' : 'primary') + ' ac-btn-wide'));
     } else if(mode === 'unknown'){
@@ -1508,6 +1516,7 @@
       if(!r || !r.ok){
         var m = r && r.error;
         if(m === 'members'){ mode = 'member'; return route(); }
+        track('demo_bloqueada', { curso: courseId, motivo: m || 'error' });
         var text = m === 'limit' ? 'Hoy no te alcanzan los ejercicios gratis para esta prueba. Vuelve mañana, o desbloquea la academia y practica sin límites.'
           : (m === 'demo_used' ? 'Ya hiciste tu prueba gratis. Para seguir con el curso completo, desbloquea la academia.' : 'No pudimos empezar la prueba ahora. Revisa tu conexión e inténtalo de nuevo.');
         msgCard(m === 'demo_used' ? 'Ya hiciste tu prueba gratis' : 'La prueba no está disponible ahora', text, [
