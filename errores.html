@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261026a">
+<link rel="stylesheet" href="style.css?v=20261027c">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -42,11 +42,11 @@
       Inglés con <span class="leo">Leo</span>
     </a>
     <nav class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
-      <a href="practica.html">Practicar gratis</a>
-      <a href="miembros.html" class="current">Miembros</a>
+      <a href="miembros.html">Inicio</a>
       <a href="academia.html" class="ac-live-only">Academia</a>
+      <a href="practica.html" class="current">Practicar</a>
+      <a href="progreso.html">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases particulares</a>
       <a href="index.html#contacto">Contacto</a>
     </nav>
@@ -121,11 +121,11 @@
   <div class="wrap foot-row">
     <a href="index.html" class="logo" style="font-size:1.1rem;"><img src="logo.png" class="logo-mark" alt="Inglés con Leo" style="width:28px;height:28px;">Inglés con <span class="leo">Leo</span></a>
     <div class="foot-links">
-      <a href="index.html">Inicio</a>
-      <a href="articulos.html">Aprende inglés</a>
+      <a href="miembros.html">Inicio</a>
+      <a href="academia.html">Academia</a>
       <a href="practica.html">Practicar</a>
-      <a href="miembros.html">Miembros</a>
-      <a href="academia-de-ingles.html">Academia</a>
+      <a href="progreso.html">Mi progreso</a>
+      <a href="articulos.html">Aprende inglés</a>
       <a href="clases-particulares.html">Clases con Leo</a>
       <a href="privacidad.html">Privacidad</a>
     </div>
@@ -147,30 +147,34 @@
   </div>
 </footer>
 
-<nav class="mobile-nav">
-  <button class="mnav-item" onclick="location.href='index.html'">
+<nav class="mobile-nav" aria-label="Navegación principal">
+  <button class="mnav-item" onclick="location.href='miembros.html'">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     Inicio
   </button>
-  <button class="mnav-item" onclick="location.href='articulos.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    Aprende inglés
+  <button class="mnav-item" onclick="location.href='academia.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 4L2 9l10 5 10-5-10-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Academia
   </button>
-  <button class="mnav-item" onclick="location.href='practica.html'">
+  <button class="mnav-item active" onclick="location.href='practica.html'" aria-current="page">
     <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
     Practicar
   </button>
-  <button class="mnav-item active" onclick="location.href='miembros.html'">
-    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
-    Miembros
+  <button class="mnav-item" onclick="location.href='progreso.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V10M12 19V5M17 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Progreso
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Aprende
   </button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
-<script src="app.js?v=20261021c"></script>
-<script src="backend.js?v=20261026b"></script>
+<script src="app.js?v=20261027c"></script>
+<script src="backend.js?v=20261027c"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga

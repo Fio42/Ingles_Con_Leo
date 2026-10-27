@@ -145,9 +145,12 @@ test('Limites gratis, pagos y reglas del motor adaptativo siguen intactos', () =
   assert(/var GUEST_EXERCISE_LIMIT = 3;/.test(app));
   assert(/LEVEL_SUGGEST/.test(app));
 });
-test('Panel: etiqueta "Otras formas de practicar hoy" antes de la fila secundaria y CSS para el hueco de Continuar', () => {
-  assert(/<p class="dash-more-label">Otras formas de practicar hoy<\/p>\n\s*<div class="dash-top-grid">/.test(html));
-  assert(/\.dash-top-grid\.no-continue\{grid-template-columns:1fr 1fr;\}/.test(css));
+test('Panel nuevo: Academia y Practicar primero, luego "Tu siguiente paso"; sin "Continuar" duplicado (el guard de syncContinueWithHero sigue seguro)', () => {
+  const iA = html.indexOf('id="dashAcademia"'), iP = html.indexOf('id="dashPracticar"'), iH = html.indexOf('id="todayHero"');
+  assert(iA > 0 && iP > iA && iH > iP, 'orden Academia, Practicar, siguiente paso');
+  assert(/<h2 class="home-h">Tu siguiente paso<\/h2>/.test(html));
+  assert(!/id="continueCard"/.test(html) && !/renderContinueCard\(document/.test(html), 'la tarjeta Continuar ya no esta en el panel');
+  assert(/function syncContinueWithHero\(hero\)\{\s*const cc = document\.getElementById\('continueCard'\);\s*if\(!cc\) return;/.test(app));
   assert(!/—/.test(app.slice(app.indexOf('const DASH_RESUME_SKILLS'), app.indexOf('SUGERENCIA DE NIVEL (solo Miembros'))), 'sin rayas largas en los textos nuevos');
 });
 test('Practica gratis: una cuenta con nivel elegido arranca en ese nivel; los invitados siguen en Facil', () => {

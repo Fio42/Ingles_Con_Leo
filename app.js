@@ -3940,10 +3940,38 @@ async function flushFreeSessions(){
   if(_freeFlushAgain){ _freeFlushAgain = false; return flushFreeSessions(); }
 }
 
+/* Un mismo evento (p. ej. el aviso de límite) se pinta muchas veces si la persona recarga o vuelve a la pantalla:
+   se manda UNA vez por pestaña y día para que GA4 cuente personas y no repeticiones. */
+function trackLeoEventOncePerDay(name, params){
+  var key = 'leo_ev_' + name + '_' + new Date().toISOString().slice(0, 10);
+  try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); }catch(e){}
+  trackLeoEvent(name, params);
+}
+
+/* Invitación a la prueba gratis de TO BE en el muro del límite diario. Solo si el servidor dice que sigue
+   disponible (cuenta gratis, curso habilitado, sin usar). Sin ventanas emergentes: es una tarjeta más, debajo del botón de membresía. */
+async function hydrateAcademiaDemoOffer(){
+  var box = document.querySelector('[data-academia-offer]');
+  if(!box || box.dataset.ready || !window.ACADEMIA_LIVE) return;
+  box.dataset.ready = '1';
+  try{
+    if(typeof LeoBackend === "undefined" || !LeoBackend.academiaDemoOffer) return;
+    var o = await LeoBackend.academiaDemoOffer();
+    if(!o || !(o.available || o.resumable) || !box.isConnected) return;
+    box.innerHTML = '<h3>¿Quieres seguir aprendiendo?</h3>' +
+      '<p>Prueba gratis una parte de nuestro curso TO BE: una explicación sencilla y tres ejercicios.</p>' +
+      '<a class="btn btn-ghost" href="academia.html#/curso/to-be/demo">Probar la Academia gratis</a>';
+    box.hidden = false;
+    trackLeoEventOncePerDay('academia_demo_oferta_vista', { origen: 'limite_diario' });
+    box.querySelector('a').addEventListener('click', function(){ trackLeoEvent('academia_demo_clic', { origen: 'limite_diario' }); });
+  }catch(e){}
+}
+
 function renderFreeDailyLimitReachedBlock(){
   if(_leoAccessTier === 'free'){
     freeSessionEnd();   // el límite cortó la sesión: se guarda lo respondido hasta aquí
-    trackLeoEvent('free_daily_limit_reached');
+    trackLeoEventOncePerDay('free_daily_limit_reached');
+    setTimeout(hydrateAcademiaDemoOffer, 0);
     return `
       <div class="session-summary upgrade-block">
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
@@ -3963,6 +3991,7 @@ function renderFreeDailyLimitReachedBlock(){
           <a href="miembros.html?pagar=1" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
           <a href="index.html" class="btn btn-ghost">Volver mañana</a>
         </div>
+        <div class="academia-demo-offer" data-academia-offer hidden></div>
         <p class="upgrade-note">Tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis se renuevan mañana.</p>
       </div>`;
   }
@@ -5986,7 +6015,7 @@ function renderStatCards(container){
         </svg>
       </div>
       <div>
-        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-label">Tu nivel de práctica</div>
         <div class="stat-card-value">${LEVEL_META[level].label} ${LEVEL_META[level].range}</div>
       </div>
     </div>
@@ -7706,10 +7735,6 @@ function renderTodayHero(el){
     card.id = el.id || '';
     card.dataset.heroState = hero.state;
     card.innerHTML = `
-      <span class="plan-feature-badge">Recomendado</span>
-      <div class="plan-feature-icon">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-      </div>
       <div class="today-hero-eyebrow">${hero.eyebrow}</div>
       <h2>${hero.title}</h2>
       <p class="plan-feature-desc">${hero.reason}</p>
@@ -8111,7 +8136,7 @@ function renderProgressStatCards(container, stats, streak, level){
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4-8 4-8-4 8-4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </div>
       <div>
-        <div class="stat-card-label">Nivel actual</div>
+        <div class="stat-card-label">Tu nivel de práctica</div>
         <div class="stat-card-value">${LEVEL_META[level].label}</div>
         <button type="button" class="stat-card-link" id="statChangeLevelBtn">Ajustar nivel →</button>
       </div>

@@ -917,6 +917,19 @@ const LeoBackend = (function(){
       return /feedback_too_soon/.test(String(error.message || '')) ? 'too_soon' : 'fail';
     }catch(e){ return 'fail'; }
   }
+  /* Muro del limite gratis: ¿se puede ofrecer la prueba gratis de TO BE? Lo decide el SERVIDOR (academia_access):
+     cuenta gratuita, curso habilitado, demo sin usar (o reanudable). Nunca lanza error: si algo falla, no se ofrece nada. */
+  async function academiaDemoOffer(){
+    try{
+      const sb = getClient();
+      if(!sb) return null;
+      const session = await getSession();
+      if(!session) return null;
+      const { data, error } = await sb.rpc('academia_access', { p_course: 'to-be', p_today: null, p_local_count: 0 });
+      if(error || !data || data.ok !== true || data.member || !data.demo) return null;
+      return { available: !!data.demo.available, resumable: !!data.demo.resumable, used: !!data.demo.used };
+    }catch(e){ return null; }
+  }
   async function dismissMemberFeedback(){
     try{
       const sb = getClient();
@@ -932,7 +945,7 @@ const LeoBackend = (function(){
     isConfigured, getClient, getSession, signOut,
     signUp, signInWithPassword, signInWithGoogle, signInWithGoogleIdToken, sendPasswordReset, updatePassword, onPasswordRecovery,
     getMemberProfile, saveProfileToCloud, getLatestSessionLevel, syncProgressFromCloud, pushSession, pushFreeSession, requireMemberAsync, startCheckout, startStripeCheckout, markPurchaseIntent, startPaypalCheckout,
-    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName,
+    getArticleComments, postArticleComment, deleteArticleComment, bumpFreeDailyCount, saveDisplayName, academiaDemoOffer,
     getMistakeStats, applyMistakeResults, submitLeobotReport, askLeoAI, getLeoAiTrial,
     feedbackCardStatus, submitMemberFeedback, dismissMemberFeedback
   };
