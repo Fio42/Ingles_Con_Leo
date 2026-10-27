@@ -6,7 +6,8 @@ const root = path.join(__dirname, '..', '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const IA = require(path.join(root, 'inicio-alumno.js'));
 let p = 0, f = 0;
-function test(n, fn){ try{ fn(); p++; console.log('  ok   ' + n); }catch(e){ f++; console.log('  FAIL ' + n + '\n       ' + e.message); } }
+const pend = [];
+function test(n, fn){ try{ const r = fn(); if(r && r.then){ pend.push(r.then(() => { p++; console.log('  ok   ' + n); }, e => { f++; console.log('  FAIL ' + n + '\n       ' + e.message); })); } else { p++; console.log('  ok   ' + n); } }catch(e){ f++; console.log('  FAIL ' + n + '\n       ' + e.message); } }
 const CUR = { enabled: true, courses: { 'to-be': { title: 'TO BE', open: true, lessons: 5 }, 'pronombres': { title: 'Pronombres', open: true, lessons: 5 }, 'futuro': { title: 'Oculto', open: false, lessons: 5 } } };
 const mk = o => ({ getItem: k => (k in o ? JSON.stringify(o[k]) : null) });
 const st = (done, days, resume) => { const l = {}; for(let i = 1; i <= done; i++) l['l' + i] = { done: true }; return { lessons: l, days: days || [], resume: resume || {} }; };
@@ -54,6 +55,41 @@ test('Nunca más de 100 % ni negativo, aunque el estado traiga lecciones de más
   const s = IA.summarize('to-be', { title: 'x', lessons: 5 }, st(9, ['2026-10-01']));
   assert(s.done <= 5 && s.finished);
 });
+
+/* ---- Fuente real: servidor (academia_progress / academia_courses) ---- */
+const fakeClient = (prog, enabled, opts) => ({ from: t => ({ select: async () => {
+  if(opts && opts.fail) return { error: { message: 'net' }, data: null };
+  if(t === 'academia_progress') return { error: null, data: Object.keys(prog).map(k => ({ course_id: k, state: prog[k] })) };
+  return enabled === 'error' ? { error: { message: 'x' }, data: null } : { error: null, data: Object.keys(enabled).map(k => ({ course_id: k, enabled: enabled[k] })) };
+} }) });
+const deps = (o, storage) => ({ motor: CUR, storage: storage || mk({}), client: fakeClient(o.prog || {}, o.enabled || { 'to-be': true, pronombres: true }, o), getSession: async () => (o.anon ? null : { user: { id: 'u1' } }) });
+const av = async o => IA.view((await IA.loadServer(deps(o, o.storage))).courses || []);
+test('Servidor: el avance sale de academia_progress de la cuenta, no del navegador', async () => {
+  const v = await av({ prog: { 'to-be': st(2, ['2026-10-26']) }, storage: mk({ leo_academia_v1_pronombres: st(4, ['2026-10-27']) }) });
+  assert.strictEqual(v.course.id, 'to-be', 'el avance local de OTRA cuenta no cuenta'); assert.strictEqual(v.meta, 'Lección 3 de 5');
+});
+test('Servidor: curso apagado en la base (enabled=false) no se ofrece aunque el código lo tenga abierto', async () => {
+  const v = await av({ prog: { 'to-be': st(1, ['2026-10-26']), pronombres: st(2, ['2026-10-27']) }, enabled: { 'to-be': true, pronombres: false } });
+  assert.strictEqual(v.course.id, 'to-be');
+});
+test('Servidor: sin sesión o con error de red no se inventan cifras (resultado no confiable)', async () => {
+  assert.strictEqual((await IA.loadServer(deps({ anon: true }))).ok, false);
+  assert.strictEqual((await IA.loadServer(deps({ fail: true }))).ok, false);
+});
+test('Servidor: si la lista de cursos de la base falla, no se filtra por enabled (usa el código)', async () => {
+  const r = await IA.loadServer(deps({ prog: { 'to-be': st(1, ['2026-10-26']) }, enabled: 'error' }));
+  assert(r.ok && r.courses.length === 2);
+});
+test('Cola pendiente de ESTA cuenta: se toma lo más avanzado entre servidor y local (justo tras terminar una lección)', async () => {
+  const storage = { getItem: k => ({ 'leo_academia_cola_v1:u1:to-be': JSON.stringify({ sessions: [{}] }), leo_academia_piloto_v1: JSON.stringify(st(3, ['2026-10-27'])) })[k] || null };
+  const v = await av({ prog: { 'to-be': st(2, ['2026-10-26']) }, storage });
+  assert.strictEqual(v.meta, 'Lección 4 de 5');
+  const sinCola = await av({ prog: { 'to-be': st(2, ['2026-10-26']) }, storage: { getItem: k => (k === 'leo_academia_piloto_v1' ? JSON.stringify(st(3, ['2026-10-27'])) : null) } });
+  assert.strictEqual(sinCola.meta, 'Lección 3 de 5', 'sin cola propia, el local no se usa');
+});
+test('Cuenta sin filas de progreso: todos "Sin empezar"; la tarjeta no ofrece "Continuar"', async () => {
+  const v = await av({ prog: {} }); assert.strictEqual(v.state, 'start');
+});
 const PRIV = ['miembros', 'plan-estudio', 'errores', 'aprender', 'clases', 'practica-miembros', 'progreso'];
 test('Las 7 páginas del alumno comparten header, barra móvil y pie con los mismos destinos', () => {
   const sig = h => ({
@@ -79,4 +115,4 @@ test('Sin rayas largas en los textos nuevos y el Inicio no repite "Nuevo"/"Recom
   const h = read('miembros.html'), mem = h.slice(h.indexOf('id="memberContent"'), h.indexOf('<footer'));
   assert(!/—/.test(read('inicio-alumno.js')) && (mem.match(/>Nuevo</g) || []).length <= 1 && !/Recomendado/.test(mem));
 });
-console.log('\n' + p + ' pass, ' + f + ' fail'); process.exit(f ? 1 : 0);
+Promise.all(pend).then(() => { console.log('\n' + p + ' pass, ' + f + ' fail'); process.exit(f ? 1 : 0); });

@@ -221,7 +221,7 @@
 <script>
   function refreshProgressPage(){
     renderProgressPage(document.getElementById('progressRoot'));
-    if(window.InicioAlumno) InicioAlumno.renderCourses(document.getElementById('progressCourses'));
+    if(window.InicioAlumno) InicioAlumno.renderCourses(document.getElementById('progressCourses'), InicioAlumno.depsFromPage());
   }
   /* guardMemberPage deja que la sincronización continúe en segundo plano.
      Si llegan sesiones de otro dispositivo, el panel se actualiza solo. */

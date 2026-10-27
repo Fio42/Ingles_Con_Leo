@@ -14,15 +14,24 @@ const st = (done, days) => { const l = {}; for(let i = 1; i <= done; i++) l['l' 
   await new Promise(r => srv.listen(0, '127.0.0.1', r));
   const base = 'http://127.0.0.1:' + srv.address().port;
   const browser = await chromium.launch();
-  async function panel(w, store, h){
+  async function panel(w, server, h){
     const ctx = await browser.newContext({ viewport: { width: w, height: h || 800 } });
     await ctx.route(/googletagmanager|facebook|fonts\.(googleapis|gstatic)|supabase|stripe|paypal|mercadopago/, r => r.abort());
     const page = await ctx.newPage();
     const errs = []; page.on('pageerror', e => errs.push(e.message));
-    await page.addInitScript(s => { try{ Object.keys(s).forEach(k => localStorage.setItem(k, JSON.stringify(s[k]))); }catch(e){} }, Object.assign({ leo_profile: { name: 'Leo', level: 'facil', onboarded: true } }, store || {}));
+    await page.addInitScript(() => { try{ localStorage.setItem('leo_profile', JSON.stringify({ name: 'Leo', level: 'facil', onboarded: true })); }catch(e){} });
     await page.goto(base + '/miembros.html'); await page.waitForTimeout(400);
-    await page.evaluate(() => { window.__leoMemberVerified = true; unlock(); });
-    await page.waitForTimeout(500);
+    /* Servidor SIMULADO: se sustituye solo el cliente de datos; el resto de la página es el real. */
+    await page.evaluate(sv => {
+      const fake = { from: t => ({ select: async () => {
+        if(sv.fail) return { error: { message: 'net' }, data: null };
+        if(t === 'academia_progress') return { error: null, data: Object.keys(sv.prog || {}).map(k => ({ course_id: k, state: sv.prog[k] })) };
+        return { error: null, data: [{ course_id: 'to-be', enabled: true }, { course_id: 'pronombres', enabled: sv.pronombresOn !== false }] };
+      } }) };
+      LeoBackend.getClient = () => fake; LeoBackend.getSession = async () => ({ user: { id: 'u1' } });
+      window.__leoMemberVerified = true; unlock();
+    }, server || {});
+    await page.waitForTimeout(600);
     return { page, ctx, errs };
   }
   const noScroll = async page => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1);
@@ -40,7 +49,7 @@ const st = (done, days) => { const l = {}; for(let i = 1; i <= done; i++) l['l' 
     await ctx.close();
   });
   await test('Con TO BE a medias: "Continuar curso", Lección 3 de 5 y barra al 40 %', async()=>{
-    const { page, ctx } = await panel(390, { leo_academia_piloto_v1: st(2, ['2026-10-26']) });
+    const { page, ctx } = await panel(390, { prog: { 'to-be': st(2, ['2026-10-26']) } });
     assert.strictEqual((await page.innerText('#dashAcademia [data-slot="cta"]')).trim(), 'Continuar curso');
     assert(/Lección 3 de 5/.test(await page.innerText('#dashAcademia [data-slot="meta"]')));
     assert.strictEqual(await page.$eval('#dashAcademia .home-bar > span', e => e.style.width), '40%');
@@ -48,24 +57,35 @@ const st = (done, days) => { const l = {}; for(let i = 1; i <= done; i++) l['l' 
     await ctx.close();
   });
   await test('Dos cursos empezados: continúa el más reciente (Pronombres), sin suponer TO BE', async()=>{
-    const { page, ctx } = await panel(390, { leo_academia_piloto_v1: st(3, ['2026-10-10']), leo_academia_v1_pronombres: st(1, ['2026-10-26']) });
+    const { page, ctx } = await panel(390, { prog: { 'to-be': st(3, ['2026-10-10']), pronombres: st(1, ['2026-10-26']) } });
     assert.strictEqual(await page.getAttribute('#dashAcademia', 'href'), 'academia.html#/curso/pronombres');
     assert(/Pronombres personales/.test(await page.innerText('#dashAcademia')));
     await ctx.close();
   });
   await test('Cursos terminados: "Ir a la Academia" sin barra de continuar', async()=>{
-    const { page, ctx } = await panel(390, { leo_academia_piloto_v1: st(5, ['2026-10-26']), leo_academia_v1_pronombres: st(5, ['2026-10-26']) });
+    const { page, ctx } = await panel(390, { prog: { 'to-be': st(5, ['2026-10-26']), pronombres: st(5, ['2026-10-26']) } });
     assert.strictEqual(await page.getAttribute('#dashAcademia', 'data-academia-state'), 'finished');
     await ctx.close();
   });
-  await test('Estado dañado en el navegador: la tarjeta se queda en "Ir a la Academia"', async()=>{
+  await test('Sin conexión con el servidor: tarjeta neutra, sin cifras, sin errores de JS', async()=>{
+    const { page, ctx, errs } = await panel(390, { fail: true });
+    assert.strictEqual(await page.getAttribute('#dashAcademia', 'data-academia-state'), 'start'); assert.deepStrictEqual(errs, []);
+    await ctx.close();
+  });
+  await test('Avance local de OTRA cuenta en este navegador no se muestra (equipo compartido)', async()=>{
     const ctx = await browser.newContext({ viewport: { width: 390, height: 800 } });
     await ctx.route(/googletagmanager|facebook|fonts\.|supabase|stripe|paypal|mercadopago/, r => r.abort());
-    const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
-    await page.addInitScript(() => { try{ localStorage.setItem('leo_academia_piloto_v1', '{no json'); localStorage.setItem('leo_profile', JSON.stringify({ name: 'Leo', level: 'facil', onboarded: true })); }catch(e){} });
+    const page = await ctx.newPage();
+    await page.addInitScript(() => { try{ localStorage.setItem('leo_academia_piloto_v1', JSON.stringify({ v: 1, lessons: { l1: { done: true }, l2: { done: true }, l3: { done: true } }, resume: {}, days: ['2026-10-26'] })); localStorage.setItem('leo_profile', JSON.stringify({ name: 'Leo', level: 'facil', onboarded: true })); }catch(e){} });
     await page.goto(base + '/miembros.html'); await page.waitForTimeout(300);
-    await page.evaluate(() => { window.__leoMemberVerified = true; unlock(); }); await page.waitForTimeout(300);
-    assert.strictEqual(await page.getAttribute('#dashAcademia', 'data-academia-state'), 'start'); assert.deepStrictEqual(errs, []);
+    await page.evaluate(() => { LeoBackend.getClient = () => ({ from: () => ({ select: async () => ({ error: null, data: [] }) }) }); LeoBackend.getSession = async () => ({ user: { id: 'otra' } }); window.__leoMemberVerified = true; unlock(); });
+    await page.waitForTimeout(500);
+    assert.strictEqual(await page.getAttribute('#dashAcademia', 'data-academia-state'), 'start');
+    await ctx.close();
+  });
+  await test('Curso apagado en la base: no se ofrece como "Continuar"', async()=>{
+    const { page, ctx } = await panel(390, { prog: { pronombres: st(2, ['2026-10-27']), 'to-be': st(1, ['2026-10-20']) }, pronombresOn: false });
+    assert.strictEqual(await page.getAttribute('#dashAcademia', 'href'), 'academia.html#/curso/to-be');
     await ctx.close();
   });
   await test('Orden y tamaño: Academia y Practicar entran en la primera pantalla de 390x800 y el Inicio es corto', async()=>{
@@ -79,7 +99,7 @@ const st = (done, days) => { const l = {}; for(let i = 1; i <= done; i++) l['l' 
   });
   for(const w of [320, 360, 375, 390, 430, 768, 1024, 1440]){
     await test('Sin desplazamiento horizontal ni errores a ' + w + ' px (Inicio)', async()=>{
-      const { page, ctx, errs } = await panel(w, { leo_academia_piloto_v1: st(2, ['2026-10-26']) });
+      const { page, ctx, errs } = await panel(w, { prog: { 'to-be': st(2, ['2026-10-26']) } });
       assert(await noScroll(page), 'hay scroll horizontal');
       const small = await page.$$eval('#memberContent a.btn, .home-more a, .home-card', els => els.filter(e => e.getBoundingClientRect().height < 40).length);
       assert.strictEqual(small, 0, 'objetivos táctiles menores de 40 px');
