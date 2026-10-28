@@ -1171,7 +1171,7 @@ var ACADEMIA = {
               items: [
                 { en: 'I have a cat. The cat is black.', es: 'Tengo un gato. El gato es negro.' },
                 { en: 'Please close the door.', es: 'Por favor, cierra la puerta.' },
-                { en: 'The sun is hot.', es: 'El sol es caliente.' },
+                { en: 'The sun is hot.', es: 'El sol está muy fuerte.' },
                 { en: 'Look at the moon.', es: 'Mira la luna.' }
               ],
               listen: ['I have a cat. The cat is black.', 'Please close the door.', 'The sun is hot.', 'Look at the moon.'],
@@ -1264,11 +1264,21 @@ var ACADEMIA = {
               note: 'Cuidado con el español: aquí decimos "la música" y "los perros", pero en inglés, al hablar en general, no se pone the.'
             },
             {
+              title: 'Cosas que no se cuentan',
+              text: 'Algunas palabras nombran cosas que no se cuentan de una en una, como water, music o rice. Normalmente no llevan a ni an, y no se usan en plural.',
+              compare: { wrong: 'I like musics.', right: 'I like music.' },
+              items: [
+                { en: 'I drink water.', es: 'Bebo agua.' },
+                { en: 'She likes rice.', es: 'A ella le gusta el arroz.' }
+              ],
+              listen: ['I drink water.', 'She likes rice.']
+            },
+            {
               title: 'La profesión lleva a o an',
               text: 'En español decimos "Soy enfermera", sin artículo. En inglés, al decir qué profesión tienes, sí se usa a o an.',
               compare: { wrong: 'She is nurse.', right: 'She is a nurse.' },
               items: [
-                { en: 'He is a doctor.', es: 'Él es doctor.' },
+                { en: 'He is a doctor.', es: 'Él es médico.' },
                 { en: 'I am an engineer.', es: 'Soy ingeniero.' }
               ],
               listen: ['She is a nurse.', 'He is a doctor.', 'I am an engineer.']
@@ -1460,7 +1470,7 @@ var ACADEMIA = {
               text: 'People significa personas y ya es un plural. No le añadas -s ni uses a. Va con are, no con is.',
               compare: { wrong: 'The peoples are kind.', right: 'The people are kind.' },
               items: [
-                { en: 'Many people are here.', es: 'Mucha gente está aquí.' },
+                { en: 'Many people are here.', es: 'Hay mucha gente aquí.' },
                 { en: 'A person is here.', es: 'Una persona está aquí.' }
               ],
               listen: ['The people are kind.', 'Many people are here.', 'A person is here.']
@@ -1489,7 +1499,7 @@ var ACADEMIA = {
               wrongWhy: { 'childs': 'Child es irregular: no se forma con -s.', 'childrens': 'Children ya es el plural. No se le añade otra -s.' },
               why: 'Child es irregular: su plural es children.' },
             { id: 'l5-a3', type: 'choice', topic: 'irregulares', q: 'I see two ___ in the field.', options: ['sheeps', 'sheep', 'sheepes'], answer: 1,
-              wrongWhy: { 'sheeps': 'Sheep no cambia en plural.', 'sheepes': 'Sheep no cambia en plural.' },
+              wrongWhy: { 'sheeps': 'No se le añade -s: sheep es igual en singular y en plural.', 'sheepes': 'No se le añade -es: sheep es igual en singular y en plural.' },
               why: 'Sheep tiene la misma forma en singular y en plural: two sheep.' },
             { id: 'l5-a4', type: 'choice', topic: 'irregulares', q: 'Many ___ are at the park.', options: ['person', 'peoples', 'people'], answer: 2,
               wrongWhy: { 'person': 'Person es singular y Many pide un plural.', 'peoples': 'People ya es un plural, no se le añade -s.' },
@@ -1519,7 +1529,7 @@ var ACADEMIA = {
         bank: [
           /* aan */
           { id: 'x-a1', type: 'choice', topic: 'aan', q: 'She has ___ egg.', options: ['a', 'an'], answer: 1, why: 'Egg empieza con sonido de vocal: an egg.' },
-          { id: 'x-a2', type: 'choice', topic: 'aan', q: 'He works at ___ university.', options: ['a', 'an'], answer: 0, why: 'University suena "yuniversiti", con sonido de consonante: a university.' },
+          { id: 'x-a2', type: 'choice', topic: 'aan', q: 'She has ___ uniform for work.', options: ['a', 'an'], answer: 0, why: 'Uniform suena "yuniform", con sonido de consonante: a uniform.' },
           { id: 'x-a3', type: 'choice', topic: 'aan', q: 'She is ___ honest woman.', options: ['a', 'an'], answer: 1, why: 'En honest la h no suena: se dice "onest". Empieza con sonido de vocal: an honest woman.' },
           { id: 'x-a4', type: 'type', topic: 'aan', q: 'Escribe a o an.', ex: 'I have ___ pen.  →  a', source: 'He wants ___ orange. Do you have one?', accepted: ['an'], show: 'an', why: 'Orange empieza con sonido de vocal: an orange.' },
           { id: 'x-a5', type: 'error', topic: 'aan', q: 'Una de estas frases tiene un error. Tócala.', options: ['I see a elephant.', 'She has a cat.', 'He is a student.'], wrong: 0, fix: 'I see an elephant.', why: 'Elephant empieza con sonido de vocal: an elephant.' },
@@ -1529,13 +1539,13 @@ var ACADEMIA = {
           { id: 'x-t2', type: 'choice', topic: 'the', q: '___ Earth is round.', options: ['A', 'The'], answer: 1, why: 'Solo hay una Tierra: The Earth is round.' },
           { id: 'x-t3', type: 'choice', topic: 'the', q: 'I need ___ pencil. Do you have one?', options: ['a', 'the'], answer: 0, why: 'Pides un lápiz cualquiera: a pencil.' },
           { id: 'x-t4', type: 'type', topic: 'the', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'She has a son. ___ son is five.', accepted: ['the'], show: 'the', why: 'Ya mencionaste al hijo: the son.' },
-          { id: 'x-t5', type: 'error', topic: 'the', q: 'Una de estas frases tiene un error. Tócala.', options: ['The sun is hot.', 'I have a dog. A dog is black.', 'She is a nurse.'], wrong: 1, fix: 'I have a dog. The dog is black.', why: 'Hablas del mismo perro, así que lleva the.' },
+          { id: 'x-t5', type: 'error', topic: 'the', q: 'Una de estas frases tiene un error. Tócala.', options: ['I have a cat.', 'A sun is hot today.', 'She is a nurse.'], wrong: 1, fix: 'The sun is hot today.', why: 'Solo hay un sol, así que lleva the.' },
           { id: 'x-t6', type: 'order', topic: 'the', q: 'Ordena las palabras para formar una frase.', tokens: ['The', 'teacher', 'is', 'here.'], why: 'Primero the teacher, luego is y luego dónde.' },
           /* general */
           { id: 'x-g1', type: 'choice', topic: 'general', say: 'My brother is a doctor.', q: 'My brother is ___ doctor.', options: ['a', 'an', 'sin artículo'], answer: 0, why: 'La profesión en singular lleva artículo y doctor empieza con consonante: a doctor.' },
           { id: 'x-g2', type: 'choice', topic: 'general', say: 'I like coffee.', q: 'Me gusta el café, en general: I like ___ coffee.', options: ['a', 'the', 'sin artículo'], answer: 2, why: 'Hablas del café en general: I like coffee.' },
           { id: 'x-g3', type: 'choice', topic: 'general', say: 'We play soccer on Sundays.', q: 'We play ___ soccer on Sundays.', options: ['a', 'the', 'sin artículo'], answer: 2, why: 'Con los deportes no se pone artículo: We play soccer.' },
-          { id: 'x-g4', type: 'type', topic: 'general', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'I need ___ umbrella. Do you have one?', accepted: ['an'], show: 'an', why: 'Umbrella empieza con sonido de vocal y pides uno cualquiera: an umbrella.' },
+          { id: 'x-g4', type: 'type', topic: 'general', q: 'Escribe a, an o the.', ex: 'I have ___ pen.  →  a', source: 'I need ___ eraser. Do you have one?', accepted: ['an'], show: 'an', why: 'Eraser empieza con sonido de vocal y pides uno cualquiera: an eraser.' },
           { id: 'x-g5', type: 'error', topic: 'general', q: 'Una de estas frases tiene un error. Tócala.', options: ['We speak English.', 'He is engineer.', 'I like cats.'], wrong: 1, fix: 'He is an engineer.', why: 'La profesión en singular lleva a o an.' },
           { id: 'x-g6', type: 'order', topic: 'general', q: 'Ordena las palabras para formar una frase.', tokens: ['They', 'play', 'soccer', 'at', 'school.'], why: 'Primero quién, luego play, luego soccer sin artículo y por último dónde.' },
           /* plurales */

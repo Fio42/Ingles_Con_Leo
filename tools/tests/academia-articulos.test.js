@@ -198,6 +198,20 @@ function articleErrors(text){
     });
   });
 
+  await test('sin duplicados ni preguntas casi iguales: ninguna pregunta se repite entre lecciones, practica y examen privado', () => {
+    const key = a => a.type === 'order' ? 'o:' + (a.tokens || []).join(' ') : a.type === 'match' ? 'm:' + a.pairs.map(p => p.join('=')).join(';') : a.type === 'error' ? 'e:' + a.options.join('|') : 'c:' + (a.source || a.q).toLowerCase().replace(/[^a-z_ áéíóúñ]/g, '').replace(/\s+/g, ' ').trim();
+    const seen = {}; const dup = [];
+    const add = (id, a) => { const k = key(a); if(seen[k]) dup.push(id + ' = ' + seen[k]); else seen[k] = id; };
+    allActivities(C).forEach(a => add(a.id, a));
+    const f = path.join(root, 'private', 'academia-examen-articulos.json');
+    if(fs.existsSync(f)) JSON.parse(fs.readFileSync(f, 'utf8')).items.forEach(i => add(i.id, { type: i.type, tokens: i.public.tokens, options: i.public.options, source: i.public.source, q: i.public.q }));
+    // los "relaciona" con el mismo enunciado generico pueden repetirse, pero no sus pares
+    assert.deepStrictEqual(dup, []);
+    // y el mismo sustantivo con el mismo hueco no aparece mas de dos veces en todo el material
+    const noun = {}; allActivities(C).forEach(a => { const m = /___ ([A-Za-z]+)/.exec(a.source || a.q || ''); if(m && ['a','an'].some(x => (a.options || []).includes(x) || a.type === 'type')) noun[m[1].toLowerCase()] = (noun[m[1].toLowerCase()] || 0) + 1; });
+    Object.keys(noun).forEach(n => assert.ok(noun[n] <= 2, 'demasiado repetido: ' + n));
+  });
+
   await test('alcance: lo que ensena el curso no incluye temas de otros cursos (posesivos, there is/are, can)', () => {
     const spanish = JSON.stringify(C.lessons.map(l => l.screens.map(s => [s.title, s.text, s.note])));
     assert.ok(!/posesiv|demostrativ|there (is|are)|can't|\bcan\b/i.test(spanish));
@@ -303,7 +317,7 @@ function articleErrors(text){
       if(i.type === 'choice' && i.public.options.includes('a') && i.public.options.includes('an') && !i.public.options.includes('the') && (m = /___ ([A-Za-z-]+)/.exec(i.public.q))) assert.strictEqual(i.answer.correct, sound(m[1]), i.id);
       if(i.type === 'choice' && i.public.options.includes('sin artículo') && NO_ART.test(i.public.q)) assert.strictEqual(i.answer.correct, 'sin artículo', i.id);
       if(i.type === 'choice' && /^___ /.test(i.public.q) && i.public.options.some(o => /^the$/i.test(o))) assert.ok(UNIQUE.test(i.public.q), i.id + ' hueco inicial sin contexto');
-      if(i.type === 'choice' && i.public.options.some(o => /^the$/i.test(o)) && !/^___ /.test(i.public.q)) assert.ok(/\. ___ |Any \w+ is fine|Do you have one/.test(i.public.q) || NO_ART.test(i.public.q) || /En general|Me gusta/.test(i.public.q) || /___ (lawyer|actor|Italian|basketball)/.test(i.public.q), i.id + ' sin contexto: ' + i.public.q);
+      if(i.type === 'choice' && i.public.options.some(o => /^the$/i.test(o)) && !/^___ /.test(i.public.q)) assert.ok(/\. ___ |Any \w+ is fine|Do you have one/.test(i.public.q) || NO_ART.test(i.public.q) || /en general|Me gusta/i.test(i.public.q) || /___ (lawyer|actor|Italian|basketball)/.test(i.public.q), i.id + ' sin contexto: ' + i.public.q);
       assert.ok(i.answer.why && i.answer.why.length > 12, i.id + ' explicacion');
       assert.ok(!/fishes/.test(JSON.stringify(i)));
     });

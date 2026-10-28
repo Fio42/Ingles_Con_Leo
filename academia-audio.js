@@ -876,6 +876,14 @@ var ACADEMIA_AUDIO = {
   "f": "audio/academia/articulos/afd5c79d5b.mp3",
   "v": "f"
  },
+ "I drink water.": {
+  "f": "audio/academia/articulos/5c6bdbc613.mp3",
+  "v": "f"
+ },
+ "She likes rice.": {
+  "f": "audio/academia/articulos/febcbb0eed.mp3",
+  "v": "f"
+ },
  "I am an engineer.": {
   "f": "audio/academia/articulos/c20d347e61.mp3",
   "v": "f"

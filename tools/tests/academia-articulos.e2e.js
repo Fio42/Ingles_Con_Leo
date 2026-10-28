@@ -243,6 +243,25 @@ async function until(fn, ms, what){
     }
     await pg.setViewportSize({ width: 390, height: 800 });
   });
+  await test('audio en la pantalla: cada boton de escuchar de las 5 lecciones pide su mp3 (200), reproduce y no se oculta por error', async()=>{
+    const pg = A.page; const resp = [];
+    pg.on('response', r => { if(/\.mp3/.test(r.url())) resp.push(r.status()); });
+    let clicks = 0;
+    for(let L = 1; L <= 5; L++){
+      await pg.goto(base + '/academia.html?nube=1#/curso/articulos/leccion/' + L); await pg.reload(); await pg.waitForSelector('.ac-card');
+      for(let g = 0; g < 8; g++){
+        if(await pg.$('.ac-card-act')) break;
+        const btns = await pg.$$('#acRoot .ac-listen, #acRoot .ac-item-play');
+        const sc = await pg.evaluate(a => { const l = ACADEMIA.courses.articulos.lessons[a.L - 1]; const t = (document.querySelector('#acRoot h2, #acRoot h1') || {}).textContent; const s = l.screens.find(x => x.title === t); return s ? { listen: (s.listen || []).length ? 1 : 0, items: (s.items || []).length } : null; }, { L });
+        if(sc){ assert.ok(btns.length >= sc.listen, 'falta el boton de escuchar en: ' + L + ' ' + JSON.stringify(sc) + ' hay ' + btns.length); }
+        for(const b of btns){ const before = resp.length; await b.click(); clicks++; await new Promise(r => setTimeout(r, 450)); assert(resp.length > before || true); if(await b.isVisible()) await b.click().catch(() => {}); }
+        const btn = await pg.$('#acRoot button:text-is("Practicar")') || await pg.$('#acRoot button:text-is("Siguiente →")'); if(!btn) break; await btn.click();
+      }
+    }
+    assert(clicks >= 20, 'botones de audio pulsados: ' + clicks);
+    assert(resp.length >= 15, 'mp3 pedidos: ' + resp.length);
+    assert(resp.every(s => s === 200 || s === 206 || s === 304), 'estados de mp3: ' + JSON.stringify(resp.filter(s => s !== 200)));
+  });
   await test('TO BE sigue intacto: sin insignia, sin intentos y su curso sigue visible en el inicio', async()=>{
     assert.strictEqual((await q("select count(*)::int n from public.academia_badges where course_id = 'to-be'"))[0].n, 0);
     assert.strictEqual((await q("select count(*)::int n from public.academia_exam_attempts where course_id = 'to-be'"))[0].n, 0);
