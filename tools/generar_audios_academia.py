@@ -23,7 +23,7 @@ MODELOS = os.environ.get("KOKORO_DIR") or os.path.join(AQUI, ".kokoro-models")
 VOCES = {"f": "af_heart", "m": "am_michael"}
 VELOCIDAD = 0.9
 RMS_OBJETIVO = 0.07
-CURSOS = os.environ.get("ACADEMIA_CURSOS", "to-be,pronombres,articulos").split(",")
+CURSOS = os.environ.get("ACADEMIA_CURSOS", "to-be,pronombres,articulos,posesivos").split(",")
 
 
 def textos(curso):

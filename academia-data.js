@@ -1276,6 +1276,244 @@ var ACADEMIA = {
           }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO (Curso 4, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'posesivos': {
+      "id": "posesivos",
+      "title": "Posesivos y demostrativos",
+      "name": "Posesivos y demostrativos",
+      "short": "My, your, this, that",
+      "tagline": "Di de quién es algo y señala lo que está cerca o lejos: my, your, this, that, these y those.",
+      "goal": "Al terminar podrás usar my, your, his, her, its, our y their, y señalar cosas con this, that, these y those en frases completas.",
+      "protected": true,
+      "topics": {
+        "my": "My, your, his, her",
+        "our": "Its, our, their",
+        "this": "This y that",
+        "plural": "These y those",
+        "juntos": "Posesivos y demostrativos juntos"
+      },
+      "lessons": [
+        {
+          "id": "my-your-his-her",
+          "n": 1,
+          "minutes": 6,
+          "topic": "my",
+          "title": "My, your, his, her",
+          "summary": "Decir de quién es algo: mi, tu, su de él y su de ella.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "its-our-their",
+          "n": 2,
+          "minutes": 6,
+          "topic": "our",
+          "title": "Its, our, their",
+          "summary": "Hablar de cosas nuestras, de ellos y de animales, y no confundir its con it's.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "this-that",
+          "n": 3,
+          "minutes": 6,
+          "topic": "this",
+          "title": "This y that",
+          "summary": "Señalar una cosa cerca (this) o lejos (that).",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "these-those",
+          "n": 4,
+          "minutes": 6,
+          "topic": "plural",
+          "title": "These y those",
+          "summary": "Señalar varias cosas cerca (these) o lejos (those), con are.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "posesivos-y-demostrativos",
+          "n": 5,
+          "minutes": 7,
+          "topic": "juntos",
+          "title": "Posesivos y demostrativos juntos",
+          "summary": "Armar frases completas como This is my book y Those are their bags.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "posesivos-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-m1",
+            "topic": "my"
+          },
+          {
+            "id": "x-m2",
+            "topic": "my"
+          },
+          {
+            "id": "x-m3",
+            "topic": "my"
+          },
+          {
+            "id": "x-m4",
+            "topic": "my"
+          },
+          {
+            "id": "x-m5",
+            "topic": "my"
+          },
+          {
+            "id": "x-m6",
+            "topic": "my"
+          },
+          {
+            "id": "x-o1",
+            "topic": "our"
+          },
+          {
+            "id": "x-o2",
+            "topic": "our"
+          },
+          {
+            "id": "x-o3",
+            "topic": "our"
+          },
+          {
+            "id": "x-o4",
+            "topic": "our"
+          },
+          {
+            "id": "x-o5",
+            "topic": "our"
+          },
+          {
+            "id": "x-o6",
+            "topic": "our"
+          },
+          {
+            "id": "x-t1",
+            "topic": "this"
+          },
+          {
+            "id": "x-t2",
+            "topic": "this"
+          },
+          {
+            "id": "x-t3",
+            "topic": "this"
+          },
+          {
+            "id": "x-t4",
+            "topic": "this"
+          },
+          {
+            "id": "x-t5",
+            "topic": "this"
+          },
+          {
+            "id": "x-t6",
+            "topic": "this"
+          },
+          {
+            "id": "x-p1",
+            "topic": "plural"
+          },
+          {
+            "id": "x-p2",
+            "topic": "plural"
+          },
+          {
+            "id": "x-p3",
+            "topic": "plural"
+          },
+          {
+            "id": "x-p4",
+            "topic": "plural"
+          },
+          {
+            "id": "x-p5",
+            "topic": "plural"
+          },
+          {
+            "id": "x-p6",
+            "topic": "plural"
+          },
+          {
+            "id": "x-j1",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j2",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j3",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j4",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j5",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j6",
+            "topic": "juntos"
+          }
+        ]
+      }
     }
   }
 };

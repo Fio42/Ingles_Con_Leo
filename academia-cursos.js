@@ -16,6 +16,11 @@ var ACADEMIA_CURSOS = {
    "title": "Artículos y plurales",
    "open": true,
    "lessons": 5
+  },
+  "posesivos": {
+   "title": "Posesivos y demostrativos",
+   "open": false,
+   "lessons": 5
   }
  }
 };
