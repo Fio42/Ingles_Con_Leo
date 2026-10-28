@@ -1514,6 +1514,244 @@ var ACADEMIA = {
           }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO (Curso 5, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'there-is-are': {
+      "id": "there-is-are",
+      "title": "THERE IS / THERE ARE",
+      "name": "There is / There are",
+      "short": "Hay y no hay",
+      "tagline": "Di qué hay y dónde está: there is, there are, there isn't, there aren't y las preguntas con is there y are there.",
+      "goal": "Al terminar podrás decir qué hay en un lugar, decir qué no hay, preguntar si hay algo y contestar con respuestas cortas, usando in, on, under, next to, behind e in front of.",
+      "protected": true,
+      "topics": {
+        "is": "There is",
+        "are": "There are",
+        "neg": "There isn't y there aren't",
+        "preg": "Is there? Are there?",
+        "juntos": "Hay y dónde está"
+      },
+      "lessons": [
+        {
+          "id": "there-is",
+          "n": 1,
+          "minutes": 6,
+          "topic": "is",
+          "title": "There is",
+          "summary": "Decir que hay una cosa o algo que no se cuenta, y dónde está.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "there-are",
+          "n": 2,
+          "minutes": 6,
+          "topic": "are",
+          "title": "There are",
+          "summary": "Decir que hay dos o más cosas, con el nombre en plural.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "there-isnt-arent",
+          "n": 3,
+          "minutes": 6,
+          "topic": "neg",
+          "title": "There isn't y there aren't",
+          "summary": "Decir que no hay algo, con any, y no confundir isn't con aren't.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "is-there-are-there",
+          "n": 4,
+          "minutes": 7,
+          "topic": "preg",
+          "title": "Is there? Are there?",
+          "summary": "Preguntar si hay algo, contestar corto y preguntar cuántos hay.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "there-is-are-lugares",
+          "n": 5,
+          "minutes": 7,
+          "topic": "juntos",
+          "title": "Hay y dónde está",
+          "summary": "Usar there is y there are con in, on, under, next to, behind e in front of, y distinguirlos de it is y they are.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "there-is-are-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-i1",
+            "topic": "is"
+          },
+          {
+            "id": "x-i2",
+            "topic": "is"
+          },
+          {
+            "id": "x-i3",
+            "topic": "is"
+          },
+          {
+            "id": "x-i4",
+            "topic": "is"
+          },
+          {
+            "id": "x-i5",
+            "topic": "is"
+          },
+          {
+            "id": "x-i6",
+            "topic": "is"
+          },
+          {
+            "id": "x-a1",
+            "topic": "are"
+          },
+          {
+            "id": "x-a2",
+            "topic": "are"
+          },
+          {
+            "id": "x-a3",
+            "topic": "are"
+          },
+          {
+            "id": "x-a4",
+            "topic": "are"
+          },
+          {
+            "id": "x-a5",
+            "topic": "are"
+          },
+          {
+            "id": "x-a6",
+            "topic": "are"
+          },
+          {
+            "id": "x-n1",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n2",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n3",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n4",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n5",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n6",
+            "topic": "neg"
+          },
+          {
+            "id": "x-p1",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p2",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p3",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p4",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p5",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p6",
+            "topic": "preg"
+          },
+          {
+            "id": "x-j1",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j2",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j3",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j4",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j5",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j6",
+            "topic": "juntos"
+          }
+        ]
+      }
     }
   }
 };

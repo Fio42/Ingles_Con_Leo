@@ -274,7 +274,7 @@ function articleErrors(text){
 
   await test('academia.js: el curso queda registrado, sigue tras la puerta de "launched" y los otros cursos no se tocaron', () => {
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
-    assert.ok(/\['to-be', 'pronombres', 'articulos'(, 'posesivos')?\]\.forEach/.test(js));
+    assert.ok(/\['to-be', 'pronombres', 'articulos'(, 'posesivos')?(, 'there-is-are')?\]\.forEach/.test(js));
     assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
     assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'TO BE, Pronombres, Articulos y Posesivos estan visibles');
     assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);

@@ -346,7 +346,7 @@ function distance(text){ const t = text.replace(/far from here|lejos de aquí/gi
     assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'TO BE, Pronombres, Articulos y Posesivos estan visibles');
     assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
-    assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos'\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
+    assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos'(, 'there-is-are')?\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });
 
   await test('el esqueleto PUBLICO no lleva contenido: ni pantallas, ni respuestas, ni audio; y nada del curso privado esta en archivos versionados', () => {
