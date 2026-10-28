@@ -87,14 +87,16 @@ Estado de las ramas del repositorio público:
 Qué se puede retirar y qué queda recuperable:
 - Puedes borrar las ramas remotas `curso/articulos-plurales` y `proteccion/contenido-premium` (no es force push). Dejan de aparecer en la lista de ramas y de ser navegables.
 - Las confirmaciones que contenían el material (`b65d7f7`, `146960e`) quedan recuperables por quien tenga el código o el enlace de la confirmación, y GitHub las conserva un tiempo aunque no haya rama. No hay forks ni solicitudes de cambio (pull requests) que las referencien. Eliminarlas del todo solo se logra con reescritura de historia o pidiendo a GitHub Support que purgue confirmaciones no referenciadas; ambas cosas requieren tu decisión aparte.
-- Comandos listos (NO ejecutados): `git push origin --delete curso/articulos-plurales proteccion/contenido-premium`.
+- Eliminar las ramas viejas: `git push origin --delete curso/articulos-plurales proteccion/contenido-premium` (o el icono de papelera en la página de ramas de GitHub).
 - Nunca estuvieron en ninguna rama: los bancos de examen, sus semillas, `private/` y las semillas del contenido protegido.
 
 ## 9. Dónde se guardan los materiales privados
 
 - En el repositorio de trabajo, carpeta `private/` (ignorada por Git, comprobado por prueba): contenido (`private/contenido/articulos.json` y `.audio.json`), 137 mp3 (`private/audio/articulos/`), semilla del contenido, los tres bancos de examen y sus semillas.
-- Respaldo verificable (fuera del repositorio): `/home/claude/respaldo-privado/curso3-privado-2026-10-27.tar.gz` (146 archivos, incluye los 137 mp3, el contenido, los bancos y semillas) con `MANIFIESTO-sha256.txt` (huella de cada archivo) y huella del paquete `9c2efc0d...ff8e7`. Se extrajo en una carpeta limpia y las 146 huellas coinciden. Está en el espacio de trabajo de Claude, que es temporal: no es un respaldo definitivo.
-- Falta que decidas dónde vive la copia definitiva (por ejemplo tu computador o un USB). Esa copia no se ha hecho para respetar tu instrucción de no crear copias sin autorización.
+- Respaldo definitivo (27 de octubre de 2026): paquete `InglesConLeo-privado-2026-10-27.7z`, 7z con cifrado AES-256 y nombres de archivo cifrados, 146 archivos (137 mp3, contenido completo del Curso 3, los tres bancos de examen y sus semillas). Huella SHA-256 del paquete: `ad1f68b2b63d71010dc7aad6a156e9b17612796820c2f3c6f92968869091f9f6`. Dos copias, cada una con su `.sha256` y un `LEEME.txt`:
+  - Computadora: `C:\Users\fiocc\WebProjects\Respaldos-Privados\InglesConLeo\`
+  - OneDrive: `C:\Users\fiocc\OneDrive\Documents\Respaldos-Privados\InglesConLeo\`
+  - Verificación: huella correcta en ambas copias leída en tu computador, y extracción de prueba de ambas copias con diferencia cero contra los originales. La contraseña la eligió Leo, se leyó desde un archivo temporal ya borrado y vive solo en su gestor de contraseñas.
 - Tras el lanzamiento, Supabase tendrá otra copia (tabla `academia_content` y bucket `academia-audio`), pero el plan gratis no hace copias de seguridad automáticas.
 
 ## 10. Audio: duración de los enlaces, vencimiento y límites
