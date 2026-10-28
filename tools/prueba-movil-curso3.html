@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Prueba de audio del Curso 3 (solo proyecto de prueba)</title>
+<style>body{font:16px system-ui,sans-serif;margin:16px;max-width:520px}input,button{font:inherit;padding:12px;margin:4px 0;width:100%;box-sizing:border-box}button{background:#1b4fd8;color:#fff;border:0;border-radius:8px}pre{white-space:pre-wrap;background:#f3f3f3;padding:8px;border-radius:8px;min-height:3em}</style></head><body>
+<h1>Prueba de audio, Curso 3</h1>
+<p>Solo para un proyecto Supabase de PRUEBA con una cuenta de prueba. No se guarda nada.</p>
+<input id="u" placeholder="https://xxxx.supabase.co" autocapitalize="off"><input id="k" placeholder="clave anon (publica)" autocapitalize="off">
+<input id="e" type="email" placeholder="correo de la cuenta de prueba" autocapitalize="off"><input id="p" type="password" placeholder="contraseña de la cuenta de prueba">
+<button id="go">1. Entrar y pedir el curso</button><button id="a1">2. Tocar un audio</button><button id="a3">3. Tocar 3 audios seguidos</button><button id="re">4. Pedir enlaces nuevos (renovar)</button>
+<pre id="o"></pre>
+<script>
+var T=null,A=null,C=null,SG={},names=[],au=new Audio(),$=function(i){return document.getElementById(i)};
+function say(s){$('o').textContent=s+'\n'+$('o').textContent}
+function H(){return{apikey:$('k').value.trim(),Authorization:'Bearer '+(T||$('k').value.trim()),'content-type':'application/json'}}
+async function sign(){var b=$('u').value.trim().replace(/\/$/,'');var r=await fetch(b+'/storage/v1/object/sign/academia-audio',{method:'POST',headers:H(),body:JSON.stringify({expiresIn:900,paths:names})});var j=await r.json();SG={};j.forEach(function(x){if(x.signedURL)SG[x.path]=b+'/storage/v1'+x.signedURL});return Object.keys(SG).length}
+$('go').onclick=async function(){try{var b=$('u').value.trim().replace(/\/$/,'');var r=await fetch(b+'/auth/v1/token?grant_type=password',{method:'POST',headers:H(),body:JSON.stringify({email:$('e').value.trim(),password:$('p').value})});var j=await r.json();T=j.access_token;if(!T)return say('No entró: '+(j.error_description||j.msg||r.status));
+var c=await(await fetch(b+'/rest/v1/rpc/academia_get_content',{method:'POST',headers:H(),body:JSON.stringify({p_course:'articulos'})})).json();if(!c.ok)return say('Contenido: '+c.error+' (sin contenido, como debe ser si no es miembro o el curso está apagado)');
+C=c.content;names=Object.values(C.audio);say('Contenido recibido: '+C.lessons.length+' lecciones, '+C.practice.length+' preguntas. Enlaces firmados: '+await sign()+' de '+names.length)}catch(x){say('Error: '+x.message)}};
+function play(list){var i=0;function n(){if(i>=list.length)return say('Fin de la lista');var u=SG[list[i++]];if(!u)return say('Sin enlace para este audio (¿sin permiso?)');au.src=u;au.onended=n;au.onerror=function(){say('Error de audio (código '+(au.error&&au.error.code)+')')};au.play().then(function(){say('Sonando '+i+' de '+list.length)}).catch(function(x){say('El teléfono bloqueó la reproducción: '+x.name)})}n()}
+$('a1').onclick=function(){if(names.length)play([names[0]]);else say('Primero el paso 1')};
+$('a3').onclick=function(){if(names.length)play(names.slice(0,3));else say('Primero el paso 1')};
+$('re').onclick=async function(){if(names.length)say('Enlaces renovados: '+await sign()+' de '+names.length)};
+</script></body></html>
