@@ -26,6 +26,11 @@ var ACADEMIA_CURSOS = {
    "title": "THERE IS / THERE ARE",
    "open": false,
    "lessons": 5
+  },
+  "can": {
+   "title": "CAN / CAN'T",
+   "open": false,
+   "lessons": 5
   }
  }
 };

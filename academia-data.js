@@ -1752,6 +1752,244 @@ var ACADEMIA = {
           }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO (Curso 6, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'can': {
+      "id": "can",
+      "title": "CAN / CAN'T",
+      "name": "Can / Can't",
+      "short": "Puedo y no puedo",
+      "tagline": "Di lo que sabes y no sabes hacer, pregunta si alguien puede y pide permiso con can y can't.",
+      "goal": "Al terminar podrás decir lo que puedes y no puedes hacer, preguntar si alguien puede, contestar con respuestas cortas y pedir permiso con Can I.",
+      "protected": true,
+      "topics": {
+        "can": "Can: puedo, sé",
+        "neg": "Can't y errores frecuentes",
+        "preg": "Can en preguntas",
+        "ask": "Can para pedir permiso",
+        "juntos": "Todo con can"
+      },
+      "lessons": [
+        {
+          "id": "can-habilidad",
+          "n": 1,
+          "minutes": 6,
+          "topic": "can",
+          "title": "Can: puedo, sé",
+          "summary": "Decir lo que puedes o sabes hacer, con el verbo sin cambios.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "cant-errores",
+          "n": 2,
+          "minutes": 6,
+          "topic": "neg",
+          "title": "Can't y errores frecuentes",
+          "summary": "Decir lo que no puedes o no sabes hacer y evitar la s, el to y el ing.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "can-preguntas",
+          "n": 3,
+          "minutes": 6,
+          "topic": "preg",
+          "title": "Can en preguntas",
+          "summary": "Preguntar si alguien puede y contestar con respuestas cortas.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "can-permiso",
+          "n": 4,
+          "minutes": 6,
+          "topic": "ask",
+          "title": "Can para pedir permiso",
+          "summary": "Pedir permiso con Can I, darlo o negarlo y distinguirlo de la habilidad.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "can-repaso",
+          "n": 5,
+          "minutes": 7,
+          "topic": "juntos",
+          "title": "Todo con can",
+          "summary": "Repasar can, can't, preguntas y permisos, y unirlos con but.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "can-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-c1",
+            "topic": "can"
+          },
+          {
+            "id": "x-c2",
+            "topic": "can"
+          },
+          {
+            "id": "x-c3",
+            "topic": "can"
+          },
+          {
+            "id": "x-c4",
+            "topic": "can"
+          },
+          {
+            "id": "x-c5",
+            "topic": "can"
+          },
+          {
+            "id": "x-c6",
+            "topic": "can"
+          },
+          {
+            "id": "x-n1",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n2",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n3",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n4",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n5",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n6",
+            "topic": "neg"
+          },
+          {
+            "id": "x-p1",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p2",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p3",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p4",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p5",
+            "topic": "preg"
+          },
+          {
+            "id": "x-p6",
+            "topic": "preg"
+          },
+          {
+            "id": "x-a1",
+            "topic": "ask"
+          },
+          {
+            "id": "x-a2",
+            "topic": "ask"
+          },
+          {
+            "id": "x-a3",
+            "topic": "ask"
+          },
+          {
+            "id": "x-a4",
+            "topic": "ask"
+          },
+          {
+            "id": "x-a5",
+            "topic": "ask"
+          },
+          {
+            "id": "x-a6",
+            "topic": "ask"
+          },
+          {
+            "id": "x-j1",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j2",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j3",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j4",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j5",
+            "topic": "juntos"
+          },
+          {
+            "id": "x-j6",
+            "topic": "juntos"
+          }
+        ]
+      }
     }
   }
 };
