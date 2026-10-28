@@ -343,9 +343,17 @@
      Las grabaciones de Leo (screen.audio) se rotulan "Escuchar a Leo". Las frases en ingles usan voz sintetica
      (Kokoro) y se rotulan "Escuchar" o "Escuchar los ejemplos". Nunca hay autoplay. Si falta el mp3, el boton se oculta. */
   var snd = null, sndBtn = null, sndQueue = [], sndTimer = null, sndCur = null, sndRetried = false;
+  function audioKey(map, text){
+    if(!map) return null;
+    if(Object.prototype.hasOwnProperty.call(map, text)) return text;
+    var t = String(text).trim().toLowerCase(), ks = Object.keys(map);
+    for(var i = 0; i < ks.length; i++){ if(ks[i].trim().toLowerCase() === t) return ks[i]; }
+    return null;
+  }
   function audioFor(text){
-    if(PROT) return SIGNED[text] || null;
-    return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null;
+    if(PROT){ var k = audioKey(SIGNED, text); return k ? SIGNED[k] : null; }
+    if(typeof ACADEMIA_AUDIO === 'undefined') return null;
+    var k2 = audioKey(ACADEMIA_AUDIO, text); return k2 ? ACADEMIA_AUDIO[k2].f : null;
   }
   function resetBtn(b){
     if(!b) return;
