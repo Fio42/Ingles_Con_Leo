@@ -17,3 +17,14 @@ Visitante, cuenta gratuita, miembro activo, cancelado vigente (misma condición 
 
 ## Qué no cubre
 La página `academia.html` completa en teléfono se valida en el paso 4 de producción de la guía de lanzamiento (curso encendido pero oculto al público, con el canario). Un enlace ya emitido puede seguir sirviendo hasta 15 minutos tras vencer la membresía.
+
+## Resultado de la validación real (27-oct-2026, proyecto de prueba `ingles-prueba`, ref distinto de producción)
+Ejecutada por Claude desde el navegador integrado, contra Supabase Auth, PostgREST y Storage reales (no simulados). No se tocó producción.
+- Cuentas reales de prueba (cargador, gratis, miembro, vencido) con inicio de sesión real por contraseña (Auth devolvió token a las 4).
+- Curso APAGADO: visitante 401, gratis, miembro y vencido reciben `course`; firma, descarga directa, URL pública y tabla: todo bloqueado.
+- Curso ENCENDIDO: visitante 401; gratis y vencido reciben `members`; miembro recibe 5 lecciones y 30 de práctica idénticas al origen, firmó y descargó los 137 audios (0 fallos, audio/mpeg). Tabla `academia_content` sin lectura directa (403). URL pública 400.
+- Enlace de 2 s: 200 antes de expirar, 400 después; renovación con sesión: 200.
+- Miembro pasa a vencido: RPC `members`, firma nueva rechazada; un enlace emitido antes sigue vivo hasta su caducidad (diseño de 15 min).
+- Permisos: bucket privado, RLS activo, `anon` sin permisos sobre tablas ni funciones, `authenticated` solo ejecuta `academia_get_content` y `academia_audio_allowed`, 137 objetos, política temporal de carga eliminada (solo queda `academia_audio: miembros`).
+- Hallazgos: la subida con `x-upsert` es denegada para cuentas sin política de escritura (comportamiento correcto). El registro por correo en el proyecto de prueba quedó limitado por el envío de confirmaciones, así que las cuentas se crearon directo en su base.
+- Pendiente: prueba en teléfono físico (Leo).
