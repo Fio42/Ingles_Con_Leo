@@ -1163,7 +1163,7 @@
     root.textContent = '';
     var ready = dc === COURSE.lessons.length;
     var intro = el('section', { class: 'ac-card', 'aria-labelledby': 'acH' }, [
-      el('p', { class: 'ac-kicker', text: 'Curso To be · Evaluación final' }),
+      el('p', { class: 'ac-kicker', text: (PRIMARY ? 'Curso To be' : 'Curso ' + (COURSE.name || COURSE.title)) + ' · Evaluación final' }),
       el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: 'Evaluación de práctica' }),
       el('p', { class: 'ac-practice-tag', text: 'Práctica: no da insignia ni certificado' }),
       el('p', { class: 'ac-text', text: 'Sirve para ver cómo vas antes de la evaluación oficial.' }),
@@ -1317,7 +1317,7 @@
       }
       var needed = Math.ceil(st.exam_size * st.pass_pct / 100);
       var intro = el('section', { class: 'ac-card', 'aria-labelledby': 'acH' }, [
-        el('p', { class: 'ac-kicker', text: 'Curso To be · Evaluación final' }),
+        el('p', { class: 'ac-kicker', text: (PRIMARY ? 'Curso To be' : 'Curso ' + (COURSE.name || COURSE.title)) + ' · Evaluación final' }),
         el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: st.badge ? 'Ya conseguiste la insignia' : 'Evaluación del curso' }),
         st.badge ? el('p', { class: 'ac-text', text: 'Tu mejor resultado: ' + st.best_pct + ' %. Puedes repetirla cuando quieras para mejorarlo.' }) : el('p', { class: 'ac-text', text: 'Si la superas, ganas la insignia del curso.' }),
         el('ul', { class: 'ac-rules' }, [
@@ -1404,7 +1404,7 @@
       el('h1', { class: 'ac-h1 ac-h1-sm', id: 'acH', 'data-focus': '', text: res.passed ? '¡Superaste el curso!' : (res.score_pct >= 60 ? 'Todavía no, vas cerca' : 'Todavía no, sigue practicando') }),
       el('p', { class: 'ac-score', text: res.score_pct + ' %' }),
       el('p', { class: 'ac-text', text: 'Respondiste ' + res.correct + ' de ' + res.total + ' bien. Para superarla necesitas ' + res.pass_pct + ' %.' + (res.passed ? '' : ' Tus lecciones siguen completadas.') }),
-      res.passed ? el('p', { class: 'ac-badge-won', role: 'status', text: 'Insignia conseguida: Domina el verbo TO BE' }) : null
+      res.passed ? el('p', { class: 'ac-badge-won', role: 'status', text: 'Insignia conseguida: ' + (PRIMARY ? 'Domina el verbo TO BE' : COURSE.title) }) : null
     ]));
     var weak = [];
     var topicsCard = el('section', { class: 'ac-card' }, [el('h2', { class: 'ac-h2 ac-h2-in', text: 'Por tema' })]);

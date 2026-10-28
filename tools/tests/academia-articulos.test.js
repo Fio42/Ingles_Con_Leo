@@ -403,6 +403,14 @@ function articleErrors(text){
     assert.strictEqual(perm[0].n, 0, 'el navegador no puede leer el banco');
   });
 
+  // Los textos de la evaluacion y la insignia no pueden nombrar a TO BE en cursos que no son TO BE (hallazgo de la prueba real).
+  await test('las pantallas de evaluacion e insignia usan el nombre del curso, no el de TO BE', async () => {
+    const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
+    assert.strictEqual(/text: 'Curso To be . Evaluaci/.test(js), false, 'kicker fijo de TO BE');
+    assert.strictEqual(/text: 'Insignia conseguida: Domina el verbo TO BE'/.test(js), false, 'insignia fija de TO BE');
+    assert.ok(/PRIMARY \? 'Domina el verbo TO BE' : COURSE\.title/.test(js), 'TO BE conserva su texto y los demas usan su titulo');
+  });
+
   console.log('\n' + passed + ' pruebas ok' + (failed ? ', ' + failed + ' FALLAN' : ''));
   if(failed) process.exit(1);
 })();
