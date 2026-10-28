@@ -13,8 +13,10 @@ const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 't
 function serve(){
   return new Promise(res => {
     const srv = http.createServer((req, rsp) => {
-      const p = path.join(root, decodeURIComponent(req.url.split('?')[0]));
-      if(!p.startsWith(root) || !fs.existsSync(p) || fs.statSync(p).isDirectory()){ rsp.writeHead(404); return rsp.end(); }
+      const u = decodeURIComponent(req.url.split('?')[0]);
+      // Solo en la prueba: simula el almacenamiento privado (en produccion es el bucket academia-audio con URL firmada).
+      const p = u.startsWith('/private-audio/') ? path.join(root, 'private', 'audio', u.slice(15)) : path.join(root, u);
+      if(!p.startsWith(root) || (!u.startsWith('/private-audio/') && /^\/private\//.test(u)) || !fs.existsSync(p) || fs.statSync(p).isDirectory()){ rsp.writeHead(404); return rsp.end(); }
       rsp.writeHead(200, { 'content-type': MIME[path.extname(p)] || 'application/octet-stream' }); fs.createReadStream(p).pipe(rsp);
     }).listen(0, '127.0.0.1', () => res(srv));
   });
@@ -23,6 +25,8 @@ const FAKE_BACKEND = `
 var LeoBackend = (function(){
   var CLIENT = {
     rpc: function(fn, args){ return window.__rpc(fn, args); },
+    storage: { from: function(bucket){ return { createSignedUrls: function(names, secs){ window.__signed = (window.__signed || []).concat([{ bucket: bucket, n: names.length, secs: secs }]);
+      return Promise.resolve({ data: names.map(function(n){ return { path: n, signedUrl: '/private-audio/' + n + '?token=fake' }; }), error: null }); } }; } },
     from: function(table){ var st = { cols:'*', eq:{} }, b = {
       select: function(c){ st.cols = c || '*'; return b; }, eq: function(k, v){ st.eq[k] = v; return b; },
       maybeSingle: function(){ return window.__select(table, st.cols, st.eq); } }; return b; }
@@ -56,6 +60,9 @@ async function until(fn, ms, what){
 
   const db = await H.freshDb(PGlite, []);
   await db.exec(H.read('supabase/migrations/20261028120000_academia_curso_articulos.sql'));
+  await db.exec(H.read('supabase/migrations/20261028180000_academia_contenido_protegido.sql'));
+  { const cj = JSON.parse(fs.readFileSync(path.join(root, 'private', 'contenido', 'articulos.json'), 'utf8')); cj.audio = JSON.parse(fs.readFileSync(path.join(root, 'private', 'contenido', 'articulos.audio.json'), 'utf8'));
+    await db.query('insert into public.academia_content (course_id, version, content) values ($1,$2,$3)', ['articulos', cj.version || 1, JSON.stringify(cj)]); }
   for(const b of exam) await db.query('insert into public.academia_exam_items (course_id, id, topic, type, public, answer) values ($1,$2,$3,$4,$5,$6)', ['articulos', b.id, b.topic, b.type, JSON.stringify(b.public), JSON.stringify(b.answer)]);
   await db.exec(`update public.academia_courses set exam_size = 15, per_topic = 3, pass_pct = 80, max_attempts_day = 8`);
   const UID = H.U.a, F = H.U.free, net = { down: false };

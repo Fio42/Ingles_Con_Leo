@@ -229,8 +229,61 @@
 
 
   var itemIndex = {};
-  COURSE.lessons.forEach(function(l){ l.activities.forEach(function(a){ itemIndex[a.id] = a; }); });
-  COURSE.exam.bank.forEach(function(a){ itemIndex[a.id] = a; });
+  function buildIndex(){
+    itemIndex = {};
+    COURSE.lessons.forEach(function(l){ (l.activities || []).forEach(function(a){ itemIndex[a.id] = a; }); });
+    (COURSE.exam.bank || []).forEach(function(a){ itemIndex[a.id] = a; });
+  }
+  buildIndex();
+
+  /* ---------------- Contenido protegido ----------------
+     Un curso con protected:true trae en academia-data.js solo su esqueleto publico (titulos, temas, resumenes, ids).
+     Lecciones, ejercicios, practica y audio llegan del servidor, y solo a miembros vigentes (academia_get_content + bucket privado).
+     TO BE y Pronombres no son protected: siguen el camino de siempre, sin ninguna llamada extra. */
+  var PROT = COURSE.protected === true, hydrated = !PROT, hydrating = false, hydrateFail = null;
+  var PAUD = {}, signedAt = 0, signing = false;
+  function signAudio(){
+    if(!PROT || !NUBE || signing) return;
+    var names = Object.keys(PAUD).map(function(k){ return PAUD[k]; });
+    if(!names.length) return;
+    signing = true;
+    NUBE.signAudio(names).then(function(map){
+      if(map){ Object.keys(PAUD).forEach(function(t){ if(map[PAUD[t]]) SIGNED[t] = map[PAUD[t]]; }); signedAt = Date.now(); }
+    }).then(function(){ signing = false; }, function(){ signing = false; });
+  }
+  var SIGNED = {};
+  function applyContent(c){
+    var byId = {}; (c.lessons || []).forEach(function(l){ byId[l.id] = l; });
+    COURSE.lessons.forEach(function(l){ var x = byId[l.id]; if(!x) throw new Error('contenido incompleto'); l.screens = x.screens; l.activities = x.activities; l.canSay = x.canSay; });
+    COURSE.exam.bank = c.practice || [];
+    PAUD = c.audio || {};
+    buildIndex();
+  }
+  /* Pide el contenido al servidor y vuelve a dibujar. Devuelve true si ya dibujo algo. */
+  function hydrateThen(){
+    if(hydrating) return true;
+    hydrating = true; hydrateFail = null;
+    msgCard('Cargando tu curso', 'Un momento...');
+    NUBE.content().then(function(r){
+      if(!r || !r.ok || !r.content) throw new Error(r && r.error || 'net');
+      applyContent(r.content); hydrated = true; hydrating = false;
+      return NUBE.signAudio(Object.keys(PAUD).map(function(k){ return PAUD[k]; })).catch(function(){ return null; });
+    }).then(function(map){
+      if(map){ Object.keys(PAUD).forEach(function(t){ if(map[PAUD[t]]) SIGNED[t] = map[PAUD[t]]; }); signedAt = Date.now(); }
+      if(hydrated) route();
+    }).catch(function(e){
+      hydrating = false; hydrateFail = String(e && e.message || 'net');
+      var members = hydrateFail === 'members';
+      msgCard(members ? 'Este curso es solo para miembros' : 'No pudimos cargar el curso',
+        members ? 'Tu membresía no está vigente. Puedes renovarla para seguir.' : 'Revisa tu conexión e inténtalo otra vez.',
+        [el('div', { class: 'ac-nav ac-nav-col' }, [
+          members ? link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-primary ac-btn-wide')
+                  : el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: 'Reintentar', onclick: function(){ route(); } }),
+          link('#/', 'Volver a la academia', 'ac-btn ac-btn-quiet ac-btn-wide')
+        ])]);
+    });
+    return true;
+  }
 
   function lessonById(id){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].id === id) return COURSE.lessons[i]; return null; }
   function lessonByN(n){ return COURSE.lessons[n - 1] || null; }
@@ -276,7 +329,10 @@
      Las grabaciones de Leo (screen.audio) se rotulan "Escuchar a Leo". Las frases en ingles usan voz sintetica
      (Kokoro) y se rotulan "Escuchar" o "Escuchar los ejemplos". Nunca hay autoplay. Si falta el mp3, el boton se oculta. */
   var snd = null, sndBtn = null, sndQueue = [], sndTimer = null;
-  function audioFor(text){ return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null; }
+  function audioFor(text){
+    if(PROT) return SIGNED[text] || null;
+    return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null;
+  }
   function resetBtn(b){
     if(!b) return;
     b.classList.remove('is-on'); b.setAttribute('aria-pressed', 'false');
@@ -1580,6 +1636,12 @@
 
   /* Que vista corresponde a este alumno. Devuelve true si ya dibujo algo (el router no sigue). */
   function gate(parts){
+    if(PROT && !NUBE){ viewPresentation(); return true; }
+    if(PROT && mode === 'member'){
+      if(!hydrated) return hydrating ? true : hydrateThen();
+      if(signedAt && Date.now() - signedAt > 5 * 3600 * 1000) signAudio();   // las URLs de audio duran 6 h
+      return false;
+    }
     if(!NUBE || mode === 'member') return false;
     if(mode === 'pending'){
       msgCard('Conectando con tu cuenta', 'Un momento...');
