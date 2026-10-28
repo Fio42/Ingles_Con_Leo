@@ -16,8 +16,8 @@ Guía independiente de `LANZAMIENTO_TO_BE.md`, que no se modificó. TO BE y Pron
 - Para recuperar: abrir con 7-Zip y copiar `InglesConLeo-privado\*` dentro de `private\` del repositorio.
 - Después de cargar todo en Supabase, la base y el bucket son otra copia, pero el plan gratis no hace copias automáticas.
 
-## 2. Validación real previa (proyecto de PRUEBA, no toca producción)
-Guía: `docs/validacion-supabase-real-curso3.md`. Un solo comando en tu computador (`tools/probar_curso3_en_supabase_de_prueba.js`) deja el proyecto de prueba listo, crea 4 cuentas de prueba (gratis, activo, cancelado vigente, vencido), sube los 137 audios, corre las etapas "apagado" y "encendido" y guarda los datos para la prueba del teléfono. Resultado esperado: 13 ok (apagado) y 16 ok (encendido). Después, la prueba de audio en teléfono físico con `tools/prueba-movil-curso3.html`.
+## 2. Validación real previa (proyecto de PRUEBA, no toca producción) — HECHA el 27-oct-2026
+Resultados completos en `docs/validacion-supabase-real-curso3.md`. Se ejecutó en un proyecto Supabase de prueba real, con las migraciones reales de la Academia, la página `academia.html` real en navegador y cuentas reales de Auth: visitante, gratis, miembro, cancelado con acceso vigente y vencido. Pasaron: las 5 lecciones (40 ejercicios), guardado y recuperación de progreso desde la nube, práctica, examen privado (60% no aprueba y no da insignia; 100% aprueba y da insignia), audio firmado dentro de la página (uno, tres seguidos, renovación) y corte inmediato al vencer la membresía. Hallazgo corregido: las pantallas de evaluación e insignia decían "TO BE" en otros cursos (commit d2a7863). Pendiente: prueba en teléfono físico (carpeta `PruebaMovilCurso3` en el Escritorio de Leo).
 
 ## 3. Pasos de producción (cada uno se verifica antes de seguir; solo con tu autorización)
 1. Merge de `curso/articulos-protegido` a `main` y publicación del sitio. El curso sigue oculto para todos. Comprobar: Inicio, Academia, Practicar y Mi progreso se ven igual; `https://inglesconleo.com/academia.html#/curso/articulos` te devuelve al inicio; en `https://inglesconleo.com/academia-data.js` no hay textos del curso.
