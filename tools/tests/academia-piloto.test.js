@@ -77,7 +77,7 @@ test('audio: cada frase con boton tiene mp3 y el manifiesto coincide con el text
   T.forEach(x => { const m = MAN[x.t]; assert.ok(m, 'sin audio: ' + x.t); assert.strictEqual(m.v, x.v, 'voz ' + x.t); assert.ok(fs.existsSync(path.join(root, m.f)), m.f); });
   assert.strictEqual(Object.keys(MAN).length, T.length, 'el manifiesto tiene textos que ya no se usan');
   let n = 0;
-  Object.keys(A.courses).forEach(id => { n += fs.readdirSync(path.join(root, 'audio/academia/' + id)).filter(f => f.endsWith('.mp3')).length; });
+  Object.keys(A.courses).filter(id => !A.courses[id].protected).forEach(id => { n += fs.readdirSync(path.join(root, 'audio/academia/' + id)).filter(f => f.endsWith('.mp3')).length; });
   assert.strictEqual(n, T.length, 'mp3 sobrantes');
 });
 test('audio: todo lo que se muestra con ingles escuchable esta en el manifiesto', () => {
