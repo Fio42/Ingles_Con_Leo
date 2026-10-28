@@ -1038,6 +1038,244 @@ var ACADEMIA = {
           { id: 'x-v6', type: 'order', topic: 'vida', q: 'Ordena las palabras para formar una frase.', tokens: ['He', 'is', 'my', 'brother.'], why: 'Primero he, luego is y luego quién es.' }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO: aqui solo el esqueleto publico (temario comercial). El contenido se entrega desde el servidor a miembros.
+    'articulos': {
+      "id": "articulos",
+      "title": "Artículos y plurales",
+      "name": "Artículos y plurales",
+      "short": "A, an, the y plurales",
+      "tagline": "Aprende cuándo usar a, an, the o ningún artículo, y cómo formar el plural.",
+      "goal": "Al terminar podrás elegir entre a, an, the o ningún artículo, y formar plurales regulares e irregulares con seguridad.",
+      "protected": true,
+      "topics": {
+        "aan": "A y an",
+        "the": "The",
+        "general": "A, an, the o ningún artículo",
+        "plurales": "Plurales regulares",
+        "irregulares": "Plurales irregulares"
+      },
+      "lessons": [
+        {
+          "id": "a-an",
+          "n": 1,
+          "minutes": 6,
+          "topic": "aan",
+          "title": "A y an",
+          "summary": "Decir \"un\" o \"una\" y elegir entre a y an.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "the",
+          "n": 2,
+          "minutes": 6,
+          "topic": "the",
+          "title": "The",
+          "summary": "Hablar de algo concreto: el, la, los y las.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "a-an-the-nada",
+          "n": 3,
+          "minutes": 7,
+          "topic": "general",
+          "title": "A, an, the o ningún artículo",
+          "summary": "Elegir bien entre las tres opciones, incluida la de no poner artículo.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "plurales-regulares",
+          "n": 4,
+          "minutes": 7,
+          "topic": "plurales",
+          "title": "Plurales regulares",
+          "summary": "Formar el plural con -s, -es y -ies, y los casos con -o y -f.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "plurales-irregulares",
+          "n": 5,
+          "minutes": 7,
+          "topic": "irregulares",
+          "title": "Plurales irregulares y repaso",
+          "summary": "Los plurales que cambian de forma y un repaso de todo el curso.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "articulos-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-a1",
+            "topic": "aan"
+          },
+          {
+            "id": "x-a2",
+            "topic": "aan"
+          },
+          {
+            "id": "x-a3",
+            "topic": "aan"
+          },
+          {
+            "id": "x-a4",
+            "topic": "aan"
+          },
+          {
+            "id": "x-a5",
+            "topic": "aan"
+          },
+          {
+            "id": "x-a6",
+            "topic": "aan"
+          },
+          {
+            "id": "x-t1",
+            "topic": "the"
+          },
+          {
+            "id": "x-t2",
+            "topic": "the"
+          },
+          {
+            "id": "x-t3",
+            "topic": "the"
+          },
+          {
+            "id": "x-t4",
+            "topic": "the"
+          },
+          {
+            "id": "x-t5",
+            "topic": "the"
+          },
+          {
+            "id": "x-t6",
+            "topic": "the"
+          },
+          {
+            "id": "x-g1",
+            "topic": "general"
+          },
+          {
+            "id": "x-g2",
+            "topic": "general"
+          },
+          {
+            "id": "x-g3",
+            "topic": "general"
+          },
+          {
+            "id": "x-g4",
+            "topic": "general"
+          },
+          {
+            "id": "x-g5",
+            "topic": "general"
+          },
+          {
+            "id": "x-g6",
+            "topic": "general"
+          },
+          {
+            "id": "x-p1",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-p2",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-p3",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-p4",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-p5",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-p6",
+            "topic": "plurales"
+          },
+          {
+            "id": "x-i1",
+            "topic": "irregulares"
+          },
+          {
+            "id": "x-i2",
+            "topic": "irregulares"
+          },
+          {
+            "id": "x-i3",
+            "topic": "irregulares"
+          },
+          {
+            "id": "x-i4",
+            "topic": "irregulares"
+          },
+          {
+            "id": "x-i5",
+            "topic": "irregulares"
+          },
+          {
+            "id": "x-i6",
+            "topic": "irregulares"
+          }
+        ]
+      }
     }
   }
 };
@@ -1073,6 +1311,7 @@ function academiaSentence(item){
 function academiaAudioTexts(course){
   var out = {}, add = function(t, v){ if(t && !out[t]) out[t] = v || 'f'; };
   course.lessons.forEach(function(l){
+    if(!l.screens) return;      // curso protegido sin hidratar: solo esqueleto
     l.screens.forEach(function(s){
       (s.listen || []).forEach(function(x){ if(typeof x === 'string') add(x, 'f'); else add(x.t, x.v); });
       (s.items || []).forEach(function(i){ add(i.en, 'f'); });

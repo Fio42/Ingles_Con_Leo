@@ -313,6 +313,18 @@ var AcademiaNube = (function(){
         return r.data;
       }catch(e){ return { ok: false, error: 'net' }; }
     }
+    /* ---- contenido premium (solo miembros vigentes; el servidor decide) ---- */
+    function content(){ return S.ready ? rpc('academia_get_content', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
+    /* URLs temporales (15 min por defecto) de los audios privados. Devuelve { 'curso/hash.mp3': url } o null. */
+    async function signAudio(names, secs){
+      if(!S.ready || !names || !names.length) return null;
+      try{
+        var r = await client().storage.from('academia-audio').createSignedUrls(names, secs || 900);
+        if(!r || r.error || !r.data) return null;
+        var out = {}; r.data.forEach(function(x){ if(x && x.signedUrl && !x.error) out[x.path] = x.signedUrl; });
+        return out;
+      }catch(e){ return null; }
+    }
     function examStatus(){ return S.ready ? rpc('academia_exam_status', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
     function examStart(){ return S.ready ? rpc('academia_exam_start', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
     function examSubmit(attemptId, answers){ return S.ready ? rpc('academia_exam_submit', { p_attempt: attemptId, p_answers: answers }) : Promise.resolve({ ok: false, error: 'anon' }); }
@@ -325,7 +337,7 @@ var AcademiaNube = (function(){
     }
 
     return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson, flushAll: flushAll, flushSessions: flushSessions, access: access, demoStart: demoStart, demoFinish: demoFinish,
-      examStatus: examStatus, examStart: examStart, examSubmit: examSubmit, badge: badge,
+      content: content, signAudio: signAudio, examStatus: examStatus, examStart: examStart, examSubmit: examSubmit, badge: badge,
       get ready(){ return S.ready; }, get dirty(){ return S.dirty; }, get online(){ return S.online; }, get version(){ return S.version; },
       get pendingMistakes(){ return S.user ? qCount(qRead()) : pre.length; }, get pendingSessions(){ return S.user ? qRead().sessions.length : 0; },
       get dropped(){ return S.dropped; }, get queuedInServer(){ return S.queuedServer; }, enabled: enabled };

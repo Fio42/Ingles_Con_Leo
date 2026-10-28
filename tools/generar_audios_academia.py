@@ -23,14 +23,17 @@ MODELOS = os.environ.get("KOKORO_DIR") or os.path.join(AQUI, ".kokoro-models")
 VOCES = {"f": "af_heart", "m": "am_michael"}
 VELOCIDAD = 0.9
 RMS_OBJETIVO = 0.07
-CURSOS = os.environ.get("ACADEMIA_CURSOS", "to-be,pronombres").split(",")
+CURSOS = os.environ.get("ACADEMIA_CURSOS", "to-be,pronombres,articulos").split(",")
 
 
 def textos(curso):
-    js = ("const fs=require('fs'),vm=require('vm');const c={};vm.createContext(c);"
-          "vm.runInContext(fs.readFileSync(%s,'utf8')+';this.L=academiaAudioTexts(ACADEMIA.courses[%s]);',c);"
-          "console.log(JSON.stringify(c.L));") % (json.dumps(os.path.join(RAIZ, "academia-data.js")), json.dumps(curso))
-    return json.loads(subprocess.check_output(["node", "-e", js], text=True, encoding="utf-8"))
+    """Devuelve (protegido, textos). Un curso protegido (protected:true) trae su contenido de private/contenido/<curso>.json
+    (tools/academia_fuente.js); si ese archivo no existe se omite."""
+    js = ("const F=require(%s);const r=F.load();const c=r.A.courses[%s];"
+          "console.log(JSON.stringify({p:!!c.protected,h:!!c.hydrated,l:c.hydrated?r.TX(c):[]}));") % (
+        json.dumps(os.path.join(AQUI, "academia_fuente.js")), json.dumps(curso))
+    r = json.loads(subprocess.check_output(["node", "-e", js], text=True, encoding="utf-8"))
+    return r["p"], r["h"], r["l"]
 
 
 def nombre(voz, texto):
@@ -50,19 +53,26 @@ def main():
     manifest, hechos, total = {}, 0, 0
     usados_por_curso = {}
     for curso in CURSOS:
-        carpeta = "audio/academia/" + curso
+        protegido, hidratado, lista = textos(curso)
+        if protegido and not hidratado:
+            print("[omitido] %s es un curso protegido y falta private/contenido/%s.json" % (curso, curso)); continue
+        # Curso PROTEGIDO: sus mp3 NO van a audio/academia (publico) sino a private/audio/<curso> (se suben al almacenamiento privado)
+        # y su texto->archivo NO entra en academia-audio.js (publico): va en private/contenido/<curso>.audio.json y lo entrega el servidor.
+        carpeta = ("private/audio/" if protegido else "audio/academia/") + curso
         destino_dir = os.path.join(RAIZ, carpeta)
         os.makedirs(destino_dir, exist_ok=True)
         usados = usados_por_curso.setdefault(carpeta, set())
-        for it in textos(curso):
+        privado = {}
+        for it in lista:
             t, v = it["t"], it["v"]
-            if t in manifest:           # un texto que ya tiene audio (de otro curso) se reutiliza: el audio no cambia
+            if not protegido and t in manifest:   # un texto que ya tiene audio (de otro curso) se reutiliza: el audio no cambia
                 continue
             total += 1
             f = nombre(v, t)
             usados.add(f)
             ruta = os.path.join(destino_dir, f)
-            manifest[t] = {"f": carpeta + "/" + f, "v": v}
+            if protegido: privado[t] = curso + "/" + f
+            else: manifest[t] = {"f": carpeta + "/" + f, "v": v}
             if os.path.exists(ruta) and not force:
                 continue
             s, sr = k.create(t, voice=VOCES[v], speed=VELOCIDAD, lang="en-us")
@@ -76,6 +86,9 @@ def main():
                 fh.write(a_mp3(audio, sr))
             hechos += 1
             print("[OK] %-45s %.1fs" % (t[:45], len(audio) / sr))
+        if protegido:
+            with open(os.path.join(RAIZ, "private", "contenido", curso + ".audio.json"), "w", encoding="utf-8") as fh:
+                json.dump(privado, fh, ensure_ascii=False, indent=1)
     for carpeta, usados in usados_por_curso.items():
         d = os.path.join(RAIZ, carpeta)
         for viejo in os.listdir(d):
