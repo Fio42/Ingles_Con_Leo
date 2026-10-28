@@ -186,7 +186,7 @@ const contentFile = path.join(FU.privDir, 'contenido', 'articulos.json'), audioF
   await test('el cargador del navegador pide el contenido SOLO a miembros y solo para cursos protegidos (TO BE y Pronombres no hacen ninguna llamada nueva)', () => {
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/var PROT = COURSE\.protected === true/.test(js)); assert.ok(/if\(PROT && mode === 'member'\)/.test(js));
-    assert.ok(/function audioFor\(text\)\{\s*if\(PROT\) return SIGNED\[text\] \|\| null;/.test(js));
+    assert.ok(/function audioFor\(text\)\{\s*if\(PROT\)\{ var k = audioKey\(SIGNED, text\); return k \? SIGNED\[k\] : null; \}/.test(js), 'audioFor en cursos protegidos solo lee las URLs firmadas (sin distinguir mayusculas)');
     assert.ok(/createSignedUrls\(names, secs \|\| 900\)/.test(fs.readFileSync(path.join(root, 'academia-nube.js'), 'utf8')), 'URLs temporales de 15 min por defecto');
     assert.ok(/SIGN_SECS = 900, RENEW_MS = 8 \* 60 \* 1000/.test(js), 'enlaces de 15 min, renovacion a los 8');
     const gate = js.slice(js.indexOf('function gate(parts)'), js.indexOf('function gate(parts)') + 700);
