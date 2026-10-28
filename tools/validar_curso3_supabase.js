@@ -2,7 +2,7 @@
 /* Validacion REAL del Curso 3 contra un proyecto Supabase de PRUEBA (auth real, RPC real, Storage real).
    No guarda ni imprime contrasenas ni tokens. Uso:
      SB_URL=https://xxxx.supabase.co SB_ANON=<anon key> \
-     T_GRATIS="correo|clave" T_ACTIVO="correo|clave" T_VENCIDO="correo|clave" \
+     T_GRATIS="correo|clave" T_ACTIVO="correo|clave" T_VENCIDO="correo|clave" [T_CANCELADO="correo|clave"] \
      node tools/validar_curso3_supabase.js apagado|encendido
    Etapa "apagado": curso apagado (enabled=false). Etapa "encendido": enabled=true y los 137 audios subidos al bucket. */
 const stage = process.argv[2];
@@ -25,7 +25,7 @@ const signedOk = it => it.filter(x => x && x.signedURL && !x.error);
 
 (async()=>{
   console.log('Validacion real del Curso 3, etapa: ' + stage);
-  const tok = { gratis: await login(process.env.T_GRATIS), activo: await login(process.env.T_ACTIVO), vencido: await login(process.env.T_VENCIDO) };
+  const tok = { gratis: await login(process.env.T_GRATIS), activo: await login(process.env.T_ACTIVO), vencido: await login(process.env.T_VENCIDO), cancelado: await login(process.env.T_CANCELADO) };   // cancelado = suscripcion cancelada pero aun vigente (is_member sigue en true)
   check('las 3 cuentas de prueba inician sesion (auth real)', !!(tok.gratis && tok.activo && tok.vencido));
   const probe = ['articulos/prueba-1.mp3', 'articulos/prueba-2.mp3'];
   // VISITANTE (solo clave publica, sin sesion)
@@ -37,7 +37,7 @@ const signedOk = it => it.filter(x => x && x.signedURL && !x.error);
   check('MIEMBRO: la tabla academia_content no se lee directamente', tb.status >= 400 || (Array.isArray(tbj) && tbj.length === 0), 'status ' + tb.status);
 
   if(stage === 'apagado'){
-    for(const [k, t] of [['GRATIS', tok.gratis], ['ACTIVO', tok.activo], ['VENCIDO', tok.vencido]]){
+    for(const [k, t] of [['GRATIS', tok.gratis], ['ACTIVO', tok.activo], ['VENCIDO', tok.vencido], ['CANCELADO VIGENTE', tok.cancelado]].filter(x => x[1])){
       const r = await rpc(t, 'academia_get_content', { p_course: 'articulos' });
       check('CURSO OCULTO / ' + k + ': sin contenido (error "course")', r.body && r.body.ok === false && r.body.error === 'course' && !r.body.content, JSON.stringify(r.body).slice(0, 80));
       const s = await sign(t, probe); check('CURSO OCULTO / ' + k + ': ningun enlace de audio', signedOk(s.items).length === 0);
@@ -48,9 +48,13 @@ const signedOk = it => it.filter(x => x && x.signedURL && !x.error);
     const e = await rpc(tok.vencido, 'academia_get_content', { p_course: 'articulos' });
     check('MIEMBRO VENCIDO: error "members", sin contenido', e.body && e.body.ok === false && e.body.error === 'members' && !e.body.content);
     const a = await rpc(tok.activo, 'academia_get_content', { p_course: 'articulos' });
-    const c = a.body && a.body.content;
+    const c = a.body && a.body.content; const all = await names(tok.activo);
     check('MIEMBRO ACTIVO: recibe 5 lecciones, 40 ejercicios, 30 de practica', !!c && c.lessons.length === 5 && c.lessons.reduce((n, l) => n + l.activities.length, 0) === 40 && c.practice.length === 30);
-    const all = await names(tok.activo); check('MIEMBRO ACTIVO: el mapa trae 137 audios', !!all && new Set(all).size === 137);
+    check('MIEMBRO ACTIVO: el mapa trae 137 audios', !!all && new Set(all).size === 137);
+    if(tok.cancelado){
+      const cc = await rpc(tok.cancelado, 'academia_get_content', { p_course: 'articulos' }); const cl = all ? await sign(tok.cancelado, all.slice(0, 5)) : { items: [] };
+      check('CANCELADO VIGENTE: conserva contenido y audio hasta vencer', !!(cc.body && cc.body.ok && cc.body.content.lessons.length === 5) && signedOk(cl.items).length === 5);
+    }
     if(all){
       const s = await sign(tok.activo, all); const ok = signedOk(s.items);
       check('MIEMBRO ACTIVO: Storage firma los 137 audios', ok.length === 137, ok.length + ' de 137');
