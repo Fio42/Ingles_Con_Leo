@@ -358,7 +358,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "a-an",
   "engineTopic": "A / An",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "aan": "A y an",
    "the": "The",

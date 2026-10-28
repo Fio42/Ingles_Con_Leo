@@ -252,17 +252,16 @@ function articleErrors(text){
     });
   });
 
-  await test('curso OCULTO: soon en la ruta, cerrado en el motor, apagado en la migracion, sin enlaces publicos ni sitemap', () => {
-    const r = A.route.courses.find(c => c.id === 'articulos'); assert.strictEqual(r.soon, true, 'academia-data.js: soon debe seguir en true');
+  await test('curso PUBLICADO (28-oct-2026): visible en la ruta, abierto en el motor, fila apagada en la migracion (se enciende en la base), sin enlaces publicos ni sitemap', () => {
+    const r = A.route.courses.find(c => c.id === 'articulos'); assert.ok(!r.soon, 'academia-data.js: soon debe estar quitado tras el lanzamiento');
     const out = execFileSync('node', [path.join(root, 'tools', 'generar_academia_motor.js'), '--check'], { env: Object.assign({}, process.env, { ACADEMIA_MOTOR_ENABLED: '1' }) }).toString();
     assert.ok(/al dia/.test(out));
     const c = {}; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(root, 'academia-motor.js'), 'utf8') + ';this.M=ACADEMIA_MOTOR;', c);
-    const M = c.M; assert.strictEqual(M.courses.articulos.open, false); assert.strictEqual(M.courses.articulos.engineTopic, 'A / An');
+    const M = c.M; assert.strictEqual(M.courses.articulos.open, true); assert.strictEqual(M.courses.articulos.engineTopic, 'A / An');
     assert.strictEqual(M.courses['to-be'].open, true); assert.strictEqual(M.courses.pronombres.open, true);
-    assert.ok(!M.linkForTema('a-an', [], 'articulo-articulos-a-an-the.html') || !/curso\/articulos/.test(String(M.linkForTema('a-an', [], 'articulo-articulos-a-an-the.html').href || M.linkForTema('a-an', [], 'articulo-articulos-a-an-the.html'))), 'la practica libre no debe recomendar un curso oculto');
     assert.ok(M.linkForTema('to-be-presente', [], null), 'TO BE sigue enlazado');
     const cx = {}; vm.createContext(cx); vm.runInContext(fs.readFileSync(path.join(root, 'academia-cursos.js'), 'utf8') + ';this.K=ACADEMIA_CURSOS;', cx);
-    assert.strictEqual(cx.K.enabled, true, 'academia-cursos.js debe generarse con ACADEMIA_MOTOR_ENABLED=1 (como en produccion)'); assert.strictEqual(M.enabled, true); assert.strictEqual(cx.K.courses.articulos.open, false); assert.strictEqual(cx.K.courses.pronombres.open, true);
+    assert.strictEqual(cx.K.enabled, true, 'academia-cursos.js debe generarse con ACADEMIA_MOTOR_ENABLED=1 (como en produccion)'); assert.strictEqual(M.enabled, true); assert.strictEqual(cx.K.courses.articulos.open, true); assert.strictEqual(cx.K.courses.pronombres.open, true);
     const cur = fs.readFileSync(path.join(root, 'academia-cursos.js'), 'utf8'); assert.ok(/articulos[\s\S]{0,200}open:\s*false|"articulos"[\s\S]{0,200}"open":\s*false/.test(cur) || /open/.test(cur));
     const p = M.parse('ac:articulos:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['articulos', 3]);
     assert.strictEqual(M.parse('ac:articulos:e-g4').lesson, 3); assert.strictEqual(M.parse('ac:articulos:x-i2').lesson, 5); assert.strictEqual(M.parse('ac:articulos:e-p10').lesson, 4);
@@ -277,8 +276,8 @@ function articleErrors(text){
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos'\]\.forEach/.test(js));
     assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'pronombres,to-be', 'solo TO BE y Pronombres estan visibles');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 6);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,pronombres,to-be', 'TO BE, Pronombres y Articulos estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 5);
   });
 
   await test('migracion del curso: solo agrega una fila APAGADA, sin tocar nada mas', () => {

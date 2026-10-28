@@ -142,7 +142,7 @@ async function until(fn, ms, what){
     assert(/Por dónde empezar/i.test(txt) && /No es obligatorio/.test(txt), 'sugerencia: ' + JSON.stringify(txt.slice(0, 700)));
     assert(await N.page.$('a[href="#/curso/pronombres"]'), 'enlace al curso nuevo');
     assert(!/Pronombres personales · Próximamente/.test(txt), 'ya no esta en Proximamente');
-    assert(/Artículos y plurales/.test(txt), 'los demas siguen como proximos');
+    assert(!/Artículos y plurales/.test(txt), 'un curso abierto en el sitio pero apagado en el servidor (Articulos en esta base) no aparece');
     assert(!/certificado/i.test(txt), 'no se promete certificado');
   });
   await N.ctx.close();

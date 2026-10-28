@@ -14,7 +14,7 @@ var ACADEMIA_CURSOS = {
   },
   "articulos": {
    "title": "Artículos y plurales",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

@@ -12,7 +12,7 @@
   try{ canary = localStorage.getItem('leo_academia_canary') === '1'; }catch(e){}
   if(!CLOUD_ON && !local && !canary) return;
   window.ACADEMIA_CLOUD = true;
-  var v = '?v=20261028c';
+  var v = '?v=20261028d';
   document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
   document.write('<script src="backend.js' + v + '"><\/script>');
   document.write('<script src="academia-motor.js' + v + '"><\/script>');

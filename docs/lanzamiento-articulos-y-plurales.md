@@ -38,3 +38,10 @@ Resultados completos en `docs/validacion-supabase-real-curso3.md`. Se ejecutó e
 
 ## 4. Qué NO cambia
 Precios, pagos, límite gratis, la prueba gratis de TO BE (sigue siendo la única), el avance de TO BE y Pronombres, el motor adaptativo, el panel del alumno, Leo AI y el SEO.
+
+## 5. Registro del lanzamiento (28-oct-2026)
+- Merge a `main` (avance rapido, sin conflictos) y migraciones 20261028120000 y 20261028180000 aplicadas en produccion; banco de examen (50) y contenido (5 lecciones) cargados. Huellas md5 del contenido y del banco identicas a las del proyecto de prueba, donde se cargaron desde los archivos originales.
+- 137 audios en `academia-audio/articulos/` (peso exacto 2.536.128 bytes, nombres identicos a los originales). Quedan dentro de la carpeta ademas un marcador `.emptyFolderPlaceholder` creado por el panel.
+- Simulacion en produccion dentro de una transaccion que se deshace sola: visitante bloqueado; cuenta gratis sin contenido, audio ni examen; miembro con 5 lecciones, 40 ejercicios, 30 de practica, 137 audios, examen de 15 sin respuestas en la carga, 0 % suspende y 100 % aprueba con insignia. Se comprobo despues que no quedo nada (0 insignias, 0 intentos).
+- Encendido: `academia_courses.enabled = true` y `soon:false` / `open:true` en el sitio.
+- NO probado: telefono fisico; reproduccion de audio con una sesion de miembro real en produccion (no hay cuenta de miembro de prueba y no se usan alumnos reales); renovacion de pagos.
