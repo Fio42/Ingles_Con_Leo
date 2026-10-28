@@ -276,8 +276,8 @@ function articleErrors(text){
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos'(, 'posesivos')?\]\.forEach/.test(js));
     assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,pronombres,to-be', 'TO BE, Pronombres y Articulos estan visibles');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 5);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'TO BE, Pronombres, Articulos y Posesivos estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);
   });
 
   await test('migracion del curso: solo agrega una fila APAGADA, sin tocar nada mas', () => {

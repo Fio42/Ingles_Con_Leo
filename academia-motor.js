@@ -531,7 +531,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "posesivos",
   "engineTopic": "Posesivos (my / your / his / her / our / their)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "my": "My, your, his, her",
    "our": "Its, our, their",

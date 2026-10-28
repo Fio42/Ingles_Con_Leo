@@ -15,7 +15,7 @@ const COURSES = {
   'pronombres': { tema: 'pronombres', engineTopic: 'He / She / It (pronombres)', level: 'facil', open: true },
   'articulos': { tema: 'a-an', engineTopic: 'A / An', level: 'facil', open: true },
   // Curso 4: OCULTO. open:false hasta que Leo autorice el lanzamiento.
-  'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: false }
+  'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: true }
 };
 
 function build(){

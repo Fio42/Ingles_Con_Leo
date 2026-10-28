@@ -19,7 +19,7 @@ var ACADEMIA_CURSOS = {
   },
   "posesivos": {
    "title": "Posesivos y demostrativos",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

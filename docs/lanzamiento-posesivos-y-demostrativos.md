@@ -39,3 +39,11 @@ NO probado: teléfono físico, reproducción de audio con una sesión de miembro
 
 ## 5. Qué NO cambia
 Precios, pagos, límite gratis, la prueba gratis de TO BE, el avance de los otros cursos, el motor adaptativo, el panel del alumno, Leo AI y el SEO.
+
+## 6. Registro del lanzamiento (28-oct-2026)
+- Migración `20261029120000` aplicada en producción (fila apagada). Banco de examen (50, 10 por tema) y contenido (5 lecciones, 40 ejercicios, 30 de práctica, 98 claves de audio) cargados en producción por el editor SQL; las huellas SHA-256 de los dos archivos coincidieron antes de ejecutar.
+- 98 audios en `academia-audio/posesivos/` (los 98 nombres del contenido existen, 0 faltantes). Al subirlos desde el panel se crearon además 42 copias con nombre "(1)" dentro de la misma carpeta: no las usa el contenido, el bucket es privado y no se borraron (borrar datos queda fuera de lo autorizado a Claude). Se pueden borrar a mano desde Storage buscando " (1)". Hay un marcador `.emptyFolderPlaceholder`.
+- Simulación en producción dentro de una transacción que se deshace sola: visitante bloqueado; cuenta gratis sin contenido, audio ni examen; miembro con 5 lecciones, 30 de práctica, 98 audios, examen de 15 sin respuestas en la carga, 0 % suspende y 100 % aprueba con insignia. Después: 0 insignias, 0 intentos, 0 progreso.
+- Permisos comprobados: el navegador (anon y logueado) no lee `academia_exam_items` ni `academia_content`, y no edita `academia_courses`; el bucket es privado. Los bancos de los otros cursos no cambiaron (articulos 50, pronombres 50, to-be 30) y sus filas siguen encendidas.
+- Encendido: `academia_courses.enabled = true` y `soon:false` / `open:true` en el sitio (scripts versión 20261028f).
+- NO probado: teléfono físico; reproducción de audio con una sesión de miembro real en producción (no hay cuenta de miembro de prueba y no se usan alumnos reales); renovación de pagos.

@@ -49,7 +49,7 @@ var ACADEMIA = {
       { id: 'pronombres', title: 'Pronombres personales', soon: false, blurb: 'I, you, he, she, it, we, they.' },
       { id: 'to-be', title: 'TO BE completo', pilot: true },
       { id: 'articulos', title: 'Artículos y plurales', blurb: 'A, an, the y cómo formar plurales.' },
-      { id: 'posesivos', title: 'Posesivos y demostrativos', soon: true, blurb: 'My, your, this, that.' },
+      { id: 'posesivos', title: 'Posesivos y demostrativos', blurb: 'My, your, this, that.' },
       { id: 'there-is-are', title: 'THERE IS / THERE ARE', soon: true, blurb: 'Decir qué hay y dónde.' },
       { id: 'can', title: "CAN / CAN'T", soon: true, blurb: 'Habilidades y permisos.' },
       { id: 'presente-simple', title: 'Presente simple', soon: true, blurb: 'Rutinas y hábitos.' },
