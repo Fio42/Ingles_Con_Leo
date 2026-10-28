@@ -229,8 +229,75 @@
 
 
   var itemIndex = {};
-  COURSE.lessons.forEach(function(l){ l.activities.forEach(function(a){ itemIndex[a.id] = a; }); });
-  COURSE.exam.bank.forEach(function(a){ itemIndex[a.id] = a; });
+  function buildIndex(){
+    itemIndex = {};
+    COURSE.lessons.forEach(function(l){ (l.activities || []).forEach(function(a){ itemIndex[a.id] = a; }); });
+    (COURSE.exam.bank || []).forEach(function(a){ itemIndex[a.id] = a; });
+  }
+  buildIndex();
+
+  /* ---------------- Contenido protegido ----------------
+     Un curso con protected:true trae en academia-data.js solo su esqueleto publico (titulos, temas, resumenes, ids).
+     Lecciones, ejercicios, practica y audio llegan del servidor, y solo a miembros vigentes (academia_get_content + bucket privado).
+     TO BE y Pronombres no son protected: siguen el camino de siempre, sin ninguna llamada extra. */
+  var PROT = COURSE.protected === true, hydrated = !PROT, hydrating = false, hydrateFail = null;
+  var PAUD = {}, signedAt = 0, signing = false;
+  var SIGN_SECS = 900, RENEW_MS = 8 * 60 * 1000, signP = null;   // URLs de audio de 15 min; se renuevan solas cuando pasan 8
+  function signAudio(){
+    if(!PROT || !NUBE) return Promise.resolve(false);
+    if(signP) return signP;
+    var names = Object.keys(PAUD).map(function(k){ return PAUD[k]; });
+    if(!names.length) return Promise.resolve(false);
+    signP = NUBE.signAudio(names, SIGN_SECS).then(function(map){
+      if(!map) return false;
+      Object.keys(PAUD).forEach(function(t){ if(map[PAUD[t]]) SIGNED[t] = map[PAUD[t]]; else delete SIGNED[t]; });   // sin permiso (membresia vencida) = sin URL
+      signedAt = Date.now(); return true;
+    }).then(function(ok){ signP = null; return ok; }, function(){ signP = null; return false; });
+    return signP;
+  }
+  function staleAudio(){ return signedAt && Date.now() - signedAt > RENEW_MS; }
+  var SIGNED = {};
+  /* Mantiene frescos los enlaces mientras el alumno esta en este curso y la pagina esta a la vista. */
+  var renewTimer = null;
+  function startRenew(){
+    if(renewTimer || !PROT) return;
+    renewTimer = setInterval(function(){
+      if(document.hidden || location.hash.indexOf('curso/' + courseId) === -1) return;
+      if(staleAudio()) signAudio();
+    }, 4 * 60 * 1000);
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden && hydrated && staleAudio()) signAudio(); });
+  }
+  function applyContent(c){
+    var byId = {}; (c.lessons || []).forEach(function(l){ byId[l.id] = l; });
+    COURSE.lessons.forEach(function(l){ var x = byId[l.id]; if(!x) throw new Error('contenido incompleto'); l.screens = x.screens; l.activities = x.activities; l.canSay = x.canSay; });
+    COURSE.exam.bank = c.practice || [];
+    PAUD = c.audio || {};
+    buildIndex();
+  }
+  /* Pide el contenido al servidor y vuelve a dibujar. Devuelve true si ya dibujo algo. */
+  function hydrateThen(){
+    if(hydrating) return true;
+    hydrating = true; hydrateFail = null;
+    msgCard('Cargando tu curso', 'Un momento...');
+    NUBE.content().then(function(r){
+      if(!r || !r.ok || !r.content) throw new Error(r && r.error || 'net');
+      applyContent(r.content); hydrated = true; hydrating = false;
+      startRenew(); return signAudio();
+    }).then(function(){
+      if(hydrated) route();
+    }).catch(function(e){
+      hydrating = false; hydrateFail = String(e && e.message || 'net');
+      var members = hydrateFail === 'members';
+      msgCard(members ? 'Este curso es solo para miembros' : 'No pudimos cargar el curso',
+        members ? 'Tu membresía no está vigente. Puedes renovarla para seguir.' : 'Revisa tu conexión e inténtalo otra vez.',
+        [el('div', { class: 'ac-nav ac-nav-col' }, [
+          members ? link(PAY_URL, 'Desbloquear mi academia', 'ac-btn ac-btn-primary ac-btn-wide')
+                  : el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: 'Reintentar', onclick: function(){ route(); } }),
+          link('#/', 'Volver a la academia', 'ac-btn ac-btn-quiet ac-btn-wide')
+        ])]);
+    });
+    return true;
+  }
 
   function lessonById(id){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].id === id) return COURSE.lessons[i]; return null; }
   function lessonByN(n){ return COURSE.lessons[n - 1] || null; }
@@ -275,8 +342,11 @@
   /* ---------------- Audio ----------------
      Las grabaciones de Leo (screen.audio) se rotulan "Escuchar a Leo". Las frases en ingles usan voz sintetica
      (Kokoro) y se rotulan "Escuchar" o "Escuchar los ejemplos". Nunca hay autoplay. Si falta el mp3, el boton se oculta. */
-  var snd = null, sndBtn = null, sndQueue = [], sndTimer = null;
-  function audioFor(text){ return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null; }
+  var snd = null, sndBtn = null, sndQueue = [], sndTimer = null, sndCur = null, sndRetried = false;
+  function audioFor(text){
+    if(PROT) return SIGNED[text] || null;
+    return (typeof ACADEMIA_AUDIO !== 'undefined' && ACADEMIA_AUDIO[text]) ? ACADEMIA_AUDIO[text].f : null;
+  }
   function resetBtn(b){
     if(!b) return;
     b.classList.remove('is-on'); b.setAttribute('aria-pressed', 'false');
@@ -290,8 +360,11 @@
   }
   function playNext(){
     if(!sndQueue.length){ var b = sndBtn; sndBtn = null; resetBtn(b); return; }
-    snd.src = sndQueue.shift();
-    var p = snd.play(); if(p && p.catch) p.catch(function(){ stopAudio(); });
+    var q = sndQueue.shift(); sndCur = q;
+    var u = typeof q === 'function' ? q() : q;
+    if(!u){ stopAudio(); return; }
+    snd.src = u;
+    var p = snd.play(); if(p && p.catch) p.catch(function(e){ if(PROT && e && e.name === 'NotSupportedError') return;   /* enlace vencido: lo resuelve snd.onerror (renueva y reintenta) */ stopAudio(); });
   }
   function playList(btn, srcs){
     if(sndBtn === btn){ stopAudio(); return; }
@@ -300,13 +373,23 @@
       snd = new Audio(); snd.preload = 'auto';
       snd.addEventListener('ended', function(){ if(sndQueue.length){ sndTimer = setTimeout(playNext, 380); } else playNext(); });
     }
-    snd.onerror = function(){ var b = btn; stopAudio(); if(b) b.hidden = true; };
+    sndRetried = false;
+    snd.onerror = function(){
+      // Curso protegido: si el enlace temporal vencio, se pide uno nuevo y se reintenta UNA vez antes de rendirse.
+      if(PROT && typeof sndCur === 'function' && !sndRetried && sndBtn === btn){
+        sndRetried = true; var cur = sndCur;
+        signAudio().then(function(){ if(sndBtn === btn){ sndQueue.unshift(cur); playNext(); } });
+        return;
+      }
+      var b = btn; stopAudio(); if(b) b.hidden = true;
+    };
     sndQueue = srcs.slice(); sndBtn = btn;
     btn.classList.add('is-on'); btn.setAttribute('aria-pressed', 'true');
     var l = btn.querySelector('.ac-audio-label'); if(l) l.textContent = 'Detener';
     if(btn.hasAttribute('data-icon')) btn.firstChild.textContent = '■';
     playNext();
   }
+  function srcRef(text, src){ return PROT ? function(){ return audioFor(text); } : src; }
   function leoButton(src){
     var b = el('button', { type: 'button', class: 'ac-leo', 'aria-pressed': 'false', 'data-label': 'Escuchar a Leo' }, [
       el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
@@ -318,6 +401,7 @@
   function listenButton(texts, label){
     var srcs = texts.map(audioFor);
     if(!srcs.length || srcs.some(function(s){ return !s; })) return null;
+    if(PROT) srcs = texts.map(function(t){ return function(){ return audioFor(t); }; });
     var b = el('button', { type: 'button', class: 'ac-leo ac-listen', 'aria-pressed': 'false', 'data-label': label || 'Escuchar los ejemplos' }, [
       el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
       el('span', { class: 'ac-audio-label', text: label || 'Escuchar los ejemplos' })
@@ -330,7 +414,7 @@
     var b = el('button', { type: 'button', class: cls || 'ac-item-play', 'aria-label': label || ('Escuchar: ' + text), 'aria-pressed': 'false', 'data-label': '', 'data-icon': '▶' }, [
       el('span', { 'aria-hidden': 'true', text: '▶' })
     ]);
-    b.addEventListener('click', function(){ playList(b, [src]); });
+    b.addEventListener('click', function(){ playList(b, [srcRef(text, src)]); });
     return b;
   }
   function phraseButton(text){
@@ -339,7 +423,7 @@
       el('span', { class: 'ac-leo-ico', 'aria-hidden': 'true', text: '▶' }),
       el('span', { class: 'ac-audio-label', text: 'Escuchar la frase' })
     ]);
-    b.addEventListener('click', function(){ playList(b, [src]); });
+    b.addEventListener('click', function(){ playList(b, [srcRef(text, src)]); });
     return b;
   }
 
@@ -1580,6 +1664,12 @@
 
   /* Que vista corresponde a este alumno. Devuelve true si ya dibujo algo (el router no sigue). */
   function gate(parts){
+    if(PROT && !NUBE){ viewPresentation(); return true; }
+    if(PROT && mode === 'member'){
+      if(!hydrated) return hydrating ? true : hydrateThen();
+      if(staleAudio()) signAudio();
+      return false;
+    }
     if(!NUBE || mode === 'member') return false;
     if(mode === 'pending'){
       msgCard('Conectando con tu cuenta', 'Un momento...');

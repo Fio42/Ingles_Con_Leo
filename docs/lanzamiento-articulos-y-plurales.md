@@ -30,3 +30,19 @@ Para verificar: pega `supabase/verify/academia_articulos_verificacion.sql` en el
 
 ## 4. Qué NO cambia este lanzamiento
 Precios, pagos, límite gratis, la prueba gratis de TO BE (sigue siendo la única), el avance de TO BE y Pronombres, el motor adaptativo, el panel del alumno, Leo AI y el SEO.
+
+## Contenido protegido (rama `proteccion/contenido-premium`)
+
+Si se aprueba la protección, el Curso 3 NO se publica con su contenido en archivos del sitio. Pasos adicionales antes de encenderlo (ninguno se ha hecho):
+1. Aplicar `supabase/migrations/20261028180000_academia_contenido_protegido.sql` (crea `academia_content`, `academia_get_content`, el bucket privado `academia-audio` y su política).
+2. Cargar el contenido: ejecutar `private/seed-academia-contenido-articulos.sql` (se regenera con `node tools/academia_seed_contenido.js articulos`).
+3. Subir el contenido de `private/audio/articulos/` al bucket `academia-audio`, carpeta `articulos/`.
+4. Verificar con cuentas de prueba: miembro ve las lecciones y oye el audio; cuenta gratis ve solo el temario; cuenta sin membresía recibe "solo para miembros"; con el curso apagado nadie entra.
+5. Respaldo: `private/contenido/` y `private/audio/` se suman a lo que hay que guardar fuera del repositorio (junto a los bancos de examen).
+Detalle completo: `docs/proteccion-contenido-premium.md`.
+
+Pruebas obligatorias en Supabase antes de abrir (con cuentas de prueba, nunca de clientes), en un proyecto de prueba o en producción con el curso aún apagado:
+- Con el curso apagado: un miembro NO recibe contenido y `createSignedUrls` no devuelve enlaces.
+- Encender el curso: miembro ve y oye; cuenta gratis solo temario; cuenta vencida no recibe nada.
+- En un teléfono real (Android e iPhone): tocar un audio, avanzar varias pantallas, dejar la lección abierta más de 15 minutos y volver a tocar un audio.
+- Confirmar en el panel de Storage que el bucket `academia-audio` aparece como privado.

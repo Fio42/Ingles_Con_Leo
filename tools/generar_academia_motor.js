@@ -24,8 +24,9 @@ function build(){
     const lessons = c.lessons.map(l => ({ n: l.n, title: l.title, topic: l.topic }));
     const byTopic = {}; c.lessons.forEach(l => byTopic[l.topic] = l.n);
     const items = {};
-    c.lessons.forEach(l => l.activities.forEach(a => { items[a.id] = l.n; }));
-    c.exam.bank.forEach(a => { items[a.id] = byTopic[a.topic]; });
+    // Un curso PROTEGIDO no trae el contenido en academia-data.js, solo los ids (activityIds / exam.practiceIds): no hace falta el contenido.
+    c.lessons.forEach(l => (l.activityIds || l.activities.map(a => a.id)).forEach(id => { items[id] = l.n; }));
+    (c.exam.practiceIds || c.exam.bank).forEach(a => { items[a.id] = byTopic[a.topic]; });
     // Demostracion gratuita: sus ejercicios alimentan el mismo motor de errores y refuerzan la leccion 1.
     ((c.demo && c.demo.activities) || []).forEach(a => { items[a.id] = byTopic[a.topic]; });
     // Examen OFICIAL (banco privado, ids e-<letra><n>): la letra es la inicial del tema. Solo se reservan los ids; no hay contenido.

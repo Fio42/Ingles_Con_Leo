@@ -8,8 +8,9 @@ const root = path.join(__dirname, '..', '..');
 const H = require('./academia-pg-helpers.js');
 const SEED = require('../academia_seed_examen.js');
 
-const ctx = {}; vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';this.A=ACADEMIA;this.S=academiaSentence;this.TX=academiaAudioTexts;', ctx);
+// El Curso 3 es PROTEGIDO: academia-data.js solo trae el esqueleto; el contenido real se une desde private/ (git-ignored).
+const FUENTE = require('../academia_fuente.js').load(); const FUENTE_PRIV = require('../academia_fuente.js').privDir;
+const ctx = FUENTE.ctx; ctx.A = FUENTE.A; ctx.S = FUENTE.S; ctx.TX = FUENTE.TX;
 const A = ctx.A, C = A.courses['articulos'], TB = A.courses['to-be'], PR = A.courses['pronombres'];
 const MAN = (() => { const c = {}; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(root, 'academia-audio.js'), 'utf8') + ';this.M=ACADEMIA_AUDIO;', c); return c.M; })();
 
@@ -219,34 +220,31 @@ function articleErrors(text){
   });
 
   await test('estilo del sitio: sin rayas largas, sin negritas, titulos y explicaciones cortos', () => {
-    const src = fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8');
+    const src = fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + JSON.stringify(C);
     assert.ok(!/[—–]/.test(src), 'raya larga');
     assert.ok(!/\*\*|<b>|<strong>/.test(src));
     C.lessons.forEach(l => l.screens.forEach(s => { assert.ok(s.title && s.title.length <= 56, 'titulo largo: ' + s.title); if(s.text) assert.ok(s.text.length <= 330, 'explicacion larga (' + s.text.length + '): ' + s.title); }));
   });
 
-  await test('audio: toda frase en ingles tiene su mp3 y las palabras clave existen (a university, an hour, a book, an apple, man/men, woman/women, child/children)', () => {
-    const T = ctx.TX(C);
+  await test('audio: toda frase en ingles tiene su mp3 PRIVADO (no esta en el manifiesto publico) y las palabras clave existen', () => {
+    const T = ctx.TX(C), APR = JSON.parse(fs.readFileSync(path.join(FUENTE_PRIV, 'contenido', 'articulos.audio.json'), 'utf8'));
     assert.ok(T.length >= 100, 'textos de audio: ' + T.length);
-    T.forEach(x => { const m = MAN[x.t]; assert.ok(m, 'sin audio: ' + x.t); assert.ok(fs.existsSync(path.join(root, m.f)), m.f); assert.ok(!x.t.includes('___')); assert.ok(!/[áéíóúñ¿¡]/.test(x.t), 'espanol en un audio: ' + x.t); });
-    ['A university', 'An hour', 'A book', 'An apple', 'Man', 'Men', 'Woman', 'Women', 'Child', 'Children', 'Person', 'People'].forEach(t => { assert.ok(MAN[t], 'falta el audio de ' + t); assert.ok(T.some(x => x.t === t), t + ' debe estar en el contenido'); });
-    // los audios de frases con "sin articulo" dicen la frase correcta
-    ['I like music.', 'I speak Spanish.', 'My sister speaks French.', 'I speak English.', 'We play soccer.'].forEach(t => assert.ok(MAN[t], t));
-    // carpeta del curso: sin mp3 sobrantes
-    const folder = fs.readdirSync(path.join(root, 'audio/academia/articulos')).filter(f => f.endsWith('.mp3'));
-    const used = new Set(T.filter(x => MAN[x.t].f.indexOf('/articulos/') !== -1).map(x => path.basename(MAN[x.t].f)));
-    assert.strictEqual(folder.length, used.size, 'mp3 sobrantes en la carpeta del curso');
-    // los audios de TO BE y Pronombres no cambiaron de archivo
-    ctx.TX(TB).forEach(x => assert.ok(MAN[x.t] && /\/(to-be|pronombres|articulos)\//.test(MAN[x.t].f), 'to-be: ' + x.t));
+    T.forEach(x => { const f = APR[x.t]; assert.ok(f, 'sin audio: ' + x.t); assert.ok(fs.existsSync(path.join(FUENTE_PRIV, 'audio', f)), f); assert.ok(!MAN[x.t] || !/articulos/.test(MAN[x.t].f), 'audio del Curso 3 en el manifiesto publico: ' + x.t); assert.ok(!x.t.includes('___')); assert.ok(!/[áéíóúñ¿¡]/.test(x.t), 'espanol en un audio: ' + x.t); });
+    ['A university', 'An hour', 'A book', 'An apple', 'Man', 'Men', 'Woman', 'Women', 'Child', 'Children', 'Person', 'People'].forEach(t => { assert.ok(APR[t], 'falta el audio de ' + t); assert.ok(T.some(x => x.t === t), t + ' debe estar en el contenido'); });
+    const folder = fs.readdirSync(path.join(FUENTE_PRIV, 'audio', 'articulos')).filter(f => f.endsWith('.mp3'));
+    const used = new Set(T.map(x => path.basename(APR[x.t])));
+    assert.strictEqual(folder.length, used.size, 'mp3 sobrantes en la carpeta privada del curso');
+    assert.ok(!fs.existsSync(path.join(root, 'audio/academia/articulos')) || fs.readdirSync(path.join(root, 'audio/academia/articulos')).length === 0, 'mp3 del Curso 3 en la carpeta publica');
+    ctx.TX(TB).forEach(x => assert.ok(MAN[x.t] && /\/(to-be|pronombres)\//.test(MAN[x.t].f), 'to-be: ' + x.t));
     ctx.TX(PR).forEach(x => assert.ok(MAN[x.t], 'pronombres: ' + x.t));
-    ctx.TX(TB).filter(x => MAN[x.t].f.indexOf('/to-be/') === -1).forEach(x => assert.ok(/\/pronombres\//.test(MAN[x.t].f)));
   });
 
   await test('audio: duracion acorde al texto (sin cortes, sin silencios, sin archivos vacios)', () => {
     let ffprobe = true; try{ execFileSync('ffprobe', ['-version'], { stdio: 'ignore' }); }catch(e){ ffprobe = false; }
     if(!ffprobe){ console.log('       (sin ffprobe: omitida)'); return; }
+    const APR = JSON.parse(fs.readFileSync(path.join(FUENTE_PRIV, 'contenido', 'articulos.audio.json'), 'utf8'));
     ctx.TX(C).forEach(x => {
-      const f = path.join(root, MAN[x.t].f);
+      const f = path.join(FUENTE_PRIV, 'audio', APR[x.t]);
       assert.ok(fs.statSync(f).size > 3000, 'archivo muy pequeño: ' + x.t);
       const dur = parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString());
       const words = x.t.split(/\s+/).length;
