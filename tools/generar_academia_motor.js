@@ -17,7 +17,8 @@ const COURSES = {
   // Curso 4: publicado el 28-oct-2026.
   'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: true },
   // Curso 5 (OCULTO hasta que Leo lo autorice).
-  'there-is-are': { tema: 'there-is-are', engineTopic: 'There is / are (hay)', level: 'facil', open: false }
+  'there-is-are': { tema: 'there-is-are', engineTopic: 'There is / are (hay)', level: 'facil', open: false },
+  'can': { tema: 'can-cant', engineTopic: "Can / Can't (habilidad)", level: 'facil', open: false }
 };
 
 function build(){
