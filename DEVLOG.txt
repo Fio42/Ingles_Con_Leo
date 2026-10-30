@@ -1726,3 +1726,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 
 ## 2026-10-26 - Audio del test de nivel (A1, Sofia)
 - El audio lt-a1.mp3 sonaba raro al inicio ("Hi, I'm Sofia"). Se cambio el texto a "My name is Sofia. ..." en tools/lista_audios.csv y en la transcripcion de test-de-nivel-de-ingles.html. Audio regenerado con Ava (edge-tts actualizado) y verificado: mp3 valido de 5,4 s.
+
+## 2026-10-30 - Enlaces de preparacion de examenes para miembros
+- Reporte de Leo: desde el panel, "Preparacion de examenes" lo dejaba en Practicar. Reproducido en vivo: el enlace (practica-miembros.html#examenes) existia, pero la pagina terminaba de dibujarse despues del salto automatico y se quedaba arriba. Las tarjetas TOEFL, IELTS, TOEIC y Cambridge si llevan a su pagina correcta.
+- practica-miembros.html: tras cargar, vuelve a bajar a #examenes / #masFormas unas veces (se detiene si la persona se mueve).
+- app.js: para miembros reales, el pie de pagina (foot-links) ahora lleva "Practicar" a practica-miembros.html y "Academia" a academia.html (antes iban a practica.html y a academia-de-ingles.html, la pagina publica). app.js?v=20261030a en todos los HTML.
+- Verificado: node --check app.js. NO probado en vivo (falta el push).

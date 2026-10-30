@@ -231,7 +231,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261016a"></script>
 <script src="temas.js?v=20261012a"></script>
-<script src="app.js?v=20261027c"></script>
+<script src="app.js?v=20261030a"></script>
 <script src="backend.js?v=20261027c"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -278,6 +278,24 @@
     });
     renderMistakesBanner(document.getElementById('mistakesSection'), document.getElementById('mistakesBannerText'), document.getElementById('mistakesChips'), document.getElementById('mistakesRecoveredNote'));
     initDailyChallenge(document.getElementById('dailyChallengeBody'), { isFree: false });
+    /* Si llegas con #examenes (o #masFormas), la pagina termina de dibujarse despues
+       del salto automatico del navegador y te dejaba arriba. Se vuelve a bajar unas
+       veces hasta que el contenido se asiente, y se detiene si la persona se mueve. */
+    (function(){
+      var id = location.hash.replace('#','');
+      if(id !== 'examenes' && id !== 'masFormas') return;
+      var n = 0, stopped = false;
+      function stop(){ stopped = true; }
+      addEventListener('wheel', stop, { passive:true, once:true });
+      addEventListener('touchstart', stop, { passive:true, once:true });
+      addEventListener('keydown', stop, { once:true });
+      (function go(){
+        if(stopped) return;
+        var el = document.getElementById(id);
+        if(el) el.scrollIntoView({ block:'start' });
+        if(++n < 6) setTimeout(go, 400);
+      })();
+    })();
   });
 </script>
 

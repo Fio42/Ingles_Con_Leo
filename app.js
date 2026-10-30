@@ -373,6 +373,14 @@ async function initMemberHeader(){
     }
   });
 
+  // El pie de pagina (foot-links) tambien debe llevar a las paginas de miembro:
+  // "Practicar" -> practica-miembros.html y "Academia" -> academia.html (la de
+  // academia-de-ingles.html es la pagina publica de venta). Solo miembros reales.
+  if(isRealMember){
+    document.querySelectorAll('.foot-links a[href="practica.html"]').forEach(a=>{ a.href = 'practica-miembros.html'; });
+    document.querySelectorAll('.foot-links a[href="academia-de-ingles.html"]').forEach(a=>{ a.href = 'academia.html'; });
+  }
+
   const editBtn = document.getElementById('navEditNameBtn');
   if(editBtn){
     editBtn.addEventListener('click', ()=>{
