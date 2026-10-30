@@ -7,7 +7,7 @@ Misma arquitectura protegida de los Cursos 3, 4 y 5. TO BE, Pronombres, Artícul
 ## 0. Qué incluye
 - 5 lecciones: Can (puedo, sé) / Can't y errores frecuentes / Can en preguntas y respuestas cortas / Can para pedir permiso (habilidad frente a permiso) / Todo con can (repaso, con but).
 - 40 ejercicios (8 por lección, con los 6 tipos), 30 preguntas de práctica (6 por tema), banco privado de 50 preguntas de examen (10 por tema; cada intento saca 15, 3 por tema, aprueba con 80 %).
-- 70 audios (voz Kokoro, igual que los otros cursos).
+- 68 audios (voz Kokoro, igual que los otros cursos).
 - Cada pregunta trae la pista en español que decide la respuesta (sí o no, pregunta o frase, a quién se contesta), para que haya una sola respuesta correcta.
 
 ## 1. Cómo queda protegido
@@ -17,7 +17,7 @@ Misma arquitectura protegida de los Cursos 3, 4 y 5. TO BE, Pronombres, Artícul
 - Nada de esto está en GitHub: `private/` está ignorado y una prueba automática lo comprueba (`tools/tests/academia-can.test.js`).
 
 ## 2. Material privado (no está en Git)
-`private/contenido/can.json`, `private/contenido/can.audio.json`, `private/audio/can/` (70 mp3), `private/academia-examen-can.json`, `private/seed-academia-examen-can.sql`, `private/seed-academia-contenido-can.sql`.
+`private/contenido/can.json`, `private/contenido/can.audio.json`, `private/audio/can/` (68 mp3), `private/academia-examen-can.json`, `private/seed-academia-examen-can.sql`, `private/seed-academia-contenido-can.sql`.
 Van incluidos en el respaldo cifrado.
 
 ## 3. Pasos de producción (solo con tu autorización; cada paso se verifica antes de seguir)
@@ -27,7 +27,7 @@ Van incluidos en el respaldo cifrado.
    b. `private/seed-academia-examen-can.sql` (50 preguntas).
    c. `private/seed-academia-contenido-can.sql` (contenido).
    Verificación (solo lee): `supabase/verify/academia_can_verificacion.sql`.
-3. Storage > `academia-audio`: subir la carpeta `can` con los 70 mp3 (como `can/<nombre>.mp3`). Subir los archivos una sola vez para no crear copias "(1)".
+3. Storage > `academia-audio`: subir la carpeta `can` con los 68 mp3 (como `can/<nombre>.mp3`). Subir los archivos una sola vez para no crear copias "(1)".
 4. Prueba privada con cuentas TUYAS (miembro y gratis): `update public.academia_courses set enabled = true where course_id = 'can';` y en el navegador `localStorage.setItem('leo_academia_canary','1')`.
 5. Abrir para todos (con tu autorización): quitar `soon:true` de `can` en `route.courses` (`academia-data.js`), poner `open:true` en `tools/generar_academia_motor.js`, regenerar con `ACADEMIA_MOTOR_ENABLED=1 node tools/generar_academia_motor.js` y `ACADEMIA_MOTOR_ENABLED=1 node tools/generar_academia_cursos.js`, subir la versión de los scripts en `academia.html` y `academia-boot.js`, y actualizar la prueba de "curso oculto".
 6. Apagado de emergencia, sin borrar nada: `update public.academia_courses set enabled = false where course_id = 'can';`. Nunca correr `supabase/rollback/`.
@@ -40,3 +40,11 @@ NO probado: teléfono físico, reproducción de audio con una sesión de miembro
 
 ## 5. Qué NO cambia
 Precios, pagos, límite gratis, la prueba gratis de TO BE, el avance de los otros cursos, el motor adaptativo, el panel del alumno, Leo AI y el SEO.
+
+## 6. Ajustes del 30-oct-2026 (inglés americano y español latinoamericano)
+Sin publicar nada y sin tocar producción. Solo cambió material privado (no está en Git) y un número en la prueba:
+- En inglés, football pasó a soccer (3 audios nuevos generados con Kokoro: They can play soccer. / We can't play soccer today. / Can you play soccer?). En español, conducir pasó a manejar. El resto del inglés no cambió.
+- Dos actividades traían una pista en español que el audio leía con voz inglesa (Ella sabe cantar, Ella no sabe conducir). Ahora llevan say con la frase en inglés. Audios: 70 a 68 (se descartaron 5 viejos y se crearon 3 nuevos).
+- La prueba exige 66 o más textos de audio (antes 70).
+- Huellas SHA-256 de los archivos que se cargan: `seed-academia-contenido-can.sql` 4779b6f98e7b5b5c96d4e967743ef2d3643fecb1d56435ed0026b957eab02ed9 y `seed-academia-examen-can.sql` 50d8dc7562fca9e8a61caa4af7adb64c3120ff6de012974c2371239d72523a21.
+- El orden de lanzamiento sigue siendo Curso 5 y luego Curso 6 (ver docs/lanzamiento-there-is-are.md, sección 7).

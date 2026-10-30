@@ -280,7 +280,7 @@ function sentenceOK(filled, es){
 
   await test('audio: toda frase en ingles tiene su mp3 PRIVADO (no esta en el manifiesto publico) y las palabras clave existen', () => {
     const T = ctx.TX(C), APR = JSON.parse(fs.readFileSync(path.join(FUENTE_PRIV, 'contenido', 'can.audio.json'), 'utf8'));
-    assert.ok(T.length >= 70, 'textos de audio: ' + T.length);
+    assert.ok(T.length >= 66, 'textos de audio: ' + T.length);   // 68 desde el 30-oct (las 2 pistas en español ya no se leen y football pasó a soccer)
     T.forEach(x => { const f = APR[x.t]; assert.ok(f, 'sin audio: ' + x.t); assert.ok(f.indexOf('can/') === 0); assert.ok(fs.existsSync(path.join(FUENTE_PRIV, 'audio', f)), f); assert.ok(!MAN[x.t] || !/\/can\//.test(MAN[x.t].f), 'audio del Curso 4 en el manifiesto publico: ' + x.t); assert.ok(!x.t.includes('___')); assert.ok(!/[áéíóúñ¿¡]/.test(x.t), 'espanol en un audio: ' + x.t); });
     ['I can swim.', "I can't swim.", 'Can you swim?', 'Yes, I can.'].forEach(t => { assert.ok(APR[t], 'falta el audio de ' + t); assert.ok(T.some(x => x.t === t), t + ' debe estar en el contenido'); });
     const folder = fs.readdirSync(path.join(FUENTE_PRIV, 'audio', 'can')).filter(f => f.endsWith('.mp3'));
