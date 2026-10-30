@@ -13,7 +13,7 @@ function test(n, fn){ try { fn(); p++; console.log('  ok   ' + n); } catch(e){ f
 
 test('La tarjeta existe en el panel, justo despues de la sugerencia de nivel, y se inicia una vez', () => {
   assert(/id="levelSuggest" hidden><\/div>\n\s*<div class="fb-wrap" id="feedbackCard" hidden><\/div>/.test(html));
-  assert(/renderFeedbackCard\(document\.getElementById\('feedbackCard'\), \['levelSuggest', 'dashAnnounce'\]\)/.test(html));
+  assert(/renderFeedbackCard\(document\.getElementById\('feedbackCard'\), \['levelSuggest'\]\)/.test(html));
   assert(/el\.dataset\.fbInit/.test(card));
 });
 test('Sin popup ni modal', () => { assert(!/role="dialog"|aria-modal|position:\s*fixed/.test(card + css.slice(css.indexOf('.fb-wrap'), css.indexOf('.fb-wrap') + 2200))); });

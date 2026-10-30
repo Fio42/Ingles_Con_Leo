@@ -27,7 +27,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261027c">
+<link rel="stylesheet" href="style.css?v=20261030a">
 <link rel="preload" as="style" href="chatbot.css?v=20260926">
 <link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
@@ -524,19 +524,12 @@
         <h2 class="home-h">Tu progreso</h2>
         <div class="progress-summary-card" id="progressSummaryCard"></div>
 
-        <div class="dash-announce" id="dashAnnounce" hidden>
-          <span class="dash-announce-badge">Nuevo</span>
-          <div class="dash-announce-text"><strong>Preparación TOEIC</strong> El examen de inglés que más piden las empresas: Listening con varios acentos, Reading, Speaking con cronómetro y Writing.</div>
-          <a href="toeic.html" class="btn btn-primary btn-sm" id="dashAnnounceGo">Probarlo →</a>
-          <button type="button" class="dash-announce-close" id="dashAnnounceClose" aria-label="Cerrar aviso">×</button>
-        </div>
-
         <h2 class="home-h">Explorar más</h2>
         <ul class="home-more">
           <li><a href="aprender.html"><strong>Modo aprender</strong><span>Microlecciones de 3 minutos para mirar y escuchar.</span></a></li>
           <li><a href="clases.html"><strong>Clases interactivas</strong><span>Situaciones reales: aeropuerto, restaurante, trabajo.</span></a></li>
           <li><a href="juego.html"><strong>English Rush</strong><span>Preguntas rápidas con dificultad progresiva.</span></a></li>
-          <li><a href="practica-miembros.html#examenes"><strong>Preparación de exámenes</strong><span>TOEFL, IELTS, TOEIC y Cambridge.</span></a></li>
+          <li><a href="examenes.html"><strong>Preparación de exámenes</strong><span>TOEFL, IELTS, TOEIC y Cambridge.</span></a></li>
           <li><a href="articulos.html"><strong>Guías y artículos gratis</strong><span>Gramática y vocabulario explicados en español.</span></a></li>
         </ul>
       </div>
@@ -837,27 +830,13 @@
   }
 
   function startDashboard(){
-    // Aviso de novedades (TOEIC). Se oculta para siempre en este navegador
-    // si la persona lo cierra o entra a la sección.
-    (function(){
-      const KEY = 'leo_announce_toeic_2026_09';
-      const box = document.getElementById('dashAnnounce');
-      if(!box) return;
-      let seen = false;
-      try{ seen = localStorage.getItem(KEY) === '1'; }catch(e){}
-      if(seen) return;
-      box.hidden = false;
-      const dismiss = ()=>{ try{ localStorage.setItem(KEY, '1'); }catch(e){} };
-      document.getElementById('dashAnnounceClose').addEventListener('click', ()=>{ dismiss(); box.hidden = true; });
-      document.getElementById('dashAnnounceGo').addEventListener('click', dismiss);
-    })();
     applyDashboardGreeting(document.getElementById('greetLine'));
     renderStatCards(document.getElementById('statCards'));
     if(window.InicioAlumno) InicioAlumno.render(document.getElementById('dashAcademia'), InicioAlumno.depsFromPage());
     renderProgressSummaryCard(document.getElementById('progressSummaryCard'));
     renderTodayHero(document.getElementById('todayHero'));
     renderLevelSuggestion(document.getElementById('levelSuggest'));
-    renderFeedbackCard(document.getElementById('feedbackCard'), ['levelSuggest', 'dashAnnounce']);
+    renderFeedbackCard(document.getElementById('feedbackCard'), ['levelSuggest']);
     // Igual que progreso.html: si llegan sesiones de otro dispositivo,
     // se redibujan los números y "Tu diagnóstico" con los datos completos.
     if(!window._dashSyncListener){

@@ -1732,3 +1732,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - practica-miembros.html: tras cargar, vuelve a bajar a #examenes / #masFormas unas veces (se detiene si la persona se mueve).
 - app.js: para miembros reales, el pie de pagina (foot-links) ahora lleva "Practicar" a practica-miembros.html y "Academia" a academia.html (antes iban a practica.html y a academia-de-ingles.html, la pagina publica). app.js?v=20261030a en todos los HTML.
 - Verificado: node --check app.js. NO probado en vivo (falta el push).
+
+## 2026-10-30 (2) - Letrero TOEIC fuera y pagina de examenes
+- Pedido de Leo: quitar por completo el letrero "Nuevo / Preparacion TOEIC" del panel de miembros (ya es viejo) y que "Preparacion de examenes" lleve directo a los examenes, no a Practicar.
+- miembros.html: eliminado el letrero (HTML, el script que lo ocultaba y su mencion en renderFeedbackCard). style.css: eliminadas sus reglas .dash-announce. tools/tests/feedback-card.test.js ajustado a la nueva lista (12 ok).
+- Nueva pagina examenes.html (miembros, noindex, misma estructura que practica-miembros.html): 4 tarjetas a TOEFL, IELTS, TOEIC y Cambridge. La tarjeta "Preparacion de examenes" de "Explorar mas" ahora apunta ahi.
+- style.css?v=20261030a en todos los HTML. NO probado en vivo (falta el push).
