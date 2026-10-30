@@ -336,22 +336,21 @@ function prepFromSpanish(es){ const hits = new Set(); PREP_ES.forEach(([re, w]) 
     });
   });
 
-  await test('curso OCULTO: sigue "soon" en la ruta, cerrado en el motor, apagado en la migracion, sin enlaces publicos ni sitemap; TO BE, Pronombres y Articulos intactos', () => {
-    const r = A.route.courses.find(c => c.id === 'there-is-are'); assert.strictEqual(r.soon, true, 'academia-data.js: soon debe seguir en true');
+  await test('curso PUBLICADO (30-oct-2026): visible en la ruta, abierto en el motor, fila apagada en la migracion (se enciende en la base), sin enlaces publicos ni sitemap; TO BE, Pronombres, Articulos y Posesivos intactos', () => {
+    const r = A.route.courses.find(c => c.id === 'there-is-are'); assert.ok(!r.soon, 'academia-data.js: soon debe estar quitado tras el lanzamiento');
     const out = execFileSync('node', [path.join(root, 'tools', 'generar_academia_motor.js'), '--check'], { env: Object.assign({}, process.env, { ACADEMIA_MOTOR_ENABLED: '1' }) }).toString();
     assert.ok(/al dia/.test(out));
     const c = {}; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(root, 'academia-motor.js'), 'utf8') + ';this.M=ACADEMIA_MOTOR;', c);
-    const M = c.M; assert.strictEqual(M.courses['there-is-are'].open, false); assert.strictEqual(M.courses['there-is-are'].engineTopic, 'There is / are (hay)');
+    const M = c.M; assert.strictEqual(M.courses['there-is-are'].open, true); assert.strictEqual(M.courses['there-is-are'].engineTopic, 'There is / are (hay)');
     assert.strictEqual(M.courses['to-be'].open, true); assert.strictEqual(M.courses.pronombres.open, true); assert.strictEqual(M.courses.articulos.open, true);
     assert.ok(M.linkForTema('to-be-presente', [], null), 'TO BE sigue enlazado');
-    assert.ok(!M.linkForTema('there-is-are', [], null), 'el tema del curso oculto no enlaza a ningun curso mientras open sea false');
     const cx = {}; vm.createContext(cx); vm.runInContext(fs.readFileSync(path.join(root, 'academia-cursos.js'), 'utf8') + ';this.K=ACADEMIA_CURSOS;', cx);
-    assert.strictEqual(cx.K.enabled, true); assert.strictEqual(cx.K.courses['there-is-are'].open, false); assert.strictEqual(cx.K.courses.articulos.open, true);
+    assert.strictEqual(cx.K.enabled, true); assert.strictEqual(cx.K.courses['there-is-are'].open, true); assert.strictEqual(cx.K.courses.articulos.open, true);
     const p = M.parse('ac:there-is-are:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['there-is-are', 3]);
     assert.strictEqual(M.parse('ac:there-is-are:e-a3').lesson, 2); assert.strictEqual(M.parse('ac:there-is-are:x-j2').lesson, 5); assert.strictEqual(M.parse('ac:there-is-are:e-p10').lesson, 4); assert.strictEqual(M.parse('ac:there-is-are:x-n5').lesson, 3); assert.strictEqual(M.parse('ac:there-is-are:e-i1').lesson, 1);
     ['sitemap.xml', 'academia-de-ingles.html', 'index.html', 'practicar.html'].filter(f => fs.existsSync(path.join(root, f))).forEach(f => assert.ok(!/curso\/there-is-are|there-is-are-hay/.test(fs.readFileSync(path.join(root, f), 'utf8')), f));
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'los cursos visibles no cambian');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,there-is-are,to-be', 'TO BE, Pronombres, Articulos, Posesivos y THERE IS / THERE ARE estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 3);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are'(, 'can')?\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });

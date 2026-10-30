@@ -24,7 +24,7 @@ var ACADEMIA_CURSOS = {
   },
   "there-is-are": {
    "title": "THERE IS / THERE ARE",
-   "open": false,
+   "open": true,
    "lessons": 5
   },
   "can": {

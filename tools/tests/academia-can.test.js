@@ -329,8 +329,8 @@ function sentenceOK(filled, es){
     const p = M.parse('ac:can:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['can', 3]);
     assert.strictEqual(M.parse('ac:can:e-a3').lesson, 4); assert.strictEqual(M.parse('ac:can:x-j2').lesson, 5); assert.strictEqual(M.parse('ac:can:e-p10').lesson, 3); assert.strictEqual(M.parse('ac:can:x-n5').lesson, 2); assert.strictEqual(M.parse('ac:can:e-c1').lesson, 1);
     ['sitemap.xml', 'academia-de-ingles.html', 'index.html', 'practicar.html'].filter(f => fs.existsSync(path.join(root, f))).forEach(f => assert.ok(!/curso\/can\b/.test(fs.readFileSync(path.join(root, f), 'utf8')), f));
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'los cursos visibles no cambian');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,there-is-are,to-be', 'los cursos visibles no cambian');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 3);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are', 'can'\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });

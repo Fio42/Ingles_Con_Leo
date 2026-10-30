@@ -343,8 +343,8 @@ function distance(text){ const t = text.replace(/far from here|lejos de aquí/gi
     const p = M.parse('ac:posesivos:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['posesivos', 3]);
     assert.strictEqual(M.parse('ac:posesivos:e-o3').lesson, 2); assert.strictEqual(M.parse('ac:posesivos:x-j2').lesson, 5); assert.strictEqual(M.parse('ac:posesivos:e-p10').lesson, 4); assert.strictEqual(M.parse('ac:posesivos:x-t5').lesson, 3); assert.strictEqual(M.parse('ac:posesivos:e-m1').lesson, 1);
     ['sitemap.xml', 'academia-de-ingles.html', 'index.html', 'practicar.html'].filter(f => fs.existsSync(path.join(root, f))).forEach(f => assert.ok(!/curso\/posesivos|posesivos-y-demostrativos/.test(fs.readFileSync(path.join(root, f), 'utf8')), f));
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,to-be', 'TO BE, Pronombres, Articulos y Posesivos estan visibles');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 4);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,there-is-are,to-be', 'TO BE, Pronombres, Articulos y Posesivos estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 3);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos'(, 'there-is-are')?(, 'can')?\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });

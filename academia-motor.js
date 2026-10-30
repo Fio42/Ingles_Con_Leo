@@ -704,7 +704,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "there-is-are",
   "engineTopic": "There is / are (hay)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "is": "There is",
    "are": "There are",
