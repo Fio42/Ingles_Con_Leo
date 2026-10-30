@@ -60,3 +60,9 @@ Orden: Curso 5 primero y Curso 6 después (la rama del 6 contiene la del 5; una 
 6. Abrir para todos (commit aparte, igual que `8be0377` del Curso 4): quitar `soon:true` de `there-is-are`, `open:true` en `tools/generar_academia_motor.js`, regenerar motor y cursos, subir la versión de los scripts y adaptar las pruebas de "curso oculto".
 7. Verificación después: repetir todos los bloques de `academia_there_is_are_prelanzamiento.sql`, revisar GA4 y `tools/informe_academia_24h.sql` a las 24 horas, y confirmar que TO BE, Pronombres, Artículos y Posesivos conservan sus conteos.
 Reversión, sin borrar nada: `update public.academia_courses set enabled = false where course_id = 'there-is-are';` (el curso se oculta al instante y el progreso queda guardado). Si además hay que quitarlo de la vista: revertir el commit del paso 6 con `git revert` y subirlo. Nunca correr `supabase/rollback/`.
+
+## 8. Registro del 30-oct-2026 (tarde): carga en produccion, curso APAGADO
+- Fusionado a main de forma oculta. El sitio publico sigue mostrando el curso como proximo (open:false).
+- Supabase de produccion: fila del curso creada con enabled=false, banco de examen cargado (50 preguntas, 10 por tema, huella verificada byte a byte antes de ejecutar) y contenido cargado (5 lecciones, 40 actividades, 30 de practica, 72 claves de audio). Los otros cursos y sus conteos no cambiaron.
+- Decision de audio: se usa la version 10b (frase unica generada de una vez con Kokoro) para "There are two cats in the box. They are black.". Mismo nombre de archivo, no cambia el SQL.
+- PENDIENTE: subir los 72 mp3 a Storage academia-audio/there-is-are/ (carpeta _dev\subir-audios\there-is-are), verificar con el bloque D, encender enabled=true, probar con canario y abrir (commit aparte).
