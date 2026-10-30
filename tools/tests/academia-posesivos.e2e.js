@@ -191,7 +191,7 @@ async function until(fn, ms, what){
   await test('inicio y logros: "5 de 5 lecciones" del curso nuevo en telefono, 320 px y escritorio, sin desborde', async()=>{
     for(const dev of [A, S, D]){
       await dev.page.goto(base + '/academia.html?nube=1#/'); await dev.page.reload(); await dev.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
-      await until(async () => /5 de 5 lecciones/.test(await dev.page.innerText('#acRoot')), 8000, 'avance 5 de 5 en ' + dev.label);
+      await until(async () => /Lecciones completadas: 5 de 5/.test(await dev.page.innerText('#acRoot')), 8000, 'avance 5 de 5 en ' + dev.label);
       assert(await overflow(dev.page) <= 0, 'desborde inicio ' + dev.label);
       await dev.page.goto(base + '/academia.html?nube=1#/logros'); await dev.page.reload(); await dev.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
       assert(await overflow(dev.page) <= 0, 'desborde logros ' + dev.label);

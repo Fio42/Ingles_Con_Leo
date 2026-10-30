@@ -191,7 +191,7 @@ async function until(fn, ms, what){
   await test('inicio y logros: "5 de 5 lecciones" del curso nuevo en telefono, 320 px y escritorio, sin desborde', async()=>{
     for(const dev of [A, S, D]){
       await dev.page.goto(base + '/academia.html?nube=1#/'); await dev.page.reload(); await dev.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
-      await until(async () => /5 de 5 lecciones/.test(await dev.page.innerText('#acRoot')), 8000, 'avance 5 de 5 en ' + dev.label);
+      await until(async () => /Lecciones completadas: 5 de 5/.test(await dev.page.innerText('#acRoot')), 8000, 'avance 5 de 5 en ' + dev.label);
       await until(async () => /Gana tu insignia al aprobar la evaluación/.test(await dev.page.innerText('#acRoot')), 8000, 'indicacion discreta de insignia (aun sin aprobar) en ' + dev.label);
       assert(!/Insignia conseguida/.test(await dev.page.innerText('#acRoot')), 'no dice conseguida sin haber aprobado');
       await until(async () => /Ahora puedes hacer la evaluación del curso y ganar tu insignia/.test(await dev.page.innerText('#acRoot')), 8000, 'curso terminado sin insignia: invita a la evaluacion en ' + dev.label);

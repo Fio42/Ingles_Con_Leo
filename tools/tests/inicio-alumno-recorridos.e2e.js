@@ -122,8 +122,8 @@ const st = (n, days) => { const l = {}; for(let i = 1; i <= n; i++) l['l' + i] =
     await page.evaluate(() => { window.__leoMemberVerified = true; unlock(); }); await page.waitForTimeout(400);
     await page.click('.mobile-nav .mnav-item:nth-child(4)'); await page.waitForURL(/progreso\.html/); await page.waitForTimeout(1200);
     const t = await page.innerText('#progressCourses');
-    assert(/2 de 5 lecciones · Lección 3 de 5/.test(t), t);
-    assert(/5 de 5 lecciones · Lecciones completas/.test(t), t);
+    assert(/Lecciones completadas: 2 de 5 · Lección 3 de 5/.test(t), t);
+    assert(/Lecciones completadas: 5 de 5(?! ·)/.test(t), t);
     assert(await page.$('a[href="errores.html"]') && await page.$('a[href="plan-estudio.html"]'));
     await page.click('#progressCourses a >> nth=0'); await page.waitForURL(/academia\.html#\/curso\/to-be/);
     assert.deepStrictEqual(errs, []);

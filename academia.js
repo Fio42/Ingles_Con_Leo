@@ -818,7 +818,7 @@
     hero.appendChild(el('h2', { class: 'ac-hero-h', text: COURSE.title }));
     var heroDone = null;      // se rellena si el alumno ya termino las lecciones: el mensaje y el boton dependen de su insignia real
     hero.appendChild(badgeLine(function(b){ if(heroDone) heroDone(b); }));
-    hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
+    hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: 'Lecciones completadas: ' + dc + ' de ' + COURSE.lessons.length }), el('strong', { text: Math.round(pct) + ' %' })]));
     hero.appendChild(progressBar(pct, 'Avance del curso'));
     var mid = el('div', { class: 'ac-hero-next' });
     var cta, tail, more = el('a', { href: CB, class: 'ac-hero-link', text: 'Ver todas las lecciones del curso' });
@@ -957,7 +957,7 @@
     root.appendChild(badgeLine());
     root.appendChild(el('p', { class: 'ac-lead', text: COURSE.tagline }));
     root.appendChild(el('p', { class: 'ac-text', text: COURSE.goal }));
-    root.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
+    root.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: 'Lecciones completadas: ' + dc + ' de ' + COURSE.lessons.length }), el('strong', { text: Math.round(pct) + ' %' })]));
     root.appendChild(progressBar(pct, 'Avance del curso'));
 
     var nl = nextLesson();

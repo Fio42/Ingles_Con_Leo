@@ -158,7 +158,7 @@ async function until(fn, ms, what){
     await B.page.goto(base + '/academia.html?nube=1#/');
     await until(async () => /Seguir|a medias/.test(await B.page.innerText('#acRoot')), 8000, 'la computadora ve la leccion a medias');
     const txt = await B.page.innerText('#acRoot');
-    assert(/1 de 5 lecciones/.test(txt), txt.slice(0, 300));
+    assert(/Lecciones completadas: 1 de 5/.test(txt), txt.slice(0, 300));
     await B.page.click('#acRoot >> text=Continuar aprendiendo');
     await B.page.waitForSelector('.ac-card-act');
     assert(/Actividad 4 de 8/.test(await B.page.innerText('.ac-step')), await B.page.innerText('.ac-step'));
@@ -226,7 +226,7 @@ async function until(fn, ms, what){
     assert.strictEqual(evB.filter(e => e === 'academia_curso_lecciones_completas').length, 1, 'la ultima leccion termina el curso: un solo evento curso_lecciones_completas');
     await until(async () => Object.keys((await prog()).state.lessons).length === 5, 12000, '5 lecciones en la nube');
     await A.page.goto(base + '/academia.html?nube=1#/'); await A.page.reload();
-    await until(async () => /5 de 5 lecciones/.test(await A.page.innerText('#acRoot')), 8000, 'el telefono ve 5 de 5');
+    await until(async () => /Lecciones completadas: 5 de 5/.test(await A.page.innerText('#acRoot')), 8000, 'el telefono ve 5 de 5');
   });
 
   async function answerOfficial(p, ok){

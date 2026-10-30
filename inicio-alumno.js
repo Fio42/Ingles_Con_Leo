@@ -122,7 +122,7 @@
     el.innerHTML = cs.map(function(c){
       var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
       var st = c.finished ? 'Lecciones completas' : (c.started ? 'Lección ' + Math.min(c.done + 1, c.total) + ' de ' + c.total : 'Sin empezar');
-      return '<li><a href="academia.html#/curso/' + esc(c.id) + '"><strong>' + esc(c.title) + '</strong><span>' + esc(c.done) + ' de ' + esc(c.total) + ' lecciones · ' + st + '</span>' +
+      return '<li><a href="academia.html#/curso/' + esc(c.id) + '"><strong>' + esc(c.title) + '</strong><span>' + 'Lecciones completadas: ' + esc(c.done) + ' de ' + esc(c.total) + (c.finished ? '' : ' · ' + st) + '</span>' +
         '<span class="home-bar" aria-hidden="true"><span style="width:' + pct + '%"></span></span></a></li>';
     }).join('');
     el.hidden = false;
