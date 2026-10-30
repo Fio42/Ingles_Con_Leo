@@ -1726,3 +1726,28 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 
 ## 2026-10-26 - Audio del test de nivel (A1, Sofia)
 - El audio lt-a1.mp3 sonaba raro al inicio ("Hi, I'm Sofia"). Se cambio el texto a "My name is Sofia. ..." en tools/lista_audios.csv y en la transcripcion de test-de-nivel-de-ingles.html. Audio regenerado con Ava (edge-tts actualizado) y verificado: mp3 valido de 5,4 s.
+
+2026-10-30 - Recuperacion del proyecto y revision de los cursos 5 y 6 (entorno de desarrollo aparte, NADA publicado, produccion y Supabase sin tocar)
+- Motivo: la carpeta local de OneDrive estaba en el commit 18eb55a (26-oct), 29 commits detras de GitHub (main 24867e8). El trabajo de los cursos 3 a 6 vivia en ramas y en material privado. Se trabajo en una copia limpia (rama dev/cursos-5-6, parte de curso/can-cant-protegido) fuera de OneDrive.
+- ESTADO REAL DE LOS 8 CURSOS (orden de la ruta Fundamentos del ingles):
+  1 Pronombres personales: PUBLICADO, solo miembros.
+  2 TO BE: PUBLICADO (con la demostracion gratis).
+  3 Articulos y plurales: PUBLICADO el 28-oct (commit d7a3d60), contenido y audio protegidos en el servidor.
+  4 Posesivos y demostrativos: PUBLICADO el 28-oct (commit 8be0377), mismo esquema protegido; 98 audios.
+  5 THERE IS / THERE ARE: TERMINADO y OCULTO (rama curso/there-is-are-protegido). 5 lecciones, 40 ejercicios, 30 de practica, examen privado de 50, 77 audios. Migracion 20261029130000 NO aplicada.
+  6 CAN / CAN'T: TERMINADO y OCULTO (rama curso/can-cant-protegido, incluye el 5). 5 lecciones, 40 ejercicios, 30 de practica, examen privado de 50, 70 audios. Migracion 20261029140000 NO aplicada.
+  7 Presente simple: pendiente, no empezado.
+  8 DO / DOES: pendiente, no empezado.
+- Material privado verificado (carpeta C:\ICL-Privado, extraida del respaldo cifrado cursos4-6 del 28-oct): contenido, audios, examenes y semillas SQL de los cursos 4, 5 y 6. Cada curso: 5 lecciones de 8 actividades, 30 de practica, 50 de examen; audios 98 / 77 (despues 72, ver abajo) / 70, todos presentes en el mapa, ninguno vacio, todos decodifican con ffprobe.
+- Revision de gramatica inglesa del Curso 5 (todas las pantallas, 40 ejercicios, 30 de practica y los 50 del examen): sin errores en el ingles. Dos textos en español aclarados en la leccion 4 (que any en preguntas aplica cuando no se dice un numero; y que en el si no se usa la forma corta there's). Examen y audios sin cambios. Curso 6 revisado igual: sin errores.
+- Pruebas (todas pasan): there-is-are 24 + seguridad 7 + navegador 13; can 24 + seguridad 7 + navegador 13; regresion posesivos 23 + 7, proteccion 13, integracion 28, modelo 25, robustez 23, sql 26, piloto 13, pronombres 12. Navegador a 320/360/390/430/768/1440 sin desborde y sin errores de consola. Servidor probado en PGlite (no en el Supabase real).
+- NO verificado: produccion y Supabase reales desde esta sesion (sin acceso), telefono fisico, audio con un miembro real, pagos. Faltan por revisar con ojo humano: voz de los audios.
+- Pendientes de Leo: borrar las 42 copias "(1)" en Storage academia-audio/posesivos/; limpiar zips y copias sin cifrar; ramas viejas curso/articulos-plurales y proteccion/contenido-premium; respaldo cifrado nuevo con los cambios de texto del Curso 5 (archivo en C:\ICL-Privado\_dev).
+
+2026-10-30 (2) - Curso 5 THERE IS / THERE ARE: paquete de lanzamiento preparado (rama lanzamiento/curso-5, NO publicada, NADA en produccion)
+- Español neutro para Latinoamerica: "coche" pasó a "carro" (como el resto del sitio, 61 usos). El inglés del Curso 5 no necesito cambios. "bolígrafo" se mantiene (se entiende en toda la region).
+- Defecto encontrado y corregido: la funcion academiaSentence leia con voz inglesa la pista en español cuando esta no llevaba acentos (6 audios en el Curso 5). Se agrego say con la frase en ingles a esas 6 actividades. Audios del Curso 5: 77 -> 72 (6 descartados, 5 reutilizados, 1 nuevo unido con ffmpeg a partir de dos existentes, mismo esquema de nombre sha1 de la herramienta). La funcion compartida NO se toco (cambiaria los audios de cursos publicados).
+- Mismo defecto pendiente en: Curso 6 (2 audios: Ella sabe cantar, Ella no sabe conducir) y Curso 4 ya publicado (4 audios). Curso 4 requiere autorizacion de Leo.
+- Curso 6 pendiente de decidir: "football" -> "soccer" (3 audios) y "conducir" -> "manejar". Curso 4 publicado usa "coche" (22 veces) y esta pendiente de autorizacion.
+- Control cruzado: texto del curso, mapa de audio (72 de 72 archivos) y 50 de 50 preguntas del examen en los SQL de carga coinciden con los JSON revisados. Pruebas del curso 24, seguridad 7, navegador 13: todas pasan. Prueba de fusion en una copia: 5 y luego 6 sobre main, 0 conflictos.
+- Guia docs/lanzamiento-there-is-are.md actualizada (secciones 6 y 7: cambios, huellas, orden, verificacion y reversion).
