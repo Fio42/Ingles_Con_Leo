@@ -29,7 +29,7 @@ var ACADEMIA_CURSOS = {
   },
   "can": {
    "title": "CAN / CAN'T",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

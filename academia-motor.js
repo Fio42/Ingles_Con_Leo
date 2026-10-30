@@ -877,7 +877,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "can-cant",
   "engineTopic": "Can / Can't (habilidad)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "can": "Can: puedo, sé",
    "neg": "Can't y errores frecuentes",

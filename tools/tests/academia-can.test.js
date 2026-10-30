@@ -315,22 +315,21 @@ function sentenceOK(filled, es){
     });
   });
 
-  await test('curso OCULTO: sigue "soon" en la ruta, cerrado en el motor, apagado en la migracion, sin enlaces publicos ni sitemap; TO BE, Pronombres y Articulos intactos', () => {
-    const r = A.route.courses.find(c => c.id === 'can'); assert.strictEqual(r.soon, true, 'academia-data.js: soon debe seguir en true');
+  await test('curso PUBLICADO (30-oct-2026): visible en la ruta, abierto en el motor, fila apagada en la migracion (se enciende en la base), sin enlaces publicos ni sitemap; los cursos anteriores intactos', () => {
+    const r = A.route.courses.find(c => c.id === 'can'); assert.ok(!r.soon, 'academia-data.js: soon debe estar quitado tras el lanzamiento');
     const out = execFileSync('node', [path.join(root, 'tools', 'generar_academia_motor.js'), '--check'], { env: Object.assign({}, process.env, { ACADEMIA_MOTOR_ENABLED: '1' }) }).toString();
     assert.ok(/al dia/.test(out));
     const c = {}; vm.createContext(c); vm.runInContext(fs.readFileSync(path.join(root, 'academia-motor.js'), 'utf8') + ';this.M=ACADEMIA_MOTOR;', c);
-    const M = c.M; assert.strictEqual(M.courses['can'].open, false); assert.strictEqual(M.courses['can'].engineTopic, "Can / Can't (habilidad)");
+    const M = c.M; assert.strictEqual(M.courses['can'].open, true); assert.strictEqual(M.courses['can'].engineTopic, "Can / Can't (habilidad)");
     assert.strictEqual(M.courses['to-be'].open, true); assert.strictEqual(M.courses.pronombres.open, true); assert.strictEqual(M.courses.articulos.open, true);
     assert.ok(M.linkForTema('to-be-presente', [], null), 'TO BE sigue enlazado');
-    assert.ok(!M.linkForTema('can', [], null), 'el tema del curso oculto no enlaza a ningun curso mientras open sea false');
     const cx = {}; vm.createContext(cx); vm.runInContext(fs.readFileSync(path.join(root, 'academia-cursos.js'), 'utf8') + ';this.K=ACADEMIA_CURSOS;', cx);
-    assert.strictEqual(cx.K.enabled, true); assert.strictEqual(cx.K.courses['can'].open, false); assert.strictEqual(cx.K.courses.articulos.open, true);
+    assert.strictEqual(cx.K.enabled, true); assert.strictEqual(cx.K.courses['can'].open, true); assert.strictEqual(cx.K.courses.articulos.open, true);
     const p = M.parse('ac:can:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['can', 3]);
     assert.strictEqual(M.parse('ac:can:e-a3').lesson, 4); assert.strictEqual(M.parse('ac:can:x-j2').lesson, 5); assert.strictEqual(M.parse('ac:can:e-p10').lesson, 3); assert.strictEqual(M.parse('ac:can:x-n5').lesson, 2); assert.strictEqual(M.parse('ac:can:e-c1').lesson, 1);
     ['sitemap.xml', 'academia-de-ingles.html', 'index.html', 'practicar.html'].filter(f => fs.existsSync(path.join(root, f))).forEach(f => assert.ok(!/curso\/can\b/.test(fs.readFileSync(path.join(root, f), 'utf8')), f));
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,there-is-are,to-be', 'los cursos visibles no cambian');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 3);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,can,posesivos,pronombres,there-is-are,to-be', 'todos los cursos publicados estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 2);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are', 'can'\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });

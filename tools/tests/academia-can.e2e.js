@@ -143,17 +143,11 @@ async function until(fn, ms, what){
   /* ============ 1. Sin canario (como esta hoy en produccion): el curso NO existe para nadie ============ */
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'can'`);
   const N = await newDevice('sin-canario', { width: 390, height: 800 }, UID, false);
-  await test('OCULTO: SIN canario ni el miembro ve el curso (ni tarjeta, ni enlace) y la ruta directa vuelve al inicio; sigue en Proximamente', async()=>{
-    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
-    await new Promise(r => setTimeout(r, 800));
-    const txt = await N.page.innerText('#acRoot');
-    assert.strictEqual(await N.page.$('a[href="#/curso/can"]'), null, 'sin enlace al curso oculto');
-    assert(!/Por dónde empezar/i.test(txt) || !/CAN \/ CAN'T/.test(txt.split(/Por dónde empezar/i)[1] || ''), 'no se sugiere el curso oculto');
-    await N.page.goto(base + '/academia.html?nube=1#/curso/can'); await N.page.reload(); await N.page.waitForSelector('#acRoot'); await new Promise(r => setTimeout(r, 900));
-    assert(!/#\/curso\/can/.test(N.page.url()) || (await N.page.$('.ac-card-act')) === null, 'la ruta directa no abre el curso');
-    assert.strictEqual(await N.page.$('.ac-card-act'), null);
-    await N.page.goto(base + '/academia.html?nube=1#/curso/can/leccion/1'); await N.page.reload(); await N.page.waitForSelector('#acRoot'); await new Promise(r => setTimeout(r, 900));
-    assert.strictEqual(await N.page.$('.ac-card-act'), null, 'ni la leccion directa');
+  await test('PUBLICADO: SIN canario el miembro ve la tarjeta y el enlace del curso, y la leccion directa abre', async()=>{
+    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && /CAN \/ CAN'T/.test(r.innerText); }, null, { timeout: 9000 });
+    assert(await N.page.$('a[href="#/curso/can"]'), 'enlace al curso publicado');
+    await N.page.goto(base + '/academia.html?nube=1#/curso/can/leccion/1'); await N.page.reload(); await N.page.waitForSelector('.ac-card', { timeout: 9000 });
+    assert(await N.page.$('.ac-card'), 'la leccion directa abre');
   });
   await N.ctx.close();
 

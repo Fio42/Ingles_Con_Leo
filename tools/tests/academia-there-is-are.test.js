@@ -349,8 +349,8 @@ function prepFromSpanish(es){ const hits = new Set(); PREP_ES.forEach(([re, w]) 
     const p = M.parse('ac:there-is-are:l3-a2'); assert.deepStrictEqual([p.course, p.lesson], ['there-is-are', 3]);
     assert.strictEqual(M.parse('ac:there-is-are:e-a3').lesson, 2); assert.strictEqual(M.parse('ac:there-is-are:x-j2').lesson, 5); assert.strictEqual(M.parse('ac:there-is-are:e-p10').lesson, 4); assert.strictEqual(M.parse('ac:there-is-are:x-n5').lesson, 3); assert.strictEqual(M.parse('ac:there-is-are:e-i1').lesson, 1);
     ['sitemap.xml', 'academia-de-ingles.html', 'index.html', 'practicar.html'].filter(f => fs.existsSync(path.join(root, f))).forEach(f => assert.ok(!/curso\/there-is-are|there-is-are-hay/.test(fs.readFileSync(path.join(root, f), 'utf8')), f));
-    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,posesivos,pronombres,there-is-are,to-be', 'TO BE, Pronombres, Articulos, Posesivos y THERE IS / THERE ARE estan visibles');
-    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 3);
+    assert.strictEqual(A.route.courses.filter(c => !c.soon).map(c => c.id).sort().join(), 'articulos,can,posesivos,pronombres,there-is-are,to-be', 'TO BE, Pronombres, Articulos, Posesivos y THERE IS / THERE ARE estan visibles');
+    assert.strictEqual(A.route.courses.filter(c => c.soon).length, 2);
     const js = fs.readFileSync(path.join(root, 'academia.js'), 'utf8');
     assert.ok(/\['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are'(, 'can')?\]\.forEach/.test(js)); assert.ok(/launched\(\)[\s\S]{0,200}!ENTRY\.soon|!ENTRY\.soon/.test(js), 'la puerta de lanzamiento sigue');
   });
