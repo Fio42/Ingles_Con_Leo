@@ -1739,3 +1739,4 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Nueva pagina examenes.html (miembros, noindex, misma estructura que practica-miembros.html): 4 tarjetas a TOEFL, IELTS, TOEIC y Cambridge. La tarjeta "Preparacion de examenes" de "Explorar mas" ahora apunta ahi.
 - style.css?v=20261030a en todos los HTML. NO probado en vivo (falta el push).
 - examenes.html: el regreso ahora es "Volver a tu panel" (miembros.html) y el menu marca Inicio en vez de Practicar.
+- examenes.html: barra inferior movil marca Inicio (antes Practicar). Revision en celular (320/360/414/768) del panel y de examenes.html en vivo: sin desbordes.
