@@ -53,3 +53,6 @@ Sin publicar nada y sin tocar producción. Solo cambió material privado (no est
 - Fusionado a main de forma oculta (junto con el Curso 5). El sitio publico sigue mostrando el curso como proximo (open:false).
 - Supabase de produccion: fila del curso creada con enabled=false, banco de examen cargado (50 preguntas, 10 por tema, huella verificada byte a byte antes de ejecutar) y contenido cargado (5 lecciones, 40 actividades, 30 de practica, 67 claves de audio, 13 actividades con say). Los otros cursos y sus conteos no cambiaron.
 - PENDIENTE: subir los 67 mp3 a Storage academia-audio/can/ (carpeta _dev\subir-audios\can), verificar, encender enabled=true, probar con canario y abrir (commit aparte).
+
+## 9. PUBLICADO el 30-oct-2026
+Se subieron los audios, se encendio el curso en la base, se probo con la cuenta de Leo y se abrio en el sitio (soon:false, open:true). Reversion sin borrar nada: `update public.academia_courses set enabled = false where course_id = 'can';` (y git revert del commit de apertura si hay que quitarlo de la vista).

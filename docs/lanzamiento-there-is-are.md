@@ -66,3 +66,6 @@ Reversión, sin borrar nada: `update public.academia_courses set enabled = false
 - Supabase de produccion: fila del curso creada con enabled=false, banco de examen cargado (50 preguntas, 10 por tema, huella verificada byte a byte antes de ejecutar) y contenido cargado (5 lecciones, 40 actividades, 30 de practica, 72 claves de audio). Los otros cursos y sus conteos no cambiaron.
 - Decision de audio: se usa la version 10b (frase unica generada de una vez con Kokoro) para "There are two cats in the box. They are black.". Mismo nombre de archivo, no cambia el SQL.
 - PENDIENTE: subir los 72 mp3 a Storage academia-audio/there-is-are/ (carpeta _dev\subir-audios\there-is-are), verificar con el bloque D, encender enabled=true, probar con canario y abrir (commit aparte).
+
+## 9. PUBLICADO el 30-oct-2026
+Se subieron los audios, se encendio el curso en la base, se probo con la cuenta de Leo y se abrio en el sitio (soon:false, open:true). Reversion sin borrar nada: `update public.academia_courses set enabled = false where course_id = 'there-is-are';` (y git revert del commit de apertura si hay que quitarlo de la vista).
