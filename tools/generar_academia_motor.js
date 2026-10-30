@@ -14,8 +14,10 @@ const COURSES = {
   // open=false: el curso existe en el codigo pero el sitio todavia no lo recomienda (planes, progreso, errores). Se pone en true al lanzarlo.
   'pronombres': { tema: 'pronombres', engineTopic: 'He / She / It (pronombres)', level: 'facil', open: true },
   'articulos': { tema: 'a-an', engineTopic: 'A / An', level: 'facil', open: true },
-  // Curso 4: OCULTO. open:false hasta que Leo autorice el lanzamiento.
-  'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: true }
+  // Curso 4: publicado el 28-oct-2026.
+  'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: true },
+  // Curso 5 (OCULTO hasta que Leo lo autorice).
+  'there-is-are': { tema: 'there-is-are', engineTopic: 'There is / are (hay)', level: 'facil', open: false }
 };
 
 function build(){

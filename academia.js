@@ -1744,7 +1744,7 @@
   }
 
   /* ---------------- Router de la pagina ---------------- */
-  ['to-be', 'pronombres', 'articulos', 'posesivos'].forEach(function(id){ if(ACADEMIA.courses[id]) SHELL.apps[id] = makeApp(id); });
+  ['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are'].forEach(function(id){ if(ACADEMIA.courses[id]) SHELL.apps[id] = makeApp(id); });
   SHELL.primary = SHELL.apps['to-be'];
   SHELL.route = function(){
     var parts = hashParts().path.split('/').filter(Boolean);

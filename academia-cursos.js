@@ -21,6 +21,11 @@ var ACADEMIA_CURSOS = {
    "title": "Posesivos y demostrativos",
    "open": true,
    "lessons": 5
+  },
+  "there-is-are": {
+   "title": "THERE IS / THERE ARE",
+   "open": false,
+   "lessons": 5
   }
  }
 };
