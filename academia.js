@@ -788,6 +788,22 @@
   }
 
   /* ---- Mi ruta ---- */
+  /* Linea discreta de insignia (dato real de la cuenta: tabla academia_badges, solo lectura). Oculta hasta saberlo. */
+  function badgeLine(){
+    var p = el('p', { class: 'ac-badge-line' }); p.style.display = 'none';
+    if(NUBE && NUBE.ready){
+      NUBE.badge().then(function(b){
+        if(b){ p.className = 'ac-badge-line is-won'; p.textContent = '\uD83C\uDFC5 Insignia conseguida'; p.title = 'Mejor resultado: ' + b.score_pct + ' %'; }
+        else { p.textContent = '\uD83C\uDFC5 Gana tu insignia al aprobar la evaluación'; }
+        p.style.display = '';
+      });
+    }
+    return p;
+  }
+  /* Insignia de este curso para el resumen de Mis logros. */
+  function badgeInfo(){
+    return (NUBE && NUBE.ready) ? NUBE.badge().then(function(b){ return { id: courseId, name: NAME, badge: b }; }) : Promise.resolve(null);
+  }
   /* Tarjeta principal de este curso: avance y boton para continuar. */
   function heroSection(){
     var s = loadState(), nl = nextLesson(), dc = doneCount(), pct = dc / COURSE.lessons.length * 100;
@@ -796,6 +812,7 @@
     var hero = el('section', { class: 'ac-hero', 'aria-label': 'Continuar' });
     hero.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
     hero.appendChild(el('h2', { class: 'ac-hero-h', text: COURSE.title }));
+    hero.appendChild(badgeLine());
     hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
     hero.appendChild(progressBar(pct, 'Avance del curso'));
     var mid = el('div', { class: 'ac-hero-next' });
@@ -922,6 +939,7 @@
     root.appendChild(el('a', { href: '#/', class: 'ac-back', text: '← Mi ruta' }));
     root.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
     root.appendChild(el('h1', { class: 'ac-h1', 'data-focus': '', text: COURSE.title }));
+    root.appendChild(badgeLine());
     root.appendChild(el('p', { class: 'ac-lead', text: COURSE.tagline }));
     root.appendChild(el('p', { class: 'ac-text', text: COURSE.goal }));
     root.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
@@ -1488,6 +1506,17 @@
     root.textContent = '';
     root.appendChild(el('div', { class: 'ac-head' }, [el('p', { class: 'ac-eyebrow', text: 'Miembros' }), el('h1', { class: 'ac-h1', 'data-focus': '', text: 'Mis logros' })]));
     root.appendChild(pilotBanner());
+    if(NUBE && NUBE.ready){
+      var sum = el('p', { class: 'ac-badge-summary' }); sum.style.display = 'none'; root.appendChild(sum);
+      Promise.all(apps.map(function(a){ return a.badgeInfo(); })).then(function(list){
+        if(!sum.isConnected) return;
+        var won = list.filter(function(x){ return x && x.badge; });
+        sum.textContent = won.length
+          ? '\uD83C\uDFC5 Tus insignias: ' + won.map(function(x){ return x.name; }).join(' · ')
+          : '\uD83C\uDFC5 Aprueba la evaluación de un curso y ganarás tu primera insignia.';
+        sum.className = 'ac-badge-summary' + (won.length ? ' is-won' : ''); sum.style.display = '';
+      });
+    }
     apps.forEach(function(a){ a.logrosBlock(many).forEach(function(n){ root.appendChild(n); }); });
     if(NUBE && NUBE.ready){
       root.appendChild(el('p', { class: 'ac-hero-meta ac-sync', id: 'acSync', text: NUBE.online ? 'Tu avance se guarda en tu cuenta y lo ves en cualquier dispositivo.' : 'Sin conexión: tu avance se guardará en tu cuenta al volver.' }));
@@ -1736,7 +1765,7 @@
   var api = {
     id: courseId, primary: PRIMARY, dispatch: dispatch, stopAudio: stopAudio, visible: visible,
     mode: function(){ return mode; }, boot: function(){ if(NUBE) bootCloud(); },
-    heroSection: heroSection, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard,
+    heroSection: heroSection, badgeInfo: badgeInfo, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard,
     title: COURSE.title, cb: CB, doneCount: doneCount,
     started: function(){ var st = loadState(); return Object.keys(st.resume || {}).length > 0 || (st.days || []).length > 0; }
   };

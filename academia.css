@@ -264,3 +264,8 @@
 
 /* Pie de pagina del sitio: que la barra inferior fija no lo tape */
 .ac-body footer{padding-bottom:calc(92px + env(safe-area-inset-bottom));}
+/* Insignias: lineas pequenas y discretas (recompensa por avanzar, no publicidad) */
+.ac-badge-line{margin:.1rem 0 .55rem;font-size:.84rem;line-height:1.35;color:var(--ink-soft);}
+.ac-badge-line.is-won{color:#8A5A00;font-weight:600;}
+.ac-badge-summary{margin:0 0 1rem;font-size:.9rem;line-height:1.4;color:var(--ink-soft);overflow-wrap:anywhere;}
+.ac-badge-summary.is-won{color:#8A5A00;font-weight:600;}
