@@ -1738,3 +1738,4 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - miembros.html: eliminado el letrero (HTML, el script que lo ocultaba y su mencion en renderFeedbackCard). style.css: eliminadas sus reglas .dash-announce. tools/tests/feedback-card.test.js ajustado a la nueva lista (12 ok).
 - Nueva pagina examenes.html (miembros, noindex, misma estructura que practica-miembros.html): 4 tarjetas a TOEFL, IELTS, TOEIC y Cambridge. La tarjeta "Preparacion de examenes" de "Explorar mas" ahora apunta ahi.
 - style.css?v=20261030a en todos los HTML. NO probado en vivo (falta el push).
+- examenes.html: el regreso ahora es "Volver a tu panel" (miembros.html) y el menu marca Inicio en vez de Practicar.
