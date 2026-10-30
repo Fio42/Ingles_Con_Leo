@@ -789,13 +789,17 @@
 
   /* ---- Mi ruta ---- */
   /* Linea discreta de insignia (dato real de la cuenta: tabla academia_badges, solo lectura). Oculta hasta saberlo. */
-  function badgeLine(){
+  function badgeLine(onBadge){
     var p = el('p', { class: 'ac-badge-line' }); p.style.display = 'none';
     if(NUBE && NUBE.ready){
       NUBE.badge().then(function(b){
-        if(b){ p.className = 'ac-badge-line is-won'; p.textContent = '\uD83C\uDFC5 Insignia conseguida'; p.title = 'Mejor resultado: ' + b.score_pct + ' %'; }
-        else { p.textContent = '\uD83C\uDFC5 Gana tu insignia al aprobar la evaluación'; }
+        if(b){
+          // La insignia depende de aprobar la evaluacion (la califica el servidor), no de terminar las lecciones.
+          var all = doneCount() >= COURSE.lessons.length;
+          p.className = 'ac-badge-line is-won'; p.textContent = '\uD83C\uDFC5 Insignia conseguida' + (all ? '' : ' con la evaluación'); p.title = 'Mejor resultado: ' + b.score_pct + ' %';
+        } else { p.textContent = '\uD83C\uDFC5 Gana tu insignia al aprobar la evaluación'; }
         p.style.display = '';
+        if(onBadge) onBadge(b);
       });
     }
     return p;
@@ -812,11 +816,12 @@
     var hero = el('section', { class: 'ac-hero', 'aria-label': 'Continuar' });
     hero.appendChild(el('p', { class: 'ac-eyebrow', text: 'Curso disponible' }));
     hero.appendChild(el('h2', { class: 'ac-hero-h', text: COURSE.title }));
-    hero.appendChild(badgeLine());
+    var heroDone = null;      // se rellena si el alumno ya termino las lecciones: el mensaje y el boton dependen de su insignia real
+    hero.appendChild(badgeLine(function(b){ if(heroDone) heroDone(b); }));
     hero.appendChild(el('div', { class: 'ac-hero-row' }, [el('span', { text: dc + ' de ' + COURSE.lessons.length + ' lecciones' }), el('strong', { text: Math.round(pct) + ' %' })]));
     hero.appendChild(progressBar(pct, 'Avance del curso'));
     var mid = el('div', { class: 'ac-hero-next' });
-    var cta;
+    var cta, tail, more = el('a', { href: CB, class: 'ac-hero-link', text: 'Ver todas las lecciones del curso' });
     if(target){
       mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Lección ' + target.n + ' de ' + COURSE.lessons.length + (resume ? ' · la dejaste a medias' : (dc === 0 ? ' · para empezar' : ' · sigue aquí')) }));
       mid.appendChild(el('p', { class: 'ac-hero-lesson', text: target.title }));
@@ -824,11 +829,21 @@
     } else {
       mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Curso ' + COURSE.title }));
       mid.appendChild(el('p', { class: 'ac-hero-lesson', text: 'Terminaste las ' + COURSE.lessons.length + ' lecciones' }));
-      mid.appendChild(el('p', { class: 'ac-hero-meta', text: 'Ahora puedes probar la evaluación de práctica.' }));
+      tail = el('p', { class: 'ac-hero-meta', text: 'Ahora puedes probar la evaluación de práctica.' });
+      mid.appendChild(tail);
     }
-    cta = link(target ? CB + '/leccion/' + target.n : CB + '/evaluacion', 'Continuar aprendiendo', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
+    cta = link(target ? CB + '/leccion/' + target.n : CB + '/evaluacion', target ? 'Continuar aprendiendo' : 'Ir a la evaluación', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
+    if(!target && NUBE && NUBE.ready){
+      // Con cuenta conectada: no mostrar el texto de practica hasta saber si ya aprobo.
+      tail.style.display = 'none'; cta.style.visibility = 'hidden';
+      heroDone = function(b){
+        if(b){ tail.textContent = 'Ya conseguiste tu insignia.'; cta.textContent = 'Repasar curso'; cta.setAttribute('href', CB); more.style.display = 'none'; }
+        else { tail.textContent = 'Ahora puedes hacer la evaluación del curso y ganar tu insignia.'; }
+        tail.style.display = ''; cta.style.visibility = '';
+      };
+    }
     hero.appendChild(mid); hero.appendChild(cta);
-    hero.appendChild(el('a', { href: CB, class: 'ac-hero-link', text: 'Ver todas las lecciones del curso' }));
+    hero.appendChild(more);
     return hero;
   }
 

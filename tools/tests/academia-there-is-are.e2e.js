@@ -194,6 +194,8 @@ async function until(fn, ms, what){
       await until(async () => /5 de 5 lecciones/.test(await dev.page.innerText('#acRoot')), 8000, 'avance 5 de 5 en ' + dev.label);
       await until(async () => /Gana tu insignia al aprobar la evaluación/.test(await dev.page.innerText('#acRoot')), 8000, 'indicacion discreta de insignia (aun sin aprobar) en ' + dev.label);
       assert(!/Insignia conseguida/.test(await dev.page.innerText('#acRoot')), 'no dice conseguida sin haber aprobado');
+      await until(async () => /Ahora puedes hacer la evaluación del curso y ganar tu insignia/.test(await dev.page.innerText('#acRoot')), 8000, 'curso terminado sin insignia: invita a la evaluacion en ' + dev.label);
+      assert(await dev.page.$('a.ac-btn[href="#/curso/there-is-are/evaluacion"]'), 'el boton lleva a la evaluacion');
       assert(await overflow(dev.page) <= 0, 'desborde inicio ' + dev.label);
       await dev.page.goto(base + '/academia.html?nube=1#/logros'); await dev.page.reload(); await dev.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
       assert(await overflow(dev.page) <= 0, 'desborde logros ' + dev.label);
@@ -223,6 +225,10 @@ async function until(fn, ms, what){
       await until(async () => /Conseguida: THERE IS \/ THERE ARE, con 100 %/.test(await dev.page.innerText('#acRoot')), 8000, 'insignia visible en ' + dev.label);
       await until(async () => /Tus insignias: .*There is \/ There are/.test(await dev.page.innerText('#acRoot')), 8000, 'resumen de insignias en Mis logros en ' + dev.label);
       await dev.page.goto(base + '/academia.html?nube=1#/'); await dev.page.reload(); await until(async () => /Insignia conseguida/.test(await dev.page.innerText('#acRoot')), 8000, 'tarjeta del curso dice Insignia conseguida en ' + dev.label);
+      await until(async () => /Ya conseguiste tu insignia/.test(await dev.page.innerText('#acRoot')), 8000, 'curso terminado con insignia: mensaje de insignia en ' + dev.label);
+      assert(!/probar la evaluación de práctica|Ahora puedes hacer la evaluación/.test(await dev.page.innerText('#acRoot')), 'ya no invita a la evaluacion');
+      assert(await dev.page.$('a.ac-btn[href="#/curso/there-is-are"]'), 'Repasar curso enlaza a la pagina del curso');
+      assert(/Repasar curso/.test(await dev.page.innerText('#acRoot')), 'boton Repasar curso');
       assert(await overflow(dev.page) <= 0, 'desborde con insignia ' + dev.label);
     }
   });
