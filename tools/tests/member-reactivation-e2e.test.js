@@ -153,6 +153,7 @@ function reset(){
   state.now = T0; state.mails = []; state.resendFail = false; state.providers = { stripe: {}, paypal: {}, mp: {} };
   state.db = { profiles: [], progress_sessions: [], member_reactivation_log: [], mistake_stats: [], leo_ai_config: [{ enabled: true, public: true }] };
   env.MEMBER_REACTIVATION_V2 = 'on';
+  delete env.ACADEMIA_ANNOUNCE;
 }
 const stripeSub = (o) => Object.assign({
   status: 'active', cancel_at_period_end: false, cancel_at: null, pause_collection: null,
@@ -520,6 +521,93 @@ test('ACADEMIA: cuenta gratis que hace la demostracion no entra al flujo de miem
   reset(); state.db.profiles.push(mem('fr1', { is_member: false, member_since: null, last_practice_at: null, stripe_customer_id: null, member_welcome_sent_at: null }));
   await run();
   assert.strictEqual(mailsTo('fr1').filter(m => /Ya tienes todo listo|Practicamos/.test(m.subject)).length, 0);
+});
+
+/* ---------------- Anuncio de la academia (academia_announce) y activacion con academia ---------------- */
+const ANN = 'Tu membresía incluye la academia: cursos paso a paso';
+const annTo = id => mailsTo(id).filter(m => m.subject === ANN);
+
+test('ACADEMIA ANUNCIO: apagado por defecto (sin el secreto ACADEMIA_ANNOUNCE nadie lo recibe)', async () => {
+  reset(); add('a1', { last_practice_at: ago(5) });
+  await run();
+  assert.strictEqual(state.mails.length, 0);
+});
+
+test('ACADEMIA ANUNCIO: encendido, sale una vez con el enlace a academia.html, baja y nombre; no se repite', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on'; add('a1', { last_practice_at: ago(5) });
+  await run();
+  assert.strictEqual(annTo('a1').length, 1);
+  const m = annTo('a1')[0];
+  assert.match(m.html, /href="https:\/\/inglesconleo\.com\/academia\.html"/);
+  assert.match(m.html, /Ir a mi academia/);
+  assert.doesNotMatch(m.html, /Empezar mi primer curso/);
+  assert.match(m.html, /Ana, tu membresía incluye la academia/);
+  assert.match(m.html, /baja\.html\?u=a1&t=/);
+  assert.ok(m.headers && m.headers['List-Unsubscribe'], 'lleva List-Unsubscribe');
+  assert.doesNotMatch(m.html, /—/, 'sin rayas largas');
+  assert.ok(row('a1').lifecycle_emails.academia_announce, 'queda registrado');
+  for(let d = 0; d < 5; d++){ state.now += D; row('a1').last_practice_at = iso(state.now - H); await run(); }
+  assert.strictEqual(annTo('a1').length, 1, 'nunca dos veces');
+});
+
+test('ACADEMIA ANUNCIO: respeta bajas y rebotes', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on';
+  add('o1', { last_practice_at: ago(5), email_opt_out_at: ago(3) }); add('o2', { last_practice_at: ago(5), email_invalid: true });
+  await run();
+  assert.strictEqual(state.mails.length, 0);
+});
+
+test('ACADEMIA ANUNCIO: respeta el freno de 24 h y la ventana horaria', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on'; add('g1', { last_practice_at: ago(5), last_marketing_email_at: iso(T0 - 2 * H) });
+  await run();
+  assert.strictEqual(state.mails.length, 0, 'otro correo hace 2 h: espera');
+  state.now = T0 + 24 * H; row('g1').last_practice_at = iso(state.now - H);
+  await run();
+  assert.strictEqual(annTo('g1').length, 1, 'pasado el freno, sale');
+  reset(); env.ACADEMIA_ANNOUNCE = 'on'; add('h1', { last_practice_at: ago(5) });
+  state.now = Date.parse('2026-10-14T08:00:00.000Z'); // 03:00 en Cancun (madrugada, bloqueada)
+  row('h1').last_practice_at = iso(state.now - 5 * D);
+  await run();
+  assert.strictEqual(state.mails.length, 0, 'fuera de horario no sale');
+});
+
+test('ACADEMIA ANUNCIO: quien ya recibio la activacion (que incluye la academia) no recibe tambien el anuncio', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on'; add('v1', { last_practice_at: ago(5), member_since: ago(10), lifecycle_emails: { welcome: ago(10), member_activation: ago(8) }, last_marketing_email_at: ago(8) });
+  await run();
+  assert.strictEqual(annTo('v1').length, 0);
+});
+
+test('ACADEMIA: nadie se queda fuera. Sin practicar recibe la activacion (con academia); si practico recibe el anuncio al cerrarse su ventana', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on';
+  add('n1', { member_since: iso(T0 - 30 * H), last_practice_at: null, lifecycle_emails: { welcome: iso(T0 - 30 * H) }, member_welcome_sent_at: iso(T0 - 30 * H) });
+  add('n2', { member_since: iso(T0 - 30 * H), last_practice_at: iso(T0 - 10 * H), lifecycle_emails: { welcome: iso(T0 - 30 * H) }, member_welcome_sent_at: iso(T0 - 30 * H) });
+  await run();
+  assert.strictEqual(mailsTo('n1').length, 1);
+  assert.strictEqual(mailsTo('n1')[0].subject, 'Ya tienes todo listo: empieza tu primer curso 👋');
+  assert.match(mailsTo('n1')[0].html, /href="https:\/\/inglesconleo\.com\/academia\.html"/);
+  assert.match(mailsTo('n1')[0].html, /plan-estudio\.html/);
+  assert.strictEqual(annTo('n1').length, 0, 'n1 no recibe el anuncio ademas de la activacion');
+  assert.strictEqual(mailsTo('n2').length, 0, 'n2 practico: su activacion no aplica y todavia esta dentro de las 48 h');
+  state.now = T0 + 24 * H; row('n2').last_practice_at = iso(state.now - H);
+  await run();
+  assert.strictEqual(annTo('n2').length, 1, 'n2 recibe el anuncio al cerrarse la ventana');
+  assert.strictEqual(annTo('n1').length, 0);
+  assert.strictEqual(mailsTo('n1').length, 1, 'n1 sigue con un solo correo');
+});
+
+test('ACADEMIA ANUNCIO: el envio manual tampoco permite recibirlo dos veces', async () => {
+  reset(); add('m1', { last_practice_at: ago(5) });
+  await run({ manual_emails: ['m1@x.com'], which: 'academia_announce' });
+  await run({ manual_emails: ['m1@x.com'], which: 'academia_announce' });
+  assert.strictEqual(annTo('m1').length, 1);
+});
+
+test('ACADEMIA ANUNCIO: cuentas gratis nunca lo reciben', async () => {
+  reset(); env.ACADEMIA_ANNOUNCE = 'on';
+  state.db.profiles.push(mem('fr2', { is_member: false, member_since: null, last_practice_at: null, stripe_customer_id: null, member_welcome_sent_at: null }));
+  await run({ manual_emails: ['fr2@x.com'], which: 'academia_announce' });
+  await run();
+  assert.strictEqual(annTo('fr2').length, 0);
 });
 
 (async () => {
