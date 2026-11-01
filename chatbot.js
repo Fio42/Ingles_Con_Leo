@@ -187,7 +187,7 @@
     return ua.slice(0, 120);
   }
 
-  function sendLeobotReport(type, message){
+  function sendLeobotReport(type, message, contact){
     return new Promise(function(resolve){
       (async function(){
         try{
@@ -212,13 +212,18 @@
             practice_progress: practice ? practice.progressText : null,
             viewport: window.innerWidth + 'x' + window.innerHeight
           };
+          /* Dato de contacto que escribió la persona (correo o teléfono).
+             Va en la columna "email" (es texto libre, sin migración); si no
+             escribió nada se usa el correo de su cuenta, si tiene sesión. */
+          var contactClean = (contact || '').trim();
+          if(contactClean) context.contact_type = contactClean.indexOf('@') !== -1 ? 'correo' : 'telefono';
           var res = await LeoBackend.submitLeobotReport({
             type: type,
             message: message,
             pageUrl: window.location.href,
             pageName: document.title,
             userId: (session && session.user) ? session.user.id : null,
-            email: (session && session.user) ? session.user.email : null,
+            email: contactClean || ((session && session.user) ? session.user.email : null),
             browser: detectBrowser(),
             device: detectDevice(),
             context: context
@@ -637,24 +642,26 @@
     reportBug: {
       text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Se manda junto con información técnica de esta página (URL, navegador, qué estabas practicando si aplica) para poder ayudarte más rápido, nunca datos sensibles.',
       form: {
+        contact: 'optional',
         placeholder:'¿Qué pasó? (ej: "el audio no se reproduce", "no puedo completar el ejercicio")',
         submitLabel:'Enviar reporte',
         successText:'Gracias. Ya recibí tu reporte y lo voy a revisar. 🙏',
         errorText:'No se pudo enviar el reporte. Intenta de nuevo en un momento, o escríbenos por WhatsApp.',
         errorExtra:[{ label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, encontré un problema en Inglés con Leo: '), external:true }],
-        onSubmit: function(message){ return sendLeobotReport('bug', message); }
+        onSubmit: function(message, contact){ return sendLeobotReport('bug', message, contact); }
       }
     },
 
     contact: {
       text:'¿Tienes una duda que no alcancé a resolver, una pregunta sobre tu pago o algo que no es exactamente un problema técnico? Cuéntamelo y te respondemos.',
       form: {
+        contact: 'required',
         placeholder:'Escribe tu mensaje...',
         submitLabel:'Enviar mensaje',
         successText:'Mensaje enviado. Te responderé en cuanto pueda. 😊',
         errorText:'No se pudo enviar tu mensaje. Intenta de nuevo en un momento, o escríbenos por WhatsApp.',
         errorExtra:[{ label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, tengo una duda sobre Inglés con Leo: '), external:true }],
-        onSubmit: function(message){ return sendLeobotReport('support', message); }
+        onSubmit: function(message, contact){ return sendLeobotReport('support', message, contact); }
       }
     }
   };
@@ -856,6 +863,13 @@
        Evita doble envío deshabilitando el botón mientras está en
        curso, y siempre termina mostrando una confirmación breve más
        el botón de volver al menú (nunca deja el chat "colgado"). */
+    function isValidContact(v){
+      if(!v) return false;
+      if(v.indexOf('@') !== -1) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      var digits = v.replace(/\D/g, '');
+      return digits.length >= 7 && digits.length <= 15 && /^[+\d\s().-]+$/.test(v);
+    }
+
     function renderForm(nodeId, formSpec){
       optionsEl.innerHTML = '';
       var wrap = document.createElement('div');
@@ -874,6 +888,38 @@
       sendBtn.textContent = formSpec.submitLabel;
       actions.appendChild(sendBtn);
       wrap.appendChild(textarea);
+
+      /* Campo de contacto (correo o teléfono). 'required' en soporte, para
+         que Leo tenga a quién responder; 'optional' en reportes de bug. */
+      var contactInput = null, errorEl = null;
+      if(formSpec.contact){
+        var required = formSpec.contact === 'required';
+        var contactLabel = required ? 'Tu correo o teléfono' : 'Correo o teléfono (opcional)';
+        contactInput = document.createElement('input');
+        contactInput.type = 'text';
+        contactInput.className = 'leobot-input';
+        contactInput.maxLength = 120;
+        contactInput.autocomplete = 'off';
+        contactInput.setAttribute('autocapitalize', 'off');
+        contactInput.setAttribute('inputmode', 'email');
+        contactInput.placeholder = contactLabel;
+        contactInput.setAttribute('aria-label', contactLabel);
+        errorEl = document.createElement('div');
+        errorEl.className = 'leobot-form-error';
+        errorEl.setAttribute('role', 'alert');
+        errorEl.hidden = true;
+        wrap.appendChild(contactInput);
+        wrap.appendChild(errorEl);
+        contactInput.addEventListener('input', function(){ errorEl.hidden = true; });
+        /* Si tiene sesión, le adelantamos su correo (puede cambiarlo). */
+        try{
+          if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
+            LeoBackend.getSession().then(function(sess){
+              if(sess && sess.user && sess.user.email && contactInput && !contactInput.value) contactInput.value = sess.user.email;
+            }).catch(function(){});
+          }
+        }catch(e){}
+      }
       wrap.appendChild(actions);
       optionsEl.appendChild(wrap);
 
@@ -882,11 +928,26 @@
         if(sending) return;
         var msg = (textarea.value || '').trim();
         if(!msg){ textarea.focus(); return; }
+        var contactVal = '';
+        if(contactInput){
+          contactVal = (contactInput.value || '').trim();
+          var isRequired = formSpec.contact === 'required';
+          if(contactVal || isRequired){
+            if(!isValidContact(contactVal)){
+              errorEl.textContent = contactVal
+                ? 'Revisa tu dato: escribe un correo válido (nombre@correo.com) o un teléfono con al menos 7 números.'
+                : 'Escribe tu correo o tu teléfono para que podamos responderte.';
+              errorEl.hidden = false;
+              contactInput.focus();
+              return;
+            }
+          }
+        }
         sending = true;
         sendBtn.disabled = true;
         var originalLabel = sendBtn.textContent;
         sendBtn.textContent = 'Enviando…';
-        formSpec.onSubmit(msg).then(function(ok){
+        formSpec.onSubmit(msg, contactVal).then(function(ok){
           sending = false;
           sendBtn.disabled = false;
           sendBtn.textContent = originalLabel;

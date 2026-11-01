@@ -19,9 +19,9 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
 <link rel="stylesheet" href="style.css?v=20261030a">
-<link rel="preload" as="style" href="chatbot.css?v=20260926">
-<link rel="stylesheet" href="chatbot.css?v=20260926" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="chatbot.css?v=20260926"></noscript>
+<link rel="preload" as="style" href="chatbot.css?v=20261031a">
+<link rel="stylesheet" href="chatbot.css?v=20261031a" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="chatbot.css?v=20261031a"></noscript>
 <!-- Google tag (gtag.js) -->
 <script src="error-monitor.js?v=20261007e"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -183,13 +183,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261021a';
+    s.src = 'chatbot.js?v=20261031a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261021a&r=1';
+        r.src = 'chatbot.js?v=20261031a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };

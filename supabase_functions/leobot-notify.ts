@@ -91,7 +91,7 @@ Deno.serve(async (req: Request) => {
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;">
             <h2>${isBug ? '🐞 Nuevo reporte de bug' : '✉️ Nuevo mensaje de soporte'}</h2>
             <p><strong>Página:</strong> ${escapeHtml(report.page_name || '-')} ${report.page_url ? `(<a href="${escapeHtml(report.page_url)}">${escapeHtml(report.page_url)}</a>)` : ''}</p>
-            ${report.email ? `<p><strong>Correo de contacto:</strong> ${escapeHtml(report.email)}</p>` : '<p><strong>Correo de contacto:</strong> no dio uno (invitado)</p>'}
+            ${report.email ? `<p><strong>Contacto (correo o teléfono):</strong> ${escapeHtml(report.email)}</p>` : '<p><strong>Contacto:</strong> no dio uno (invitado)</p>'}
             <p style="background:#f4f6fb;border-radius:8px;padding:14px;white-space:pre-wrap;">${escapeHtml(report.message)}</p>
             ${contextRows ? `<p><strong>Contexto técnico:</strong></p><table style="font-size:13px;">${contextRows}</table>` : ''}
             <p style="color:#666;font-size:13px;">Navegador: ${escapeHtml(report.browser || '-')} · Dispositivo: ${escapeHtml(report.device || '-')}</p>

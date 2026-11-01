@@ -313,6 +313,18 @@ body.leobot-away{padding-bottom:84px;}
   min-height:70px;
 }
 .leobot-textarea:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;border-color:var(--blue,#3554F0);}
+.leobot-input{
+  width:100%;box-sizing:border-box;min-width:0;
+  border:1.5px solid var(--line,#E4E7F0);
+  border-radius:14px;
+  padding:11px 14px;
+  font-family:inherit;
+  font-size:16px;
+  color:var(--ink,#1B2333);
+}
+.leobot-input:focus-visible{outline:2px solid var(--blue,#3554F0);outline-offset:1px;border-color:var(--blue,#3554F0);}
+.leobot-form-error{font-size:0.82rem;line-height:1.35;color:#B3261E;}
+.leobot-form-error[hidden]{display:none;}
 .leobot-form-actions{display:flex;justify-content:flex-end;}
 .leobot-form-send{min-height:42px;padding:9px 20px;}
 .leobot-form-send:disabled{opacity:0.65;cursor:default;}

@@ -1804,3 +1804,10 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 
 2026-10-30 (8) - Texto de progreso: "Lecciones completadas: X de Y"
 - Pedido de Leo: distinguir mejor el progreso de las lecciones del resultado del examen. Cambio solo de texto: tarjeta del curso (inicio) y pagina de cada curso ahora dicen "Lecciones completadas: X de Y" (Y = total real de lecciones de cada curso); en Mi progreso y el panel del inicio, "Lecciones completadas: X de Y · Lección N de Y" (si el curso esta terminado, solo "Lecciones completadas: Y de Y"). Sin cambios en reglas, datos ni diseño. Pruebas de navegador de academia (cursos 5, 6, 4, nube, comercial) y del panel del alumno pasan.
+
+2026-10-31 - LeoBot: "Contactar / Otra duda" ahora pide correo o teléfono (obligatorio)
+- Motivo: los mensajes de soporte de invitados llegaban sin ningún dato de contacto y Leo no podía responder.
+- chatbot.js: campo nuevo "Tu correo o teléfono" en el formulario Contactar (obligatorio, con validación: correo válido o teléfono de 7 a 15 números; muestra un aviso en rojo si falta o está mal). En "Reportar un problema" es opcional. Si la persona tiene sesión, se adelanta su correo (lo puede cambiar). El dato se guarda en la columna email de leobot_reports (texto libre, sin migración) y context.contact_type indica 'correo' o 'telefono'.
+- chatbot.css: estilos del campo y del aviso. Versiones ?v=20261031a en todas las páginas.
+- supabase_functions/leobot-notify.ts: el correo a Leo ahora dice "Contacto (correo o teléfono)". Cambio solo de texto: sin redeploy el correo sigue funcionando, solo dice "Correo de contacto" aunque sea un teléfono.
+- Pruebas: Playwright a 320/360/375 px (sin dato -> aviso, dato inválido -> aviso, teléfono válido -> se envía, sin desborde horizontal).
