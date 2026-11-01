@@ -40,7 +40,8 @@ async function partA(){
     assert.strictEqual(M.enabled, /var PUBLIC = true;/.test(read('academia-lanzamiento.js')), 'el motor va junto con PUBLIC');
     if(!M.enabled) assert.strictEqual(M.linkForTema('to-be-presente', [], 'x.html'), null, 'apagado: ningun enlace');
     const gen = require('../generar_academia_motor.js');
-    assert.strictEqual(M.enabled ? (process.env.ACADEMIA_MOTOR_ENABLED = '1', gen.build()) : gen.build(), read('academia-motor.js'), 'corre node tools/generar_academia_motor.js');
+    const nl = s => s.replace(/\r\n/g, '\n'); // CRLF de Windows no cambia el contenido
+    assert.strictEqual(nl(M.enabled ? (process.env.ACADEMIA_MOTOR_ENABLED = '1', gen.build()) : gen.build()), nl(read('academia-motor.js')), 'corre node tools/generar_academia_motor.js');
   });
   await test('la migracion NO se aplica sola: curso apagado por defecto y no esta mezclada en supabase_schema.sql', async()=>{
     const mig = read('supabase/migrations/20261026120000_academia_integracion.sql');

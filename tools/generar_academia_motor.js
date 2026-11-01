@@ -21,6 +21,11 @@ const COURSES = {
   'can': { tema: 'can-cant', engineTopic: "Can / Can't (habilidad)", level: 'facil', open: true }
 };
 
+// Encendido: lo manda ACADEMIA_MOTOR_ENABLED (1/0) si existe; si no, sigue a PUBLIC de academia-lanzamiento.js, asi regenerar sin variable no apaga la academia publicada.
+function motorOn(){
+  if(process.env.ACADEMIA_MOTOR_ENABLED !== undefined) return process.env.ACADEMIA_MOTOR_ENABLED === '1';
+  try{ return /var PUBLIC = true;/.test(fs.readFileSync(path.join(root, 'academia-lanzamiento.js'), 'utf8')); }catch(e){ return false; }
+}
 function build(){
   const A = vm.runInNewContext(fs.readFileSync(path.join(root, 'academia-data.js'), 'utf8') + ';ACADEMIA');
   const courses = {};
@@ -44,7 +49,7 @@ function build(){
    enabled=false: mientras la academia no se lance, el sitio actual se ve y se comporta EXACTAMENTE igual. */
 var ACADEMIA_MOTOR = (function(){
   var DATA = ${JSON.stringify(courses, null, 1)};
-  var M = { enabled: ${process.env.ACADEMIA_MOTOR_ENABLED === '1' ? 'true' : 'false'}, page: 'academia.html', courses: DATA };
+  var M = { enabled: ${motorOn() ? 'true' : 'false'}, page: 'academia.html', courses: DATA };
   M.itemId = function(courseId, activityId){ return 'ac:' + courseId + ':' + activityId; };
   M.parse = function(engineId){
     var m = /^ac:([a-z0-9-]+):(.+)$/.exec(String(engineId || ''));
@@ -93,7 +98,8 @@ if(require.main === module){
 const out = build();
 if(process.argv.indexOf('--check') !== -1){
   const cur = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
-  if(cur !== out){ console.error('academia-motor.js esta desactualizado: corre node tools/generar_academia_motor.js'); process.exit(1); }
+  const nl = s => s.replace(/\r\n/g, '\n'); // los saltos de linea CRLF de Windows no cuentan
+  if(nl(cur) !== nl(out)){ console.error('academia-motor.js esta desactualizado: corre node tools/generar_academia_motor.js'); process.exit(1); }
   console.log('academia-motor.js al dia');
 } else { fs.writeFileSync(OUT, out); console.log('academia-motor.js escrito (' + out.length + ' bytes)'); }
 }
