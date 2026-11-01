@@ -31,6 +31,11 @@ var ACADEMIA_CURSOS = {
    "title": "CAN / CAN'T",
    "open": true,
    "lessons": 5
+  },
+  "presente-simple": {
+   "title": "Presente simple",
+   "open": false,
+   "lessons": 5
   }
  }
 };

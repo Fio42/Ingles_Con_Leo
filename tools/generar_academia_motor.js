@@ -18,7 +18,9 @@ const COURSES = {
   'posesivos': { tema: 'posesivos', engineTopic: 'Posesivos (my / your / his / her / our / their)', level: 'facil', open: true },
   // Curso 5 (OCULTO hasta que Leo lo autorice).
   'there-is-are': { tema: 'there-is-are', engineTopic: 'There is / are (hay)', level: 'facil', open: true },
-  'can': { tema: 'can-cant', engineTopic: "Can / Can't (habilidad)", level: 'facil', open: true }
+  'can': { tema: 'can-cant', engineTopic: "Can / Can't (habilidad)", level: 'facil', open: true },
+  // Curso 7 (OCULTO hasta que Leo lo autorice): open=false. Se pone en true al lanzarlo.
+  'presente-simple': { tema: 'presente-simple', engineTopic: 'Presente simple: la -s de he / she / it', level: 'facil', open: false }
 };
 
 // Encendido: lo manda ACADEMIA_MOTOR_ENABLED (1/0) si existe; si no, sigue a PUBLIC de academia-lanzamiento.js, asi regenerar sin variable no apaga la academia publicada.

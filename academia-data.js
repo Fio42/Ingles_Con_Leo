@@ -1990,6 +1990,244 @@ var ACADEMIA = {
           }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO (Curso 7, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'presente-simple': {
+      "id": "presente-simple",
+      "title": "Presente simple",
+      "name": "Presente simple",
+      "short": "Lo que haces siempre",
+      "tagline": "Habla de tus rutinas y de lo que haces siempre, y aprende cuándo el verbo lleva s, es o ies.",
+      "goal": "Al terminar podrás hablar de tus rutinas, usar el verbo con I, you, we y they y con he, she e it, escribir bien la s, es e ies, y decir con qué frecuencia haces las cosas.",
+      "protected": true,
+      "topics": {
+        "uso": "Qué es el presente simple",
+        "base": "I, you, we y they",
+        "tercera": "He, she, it: la s",
+        "reglas": "Reglas de s, es e ies",
+        "frec": "Frecuencia y repaso"
+      },
+      "lessons": [
+        {
+          "id": "presente-uso",
+          "n": 1,
+          "minutes": 6,
+          "topic": "uso",
+          "title": "Presente simple: lo que haces siempre",
+          "summary": "Hablar de rutinas y hechos con el verbo sin cambios.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "presente-base",
+          "n": 2,
+          "minutes": 6,
+          "topic": "base",
+          "title": "I, you, we y they",
+          "summary": "Decir lo que hacen yo, tú, nosotros y ellos sin agregar nada al verbo.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "presente-tercera",
+          "n": 3,
+          "minutes": 6,
+          "topic": "tercera",
+          "title": "He, she, it: la s",
+          "summary": "Agregar la s al verbo con él, ella y eso.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "presente-reglas",
+          "n": 4,
+          "minutes": 7,
+          "topic": "reglas",
+          "title": "Reglas de s, es e ies",
+          "summary": "Escribir bien watches, studies, goes y has.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "presente-frecuencia",
+          "n": 5,
+          "minutes": 7,
+          "topic": "frec",
+          "title": "Frecuencia y repaso",
+          "summary": "Decir cuántas veces haces algo con always, usually, often, sometimes y never.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "presente-simple-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-u1",
+            "topic": "uso"
+          },
+          {
+            "id": "x-u2",
+            "topic": "uso"
+          },
+          {
+            "id": "x-u3",
+            "topic": "uso"
+          },
+          {
+            "id": "x-u4",
+            "topic": "uso"
+          },
+          {
+            "id": "x-u5",
+            "topic": "uso"
+          },
+          {
+            "id": "x-u6",
+            "topic": "uso"
+          },
+          {
+            "id": "x-b1",
+            "topic": "base"
+          },
+          {
+            "id": "x-b2",
+            "topic": "base"
+          },
+          {
+            "id": "x-b3",
+            "topic": "base"
+          },
+          {
+            "id": "x-b4",
+            "topic": "base"
+          },
+          {
+            "id": "x-b5",
+            "topic": "base"
+          },
+          {
+            "id": "x-b6",
+            "topic": "base"
+          },
+          {
+            "id": "x-t1",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-t2",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-t3",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-t4",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-t5",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-t6",
+            "topic": "tercera"
+          },
+          {
+            "id": "x-r1",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-r2",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-r3",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-r4",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-r5",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-r6",
+            "topic": "reglas"
+          },
+          {
+            "id": "x-f1",
+            "topic": "frec"
+          },
+          {
+            "id": "x-f2",
+            "topic": "frec"
+          },
+          {
+            "id": "x-f3",
+            "topic": "frec"
+          },
+          {
+            "id": "x-f4",
+            "topic": "frec"
+          },
+          {
+            "id": "x-f5",
+            "topic": "frec"
+          },
+          {
+            "id": "x-f6",
+            "topic": "frec"
+          }
+        ]
+      }
     }
   }
 };
