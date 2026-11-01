@@ -1811,3 +1811,8 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - chatbot.css: estilos del campo y del aviso. Versiones ?v=20261031a en todas las páginas.
 - supabase_functions/leobot-notify.ts: el correo a Leo ahora dice "Contacto (correo o teléfono)". Cambio solo de texto: sin redeploy el correo sigue funcionando, solo dice "Correo de contacto" aunque sea un teléfono.
 - Pruebas: Playwright a 320/360/375 px (sin dato -> aviso, dato inválido -> aviso, teléfono válido -> se envía, sin desborde horizontal).
+
+2026-11-01 - Estabilidad: pruebas alineadas y tarjetas de ejercicios (solo herramientas de prueba y articulos.html; produccion y pagos sin tocar)
+- tools/generar_academia_motor.js: si no se pasa ACADEMIA_MOTOR_ENABLED, ahora sigue a PUBLIC de academia-lanzamiento.js (antes apagaba el puente sin avisar). Salida verificada IDENTICA al academia-motor.js publicado. El --check y la prueba de integracion ignoran los saltos de linea CRLF de Windows (era la causa de que la prueba fallara en local).
+- tools/e2e/regresiones.js: se agrego como cambio aprobado el bloque de la academia en computeDiagnosis (aditivo y protegido por ACADEMIA_MOTOR.enabled). Comprobado que la prueba sigue detectando cualquier otro cambio en esa funcion.
+- articulos.html: dos tarjetas nuevas (ejercicios-ingles-a1 y ejercicios-presente-simple-ingles), con filtros Niveles y Gramatica. Probado a 320/360/375 px sin desbordes.
