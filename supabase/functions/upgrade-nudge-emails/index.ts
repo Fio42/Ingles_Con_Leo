@@ -472,6 +472,8 @@ const PRIORITY_ORDER = [
   // más abajo), no pasan por decideEmail ni compiten en prioridad con
   // los de arriba.
   'member_activation',
+  // Anuncio unico de la academia (ver decideMemberEmail). Miembros.
+  'academia_announce',
 ] as const
 type EmailKey = (typeof PRIORITY_ORDER)[number]
 
@@ -480,7 +482,7 @@ type EmailKey = (typeof PRIORITY_ORDER)[number]
 // correo requiere is_member=true (en vez de false, como todos los
 // demás), y para que el modo manual de prueba busque el perfil
 // correcto.
-const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation'])
+const MEMBER_ONLY_KEYS = new Set<EmailKey>(['member_activation', 'academia_announce'])
 
 // Subconjunto de EmailKey: solo las 4 claves de la secuencia por
 // calendario que pueden "caducar" y marcarse 'skipped' (ver
@@ -1136,6 +1138,15 @@ function decideMemberEmail(p: Profile, now: number): EmailKey | null {
       return 'member_activation'
     }
   }
+  // Anuncio de la academia (una sola vez por persona): para quien NO recibio
+  // el correo de activacion (que ya incluye la academia) y ya paso su ventana
+  // de 24-48 h, asi nadie se queda sin enterarse. Respeta bajas, rebotes, el
+  // freno de 24 h (arriba) y la ventana horaria. APAGADO hasta que el secreto
+  // ACADEMIA_ANNOUNCE valga 'on'.
+  if (Deno.env.get('ACADEMIA_ANNOUNCE') === 'on' && !lifecycle['academia_announce'] && !lifecycle['member_activation']) {
+    const activationWindowClosed = !p.member_since || hoursSince(p.member_since, now) > MEMBER_ACTIVATION_MAX_HOURS
+    if (activationWindowClosed) return 'academia_announce'
+  }
   return null
 }
 
@@ -1277,6 +1288,7 @@ async function sendIfStillEligible(
   const freshLifecycle: Record<string, string> = fresh.lifecycle_emails || {}
   const longTermIdx = parseInt(freshLifecycle['long_term_count'] || '0', 10) || 0
   if (key === 'long_term' && longTermIdx >= LONG_TERM_EMAILS.length) return false
+  if (key === 'academia_announce' && freshLifecycle['academia_announce']) return false // una sola vez por persona
 
   // Variantes de los correos de reactivación (reactivation_3d de cuentas
   // gratis): un contador por
@@ -1861,38 +1873,65 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
   member_activation: {
-    subject: 'Ya tienes todo listo. Empieza por aquí 👋',
-    preheader: 'Tu plan de estudio y Leo AI ya te están esperando.',
+    subject: 'Ya tienes todo listo: empieza tu primer curso 👋',
+    preheader: 'Lecciones cortas, ejercicios, evaluación e insignia.',
     greeting: '¡Hola! 👋',
     title: 'Tu membresía ya está activa',
     titleWithName: '{name}, tu membresía ya está activa',
     bodyHtml: `
     <p style="${P}">
-      Ya tienes acceso completo: práctica sin límite diario en las 5
-      habilidades, clases interactivas, repaso automático de tus errores
-      y Leo AI.
+      Ya tienes acceso completo: los cursos de la academia, práctica sin
+      límite diario, clases interactivas, repaso de tus errores y Leo AI.
     </p>
     <div style="${BOX}">
-      Para que no tengas que pensar por dónde empezar, armamos un
-      <strong>plan de estudio</strong> con tu nivel, tu progreso y tus
-      errores más frecuentes. Es tu mejor primer paso ahora mismo.
+      La forma más sencilla de empezar es la <strong>academia</strong>. Son
+      cursos cortos que van de menos a más, con ejercicios guiados, una
+      evaluación al final y una insignia cuando la apruebas. Tu avance se
+      guarda.
     </div>
     ${aiCard(
       'Cuando falles, no sigas de largo',
       'Después de contestar, busca los botones de Leo AI (los que tienen la estrellita ✦):',
       [
         '<strong>Explícame por qué</strong>: te explica tu error en ese mismo ejercicio',
-        '<strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir',
         '<strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar',
       ],
     )}
     <p style="${P}">
-      Con 5-10 minutos hoy ya arrancas. Tú eliges cuánto tiempo practicar
-      cada vez.
+      ¿Prefieres practicar libremente?
+      <a href="${SITE}/plan-estudio.html" style="color:#253ECC;">Tu plan de estudio</a>
+      te dice qué reforzar según tu nivel y tus errores. Con 5-10 minutos
+      hoy ya arrancas.
     </p>`,
-    ctaText: 'Ver mi plan de estudio',
-    ctaUrl: `${SITE}/plan-estudio.html`,
+    ctaText: 'Empezar mi primer curso',
+    ctaUrl: `${SITE}/academia.html`,
     footerNote: '¿Dudas sobre cómo usar tu membresía? Responde este correo, lo leo yo.',
+  },
+  // Anuncio unico para miembros que no recibieron el correo de activacion.
+  academia_announce: {
+    subject: 'Tu membresía incluye la academia: cursos paso a paso',
+    preheader: 'Lecciones cortas, ejercicios, evaluación e insignia, sin costo extra.',
+    greeting: '¡Hola! 👋',
+    title: 'Tu membresía incluye la academia',
+    titleWithName: '{name}, tu membresía incluye la academia',
+    bodyHtml: `
+    <p style="${P}">
+      La Academia de Inglés con Leo ya forma parte de tu membresía, sin
+      costo extra. Son cursos cortos que van de menos a más, con lecciones
+      de pocos minutos y ejercicios guiados.
+    </p>
+    <div style="${BOX}">
+      Al terminar cada curso haces una evaluación y, si la apruebas, ganas
+      una <strong>insignia</strong>. Tu avance se guarda y puedes retomar
+      justo donde lo dejaste.
+    </div>
+    <p style="${P}">
+      Con 5-10 minutos hoy ya puedes empezar. Seguiremos agregando más
+      cursos.
+    </p>`,
+    ctaText: 'Ir a mi academia',
+    ctaUrl: `${SITE}/academia.html`,
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
 }
 
