@@ -1823,3 +1823,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Hallazgo de las pruebas: una pista en español sin acentos se leia con voz inglesa (3 audios); se agrego say en esas actividades. Y 5 preguntas del examen de tercera persona tenian mal la respuesta marcada (la pruebas con oraculo gramatical lo detecto antes de cargar nada).
 - Pruebas: 11 de contenido, 7 de seguridad en servidor (PGlite) y 14 de navegador (Playwright), todas pasan; academia-integracion, piloto, inicio-alumno, panel, regresiones, correos y pagos siguen pasando.
 - No se toco: pagos, membresias, correos, anuncio de la academia, cursos 1 a 6.
+
+2026-11-01 (3) - Curso 7 PRESENTE SIMPLE: prueba final con audios reales en produccion (curso vuelto a APAGAR, sigue cerrado)
+- Audios: 116 mp3 subidos por Leo a Storage academia-audio/presente-simple/. Verificacion SQL: subidos 116, esperados 116, faltan 0, sin archivos pequenos.
+- Prueba real (cuenta de prueba f8c0, curso encendido solo unos minutos y con la bandera de prueba privada; ya apagado y bandera quitada): contenido entregado por el servidor, 102 audios de las pantallas de explicacion y de las actividades responden 200, audio/mpeg y decodifican (0,9 a 2,2 s), 5 lecciones completadas con progreso guardado en la nube, evaluacion de 15 con 100 % aprobada e insignia conseguida.
+- Efecto en datos: la cuenta de prueba queda con progreso, 1 intento aprobado y la insignia de Presente simple. Otros cursos sin cambios (todos enabled=true), presente-simple enabled=false.
+- Falta: autorizacion de Leo para abrir el curso (docs/lanzamiento-presente-simple.md, paso 5).
