@@ -162,16 +162,19 @@ const EXPLAIN_RULES = `${BASE_RULES}
 - El alumno YA leyó la "Explicación que ya leyó" y YA ve los "Ejemplos que ya ve": no repitas ni parafrasees esa regla, no repitas cuál es la respuesta correcta ni qué significa, y no reutilices esas frases.
 - Elige UNA estrategia, la que mejor sirva a este ejercicio: explicar la regla desde otro ángulo; ampliar cuándo y cómo se usa la palabra o estructura; mostrar otro uso frecuente relacionado; comparar con la palabra o estructura con la que suele confundirse; dar un truco sencillo para recordarla; o, si su opción parece correcta, explicar por qué no funciona en ESTA frase (y dónde sí funciona).
 - Si el ejercicio es muy sencillo, enseña otra aplicación real de esa palabra o estructura. No inventes reglas, excepciones, usos ni ejemplos: solo hechos del inglés estándar de los que estés seguro.
-- Principiantes: palabras sencillas y situaciones cotidianas. Intermedio y avanzado: añade un matiz útil cuando corresponda. Evita términos gramaticales difíciles. 2 a 4 frases cortas (menos si basta).
-- Si ACERTÓ: solo un dato nuevo en una o dos frases.
+- Principiantes: palabras sencillas y situaciones cotidianas. Intermedio y avanzado: un matiz útil. Sin términos gramaticales difíciles.
+- Si ACERTÓ: un dato nuevo en 1-2 frases.
 - Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales. Si hay excepciones o usos informales, di "normalmente", "en general" o "en inglés formal".
-- No afirmes nada de la situación que la frase no diga (por ejemplo, no digas que algo "terminó" o "ya pasó" si la frase no lo dice).
-- Si la opción del alumno es válida en otro contexto, dilo con matiz en lugar de decir solo que está mal. Si hay más de una forma válida según el contexto, nómbralo.
+- No afirmes nada que la frase no diga (p. ej. que algo "terminó").
+- Si su opción es válida en otro contexto, dilo con matiz; si hay más de una forma válida según el contexto, nómbralo.
 - Registro (hablado, escrito, formal, informal): menciónalo SOLO si estás totalmente seguro de que es la diferencia real entre las opciones; ante la duda, no hables de registro.
 - No inventes por qué eligió esa opción ni su intención.
 - El contraste debe respetar la naturaleza de la frase: si expresa obligación, ley o prohibición, contrasta con algo realmente opcional o distinto, nunca con una frase que la suavice (no uses "could" ni "if you want" para contrastar con "must").
 - "example_en"/"example_es": incluye siempre que puedas un ejemplo NUEVO: una frase corta, natural y 100% correcta en inglés, con su traducción natural al español, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Si no estás totalmente seguro de que es correcta y natural, déjalos como "", pero explica igual.
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
+- Conecta con SU frase: señala la pista concreta de ESTA frase que decide la respuesta (un año, "before", "any"...). Nada de lección general suelta.
+- No empieces con "Puedes usar..."; varía el inicio.
+- El ejemplo va SOLO en example_en/example_es: en "explanation" no escribas "Example:", "Traducción:" ni ese ejemplo.
 - Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
 
 const WRITING_RULES = `${BASE_RULES}
@@ -456,6 +459,13 @@ export function checkExplain(out: { explanation: string; example_en: string; exa
   return out
 }
 
+// El modelo a veces pega el ejemplo DENTRO de la explicación ("Example: ... | traducción") además de devolverlo en example_en/example_es,
+// y la página lo mostraría dos veces. Se corta desde el marcador; si lo que queda es muy corto, checkExplain lo descarta (mala salida).
+export function stripInlineExample(text: string): string {
+  const i = text.search(/(^|[\s.(|])(example_en|example_es|example|ejemplo|traducci[oó]n)\s*:/i)
+  return (i >= 0 ? text.slice(0, i) : text).replace(/[\s|(:;,-]+$/, '').trim()
+}
+
 // Valida la respuesta del modelo según el modo. null = descartar.
 export function validateOutput(mode: string, parsed: any, candidates: string[] = [], check?: ExplainCheck) {
   if (!parsed || typeof parsed !== 'object') return null
@@ -488,7 +498,7 @@ export function validateOutput(mode: string, parsed: any, candidates: string[] =
     const tip = cleanText(parsed.tip, 240)
     return explanation && tip ? { explanation, tip } : null
   }
-  const explanation = cleanText(parsed.explanation, 600)
+  const explanation = stripInlineExample(cleanText(parsed.explanation, 600))
   const example_en = cleanText(parsed.example_en, 200)
   const example_es = cleanText(parsed.example_es, 200)
   return explanation ? checkExplain({ explanation, example_en, example_es }, check) : null
@@ -531,7 +541,7 @@ export function estimateNeurons(usage: { input: number; output: number }) {
   return (usage.input * CF_NEURONS_PER_M.input + usage.output * CF_NEURONS_PER_M.output) / 1e6
 }
 
-export async function callCloudflare(mode: string, rules: string, text: string, schema?: any): Promise<ProviderResult> {
+export async function callCloudflare(mode: string, rules: string, text: string, schema?: any, temperature = 0.2): Promise<ProviderResult> {
   const account = env('CLOUDFLARE_ACCOUNT_ID'), token = env('CLOUDFLARE_API_TOKEN')
   if (!account || !token) return { ok: false, reason: 'not_configured' }
   const model = env('CLOUDFLARE_AI_MODEL') || '@cf/google/gemma-4-26b-a4b-it'
@@ -541,7 +551,7 @@ export async function callCloudflare(mode: string, rules: string, text: string, 
     body: JSON.stringify({
       messages: [{ role: 'system', content: rules }, { role: 'user', content: text }],
       max_completion_tokens: maxOutputFor(mode),
-      temperature: 0.2,
+      temperature,
       chat_template_kwargs: { enable_thinking: false }, // SIEMPRE: sin razonamiento extra
       response_format: { type: 'json_schema', json_schema: { name: 'leo_ai_' + mode, schema: schema || SCHEMAS[mode] } },
     }),
@@ -605,7 +615,7 @@ export async function callGemini(mode: string, rules: string, text: string, sche
   return { ok: true, raw, usage: { input: u.promptTokenCount || 0, output: u.candidatesTokenCount || 0 }, provider: 'gemini' }
 }
 
-const PROVIDERS: Record<string, (m: string, r: string, t: string, schema?: any) => Promise<ProviderResult>> = {
+const PROVIDERS: Record<string, (m: string, r: string, t: string, schema?: any, temperature?: number) => Promise<ProviderResult>> = {
   cloudflare: callCloudflare, groq: callGroq, gemini: callGemini,
 }
 
@@ -793,7 +803,11 @@ Deno.serve(async (req: Request) => {
     // 5) Llamar al proveedor (y, si se configuró, al siguiente de la lista).
     let lastReason = 'provider_error', lastDetail = ''
     for (const name of chain) {
-      const r = await PROVIDERS[name](mode, prompt.rules, prompt.text, mode === 'insight' ? insightSchema(prompt.candidates || []) : undefined)
+      // 2.º intento real de la MISMA pulsación (el 1.º se descartó por repetir o por salida mala): con temperatura 0,2 el modelo suele
+      // devolver casi lo mismo, así que se sube un poco y se le pide otro enfoque. Solo explain.
+      const retryExplain = attempt >= 2 && mode === 'explain'
+      const text = retryExplain ? prompt.text + '\nUna respuesta anterior se descartó por repetir lo que el alumno ya ve. Cambia de enfoque: otra idea, otro ejemplo.' : prompt.text
+      const r = await PROVIDERS[name](mode, prompt.rules, text, mode === 'insight' ? insightSchema(prompt.candidates || []) : undefined, retryExplain ? 0.6 : 0.2)
       if (r.ok === false) { lastReason = r.reason; lastDetail = r.detail || ''; continue }
       // Solo cantidades: nunca el contenido.
       const neurons = name === 'cloudflare' ? estimateNeurons(r.usage) : 0
