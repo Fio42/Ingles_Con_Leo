@@ -41,6 +41,21 @@ var ACADEMIA_CURSOS = {
    "title": "DO / DOES: preguntas y negaciones",
    "open": true,
    "lessons": 5
+  },
+  "in-on-at": {
+   "title": "IN / ON / AT: lugar y tiempo",
+   "open": false,
+   "lessons": 5
+  },
+  "wh": {
+   "title": "WH-QUESTIONS: What, Where, When, Who, Why, How",
+   "open": false,
+   "lessons": 5
+  },
+  "presente-continuo": {
+   "title": "Presente continuo: lo que pasa ahora",
+   "open": false,
+   "lessons": 5
   }
  }
 };

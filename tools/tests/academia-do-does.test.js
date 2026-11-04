@@ -207,7 +207,7 @@ test('OCULTO: el curso sigue cerrado en la ruta, el puente y el listado; los otr
   ["Do you live here?", "Con you se usa do", 'wrongWhy', "She doesn't like tea.", 'Does she work here?'].forEach(s => assert(pub.indexOf(s, i) === -1, 'contenido privado en academia-data.js: ' + s));
   assert(/^private\/$/m.test(read('.gitignore').replace(/\r/g, '')), 'private/ ignorado');
   assert(!fs.existsSync(path.join(root, 'audio', 'academia', 'do-does')), 'no hay audio publico del curso');
-  assert(/'presente-simple', 'do-does'\]/.test(read('academia.js')), 'el curso esta en la lista de academia.js');
+  assert(/'presente-simple', 'do-does'[,\]]/.test(read('academia.js')), 'el curso esta en la lista de academia.js');
 });
 test('SQL: la migracion solo inserta una fila APAGADA y los seeds solo tocan este curso', () => {
   const mig = read('supabase/migrations/20261104140000_academia_curso_do_does.sql'); const code = mig.split('\n').filter(l => !/^\s*--/.test(l)).join('\n');

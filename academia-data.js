@@ -53,7 +53,10 @@ var ACADEMIA = {
       { id: 'there-is-are', title: 'THERE IS / THERE ARE', blurb: 'Decir qué hay y dónde.' },
       { id: 'can', title: "CAN / CAN'T", blurb: 'Habilidades y permisos.' },
       { id: 'presente-simple', title: 'Presente simple', blurb: 'Rutinas y hábitos.' },
-      { id: 'do-does', title: 'DO / DOES', blurb: 'Preguntas y negaciones en presente.' }
+      { id: 'do-does', title: 'DO / DOES', blurb: 'Preguntas y negaciones en presente.' },
+      { id: 'in-on-at', title: 'IN / ON / AT', soon: true, blurb: 'Lugar y tiempo.' },
+      { id: 'wh', title: 'WH-QUESTIONS', soon: true, blurb: 'Preguntar con what, where, when, who, why y how.' },
+      { id: 'presente-continuo', title: 'PRESENTE CONTINUO', soon: true, blurb: 'Lo que pasa ahora.' }
     ]
   },
 
@@ -2463,6 +2466,720 @@ var ACADEMIA = {
           {
             "id": "x-r6",
             "topic": "rep"
+          }
+        ]
+      }
+    },
+
+    // CURSO PROTEGIDO (Curso 11, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'in-on-at': {
+      "id": "in-on-at",
+      "title": "IN / ON / AT: lugar y tiempo",
+      "name": "IN / ON / AT",
+      "short": "Lugar y tiempo",
+      "tagline": "Aprende a usar in, on y at para decir dónde están las cosas y cuándo pasan.",
+      "goal": "Al terminar podrás elegir in, on o at para hablar de lugares y de tiempo, y evitar errores comunes como in Monday o in home.",
+      "protected": true,
+      "topics": {
+        "que": "Qué son in, on y at",
+        "lug": "Lugar",
+        "tie": "Tiempo",
+        "mez": "Mezcla y excepciones",
+        "rep": "Repaso y situaciones reales"
+      },
+      "lessons": [
+        {
+          "id": "ioa-que",
+          "n": 1,
+          "minutes": 6,
+          "topic": "que",
+          "title": "¿Qué son in, on y at?",
+          "summary": "Entender la idea de cada palabra: dentro, sobre y en un punto.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "ioa-lug",
+          "n": 2,
+          "minutes": 7,
+          "topic": "lug",
+          "title": "Lugar: in, on y at",
+          "summary": "Decir dónde estás con cuartos, ciudades, calles, pisos, casa y trabajo.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "ioa-tie",
+          "n": 3,
+          "minutes": 7,
+          "topic": "tie",
+          "title": "Tiempo: in, on y at",
+          "summary": "Decir cuándo pasa algo con meses, días, fechas y horas.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "ioa-mez",
+          "n": 4,
+          "minutes": 7,
+          "topic": "mez",
+          "title": "Mezcla y excepciones",
+          "summary": "In the morning pero at night, on Monday morning, in the car pero on the plane.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "ioa-rep",
+          "n": 5,
+          "minutes": 7,
+          "topic": "rep",
+          "title": "Repaso y situaciones reales",
+          "summary": "Mezclar lugar y tiempo en situaciones de todos los días.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "in-on-at-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-q1",
+            "topic": "que"
+          },
+          {
+            "id": "x-q2",
+            "topic": "que"
+          },
+          {
+            "id": "x-q3",
+            "topic": "que"
+          },
+          {
+            "id": "x-q4",
+            "topic": "que"
+          },
+          {
+            "id": "x-q5",
+            "topic": "que"
+          },
+          {
+            "id": "x-q6",
+            "topic": "que"
+          },
+          {
+            "id": "x-l1",
+            "topic": "lug"
+          },
+          {
+            "id": "x-l2",
+            "topic": "lug"
+          },
+          {
+            "id": "x-l3",
+            "topic": "lug"
+          },
+          {
+            "id": "x-l4",
+            "topic": "lug"
+          },
+          {
+            "id": "x-l5",
+            "topic": "lug"
+          },
+          {
+            "id": "x-l6",
+            "topic": "lug"
+          },
+          {
+            "id": "x-t1",
+            "topic": "tie"
+          },
+          {
+            "id": "x-t2",
+            "topic": "tie"
+          },
+          {
+            "id": "x-t3",
+            "topic": "tie"
+          },
+          {
+            "id": "x-t4",
+            "topic": "tie"
+          },
+          {
+            "id": "x-t5",
+            "topic": "tie"
+          },
+          {
+            "id": "x-t6",
+            "topic": "tie"
+          },
+          {
+            "id": "x-m1",
+            "topic": "mez"
+          },
+          {
+            "id": "x-m2",
+            "topic": "mez"
+          },
+          {
+            "id": "x-m3",
+            "topic": "mez"
+          },
+          {
+            "id": "x-m4",
+            "topic": "mez"
+          },
+          {
+            "id": "x-m5",
+            "topic": "mez"
+          },
+          {
+            "id": "x-m6",
+            "topic": "mez"
+          },
+          {
+            "id": "x-r1",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r2",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r3",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r4",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r5",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r6",
+            "topic": "rep"
+          }
+        ]
+      }
+    },
+
+    // CURSO PROTEGIDO (Curso 9, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'wh': {
+      "id": "wh",
+      "title": "WH-QUESTIONS: What, Where, When, Who, Why, How",
+      "name": "WH-QUESTIONS",
+      "short": "Preguntas con wh",
+      "tagline": "Aprende a preguntar por información con what, where, when, who, why y how.",
+      "goal": "Al terminar podrás hacer preguntas con what, where, who, when, why y how, usar is, are, do y does en el orden correcto y evitar errores como Where you live.",
+      "protected": true,
+      "topics": {
+        "bas": "What, where y who",
+        "tim": "When, why y how",
+        "ser": "Wh con is y are",
+        "aux": "Wh con do y does",
+        "mix": "Repaso y situaciones reales"
+      },
+      "lessons": [
+        {
+          "id": "wh-bas",
+          "n": 1,
+          "minutes": 6,
+          "topic": "bas",
+          "title": "¿Qué son las preguntas con wh?",
+          "summary": "Preguntar por una cosa, un lugar o una persona con what, where y who.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "wh-tim",
+          "n": 2,
+          "minutes": 7,
+          "topic": "tim",
+          "title": "When, why y how",
+          "summary": "Preguntar cuándo, por qué y cómo, también la hora y la edad.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "wh-ser",
+          "n": 3,
+          "minutes": 7,
+          "topic": "ser",
+          "title": "Wh con is y are",
+          "summary": "Preguntar con where is, what are, who is y how are, sin do ni does.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "wh-aux",
+          "n": 4,
+          "minutes": 7,
+          "topic": "aux",
+          "title": "Wh con do y does",
+          "summary": "Preguntar con where do, what does y when do, con el verbo sin s.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "wh-mix",
+          "n": 5,
+          "minutes": 7,
+          "topic": "mix",
+          "title": "Repaso y situaciones reales",
+          "summary": "Mezclar todas las preguntas en situaciones de todos los días.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "wh-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-b1",
+            "topic": "bas"
+          },
+          {
+            "id": "x-b2",
+            "topic": "bas"
+          },
+          {
+            "id": "x-b3",
+            "topic": "bas"
+          },
+          {
+            "id": "x-b4",
+            "topic": "bas"
+          },
+          {
+            "id": "x-b5",
+            "topic": "bas"
+          },
+          {
+            "id": "x-b6",
+            "topic": "bas"
+          },
+          {
+            "id": "x-t1",
+            "topic": "tim"
+          },
+          {
+            "id": "x-t2",
+            "topic": "tim"
+          },
+          {
+            "id": "x-t3",
+            "topic": "tim"
+          },
+          {
+            "id": "x-t4",
+            "topic": "tim"
+          },
+          {
+            "id": "x-t5",
+            "topic": "tim"
+          },
+          {
+            "id": "x-t6",
+            "topic": "tim"
+          },
+          {
+            "id": "x-s1",
+            "topic": "ser"
+          },
+          {
+            "id": "x-s2",
+            "topic": "ser"
+          },
+          {
+            "id": "x-s3",
+            "topic": "ser"
+          },
+          {
+            "id": "x-s4",
+            "topic": "ser"
+          },
+          {
+            "id": "x-s5",
+            "topic": "ser"
+          },
+          {
+            "id": "x-s6",
+            "topic": "ser"
+          },
+          {
+            "id": "x-a1",
+            "topic": "aux"
+          },
+          {
+            "id": "x-a2",
+            "topic": "aux"
+          },
+          {
+            "id": "x-a3",
+            "topic": "aux"
+          },
+          {
+            "id": "x-a4",
+            "topic": "aux"
+          },
+          {
+            "id": "x-a5",
+            "topic": "aux"
+          },
+          {
+            "id": "x-a6",
+            "topic": "aux"
+          },
+          {
+            "id": "x-m1",
+            "topic": "mix"
+          },
+          {
+            "id": "x-m2",
+            "topic": "mix"
+          },
+          {
+            "id": "x-m3",
+            "topic": "mix"
+          },
+          {
+            "id": "x-m4",
+            "topic": "mix"
+          },
+          {
+            "id": "x-m5",
+            "topic": "mix"
+          },
+          {
+            "id": "x-m6",
+            "topic": "mix"
+          }
+        ]
+      }
+    },
+
+    // CURSO PROTEGIDO (Curso 10, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'presente-continuo': {
+      "id": "presente-continuo",
+      "title": "Presente continuo: lo que pasa ahora",
+      "name": "Presente continuo",
+      "short": "Lo que pasa ahora",
+      "tagline": "Habla de lo que está pasando ahora mismo con am, is, are y el verbo con ing.",
+      "goal": "Al terminar podrás decir lo que pasa ahora con am, is y are más el verbo con ing, escribir bien el ing, hacer negaciones con not, preguntar y responder, y saber cuándo usar el presente simple o el continuo.",
+      "protected": true,
+      "topics": {
+        "ing": "Am, is, are + verbo con ing",
+        "afi": "Frases afirmativas ahora",
+        "neg": "Negaciones con not",
+        "pre": "Preguntas y respuestas cortas",
+        "vs": "Simple o continuo"
+      },
+      "lessons": [
+        {
+          "id": "pc-ing",
+          "n": 1,
+          "minutes": 7,
+          "topic": "ing",
+          "title": "Am, is, are + verbo con ing",
+          "summary": "Formar el presente continuo y escribir bien el ing.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "pc-afi",
+          "n": 2,
+          "minutes": 7,
+          "topic": "afi",
+          "title": "Frases afirmativas: lo que pasa ahora",
+          "summary": "Decir lo que pasa ahora con I, you, he, she, it, we y they, y usar las formas cortas.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "pc-neg",
+          "n": 3,
+          "minutes": 7,
+          "topic": "neg",
+          "title": "Negaciones: I'm not, isn't, aren't",
+          "summary": "Decir lo que no pasa ahora con am not, isn't y aren't.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "pc-pre",
+          "n": 4,
+          "minutes": 7,
+          "topic": "pre",
+          "title": "Preguntas y respuestas cortas",
+          "summary": "Preguntar con am, is y are, y responder Yes, I am o No, he isn't.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "pc-vs",
+          "n": 5,
+          "minutes": 7,
+          "topic": "vs",
+          "title": "Presente simple o presente continuo",
+          "summary": "Elegir entre lo que haces siempre y lo que pasa ahora, y usarlo en situaciones reales.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "presente-continuo-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-i1",
+            "topic": "ing"
+          },
+          {
+            "id": "x-i2",
+            "topic": "ing"
+          },
+          {
+            "id": "x-i3",
+            "topic": "ing"
+          },
+          {
+            "id": "x-i4",
+            "topic": "ing"
+          },
+          {
+            "id": "x-i5",
+            "topic": "ing"
+          },
+          {
+            "id": "x-i6",
+            "topic": "ing"
+          },
+          {
+            "id": "x-a1",
+            "topic": "afi"
+          },
+          {
+            "id": "x-a2",
+            "topic": "afi"
+          },
+          {
+            "id": "x-a3",
+            "topic": "afi"
+          },
+          {
+            "id": "x-a4",
+            "topic": "afi"
+          },
+          {
+            "id": "x-a5",
+            "topic": "afi"
+          },
+          {
+            "id": "x-a6",
+            "topic": "afi"
+          },
+          {
+            "id": "x-n1",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n2",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n3",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n4",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n5",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n6",
+            "topic": "neg"
+          },
+          {
+            "id": "x-p1",
+            "topic": "pre"
+          },
+          {
+            "id": "x-p2",
+            "topic": "pre"
+          },
+          {
+            "id": "x-p3",
+            "topic": "pre"
+          },
+          {
+            "id": "x-p4",
+            "topic": "pre"
+          },
+          {
+            "id": "x-p5",
+            "topic": "pre"
+          },
+          {
+            "id": "x-p6",
+            "topic": "pre"
+          },
+          {
+            "id": "x-v1",
+            "topic": "vs"
+          },
+          {
+            "id": "x-v2",
+            "topic": "vs"
+          },
+          {
+            "id": "x-v3",
+            "topic": "vs"
+          },
+          {
+            "id": "x-v4",
+            "topic": "vs"
+          },
+          {
+            "id": "x-v5",
+            "topic": "vs"
+          },
+          {
+            "id": "x-v6",
+            "topic": "vs"
           }
         ]
       }

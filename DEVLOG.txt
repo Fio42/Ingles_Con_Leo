@@ -1859,3 +1859,7 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Pruebas: do-does 14, seguridad 7, navegador 14, integracion 17, todas ok. Apagado de emergencia: update public.academia_courses set enabled=false where course_id='do-does';
 
 2026-11-04 (tarde) - Audio: el verbo "live" sonaba /laIv/ (en vivo) en 4 frases de DO / DOES y en la palabra suelta de Presente simple. Corregido en tools/generar_audios_academia.py (fuerza /lIv/) y regenerados 5 mp3 (mismos nombres). Pendiente: Leo los sube a Storage (reemplazar). Revisados el resto de textos de TO BE, Pronombres, CAN, Posesivos, THERE IS/ARE, Presente simple y DO/DOES: sin otros casos (read, use, close, does bien). Articulos no se pudo revisar (faltan sus archivos privados en esta copia).
+
+2026-11-04 (noche) - Academia: Cursos 9 (WH-QUESTIONS), 10 (Presente continuo) y 11 (IN / ON / AT) desarrollados y OCULTOS
+- Cada uno: 5 lecciones, 40 ejercicios, 30 de practica, 50 de examen, audios Kokoro generados (wh 101, presente-continuo 209, in-on-at 141). Esqueleto + ruta soon:true + puente open:false + migracion apagada. Nada cargado en produccion. Guia: docs/lanzamiento-cursos-9-10-11.md. Versiones ?v=20261104c.
+- Ojo: la ruta mostrara tres tarjetas "Proximamente" mas.
