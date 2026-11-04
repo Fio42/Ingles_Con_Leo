@@ -1050,7 +1050,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "presente-simple",
   "engineTopic": "Presente simple: la -s de he / she / it",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "uso": "Qué es el presente simple",
    "base": "I, you, we y they",

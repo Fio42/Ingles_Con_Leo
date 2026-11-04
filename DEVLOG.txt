@@ -1829,3 +1829,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Prueba real (cuenta de prueba f8c0, curso encendido solo unos minutos y con la bandera de prueba privada; ya apagado y bandera quitada): contenido entregado por el servidor, 102 audios de las pantallas de explicacion y de las actividades responden 200, audio/mpeg y decodifican (0,9 a 2,2 s), 5 lecciones completadas con progreso guardado en la nube, evaluacion de 15 con 100 % aprobada e insignia conseguida.
 - Efecto en datos: la cuenta de prueba queda con progreso, 1 intento aprobado y la insignia de Presente simple. Otros cursos sin cambios (todos enabled=true), presente-simple enabled=false.
 - Falta: autorizacion de Leo para abrir el curso (docs/lanzamiento-presente-simple.md, paso 5).
+
+2026-11-01 (4) - CURSO 7 PRESENTE SIMPLE: PUBLICADO (autorizado por Leo)
+- Apertura: route soon quitado en academia-data.js, open:true en tools/generar_academia_motor.js, regenerados academia-motor.js y academia-cursos.js, versiones ?v=20261101b (academia.html, academia-boot.js, miembros.html y progreso.html solo en la version de academia-cursos.js). Luego enabled=true en Supabase.
+- Pruebas ajustadas al nuevo estado: academia-presente-simple (11) y e2e (14: ahora el miembro ve el curso SIN bandera de prueba); academia-integracion (17): el tema "otro sin curso" ya no es presente-simple sino do-does.
+- Reversion sin tocar los demas cursos: update public.academia_courses set enabled = false where course_id = 'presente-simple'; y, si hace falta ocultarlo del sitio, git revert del commit de apertura.
+- No se toco: pagos, membresias, correos, ACADEMIA_ANNOUNCE (apagado), cursos 1 a 6.

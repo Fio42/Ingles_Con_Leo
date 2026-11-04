@@ -140,17 +140,14 @@ async function until(fn, ms, what){
   const prog = async (course) => (await q('select state, version from public.academia_progress where user_id = $1 and course_id = $2', [UID, course]))[0];
   const events = p => p.evaluate(() => (window.dataLayer || []).filter(a => a[0] === 'event').map(a => a[1]));
 
-  /* ============ 1. Sin canario (curso OCULTO, como queda hasta que Leo lo autorice): el curso NO existe para nadie ============ */
+  /* ============ 1. Sin canario (curso PUBLICADO el 1-nov-2026): el miembro ve el curso ============ */
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'presente-simple'`);
   const N = await newDevice('sin-canario', { width: 390, height: 800 }, UID, false);
-  await test('OCULTO: SIN canario el miembro NO ve el curso (ni tarjeta, ni enlace, ni leccion directa); TO BE sigue visible', async()=>{
-    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
-    await new Promise(r => setTimeout(r, 900));
-    assert.strictEqual(await N.page.$('a[href="#/curso/presente-simple"]'), null, 'sin enlace al curso oculto');
-    assert.strictEqual(await N.page.$('section[aria-label="Presente simple"], a[href*="presente-simple"]'), null, 'sin tarjeta ni enlaces del curso oculto');   // puede aparecer como titulo de "Lo que viene"
-    assert(/TO BE/.test(await N.page.innerText('#acRoot')), 'TO BE visible');
-    await N.page.goto(base + '/academia.html?nube=1#/curso/presente-simple/leccion/1'); await N.page.reload(); await N.page.waitForSelector('#acRoot'); await new Promise(r => setTimeout(r, 900));
-    assert.strictEqual(await N.page.$('.ac-card-act'), null, 'la leccion directa no abre');
+  await test('PUBLICADO: SIN canario el miembro ve la tarjeta y el enlace del curso, y la leccion directa abre', async()=>{
+    await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && /Presente simple/.test(r.innerText); }, null, { timeout: 9000 });
+    assert(await N.page.$('a[href="#/curso/presente-simple"]'), 'enlace al curso publicado');
+    await N.page.goto(base + '/academia.html?nube=1#/curso/presente-simple/leccion/1'); await N.page.reload(); await N.page.waitForSelector('.ac-card', { timeout: 9000 });
+    assert(await N.page.$('.ac-card'), 'la leccion directa abre');
   });
   await N.ctx.close();
 

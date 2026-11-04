@@ -364,7 +364,8 @@ async function partD(){
     assert.strictEqual(M.linkForTema('to-be-presente', [], null).href, 'academia.html#/curso/to-be');
     assert.strictEqual(M.linkForTema('to-be-presente', ['ac:to-be:l4-a1', 'ac:to-be:l2-a1'], null).lesson, 2);
     assert.strictEqual(M.linkForTema('to-be-presente', ['ac:to-be:e-n3', 'ac:to-be:e-n2', 'ac:to-be:l2-a1'], null).lesson, 3, 'los ids del examen oficial cuentan para su leccion');
-    assert.strictEqual(M.linkForTema('presente-simple', ['ac:to-be:l2-a1'], null), null, 'otro tema: sin enlace');
+    assert.strictEqual(M.linkForTema('do-does', ['ac:to-be:l2-a1'], null), null, 'otro tema (sin curso): sin enlace');
+    assert.strictEqual(M.linkForTema('presente-simple', [], null).href, 'academia.html#/curso/presente-simple', 'Presente simple ya tiene su curso abierto');
     assert.strictEqual(M.linkForTema('to-be-presente', ['ac:otro:l2-a1', 'basura'], null).lesson, null);
   });
 }

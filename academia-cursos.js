@@ -34,7 +34,7 @@ var ACADEMIA_CURSOS = {
   },
   "presente-simple": {
    "title": "Presente simple",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

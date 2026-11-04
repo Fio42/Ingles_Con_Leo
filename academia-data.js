@@ -52,7 +52,7 @@ var ACADEMIA = {
       { id: 'posesivos', title: 'Posesivos y demostrativos', blurb: 'My, your, this, that.' },
       { id: 'there-is-are', title: 'THERE IS / THERE ARE', blurb: 'Decir qué hay y dónde.' },
       { id: 'can', title: "CAN / CAN'T", blurb: 'Habilidades y permisos.' },
-      { id: 'presente-simple', title: 'Presente simple', soon: true, blurb: 'Rutinas y hábitos.' },
+      { id: 'presente-simple', title: 'Presente simple', blurb: 'Rutinas y hábitos.' },
       { id: 'do-does', title: 'DO / DOES', soon: true, blurb: 'Preguntas y negaciones en presente.' }
     ]
   },
