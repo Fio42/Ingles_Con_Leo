@@ -21,4 +21,11 @@ t('validateOutput(explain) entrega la explicación limpia y conserva example_en/
 t('si tras limpiar la explicación queda vacía/corta, es mala salida (null)', () => {
   assert.strictEqual(S.validateOutput('explain', { explanation: 'Example: He had left. | Se había ido.', example_en: 'He had left.', example_es: 'Se había ido.' }, [], undefined), null);
 });
+t('hasShapeTrick descarta "palabras que terminan en s" como truco y deja pasar usos legítimos', () => {
+  assert.strictEqual(S.hasShapeTrick("Piensa que 'many' acompaña a palabras que terminan en 's' cuando son plurales."), true);
+  assert.strictEqual(S.hasShapeTrick('Los verbos regulares terminan en -ed en pasado.'), false);
+  assert.strictEqual(S.hasShapeTrick('Usa many con sustantivos que se pueden contar.'), false);
+  const chk = { base: '', shown: [], skill: 'grammar', correct: 'many', chosen: 'much', failed: true, question: 'I have ___ books.' };
+  assert.strictEqual(S.validateOutput('explain', { explanation: "Como 'books' tiene esa 's' al final, necesitas usar many; termina en 's' y por eso es plural.", example_en: '', example_es: '' }, [], chk), null);
+});
 console.log(n + ' pruebas pasaron');

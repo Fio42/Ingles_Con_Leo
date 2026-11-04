@@ -164,16 +164,17 @@ const EXPLAIN_RULES = `${BASE_RULES}
 - Si el ejercicio es muy sencillo, enseña otra aplicación real de esa palabra o estructura. No inventes reglas, excepciones, usos ni ejemplos: solo hechos del inglés estándar de los que estés seguro.
 - Principiantes: palabras sencillas y situaciones cotidianas. Intermedio y avanzado: un matiz útil. Sin términos gramaticales difíciles.
 - Si ACERTÓ: un dato nuevo en 1-2 frases.
-- Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales. Si hay excepciones o usos informales, di "normalmente", "en general" o "en inglés formal".
+- Nada de reglas absolutas: no uses "siempre", "nunca", "obligatorio" ni "en todos los casos" para reglas gramaticales; di "normalmente", "en general" o "en inglés formal".
 - No afirmes nada que la frase no diga (p. ej. que algo "terminó").
 - Si su opción es válida en otro contexto, dilo con matiz; si hay más de una forma válida según el contexto, nómbralo.
 - Registro (hablado, escrito, formal, informal): menciónalo SOLO si estás totalmente seguro de que es la diferencia real entre las opciones; ante la duda, no hables de registro.
 - No inventes por qué eligió esa opción ni su intención.
-- El contraste debe respetar la naturaleza de la frase: si expresa obligación, ley o prohibición, contrasta con algo realmente opcional o distinto, nunca con una frase que la suavice (no uses "could" ni "if you want" para contrastar con "must").
+- El contraste respeta la frase: si expresa obligación, ley o prohibición, no la contrastes con algo que la suavice ("could", "if you want").
 - "example_en"/"example_es": incluye siempre que puedas un ejemplo NUEVO: una frase corta, natural y 100% correcta en inglés, con su traducción natural al español, DISTINTA de los ejemplos ya mostrados y de la frase del ejercicio. Si no estás totalmente seguro de que es correcta y natural, déjalos como "", pero explica igual.
 - Si citas un texto o audio, habla de quien lo dice ("el texto dice que sus padres..."), no del alumno.
 - Conecta con SU frase: señala la pista concreta de ESTA frase que decide la respuesta (un año, "before", "any"...). Nada de lección general suelta.
-- No empieces con "Puedes usar..."; varía el inicio.
+- Varía el inicio (no "Puedes usar...").
+- Máximo 3 frases y sin relleno: termina cuando tu idea esté dicha. Todo debe ser cierto en inglés estándar: nada de trucos por la forma de la palabra ("termina en s") ni pistas ajenas a la frase.
 - El ejemplo va SOLO en example_en/example_es: en "explanation" no escribas "Example:", "Traducción:" ni ese ejemplo.
 - Sin felicitaciones ni introducciones ("Muy bien", "Correcto", "Claro", "En este caso", "Te explico").`
 
@@ -377,6 +378,9 @@ const normTxt = (v: unknown) => String(v || '').toLowerCase().normalize('NFD').r
 // como 'I have never tried sushi' no son una regla absoluta) y verbos descriptivos ("siempre va seguido de gerundio" puede ser un hecho cierto).
 const ABSOLUTE_RULE = /\b(siempre|nunca|jamas)\s+(debes|debe|tienes que|hay que|se usa|usa|usas|se pone|se escribe|necesitas)\b|\b(debes|debe|tienes que|hay que)\s+(siempre|nunca)\b|\bes obligatori[oa]\b|\bobligatoriamente\b|\ben todos los casos\b|\bsin excepcion\b/
 const stripQuoted = (t: string) => t.replace(/["\u201c\u201d\u00ab\u00bb][^"\u201c\u201d\u00ab\u00bb]*["\u201c\u201d\u00ab\u00bb]/g, ' ').replace(/(^|[\s(])'[^']{1,60}'(?=[\s.,;:!?)]|$)/g, '$1 ')
+// Truco falso por la forma de la palabra ("many va con palabras que terminan en s": falla con children, people...).
+const SHAPE_TRICK = /\btermin\w* en (la )?(letra )?["'\u201c\u2018]?s["'\u201d\u2019]?(?![a-z])/
+export function hasShapeTrick(text: string): boolean { return SHAPE_TRICK.test(String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')) }
 export function hasAbsoluteRule(text: string): boolean { return ABSOLUTE_RULE.test(normTxt(stripQuoted(String(text || '')))) }
 const contentWords = (t: string) => new Set(normTxt(t).split(' ').filter(w => w.length >= 4))
 // ¿Repite (o casi copia) la explicación que el alumno ya leyó?
@@ -448,7 +452,7 @@ const sameSentence = (a: string, b: string) => { const x = normTxt(a), y = normT
 export function checkExplain(out: { explanation: string; example_en: string; example_es: string }, check?: ExplainCheck) {
   if (out.explanation.length < 25) return null
   if (!check) return out
-  if (check.skill === 'grammar' && hasAbsoluteRule(out.explanation)) return null // regla absoluta: mejor no entregar nada que enseñar algo falso
+  if (check.skill === 'grammar' && (hasAbsoluteRule(out.explanation) || hasShapeTrick(out.explanation))) return null // regla absoluta: mejor no entregar nada que enseñar algo falso
   if (check.base && repeatsExplanation(out.explanation, check.base)) return null // repite lo que ya leyó: no se entrega (mala salida: no cobra crédito; el reintento normal pide otra)
   const ne = normTxt(out.explanation)
   if (check.shown.some(s => normTxt(s).length >= 15 && ne.includes(normTxt(s)))) return null // cita un ejemplo ya mostrado: igual que arriba
