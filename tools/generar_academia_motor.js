@@ -20,7 +20,9 @@ const COURSES = {
   'there-is-are': { tema: 'there-is-are', engineTopic: 'There is / are (hay)', level: 'facil', open: true },
   'can': { tema: 'can-cant', engineTopic: "Can / Can't (habilidad)", level: 'facil', open: true },
   // Curso 7: publicado el 1-nov-2026.
-  'presente-simple': { tema: 'presente-simple', engineTopic: 'Presente simple: la -s de he / she / it', level: 'facil', open: true }
+  'presente-simple': { tema: 'presente-simple', engineTopic: 'Presente simple: la -s de he / she / it', level: 'facil', open: true },
+  // Curso 8 (OCULTO y apagado hasta que Leo lo autorice): open=false, el sitio no lo recomienda.
+  'do-does': { tema: 'do-does', engineTopic: 'Do / Does', level: 'facil', open: false }
 };
 
 // Encendido: lo manda ACADEMIA_MOTOR_ENABLED (1/0) si existe; si no, sigue a PUBLIC de academia-lanzamiento.js, asi regenerar sin variable no apaga la academia publicada.

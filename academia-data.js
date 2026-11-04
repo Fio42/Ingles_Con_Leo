@@ -2228,6 +2228,244 @@ var ACADEMIA = {
           }
         ]
       }
+    },
+
+    // CURSO PROTEGIDO (Curso 8, OCULTO hasta que Leo lo autorice): solo esqueleto publico.
+    'do-does': {
+      "id": "do-does",
+      "title": "DO / DOES: preguntas y negaciones",
+      "name": "DO / DOES",
+      "short": "Preguntas y negaciones",
+      "tagline": "Aprende a preguntar y a decir que no en presente simple con do, does, don't y doesn't.",
+      "goal": "Al terminar podrás hacer preguntas con do y does, responder con respuestas cortas, decir que no con don't y doesn't, y evitar los errores más comunes como Does she works.",
+      "protected": true,
+      "topics": {
+        "que": "Qué son do y does",
+        "do": "Preguntas con do",
+        "hes": "Preguntas con does",
+        "neg": "Don't y doesn't",
+        "rep": "Repaso y situaciones reales"
+      },
+      "lessons": [
+        {
+          "id": "dd-que",
+          "n": 1,
+          "minutes": 6,
+          "topic": "que",
+          "title": "¿Qué son do y does?",
+          "summary": "Entender los ayudantes do y does y cuál va con cada persona.",
+          "activityIds": [
+            "l1-a1",
+            "l1-a2",
+            "l1-a3",
+            "l1-a4",
+            "l1-a5",
+            "l1-a6",
+            "l1-a7",
+            "l1-a8"
+          ]
+        },
+        {
+          "id": "dd-do",
+          "n": 2,
+          "minutes": 7,
+          "topic": "do",
+          "title": "Preguntas con do",
+          "summary": "Preguntar con I, you, we y they, y responder Yes, I do o No, I don't.",
+          "activityIds": [
+            "l2-a1",
+            "l2-a2",
+            "l2-a3",
+            "l2-a4",
+            "l2-a5",
+            "l2-a6",
+            "l2-a7",
+            "l2-a8"
+          ]
+        },
+        {
+          "id": "dd-hes",
+          "n": 3,
+          "minutes": 7,
+          "topic": "hes",
+          "title": "Preguntas con does",
+          "summary": "Preguntar con he, she e it, y entender por qué el verbo pierde la s.",
+          "activityIds": [
+            "l3-a1",
+            "l3-a2",
+            "l3-a3",
+            "l3-a4",
+            "l3-a5",
+            "l3-a6",
+            "l3-a7",
+            "l3-a8"
+          ]
+        },
+        {
+          "id": "dd-neg",
+          "n": 4,
+          "minutes": 7,
+          "topic": "neg",
+          "title": "Negaciones con don't y doesn't",
+          "summary": "Decir lo que no haces con don't y doesn't, sin errores comunes.",
+          "activityIds": [
+            "l4-a1",
+            "l4-a2",
+            "l4-a3",
+            "l4-a4",
+            "l4-a5",
+            "l4-a6",
+            "l4-a7",
+            "l4-a8"
+          ]
+        },
+        {
+          "id": "dd-rep",
+          "n": 5,
+          "minutes": 7,
+          "topic": "rep",
+          "title": "Repaso y situaciones reales",
+          "summary": "Mezclar preguntas, frases afirmativas y negaciones en situaciones de todos los días.",
+          "activityIds": [
+            "l5-a1",
+            "l5-a2",
+            "l5-a3",
+            "l5-a4",
+            "l5-a5",
+            "l5-a6",
+            "l5-a7",
+            "l5-a8"
+          ]
+        }
+      ],
+      "exam": {
+        "id": "do-does-final",
+        "n": 6,
+        "title": "Evaluación final (práctica)",
+        "bank": [],
+        "practiceIds": [
+          {
+            "id": "x-q1",
+            "topic": "que"
+          },
+          {
+            "id": "x-q2",
+            "topic": "que"
+          },
+          {
+            "id": "x-q3",
+            "topic": "que"
+          },
+          {
+            "id": "x-q4",
+            "topic": "que"
+          },
+          {
+            "id": "x-q5",
+            "topic": "que"
+          },
+          {
+            "id": "x-q6",
+            "topic": "que"
+          },
+          {
+            "id": "x-d1",
+            "topic": "do"
+          },
+          {
+            "id": "x-d2",
+            "topic": "do"
+          },
+          {
+            "id": "x-d3",
+            "topic": "do"
+          },
+          {
+            "id": "x-d4",
+            "topic": "do"
+          },
+          {
+            "id": "x-d5",
+            "topic": "do"
+          },
+          {
+            "id": "x-d6",
+            "topic": "do"
+          },
+          {
+            "id": "x-h1",
+            "topic": "hes"
+          },
+          {
+            "id": "x-h2",
+            "topic": "hes"
+          },
+          {
+            "id": "x-h3",
+            "topic": "hes"
+          },
+          {
+            "id": "x-h4",
+            "topic": "hes"
+          },
+          {
+            "id": "x-h5",
+            "topic": "hes"
+          },
+          {
+            "id": "x-h6",
+            "topic": "hes"
+          },
+          {
+            "id": "x-n1",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n2",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n3",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n4",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n5",
+            "topic": "neg"
+          },
+          {
+            "id": "x-n6",
+            "topic": "neg"
+          },
+          {
+            "id": "x-r1",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r2",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r3",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r4",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r5",
+            "topic": "rep"
+          },
+          {
+            "id": "x-r6",
+            "topic": "rep"
+          }
+        ]
+      }
     }
   }
 };

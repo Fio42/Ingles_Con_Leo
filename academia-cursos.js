@@ -36,6 +36,11 @@ var ACADEMIA_CURSOS = {
    "title": "Presente simple",
    "open": true,
    "lessons": 5
+  },
+  "do-does": {
+   "title": "DO / DOES: preguntas y negaciones",
+   "open": false,
+   "lessons": 5
   }
  }
 };
