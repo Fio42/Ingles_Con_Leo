@@ -12,7 +12,7 @@ Uso (desde la raiz del repo):
     python tools/generar_audios_academia.py --force    # regenera todos
 Requiere: pip install kokoro-onnx lameenc, Node.js y los modelos en tools/.kokoro-models o KOKORO_DIR.
 """
-import hashlib, json, os, subprocess, sys
+import hashlib, json, os, re, subprocess, sys
 import numpy as np
 import lameenc
 from kokoro_onnx import Kokoro
@@ -34,6 +34,16 @@ def textos(curso):
         json.dumps(os.path.join(AQUI, "academia_fuente.js")), json.dumps(curso))
     r = json.loads(subprocess.check_output(["node", "-e", js], text=True, encoding="utf-8"))
     return r["p"], r["h"], r["l"]
+
+
+def crear(k, t, voz):
+    """Voz de Kokoro. Corrige un error conocido: el verbo "live" (/lɪv/, vivir) a veces sale como el adjetivo /laɪv/ (en vivo)."""
+    if re.search(r"\blives?\b", t, re.I):
+        ph = k.tokenizer.phonemize(t, "en-us")
+        ph2 = re.sub(r"l(.?)aɪv", r"l\1ɪv", ph)
+        if ph2 != ph:
+            return k.create(ph2, voice=voz, speed=VELOCIDAD, lang="en-us", is_phonemes=True)
+    return k.create(t, voice=voz, speed=VELOCIDAD, lang="en-us")
 
 
 def nombre(voz, texto):
@@ -75,7 +85,7 @@ def main():
             else: manifest[t] = {"f": carpeta + "/" + f, "v": v}
             if os.path.exists(ruta) and not force:
                 continue
-            s, sr = k.create(t, voice=VOCES[v], speed=VELOCIDAD, lang="en-us")
+            s, sr = crear(k, t, VOCES[v])
             rms = float(np.sqrt(np.mean(np.square(s)))) or 1.0
             s = s * (RMS_OBJETIVO / rms)
             pico = float(np.max(np.abs(s))) or 1.0

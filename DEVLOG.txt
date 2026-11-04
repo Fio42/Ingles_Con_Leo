@@ -1857,3 +1857,5 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 2026-11-04 (tarde) - Academia: Curso 8 DO / DOES ABIERTO (autorizado por Leo)
 - 145 mp3 verificados en Storage academia-audio/do-does (145 de 145, 0 faltan, 0 sobran). Fila enabled=true en produccion. En codigo: soon quitado, open:true, regenerados motor y cursos, versiones ?v=20261104b.
 - Pruebas: do-does 14, seguridad 7, navegador 14, integracion 17, todas ok. Apagado de emergencia: update public.academia_courses set enabled=false where course_id='do-does';
+
+2026-11-04 (tarde) - Audio: el verbo "live" sonaba /laIv/ (en vivo) en 4 frases de DO / DOES y en la palabra suelta de Presente simple. Corregido en tools/generar_audios_academia.py (fuerza /lIv/) y regenerados 5 mp3 (mismos nombres). Pendiente: Leo los sube a Storage (reemplazar). Revisados el resto de textos de TO BE, Pronombres, CAN, Posesivos, THERE IS/ARE, Presente simple y DO/DOES: sin otros casos (read, use, close, does bien). Articulos no se pudo revisar (faltan sus archivos privados en esta copia).
