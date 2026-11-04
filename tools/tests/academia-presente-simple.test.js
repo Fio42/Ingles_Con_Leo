@@ -152,7 +152,7 @@ test('ABIERTO (1-nov-2026): el curso esta abierto en el sitio y en el puente, lo
   assert.strictEqual(M.courses['presente-simple'].engineTopic, 'Presente simple: la -s de he / she / it');
   ['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are', 'can'].forEach(id => assert.strictEqual(M.courses[id].open, true, id + ' sigue abierto'));
   const CU = vm.runInNewContext(read('academia-cursos.js') + ';ACADEMIA_CURSOS'); assert.strictEqual(CU.courses['presente-simple'].open, true); assert.strictEqual(CU.courses['presente-simple'].lessons, 5);
-  const route = A.route.courses.find(c => c.id === 'presente-simple'); assert(route && !route.soon, 'ya no figura como proximo en la ruta'); const dd = A.route.courses.find(c => c.id === 'do-does'); assert(dd && dd.soon === true, 'DO / DOES sigue como proximo');
+  const route = A.route.courses.find(c => c.id === 'presente-simple'); assert(route && !route.soon, 'ya no figura como proximo en la ruta'); const dd = A.route.courses.find(c => c.id === 'do-does'); assert(dd && !dd.soon, 'DO / DOES abierto');
   const pub = read('academia-data.js'); const sk = A.courses['presente-simple'];
   assert.strictEqual(sk.protected, true);
   ['We eat rice and beans.', 'Con I el verbo va sin cambios', 'They live in Mexico.', 'wrongWhy'].forEach(s => { const i = pub.indexOf("'presente-simple': {"); assert(pub.indexOf(s, i) === -1 || s === 'They live in Mexico.' && false, 'contenido privado en academia-data.js: ' + s); });

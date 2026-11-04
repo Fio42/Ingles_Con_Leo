@@ -197,11 +197,11 @@ test('AUDIO (archivos): cada texto tiene su mp3 privado, no vacio, y el mapa no 
   assert(!files.some(f => /\(\d+\)/.test(f)), 'copias (1)');
 });
 test('OCULTO: el curso sigue cerrado en la ruta, el puente y el listado; los otros siete cursos no cambian y el esqueleto publico no trae contenido', () => {
-  const M = vm.runInNewContext(read('academia-motor.js') + ';ACADEMIA_MOTOR'); assert.strictEqual(M.courses['do-does'].open, false, 'puente cerrado'); assert.strictEqual(M.courses['do-does'].tema, 'do-does'); assert.strictEqual(M.courses['do-does'].engineTopic, 'Do / Does');
+  const M = vm.runInNewContext(read('academia-motor.js') + ';ACADEMIA_MOTOR'); assert.strictEqual(M.courses['do-does'].open, true, 'puente abierto'); assert.strictEqual(M.courses['do-does'].tema, 'do-does'); assert.strictEqual(M.courses['do-does'].engineTopic, 'Do / Does');
   ['to-be', 'pronombres', 'articulos', 'posesivos', 'there-is-are', 'can', 'presente-simple'].forEach(id => assert.strictEqual(M.courses[id].open, true, id + ' sigue abierto'));
-  assert.strictEqual(M.courseForTema('do-does'), null, 'no recomienda el curso');
-  const CU = vm.runInNewContext(read('academia-cursos.js') + ';ACADEMIA_CURSOS'); assert.strictEqual(CU.courses['do-does'].open, false); assert.strictEqual(CU.courses['do-does'].lessons, 5);
-  const route = A.route.courses.find(c => c.id === 'do-does'); assert(route && route.soon === true, 'DO / DOES sigue como proximo en la ruta');
+  assert.strictEqual(M.courseForTema('do-does'), 'do-does', 'el puente recomienda el curso abierto');
+  const CU = vm.runInNewContext(read('academia-cursos.js') + ';ACADEMIA_CURSOS'); assert.strictEqual(CU.courses['do-does'].open, true); assert.strictEqual(CU.courses['do-does'].lessons, 5);
+  const route = A.route.courses.find(c => c.id === 'do-does'); assert(route && !route.soon, 'DO / DOES ya figura abierto en la ruta');
   assert.strictEqual(A.courses['do-does'].protected, true);
   const pub = read('academia-data.js'); const i = pub.indexOf("'do-does': {"); assert(i > 0);
   ["Do you live here?", "Con you se usa do", 'wrongWhy', "She doesn't like tea.", 'Does she work here?'].forEach(s => assert(pub.indexOf(s, i) === -1, 'contenido privado en academia-data.js: ' + s));

@@ -53,7 +53,7 @@ var ACADEMIA = {
       { id: 'there-is-are', title: 'THERE IS / THERE ARE', blurb: 'Decir qué hay y dónde.' },
       { id: 'can', title: "CAN / CAN'T", blurb: 'Habilidades y permisos.' },
       { id: 'presente-simple', title: 'Presente simple', blurb: 'Rutinas y hábitos.' },
-      { id: 'do-does', title: 'DO / DOES', soon: true, blurb: 'Preguntas y negaciones en presente.' }
+      { id: 'do-does', title: 'DO / DOES', blurb: 'Preguntas y negaciones en presente.' }
     ]
   },
 

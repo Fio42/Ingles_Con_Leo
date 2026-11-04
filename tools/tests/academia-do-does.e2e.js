@@ -143,10 +143,10 @@ async function until(fn, ms, what){
   /* ============ 1. Sin canario (curso OCULTO): ni el miembro ve el curso, aunque la fila ya este encendida ============ */
   await db.exec(`update public.academia_courses set enabled = true where course_id = 'do-does'`);
   const N = await newDevice('sin-canario', { width: 390, height: 800 }, UID, false);
-  await test('OCULTO: SIN canario el miembro NO ve el enlace del curso (solo "Proximamente" en la ruta)', async()=>{
+  await test('ABIERTO: SIN canario el miembro ya ve el enlace del curso en la ruta', async()=>{
     await N.page.goto(base + '/academia.html?nube=1#/'); await N.page.waitForFunction(() => { var r = document.getElementById('acRoot'); return r && r.innerText.length > 80; }, null, { timeout: 9000 });
     await new Promise(r => setTimeout(r, 800));
-    assert.strictEqual(await N.page.$('a[href="#/curso/do-does"]'), null, 'no hay enlace al curso oculto');
+    assert.ok(await N.page.$('a[href="#/curso/do-does"]'), 'hay enlace al curso abierto');
   });
   await N.ctx.close();
 

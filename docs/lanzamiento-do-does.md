@@ -1,6 +1,6 @@
 # Lanzamiento del curso DO / DOES: preguntas y negaciones (Curso 8, guía final)
 
-Estado (4-nov-2026): terminado y probado, CERRADO. No está abierto para nadie: `soon:true` en `academia-data.js` (ruta), `open:false` en `tools/generar_academia_motor.js` y la fila de la base tiene `enabled=false`. Solo para miembros, sin prueba gratis. Misma arquitectura protegida de los Cursos 3 a 7. Los otros siete cursos no cambian.
+Estado (4-nov-2026, tarde): ABIERTO con autorización de Leo. Audios verificados en Storage (145 de 145), fila `enabled=true`, `soon` quitado de la ruta y `open:true` en el puente (versiones `?v=20261104b`). Lo que sigue describe el plan original; apagado de emergencia en el paso 6. Solo para miembros, sin prueba gratis. Misma arquitectura protegida de los Cursos 3 a 7. Los otros siete cursos no cambian.
 
 ## 0. Qué incluye
 - 5 lecciones: Qué son do y does / Preguntas con do / Preguntas con does / Don't y doesn't / Repaso y situaciones reales.

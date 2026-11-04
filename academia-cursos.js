@@ -39,7 +39,7 @@ var ACADEMIA_CURSOS = {
   },
   "do-does": {
    "title": "DO / DOES: preguntas y negaciones",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

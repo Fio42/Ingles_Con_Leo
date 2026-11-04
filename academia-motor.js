@@ -1223,7 +1223,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "do-does",
   "engineTopic": "Do / Does",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "que": "Qué son do y does",
    "do": "Preguntas con do",

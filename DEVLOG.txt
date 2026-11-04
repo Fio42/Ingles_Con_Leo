@@ -1853,3 +1853,7 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Pruebas nuevas: academia-do-does.test.js (14), academia-do-does-seguridad.test.js (7), academia-do-does.e2e.js (14). Oraculo propio de do/does/don't/doesn't.
 - Hallazgo: una pregunta sin tildes (l1-a4) se habria leido en espanol con voz inglesa; se agrego say y la prueba de audio lo vigila.
 - Cursos 1 a 7, pagos, creditos, permisos y Leo IA sin tocar. Versiones ?v= subidas.
+
+2026-11-04 (tarde) - Academia: Curso 8 DO / DOES ABIERTO (autorizado por Leo)
+- 145 mp3 verificados en Storage academia-audio/do-does (145 de 145, 0 faltan, 0 sobran). Fila enabled=true en produccion. En codigo: soon quitado, open:true, regenerados motor y cursos, versiones ?v=20261104b.
+- Pruebas: do-does 14, seguridad 7, navegador 14, integracion 17, todas ok. Apagado de emergencia: update public.academia_courses set enabled=false where course_id='do-does';
