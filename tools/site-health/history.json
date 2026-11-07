@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-11-06T18:47:19.709Z",
+  "lastRun": "2026-11-07T17:17:18.702Z",
   "findingKeys": [
     "IMPORTANT|lighthouse-performance|https://inglesconleo.com/miembros.html|Lighthouse Performance = #/#.",
     "IMPORTANT|lighthouse-bestPractices|https://inglesconleo.com/miembros.html|Lighthouse Best Practices = #/#.",
@@ -170,62 +170,62 @@
   "lighthouse": {
     "https://inglesconleo.com/": {
       "label": "Home",
-      "performance": 89,
+      "performance": 92,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1096.741,
+      "lcp": 1129.1950000000002,
       "cls": 0.001694892733073587,
-      "tbt": 424.5,
+      "tbt": 340.5,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/practica.html": {
       "label": "Práctica (gratis)",
-      "performance": 88,
+      "performance": 86,
       "seo": 100,
       "accessibility": 93,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1061.1570000000002,
+      "lcp": 1913.0910000000003,
       "cls": 0.002030821034656015,
-      "tbt": 464.24400000000014,
+      "tbt": 476,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulos.html": {
       "label": "Artículos (índice)",
-      "performance": 88,
+      "performance": 92,
       "seo": 100,
       "accessibility": 96,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1911.1169999999997,
+      "lcp": 1120.118,
       "cls": 0.003922480686810257,
-      "tbt": 411.5000000000009,
+      "tbt": 340.92325000000164,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulo-verbo-to-be.html": {
       "label": "Artículo: verbo to be",
+      "performance": 91,
+      "seo": 100,
+      "accessibility": 100,
+      "bestPractices": 100,
+      "metaPixelIgnored": true,
+      "lcp": 1851.9785,
+      "cls": 0.00357325168461894,
+      "tbt": 331.991,
+      "consoleErrors": 0
+    },
+    "https://inglesconleo.com/articulo-presente-simple.html": {
+      "label": "Artículo: presente simple",
       "performance": 87,
       "seo": 100,
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1064.0194999999999,
-      "cls": 0.00357325168461894,
-      "tbt": 523.9999999999991,
-      "consoleErrors": 0
-    },
-    "https://inglesconleo.com/articulo-presente-simple.html": {
-      "label": "Artículo: presente simple",
-      "performance": 88,
-      "seo": 100,
-      "accessibility": 100,
-      "bestPractices": 100,
-      "metaPixelIgnored": true,
-      "lcp": 1066.051,
-      "cls": 0.02200782362229011,
-      "tbt": 493,
+      "lcp": 1877.2405,
+      "cls": 0.02201050881306882,
+      "tbt": 462.9659999999999,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/articulo-como-aprender-ingles-desde-cero.html": {
@@ -235,9 +235,9 @@
       "accessibility": 100,
       "bestPractices": 100,
       "metaPixelIgnored": true,
-      "lcp": 1064.641,
+      "lcp": 1899.9730000000002,
       "cls": 0.001694892733073587,
-      "tbt": 440.5724999999993,
+      "tbt": 376.55399999999963,
       "consoleErrors": 0
     },
     "https://inglesconleo.com/miembros.html": {
@@ -247,9 +247,9 @@
       "accessibility": 98,
       "bestPractices": 77,
       "metaPixelIgnored": false,
-      "lcp": 1100.6249999999998,
-      "cls": 0.07874976831109898,
-      "tbt": 954,
+      "lcp": 2420.683,
+      "cls": 0.07584366455721488,
+      "tbt": 656.5,
       "consoleErrors": 0
     }
   }
