@@ -225,7 +225,8 @@ const audioBtn = (src, label) => `<button type="button" class="gl-play" data-aud
 /* ---------- audio ---------- */
 const audioManifest = [];
 function audioTextFor(t) {
-  return t.ej.slice(0, 3).map(e => e[0].trim()).join(' ');
+  const frases = t.ej.slice(0, 3).map(e => e[0].trim()).join(' ');
+  return t.audioPalabra ? t.t + '. ' + frases : frases;
 }
 function registerAudio(t) {
   audioManifest.push({ term: t.slug, kind: 'frases', file: `audio/glosario/${t.slug}.mp3`, voice: VOICE_A, text: audioTextFor(t) });
@@ -349,7 +350,7 @@ ${sections}
     </div>
     <section class="gl-note" id="como-leer">
       <h2>Cómo leer la pronunciación</h2>
-      <p>La sílaba con más fuerza va en MAYÚSCULAS. Es una guía aproximada con letras que ya conoces; para oír el sonido real, usa el botón de audio de cada entrada.</p>
+      <p>La sílaba con más fuerza va en MAYÚSCULAS. Es una guía aproximada con letras que ya conoces; para oír el sonido real, usa el botón de audio de cada entrada. Cuando ves símbolos entre barras, como /θ/, es el alfabeto fonético internacional: la ficha explica cómo se hace ese sonido.</p>
     </section>
     <div class="article-cta"><h3>¿Quieres practicarlo?</h3><p style="color:var(--ink-soft);">Ejercicios cortos de gramática y vocabulario, gratis y sin registrarte.</p><a href="/practica.html" class="btn btn-primary" style="width:fit-content;">Practicar gratis →</a></div>
   </div>

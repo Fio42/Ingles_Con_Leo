@@ -71,6 +71,7 @@ async def main():
     g.add_argument("--term", metavar="SLUG", help="un término, por ejemplo would-rather")
     g.add_argument("--list", action="store_true", help="solo mostrar los que faltan")
     ap.add_argument("--force", action="store_true", help="regenerar aunque ya exista")
+    ap.add_argument("--sin-paginas", action="store_true", help="no volver a construir las paginas del glosario al terminar (protege las ediciones a mano)")
     args = ap.parse_args()
 
     items = cargar()
@@ -110,7 +111,9 @@ async def main():
         print(f"Detalle en {LOG}")
 
     node = shutil.which("node")
-    if ok and node:
+    if ok and args.sin_paginas:
+        print("Paginas del glosario NO reconstruidas (--sin-paginas).")
+    elif ok and node:
         subprocess.run([node, os.path.join(AQUI, "generar_glosario.js")], cwd=RAIZ, check=False)
     elif ok:
         print("Falta ejecutar: node tools/generar_glosario.js")

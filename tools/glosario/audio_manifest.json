@@ -424,21 +424,21 @@
   "kind": "frases",
   "file": "audio/glosario/thought.mp3",
   "voice": "en-US-AvaMultilingualNeural",
-  "text": "I thought you were at work. That thought made me smile."
+  "text": "thought. I thought you were at work. That thought made me smile."
  },
  {
   "term": "through",
   "kind": "frases",
   "file": "audio/glosario/through.mp3",
   "voice": "en-US-AvaMultilingualNeural",
-  "text": "We walked through the tunnel. I read through the email."
+  "text": "through. We walked through the tunnel. I read through the email."
  },
  {
   "term": "throughout",
   "kind": "frases",
   "file": "audio/glosario/throughout.mp3",
   "voice": "en-US-AvaMultilingualNeural",
-  "text": "It rained throughout the day. The same rule applies throughout the book."
+  "text": "throughout. It rained throughout the day. The same rule applies throughout the book."
  },
  {
   "term": "tough",
@@ -711,7 +711,7 @@
   "kind": "frases",
   "file": "audio/glosario/think.mp3",
   "voice": "en-US-AvaMultilingualNeural",
-  "text": "I think you're right. Think about your answer."
+  "text": "think. I think you're right. Think about your answer."
  },
  {
   "term": "this",
@@ -725,7 +725,7 @@
   "kind": "frases",
   "file": "audio/glosario/three.mp3",
   "voice": "en-US-AvaMultilingualNeural",
-  "text": "I have three sisters. The meeting starts at three."
+  "text": "three. I have three sisters. The meeting starts at three."
  },
  {
   "term": "those",
