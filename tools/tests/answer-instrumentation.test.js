@@ -43,7 +43,7 @@ function test(name, fn){
 const plain = o => JSON.parse(JSON.stringify(o));
 const card = () => ({ dataset: {} });
 // A y B no tienen microtema (This / That); C sí (going-to-plan-decidido).
-const A = 'g-facil-this-1', B = 'g-facil-this-2', C = 'g-medio5-fut-1';
+const A = 'g-facil-m300-5', B = 'g-facil-m300-6', C = 'g-medio5-fut-1';
 const itemOf = id => T.getMistakesItemIndex().get(id).item;
 const last = () => { const p = T.loadProgress(); return p.sessions[p.sessions.length - 1]; };
 const rec = (results, extra) => T.recordSession(Object.assign({ skill:'gramatica', level:'facil', topics:[], results, startedAt:1 }, extra || null));

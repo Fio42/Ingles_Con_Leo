@@ -1890,3 +1890,16 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Se quitaron correos personales y rutas privadas de DEVLOG.txt, supabase_schema.sql, docs/proteccion-contenido-premium.md, docs/lanzamiento-articulos-y-plurales.md y Claude outputs/PLAN_SPANISHBYLEO.md.
   - Solo texto de documentacion y comentarios. Sin cambios de funcionamiento del sitio.
   - El historial de Git no se toco; queda un plan aparte.
+
+2026-11-08 (4) | Conexion error -> clase, FASE 1 (solo local, sin commit ni push)
+  - app.js: enlace discreto "Ver la clase: <tema> ↗" en el feedback de un error de gramatica (errorResourceForItem/addErrorLessonLink). Usa la seccion exacta de la clase del microtema; si no, la clase del tema; si no, la explicacion rapida del glosario; si no hay nada real, no muestra nada. Abre en otra pestana (la sesion no se reinicia ni se toca el progreso). Sin temas.js (practica gratis) no hace nada.
+  - app.js: bloque "Para reforzar" dentro del resumen de sesion de miembros (sessionReinforceRows/Html): hasta 2 temas con 2+ errores de ESA sesion (o el principal si ninguno llega a 2), con clase y practica. No repite lo que "Lo mejor para hacer ahora" ya ofrece. No cambia ninguna seleccion de ejercicios ni mistake_stats.
+  - temas.js: articulos existentes conectados a su tema (verificado leyendo su contenido): this-that, voz-pasiva, will-going-to, question-tags, secuenciadores. No se conectaron (no corresponden al tema completo): condicionales (la clase solo cubre 1 y 2), basicos-ingles (dias/meses solo cubre una parte), conectores-contraste/avanzados (tienen glosario: exigiria regenerar el glosario), was-were (ya tenia clase de to be).
+  - temas.js + data.js: 4 microtemas nuevos SOLO DECLARADOS (no activos): pron-sujeto-he-she-it, pron-objeto, poss-elegir-posesivo, dem-elegir-demostrativo; 30 ejercicios etiquetados con micro (respuestas y enunciados intactos). Anclas nuevas (ids) en 3 articulos: como-elegir, elegir-pronombre, tabla-posesivos.
+  - style.css: estilos .fb-lesson y .sess-reinforce. Versiones ?v=20261108a (alcance final pendiente de decidir). mini-lecciones.js NO se toca: regenerarlo agrega 4 entradas con texto vacio por un desfase previo del generador (There is/are y Pasado continuo).
+  - Pruebas: nueva tools/tests/conexion-recursos.test.js (15). Actualizadas micros.test.js (226 etiquetados) y answer-instrumentation.test.js (ejercicios de ejemplo sin micro). micro-ids.lock.json actualizado (35 ids).
+  - Decision: practica.html (gratis) NO carga temas.js a proposito (lo exige temas.test.js), asi que los visitantes no ven el enlace en esta fase.
+  - Hallazgo: g-facil-tobe-1..4 estan dentro del tema Presente simple pero son de to be / preposiciones (mal ubicados); no se movieron.
+  - temas.js: campo noClassTopics (etiquetas cuyo ejercicio mezcla reglas o que la clase no explica: to be+have+there is, presente simple y to be, inversiones y cleft). Para esas, el feedback no muestra enlace (salvo microtema propio) y el resumen solo ofrece Practicar.
+  - style.css: zona tactil de 44px en los enlaces nuevos. Revisado en Chrome real a 320, 360 y 375 px: sin desborde.
+  - Correccion propia: DEVLOG.txt conserva sus saltos de linea CRLF (mi primera edicion los habia cambiado y marcaba todo el archivo como modificado).

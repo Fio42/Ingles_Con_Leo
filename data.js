@@ -98,28 +98,28 @@ const GRAMMAR_BANK = {
       {
         topic: '"This is..." (esto es...)',
         items: [
-          { id:'g-principiante-this-1', translation:"(Estás señalando una manzana) Esto es una manzana.", type:'choice', prompt:"(You are pointing at one apple) ___ is an apple.",
+          { id:'g-principiante-this-1', micro:'dem-elegir-demostrativo', translation:"(Estás señalando una manzana) Esto es una manzana.", type:'choice', prompt:"(You are pointing at one apple) ___ is an apple.",
             options:["This","These","They"], correct:0,
             explain:"Usamos “this” para senalar UNA sola cosa cerca de ti.",
             examples:[
               {en:"This is a pencil.", es:"Esto es un lápiz."},
               {en:"This is my book.", es:"Este es mi libro."}
             ]},
-          { id:'g-principiante-this-2', translation:"Este es mi libro.", type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
+          { id:'g-principiante-this-2', micro:'dem-elegir-demostrativo', translation:"Este es mi libro.", type:'fill', sentence:["___","is","my","book","."], blankIndex:0,
             bank:["This","These","They"], correct:"This",
             explain:"“This” se usa para una sola cosa cerca de ti.",
             examples:[
               {en:"This is my house.", es:"Esta es mi casa."},
               {en:"This is my friend.", es:"Este es mi amigo."}
             ]},
-          { id:'g-principiante-this-3', translation:"¿Qué dices cuando muestras UNA cosa?", type:'choice', prompt:"What do you say when you show ONE thing?",
+          { id:'g-principiante-this-3', micro:'dem-elegir-demostrativo', translation:"¿Qué dices cuando muestras UNA cosa?", type:'choice', prompt:"What do you say when you show ONE thing?",
             options:["This is...","These are...","They is..."], correct:0,
             explain:"“This is...” se usa para presentar una sola cosa o persona.",
             examples:[
               {en:"This is my mother.", es:"Esta es mi mama."},
               {en:"This is a cat.", es:"Esto es un gato."}
             ]},
-          { id:'g-principiante-this-4', translation:"Estas son mis llaves.", type:'error', wrong:"This is my keys.", wrongWord:"This",
+          { id:'g-principiante-this-4', micro:'dem-elegir-demostrativo', translation:"Estas son mis llaves.", type:'error', wrong:"This is my keys.", wrongWord:"This",
             right:"These are my keys.", rightWord:"These",
             explain:"Usamos “these” cuando hablamos de más de una cosa (las llaves son varias).",
             examples:[
@@ -269,28 +269,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Adjetivos posesivos simples (my / your)',
         items: [
-          { id:'g-principiante3-poss-1', translation:"¿Cómo dices \"mi\" en inglés?", type:'choice', prompt:"How do you say \"mi\" (possessive) in English?",
+          { id:'g-principiante3-poss-1', micro:'poss-elegir-posesivo', translation:"¿Cómo dices \"mi\" en inglés?", type:'choice', prompt:"How do you say \"mi\" (possessive) in English?",
             options:["My","Me","Mine"], correct:0,
             explain:"“My” se usa antes de un sustantivo: “my book”.",
             examples:[
               {en:"This is my book.", es:"Este es mi libro."},
               {en:"My dog is small.", es:"Mi perro es pequeño."}
             ]},
-          { id:'g-principiante3-poss-2', translation:"¿Es este tu lápiz?", type:'fill', sentence:["Is","this","___","pencil","?"], blankIndex:2,
+          { id:'g-principiante3-poss-2', micro:'poss-elegir-posesivo', translation:"¿Es este tu lápiz?", type:'fill', sentence:["Is","this","___","pencil","?"], blankIndex:2,
             bank:["your","you","yours"], correct:"your",
             explain:"“Your” va antes del sustantivo: “your pencil”.",
             examples:[
               {en:"Is that your phone?", es:"¿Ese es tu teléfono?"},
               {en:"Your bag is red.", es:"Tu bolsa es roja."}
             ]},
-          { id:'g-principiante3-poss-3', translation:"Ana señala su propia casa y dice...", type:'choice', prompt:"Ana points at her own house and says ___",
+          { id:'g-principiante3-poss-3', micro:'poss-elegir-posesivo', translation:"Ana señala su propia casa y dice...", type:'choice', prompt:"Ana points at her own house and says ___",
             options:["This is my house.","This is your house.","This is his house."], correct:0,
             explain:"Cuando hablas de algo tuyo, usas “my”.",
             examples:[
               {en:"That is my bike.", es:"Esa es mi bicicleta."},
               {en:"My house is small.", es:"Mi casa es pequeña."}
             ]},
-          { id:'g-principiante3-poss-4', translation:"Tu perro es grande.", type:'error', wrong:"You dog is big.", wrongWord:"You",
+          { id:'g-principiante3-poss-4', micro:'poss-elegir-posesivo', translation:"Tu perro es grande.", type:'error', wrong:"You dog is big.", wrongWord:"You",
             right:"Your dog is big.", rightWord:"Your",
             explain:"Antes de un sustantivo usamos “your”, no “you”.",
             examples:[
@@ -511,7 +511,7 @@ const GRAMMAR_BANK = {
       {
         topic: "He / She / It (pronombres)",
         items: [
-          { id:'g-principiante6-1',
+          { id:'g-principiante6-1', micro:'pron-sujeto-he-she-it',
             translation:"(Hablando de un niño) Él es mi amigo.",
             type:'choice',
             prompt:"(Talking about a boy) ___ is my friend.",
@@ -522,7 +522,7 @@ const GRAMMAR_BANK = {
               {en:"He is an engineer.", es:"Él es ingeniero."},
               {en:"He is tall.", es:"Él es alto."}
             ]},
-          { id:'g-principiante6-2',
+          { id:'g-principiante6-2', micro:'pron-sujeto-he-she-it',
             translation:"(Hablando de una niña) Ella es mi hermana.",
             type:'choice',
             prompt:"(Talking about a girl) ___ is my sister.",
@@ -533,7 +533,7 @@ const GRAMMAR_BANK = {
               {en:"She is a student.", es:"Ella es estudiante."},
               {en:"She is happy.", es:"Ella está feliz."}
             ]},
-          { id:'g-principiante6-3',
+          { id:'g-principiante6-3', micro:'pron-sujeto-he-she-it',
             translation:"(Hablando de un perro) Es grande.",
             type:'choice',
             prompt:"(Talking about a dog) ___ is big.",
@@ -544,7 +544,7 @@ const GRAMMAR_BANK = {
               {en:"It is big.", es:"Es grande."},
               {en:"It is my book.", es:"Es mi libro."}
             ]},
-          { id:'g-principiante6-4',
+          { id:'g-principiante6-4', micro:'pron-sujeto-he-she-it',
             translation:"Ese es mi papá. Él es alto.",
             type:'error',
             wrong:"That is my dad. She is tall.",
@@ -612,7 +612,7 @@ const GRAMMAR_BANK = {
       {
         topic: "His / Her (posesivos simples)",
         items: [
-          { id:'g-principiante6-9',
+          { id:'g-principiante6-9', micro:'poss-elegir-posesivo',
             translation:"(Hablando de un niño) Ese es su libro (de él).",
             type:'choice',
             prompt:"(Talking about a boy) That is ___ book.",
@@ -623,7 +623,7 @@ const GRAMMAR_BANK = {
               {en:"His sister is a nurse.", es:"Su hermana es enfermera."},
               {en:"His name is Tom.", es:"Su nombre es Tom."}
             ]},
-          { id:'g-principiante6-10',
+          { id:'g-principiante6-10', micro:'poss-elegir-posesivo',
             translation:"(Hablando de una niña) Esa es su bolsa (de ella).",
             type:'choice',
             prompt:"(Talking about a girl) That is ___ bag.",
@@ -641,14 +641,14 @@ const GRAMMAR_BANK = {
       {
         topic: 'Pronombres objeto (me / you / him / her / it / us / them)',
         items: [
-          { id:'g-principiante-m300-1', translation:"Ella me llama a mí todos los días.", type:'choice', prompt:"She calls ___ every day.",
+          { id:'g-principiante-m300-1', micro:'pron-objeto', translation:"Ella me llama a mí todos los días.", type:'choice', prompt:"She calls ___ every day.",
             options:["I","me","my"], correct:1,
             explain:"Después del verbo usamos el pronombre objeto: me (a mí), no I (yo).",
             examples:[
               {en:"He helps me with my homework.", es:"Él me ayuda con mi tarea."},
               {en:"They invited me to the party.", es:"Ellos me invitaron a la fiesta."}
             ]},
-          { id:'g-principiante-m300-2', translation:"Queremos ayudarlos a ellos.", type:'fill',
+          { id:'g-principiante-m300-2', micro:'pron-objeto', translation:"Queremos ayudarlos a ellos.", type:'fill',
             sentence:["We","want","to","help","___","."], blankIndex:4,
             bank:["them","they","their"], correct:"them",
             explain:"Después de un verbo usamos el pronombre objeto them (a ellos), no they (ellos, sujeto).",
@@ -656,7 +656,7 @@ const GRAMMAR_BANK = {
               {en:"I saw them at the store.", es:"Los vi a ellos en la tienda."},
               {en:"She wrote them a letter.", es:"Ella les escribió una carta a ellos."}
             ]},
-          { id:'g-principiante-m300-3', translation:"Dale el libro a ella.", type:'error',
+          { id:'g-principiante-m300-3', micro:'pron-objeto', translation:"Dale el libro a ella.", type:'error',
             wrong:"Give the book to she.", wrongWord:"she",
             right:"Give the book to her.", rightWord:"her",
             explain:"Después de preposiciones como 'to' usamos el pronombre objeto: her, no she.",
@@ -664,7 +664,7 @@ const GRAMMAR_BANK = {
               {en:"This gift is for her.", es:"Este regalo es para ella."},
               {en:"Sit next to her.", es:"Siéntate junto a ella."}
             ]},
-          { id:'g-principiante-m300-4', translation:"¿Puedes ayudarnos a nosotros?", type:'choice', prompt:"Can you help ___?",
+          { id:'g-principiante-m300-4', micro:'pron-objeto', translation:"¿Puedes ayudarnos a nosotros?", type:'choice', prompt:"Can you help ___?",
             options:["we","our","us"], correct:2,
             explain:"El pronombre objeto de 'we' es 'us' (a nosotros).",
             examples:[
@@ -884,28 +884,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'This / That / These / Those',
         items: [
-          { id:'g-facil-this-1', translation:"Estos zapatos son nuevos (están aquí).", type:'choice', prompt:"___ shoes are new (they're right here).",
+          { id:'g-facil-this-1', micro:'dem-elegir-demostrativo', translation:"Estos zapatos son nuevos (están aquí).", type:'choice', prompt:"___ shoes are new (they're right here).",
             options:["This","These","That"], correct:1,
             explain:"Para plural + cerca usamos “these”.",
             examples:[
               {en:"These apples are fresh.", es:"Estas manzanas están frescas."},
               {en:"This book is mine.", es:"Este libro es mío."}
             ]},
-          { id:'g-facil-this-2', translation:"Esa casa de allá es grande.", type:'fill', sentence:["___","house","over","there","is","big","."], blankIndex:0,
+          { id:'g-facil-this-2', micro:'dem-elegir-demostrativo', translation:"Esa casa de allá es grande.", type:'fill', sentence:["___","house","over","there","is","big","."], blankIndex:0,
             bank:["This","That","These"], correct:"That",
             explain:"Para singular + lejos usamos “that”.",
             examples:[
               {en:"That man over there is my uncle.", es:"Ese hombre de allá es mi tío."},
               {en:"Those cars are expensive.", es:"Esos carros son caros."}
             ]},
-          { id:'g-facil-this-3', translation:"Mira esos pájaros allá arriba (lejos).", type:'choice', prompt:"Look at ___ birds up there (far away).",
+          { id:'g-facil-this-3', micro:'dem-elegir-demostrativo', translation:"Mira esos pájaros allá arriba (lejos).", type:'choice', prompt:"Look at ___ birds up there (far away).",
             options:["this","these","those"], correct:2,
             explain:"Para plural + lejos usamos “those”.",
             examples:[
               {en:"Look at those mountains.", es:"Mira esas montañas."},
               {en:"These flowers smell nice.", es:"Estas flores huelen bien."}
             ]},
-          { id:'g-facil-this-4', translation:"Estos zapatos son muy pequeños.", type:'error', wrong:"This shoes are too small.", wrongWord:"This",
+          { id:'g-facil-this-4', micro:'dem-elegir-demostrativo', translation:"Estos zapatos son muy pequeños.", type:'error', wrong:"This shoes are too small.", wrongWord:"This",
             right:"These shoes are too small.", rightWord:"These",
             explain:"“Shoes” es plural, entonces necesitamos “these”, no “this”.",
             examples:[
@@ -1020,28 +1020,28 @@ const GRAMMAR_BANK = {
       {
         topic: 'Posesivos (my / your / his / her / our / their)',
         items: [
-          { id:'g-facil5-poss-1', translation:"Esta es Ana. Su carro es rojo.", type:'choice', prompt:"This is Ana. ___ car is red.",
+          { id:'g-facil5-poss-1', micro:'poss-elegir-posesivo', translation:"Esta es Ana. Su carro es rojo.", type:'choice', prompt:"This is Ana. ___ car is red.",
             options:["Her","His","Their"], correct:0,
             explain:"Ana es mujer, así que usamos “her”.",
             examples:[
               {en:"This is Ana. Her bag is new.", es:"Esta es Ana. Su mochila es nueva."},
               {en:"Her house is near the park.", es:"Su casa está cerca del parque."}
             ]},
-          { id:'g-facil5-poss-2', translation:"Nos encanta nuestra casa nueva.", type:'fill', sentence:["We","love","___","new","house","."], blankIndex:2,
+          { id:'g-facil5-poss-2', micro:'poss-elegir-posesivo', translation:"Nos encanta nuestra casa nueva.", type:'fill', sentence:["We","love","___","new","house","."], blankIndex:2,
             bank:["our","us","we"], correct:"our",
             explain:"“Our” es el posesivo de “we”.",
             examples:[
               {en:"We clean our room every week.", es:"Limpiamos nuestro cuarto cada semana."},
               {en:"Our team won the game.", es:"Nuestro equipo ganó el juego."}
             ]},
-          { id:'g-facil5-poss-3', translation:"Ese es el perro de Tom y Lisa. Es su perro.", type:'choice', prompt:"That is Tom and Lisa's dog. It's ___ dog.",
+          { id:'g-facil5-poss-3', micro:'poss-elegir-posesivo', translation:"Ese es el perro de Tom y Lisa. Es su perro.", type:'choice', prompt:"That is Tom and Lisa's dog. It's ___ dog.",
             options:["their","his","your"], correct:0,
             explain:"Tom y Lisa son varias personas, así que usamos “their”.",
             examples:[
               {en:"The kids love their school.", es:"A los niños les encanta su escuela."},
               {en:"Their kids go to my school.", es:"Sus hijos van a mi escuela."}
             ]},
-          { id:'g-facil5-poss-4', translation:"A él le encanta su trabajo.", type:'error', wrong:"He loves he's job.", wrongWord:"he's",
+          { id:'g-facil5-poss-4', micro:'poss-elegir-posesivo', translation:"A él le encanta su trabajo.", type:'error', wrong:"He loves he's job.", wrongWord:"he's",
             right:"He loves his job.", rightWord:"his",
             explain:"“His” es el posesivo; “he's” significa “he is” o “he has”.",
             examples:[
@@ -10079,7 +10079,7 @@ GRAMMAR_BANK.principiante.push([
     topic: "This / These",
     items: [
       {
-        id: "g-principiante5-thisthese-1",
+        id: "g-principiante5-thisthese-1", micro:'dem-elegir-demostrativo',
         translation: "Este es mi libro.",
         type: "choice",
         prompt: "How do you say this for ONE thing close to you?",
@@ -10092,7 +10092,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-thisthese-2",
+        id: "g-principiante5-thisthese-2", micro:'dem-elegir-demostrativo',
         translation: "Estos son mis zapatos.",
         type: "fill",
         sentence: ["___", "are", "my", "shoes", "."],
@@ -10106,7 +10106,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-thisthese-3",
+        id: "g-principiante5-thisthese-3", micro:'dem-elegir-demostrativo',
         translation: "¿Cuál oración es correcta para varios lápices cerca de ti?",
         type: "choice",
         prompt: "Which sentence is correct for many pencils near you?",
@@ -10119,7 +10119,7 @@ GRAMMAR_BANK.principiante.push([
         ]
       },
       {
-        id: "g-principiante5-thisthese-4",
+        id: "g-principiante5-thisthese-4", micro:'dem-elegir-demostrativo',
         translation: "Estos son mis zapatos.",
         type: "error",
         wrong: "This are my shoes.",

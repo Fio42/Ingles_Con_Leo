@@ -28,6 +28,9 @@
                            >=6 ejercicios de practica, >=3 de comprobacion y un recurso
                            (lo exige tools/tests/micros.test.js). Sin active el microtema
                            solo esta DECLARADO: todo sigue comportandose como antes.
+   - noClassTopics: (opcional) etiquetas de ESTE tema cuyos ejercicios mezclan reglas o tratan algo que la clase/glosario
+               del tema no explica. Solo el enlace "Ver la clase" del feedback de error las respeta (no lo muestra);
+               un ejercicio con `micro` propio sigue enlazando a la sección de su microtema.
    - merges:   (opcional) ids de temas ANTIGUOS que este tema absorbe. Los antiguos siguen
                existiendo tal cual (sus ids viven en enlaces, Writing y Listening); solo
                dicen que sus ejercicios pueden pertenecer a microtemas de este tema.
@@ -59,7 +62,7 @@ const TEMAS = [
   /* ---- conectores ---- */
   { id:'conectores-contraste', label:'Although, despite y even though', family:'conectores', article:null, glossary:'although',
     topics:[`Despite / Although / Instead of`, `Despite vs In spite of vs Even though`] },
-  { id:'secuenciadores', label:'Secuenciadores (first, then, finally)', family:'conectores', article:null, glossary:null,
+  { id:'secuenciadores', label:'Secuenciadores (first, then, finally)', family:'conectores', article:'articulo-conectores-ingles.html', glossary:null,
     topics:[`Secuenciadores (first, then, after that, finally)`] },
   { id:'conectores-avanzados', label:'Conectores avanzados', family:'conectores', article:null, glossary:'however',
     topics:[`Conectores avanzados`] },
@@ -113,10 +116,13 @@ const TEMAS = [
     micros:[
       { id:'a-an-sonido', active:true, label:'A o an: depende del sonido, no de la letra', lesson:{ article:'articulo-articulos-a-an-the.html', anchor:'a-an-sonido' } }
     ] },
-  { id:'this-that', label:'This, that, these y those', family:'demostrativos', article:null, glossary:null,
-    topics:[`"This is..." (esto es...)`, `This / These`, `This / That / These / Those`] },
+  { id:'this-that', label:'This, that, these y those', family:'demostrativos', article:'articulo-this-that-these-those.html', glossary:null,
+    topics:[`"This is..." (esto es...)`, `This / These`, `This / That / These / Those`],
+    micros:[
+      { id:'dem-elegir-demostrativo', label:'This, that, these o those según cerca/lejos y uno/varios', lesson:{ article:'articulo-this-that-these-those.html', anchor:'como-elegir' } }
+    ] },
   /* ---- futuro / indirecto ---- */
-  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:null, glossary:null, topics:[`Will vs Going to (futuro)`, `Will: decisiones en el momento (futuro)`, `Going to: planes ya decididos (futuro)`, `Going to: lo que se ve venir (futuro)`, `Will + verbo base (futuro)`],
+  { id:'will-going-to', prereq:['presente-simple'], label:'Will y going to', family:'futuro', article:'articulo-will-vs-going-to.html', glossary:null, topics:[`Will vs Going to (futuro)`, `Will: decisiones en el momento (futuro)`, `Going to: planes ya decididos (futuro)`, `Going to: lo que se ve venir (futuro)`, `Will + verbo base (futuro)`],
     micros:[
       { id:'will-decision-espontanea', active:true, label:'Will: decisiones en el momento', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'will-decision-espontanea' } },
       { id:'going-to-plan-decidido', active:true, label:'Going to: planes ya decididos', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'going-to-plan-decidido' } },
@@ -147,7 +153,7 @@ const TEMAS = [
     topics:[`Pasado simple con verbos irregulares`] },
   { id:'used-to', prereq:['pasado-regulares'], label:'Used to', family:'pasado', article:null, glossary:'used-to', topics:[`"Used to"`] },
   /* ---- pasiva ---- */
-  { id:'voz-pasiva', prereq:['verbos-irregulares'], label:'Voz pasiva', family:'pasiva', article:null, glossary:null,
+  { id:'voz-pasiva', prereq:['verbos-irregulares'], label:'Voz pasiva', family:'pasiva', article:'articulo-voz-pasiva-ingles.html', glossary:null,
     topics:[`Voz pasiva (presente y pasado simple)`, `Voz pasiva con modales (should be / must have been)`] },
   { id:'causativos', label:'Verbos causativos (have something done)', family:'pasiva', article:null, glossary:null, topics:[`Verbos causativos (have something done)`] },
   /* ---- perfecto ---- */
@@ -175,7 +181,7 @@ const TEMAS = [
   { id:'preposiciones-sutiles', label:'Preposiciones sutiles (beside, besides...)', family:'preposiciones', article:null, glossary:null,
     topics:[`Preposiciones sutiles`, `"Beside" vs "Besides"`] },
   /* ---- presente simple ---- */
-  { id:'presente-simple', prereq:['to-be-presente'], label:'Presente simple', family:'presente-simple', article:'articulo-presente-simple.html', glossary:null,
+  { id:'presente-simple', prereq:['to-be-presente'], label:'Presente simple', family:'presente-simple', article:'articulo-presente-simple.html', glossary:null, noClassTopics:[`Presente simple y "to be"`],
     topics:[`Presente simple y "to be"`, `Adverbios de frecuencia (always / usually / sometimes / never)`, `Presente simple: la -s de he / she / it`, `Presente simple: don't y doesn't`, `Adverbios de frecuencia: dónde van`],
     micros:[
       { id:'ps-tercera-persona-s', active:true, label:'Presente simple: la -s de he / she / it', lesson:{ article:'articulo-presente-simple.html', anchor:'forma-afirmativa' } },
@@ -189,15 +195,22 @@ const TEMAS = [
     ] },
   /* ---- pronombres ---- */
   { id:'pronombres', label:'Pronombres (sujeto y objeto)', family:'pronombres', article:'articulo-pronombres-personales-ingles.html', glossary:null,
-    topics:[`He / She / It (pronombres)`, `Pronombres objeto (me / you / him / her / it / us / them)`] },
+    topics:[`He / She / It (pronombres)`, `Pronombres objeto (me / you / him / her / it / us / them)`],
+    micros:[
+      { id:'pron-sujeto-he-she-it', label:'He, she o it según de quién hablas', lesson:{ article:'articulo-pronombres-personales-ingles.html', anchor:'elegir-pronombre' } },
+      { id:'pron-objeto', label:'Pronombres objeto: me, him, her, us, them', lesson:{ article:'articulo-pronombres-personales-ingles.html', anchor:'pronombres-objeto' } }
+    ] },
   { id:'posesivos', label:'Posesivos (my, your, his, her...)', family:'pronombres', article:'articulo-adjetivos-posesivos-ingles.html', glossary:null,
-    topics:[`Adjetivos posesivos simples (my / your)`, `His / Her (posesivos simples)`, `Posesivos (my / your / his / her / our / their)`] },
+    topics:[`Adjetivos posesivos simples (my / your)`, `His / Her (posesivos simples)`, `Posesivos (my / your / his / her / our / their)`],
+    micros:[
+      { id:'poss-elegir-posesivo', label:'My, your, his, her, our o their según quién es el dueño', lesson:{ article:'articulo-adjetivos-posesivos-ingles.html', anchor:'tabla-posesivos' } }
+    ] },
   /* ---- relativas ---- */
   { id:'relativas', prereq:['pronombres'], label:'Cláusulas relativas', family:'relativas', article:null, glossary:null,
     topics:[`Cláusulas relativas (who / which / that)`, `Cláusulas relativas reducidas`] },
   { id:'who-whom', prereq:['relativas'], label:'Who y whom', family:'relativas', article:null, glossary:null, topics:[`Who vs Whom`, `Who / Whom`] },
   /* ---- to be ---- */
-  { id:'to-be-presente', label:'Verbo to be (am, is, are)', family:'to-be', article:'articulo-verbo-to-be.html', glossary:null,
+  { id:'to-be-presente', label:'Verbo to be (am, is, are)', family:'to-be', article:'articulo-verbo-to-be.html', glossary:null, noClassTopics:[`Verbo to be, have y there is/are`],
     topics:[`Is / Are (singular y plural)`, `Verbo "to be": am / is / are`, `Verbo to be, have y there is/are`],
     micros:[
       { id:'tobe-am-is-are', active:true, label:'To be: am, is o are según quién', lesson:{ article:'articulo-verbo-to-be.html', anchor:'forma-afirmativa' } }
@@ -216,8 +229,8 @@ const TEMAS = [
   { id:'verbo-have', label:'Verbo have', family:'verbos', article:'articulo-have-y-has-en-ingles.html', glossary:null, topics:[`Verbo "have" (tengo / tienes / tiene)`] },
   { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
   /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
-  { id:'question-tags', label:'Question tags', family:null, article:null, glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
-  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'would-rather',
+  { id:'question-tags', label:'Question tags', family:null, article:'articulo-question-tags-ingles.html', glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
+  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'would-rather', noClassTopics:[`Inversiones enfáticas`, `Oraciones enfáticas con "It is... that" (cleft sentences)`],
     topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
   { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:null, topics:[`Subjuntivo formal (It is essential that...)`] },
   { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },

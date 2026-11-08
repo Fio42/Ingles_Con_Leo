@@ -2435,3 +2435,15 @@ html:not(.ac-live) .home-main{grid-template-columns:1fr;}
   #porHabilidad ~ #levelSelector .level-card{padding:14px 14px;gap:8px;border-radius:14px;}
   #porHabilidad ~ #levelSelector .level-desc{display:none;}
 }
+
+/* Enlace discreto a la clase tras un error + bloque "Para reforzar" del resumen (Fase 1 de conexión).
+   Zona táctil de 44px de alto en celular sin cambiar el tamaño del texto. */
+.fb-lesson{margin:2px 0 0;font-size:0.88rem;font-weight:600;line-height:1.35;overflow-wrap:anywhere;}
+.fb-lesson a{display:inline-flex;align-items:center;min-height:44px;color:var(--blue-deep, var(--blue));text-decoration:underline;text-underline-offset:3px;}
+.fb-lesson a:hover{color:var(--blue);}
+.sess-reinforce{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.sess-reinforce li{background:#fff;border:2px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px 2px;display:flex;flex-direction:column;gap:2px;min-width:0;}
+.sess-rf-name{font-weight:700;font-size:0.92rem;color:var(--ink);min-width:0;overflow-wrap:anywhere;}
+.sess-rf-name small{display:block;font-weight:500;font-size:0.8rem;color:var(--ink-soft);margin-top:1px;}
+.sess-rf-links{display:flex;flex-wrap:wrap;gap:0 20px;font-size:0.88rem;font-weight:700;}
+.sess-rf-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--blue-deep, var(--blue));text-decoration:underline;text-underline-offset:3px;}

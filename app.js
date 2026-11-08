@@ -2169,6 +2169,52 @@ function writingPreHintHtml(item){
   return '<div class="writing-pre-hint"><b>Pista:</b> ' + h + '</div>';
 }
 
+/* ---------- Enlace discreto a la clase tras un error (Fase 1 de conexión) ----------
+   Solo gramática, solo cuando el ejercicio se falló y SOLO si existe un recurso real:
+   1) la sección exacta de la clase del microtema (si el ejercicio tiene `micro` con clase);
+   2) la clase del tema o, si no hay clase, su explicación rápida del glosario (contentForTema).
+   Nunca se inventa un destino: sin recurso, no se muestra nada. Se abre en OTRA pestaña para no
+   salir ni reiniciar la sesión (el progreso de esta pestaña no se toca). Si temas.js no está
+   cargado en la página, todo esto se apaga y el feedback queda como siempre. */
+function errorResourceForItem(item){
+  try{
+    if(!item || !item.id || typeof temaForTopic !== 'function' || typeof MICRO_BY_ID === 'undefined') return null;
+    const found = getMistakesItemIndex().get(item.id);
+    if(!found || found.kind !== 'grammar') return null;
+    const tema = temaForTopic(found.topic);
+    if(!tema) return null;
+    const m = found.item && found.item.micro ? MICRO_BY_ID[found.item.micro] : null;
+    if(m){
+      const lesson = microLessonHref(m);
+      if(lesson) return { href: lesson, label: 'Ver la clase', title: tema.label };
+      const quick = microQuickHref(m);
+      if(quick) return { href: quick, label: 'Ver explicación rápida', title: tema.label };
+    }
+    // etiquetas que mezclan reglas o que la clase del tema no explica: sin microtema propio, mejor ningún enlace
+    if(tema.noClassTopics && tema.noClassTopics.indexOf(found.topic) !== -1) return null;
+    const c = contentForTema(tema.id);
+    if(c && c.article) return { href: c.article, label: c.articleLabel, title: c.label };
+    return null;
+  }catch(e){ return null; }
+}
+function addErrorLessonLink(container, item, isCorrect){
+  try{
+    if(isCorrect) return;
+    const fb = container && container.querySelector('#fb');
+    if(!fb || fb.querySelector('.fb-lesson')) return;
+    const r = errorResourceForItem(item);
+    if(!r) return;
+    const p = document.createElement('p');
+    p.className = 'fb-lesson';
+    const a = document.createElement('a');
+    a.href = r.href; a.target = '_blank'; a.rel = 'noopener';
+    a.title = 'Se abre en otra pestaña: tu ejercicio sigue aquí';
+    a.textContent = r.label + ': ' + r.title + ' ↗';
+    p.appendChild(a);
+    fb.appendChild(p);
+  }catch(e){ /* el feedback normal ya está en pantalla */ }
+}
+
 function renderGrammarItemInto(container, item, onAnswered, aiOpts){
   if(item.type === 'choice'){
     container.innerHTML = `
@@ -2192,6 +2238,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
           if(j === i && !isCorrect) el.classList.add('incorrect');
         });
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        addErrorLessonLink(container, item, isCorrect);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:opt }, aiOpts));
         noteGrammarAnswer(container, item, isCorrect, opt);
         onAnswered(isCorrect);
@@ -2234,6 +2281,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
         slot.style.borderColor = isCorrect ? '#1FA463' : '#EF5A45';
         slot.style.background = isCorrect ? '#E7F7EE' : '#FDEBE8';
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        addErrorLessonLink(container, item, isCorrect);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:word }, aiOpts));
         noteGrammarAnswer(container, item, isCorrect, word);
         onAnswered(isCorrect);
@@ -2298,6 +2346,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
         container.querySelector('.error-sentence').after(box);
 
         renderFeedback(container, isCorrect, item.explain, item.examples);
+        addErrorLessonLink(container, item, isCorrect);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:cleanTokens[pickedIdx] }, aiOpts));
         noteGrammarAnswer(container, item, isCorrect, cleanTokens[pickedIdx]);
         onAnswered(isCorrect);
@@ -7366,6 +7415,9 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(!sameTema && !(sessionSkill === 'plan' && /^plan-estudio\.html/.test(todayHref) && !/foco=/.test(todayHref))){
     push(today.title, todayHref, !ins.actions.length);
   }
+  // Temas con errores de esta sesión que aún no están cubiertos arriba (clase + práctica; máx. 2).
+  const coveredTemas = new Set([microTemaCovered, ins.tema && ins.tema.id, ins.struggleTema, today && today.tema].filter(Boolean));
+  ins.reinforce = sessionReinforceRows(results, ins, coveredTemas);
   return ins;
 }
 
@@ -7506,6 +7558,63 @@ function sessionInsightAiCtx(ins){
     candidates: leoAiTemaPool(main, main), label:'Analizar mi sesión con Leo AI' };
 }
 
+/* "Para reforzar" en el resumen de sesión de miembros: hasta 2 temas con errores de ESTA sesión,
+   cada uno con su clase (si existe) y su práctica. Solo muestra lo que existe; no repite lo que la
+   sección "Lo mejor para hacer ahora" ya ofrece. No cambia ninguna selección de ejercicios. */
+function sessionReinforceRows(results, ins, covered){
+  try{
+    if(typeof temaForTopic !== 'function' || typeof TEMA_BY_ID === 'undefined') return [];
+    const index = getMistakesItemIndex();
+    const groups = new Map();
+    (results || []).forEach(r=>{
+      if(!r || r.isCorrect !== false) return;
+      const found = index.get(r.itemId);
+      if(!found || (found.kind !== 'grammar' && found.kind !== 'vocab' && found.kind !== 'listening')) return;
+      const tid = diagTemaIdForFound(found);
+      if(!tid || !TEMA_BY_ID[tid]) return;
+      const g = groups.get(tid) || { id: tid, ids: new Set(), micros: new Map(), first: found, lessonOk: false };
+      g.ids.add(r.itemId);
+      const mid = found.kind === 'grammar' && found.item && found.item.micro;
+      if(mid) g.micros.set(mid, (g.micros.get(mid) || 0) + 1);
+      // la clase solo se ofrece si algún error suyo está realmente explicado por ella (ver noClassTopics en temas.js)
+      const nc = TEMA_BY_ID[tid].noClassTopics;
+      if(mid || !nc || nc.indexOf(found.topic) === -1) g.lessonOk = true;
+      groups.set(tid, g);
+    });
+    const taken = new Set((ins && ins.actions || []).map(a => a.href));
+    const out = [];
+    // Para no saturar: temas con 2+ errores (máx. 2). Si ninguno llega a 2, solo el principal.
+    const ordered = Array.from(groups.values()).sort((a,b)=> b.ids.size - a.ids.size);
+    const repeated = ordered.filter(g => g.ids.size >= 2);
+    const maxRows = repeated.length ? 2 : 1;
+    ordered.forEach(g=>{
+      if(out.length >= maxRows || (repeated.length && g.ids.size < 2) || (covered && covered.has(g.id))) return;
+      const c = contentForTema(g.id);
+      if(!c || !c.practiceHref || taken.has(c.practiceHref)) return;
+      // clase: la sección del microtema con más errores si la tiene; si no, la del tema
+      let lesson = (c.article && g.lessonOk) ? { href: c.article, label: c.articleLabel } : null;
+      const top = Array.from(g.micros.entries()).sort((a,b)=> b[1]-a[1])[0];
+      const m = top && typeof MICRO_BY_ID !== 'undefined' ? MICRO_BY_ID[top[0]] : null;
+      if(m){
+        const lh = microLessonHref(m), qh = microQuickHref(m);
+        if(lh) lesson = { href: lh, label: 'Ver la clase' };
+        else if(qh) lesson = { href: qh, label: 'Ver explicación rápida' };
+      }
+      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref });
+    });
+    return out;
+  }catch(e){ return []; }
+}
+function sessionReinforceHtml(rows){
+  if(!rows || !rows.length) return '';
+  return `
+      <div class="sess-insight-label sess-insight-next">Para reforzar</div>
+      <ul class="sess-reinforce">
+        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small></span>
+          <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}">Practicar</a></span></li>`).join('')}
+      </ul>`;
+}
+
 function sessionInsightHtml(ins){
   return `
     <div class="sess-insight">
@@ -7517,6 +7626,7 @@ function sessionInsightHtml(ins){
         <div class="sess-next">
           ${ins.actions.map(a=>`<a href="${a.href}" class="sess-next-link${a.main ? ' is-main' : ''}"><span>${a.title}</span><span aria-hidden="true">→</span></a>`).join('')}
         </div>` : ''}
+      ${sessionReinforceHtml(ins.reinforce)}
       <div data-leo-ai-session></div>
     </div>`;
 }

@@ -36,13 +36,13 @@ test('migración gradual: activos Futuro (4), Condicionales 1 y 2, y la ampliaci
   assert.deepStrictEqual(plain(Object.keys(real.microById).filter(id => real.microById[id].active)).sort(),
     ['a-an-sonido', 'can-verbo-base', 'cond-1-probable', 'cond-2-imaginario', 'dodoes-elegir-sujeto', 'fewer-less', 'going-to-evidencia', 'going-to-plan-decidido', 'in-on-at-lugar', 'in-on-at-tiempo', 'little-few-matiz', 'much-many-contable-incontable', 'mustnt-vs-dont-have-to', 'obligacion-vs-consejo', 'pasado-cont-was-were-ing', 'pasado-fecha-terminada', 'pp-experiencia-sin-fecha', 'ps-adverbios-frecuencia', 'ps-negativa-dont-doesnt', 'ps-tercera-persona-s', 'since-for-eleccion', 'since-for-presente-perfecto', 'some-any-afirm-neg', 'there-is-are-elegir', 'tobe-am-is-are', 'will-decision-espontanea', 'will-forma-verbo-base']);
   const withMicros = plain(real.TEMAS.filter(t => (t.micros || []).length).map(t => t.id).sort());
-  assert.deepStrictEqual(withMicros, ['a-an', 'can-cant', 'condicionales', 'cuantificadores', 'do-does', 'in-on-at', 'modales-obligacion', 'pasado-continuo', 'present-perfect-vs-past', 'presente-simple', 'since-for', 'there-is-are', 'to-be-presente', 'will-going-to']);
+  assert.deepStrictEqual(withMicros, ['a-an', 'can-cant', 'condicionales', 'cuantificadores', 'do-does', 'in-on-at', 'modales-obligacion', 'pasado-continuo', 'posesivos', 'present-perfect-vs-past', 'presente-simple', 'pronombres', 'since-for', 'there-is-are', 'this-that', 'to-be-presente', 'will-going-to']);
 });
 
-test('los ejercicios sin micro siguen siendo los de siempre (solo 196 declaran micro: 71 de los pilotos + 15 existentes etiquetados en la ampliación + 38 nuevos + 29 existentes etiquetados en la ruta base + 18 nuevos de la ruta base + 9 nuevos de la auditoría para completar little-few y do/does + 16 de los temas pasado continuo y there is/are)', () => {
+test('los ejercicios sin micro siguen siendo los de siempre (solo 226 declaran micro (fase conexión: +30 etiquetados de pronombres, posesivos y this/that, microtemas solo DECLARADOS): 71 de los pilotos + 15 existentes etiquetados en la ampliación + 38 nuevos + 29 existentes etiquetados en la ruta base + 18 nuevos de la ruta base + 9 nuevos de la auditoría para completar little-few y do/does + 16 de los temas pasado continuo y there is/are)', () => {
   const tagged = real.practice.filter(r => r.item.micro);
-  assert.strictEqual(tagged.length, 196);
-  assert.ok(real.practice.length - tagged.length > 300);
+  assert.strictEqual(tagged.length, 226);
+  assert.ok(real.practice.length - tagged.length > 250);
 });
 
 test('fusión de cuantificadores: los ids antiguos siguen existiendo tal cual (enlaces, Writing, Listening, historial)', () => {
