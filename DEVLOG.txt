@@ -1878,3 +1878,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Sin canario, un miembro NO ve el enlace al curso (solo "Proximamente") y la direccion directa lo devuelve al inicio.
 - Efecto en datos: la cuenta de prueba queda con progreso, 1 intento aprobado y la insignia de WH. Las demas filas de esa cuenta se re-sincronizaron a la vez al cargar la pagina (misma hora), sin cambio de lecciones. Cursos 1 a 8 sin cambios de configuracion. wh enabled=false.
 - Falta solo la autorizacion de Leo para abrir: quitar soon de wh en academia-data.js, open:true en tools/generar_academia_motor.js, regenerar motor y cursos, subir ?v=, ajustar pruebas que asumen wh cerrado (academia-integracion y academia-cursos-nuevos), y luego enabled=true.
+
+2026-11-08 (3) - Curso 9 WH-QUESTIONS: ABIERTO EN CODIGO (autorizado por Leo); falta subir a GitHub y enabled=true
+- Codigo: quitado soon de wh en academia-data.js, open:true en tools/generar_academia_motor.js, regenerados academia-motor.js y academia-cursos.js, versiones ?v=20261108a (academia.html, academia-boot.js, miembros.html y progreso.html solo la de academia-cursos.js). Pruebas ajustadas al nuevo estado: academia-cursos-nuevos (lista ABIERTOS) y academia-wh.e2e (ahora comprueba que el miembro SI ve el enlace sin canario).
+- Pruebas: wh 10, cursos-nuevos 12, seguridad wh 7, integracion 28, modelo 25, piloto 13, robustez 23, sql 27, navegador wh 14 (320 a 1440), pronombres e2e 11. Los e2e de do-does y presente-simple solo fallan en el audio por mp3 que no copie al entorno de pruebas (no por este cambio).
+- Orden de publicacion: 1) git push 2) verificar en vivo que academia-data.js ya no trae soon para wh 3) update public.academia_courses set enabled = true where course_id = 'wh'; 4) verificar sin canario con un miembro.
+- Apagado de emergencia: update public.academia_courses set enabled = false where course_id = 'wh';

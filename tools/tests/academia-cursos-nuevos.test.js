@@ -3,6 +3,7 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), assert = r
 const root = path.join(__dirname, '..', '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const IDS = ['wh', 'presente-continuo', 'in-on-at'];
+const ABIERTOS = ['wh'];   // cursos ya publicados: Curso 9 abierto el 8-nov-2026
 let ok = 0, bad = 0;
 function test(name, fn){ try{ fn(); ok++; console.log('  ok  ' + name); }catch(e){ bad++; console.log('  FALLA ' + name + '\n  ' + (e && e.message)); } }
 const A = vm.runInNewContext(read('academia-data.js') + ';ACADEMIA');
@@ -19,9 +20,10 @@ IDS.forEach(id => {
     assert.strictEqual(c.exam.practiceIds.length, 30); assert.deepStrictEqual(Array.from(c.exam.bank || []), []);
     assert(!/"correct"|"answer"/.test(JSON.stringify(c)), 'sin respuestas en lo publico');
   });
-  test(id + ': OCULTO (ruta soon, puente y listado cerrados) y en la lista de cursos de academia.js', () => {
-    const r = A.route.courses.find(x => x.id === id); assert(r && r.soon === true, 'soon en la ruta');
-    assert.strictEqual(M.courses[id].open, false); assert.strictEqual(CU.courses[id].open, false);
+  test(id + ': estado de la ruta (oculto o abierto segun ABIERTOS) (ruta soon, puente y listado cerrados) y en la lista de cursos de academia.js', () => {
+    const r = A.route.courses.find(x => x.id === id); const abierto = ABIERTOS.indexOf(id) !== -1;
+    assert(r && (abierto ? !r.soon : r.soon === true), 'soon en la ruta');
+    assert.strictEqual(M.courses[id].open, abierto); assert.strictEqual(CU.courses[id].open, abierto);
     assert(new RegExp("'" + id + "'[,\\]]").test(js.split('SHELL.apps[id] = makeApp(id)')[0].slice(-400)), 'esta en la lista de academia.js');
   });
   test(id + ': migracion APAGADA y seeds solo de este curso', () => {

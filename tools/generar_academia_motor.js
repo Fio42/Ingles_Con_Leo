@@ -25,8 +25,8 @@ const COURSES = {
   'do-does': { tema: 'do-does', engineTopic: 'Do / Does', level: 'facil', open: true },
   // Curso 11 (OCULTO hasta que Leo lo autorice): open=false.
   'in-on-at': { tema: 'in-on-at', engineTopic: 'In / On / At', level: 'facil', open: false },
-  // Curso 9 (OCULTO hasta que Leo lo autorice): open=false.
-  'wh': { tema: 'question-words', engineTopic: "Question words (What / Where / When / Who)", level: 'facil', open: false },
+  // Curso 9: publicado el 8-nov-2026.
+  'wh': { tema: 'question-words', engineTopic: "Question words (What / Where / When / Who)", level: 'facil', open: true },
   // Curso 10 (OCULTO hasta que Leo lo autorice): open=false.
   'presente-continuo': { tema: 'presente-continuo', engineTopic: "Presente continuo (I am ___ing)", level: 'facil', open: false }
 };

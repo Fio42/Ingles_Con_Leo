@@ -55,7 +55,7 @@ var ACADEMIA = {
       { id: 'presente-simple', title: 'Presente simple', blurb: 'Rutinas y hábitos.' },
       { id: 'do-does', title: 'DO / DOES', blurb: 'Preguntas y negaciones en presente.' },
       { id: 'in-on-at', title: 'IN / ON / AT', soon: true, blurb: 'Lugar y tiempo.' },
-      { id: 'wh', title: 'WH-QUESTIONS', soon: true, blurb: 'Preguntar con what, where, when, who, why y how.' },
+      { id: 'wh', title: 'WH-QUESTIONS', blurb: 'Preguntar con what, where, when, who, why y how.' },
       { id: 'presente-continuo', title: 'PRESENTE CONTINUO', soon: true, blurb: 'Lo que pasa ahora.' }
     ]
   },

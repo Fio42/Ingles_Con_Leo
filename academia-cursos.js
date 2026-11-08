@@ -49,7 +49,7 @@ var ACADEMIA_CURSOS = {
   },
   "wh": {
    "title": "WH-QUESTIONS: What, Where, When, Who, Why, How",
-   "open": false,
+   "open": true,
    "lessons": 5
   },
   "presente-continuo": {

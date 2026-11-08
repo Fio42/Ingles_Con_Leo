@@ -1569,7 +1569,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "question-words",
   "engineTopic": "Question words (What / Where / When / Who)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "bas": "What, where y who",
    "tim": "When, why y how",
