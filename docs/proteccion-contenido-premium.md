@@ -69,7 +69,7 @@ Recomendación: A ahora, B para Pronombres solo si quieres exclusividad real, y 
 
 ## 7. Bancos privados de examen
 
-Los tres bancos y sus semillas están en `private/` (ignorado por Git, comprobado por prueba) y no están en ningún archivo de despliegue. La copia en tu computador (`OneDrive\Desktop\inglesconLeo\private\`) se hizo antes de tu nueva instrucción; no creé ninguna copia adicional. La guía de lanzamiento del Curso 3 documenta dónde está cada banco y su huella.
+Los tres bancos y sus semillas están en `private/` (ignorado por Git, comprobado por prueba) y no están en ningún archivo de despliegue. La copia en tu computador (la carpeta `private/` del proyecto) se hizo antes de tu nueva instrucción; no creé ninguna copia adicional. La guía de lanzamiento del Curso 3 documenta dónde está cada banco y su huella.
 
 ## 8. Saneamiento de ramas públicas (decisión del 27 de octubre)
 
@@ -94,8 +94,8 @@ Qué se puede retirar y qué queda recuperable:
 
 - En el repositorio de trabajo, carpeta `private/` (ignorada por Git, comprobado por prueba): contenido (`private/contenido/articulos.json` y `.audio.json`), 137 mp3 (`private/audio/articulos/`), semilla del contenido, los tres bancos de examen y sus semillas.
 - Respaldo definitivo (27 de octubre de 2026): paquete `InglesConLeo-privado-2026-10-27.7z`, 7z con cifrado AES-256 y nombres de archivo cifrados, 146 archivos (137 mp3, contenido completo del Curso 3, los tres bancos de examen y sus semillas). Huella SHA-256 del paquete: `ad1f68b2b63d71010dc7aad6a156e9b17612796820c2f3c6f92968869091f9f6`. Dos copias, cada una con su `.sha256` y un `LEEME.txt`:
-  - Computadora: `C:\Users\fiocc\WebProjects\Respaldos-Privados\InglesConLeo\`
-  - OneDrive: `C:\Users\fiocc\OneDrive\Documents\Respaldos-Privados\InglesConLeo\`
+  - Computadora: carpeta privada de respaldos, fuera del repositorio (la ubicación exacta no se publica)
+  - OneDrive: segunda copia en una carpeta privada de respaldos (la ubicación exacta no se publica)
   - Verificación: huella correcta en ambas copias leída en tu computador, y extracción de prueba de ambas copias con diferencia cero contra los originales. La contraseña la eligió Leo, se leyó desde un archivo temporal ya borrado y vive solo en su gestor de contraseñas.
 - Tras el lanzamiento, Supabase tendrá otra copia (tabla `academia_content` y bucket `academia-audio`), pero el plan gratis no hace copias de seguridad automáticas.
 

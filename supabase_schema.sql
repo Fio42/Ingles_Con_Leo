@@ -422,7 +422,7 @@ create policy "article_comments: insert all" on public.article_comments
 --     los suyos propios.
 --
 -- El UUID f8c0bf1f-57c9-462a-addf-17559aeab69f es tu usuario de
--- Supabase Auth (fiocchettaleandro@gmail.com). No es secreto (sin
+-- Supabase Auth (el administrador). No es secreto (sin
 -- tu sesión real no sirve para nada), pero es el único que estas
 -- políticas van a aceptar como admin.
 -- ============================================================

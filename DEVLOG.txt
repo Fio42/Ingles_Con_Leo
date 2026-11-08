@@ -1217,7 +1217,7 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - Leo AI: límite actual de 100 explicaciones por miembro/día porque la base de miembros de pago todavía es pequeña. Este límite debe reducirse cuando aumente el número de miembros activos para proteger la cuota gratuita de Cloudflare. Revisar el límite por usuario según crecimiento y consumo real. (Se cambia con: update leo_ai_config set user_daily_limit = N;)
 - Topes vigentes (tabla leo_ai_config): 100 por miembro/día, 1.500 globales/día, 8.000 neurons estimados/día (límite principal; los 10.000 gratis de Cloudflare dejan 20% de margen).
 - leo-ai.sql APLICADO: leo_ai_config (enabled, public, topes), leo_ai_testers, ai_usage, ai_usage_daily (solo contadores) y funciones leo_ai_reserve/leo_ai_record (solo service_role; reserva atómica con FOR UPDATE). Probado con un bloque que se deshace solo: apagado, no probador, tope por alumno, tope global, presupuesto de neurons y apertura. Visitante con la clave pública: no puede leer, escribir ni ejecutar nada de esto.
-- Encendido solo para probadores: enabled=true, public=false, probador = cuenta de Leo (fiocchettaleandro@gmail.com). Edge Function leo-ai desplegada (verify_jwt). app.js LEO_AI_ENABLED=true, LEO_AI_PUBLIC=false (el botón solo con ?ia=1).
+- Encendido solo para probadores: enabled=true, public=false, probador = cuenta de Leo (administrador). Edge Function leo-ai desplegada (verify_jwt). app.js LEO_AI_ENABLED=true, LEO_AI_PUBLIC=false (el botón solo con ?ia=1).
 - Para abrir a todos: update leo_ai_config set public = true; + app.js LEO_AI_PUBLIC = true + push.
 - 2026-10-01 APERTURA PUBLICA: prueba final minima con la cuenta de Leo desde la pagina (Gramatica, Writing, Listening, Mis errores, Tu diagnostico): respuestas correctas, nota intacta, 1 llamada por clic, consumo registrado, consola limpia. 8 pedidos reservados, 6 completados, ~29,9 neurons (~5,0 por explicacion). 2 pedidos superaron los 10 s de Cloudflare: el sitio mostro 'no disponible' y siguio normal (vigilar latencia).
 - Abierto a todos los miembros: leo_ai_config public=true (100/1.500/8.000) y app.js LEO_AI_PUBLIC=true. La practica gratis no lo muestra (sin miembro verificado) y el servidor rechaza a no miembros.
@@ -1253,12 +1253,12 @@ REGLA PARA CLAUDE (no para Leo): cada vez que se agregue o cambie gramática en 
 - renderDiagnosisSection ahora recibe un objeto con varios contenedores. Archivos: app.js, style.css, ?v= de app.js y style.css en todos los HTML.
 
 2026-10-01 — Bienvenida de cuenta gratis al instante + función protegida con llave
-- Caso: maruzca69@gmail.com se registró 22:17 UTC y la bienvenida salió 22:30 (siguiente pasada del Cron de 30 min). No falló, solo tardó.
+- Caso: un usuario real se registró 22:17 UTC y la bienvenida salió 22:30 (siguiente pasada del Cron de 30 min). No falló, solo tardó.
 - Seguridad: upgrade-nudge-emails estaba abierta (verify_jwt off y el Cron mandaba 'TU_SECRET_KEY_AQUI'). Ahora exige el header x-internal-secret = llave 'internal_functions_secret' de Supabase Vault (generada dentro de la base, no está en ningún archivo); se valida con public.internal_secret_ok() (solo service_role). Sin llave: 401. Los 3 Cron (upgrade-nudge, survey-15d, streak-reminder) mandan la llave desde Vault.
 - Trigger profiles_send_welcome (after insert en profiles) -> net.http_post {"welcome_user_id"}: la función procesa SOLO esa cuenta (nunca el barrido). Asíncrono (pg_net) y con exception handler: nunca frena ni rompe el registro.
 - Dedupe: welcome_claimed_at (columna nueva) es una reserva atómica con lease de 15 min, condicionada a lifecycle_emails.welcome vacío; solo quien la gana manda. Si Resend falla, se libera y el Cron reintenta. El Cron solo toma welcome en cuentas de 10+ min (WELCOME_CRON_DELAY_MINUTES).
 - Desplegado con npx supabase functions deploy --no-verify-jwt --use-api (la CLI ya tenía sesión en esta PC).
-- Pruebas reales (cuenta amne420+prueba1@gmail.com): registro -> marca de enviada en 0.76 s; correo recibido; 2 eventos repetidos -> 0 envíos; 3 eventos simultáneos sin marca -> exactamente 1; Cron con cuenta < 10 min -> no la toca; llamada sin llave / llave falsa -> 401.
+- Pruebas reales (cuenta de prueba): registro -> marca de enviada en 0.76 s; correo recibido; 2 eventos repetidos -> 0 envíos; 3 eventos simultáneos sin marca -> exactamente 1; Cron con cuenta < 10 min -> no la toca; llamada sin llave / llave falsa -> 401.
 - Con registro por correo/contraseña la bienvenida puede salir sin nombre ("¡Hola!"): aceptado por Leo.
 - survey-15d-email y streak-reminder-email también exigen la llave (mismo internalSecretOk). Lo desplegado era el mismo código que el repo (solo cambiaban comentarios). Sin llave: 401; survey con llave: 200.
 - Incidente 23:00 UTC: survey-15d-email respondió 401 porque la consulta de la llave falló con "JWT issued at future" (reloj del servidor recién arrancado un poco adelantado), no por llave mala. internalSecretOk ahora reintenta hasta 3 veces (1 s) si la consulta da error; una llave incorrecta se sigue rechazando de inmediato. Redesplegadas las 3; probadas sin llave (401) y con llave (200).
@@ -1782,7 +1782,7 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Curso 6: hallazgo extra, la actividad l3-a4 tambien leia su pista en español con voz inglesa; ahora lleva say. Audios del Curso 6: 67. Contenido del Curso 6 cargado ya con esa correccion (huella 37c35519...).
 - Curso 4 (publicado): la correccion de 4 audios NO se aplico en produccion. Motivo: primero deben estar los 2 mp3 nuevos en Storage; si se carga antes el contenido, 2 actividades quedarian sin audio. Contenido corregido listo (huella b4f4243c...), examen sin cambios.
 - BLOQUEO: los mp3 no se pueden pasar al navegador desde esta sesion (sin selector de archivos y sin permiso para exponer una carpeta local). Leo debe subir las carpetas de C:\ICL-Privado\_dev\subir-audios (there-is-are 72, can 67, posesivos 2). Despues: verificar Storage, enable=true, prueba con canario con la cuenta de Leo, commit de apertura (soon:false, open:true) y verificacion.
-- Respaldo cifrado vigente: Respaldos-Privados\InglesConLeo\InglesConLeo-privado-v3-2026-10-30.7z (misma clave que v2).
+- Respaldo cifrado vigente: paquete privado v3 del 2026-10-30 (misma clave que v2; ubicación no publicada).
 
 2026-10-30 (5) - CURSOS 5 y 6 PUBLICADOS; correccion de audio del Curso 4 aplicada
 - Orden: audios subidos por Leo (there-is-are 72, can 67, posesivos 2 nuevos) -> verificacion de Storage (0 faltantes, bucket privado) -> enabled=true del Curso 5 -> prueba con la cuenta de Leo y canario -> commit 4432c2e (Curso 5 abierto) -> verificacion en vivo -> enabled=true del Curso 6 -> prueba -> commit eceeda3 (Curso 6 abierto) -> verificacion en vivo.
@@ -1884,3 +1884,9 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 - Pruebas: wh 10, cursos-nuevos 12, seguridad wh 7, integracion 28, modelo 25, piloto 13, robustez 23, sql 27, navegador wh 14 (320 a 1440), pronombres e2e 11. Los e2e de do-does y presente-simple solo fallan en el audio por mp3 que no copie al entorno de pruebas (no por este cambio).
 - Orden de publicacion: 1) git push 2) verificar en vivo que academia-data.js ya no trae soon para wh 3) update public.academia_courses set enabled = true where course_id = 'wh'; 4) verificar sin canario con un miembro.
 - Apagado de emergencia: update public.academia_courses set enabled = false where course_id = 'wh';
+
+
+2026-11-08 | Privacidad: limpieza de datos personales en archivos publicos
+  - Se quitaron correos personales y rutas privadas de DEVLOG.txt, supabase_schema.sql, docs/proteccion-contenido-premium.md, docs/lanzamiento-articulos-y-plurales.md y Claude outputs/PLAN_SPANISHBYLEO.md.
+  - Solo texto de documentacion y comentarios. Sin cambios de funcionamiento del sitio.
+  - El historial de Git no se toco; queda un plan aparte.

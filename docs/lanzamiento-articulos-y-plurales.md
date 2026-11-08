@@ -12,7 +12,7 @@ Guía independiente de `LANZAMIENTO_TO_BE.md`, que no se modificó. TO BE y Pron
 
 ## 1. Material privado (nunca en GitHub) y respaldo
 - Carpeta `private/` (ignorada por Git): `contenido/articulos.json`, `contenido/articulos.audio.json`, `audio/articulos/` (137 mp3), `seed-academia-contenido-articulos.sql`, los 3 bancos `academia-examen-*.json` y sus `seed-academia-examen-*.sql`.
-- Respaldo definitivo cifrado AES-256 (7z), dos copias con su huella SHA-256 y verificadas por extracción: `C:\Users\fiocc\WebProjects\Respaldos-Privados\InglesConLeo\` y `C:\Users\fiocc\OneDrive\Documents\Respaldos-Privados\InglesConLeo\`. Huella del paquete: ver el `.sha256` de esa carpeta. La contraseña vive solo en tu gestor de contraseñas.
+- Respaldo definitivo cifrado AES-256 (7z), dos copias con su huella SHA-256 y verificadas por extracción: una carpeta privada de respaldos en tu computador y otra en tu OneDrive (la ubicación exacta no se publica). Huella del paquete: ver el `.sha256` de esa carpeta. La contraseña vive solo en tu gestor de contraseñas.
 - Para recuperar: abrir con 7-Zip y copiar `InglesConLeo-privado\*` dentro de `private\` del repositorio.
 - Después de cargar todo en Supabase, la base y el bucket son otra copia, pero el plan gratis no hace copias automáticas.
 

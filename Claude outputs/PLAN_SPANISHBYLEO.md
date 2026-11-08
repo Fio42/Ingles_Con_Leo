@@ -7,14 +7,14 @@ Base: commit `1650fa9` de Inglés con Leo. Misma estructura, mismo diseño, mism
 Proyecto aparte, NO una rama de este repo. Así un cambio en uno nunca rompe el otro.
 
 ```bash
-cd C:/Users/fiocc/OneDrive/Desktop
+cd RUTA/DE/TU/ESCRITORIO
 git clone inglesconLeo spanishbyLeo
 ```
 
 Luego crea en GitHub el repo vacío `Fio42/Spanish_By_Leo` y conéctalo:
 
 ```bash
-cd C:/Users/fiocc/OneDrive/Desktop/spanishbyLeo
+cd RUTA/DE/TU/ESCRITORIO/spanishbyLeo
 git remote set-url origin https://github.com/Fio42/Spanish_By_Leo.git
 git push -u origin main
 ```
