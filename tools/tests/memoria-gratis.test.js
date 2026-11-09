@@ -93,6 +93,19 @@ const DAY = 86400000;
     const card = T.freeMemoryCardHtml(); assert(/Recordamos lo que te costó/.test(card) && /data-free-memory="gramatica"/.test(card) && /6 de hoy/.test(card));
     assert(/href="[^"]+"/.test(card), 'conserva el enlace a la explicación');
   });
+  await test('Con varios temas flojos: el primer ejercicio y la nota son del MISMO tema, y no se filtra __tema', async () => {
+    const store = {}; const T = makeCtx(store, 'free', 'user-A');
+    const ids = doDoesIds(T, 'facil');
+    T.freeSessionAnswer('gramatica', 'facil', [ids[0].topic], { itemId: ids[0].id, isCorrect: false });
+    T.freeSessionEnd('gramatica');
+    const baseVariant = T.GRAMMAR_BANK.facil.findIndex((v, i) => (T.MEMBERS_ONLY_VARIANT_INDEX.gramatica.facil.indexOf(i) === -1) && !v.some(tg => T.diagTemaIdForTopic(tg.topic) === 'presente-simple'));
+    const base = []; T.GRAMMAR_BANK.facil[baseVariant].forEach(tg => tg.items.forEach(it => base.push(Object.assign({ topic: tg.topic }, it))));
+    const m = T.freeMemoryBoost('gramatica', 'facil', base);
+    assert(m.boosted.length >= 1);
+    m.pool.forEach(it => assert(!('__tema' in it), '__tema no debe filtrarse'));
+    assert(ids.some(x => x.id === m.pool[0].id), 'el primero es del tema que nombra la nota');
+    assert(/Do|Does|presente simple/i.test(T.freeMemoryNoteHtml(m, 0)), 'la nota nombra ese tema');
+  });
   await test('Sin errores pendientes no hay tarjeta ni cambios; si lo acierta, deja de recordarlo', async () => {
     const store = {}; const T = makeCtx(store, 'free', 'user-A');
     const ids = doDoesIds(T, 'facil');

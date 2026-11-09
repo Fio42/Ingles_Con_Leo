@@ -1977,3 +1977,8 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
     salen de él y el bloque de práctica de las 3 existentes se añadió a mano (1 línea). Revisar el generador antes de usarlo otra vez.
   - Pruebas: academia-puente (6). temas y conexion-recursos: 'to-too-two' sigue haciendo de "tema sin recurso" (se le quita el glosario en la prueba).
     Versiones: app ?v=20261108h, temas ?v=20261108e, academia.js ?v=20261108e, academia.css ?v=20261108a.
+
+(12) Memoria gratis: orden del refuerzo y tarjeta honesta (2026-11-08)
+  - Bug visto en cuenta gratis real: la nota decia 'Pasado perfecto' pero el primer ejercicio era de otro tema. Ahora los ejercicios nuevos se ordenan por tema flojo (el primero manda) y la nota nombra el tema del primer ejercicio.
+  - La tarjeta elige el primer tema flojo que SI tiene ejercicios libres nuevos en tu nivel; si ninguno, solo ofrece explicacion/curso y no el boton de ejercicios.
+  - Prueba nueva en memoria-gratis (11). Version app ?v=20261108i.

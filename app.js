@@ -4264,6 +4264,24 @@ function freeSampleApply(level, pool){
     return out;
   }catch(e){ return pool; }
 }
+// ¿Hay ejercicios nuevos (variantes abiertas a cuentas gratis, o la muestra) de ese tema en ese nivel que aún no domine?
+function freeMemoryHasNew(w, level){
+  try{
+    const skill = FREE_MEMORY_KIND_SKILL[w.kind];
+    const bank = skill === 'gramatica' ? GRAMMAR_BANK : skill === 'vocabulario' ? VOCAB_BANK : LISTENING_BANK;
+    const blocked = (MEMBERS_ONLY_VARIANT_INDEX[skill] && MEMBERS_ONLY_VARIANT_INDEX[skill][level]) || [];
+    const sample = (skill === 'gramatica' && FREE_SAMPLE_IDS[level]) || [];
+    const hist = focusHistory();
+    let found = false;
+    const ok = (it, topic) => { if(found || hist.latest.get(it.id) === true || w.ids.indexOf(it.id) !== -1) return; if(diagTemaIdForFound({ kind: w.kind, item: it, topic: topic || null }) === w.temaId) found = true; };
+    (bank[level] || []).forEach((variant, vi) => {
+      const isBlocked = blocked.indexOf(vi) !== -1;
+      if(skill === 'gramatica') variant.forEach(tg => tg.items.forEach(it => { if(!isBlocked || sample.indexOf(it.id) !== -1) ok(it, tg.topic); }));
+      else if(!isBlocked) variant.forEach(it => ok(it, null));
+    });
+    return found;
+  }catch(e){ return false; }
+}
 // Cambia hasta FREE_MEMORY_BOOST ejercicios de la sesión gratis por otros NUEVOS (o, si no hay, los menos recientes) del mismo
 // tema que costó. Solo variantes abiertas a cuentas gratis; el largo de la sesión no cambia, así que sigue contando igual en el límite.
 function freeMemoryBoost(skill, level, pool){
@@ -4282,7 +4300,7 @@ function freeMemoryBoost(skill, level, pool){
     const consider = (item, topic) => {
       if(!item || inPool.has(item.id) || hist.latest.get(item.id) === true) return;
       const tid = diagTemaIdForFound({ kind, item, topic: topic || null });
-      if(tid && temaIds.has(tid)) cands.push(topic ? Object.assign({ topic }, item) : item);
+      if(tid && temaIds.has(tid)) cands.push(Object.assign(topic ? Object.assign({ topic }, item) : Object.assign({}, item), { __tema: tid }));
     };
     const sample = (skill === 'gramatica' && FREE_SAMPLE_IDS[level]) || [];
     (bank[level] || []).forEach((variant, vi) => {
@@ -4290,7 +4308,9 @@ function freeMemoryBoost(skill, level, pool){
       if(skill === 'gramatica') variant.forEach(tg => tg.items.forEach(it => consider(it, tg.topic)));
       else variant.forEach(it => consider(it, null));
     });
-    const ranked = shuffleArray(cands).sort((a, b) => varietyRank(hist, a.id) - varietyRank(hist, b.id));
+    // Primero el tema que más costó (orden de freeMemoryWeakSpots); dentro de cada tema, lo no visto antes.
+    const wOrder = id => weak.findIndex(w => w.temaId === id);
+    const ranked = shuffleArray(cands).sort((a, b) => (wOrder(a.__tema) - wOrder(b.__tema)) || (varietyRank(hist, a.id) - varietyRank(hist, b.id)));
     const notJustFailed = ranked.filter(i => varietyRank(hist, i.id) < 2);      // lo que falló en la última sesión solo vuelve si no hay otra cosa
     const picked = (notJustFailed.length ? notJustFailed : ranked).slice(0, FREE_MEMORY_BOOST);
     if(!picked.length) return none;
@@ -4301,9 +4321,9 @@ function freeMemoryBoost(skill, level, pool){
       if((tid && temaIds.has(tid)) || (sample.indexOf(out[i].id) !== -1)) continue;     // lo que ya trae sobre el tema (y la muestra) se queda
       out.splice(i, 1); removed++;
     }
-    const use = picked.slice(0, removed);
+    const use = picked.slice(0, removed).map(i => { const c = Object.assign({}, i); delete c.__tema; return c; });
     if(!use.length) return none;
-    const label = TEMA_BY_ID[weak[0].temaId].label;
+    const label = TEMA_BY_ID[picked[0].__tema].label;       // la nota nombra el tema del primer ejercicio nuevo (nunca otro)
     return { pool: use.concat(out), boosted: use.map(i => i.id), note: 'Recordamos que te costó ' + label + '. Empezamos con ejercicios nuevos sobre eso.' };
   }catch(e){ return none; }
 }
@@ -4318,7 +4338,9 @@ function freeMemoryCardHtml(){
   try{
     const weak = freeMemoryWeakSpots();
     if(!weak.length) return '';
-    const w = weak[0];
+    const lvl = (typeof getUserLevel === 'function') ? getUserLevel() : 'facil';
+    const w = weak.find(x => freeMemoryHasNew(x, lvl)) || weak[0];     // el primero que de verdad tiene ejercicios nuevos en tu nivel
+    const hasNew = freeMemoryHasNew(w, lvl);
     const tema = TEMA_BY_ID[w.temaId];
     const row = sessionReinforceRows(w.ids.map(id => ({ itemId: id, isCorrect: false })), { actions: [] }, null)[0] || null;
     const skill = FREE_MEMORY_KIND_SKILL[w.kind];
@@ -4328,10 +4350,12 @@ function freeMemoryCardHtml(){
     const links = [];
     if(row && row.lesson) links.push('<a href="' + commentEscapeHtml(row.lesson.href) + '" data-rf="lesson">' + commentEscapeHtml(row.lesson.label) + '</a>');
     if(row && row.course) links.push('<a href="' + commentEscapeHtml(row.course.href) + '" data-rf="course">Curso: ' + commentEscapeHtml(row.course.title) + '</a> <small style="color:var(--ink-faint);">con membresía' + (row.course.demo ? ' (demo gratis)' : '') + '</small>');
-    const action = atLimit
+    const action = !hasNew
+      ? '<span style="color:var(--ink-faint);">Repasa la explicación y vuelve mañana: por ahora no tenemos más ejercicios gratis de este tema en tu nivel.</span>'
+      : atLimit
       ? '<span style="color:var(--ink-faint);">Hoy ya usaste tus ' + FREE_USER_DAILY_LIMIT + ' ejercicios gratis. Mañana seguimos con esto.</span>'
       : '<button type="button" class="btn btn-primary btn-sm" data-free-memory="' + skill + '">Practicar ejercicios nuevos</button> <span style="font-size:13px;color:var(--ink-faint);">Cuentan en tus ' + FREE_USER_DAILY_LIMIT + ' de hoy (' + used + ' usados).</span>';
-    return '<strong>Recordamos lo que te costó</strong><p style="margin:6px 0 10px;">' + commentEscapeHtml(tema.label) + ' (' + n + (n === 1 ? ' error' : ' errores') + '). Te proponemos ejercicios distintos para mejorarlo.</p>'
+    return '<strong>Recordamos lo que te costó</strong><p style="margin:6px 0 10px;">' + commentEscapeHtml(tema.label) + ' (' + n + (n === 1 ? ' error' : ' errores') + ').' + (hasNew ? ' Te proponemos ejercicios distintos para mejorarlo.' : '') + '</p>'
       + (links.length ? '<p style="margin:0 0 10px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">' + links.join('') + '</p>' : '') + action;
   }catch(e){ return ''; }
 }
