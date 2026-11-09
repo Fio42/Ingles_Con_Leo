@@ -23,15 +23,173 @@ function localDateStr(d){
   return `${y}-${m}-${day}`;
 }
 
+/* ---------- ALMACÉN LOCAL POR CUENTA (aislamiento entre alumnos) ----------
+   Antes, el progreso, el perfil y las cachés personales vivían en claves únicas del navegador (leo_progress_v2, leo_profile...).
+   Si A cerraba sesión y entraba B en el mismo navegador, la sincronización MEZCLABA lo de B con lo que ya había de A, y el
+   respaldo de errores (backfill) podía subir los errores de A a la cuenta de B.
+   Ahora cada cuenta tiene su propio espacio: la clave real es "<clave>@@u:<id de Supabase>". Las claves SIN sufijo son el
+   espacio de invitado (y los datos de antes de este cambio, de dueño NO verificable): ninguna cuenta las lee ni las sube.
+   - El espacio se fija al cargar la página (no cambia a mitad de camino), así una pestaña vieja nunca escribe en la cuenta nueva.
+   - Si en otra pestaña se cierra sesión o entra otra cuenta, esta página se recarga (nada de A queda en pantalla ni en memoria).
+   - Toda operación que sube o baja datos de la nube comprueba matchesUser(id de la sesión): si el espacio de esta página no
+     es el de la cuenta autenticada, no hace nada (ver backend.js).
+   - Nada se borra: lo de cada cuenta se queda guardado, aislado, para cuando vuelva a entrar.
+   Se queda SIN aislar a propósito (no son progreso): contadores y banderas de límites gratis, banderas de prueba de la IA,
+   leo_member_hint, nombre de invitado en comentarios, analítica. */
+const LeoScope = (function(){
+  const SEP = '@@';
+  const AUTH_RE = /^sb-.*-auth-token$/;
+  const ID_RE = /^[\w.-]{1,100}$/;   // los ids de Supabase son UUID; el filtro solo evita caracteres que romperían la clave
+  // Cuenta con sesión guardada en este navegador: 'g' (invitado), 'u:<id>' o 'u:?' (sesión ilegible: espacio aparte, vacío).
+  function readAuth(){
+    try{
+      for(let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i) || '';
+        if(!AUTH_RE.test(k)) continue;
+        let v = null;
+        try{ v = JSON.parse(localStorage.getItem(k)); }catch(e){ return { scope:'u:?', uid:null }; }
+        const u = v && (v.user || (v.currentSession && v.currentSession.user));
+        const id = u && u.id;
+        if(typeof id === 'string' && ID_RE.test(id)) return { scope:'u:' + id, uid:id };
+        return { scope:'u:?', uid:null };
+      }
+    }catch(e){}
+    return { scope:'g', uid:null };
+  }
+  let page = readAuth();
+  let oauthReturn = false;
+  try{ oauthReturn = /[?&#](oauth=|code=|access_token=)/.test(String(location.search || '') + String(location.hash || '')); }catch(e){}
+  const hooks = [];
+  const suffix = () => SEP + page.scope;   // invitado = '@@g'; las claves sin sufijo son la bóveda (LeoVault) y ninguna página las lee
+  const key = base => base + suffix();
+  function ownKeys(){
+    const out = [], sfx = suffix();
+    try{
+      for(let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i) || '';
+        if(k.length > sfx.length && k.slice(-sfx.length) === sfx) out.push(k.slice(0, -sfx.length));
+      }
+    }catch(e){}
+    return out;
+  }
+  // Misma forma que localStorage, pero solo ve (y escribe) el espacio de esta página.
+  const store = {
+    getItem(k){ return localStorage.getItem(key(k)); },
+    setItem(k, v){ localStorage.setItem(key(k), v); },
+    removeItem(k){ localStorage.removeItem(key(k)); },
+    get length(){ return ownKeys().length; },
+    key(i){ const ks = ownKeys(); return i >= 0 && i < ks.length ? ks[i] : null; }
+  };
+  function reloadOnce(){
+    try{
+      const t = Number(sessionStorage.getItem('leo_scope_reload') || 0);
+      if(Date.now() - t < 5000) return;                                     // freno contra recargas en bucle
+      sessionStorage.setItem('leo_scope_reload', String(Date.now()));
+    }catch(e){}
+    try{ document.documentElement.style.visibility = 'hidden'; }catch(e){}   // lo de la cuenta anterior no se queda a la vista
+    try{ location.reload(); }catch(e){}
+  }
+  const changed = () => readAuth().scope !== page.scope;
+  // Una página abierta con una cuenta se recarga si esa sesión ya no es la que hay guardada (cierre de sesión o cambio de cuenta).
+  function guard(){ if(page.scope !== 'g' && changed()) reloadOnce(); }
+  function rebind(){ page = readAuth(); hooks.forEach(fn => { try{ fn(); }catch(e){} }); }
+  try{
+    window.addEventListener('storage', e => { if(!e || !e.key || AUTH_RE.test(e.key)) guard(); });
+    window.addEventListener('pageshow', e => { if(e && e.persisted) guard(); });
+    document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') guard(); });
+  }catch(e){}
+  return {
+    store, key, guard, rebind, changed,
+    scope: () => page.scope,
+    uid: () => page.uid,
+    isAccount: () => page.scope !== 'g',
+    // ¿La cuenta autenticada es la dueña de los datos locales de esta página? (obligatorio antes de subir o bajar datos)
+    matchesUser: id => !!(page.uid && id && page.uid === id),
+    onRebind: fn => { hooks.push(fn); },
+    // Evento de Supabase: SIGNED_OUT recarga la página de una cuenta; SIGNED_IN solo reasigna al volver de un enlace de acceso (OAuth, recuperación).
+    onAuthEvent(ev){
+      if(ev === 'SIGNED_OUT'){ if(page.scope !== 'g') reloadOnce(); }
+      else if(ev === 'SIGNED_IN' && page.scope === 'g' && oauthReturn){ rebind(); }
+    }
+  };
+})();
+const LS_P = LeoScope.store;   // localStorage de ESTA cuenta (o de invitado): usar para todo dato personal
+
+/* ---------- Bóveda del progreso anterior al aislamiento ----------
+   Antes del aislamiento por cuenta, el progreso de este navegador estaba en claves sin dueño (leo_progress_v2, etc.).
+   Esas claves NO se borran, no se muestran, no se sincronizan y ninguna página las lee: son la "bóveda", disponible para una
+   recuperación futura segura. Nunca se le pregunta a nadie si "son suyas" y la primera cuenta que entra NO las reclama.
+   Lo que sí demuestra su dueño llega solo por identificadores fiables:
+     - el progreso que está en Supabase (RLS: solo filas de la cuenta) baja con la sincronización normal;
+     - las sesiones gratis pendientes que traen el id de la cuenta (uid) pasan a su espacio, y solo esas. */
+const LeoVault = (function(){
+  const SEP = '@@', CLAIMS = 'leo_vault_claims_v1', PROG = 'leo_progress_v2', PEND = 'leo_free_pending_v1';
+  const COPY = ['leo_profile','leo_micro_stats_v1','leo_derived_meta_v1','leo_check_seen_v1','leo_level_suggest_v1',
+                'leo_last_variant','leo_last_variant_set','leo_session_length','leo_plan_length','leo_plan_difficulty','leo_aprender_v1'];
+  const ACAD = /^leo_academia_(piloto_v1|v1_[\w-]+)$/;
+  const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  const lsSet = (k, v) => { try{ localStorage.setItem(k, v); return true; }catch(e){ return false; } };
+  const readJson = k => { try{ return JSON.parse(lsGet(k)); }catch(e){ return null; } };
+  function legacyKeys(){
+    const out = [];
+    try{
+      for(let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i) || '';
+        if(k.indexOf(SEP) >= 0) continue;
+        if(k === PROG || k === PEND || COPY.indexOf(k) >= 0 || ACAD.test(k)) out.push(k);
+      }
+    }catch(e){}
+    return out;
+  }
+  function claims(){
+    const c = readJson(CLAIMS);
+    return (c && typeof c === 'object' && c.by && typeof c.by === 'object') ? c : { owner:null, by:{} };
+  }
+  const saveClaims = c => lsSet(CLAIMS, JSON.stringify(c));
+  function legacySessions(){
+    const p = readJson(PROG);
+    return (p && Array.isArray(p.sessions)) ? p.sessions.filter(s => s && typeof s === 'object') : [];
+  }
+  function academiaKeys(){
+    return legacyKeys().filter(k => ACAD.test(k)).filter(k => { const s = readJson(k); return !!(s && s.lessons && typeof s.lessons === 'object' && Object.keys(s.lessons).length); });
+  }
+  const idOf = s => s.startedAt ? (s.startedAt + '|' + (s.skill || '')) : JSON.stringify(s);
+  // Qué hay guardado de antes (solo conteos: nada de contenido se muestra).
+  function info(){ return { sessions: legacySessions().length, academia: academiaKeys().length }; }
+  // Borradores gratis que traen el id de ESTA cuenta: se copian (una sola vez por cuenta) sin pedir confirmación.
+  function adoptPending(){
+    const uid = LeoScope.uid(), sc = LeoScope.scope();
+    if(!uid) return 0;
+    const c = claims();
+    if(c.by[sc + '#pend']) return 0;
+    let n = 0;
+    const list = readJson(PEND);
+    if(Array.isArray(list)){
+      const mine = list.filter(d => d && d.uid === uid && d.skill && Array.isArray(d.results));
+      if(mine.length){
+        const kt = LeoScope.key(PEND);
+        let t = readJson(kt); if(!Array.isArray(t)) t = [];
+        mine.forEach(d => { if(!t.some(x => x && x.uid === d.uid && x.skill === d.skill && x.startedAt === d.startedAt)){ t.push(d); n++; } });
+        if(n) lsSet(kt, JSON.stringify(t.slice(-8)));
+      }
+    }
+    c.by[sc + '#pend'] = 'done';
+    saveClaims(c);
+    return n;
+  }
+  try{ adoptPending(); }catch(e){}
+  return { info, adoptPending, legacyKeys };
+})();
+
 /* ---------- Perfil / onboarding ---------- */
 const PROFILE_KEY = 'leo_profile';
 
 function getProfile(){
-  try{ return JSON.parse(localStorage.getItem(PROFILE_KEY)) || null; }
+  try{ return JSON.parse(LS_P.getItem(PROFILE_KEY)) || null; }
   catch(e){ return null; }
 }
 function saveProfile(p){
-  try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }catch(e){}
+  try{ LS_P.setItem(PROFILE_KEY, JSON.stringify(p)); }catch(e){}
 }
 function getUserLevel(){
   const p = getProfile();
@@ -417,6 +575,7 @@ async function initMemberHeader(){
   const logoutBtn = document.getElementById('navLogoutBtn');
   if(logoutBtn){
     logoutBtn.addEventListener('click', async ()=>{
+      try{ document.documentElement.style.visibility = 'hidden'; }catch(e){}   // lo de esta cuenta desaparece de la pantalla al instante
       await LeoBackend.signOut();
       location.href = 'miembros.html';
     });
@@ -667,7 +826,7 @@ function dedupeProgressSessions(p){
    por navegador. Despues de correr, no se vuelve a tocar. */
 function migrateProgressDatesIfNeeded(p){
   try{
-    if(localStorage.getItem(PROGRESS_DATE_MIGRATION_KEY)) return p;
+    if(LS_P.getItem(PROGRESS_DATE_MIGRATION_KEY)) return p;
   }catch(e){ return p; }
   let changed = false;
   (p.sessions || []).forEach(s=>{
@@ -684,13 +843,13 @@ function migrateProgressDatesIfNeeded(p){
     p.lastActivity = { skill: last.skill, level: last.level, topic: (last.topics && last.topics[0]) || null, date: last.date };
   }
   if(changed) saveProgressRaw(p);
-  try{ localStorage.setItem(PROGRESS_DATE_MIGRATION_KEY, '1'); }catch(e){}
+  try{ LS_P.setItem(PROGRESS_DATE_MIGRATION_KEY, '1'); }catch(e){}
   return p;
 }
 
 function loadProgress(){
   try{
-    const p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+    const p = JSON.parse(LS_P.getItem(PROGRESS_KEY));
     if(p && Array.isArray(p.sessions)){
       migrateProgressDatesIfNeeded(p);
       if(dedupeProgressSessions(p)) saveProgressRaw(p);
@@ -700,7 +859,7 @@ function loadProgress(){
   return { sessions: [], lastActivity: null };
 }
 function saveProgressRaw(p){
-  try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }catch(e){}
+  try{ LS_P.setItem(PROGRESS_KEY, JSON.stringify(p)); }catch(e){}
 }
 
 /* ------------------------------------------------------------
@@ -838,7 +997,7 @@ function microOfItem(itemId, index){
   return ck ? ck.micro : null;
 }
 function readJsonKey(key, fallback){
-  try{ const v = JSON.parse(localStorage.getItem(key)); return (v && typeof v === 'object') ? v : fallback; }catch(e){ return fallback; }
+  try{ const v = JSON.parse(LS_P.getItem(key)); return (v && typeof v === 'object') ? v : fallback; }catch(e){ return fallback; }
 }
 // Ejercicios de comprobación ya vistos por este alumno. Es una CACHÉ derivada de las sesiones skill:'check'
 // (que viajan a la nube con el resto del progreso): ensureDerived() la reconstruye cuando el progreso cambió por
@@ -859,10 +1018,10 @@ const DERIVED_VERSION = 2;   // 2: señales de preparación para comprobar (rc, 
 const CHECK_SYNC_TIMEOUT_MS = 8000;
 let _deriving = false, _seenOverride = null;
 function progressSig(){
-  try{ const raw = localStorage.getItem(PROGRESS_KEY); return raw ? raw.length : 0; }catch(e){ return -1; }
+  try{ const raw = LS_P.getItem(PROGRESS_KEY); return raw ? raw.length : 0; }catch(e){ return -1; }
 }
 function stampDerived(){
-  try{ localStorage.setItem(DERIVED_META_KEY, JSON.stringify({ sig: progressSig(), v: DERIVED_VERSION })); }catch(e){}
+  try{ LS_P.setItem(DERIVED_META_KEY, JSON.stringify({ sig: progressSig(), v: DERIVED_VERSION })); }catch(e){}
 }
 function ensureDerived(){
   if(_deriving) return;
@@ -891,8 +1050,8 @@ function rebuildDerived(){
     _seenOverride = null;
     const all = readJsonKey(MICRO_STATS_KEY, {});
     Object.keys(fresh).forEach(m => { all[m] = fresh[m]; });
-    if(Object.keys(seen).length) localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));   // quien no usa microtemas no guarda nada
-    if(Object.keys(all).length) localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
+    if(Object.keys(seen).length) LS_P.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));   // quien no usa microtemas no guarda nada
+    if(Object.keys(all).length) LS_P.setItem(MICRO_STATS_KEY, JSON.stringify(all));
     stampDerived();
   }catch(e){}
   finally{ _deriving = false; _seenOverride = null; }
@@ -914,7 +1073,7 @@ function markChecksConsumed(results){
     if(!ids.length) return;
     const seen = checkSeenSet();
     ids.forEach(id => { seen[id] = 1; });
-    localStorage.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));
+    LS_P.setItem(CHECK_SEEN_KEY, JSON.stringify(seen));
   }catch(e){}
 }
 // n ejercicios de comprobación NUEVOS para este alumno, o null si no hay suficientes
@@ -1038,7 +1197,7 @@ function updateMicroStats(results, date){
   try{
     const all = readJsonKey(MICRO_STATS_KEY, {});
     if(!applyMicroResults(all, results, date)) return;
-    localStorage.setItem(MICRO_STATS_KEY, JSON.stringify(all));
+    LS_P.setItem(MICRO_STATS_KEY, JSON.stringify(all));
   }catch(e){}
 }
 // Regla de debilidad: errores en ejercicios DISTINTOS (>=3, o >=2 en días distintos). Repetir el
@@ -1314,11 +1473,11 @@ function bankSizeForLevel(skill, level){
 /* ---------- Selección de variante de sesión (evita repetir contenido) ---------- */
 const LAST_VARIANT_KEY = 'leo_last_variant';
 function getLastVariantMap(){
-  try{ return JSON.parse(localStorage.getItem(LAST_VARIANT_KEY)) || {}; }
+  try{ return JSON.parse(LS_P.getItem(LAST_VARIANT_KEY)) || {}; }
   catch(e){ return {}; }
 }
 function saveLastVariantMap(map){
-  try{ localStorage.setItem(LAST_VARIANT_KEY, JSON.stringify(map)); }
+  try{ LS_P.setItem(LAST_VARIANT_KEY, JSON.stringify(map)); }
   catch(e){ /* localStorage no disponible: simplemente no recordamos la última variante */ }
 }
 /* Indice exacto (dentro de cada BANK[skill][level]) de la variante que se
@@ -1360,12 +1519,12 @@ const SESSION_LENGTHS = {
 const SESSION_LENGTH_KEY = 'leo_session_length';
 function getSessionLength(){
   try{
-    const v = localStorage.getItem(SESSION_LENGTH_KEY);
+    const v = LS_P.getItem(SESSION_LENGTH_KEY);
     return SESSION_LENGTHS[v] ? v : 'media';
   }catch(e){ return 'media'; }
 }
 function setSessionLength(len){
-  try{ if(SESSION_LENGTHS[len]) localStorage.setItem(SESSION_LENGTH_KEY, len); }catch(e){}
+  try{ if(SESSION_LENGTHS[len]) LS_P.setItem(SESSION_LENGTH_KEY, len); }catch(e){}
 }
 /* Componente "tonto": solo dibuja las 3 tarjetas de duración y avisa con
    onChange(len) cuando se elige una distinta a la actual. NO guarda nada
@@ -1473,11 +1632,11 @@ function showConfirmOverlay({ title, message, confirmLabel, cancelLabel, onConfi
    único índice. */
 const LAST_VARIANT_SET_KEY = 'leo_last_variant_set';
 function getLastVariantSetMap(){
-  try{ return JSON.parse(localStorage.getItem(LAST_VARIANT_SET_KEY)) || {}; }
+  try{ return JSON.parse(LS_P.getItem(LAST_VARIANT_SET_KEY)) || {}; }
   catch(e){ return {}; }
 }
 function saveLastVariantSetMap(map){
-  try{ localStorage.setItem(LAST_VARIANT_SET_KEY, JSON.stringify(map)); }
+  try{ LS_P.setItem(LAST_VARIANT_SET_KEY, JSON.stringify(map)); }
   catch(e){ /* sin localStorage, simplemente no recordamos */ }
 }
 function flattenVariant(skill, variant){
@@ -2018,16 +2177,16 @@ function showRetryOrNextButtons(container, isCorrect, onRetry, onNext, nextLabel
 // Se borra automáticamente al terminar la sesión completa.
 function inflightKey(skill, level){ return 'leo_inflight_' + skill + '_' + level; }
 function saveInflightSession(skill, level, data){
-  try{ localStorage.setItem(inflightKey(skill, level), JSON.stringify(data)); }catch(e){}
+  try{ LS_P.setItem(inflightKey(skill, level), JSON.stringify(data)); }catch(e){}
 }
 function loadInflightSession(skill, level){
   try{
-    const raw = localStorage.getItem(inflightKey(skill, level));
+    const raw = LS_P.getItem(inflightKey(skill, level));
     return raw ? JSON.parse(raw) : null;
   }catch(e){ return null; }
 }
 function clearInflightSession(skill, level){
-  try{ localStorage.removeItem(inflightKey(skill, level)); }catch(e){}
+  try{ LS_P.removeItem(inflightKey(skill, level)); }catch(e){}
 }
 function sessionHeaderHtml(skillLabel, level, current, total){
   const pct = Math.round((current/total)*100);
@@ -2837,18 +2996,18 @@ function leoAiHash(str){
 }
 function leoAiInsightCacheGet(key){
   try{
-    const all = JSON.parse(localStorage.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
+    const all = JSON.parse(LS_P.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
     const hit = all[leoAiHash(key)];
     return hit && Date.now() - hit.t < LEO_AI_INSIGHT_TTL ? hit.res : null;
   }catch(e){ return null; }
 }
 function leoAiInsightCacheSet(key, res){
   try{
-    const all = JSON.parse(localStorage.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
+    const all = JSON.parse(LS_P.getItem(LEO_AI_INSIGHT_CACHE_KEY) || '{}');
     all[leoAiHash(key)] = { t: Date.now(), res };
     const keys = Object.keys(all).sort((a,b)=> all[b].t - all[a].t);
     keys.slice(12).forEach(k => delete all[k]);
-    localStorage.setItem(LEO_AI_INSIGHT_CACHE_KEY, JSON.stringify(all));
+    LS_P.setItem(LEO_AI_INSIGHT_CACHE_KEY, JSON.stringify(all));
   }catch(e){}
 }
 
@@ -3897,12 +4056,12 @@ const _freeBegun = {};                           // skill -> momento en que empe
 let _freeFlushing = false, _freeFlushAgain = false;
 function freeAcctId(){ return (_leoAccessTier === 'free' && _leoAccessProfile && _leoAccessProfile.id) || null; }
 function readFreePending(){
-  try{ const v = JSON.parse(localStorage.getItem(FREE_PENDING_KEY)); return Array.isArray(v) ? v.filter(d => d && d.uid && d.skill && Array.isArray(d.results)) : []; }catch(e){ return []; }
+  try{ const v = JSON.parse(LS_P.getItem(FREE_PENDING_KEY)); return Array.isArray(v) ? v.filter(d => d && d.uid && d.skill && Array.isArray(d.results)) : []; }catch(e){ return []; }
 }
 function writeFreePending(list){
   try{
-    if(list.length) localStorage.setItem(FREE_PENDING_KEY, JSON.stringify(list.slice(-FREE_PENDING_MAX)));
-    else localStorage.removeItem(FREE_PENDING_KEY);
+    if(list.length) LS_P.setItem(FREE_PENDING_KEY, JSON.stringify(list.slice(-FREE_PENDING_MAX)));
+    else LS_P.removeItem(FREE_PENDING_KEY);
   }catch(e){}
 }
 // Cierra los borradores abiertos (de una habilidad, o todos menos `except`) y devuelve si cambió algo.
@@ -4542,12 +4701,12 @@ const PLAN_LENGTHS = {
 const PLAN_LENGTH_KEY = 'leo_plan_length';
 function getPlanLength(){
   try{
-    const v = localStorage.getItem(PLAN_LENGTH_KEY);
+    const v = LS_P.getItem(PLAN_LENGTH_KEY);
     return PLAN_LENGTHS[v] ? v : 'normal';
   }catch(e){ return 'normal'; }
 }
 function setPlanLength(len){
-  try{ if(PLAN_LENGTHS[len]) localStorage.setItem(PLAN_LENGTH_KEY, len); }catch(e){}
+  try{ if(PLAN_LENGTHS[len]) LS_P.setItem(PLAN_LENGTH_KEY, len); }catch(e){}
 }
 function renderPlanLengthSelector(container, selected, onChange){
   if(!container) return;
@@ -4591,12 +4750,12 @@ const PLAN_DIFFICULTIES = {
 const PLAN_DIFFICULTY_KEY = 'leo_plan_difficulty';
 function getPlanDifficulty(){
   try{
-    const v = localStorage.getItem(PLAN_DIFFICULTY_KEY);
+    const v = LS_P.getItem(PLAN_DIFFICULTY_KEY);
     return PLAN_DIFFICULTIES[v] ? v : 'recommended';
   }catch(e){ return 'recommended'; }
 }
 function setPlanDifficulty(diff){
-  try{ if(PLAN_DIFFICULTIES[diff]) localStorage.setItem(PLAN_DIFFICULTY_KEY, diff); }catch(e){}
+  try{ if(PLAN_DIFFICULTIES[diff]) LS_P.setItem(PLAN_DIFFICULTY_KEY, diff); }catch(e){}
 }
 function resolvePlanContentLevel(userLevel, difficulty){
   const idx = LEVELS.indexOf(userLevel);
@@ -5248,6 +5407,7 @@ function contentForUnit(type, id){
 // _mistakeStatsCache: undefined = todavía no se intentó cargar,
 // null = se intentó y falló (usar respaldo viejo), Map = cargado bien.
 let _mistakeStatsCache;
+LeoScope.onRebind(() => { _mistakeStatsCache = undefined; });   // al cambiar de espacio no sobrevive nada en memoria del anterior
 async function loadMistakeStatsMap(forceReload){
   if(forceReload) _mistakeStatsCache = undefined;
   if(_mistakeStatsCache !== undefined) return _mistakeStatsCache;
@@ -5271,12 +5431,17 @@ async function loadMistakeStatsMap(forceReload){
 // próxima visita, no se marca como hecho.
 const MISTAKE_BACKFILL_KEY = 'leo_mistake_backfill_v1_done';
 async function backfillMistakeStatsIfNeeded(){
-  try{ if(localStorage.getItem(MISTAKE_BACKFILL_KEY)) return; }catch(e){ return; }
+  try{ if(LS_P.getItem(MISTAKE_BACKFILL_KEY)) return; }catch(e){ return; }
   const statsMap = await loadMistakeStatsMap();
   if(statsMap === null) return; // sin backend o falla de red: se reintenta despues
-  if(statsMap.size > 0){ try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} return; }
+  if(statsMap.size > 0){ try{ LS_P.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} return; }
   const legacyIds = computeMistakeIds();
-  if(!legacyIds.length){ try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} return; }
+  if(!legacyIds.length){
+    // Sin errores locales: solo se da por hecho si ya hay sesiones de ESTA cuenta en el navegador. Con el espacio recién creado
+    // (aún sin bajar de la nube) todavía no se sabe nada, y marcarlo como hecho dejaría el respaldo sin hacer nunca.
+    if(loadProgress().sessions.length){ try{ LS_P.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){} }
+    return;
+  }
   const index = getMistakesItemIndex();
   const items = [];
   legacyIds.forEach(id=>{
@@ -5289,7 +5454,7 @@ async function backfillMistakeStatsIfNeeded(){
     try{ result = await LeoBackend.applyMistakeResults(items); }catch(e){ return; }
     if(!result || !result.ok) return; // fallo real: no marcar como hecho, reintentar en la próxima visita
   }
-  try{ localStorage.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){}
+  try{ LS_P.setItem(MISTAKE_BACKFILL_KEY, '1'); }catch(e){}
   await loadMistakeStatsMap(true); // recargar con lo recien sembrado
 }
 
@@ -7844,7 +8009,7 @@ function renderTodayHero(el){
     try{ p = loadProgress(); }catch(e){ p = null; }
     const hasHistory = !!(p && ((p.sessions && p.sessions.length) || p.lastActivity));
     let resume = null;
-    try{ resume = findResumableSession(localStorage, Date.now(), getUserLevel()); }catch(e){ resume = null; }
+    try{ resume = findResumableSession(LS_P, Date.now(), getUserLevel()); }catch(e){ resume = null; }
     const hero = pickDashHero({ resume, today: (diag && diag.ready && diag.today) ? diag.today : null, hasHistory });
     if(!hero) return;                    // se queda la tarjeta del Plan del HTML
     const t = hero.action || {};
@@ -7911,7 +8076,7 @@ function saveLevelSuggestState(s){
   try{
     const cut = Date.now() - LEVEL_SUGGEST.DISMISS_DAYS * 86400000;
     Object.keys(s.dismissed || {}).forEach(k => { if(!(s.dismissed[k] >= cut)) delete s.dismissed[k]; });
-    localStorage.setItem(LEVEL_SUGGEST_KEY, JSON.stringify(s));
+    LS_P.setItem(LEVEL_SUGGEST_KEY, JSON.stringify(s));
   }catch(e){}
 }
 // Respuestas válidas del nivel `level` (ver EVIDENCIA arriba), de la más antigua a la más reciente.
@@ -8050,7 +8215,7 @@ function renderLevelSuggestion(el){
 const FEEDBACK_CARD_KEY = 'leo_feedback_card_v1';
 const FEEDBACK_CARD = { SHOW_DELAY_MS: 1500, MIN_RECHECK_MS: 3600000, LATER_MS: 7 * 86400000, ANSWERED_MS: 90 * 86400000, MAX_COMMENT: 600 };
 function feedbackCardSetNext(ms){
-  try{ localStorage.setItem(FEEDBACK_CARD_KEY, JSON.stringify({ next: ms })); }catch(e){}
+  try{ LS_P.setItem(FEEDBACK_CARD_KEY, JSON.stringify({ next: ms })); }catch(e){}
 }
 function feedbackScaleHtml(){
   let h = '';
@@ -8465,14 +8630,14 @@ const LEO_AI_PITCH_KEY = 'leo_ai_pitch_state';
 function nextLeoAiPitchVariant(wrong){
   if(window.__leoMemberVerified === true) return null;
   let st = { sessions:0, lastShownAt:-99 };
-  try{ st = Object.assign(st, JSON.parse(localStorage.getItem(LEO_AI_PITCH_KEY)) || {}); }catch(e){}
+  try{ st = Object.assign(st, JSON.parse(LS_P.getItem(LEO_AI_PITCH_KEY)) || {}); }catch(e){}
   st.sessions++;
   const sinceLast = st.sessions - st.lastShownAt;
   let variant = null;
   if(sinceLast >= 2 && wrong >= 3) variant = 'errors';
   else if(sinceLast >= 2 && st.sessions % 5 === 0) variant = 'progress';
   if(variant) st.lastShownAt = st.sessions;
-  try{ localStorage.setItem(LEO_AI_PITCH_KEY, JSON.stringify(st)); }catch(e){}
+  try{ LS_P.setItem(LEO_AI_PITCH_KEY, JSON.stringify(st)); }catch(e){}
   return variant;
 }
 const LEO_AI_PITCH_COPY = {

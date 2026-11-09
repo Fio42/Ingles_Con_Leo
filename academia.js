@@ -89,11 +89,51 @@
   /* Registro de los cursos de la pagina: cada curso tiene su propia instancia (progreso, conexion y acceso propios). */
   var SHELL = { apps: {}, primary: null, route: function(){} };
 
+  /* Espacio local de la cuenta: el avance, el borrador del examen y la caché de membresía llevan el id de la cuenta que tenía
+     la sesión al cargar (@@u:<id>; sin sesión @@g). Así el avance de una cuenta nunca se fusiona con la nube de otra.
+     Las claves anteriores (sin sufijo) quedan intactas como respaldo; se recuperan con confirmación desde Mi progreso. */
+  var AC_AUTH = /^sb-.*-auth-token$/;
+  function acReadSfx(){
+    try{
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i) || '';
+        if(!AC_AUTH.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k));
+        var u = v && (v.user || (v.currentSession && v.currentSession.user));
+        var id = u && u.id;
+        return (typeof id === 'string' && /^[\w.-]{1,100}$/.test(id)) ? '@@u:' + id : '@@u:?';
+      }
+    }catch(e){ return '@@u:?'; }
+    return '@@g';
+  }
+  var AC_SFX = acReadSfx();
+  function acReloadOnce(){
+    try{
+      var t = Number(sessionStorage.getItem('leo_scope_reload') || 0);
+      if(Date.now() - t < 5000) return;
+      sessionStorage.setItem('leo_scope_reload', String(Date.now()));
+    }catch(e){}
+    try{ document.documentElement.style.visibility = 'hidden'; }catch(e){}
+    try{ location.reload(); }catch(e){}
+  }
+  try{
+    window.addEventListener('storage', function(e){ if(!e || !e.key || AC_AUTH.test(e.key)){ if(AC_SFX !== '@@g' && acReadSfx() !== AC_SFX) acReloadOnce(); } });
+    window.addEventListener('pageshow', function(e){ if(e && e.persisted && AC_SFX !== '@@g' && acReadSfx() !== AC_SFX) acReloadOnce(); });
+  }catch(e){}
+  /* Solo se acepta la sesión si es la cuenta dueña del espacio local de esta página; si cambió (inicio de sesión en esta misma página),
+     se recarga para empezar limpio en vez de fusionar el avance de otra persona con esta nube. */
+  function acSession(){
+    return LeoBackend.getSession().then(function(s){
+      if(s && s.user && '@@u:' + s.user.id !== AC_SFX){ acReloadOnce(); return null; }
+      return s;
+    });
+  }
+
   function makeApp(courseId){
   var COURSE = ACADEMIA.courses[courseId];
   var CB = '#/curso/' + courseId;
   var PRIMARY = courseId === 'to-be';          // TO BE es el curso de siempre: conserva su clave de avance y las pantallas generales (Mi ruta, logros, practicar)
-  var KEY = PRIMARY ? 'leo_academia_piloto_v1' : 'leo_academia_v1_' + courseId;
+  var KEY = (PRIMARY ? 'leo_academia_piloto_v1' : 'leo_academia_v1_' + courseId) + AC_SFX;
   var NAME = COURSE.name || COURSE.title;
 
 
@@ -103,7 +143,7 @@
     if(window.ACADEMIA_CLOUD === true && typeof AcademiaNube !== 'undefined' && typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
       NUBE = AcademiaNube.create({
         enabled: true, courseId: courseId, meta: (typeof ACADEMIA_MOTOR !== 'undefined' ? ACADEMIA_MOTOR.courses[courseId] : null),
-        getClient: LeoBackend.getClient, getSession: LeoBackend.getSession,
+        getClient: LeoBackend.getClient, getSession: acSession,
         storage: window.localStorage,
         localDailyCount: localDailyCount, setLocalDailyCount: setLocalDailyCount
       });
@@ -134,7 +174,7 @@
      Esto es SOLO lo que se muestra: cada accion premium la vuelve a validar el servidor. */
   var mode = NUBE ? 'pending' : (PRIMARY ? 'member' : 'off');
   var ACC = null;
-  var MEMBER_KEY = 'leo_academia_member_v1', MEMBER_TTL = 14 * 86400000;
+  var MEMBER_KEY = 'leo_academia_member_v1' + AC_SFX, MEMBER_TTL = 14 * 86400000;
   function cachedMember(){ try{ var m = JSON.parse(localStorage.getItem(MEMBER_KEY) || 'null'); return !!(m && m.m === 1 && Date.now() - m.at < MEMBER_TTL); }catch(e){ return false; } }
   function cacheMember(v){ try{ if(v) localStorage.setItem(MEMBER_KEY, JSON.stringify({ m: 1, at: Date.now() })); else localStorage.removeItem(MEMBER_KEY); }catch(e){} }
   function refreshAccess(){
@@ -1323,7 +1363,7 @@
 
 
   /* ---- Evaluación OFICIAL (la corrige el servidor; da insignia) ---- */
-  var DRAFT_KEY = PRIMARY ? 'leo_academia_exam_draft_v1' : 'leo_academia_exam_draft_v1:' + courseId;     // un borrador por curso
+  var DRAFT_KEY = (PRIMARY ? 'leo_academia_exam_draft_v1' : 'leo_academia_exam_draft_v1:' + courseId) + AC_SFX;     // un borrador por curso
   function toClientItem(p){
     // El navegador NO conoce la respuesta: estos campos son de relleno para dibujar la actividad. La nota la da el servidor.
     var it = { id: p.id, type: p.type, topic: p.topic, q: p.q, source: p.source, ex: p.ex };

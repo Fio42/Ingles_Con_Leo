@@ -63,19 +63,25 @@ const EXPORTS = ['recordSession', 'loadProgress', 'noteGrammarAnswer', 'markGram
 
 function makeDevice(cloud, opts){
   opts = opts || {};
-  const store = {}, shown = [];
+  const rawStore = {}, shown = [];
+  // Con cuenta, el sitio guarda lo personal en el espacio de esa cuenta (clave@@u:<id>). Los tests leen y escriben `store.leo_profile`,
+  // `store.leo_progress_v2`... tal cual: este proxy los lleva al espacio de la cuenta del dispositivo, igual que hace la página.
+  const sfx = opts.loggedIn !== false ? '@@u:' + cloud.profile.id : '@@g';
+  const PERSONAL = /^leo_(profile|progress_v2|progress_localdate_migrated_v1|check_seen_v1|micro_stats_v1|derived_meta_v1|last_variant|last_variant_set|session_length|plan_length|plan_difficulty|ai_insight_cache_v1|free_pending_v1|mistake_backfill_v1_done|level_suggest_v1|feedback_card_v1|ai_pitch_state|inflight_.*)$/;
+  const pk = k => (typeof k === 'string' && PERSONAL.test(k)) ? k + sfx : k;
+  const store = new Proxy(rawStore, { get: (t, k) => t[pk(k)], set: (t, k, v) => { t[pk(k)] = v; return true; }, has: (t, k) => pk(k) in t, deleteProperty: (t, k) => delete t[pk(k)] });
   const el = () => { let html = ''; return { style:{}, classList:{ add:noop, remove:noop, toggle:noop, contains:()=>false }, setAttribute:noop, appendChild:noop, addEventListener:noop,
     querySelector: noop, querySelectorAll: () => [], remove: noop, dataset:{}, set innerHTML(v){ html = String(v); }, get innerHTML(){ return html; } }; };
   const ctx = {
     console, Math, Date, JSON, Map, Set, Array, Object, String, Number, Promise, setTimeout, clearTimeout, URLSearchParams, Event: function(n){ this.type = n; },
-    localStorage:{ getItem:k=> k in store ? store[k] : null, setItem:(k,v)=>{ store[k] = String(v); }, removeItem:k=>{ delete store[k]; }, key:i=>Object.keys(store)[i], get length(){ return Object.keys(store).length; } },
+    localStorage:{ getItem:k=> k in rawStore ? rawStore[k] : null, setItem:(k,v)=>{ rawStore[k] = String(v); }, removeItem:k=>{ delete rawStore[k]; }, key:i=>Object.keys(rawStore)[i], get length(){ return Object.keys(rawStore).length; } },
     document:{ addEventListener:noop, querySelector:()=>null, querySelectorAll:()=>[], getElementById:()=>null, readyState:'complete', documentElement: el(),
       body:{ appendChild: o => shown.push(o), style:{}, classList:{ add:noop, remove:noop, toggle:noop, contains:()=>false }, setAttribute:noop, addEventListener:noop }, createElement: el },
     location:{ hash:'', search: opts.search || '', pathname:'/', href:'' }, navigator:{ userAgent:'node' }, addEventListener:noop, dispatchEvent: noop,
     MutationObserver:function(){ return { observe:noop }; }, IntersectionObserver:function(){ return { observe:noop }; }, matchMedia:()=>({ matches:false, addEventListener:noop })
   };
   ctx.window = ctx;
-  if(opts.loggedIn !== false) store['sb-qa-auth-token'] = '{}';
+  if(opts.loggedIn !== false) rawStore['sb-qa-auth-token'] = JSON.stringify({ user:{ id: cloud.profile.id } });
   ctx.supabase = { createClient: () => fakeClient(cloud, opts.loggedIn !== false) };
   vm.createContext(ctx);
   ['data.js', 'temas.js', 'app.js'].forEach(f => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx));

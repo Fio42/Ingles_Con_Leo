@@ -23,13 +23,13 @@ const CLASE_PROGRESS_KEY = 'leo_clases_inflight_v2';
 
 function loadAllClaseProgress(){
   try{
-    const raw = localStorage.getItem(CLASE_PROGRESS_KEY);
+    const raw = LS_P.getItem(CLASE_PROGRESS_KEY);
     const parsed = raw ? JSON.parse(raw) : null;
     return (parsed && typeof parsed === 'object') ? parsed : {};
   }catch(e){ return {}; }
 }
 function saveAllClaseProgress(all){
-  try{ localStorage.setItem(CLASE_PROGRESS_KEY, JSON.stringify(all)); }catch(e){}
+  try{ LS_P.setItem(CLASE_PROGRESS_KEY, JSON.stringify(all)); }catch(e){}
 }
 
 function saveClaseProgress(state){

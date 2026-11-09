@@ -65,7 +65,7 @@ function makeBrowser(opts){
     MutationObserver:function(){ return { observe:noop }; }, IntersectionObserver:function(){ return { observe:noop }; }, matchMedia:()=>({ matches:false, addEventListener:noop })
   };
   ctx.window = ctx;
-  if(opts.user) store['sb-test-auth-token'] = '{}';
+  if(opts.user) store['sb-test-auth-token'] = JSON.stringify({ user:{ id:opts.user } });
   ctx.supabase = { createClient: () => fakeClient(opts.user || null) };
   vm.createContext(ctx);
   ['data.js', 'temas.js', 'app.js'].forEach(f => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx));
@@ -75,7 +75,8 @@ function makeBrowser(opts){
   if(opts.tier === 'free') run(`initLeoAccessTier('free', { id:${JSON.stringify(opts.user)}, is_member:false, free_daily_count:0, free_daily_date:null, free_first_exercise_at:'2026-01-01T00:00:00Z' })`);
   const t = run(';({ freeSessionBegin, freeSessionAnswer, freeSessionEnd, freeSessionResume, flushFreeSessions, renderFreeDailyLimitReachedBlock, freeDailyLimitReached, bumpFreeDailyExerciseCount, recordSession, loadProgress, noteGrammarAnswer, markGrammarRetry })');
   t.run = run; t.store = store; t.LeoBackend = ctx.LeoBackend;
-  t.pending = () => JSON.parse(store.leo_free_pending_v1 || '[]');
+  t.pk = k => opts.user ? k + '@@u:' + opts.user : k;   // con cuenta, los datos personales viven en el espacio de esa cuenta
+  t.pending = () => JSON.parse(store[t.pk('leo_free_pending_v1')] || '[]');
   t.settle = () => new Promise(r => setTimeout(r, 40));
   return t;
 }
@@ -112,7 +113,7 @@ test('INVITADO: no sube nada, no guarda borradores y su límite es 3', async () 
   B.freeSessionEnd('gramatica');
   await B.settle();
   assert.strictEqual(CLOUD.calls.length, 0, 'ninguna llamada a la nube (' + CLOUD.calls.join(', ') + ')');
-  assert.strictEqual(B.store.leo_free_pending_v1, undefined, 'ni un borrador en el navegador');
+  assert.strictEqual(B.store[B.pk('leo_free_pending_v1')], undefined, 'ni un borrador en el navegador');
 });
 
 test('invitado que luego crea su cuenta: lo que hizo como invitado no se sube', async () => {
@@ -165,7 +166,7 @@ test('no toca el progreso local, mistake_stats, microtemas ni last_practice_at',
   await B.settle();
   assert.strictEqual(CLOUD.sessions.length, 1);
   assert.strictEqual(B.loadProgress().sessions.length, 0, 'leo_progress sigue vacío');
-  assert.strictEqual(B.store.leo_micro_stats_v1, undefined, 'sin señales de microtemas');
+  assert.strictEqual(B.store[B.pk('leo_micro_stats_v1')], undefined, 'sin señales de microtemas');
   assert.strictEqual(CLOUD.rpc.length, 0, 'no se llama a apply_mistake_results');
   assert.ok(!CLOUD.profileUpdates.some(u => /(^|,)last_practice_at(,|$)/.test(u)), 'last_practice_at es solo de miembros');
   assert.ok(CLOUD.profileUpdates.some(u => /free_last_practice_at/.test(u)), 'la práctica gratis autenticada deja timestamp UTC en la misma actualización del contador');
@@ -257,7 +258,9 @@ test('el borrador de OTRA cuenta en el mismo navegador no se sube con esta', asy
   B.freeSessionEnd('gramatica');
   await B.settle();
   assert.deepStrictEqual(CLOUD.sessions.map(s => s.user_id + ':' + s.results[0].itemId), ['u2:g-facil-some-3']);
-  assert.ok(B.pending().some(d => d.uid === 'u1'), 'lo de u1 espera a que u1 vuelva');
+  // Aislamiento por cuenta: el borrador de u1 vive en el espacio de u1; u2 ni lo ve ni puede subirlo, y espera a que u1 vuelva.
+  assert.ok(!B.pending().some(d => d.uid === 'u1'), 'u2 no ve el borrador de u1');
+  assert.ok(JSON.parse(B.store['leo_free_pending_v1@@u:u1'] || '[]').some(d => d.uid === 'u1'), 'lo de u1 espera a que u1 vuelva, en su espacio');
   const A2 = makeBrowser({ user:'u1', tier:'free', store: B.store });
   A2.freeSessionResume();
   await A2.settle();
@@ -305,7 +308,7 @@ test('MIEMBRO: recordSession guarda igual que antes (progreso local, nube y last
   assert.strictEqual(CLOUD.sessions[0].tier, null, 'la base no marca free a un miembro');
   assert.ok(CLOUD.profileUpdates.some(u => /last_practice_at/.test(u)));
   assert.ok(CLOUD.rpc.indexOf('apply_mistake_results') !== -1);
-  assert.strictEqual(B.store.leo_free_pending_v1, undefined);
+  assert.strictEqual(B.store[B.pk('leo_free_pending_v1')], undefined);
 });
 
 test('al hacerse miembro, la sincronización trae sus sesiones gratis y conserva tier "free"', async () => {

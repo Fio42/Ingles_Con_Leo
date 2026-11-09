@@ -15,7 +15,7 @@ const el = () => { let html = ''; return { style:{}, classList:{ add:noop, remov
 
 const CLOUD = [];   // la nube compartida: sesiones de todos los dispositivos de ESTE alumno
 function makeDevice(opts){
-  const store = {};
+  const store = require('./lib/guest-store.js')();
   const ctx = {
     console, Math, Date, JSON, Map, Set, Array, Object, String, Number, Promise, setTimeout, clearTimeout, URLSearchParams,
     localStorage:{ getItem:k=> k in store ? store[k] : null, setItem:(k,v)=>{ store[k] = String(v); }, removeItem:k=>{ delete store[k]; }, key:i=>Object.keys(store)[i], get length(){ return Object.keys(store).length; } },

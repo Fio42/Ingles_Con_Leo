@@ -9,7 +9,7 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8').replace(/\r\n/g, '
 let p = 0, f = 0;
 function test(n, fn){ try { fn(); p++; console.log('  ok   ' + n); } catch(e){ f++; console.log('  FAIL ' + n + '\n       ' + e.message); } }
 
-const store = {};
+const store = require('./lib/guest-store.js')();
 const noop = () => {};
 function mkEl(extra){
   let html = '';

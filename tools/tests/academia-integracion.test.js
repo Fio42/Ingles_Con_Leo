@@ -284,7 +284,7 @@ async function partC(PGlite){
 
 /* ---------------- D. motor adaptativo (app.js real) ---------------- */
 function makeEngine(enabled){
-  const store = {}; const noop = () => {};
+  const store = require('./lib/guest-store.js')(); const noop = () => {};
   const fakeEl = () => ({ style: {}, classList: { add: noop, remove: noop, toggle: noop, contains: () => false }, setAttribute: noop, appendChild: noop, addEventListener: noop });
   const ctx = {
     console, Math, Date, JSON, Map, Set, Array, Object, String, Number, Promise, setTimeout, clearTimeout, URLSearchParams,

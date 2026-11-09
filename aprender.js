@@ -42,7 +42,7 @@
   function freshState(){ return { v: 1, done: {}, cur: null, auto: false, first: null, lastVisit: null, d7: false }; }
   function loadState(){
     try{
-      var s = JSON.parse(localStorage.getItem(KEY));
+      var s = JSON.parse(LS_P.getItem(KEY));
       if(s && s.v === 1 && typeof s.done === 'object' && s.done){
         if(typeof s.auto !== 'boolean') s.auto = false;
         return s;
@@ -51,7 +51,7 @@
     return freshState();
   }
   var state = loadState();
-  function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function saveState(){ try{ LS_P.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 
   /* ---------------- Analítica ligera ---------------- */
   function track(name, params){

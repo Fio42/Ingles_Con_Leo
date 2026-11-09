@@ -1903,3 +1903,22 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - temas.js: campo noClassTopics (etiquetas cuyo ejercicio mezcla reglas o que la clase no explica: to be+have+there is, presente simple y to be, inversiones y cleft). Para esas, el feedback no muestra enlace (salvo microtema propio) y el resumen solo ofrece Practicar.
   - style.css: zona tactil de 44px en los enlaces nuevos. Revisado en Chrome real a 320, 360 y 375 px: sin desborde.
   - Correccion propia: DEVLOG.txt conserva sus saltos de linea CRLF (mi primera edicion los habia cambiado y marcaba todo el archivo como modificado).
+
+2026-11-08 (5) | Aislamiento de datos entre cuentas (espacio local por alumno) - SIN COMMIT
+  - Problema real: leo_progress_v2, leo_profile y las cachés personales eran claves unicas del navegador. Al cerrar sesion A y entrar B, syncProgressFromCloud mezclaba lo de B con lo de A (B veia historial y nombre de A) y el backfill de mistake_stats podia subir errores de A a la cuenta de B. Reproducido con el backend.js y las funciones reales antes de corregir.
+  - app.js: modulo LeoScope. Cada cuenta usa claves "<clave>@@u:<id de Supabase>"; sin sesion (invitado) se usan las claves de siempre. El espacio se fija al cargar la pagina; si en otra pestaña se cierra sesion o entra otra cuenta, esta pagina se oculta y se recarga (storage, pageshow, visibilitychange, SIGNED_OUT). LS_P = localStorage del espacio de la cuenta. ~40 accesos migrados (perfil, progreso, microtemas, comprobaciones, derivadas, variantes, sesiones a medias, borradores gratis, caches de IA, backfill, sugerencia de nivel). SIN aislar a proposito: contadores y banderas de limites gratis, banderas de prueba de la IA, leo_member_hint, nombre de invitado en comentarios.
+  - backend.js: ownerOk(session) en toda subida o bajada ligada a la cuenta (sync, pushSession, pushFreeSession, mistake_stats, perfil): si el espacio de la pagina no es el de la cuenta autenticada, no hace nada. rebind() al iniciar sesion/crear cuenta; listener de SIGNED_OUT/SIGNED_IN. No cambia autenticacion, pagos, membresias ni limites.
+  - clases.js y aprender.js: su progreso local tambien usa LS_P.
+  - Datos antiguos (sin dueño verificable): NO se asignan a ninguna cuenta. Siguen intactos en las claves sin sufijo, que solo ve el invitado. Cada cuenta reconstruye su historial desde la nube (como un dispositivo nuevo). Nada se borra.
+  - Backfill: ya no marca "hecho" si la cuenta aun no tiene sesiones locales (espacio recien creado antes de bajar la nube).
+  - Pruebas: nueva tools/tests/aislamiento-cuentas.test.js (18; se verifico que fallan si se quita el aislamiento o ownerOk). free-sessions, onboarding-nube y tools/e2e/lib/sim.js adaptados a las claves por cuenta (el borrador de otra cuenta ya no es visible, solo espera en su espacio). Revisado en Chrome real (pestañas y evento storage).
+  - Versiones: app.js, backend.js, clases.js y aprender.js a ?v=20261108b en las 90 paginas que los cargan (solo cambia ?v=).
+
+2026-11-08 (6) | Aislamiento de datos entre cuentas, versión 2 (datos antiguos). SIN publicar.
+  - Invitado: espacio propio (clave@@g). Las claves antiguas sin sufijo son la "bóveda": intactas, ocultas, sin sincronizar, ninguna página las lee.
+  - Sin invitación ni reclamo: nadie "recupera" datos de dueño desconocido y la primera cuenta que entra no se queda con nada.
+    Lo demostrable llega por identificadores: el progreso en Supabase baja con la sincronización normal (RLS), y las sesiones gratis pendientes
+    con el uid de la cuenta pasan a su espacio (solo esas).
+  - Academia (avance, examen, caché de membresía) y borradores de TOEIC: por cuenta. signOut recarga la página sin depender de getClient().
+  - Pruebas: aislamiento-cuentas 26/26; batería con los mismos 3 fallos de antes; e2e regresiones, simulate-flow, simulate-real OK.
+  - Versiones ?v=20261108c. 91 HTML: solo cambia ?v=.

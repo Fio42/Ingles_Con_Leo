@@ -452,8 +452,8 @@ function renderToeicWritingItem({ card, item, results, next, nextLabel, retry })
       <div class="feedback" id="fb"></div>
       <div class="next-row" id="nextRow"></div>`;
     const input = card.querySelector('#writingInput');
-    try{ input.value = localStorage.getItem(toeicDraftKey(item.id)) || ''; }catch(e){}
-    input.addEventListener('input', ()=>{ try{ localStorage.setItem(toeicDraftKey(item.id), input.value); }catch(e){} });
+    try{ input.value = LS_P.getItem(toeicDraftKey(item.id)) || ''; }catch(e){}
+    input.addEventListener('input', ()=>{ try{ LS_P.setItem(toeicDraftKey(item.id), input.value); }catch(e){} });
     card.querySelector('#checkBtn').addEventListener('click', function(){
       const text = input.value.trim();
       if(!text){ input.focus(); return; }
@@ -480,7 +480,7 @@ function renderToeicWritingItem({ card, item, results, next, nextLabel, retry })
         </ul>
         <div class="examples-block"><div class="examples-label">Ejemplo</div><div class="example-pair"><div class="example-en">${toeicEsc(item.example)}</div></div></div>`;
       results.push({ itemId:item.id, isCorrect });
-      showRetryOrNextButtons(card, isCorrect, ()=>{ try{ localStorage.removeItem(toeicDraftKey(item.id)); }catch(e){} retry(); }, next, nextLabel);
+      showRetryOrNextButtons(card, isCorrect, ()=>{ try{ LS_P.removeItem(toeicDraftKey(item.id)); }catch(e){} retry(); }, next, nextLabel);
     });
     return;
   }
@@ -506,13 +506,13 @@ function renderToeicWritingItem({ card, item, results, next, nextLabel, retry })
   const input = card.querySelector('#writingInput');
   const wc = card.querySelector('#wordCount');
   const wt = card.querySelector('#writeTimer');
-  try{ input.value = localStorage.getItem(toeicDraftKey(item.id)) || ''; }catch(e){}
+  try{ input.value = LS_P.getItem(toeicDraftKey(item.id)) || ''; }catch(e){}
   const updateCount = ()=>{ wc.textContent = toeicWordCount(input.value) + ' palabras'; };
   updateCount();
   let startTs = null, tick = null;
   input.addEventListener('input', ()=>{
     updateCount();
-    try{ localStorage.setItem(toeicDraftKey(item.id), input.value); }catch(e){}
+    try{ LS_P.setItem(toeicDraftKey(item.id), input.value); }catch(e){}
     if(!startTs){
       startTs = Date.now();
       tick = setInterval(()=>{
@@ -532,7 +532,7 @@ function renderToeicWritingItem({ card, item, results, next, nextLabel, retry })
       <div class="examples-block"><div class="examples-label">Ejemplo</div><div class="example-pair"><div class="example-en" style="white-space:pre-line;">${toeicEsc(item.example)}</div></div></div>
       <ul class="checklist">${item.checklist.map(c=>`<li>${toeicEsc(c)}</li>`).join('')}</ul>`;
     results.push({ itemId:item.id, isCorrect:null });
-    showNextButton(card, nextLabel, ()=>{ try{ localStorage.removeItem(toeicDraftKey(item.id)); }catch(e){} next(); });
+    showNextButton(card, nextLabel, ()=>{ try{ LS_P.removeItem(toeicDraftKey(item.id)); }catch(e){} next(); });
   });
 }
 

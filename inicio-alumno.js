@@ -113,7 +113,10 @@
       /* LeoBackend es un const de otro script: se ve como variable global, no como propiedad de window. */
       var lb = (typeof LeoBackend !== 'undefined') ? LeoBackend : root.LeoBackend;
       if(!lb || !lb.getClient || !lb.getClient()) return null;
-      return { motor: root.ACADEMIA_CURSOS, storage: root.localStorage, client: lb.getClient(), getSession: lb.getSession };
+      /* El avance local de la academia vive en el espacio de la cuenta (clave@@u:<id>); la cola de envíos ya lleva el id en su nombre. */
+      var sfx = (typeof LeoScope !== 'undefined') ? '@@' + LeoScope.scope() : '';
+      var scoped = { getItem: function(k){ return root.localStorage.getItem(String(k).indexOf('leo_academia_cola_v1:') === 0 ? k : k + sfx); } };
+      return { motor: root.ACADEMIA_CURSOS, storage: scoped, client: lb.getClient(), getSession: lb.getSession };
     }catch(e){ return null; }
   }
   /* Lista de cursos para "Mi progreso": una fila por curso abierto. Es avance de cursos, no estadística de práctica. */

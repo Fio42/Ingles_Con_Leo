@@ -6,7 +6,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path'), assert = require('assert');
 const root = path.join(__dirname, '..', '..');
 
-const store = {};
+const store = require('./lib/guest-store.js')();
 const noop = ()=>{};
 const fakeEl = ()=>({ style:{}, classList:{ add:noop, remove:noop, toggle:noop, contains:()=>false }, setAttribute:noop, appendChild:noop, addEventListener:noop });
 const ctx = {

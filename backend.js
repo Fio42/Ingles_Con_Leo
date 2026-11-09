@@ -46,8 +46,22 @@ const LeoBackend = (function(){
     if(!isConfigured()) return null;
     if(!client && window.supabase && window.supabase.createClient){
       client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      /* Aislamiento por cuenta (ver LeoScope en app.js): si la sesión se cierra, la página de esa cuenta se recarga;
+         si se vuelve de un enlace de acceso (OAuth), la página de invitado pasa a la cuenta que entró. */
+      try{
+        client.auth.onAuthStateChange(function(event){
+          if(typeof LeoScope !== 'undefined') LeoScope.onAuthEvent(event);
+        });
+      }catch(e){}
     }
     return client;
+  }
+
+  /* ¿Los datos locales de ESTA página son de la cuenta autenticada? Si no, no se sube ni se baja nada de la nube:
+     nunca se usa la sesión de B para mover datos de A (ni al revés). Sin LeoScope (página sin app.js) no hay datos locales. */
+  function ownerOk(session){
+    if(typeof LeoScope === 'undefined') return true;
+    return LeoScope.matchesUser(session && session.user && session.user.id);
   }
 
   async function getSession(){
@@ -69,6 +83,7 @@ const LeoBackend = (function(){
       const { data, error } = await sb.auth.signUp({ email, password });
       if(error) return { ok:false, error: error.message };
       if(!data.session) return { ok:false, error: 'no_session' };
+      if(typeof LeoScope !== 'undefined') LeoScope.rebind();   // esta página pasa al espacio de la cuenta nueva
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
@@ -95,6 +110,7 @@ const LeoBackend = (function(){
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if(error) return { ok:false, error: error.message };
       try{ await sb.auth.signOut({ scope: 'others' }); }catch(e){}
+      if(typeof LeoScope !== 'undefined') LeoScope.rebind();   // esta página pasa al espacio de la cuenta que acaba de entrar
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
@@ -161,6 +177,8 @@ const LeoBackend = (function(){
     try{ localStorage.removeItem('leo_member_hint'); }catch(e){}
     const sb = getClient();
     if(sb){ try{ await sb.auth.signOut(); }catch(e){} }
+    // No depende de que el cliente haya avisado: si esta página tenía una cuenta, se recarga ya sin sus datos.
+    try{ if(typeof LeoScope !== 'undefined') LeoScope.onAuthEvent('SIGNED_OUT'); }catch(e){}
   }
 
   /* Fila de la tabla profiles del usuario logueado (o null si no
@@ -194,6 +212,7 @@ const LeoBackend = (function(){
       const { data, error } = await sb.auth.signInWithIdToken({ provider:'google', token, nonce });
       if(error) return { ok:false, error: error.message };
       if(!data || !data.session) return { ok:false, error:'no_session' };
+      if(typeof LeoScope !== 'undefined') LeoScope.rebind();   // esta página pasa al espacio de la cuenta que acaba de entrar
       return { ok:true };
     }catch(e){
       return { ok:false, error: String(e) };
@@ -222,6 +241,7 @@ const LeoBackend = (function(){
       // Si la cuenta todavía no tiene nombre en Supabase pero en este
       // navegador sí lo escribió (onboarding o "cambiar nombre"), se
       // sube una vez para que los correos lo puedan usar.
+      if(!ownerOk(session)) return data;   // el perfil local es de otra cuenta (o de invitado): no se mezcla con este
       try{
         const local = (typeof getProfile === 'function' && getProfile()) || null;
         if(data && !data.display_name && local && local.name){
@@ -246,7 +266,7 @@ const LeoBackend = (function(){
       const sb = getClient();
       if(!sb) return 'skip';
       const session = await getSession();
-      if(!session) return 'skip';
+      if(!session || !ownerOk(session)) return 'skip';
       const payload = {};
       if(fields && typeof fields.level === 'string') payload.level = fields.level;
       if(fields && fields.onboarded_at) payload.onboarded_at = fields.onboarded_at;
@@ -271,7 +291,7 @@ const LeoBackend = (function(){
       const sb = getClient();
       if(!sb) return null;
       const session = await getSession();
-      if(!session) return null;
+      if(!session || !ownerOk(session)) return null;
       const skills = (typeof PROFILE_HISTORY_SKILLS !== 'undefined') ? PROFILE_HISTORY_SKILLS : [];
       const levels = (typeof LEVELS !== 'undefined') ? LEVELS : [];
       if(!skills.length || !levels.length) return null;
@@ -294,7 +314,7 @@ const LeoBackend = (function(){
       const sb = getClient();
       if(!sb) return;
       const session = await getSession();
-      if(!session) return;
+      if(!session || !ownerOk(session)) return;
       await sb.from('profiles').update({ display_name: clean }).eq('id', session.user.id);
     }catch(e){}
   }
@@ -363,7 +383,7 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb) return 'skip';
     const session = await getSession();
-    if(!session) return 'skip';
+    if(!session || !ownerOk(session)) return 'skip';
     try{
       const { data, error } = await sb.from('progress_sessions')
         .select('*').eq('user_id', session.user.id)
@@ -429,7 +449,7 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb) return;
     const session_ = await getSession();
-    if(!session_) return;
+    if(!session_ || !ownerOk(session_)) return;
     try{
       await sb.from('progress_sessions').insert({
         user_id: session_.user.id,
@@ -468,7 +488,7 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb || !session) return 'skip';
     const s = await getSession();
-    if(!s || !s.user || !s.user.id || (expectedUserId && s.user.id !== expectedUserId)) return 'skip';
+    if(!s || !s.user || !s.user.id || (expectedUserId && s.user.id !== expectedUserId) || !ownerOk(s)) return 'skip';
     try{
       const { error } = await sb.from('progress_sessions').insert({
         user_id: s.user.id,
@@ -502,7 +522,7 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb) return null;
     const session = await getSession();
-    if(!session) return null;
+    if(!session || !ownerOk(session)) return null;
     try{
       const { data, error } = await sb.from('mistake_stats')
         .select('item_id,kind,topic,fail_count,correct_streak,status,recovered_at,last_seen_at')
@@ -520,7 +540,7 @@ const LeoBackend = (function(){
     const sb = getClient();
     if(!sb || !items || !items.length) return { ok:false };
     const session = await getSession();
-    if(!session) return { ok:false };
+    if(!session || !ownerOk(session)) return { ok:false };
     try{
       const { error } = await sb.rpc('apply_mistake_results', { p_items: items });
       if(error) return { ok:false };
