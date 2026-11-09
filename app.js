@@ -2335,10 +2335,31 @@ function writingPreHintHtml(item){
    Nunca se inventa un destino: sin recurso, no se muestra nada. Se abre en OTRA pestaña para no
    salir ni reiniciar la sesión (el progreso de esta pestaña no se toca). Si temas.js no está
    cargado en la página, todo esto se apaga y el feedback queda como siempre. */
+// Vocabulario y Listening: la explicación que YA existe para ese ejercicio, de lo más específico a lo más general:
+// 1) la pareja de palabras en el glosario, 2) la clase/explicación del tema del ejercicio, 3) la guía del nivel. Sin ninguna: sin enlace.
+function skillErrorResource(kind, itemId){
+  try{
+    const skill = kind === 'vocab' ? 'vocabulary' : 'listening';
+    const slug = kind === 'vocab' && typeof VOCAB_GLOSSARY_BY_ITEM !== 'undefined' ? VOCAB_GLOSSARY_BY_ITEM[itemId] : null;
+    if(slug){
+      const title = slug.split('-vs-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' vs ');
+      return { href: '/glosario/' + slug + '/', label: 'Ver explicación rápida', title };
+    }
+    const tema = kind === 'vocab' ? temaForVocabItem(itemId) : temaForListeningItem(itemId);
+    if(tema){
+      const c = contentForTema(tema.id);
+      if(c && c.article) return { href: c.article, label: c.articleLabel, title: c.label };
+    }
+    const lvl = /^(v|l)-principiante/.test(String(itemId)) ? 'principiante' : null;
+    const g = lvl && typeof GUIDE_BY_SKILL_LEVEL !== 'undefined' && GUIDE_BY_SKILL_LEVEL[skill] ? GUIDE_BY_SKILL_LEVEL[skill][lvl] : null;
+    return g ? { href: g.article, label: 'Ver la guía', title: g.title } : null;
+  }catch(e){ return null; }
+}
 function errorResourceForItem(item){
   try{
     if(!item || !item.id || typeof temaForTopic !== 'function' || typeof MICRO_BY_ID === 'undefined') return null;
     const found = getMistakesItemIndex().get(item.id);
+    if(found && (found.kind === 'vocab' || found.kind === 'listening')) return skillErrorResource(found.kind, item.id);
     if(!found || found.kind !== 'grammar') return null;
     const tema = temaForTopic(found.topic);
     if(!tema) return null;
@@ -2568,6 +2589,7 @@ function runVocabSession({ container, level, onExit }){
         reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        addErrorLessonLink(card, item, isCorrect);
         leoAiAttach(card.querySelector('#fb'), { kind:'vocab', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
@@ -2660,6 +2682,7 @@ function runListeningSession({ container, level, onExit }){
             <div class="examples-label">Transcripción</div>
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        addErrorLessonLink(card, item, isCorrect);
         leoAiAttach(fb, { kind:'listening', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
@@ -2750,6 +2773,7 @@ function runReadingSession({ container, level, onExit }){
             <div class="examples-label">Traducción</div>
             <div class="example-pair"><div class="example-en">${item.passage}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        addErrorLessonLink(card, item, isCorrect);
         leoAiAttach(fb, { kind:'reading', item, isCorrect, userAnswer:opt });
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
@@ -3698,6 +3722,7 @@ function renderMixItemInto(card, entry, onAnswered){
         reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        addErrorLessonLink(card, item, isCorrect);
         leoAiAttach(card.querySelector('#fb'), Object.assign({ kind:'vocab', item, isCorrect, userAnswer:opt }, aiReview));
         onAnswered(isCorrect);
       });
@@ -3740,6 +3765,7 @@ function renderMixItemInto(card, entry, onAnswered){
             <div class="examples-label">Transcripción</div>
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        addErrorLessonLink(card, item, isCorrect);
         leoAiAttach(fb, Object.assign({ kind:'listening', item, isCorrect, userAnswer:opt }, aiReview));
         onAnswered(isCorrect);
       });
@@ -6951,12 +6977,40 @@ function computeWeeklyReport(diag){
 /* Ejercicios del tema elegido para el refuerzo del Plan (vocabulario o listening):
    primero los que falló, luego los que no ha visto; el resto del cupo lo completa
    la habilidad normal del nivel (igual que en gramática). */
+/* ---------- Refuerzo con ejercicios DISTINTOS ----------
+   Reforzar un tema o microtema ya no repite a ciegas la pregunta que falló. Orden de los ejercicios de ESE foco:
+     0  que el alumno todavía no ha visto (otra pregunta sobre la misma dificultad)
+     1  fallados antes, pero no en la sesión más reciente (volver a una pregunta pendiente, no repetir la de hace un momento)
+     2  fallados en la sesión más reciente (solo si no hay más)
+   Se saltan los que domina: su último resultado fue correcto. Si el foco se queda sin ejercicios, el Plan completa como siempre
+   con el resto de la familia/banco. MICRO_VARIETY_ON = false devuelve el orden anterior. */
+const MICRO_VARIETY_ON = true;
+function focusHistory(){
+  const p = loadProgress();
+  const latest = new Map(), everFailed = new Set(), seen = new Set(), lastSession = new Set();
+  const sessions = (p.sessions || []).slice().sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+  sessions.forEach(s => (s.results || []).forEach(r => {
+    if(r.isCorrect !== true && r.isCorrect !== false) return;
+    seen.add(r.itemId); latest.set(r.itemId, r.isCorrect);
+    if(r.isCorrect === false) everFailed.add(r.itemId);
+  }));
+  const real = sessions.filter(s => s.skill !== 'check');
+  const last = real[real.length - 1];
+  if(last) (last.results || []).forEach(r => lastSession.add(r.itemId));
+  return { latest, everFailed, seen, lastSession };
+}
+function varietyRank(h, id){
+  if(!h.seen.has(id)) return 0;
+  return h.lastSession.has(id) ? 2 : 1;
+}
+
 function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
   const bank = skill === 'vocabulario' ? (typeof VOCAB_BANK === 'undefined' ? null : VOCAB_BANK)
     : skill === 'listening' ? (typeof LISTENING_BANK === 'undefined' ? null : LISTENING_BANK)
     : skill === 'writing' ? (typeof WRITING_BANK === 'undefined' ? null : WRITING_BANK) : null;
   if(!temaId || !n || !bank || !bank[level]) return [];
   const idOf = skill === 'vocabulario' ? vocabTemaIdForItem : skill === 'listening' ? listeningTemaIdForItem : writingTemaIdForItem;
+  const hist = focusHistory();
   const p = loadProgress();
   const recentOk = new Set(), everFailed = new Set(), seen = new Set();
   const cut = Date.now() - 3*86400000;
@@ -6969,14 +7023,16 @@ function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
   bank[level].forEach(variant=> variant.forEach(item=>{
     if(idOf(item.id) !== temaId) return;
     if(recentOk.has(item.id) || (excludeIds && excludeIds.has(item.id))) return;
+    if(MICRO_VARIETY_ON && hist.latest.get(item.id) === true) return;      // ya lo domina
     candidates.push(item);
   }));
-  const rank = item => everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1);
+  const rank = MICRO_VARIETY_ON ? (item => varietyRank(hist, item.id)) : (item => everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1));
   return shuffleArray(candidates).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind: PLAN_SKILL_TO_KIND[skill], item, focus:true }));
 }
 
 function pickDiagFocusItems(level, familyId, n, excludeIds, temaId, microId){
   if(!familyId || !n || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return [];
+  const hist = focusHistory();
   const p = loadProgress();
   const recentOk = new Set(), everFailed = new Set(), seen = new Set();
   const cut = Date.now() - 3*86400000;
@@ -6991,10 +7047,16 @@ function pickDiagFocusItems(level, familyId, n, excludeIds, temaId, microId){
     const fam = diagFamilyForTopic(group.topic);
     if(!fam || fam.id !== familyId) return;
     const inTema = !!temaId && diagTemaIdForTopic(group.topic) === temaId;
-    group.items.forEach(item=>{ if(!recentOk.has(item.id) && !(excludeIds && excludeIds.has(item.id))){ candidates.push(item); if(inTema) temaItems.add(item.id); } });
+    group.items.forEach(item=>{
+      if(recentOk.has(item.id) || (excludeIds && excludeIds.has(item.id))) return;
+      // Con un microtema en foco: lo que ya domina (último resultado correcto) no vuelve a salir.
+      if(MICRO_VARIETY_ON && microId && item.micro === microId && hist.latest.get(item.id) === true) return;
+      candidates.push(item); if(inTema) temaItems.add(item.id);
+    });
   }));
   // Primero los ejercicios del tema elegido; el resto de la familia solo completa el cupo.
-  const rank = item => (microId && item.micro === microId ? -10 : 0) + (temaItems.has(item.id) ? 0 : 10) + (everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1));
+  const rank = item => (microId && item.micro === microId ? -10 : 0) + (temaItems.has(item.id) ? 0 : 10)
+    + ((MICRO_VARIETY_ON && microId && item.micro === microId) ? varietyRank(hist, item.id) : (everFailed.has(item.id) ? 0 : (seen.has(item.id) ? 2 : 1)));
   return shuffleArray(candidates)
     .sort((a,b)=> rank(a) - rank(b))
     .slice(0, n)
@@ -7765,7 +7827,12 @@ function sessionReinforceRows(results, ins, covered){
         if(lh) lesson = { href: lh, label: 'Ver la clase' };
         else if(qh) lesson = { href: qh, label: 'Ver explicación rápida' };
       }
-      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref });
+      if(!lesson && (g.first.kind === 'vocab' || g.first.kind === 'listening')){
+        const sr = skillErrorResource(g.first.kind, g.first.item.id);
+        if(sr) lesson = { href: sr.href, label: sr.label };
+      }
+      const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(g.id) : null;
+      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, course });
     });
     return out;
   }catch(e){ return []; }
@@ -7775,7 +7842,7 @@ function sessionReinforceHtml(rows){
   return `
       <div class="sess-insight-label sess-insight-next">Para reforzar</div>
       <ul class="sess-reinforce">
-        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small></span>
+        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" style="display:inline-block;padding:12px 0">${r.course.title}</a> · con membresía${r.course.demo ? ' (demo gratis)' : ''}</small>` : ''}</span>
           <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}">Practicar</a></span></li>`).join('')}
       </ul>`;
 }

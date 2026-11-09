@@ -244,7 +244,7 @@ const TEMAS = [
      siguen contando para "Vocabulario", pero no para un tema. tools/tests/temas.test.js
      exige que todo grupo nuevo de data.js se clasifique en uno u otro. */
   { id:'vocab-confusas', skill:'vocabulary', label:'Palabras que se confunden', family:null, article:null, glossary:null, topics:[],
-    groups:['principiante5', 'facil9', 'medio8', 'medio9', 'avanzado8', 'avanzado9'] },
+    groups:['principiante5', 'facil8', 'facil9', 'medio8', 'medio9', 'avanzado8', 'avanzado9'] },
   { id:'vocab-numeros', skill:'vocabulary', label:'Números, precios y datos personales', family:null, article:'articulo-numeros-en-ingles.html', glossary:null, topics:[],
     groups:['principiante-numeros', 'facil-numeros', 'medio-numeros'] },
   { id:'vocab-trabajo', skill:'vocabulary', label:'Trabajo y negocios', family:null, article:null, glossary:null, topics:[],
@@ -296,7 +296,7 @@ const TEMAS = [
 // Grupos de VOCAB_BANK sin un tema común (palabras generales o mezcladas).
 const VOCAB_GRUPOS_SIN_TEMA = [
   'principiante', 'principiante2', 'principiante3', 'principiante4', 'principiante6', 'principiante-m100', 'principiante-m200', 'principiante-m300', 'principiante-m400',
-  'facil2', 'facil3', 'facil7', 'facil8', 'facil10', 'facil-m100', 'facil-m200', 'facil-m300', 'facil-m400',
+  'facil2', 'facil3', 'facil7', 'facil10', 'facil-m100', 'facil-m200', 'facil-m300', 'facil-m400',
   'medio', 'medio2', 'medio3', 'medio5', 'medio7', 'medio10', 'medio-m100', 'medio-m200', 'medio-m400',
   'avz', 'avz2', 'avz3', 'avz5', 'avz6', 'avanzado7', 'avanzado10', 'avanzado-m100', 'avanzado-m200', 'avanzado-m300', 'avanzado-m400'
 ];
@@ -383,6 +383,56 @@ const WRITING_TEMA_BY_ITEM = {
 function temaForWritingItem(itemId){
   const id = WRITING_TEMA_BY_ITEM[String(itemId || '').replace(/^w-/, '')];
   return id ? (TEMA_BY_ID[id] || null) : null;
+}
+
+/* Vocabulario: explicación rápida (glosario) de las palabras que se confunden. Solo las parejas que ya tienen una página
+   en /glosario/ y cuyo ejercicio trata justo esa pareja (revisado a mano). Sin entrada = sin enlace; nada se aproxima. */
+const VOCAB_GLOSSARY_BY_ITEM = {
+  'v-principiante5-1':'borrow-vs-lend', 'v-principiante5-2':'borrow-vs-lend', 'v-facil8-1':'borrow-vs-lend',
+  'v-principiante5-3':'say-vs-tell', 'v-principiante5-4':'say-vs-tell',
+  'v-principiante5-5':'bring-vs-take', 'v-principiante5-6':'bring-vs-take',
+  'v-principiante5-7':'hear-vs-listen', 'v-principiante5-8':'hear-vs-listen',
+  'v-facil8-2':'than-vs-then', 'v-facil8-3':'than-vs-then',
+  'v-facil8-4':'accept-vs-except', 'v-facil8-5':'accept-vs-except',
+  'v-facil8-6':'suggest-vs-recommend',
+  'v-facil9-1':'make-vs-do', 'v-facil9-2':'make-vs-do',
+  'v-facil9-3':'look-vs-see-vs-watch', 'v-facil9-4':'look-vs-see-vs-watch',
+  'v-facil9-5':'travel-vs-trip', 'v-facil9-6':'travel-vs-trip',
+  'v-facil9-7':'job-vs-work', 'v-facil9-8':'job-vs-work',
+  'v-medio8-1':'affect-vs-effect', 'v-medio8-2':'affect-vs-effect',
+  'v-medio8-3':'lose-vs-loose', 'v-medio8-4':'lose-vs-loose',
+  'v-medio8-7':'complement-vs-compliment', 'v-medio8-8':'complement-vs-compliment',
+  'v-medio9-1':'actually',
+  'v-medio9-3':'sensible-vs-sensitive', 'v-medio9-4':'sensible-vs-sensitive',
+  'v-medio9-7':'attend-vs-assist', 'v-medio9-8':'attend-vs-assist',
+  'v-avanzado8-1':'principal-vs-principle', 'v-avanzado8-2':'principal-vs-principle',
+  'v-avanzado8-3':'farther-vs-further', 'v-avanzado8-4':'farther-vs-further',
+  'v-avanzado8-5':'stationary-vs-stationery', 'v-avanzado8-6':'stationary-vs-stationery',
+  'v-avanzado9-1':'despite-vs-although', 'v-avanzado9-2':'despite-vs-although'
+};
+/* Ejercicios sin tema propio: la guía general que sí corresponde a ese nivel (hoy solo principiante: vocabulario básico y Listening A1). */
+const GUIDE_BY_SKILL_LEVEL = {
+  vocabulary: { principiante: { article:'articulo-vocabulario-basico.html', title:'Vocabulario básico para principiantes' } },
+  listening:  { principiante: { article:'articulo-listening-a1.html', title:'Listening A1 para principiantes' } }
+};
+
+/* Academia: curso PUBLICADO (open:true en academia-motor.js) que corresponde a un tema. Todos requieren membresía; TO BE además
+   tiene una demo gratis. Los cursos apagados (in-on-at, presente-continuo) NO están aquí. tools/tests/conexion-educativa.test.js
+   exige que esta tabla coincida con academia-motor.js: cuando se abre o cierra un curso, hay que actualizarla. */
+const ACADEMIA_COURSE_BY_TEMA = {
+  'to-be-presente': { course:'to-be', title:'Domina el verbo TO BE', demo:true },
+  'pronombres':     { course:'pronombres', title:'Pronombres personales' },
+  'a-an':           { course:'articulos', title:'Artículos y plurales' },
+  'posesivos':      { course:'posesivos', title:'Posesivos y demostrativos' },
+  'there-is-are':   { course:'there-is-are', title:'THERE IS / THERE ARE' },
+  'can-cant':       { course:'can', title:'CAN / CAN\'T' },
+  'presente-simple':{ course:'presente-simple', title:'Presente simple' },
+  'do-does':        { course:'do-does', title:'DO / DOES: preguntas y negaciones' },
+  'question-words': { course:'wh', title:'WH-QUESTIONS: What, Where, When, Who, Why, How' }
+};
+function academiaCourseForTema(temaId){
+  const c = ACADEMIA_COURSE_BY_TEMA[canonicalTemaId(temaId)] || ACADEMIA_COURSE_BY_TEMA[temaId];
+  return c ? { course:c.course, title:c.title, demo:!!c.demo, member:true, href:'academia.html#/curso/' + c.course } : null;
 }
 
 // Ejercicios de Listening que cumplen un criterio por texto pero NO practican ese patrón

@@ -1922,3 +1922,13 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Academia (avance, examen, caché de membresía) y borradores de TOEIC: por cuenta. signOut recarga la página sin depender de getClient().
   - Pruebas: aislamiento-cuentas 26/26; batería con los mismos 3 fallos de antes; e2e regresiones, simulate-flow, simulate-real OK.
   - Versiones ?v=20261108c. 91 HTML: solo cambia ?v=.
+
+2026-11-08 (7) | Fase 2 educativa: ejercicio -> explicación -> refuerzo distinto -> curso. SIN publicar (falta verificación funcional).
+  - Explicación al fallar ahora también en Vocabulario, Listening y sesiones mixtas/Plan: pareja de palabras en el glosario (tabla revisada a mano,
+    VOCAB_GLOSSARY_BY_ITEM), clase del tema si existe, o guía del nivel principiante. Reading y lo demás sin recurso: sin enlace (nada se inventa).
+    facil8 (Then/Than, Accept/Except...) pasa al tema "Palabras que se confunden".
+  - Refuerzo con ejercicios DISTINTOS (MICRO_VARIETY_ON): primero preguntas no vistas del mismo microtema/tema, luego las falladas antes, al final las de la
+    última sesión; lo que ya domina (último resultado correcto) no sale. "Mis errores" no cambia. Apagable con la constante.
+  - "Para reforzar": además de clase y Practicar, muestra el curso de academia PUBLICADO del tema, con "con membresía" (TO BE: demo gratis). Cursos apagados
+    (in-on-at, presente-continuo) no se enlazan; la tabla ACADEMIA_COURSE_BY_TEMA la vigila una prueba contra academia-motor.js.
+  - Pruebas nuevas: refuerzo-variado (5), conexion-educativa (9). Versiones ?v=20261108d (app, temas).
