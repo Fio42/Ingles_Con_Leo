@@ -30,7 +30,7 @@ function load(opts){
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(read('data.js'), ctx);
   vm.runInContext(read('temas.js'), ctx);
-  vm.runInContext(read('app.js') + ';this.__t = { getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, setStats: m => { _mistakeStatsCache = m; } }', ctx);
+  vm.runInContext(read('app.js') + ';this.__t = { getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
   ctx.__handlers = handlers; ctx.__calls = calls; ctx.__store = store;
   return ctx;
 }
@@ -131,6 +131,34 @@ function root0(){ return root; }
 test('el quiz de artículos no toca el límite diario: no hay referencias al contador gratis', ()=>{
   const src = read('app.js'); const a = src.indexOf('function articleQuizRecord'), b = src.indexOf('function articleQuizReinforceHtml');
   assert(!/free_daily|FreeAcctExercise|incrementFree/.test(src.slice(a, b)));
+});
+
+test('cuenta GRATIS: fallar quizzes no mueve el contador diario ni el límite (los 6 ejercicios quedan intactos)', ()=>{
+  const c = load({ account:'user-free' }), T = c.__t;
+  c.__leoMemberVerified = false; T.setFreeAcct('user-free');
+  const before = T.getFreeAcctExerciseCount(), keysBefore = Object.keys(c.__store).filter(k => /daily|free/i.test(k) && !/article_quiz/.test(k)).sort().join();
+  for(let n = 0; n < 7; n++) T.articleQuizRecord({ file:'/articulo-in-on-at.html', root:'prepQuiz1', n:n, ok:false });
+  assert.strictEqual(T.getFreeAcctExerciseCount(), before);
+  assert.strictEqual(T.freeDailyLimitReached(), false);
+  assert.strictEqual(Object.keys(c.__store).filter(k => /daily|free/i.test(k) && !/article_quiz/.test(k)).sort().join(), keysBefore, 'ninguna llave del contador cambió');
+  assert.strictEqual(c.__calls.length, 0, 'gratis: nada a mistake_stats');
+  assert.strictEqual(T.articleQuizFailedIds().length, 7);
+  const w = T.freeMemoryWeakSpots();
+  assert(w.length === 1 && w[0].temaId === 'in-on-at' && w[0].ids.length === 7, 'la memoria gratis ve el tema fallado');
+});
+test('MIEMBRO: Reading y quiz se registran en el mismo motor, cada uno con su tipo, y a la cuenta correcta', ()=>{
+  const c = load({ account:'user-member' }), T = c.__t; c.__leoMemberVerified = true;
+  let r = null; Object.keys(T.READING_BANK).forEach(l => T.READING_BANK[l].forEach(v => v.forEach(it => { r = r || it; })));
+  T.updateMistakeStatsFromResults([{ itemId:r.id, isCorrect:false }, { itemId:'inventado-xyz', isCorrect:false }]);
+  T.articleQuizRecord({ file:'/articulo-articulos-a-an-the.html', root:'articlesQuiz', n:1, ok:false });
+  const flat = c.__calls.reduce((a, x) => a.concat(JSON.parse(JSON.stringify(x))), []);
+  assert.strictEqual(JSON.stringify(flat.map(x => [x.kind, x.item_id, x.topic])), JSON.stringify([['reading', r.id, null], ['article', 'aq:articulos-a-an-the:articlesQuiz:1', null]]));
+  assert(Object.keys(c.__store).some(k => /leo_article_quiz_v1@@u:user-member/.test(k)) && !Object.keys(c.__store).some(k => /user-free|user-aaa/.test(k.replace('sb-test-auth-token',''))));
+});
+test('INVITADO: nada en ninguna llave de progreso ni historial tras responder quizzes', ()=>{
+  const c = load(), T = c.__t; const before = JSON.stringify(c.__store);
+  T.articleQuizRecord({ file:'/articulo-in-on-at.html', root:'prepQuiz1', n:0, ok:false });
+  assert.strictEqual(JSON.stringify(c.__store), before); assert.strictEqual(c.__calls.length, 0);
 });
 
 console.log('\n' + passed + ' ok, ' + failed + ' fallos');
