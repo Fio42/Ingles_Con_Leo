@@ -2453,6 +2453,12 @@ html:not(.ac-live) .home-main{grid-template-columns:1fr;}
 .first-offer-list{margin:0 0 10px;padding-left:20px;color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
 .first-offer-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
 .first-offer-actions .btn{flex:1 1 200px;justify-content:center;min-height:44px;text-align:center;}
+@media(min-width:700px){
+  .first-offer{padding:16px 22px;max-width:760px;margin-left:auto;margin-right:auto;}
+  .first-offer-list{display:flex;flex-wrap:wrap;gap:4px 22px;list-style:none;padding-left:0;}
+  .first-offer-list li::before{content:"\2713\00a0";color:var(--blue,#253ecc);font-weight:700;}
+  .first-offer-actions .btn{flex:0 1 auto;min-width:210px;}
+}
 .free-limit-note{margin:14px 0 0;padding:10px 14px;border-radius:10px;background:#f1f5ff;color:var(--ink);font-size:0.92rem;font-weight:600;text-align:center;}
 /* Mientras la invitación de primera sesión está a la vista no se muestra además el bloque fijo de membresía de la página (un solo mensaje comercial). */
 body:has([data-first-offer-card]:not([style*="display: none"])) .practice-members-cta{display:none !important;}

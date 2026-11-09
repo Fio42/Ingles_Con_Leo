@@ -175,5 +175,21 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
     assert.strictEqual(await page.locator('[data-first-offer-card]').count(), 0);
     await noOverflow(page); pass('F: invitado sin tarjeta de cuenta'); await ctx.close(); }
 
+  // G) escritorio: la tarjeta aprovecha el ancho sin volverse enorme
+  { const { ctx, page, errors } = await newPage(browser, 'desk1', { free_daily_count:3, free_daily_date:today() }, undefined, 1280);
+    await page.goto(base()); await ready(page);
+    const r = await runSession(page); assert.strictEqual(r.answered, 3);
+    const card = page.locator('[data-first-offer-card]'); assert.strictEqual(await card.count(), 1);
+    const box = await card.boundingBox(); assert.ok(box.width <= 900 && box.height <= 260, 'tarjeta de escritorio compacta: ' + Math.round(box.width) + 'x' + Math.round(box.height));
+    await noOverflow(page);
+    if(process.env.SHOTDIR){ await card.scrollIntoViewIfNeeded(); await page.screenshot({ path: process.env.SHOTDIR + '/desk.png' }); }
+    assert.deepStrictEqual(errors, []); pass('G: escritorio 1280 px, tarjeta compacta (' + Math.round(box.width) + 'x' + Math.round(box.height) + ')'); await ctx.close(); }
+  // H) miembro: sin tarjeta comercial ni muro gratis
+  { const { ctx, page } = await newPage(browser, 'mem1', { is_member:true, free_daily_count:6, free_daily_date:today(), free_first_exercise_at:'2026-10-01T00:00:00Z' });
+    await page.goto(base()); await page.waitForTimeout(2500);
+    const t = await page.locator('body').innerText();
+    assert.strictEqual(await page.locator('[data-first-offer-card]').count(), 0); assert.ok(!/Completaste tus 6 ejercicios gratis de hoy/.test(t));
+    pass('H: miembro sin tarjeta comercial ni muro gratuito'); await ctx.close(); }
+
   await browser.close(); server.close(); console.log(ok + ' ok');
 })().catch(e => { console.log('FALLA ' + (e && e.stack || e)); process.exit(1); });

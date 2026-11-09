@@ -2013,3 +2013,7 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 2) Tarjeta comercial simplificada: titulo, texto, 9 cursos (dinamico, solo publicados), evaluaciones, insignias, practica ilimitada, $2 USD al mes., dos acciones. Ya no repite puntaje ni temas.
 3) Encabezado dinamico: "N preguntas cortas..." (y equivalentes de vocabulario, listening, speaking, writing, mixto) con el numero real de la sesion (6, 3, 1...).
 Pruebas: oferta-primera-sesion 20/20 (dos cuentas mismo navegador, invitado, dos dispositivos, encabezado), e2e free-cap en Chromium movil 320/360/375 (11 ok), regresiones PASS. Versiones: app.js 20261109g, backend.js y academia.js 20261109a.
+
+
+(25) 2026-11-09 - Tarjeta de membresia en escritorio y pruebas finales del modelo 3 + 3
+La tarjeta queda compacta en escritorio (maximo 760 px, beneficios en una linea, botones lado a lado); en movil no cambia. Pruebas nuevas: 3 de invitado + registro = 3 restantes, registro directo = 6, al dia siguiente 6, recargar o abrir otra pestana con perfil de nube viejo no regala ejercicios, miembro sin tarjeta ni muro. No se toco el modelo 3 + 3 ni el contador. Limitacion documentada: con dos dispositivos que contestan al mismo tiempo el limite no es atomico (ver (24)); ademas, quien cierra sesion y practica como invitado en el mismo navegador recibe sus 3 de invitado (el tope de invitado siempre ha sido por navegador).

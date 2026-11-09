@@ -221,4 +221,19 @@ test('ENCABEZADO: freeSessionCap publica el número real de ejercicios (6, 3, 1,
   assert(/SKILL_DESC_FN[\s\S]*n \+ ' preguntas cortas'/.test(src) && /1 pregunta corta/.test(src));
 });
 
+test('3 + 3: invitado con 3 que se registra le quedan 3; registro directo 6; el día siguiente 6; recargar no regala', ()=>{
+  const day = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const store = {}; const g = load({ store }); g.__t.setTier('guest'); bumpGuest(g, 3);
+  const a = free('p1', { store });
+  assert.strictEqual(6 - a.__t.getFreeAcctExerciseCount(), 3, 'quedan 3');
+  assert.strictEqual(a.__t.freeSessionCap(Array.from({ length:8 }, (_, i) => i)).length, 3);
+  bumpN(a, 3); assert.strictEqual(a.__t.freeDailyLimitReached(), true);
+  const a2 = free('p1', { store, count:0 }); // recarga / nueva pestaña con perfil de nube viejo
+  assert.strictEqual(a2.__t.freeDailyLimitReached(), true, 'recargar no regala ejercicios');
+  const d = free('direct1', { store: {} }); assert.strictEqual(d.__t.getFreeAcctExerciseCount(), 0, 'registro directo: 6 disponibles');
+  const y = {}; y['leoAcctDailyCount:' + day(1) + '@@u:nx'] = '6'; y['leoLocalDailyCount:' + day(1)] = '3';
+  const n = free('nx', { store: y, count:6 }); n.__t.setProfile({ id:'nx', free_daily_count:6, free_daily_date:day(1), free_first_exercise_at:new Date().toISOString() });
+  assert.strictEqual(n.__t.getFreeAcctExerciseCount(), 0, 'al día siguiente: 6 de nuevo');
+});
+
 Promise.all(pending).then(() => { console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0); });
