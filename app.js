@@ -7832,18 +7832,19 @@ function sessionReinforceRows(results, ins, covered){
         if(sr) lesson = { href: sr.href, label: sr.label };
       }
       const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(g.id) : null;
-      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, course });
+      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, course, skill: c.skill });
     });
     return out;
   }catch(e){ return []; }
 }
 function sessionReinforceHtml(rows){
   if(!rows || !rows.length) return '';
+  try{ if(typeof trackLeoEvent === 'function') trackLeoEvent('reinforce_shown', { rows: rows.length, tier: window.__leoMemberVerified === true ? 'member' : 'free' }); }catch(e){}
   return `
       <div class="sess-insight-label sess-insight-next">Para reforzar</div>
       <ul class="sess-reinforce">
-        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" style="display:inline-block;padding:12px 0">${r.course.title}</a> · con membresía${r.course.demo ? ' (demo gratis)' : ''}</small>` : ''}</span>
-          <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}">Practicar</a></span></li>`).join('')}
+        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" data-rf="course" style="display:inline-block;padding:12px 0">${r.course.title}</a> · con membresía${r.course.demo ? ' (demo gratis)' : ''}</small>` : ''}</span>
+          <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}" data-rf="lesson">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}" data-rf="practice">${r.practiceLabel || 'Practicar'}</a></span></li>`).join('')}
       </ul>`;
 }
 
@@ -8726,11 +8727,34 @@ function leoAiPitchHtml(variant){
     </div>`;
 }
 
+// "Para reforzar" de la práctica gratis: lo que ya calcula Miembros, con "Practicar" llevando a la práctica gratis de esa habilidad (respeta el límite diario).
+function freeReinforceHtml(results){
+  try{
+    const rows = sessionReinforceRows(results, { actions: [] }, null).map(r => {
+      const sk = r.skill === 'vocabulario' ? 'vocabulary' : r.skill === 'listening' ? 'listening' : 'grammar';
+      return Object.assign({}, r, { practiceHref: 'practica.html?skill=' + sk, practiceLabel: 'Practicar más' });
+    });
+    return sessionReinforceHtml(rows);
+  }catch(e){ return ''; }
+}
+// Medición de las recomendaciones (una sola pareja de eventos para gratis y miembros): se muestran y se abren.
+(function(){
+  try{
+    document.addEventListener('click', function(e){
+      const a = e.target && e.target.closest ? e.target.closest('.sess-reinforce a[data-rf]') : null;
+      if(a && typeof trackLeoEvent === 'function') trackLeoEvent('reinforce_link_clicked', { kind: a.getAttribute('data-rf'), tier: window.__leoMemberVerified === true ? 'member' : 'free' });
+    });
+  }catch(e){}
+})();
 /* ---------- Resumen de sesión gratis (independiente del de Miembros) ---------- */
 function renderFreeSessionSummary({ title, score, topics, results }){
   const wrong = Array.isArray(results) ? results.filter(r => r && r.isCorrect === false).length : 0;
-  const aiVariant = nextLeoAiPitchVariant(wrong);
-  // Sin diagnóstico en la práctica gratis: solo el resultado de esta sesión.
+  // Las invitaciones a la membresía aparecen al llegar al límite del día (su propio bloque), no tras cada sesión ni cada error.
+  const atLimit = freeDailyLimitReached();
+  const aiVariant = atLimit ? nextLeoAiPitchVariant(wrong) : null;
+  // Mismo motor que Miembros, sobre los errores de ESTA sesión (la práctica gratis no guarda historial local): explicación, práctica y curso.
+  const reinforce = freeReinforceHtml(results);
+  // Sin diagnóstico completo en la práctica gratis: el resultado de esta sesión y qué reforzar.
   const graded = Array.isArray(results) ? results.filter(r => r && typeof r.isCorrect === 'boolean').length : 0;
   let vozId = null;
   if(graded >= 3){
@@ -8752,7 +8776,8 @@ function renderFreeSessionSummary({ title, score, topics, results }){
         <button class="btn btn-ghost" id="freeOtherSkillBtn">Probar otra habilidad</button>
       </div>
       ${leoVozHtml(vozId)}
-      ${aiVariant ? leoAiPitchHtml(aiVariant) : `
+      ${reinforce}
+      ${aiVariant ? leoAiPitchHtml(aiVariant) : !atLimit ? '' : `
       <div class="summary-unlock">
         <p class="summary-unlock-label">Esto es una muestra del sistema.</p>
         <p class="summary-unlock-copy">Como miembro, el sistema recuerda tu progreso, conecta tus errores y te guía con el método del Profe Leo: qué practicar, clases interactivas y Leo AI cuando necesitas ayuda.</p>
@@ -8868,6 +8893,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
         reveal.innerHTML = `<div class="vocab-word">${item.word}</div><div class="vocab-sub">${item.translation}</div>`;
         list.after(reveal);
         renderFeedback(card, isCorrect, item.quiz.explain, item.examples);
+        addErrorLessonLink(card, item, isCorrect);
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();
@@ -8954,6 +8980,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
             <div class="examples-label">Transcripción</div>
             <div class="example-pair"><div class="example-en">${item.transcript}</div><div class="example-es">${item.translation}</div></div>
           </div>`;
+        addErrorLessonLink(card, item, isCorrect);
         results.push({ itemId:item.id, isCorrect });
         showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
           bumpFreeDailyExerciseCount();

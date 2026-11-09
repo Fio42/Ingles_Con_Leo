@@ -25,7 +25,7 @@ function makeCtx(withTemas){
   vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), ctx);
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
-;this.__t = { recordSession, loadProgress, skillErrorResource, errorResourceForItem, sessionReinforceRows, sessionReinforceHtml, VOCAB_GLOSSARY_BY_ITEM, ACADEMIA_COURSE_BY_TEMA, academiaCourseForTema, TEMA_BY_ID, VOCAB_BANK, LISTENING_BANK, READING_BANK, temaForTopic, LEVELS, computeDiagnosis, microDiagActions, microFlowState, microIsActive, computePlanSelection, buildPlanPool,
+;this.__t = { recordSession, loadProgress, renderFreeSessionSummary, freeReinforceHtml, freeDailyLimitReached, localDailyCountKey, GUEST_EXERCISE_LIMIT, skillErrorResource, errorResourceForItem, sessionReinforceRows, sessionReinforceHtml, VOCAB_GLOSSARY_BY_ITEM, ACADEMIA_COURSE_BY_TEMA, academiaCourseForTema, TEMA_BY_ID, VOCAB_BANK, LISTENING_BANK, READING_BANK, temaForTopic, LEVELS, computeDiagnosis, microDiagActions, microFlowState, microIsActive, computePlanSelection, buildPlanPool,
   microCheckStart, microCheckFinish, pickCheckItems, checkAvailable, computeMistakeIds, computeWeeklyStats, computeSessionInsight, setUserLevel,
   takePagePlanParams, takePageOrigin, noteGrammarAnswer, MICRO_BY_ID, MICROS, MICRO_STATS_KEY, CHECK_SEEN_KEY, PROGRESS_KEY, GRAMMAR_BANK, GRAMMAR_CHECK_BANK, SESSION_LENGTHS,
   getMistakesItemIndex, loadInflightSession, saveInflightSession, microWeakness, MICRO_FLOW, localDateStr, PLAN_LENGTHS,
@@ -105,5 +105,35 @@ test('Un tema sin curso publicado no muestra curso; to-be indica la demo gratis'
   assert.strictEqual(T.academiaCourseForTema('presente-continuo'), null);
   assert.strictEqual(plain(T.academiaCourseForTema('to-be-presente')).demo, true);
   assert.strictEqual(plain(T.academiaCourseForTema('do-does')).demo, false);
+});
+
+console.log('Cuenta gratis / invitado');
+const doDoesIds = n => { const ids = []; T.LEVELS.forEach(l => T.GRAMMAR_BANK[l].forEach(v => v.forEach(b => { const t = T.temaForTopic(b.topic); if(t && t.id === 'do-does' && ids.length < n) ids.push(b.items[0].id); }))); return ids; };
+const wrongRes = ids => ids.map(id => ({ itemId:id, isCorrect:false }));
+test('Resumen gratis tras errores: muestra qué reforzar (explicación, práctica gratis, curso con membresía) y NO invita a pagar', () => {
+  const events = []; T.ctx.gtag = (...a) => events.push(a);
+  assert.strictEqual(T.freeDailyLimitReached(), false);
+  const html = T.renderFreeSessionSummary({ title:'¡Listo!', score:'1 / 3', topics:['x'], results: wrongRes(doDoesIds(2)) });
+  assert(/Para reforzar/.test(html) && /data-rf="lesson"/.test(html));
+  assert(/practica\.html\?skill=grammar/.test(html) && /Practicar más/.test(html), 'practicar lleva a la práctica gratis');
+  assert(/curso\/do-does/.test(html) && /con membresía/.test(html));
+  assert(!/summary-unlock/.test(html) && !/Descubrir el sistema completo/.test(html) && !/href="miembros\.html/.test(html), 'sin invitación a pagar fuera del límite');
+  assert(!/ai-pitch/.test(html), 'sin pitch de Leo AI fuera del límite');
+  assert(events.some(e => e[1] === 'reinforce_shown' && e[2].tier === 'free'), 'medición: recomendación mostrada');
+});
+test('Al llegar al límite del día sí aparece la invitación a la membresía', () => {
+  const k = T.localDailyCountKey(); store[k] = String(T.GUEST_EXERCISE_LIMIT);
+  assert.strictEqual(T.freeDailyLimitReached(), true);
+  const html = T.renderFreeSessionSummary({ title:'¡Listo!', score:'1 / 3', topics:['x'], results: wrongRes(doDoesIds(2)) });
+  assert(/href="miembros\.html/.test(html) && /Para reforzar/.test(html));
+});
+test('Sin errores no hay bloque de refuerzo ni invitación', () => {
+  const html = T.renderFreeSessionSummary({ title:'¡Listo!', score:'3 / 3', topics:['x'], results: doDoesIds(2).map(id => ({ itemId:id, isCorrect:true })) });
+  assert(!/Para reforzar/.test(html) && !/summary-unlock/.test(html));
+});
+test('Los textos de Inicio, Practicar y Miembros no anuncian "solo TO BE" ni "más cursos próximamente"', () => {
+  ['index.html', 'practica.html', 'miembros.html'].forEach(f => { const h = fs.readFileSync(path.join(root, f), 'utf8'); assert(!/Más cursos, próximamente|hoy TO BE|Primer curso: TO BE|llegarán más adelante/.test(h), f); });
+  const idx = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  ['pronombres', 'artículos', 'posesivos', 'presente simple', 'DO / DOES'].forEach(w => assert(idx.indexOf(w) >= 0, 'index menciona ' + w));
 });
 console.log('\n' + passed + ' pruebas ok');

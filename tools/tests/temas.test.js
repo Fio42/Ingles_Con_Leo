@@ -1179,8 +1179,8 @@ test('la página de cada habilidad que muestra resumen carga el registro (si no,
   ['gramatica', 'vocabulario', 'listening', 'writing', 'mixto', 'plan-estudio', 'practica-miembros', 'errores', 'progreso', 'miembros'].forEach(f=>{
     assert(/<script src="temas\.js\?v=/.test(fs.readFileSync(path.join(root, f + '.html'), 'utf8')), f + '.html sin temas.js');
   });
-  // la práctica gratis NO carga el registro (no debe cambiar)
-  assert(!/temas\.js/.test(fs.readFileSync(path.join(root, 'practica.html'), 'utf8')));
+  // la práctica gratis también lo carga (desde la Fase 2 freemium): el resumen gratis muestra "Para reforzar" con las explicaciones y el curso del tema
+  assert(/<script src="temas\.js\?v=/.test(fs.readFileSync(path.join(root, 'practica.html'), 'utf8')));
   // ninguna página lo carga dos veces
   fs.readdirSync(root).filter(f => f.endsWith('.html')).forEach(f => assert(((fs.readFileSync(path.join(root, f), 'utf8').match(/temas\.js\?v=/g)) || []).length <= 1, f));
 });

@@ -1932,3 +1932,13 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - "Para reforzar": además de clase y Practicar, muestra el curso de academia PUBLICADO del tema, con "con membresía" (TO BE: demo gratis). Cursos apagados
     (in-on-at, presente-continuo) no se enlazan; la tabla ACADEMIA_COURSE_BY_TEMA la vigila una prueba contra academia-motor.js.
   - Pruebas nuevas: refuerzo-variado (5), conexion-educativa (9). Versiones ?v=20261108d (app, temas).
+
+2026-11-08 (8) | Fase 2 freemium: mismo motor para todos, límites distintos por plan. SIN publicar (falta validar con cuenta gratis y miembro).
+  - Verificado en el código: Leo AI para cuentas gratis YA existe (5 explicaciones por cuenta, solo de ejercicios fallados, tope diario y de costo en el servidor,
+    interruptor leo_ai_config.trial_enabled). No se cambió. Límites diarios (invitado 3, cuenta gratis 6) sin tocar.
+  - Práctica gratis de Vocabulario y Listening ahora también ofrece la explicación al fallar (antes solo Miembros). practica.html carga temas.js.
+  - Resumen gratis: "Para reforzar" con los errores de la sesión (explicación, "Practicar más" a la práctica gratis, curso con membresía). Sin historial local.
+  - La invitación a la membresía (bloque y pitch de Leo AI) ya no sale tras cada sesión: solo al llegar al límite del día (su bloque propio).
+  - Textos de Inicio, Practicar y Miembros: ya no dicen "TO BE primer curso / más cursos próximamente"; listan los cursos publicados.
+  - Medición: eventos reinforce_shown y reinforce_link_clicked (tier free/member). Se reutilizan los existentes (free_signup_completed, leo_ai_trial_*, guest_exercise_limit_reached, membership_cta_clicked).
+  - Pruebas conexion-educativa 13. Versiones app ?v=20261108e.
