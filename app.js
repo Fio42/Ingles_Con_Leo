@@ -4206,6 +4206,19 @@ function freeSessionAnswer(skill, level, topics, result){
   }catch(e){}
 }
 // Fin de la sesión (resumen o límite diario): se cierra y se sube. Sin `skill` cierra todas menos el reto diario.
+/* Cuenta gratis: la sesión trae SOLO los ejercicios que le quedan hoy (máximo FREE_USER_DAILY_LIMIT). Antes una sesión de 8 chocaba con el
+   límite de 6 y, en vez de terminar, la persona veía el muro sin resultados, errores ni recomendaciones. Con la sesión ajustada llega al
+   resumen normal. Es solo el tamaño de la sesión: el contador y el límite siguen siendo los del servidor. Invitados y miembros no cambian.
+   Con 0 disponibles queda vacía y el primer renderItem muestra el muro de siempre. */
+function freeSessionCap(pool){
+  try{
+    if(_leoAccessTier === 'free' && Array.isArray(pool)){
+      const left = Math.max(0, FREE_USER_DAILY_LIMIT - getFreeAcctExerciseCount());
+      if(pool.length > left) return pool.slice(0, left);
+    }
+  }catch(e){}
+  return pool;
+}
 // ¿Se acaba de cerrar la PRIMERA sesión de esta cuenta? El marcador del servidor (free_first_exercise_at, se pone al primer ejercicio)
 // cae dentro de esa sesión; en una cuenta que ya practicaba (otro dispositivo, otro navegador) es anterior y NO cuenta: así
 // first_session_completed no se infla al cambiar de dispositivo.
@@ -4543,7 +4556,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   if(isFree) freeSessionBegin('mixto');
   const saved = !isFree ? loadInflightSession('mixto', level) : null;
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
-  const pool = useSaved ? saved.pool : pickMixItems(level, isFree);
+  const pool = useSaved ? saved.pool : (isFree ? freeSessionCap(pickMixItems(level, isFree)) : pickMixItems(level, isFree));
   const total = pool.length;
   const startedAt = useSaved ? saved.startedAt : Date.now();
   const results = useSaved ? saved.results.slice() : [];
@@ -9144,16 +9157,16 @@ function freeReinforceHtml(results){
    primera sesión solo la pone una primera sesión real: ver freeFirstSessionClosed). No cambia el límite de 6 ni quita nada gratis.
    Solo muestra datos reales de la persona (aciertos de la sesión, el tema que más le costó); si no los hay, no los inventa. */
 const FIRST_OFFER_KEY = 'leo_first_offer_v1';
-function freeFirstOfferEligible(){
+function freeFirstOfferEligible(allowAtLimit){
   try{
     if(_leoAccessTier !== 'free' || !freeAcctId() || window.__leoMemberVerified === true) return false;
     if(!LS_P.getItem('leo_first_session_evt') || LS_P.getItem(FIRST_OFFER_KEY)) return false;
-    return !freeDailyLimitReached();   // al llegar al límite ya existe su bloque propio
+    return allowAtLimit === true || !freeDailyLimitReached();   // en la pantalla de inicio de práctica, con el cupo agotado no se ofrece; en el resumen sí (es su único mensaje comercial)
   }catch(e){ return false; }
 }
-function freeFirstOfferHtml(results){
+function freeFirstOfferHtml(results, opts){
   try{
-    if(!freeFirstOfferEligible()) return '';
+    if(!freeFirstOfferEligible(!!(opts && opts.atLimit))) return '';
     LS_P.setItem(FIRST_OFFER_KEY, String(Date.now()));            // se marca al mostrarse: una sola vez
     trackLeoEvent('first_session_offer_viewed');
     const graded = Array.isArray(results) ? results.filter(r => r && typeof r.isCorrect === 'boolean') : [];
@@ -9189,7 +9202,13 @@ function renderFreeSessionSummary({ title, score, topics, results }){
   const wrong = Array.isArray(results) ? results.filter(r => r && r.isCorrect === false).length : 0;
   // Las invitaciones a la membresía aparecen al llegar al límite del día (su propio bloque), no tras cada sesión ni cada error.
   const atLimit = freeDailyLimitReached();
-  const aiVariant = atLimit ? nextLeoAiPitchVariant(wrong) : null;
+  const acct = _leoAccessTier === 'free';
+  // La sesión de una cuenta gratis se ajusta a lo que le queda (freeSessionCap): si usó el último ejercicio termina AQUÍ, no en el muro,
+  // así que el aviso de límite se registra aquí. Reconocemos primero que completó su práctica y luego UN solo mensaje comercial.
+  if(atLimit && acct) trackLeoEventOncePerDay('free_daily_limit_reached');
+  const limitNote = (atLimit && acct) ? '<p class="free-limit-note">Completaste tu práctica gratis de hoy: ' + FREE_USER_DAILY_LIMIT + ' de ' + FREE_USER_DAILY_LIMIT + ' ejercicios. Se renuevan mañana.</p>' : '';
+  const firstOffer = acct ? freeFirstOfferHtml(results, { atLimit }) : '';
+  const aiVariant = (atLimit && !firstOffer) ? nextLeoAiPitchVariant(wrong) : null;
   // Mismo motor que Miembros, sobre los errores de ESTA sesión (la práctica gratis no guarda historial local): explicación, práctica y curso.
   const reinforce = freeReinforceHtml(results);
   // Sin diagnóstico completo en la práctica gratis: el resultado de esta sesión y qué reforzar.
@@ -9215,8 +9234,8 @@ function renderFreeSessionSummary({ title, score, topics, results }){
       </div>
       ${leoVozHtml(vozId)}
       ${reinforce}
-      ${atLimit ? '' : freeFirstOfferHtml(results)}
-      ${aiVariant ? leoAiPitchHtml(aiVariant) : !atLimit ? '' : `
+      ${limitNote}
+      ${firstOffer ? firstOffer : aiVariant ? leoAiPitchHtml(aiVariant) : !atLimit ? '' : `
       <div class="summary-unlock">
         <p class="summary-unlock-label">Esto es una muestra del sistema.</p>
         <p class="summary-unlock-copy">Como miembro, el sistema recuerda tu progreso, conecta tus errores y te guía con el método del Profe Leo: qué practicar, clases interactivas y Leo AI cuando necesitas ayuda.</p>
@@ -9246,6 +9265,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   if(sampled !== pool) pool.splice(0, pool.length, ...sampled);
   const mem = freeMemoryBoost('gramatica', level, pool);
   if(mem.boosted.length) pool.splice(0, pool.length, ...mem.pool);
+  pool.splice(0, pool.length, ...freeSessionCap(pool));
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -9294,7 +9314,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
   freeSessionBegin('vocabulario');
   const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
   const memV = freeMemoryBoost('vocabulario', level, VOCAB_BANK[level][variantIdx]);
-  const pool = memV.pool;
+  const pool = freeSessionCap(memV.pool);
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -9370,7 +9390,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
   freeSessionBegin('listening');
   const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
   const memL = freeMemoryBoost('listening', level, LISTENING_BANK[level][variantIdx]);
-  const pool = memL.pool;
+  const pool = freeSessionCap(memL.pool);
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -9462,7 +9482,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('writing');
   const variantIdx = pickVariantIndex('writing', level, WRITING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.writing[level]);
-  const pool = WRITING_BANK[level][variantIdx];
+  const pool = freeSessionCap(WRITING_BANK[level][variantIdx]);
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -9572,7 +9592,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('speaking');
   const variantIdx = pickVariantIndex('speaking', level, SPEAKING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.speaking[level]);
-  const pool = SPEAKING_BANK[level][variantIdx];
+  const pool = freeSessionCap(SPEAKING_BANK[level][variantIdx]);
   const total = pool.length;
   const results = [];
   let idx = 0;

@@ -30,7 +30,7 @@ function load(opts){
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(read('data.js'), ctx);
   vm.runInContext(read('temas.js'), ctx);
-  vm.runInContext(read('app.js') + ';this.__t = { freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
+  vm.runInContext(read('app.js') + ';this.__t = { freeSessionCap, freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
   ctx.__handlers = handlers; ctx.__calls = calls; ctx.__store = store;
   return ctx;
 }
@@ -107,4 +107,58 @@ test('el evento se manda una sola vez por cuenta aunque se cierren varias sesion
   const c = mk('u11'); const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   assert(/function trackFirstSessionOnce[\s\S]*leo_first_session_evt[\s\S]*trackLeoEvent\('first_session_completed'/.test(src));
 });
+const pool8 = () => [1, 2, 3, 4, 5, 6, 7, 8];
+test('cupo: con 6, 3, 1 y 0 disponibles la sesión trae 6, 3, 1 y 0 ejercicios (máximo 6)', ()=>{
+  [[0, 6], [3, 3], [5, 1], [6, 0], [4, 2]].forEach(([used, want]) => {
+    const c = mk('cap' + used, { count:used });
+    assert.strictEqual(c.__t.freeSessionCap(pool8()).length, want, used + ' usados');
+  });
+  const big = mk('capbig', { count:0 }); assert.strictEqual(big.__t.freeSessionCap(Array.from({ length:26 }, (_, i) => i)).length, 6, 'nunca más de 6');
+  const short = mk('capshort', { count:1 }); assert.strictEqual(short.__t.freeSessionCap([1, 2, 3]).length, 3, 'una sesión corta que cabe no se toca');
+  const p = pool8(); mk('capmut', { count:2 }).__t.freeSessionCap(p); assert.strictEqual(p.length, 8, 'no modifica el banco original');
+});
+test('cupo: invitados y miembros no cambian; cada cuenta usa SU contador', ()=>{
+  const g = load(); assert.strictEqual(g.__t.freeSessionCap(pool8()).length, 8);
+  const m = mk('capm', { count:5 }); m.__t.setTier('member'); assert.strictEqual(m.__t.freeSessionCap(pool8()).length, 8);
+  const a = mk('capa', { count:0 }), b = mk('capb', { count:5 });
+  assert.strictEqual(a.__t.freeSessionCap(pool8()).length, 6); assert.strictEqual(b.__t.freeSessionCap(pool8()).length, 1);
+});
+test('las 6 sesiones gratis (gramática, vocabulario, listening, writing, speaking, mixto) ajustan su tamaño', ()=>{
+  const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  ['runFreeGrammarSession', 'runFreeVocabSession', 'runFreeListeningSession', 'runFreeWritingSession', 'runFreeSpeakingSession'].forEach(f => {
+    const a = src.indexOf('function ' + f), b = src.indexOf('\nfunction ', a + 10); assert(a > 0 && /freeSessionCap\(/.test(src.slice(a, b)), f);
+  });
+  const a = src.indexOf('function runMixSessionCore'), b = src.indexOf('\nfunction ', a + 10); assert(/isFree \? freeSessionCap\(pickMixItems/.test(src.slice(a, b)));
+  assert(/if\(freeDailyLimitReached\(\)\)\{\s*container\.innerHTML = renderFreeDailyLimitReachedBlock\(\);/.test(src), 'el muro con 0 disponibles sigue ahí');
+});
+test('resumen al usar el último ejercicio, primera sesión: reconoce la práctica, UNA sola oferta, sin muro ni pitch duplicado', ()=>{
+  const c = mk('s1', { count:6 }); c.localStorage.setItem('leo_first_session_evt@@u:s1', '1');
+  const h = c.__t.renderFreeSessionSummary({ title:'¡Listo!', score:'3 / 6 correctas', topics:['X'], results:[{ isCorrect:true }, { isCorrect:false }, { isCorrect:true }] });
+  assert(/Completaste tu práctica gratis de hoy: 6 de 6/.test(h));
+  assert.strictEqual((h.match(/\$2 USD/g) || []).length, 1, 'un solo mensaje de precio');
+  assert(/data-first-offer-card/.test(h) && !/summary-unlock/.test(h) && !/leo-ai-pitch|leoAiPitch/i.test(h));
+  assert(h.indexOf('free-limit-note') < h.indexOf('data-first-offer-card'), 'primero se reconoce la práctica');
+  assert(/freeAgainBtn/.test(h) && /freeOtherSkillBtn/.test(h) && /reinforce|summary-actions/.test(h));
+  const names = c.__events.map(e => e[0]);
+  assert.strictEqual(names.filter(n => n === 'free_daily_limit_reached').length, 1, 'límite alcanzado se registra desde el resumen');
+  assert.strictEqual(names.filter(n => n === 'first_session_offer_viewed').length, 1);
+});
+test('resumen al límite sin ser la primera sesión: aviso de práctica completa + el bloque comercial de siempre (uno solo)', ()=>{
+  const c = mk('s2', { count:6 });
+  const h = c.__t.renderFreeSessionSummary({ title:'¡Listo!', score:'5 / 6', topics:[], results:[{ isCorrect:true }] });
+  assert(/Completaste tu práctica gratis de hoy/.test(h) && !/data-first-offer-card/.test(h));
+  assert(/summary-unlock|leo-ai-pitch|Leo AI/i.test(h));
+});
+test('resumen sin llegar al límite: sin aviso de límite ni evento de límite; la oferta va después del resumen', ()=>{
+  const c = mk('s3', { count:2 }); c.localStorage.setItem('leo_first_session_evt@@u:s3', '1');
+  const h = c.__t.renderFreeSessionSummary({ title:'¡Listo!', score:'2 / 2', topics:[], results:[{ isCorrect:true }, { isCorrect:true }] });
+  assert(!/free-limit-note/.test(h) && /data-first-offer-card/.test(h) && !/summary-unlock/.test(h));
+  assert.strictEqual(c.__events.filter(e => e[0] === 'free_daily_limit_reached').length, 0);
+});
+test('invitado en su resumen: sin cambios (ni oferta ni aviso de cuenta)', ()=>{
+  const g = load(); g.gtag = () => {}; g.__t.setTier('guest');
+  const h = g.__t.renderFreeSessionSummary({ title:'¡Listo!', score:'1 / 1', topics:[], results:[{ isCorrect:true }] });
+  assert(!/free-limit-note|data-first-offer-card/.test(h));
+});
+
 console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0);
