@@ -2266,6 +2266,7 @@ function runGrammarSession({ container, level, onExit }){
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   const { pool, topics, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'gramatica', level, bankLevel:GRAMMAR_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = resumed ? saved.startedAt : Date.now();
   const results = resumed ? saved.results.slice() : [];
   let idx = resumed ? saved.idx : 0;
@@ -2552,6 +2553,7 @@ function runVocabSession({ container, level, onExit }){
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'vocabulario', level, bankLevel:VOCAB_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = resumed ? saved.startedAt : Date.now();
   const results = resumed ? saved.results.slice() : [];
   let idx = resumed ? saved.idx : 0;
@@ -2633,6 +2635,7 @@ function runListeningSession({ container, level, onExit }){
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'listening', level, bankLevel:LISTENING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = resumed ? saved.startedAt : Date.now();
   const results = resumed ? saved.results.slice() : [];
   let idx = resumed ? saved.idx : 0;
@@ -3475,6 +3478,7 @@ function runWritingSession({ container, level, onExit }){
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'writing', level, bankLevel:WRITING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = resumed ? saved.startedAt : Date.now();
   const results = resumed ? saved.results.slice() : [];
   let idx = resumed ? saved.idx : 0;
@@ -3598,6 +3602,7 @@ function runSpeakingSession({ container, level, onExit }){
   const canResume = !!(saved && Array.isArray(saved.variantIdxs) && saved.idx < saved.total);
   const { pool, itemIds, variantIdxs:usedVariantIdxs, resumed } = resolveMemberPool({ skill:'speaking', level, bankLevel:SPEAKING_BANK[level], saved: canResume ? saved : null });
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = resumed ? saved.startedAt : Date.now();
   const results = resumed ? saved.results.slice() : [];
   let idx = resumed ? saved.idx : 0;
@@ -4231,7 +4236,7 @@ function freeSessionCap(pool){
     }
   }catch(e){}
   // El encabezado de la práctica muestra el número REAL de ejercicios de esta sesión.
-  try{ if(Array.isArray(out)){ window.__leoFreeSessionTotal = out.length; document.dispatchEvent(new CustomEvent('leo:free-session-total', { detail: out.length })); } }catch(e){}
+  if(Array.isArray(out)) leoPublishSessionTotal(out.length);
   return out;
 }
 // ¿Se acaba de cerrar la PRIMERA sesión de esta cuenta? El marcador del servidor (free_first_exercise_at, se pone al primer ejercicio)
@@ -4573,6 +4578,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const pool = useSaved ? saved.pool : (isFree ? freeSessionCap(pickMixItems(level, isFree)) : pickMixItems(level, isFree));
   const total = pool.length;
+  leoPublishSessionTotal(total);
   const startedAt = useSaved ? saved.startedAt : Date.now();
   const results = useSaved ? saved.results.slice() : [];
   let idx = useSaved ? saved.idx : 0;
@@ -7590,7 +7596,7 @@ function diagUnitRowHtml(u, skipTemaId){
   const ft = u.focusTema;
   if(ft && u.state && (u.state === 'refuerzo' || u.state === 'practica')){
     const c = contentForTema(ft.id);
-    if(c) temaLine = `<span class="diag-unit-tema">Dentro de ${u.label}, lo que más necesitas reforzar es <b>${c.label}</b>.</span>` +
+    if(c && String(c.label).trim().toLowerCase() !== String(u.label).trim().toLowerCase()) temaLine = `<span class="diag-unit-tema">Dentro de ${u.label}, lo que más necesitas reforzar es <b>${c.label}</b>.</span>` +
       (ft.id === skipTemaId ? '' : `<span class="mistake-pattern-links">${temaLinksHtml(c, 'Practicar')}</span>`);
   }
   const detail = u.trend
@@ -7672,7 +7678,7 @@ function diagSkillsHtml(p, diag){
       const arrow = u.trend === 'up' ? ' <span class="diag-arrow up">↑</span>' : (u.trend === 'down' ? ' <span class="diag-arrow down">↓</span>' : '');
       detail = (u.trend ? `Aciertos: antes ${u.prevAcc}% · ahora ${u.recentAcc}%` : diagAccText(u)) + arrow;
       // Dentro de Vocabulario: el tema concreto (los botones están en "Hoy te conviene").
-      if(u.focusTema && (u.state === 'refuerzo' || u.state === 'practica')){
+      if(u.focusTema && (u.state === 'refuerzo' || u.state === 'practica') && String(temaLabelOf(u.focusTema.id)).trim().toLowerCase() !== String(SKILL_LABELS[skill]).trim().toLowerCase()){
         detail += `<span class="diag-unit-tema">Dentro de ${SKILL_LABELS[skill]}, lo que más necesitas reforzar es <b>${temaLabelOf(u.focusTema.id)}</b>.</span>`;
       }
     }
@@ -9732,6 +9738,19 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
 
 /* ---------- Orquestador de practica.html: nivel + pestañas + una
    sola sesión visible a la vez. Lee ?skill= de la URL. ---------- */
+// Descripción con el número real de ejercicios de la sesión (n); sin dato todavía, el texto de siempre.
+const SKILL_DESC_FN = {
+  gramatica: n => (n === 1 ? '1 pregunta corta' : n + ' preguntas cortas') + ' con explicación y ejemplos.',
+  vocabulario: n => (n === 1 ? '1 palabra útil' : n + ' palabras útiles') + ' en contexto, no solo la traducción.',
+  listening: n => (n === 1 ? '1 audio real' : n + ' audios reales') + ': escucha y responde.',
+  speaking: n => (n === 1 ? '1 frase' : n + ' frases') + ': escucha, grábate y compara.',
+  writing: n => (n === 1 ? '1 frase guiada' : n + ' frases guiadas') + ' con revisión honesta.',
+  mixto: n => 'Un poco de todo en ' + (n === 1 ? '1 ejercicio' : n + ' ejercicios') + ': gramática, vocabulario, listening, speaking y writing.'
+};
+/* Número real de ejercicios de la sesión que se va a mostrar: el encabezado de la práctica (cuenta gratis y miembros) lo usa. */
+function leoPublishSessionTotal(n){
+  try{ if(typeof n === 'number'){ window.__leoFreeSessionTotal = n; document.dispatchEvent(new CustomEvent('leo:free-session-total', { detail: n })); } }catch(e){}
+}
 function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   freeSessionResume();   // cuenta gratis: sube lo que haya quedado a medias o sin subir (invitados: no hace nada)
   const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing','mixto'];
@@ -9743,15 +9762,6 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     speaking: '3 frases: escucha, grábate y compara.',
     writing: '4 frases guiadas con revisión honesta.',
     mixto: 'Un poco de todo: gramática, vocabulario, listening, speaking y writing en una sola sesión.'
-  };
-  // Descripción con el número real de ejercicios de la sesión (n); sin dato todavía, el texto de siempre.
-  const SKILL_DESC_FN = {
-    gramatica: n => (n === 1 ? '1 pregunta corta' : n + ' preguntas cortas') + ' con explicación y ejemplos.',
-    vocabulario: n => (n === 1 ? '1 palabra útil' : n + ' palabras útiles') + ' en contexto, no solo la traducción.',
-    listening: n => (n === 1 ? '1 audio real' : n + ' audios reales') + ': escucha y responde.',
-    speaking: n => (n === 1 ? '1 frase' : n + ' frases') + ': escucha, grábate y compara.',
-    writing: n => (n === 1 ? '1 frase guiada' : n + ' frases guiadas') + ' con revisión honesta.',
-    mixto: n => 'Un poco de todo en ' + (n === 1 ? '1 ejercicio' : n + ' ejercicios') + ': gramática, vocabulario, listening, speaking y writing.'
   };
 
   const RUNNERS = {
@@ -9937,6 +9947,9 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
   function renderHead(){
     headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
   }
+  document.addEventListener('leo:free-session-total', e => {
+    try{ const f = SKILL_DESC_FN[currentSkill], p = headEl.querySelector('p'); if(p && f && e.detail > 0) p.textContent = f(e.detail); }catch(err){}
+  });
   function renderTabs(){
     tabsEl.innerHTML = SKILL_ORDER.map(sk => `
       <button type="button" class="skill-tab-btn" data-skill="${sk}" role="tab" aria-selected="${sk===currentSkill}" aria-pressed="${sk===currentSkill}">${SKILL_LABELS[sk]}</button>`).join('');

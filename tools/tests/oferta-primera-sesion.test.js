@@ -243,4 +243,19 @@ test('el refuerzo del resumen no le vende la membresía a un miembro (sí a invi
   const f = mk('free1'); const hf = f.__t.sessionReinforceHtml(rows); assert(/con membresía/.test(hf));
 });
 
+test('encabezado de MIEMBROS: los 6 runners publican su total real y el orquestador de miembros lo muestra (ya no dice 8 si hay 9)', ()=>{
+  const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  ['runGrammarSession', 'runVocabSession', 'runListeningSession', 'runWritingSession', 'runSpeakingSession', 'runMixSessionCore'].forEach(n => {
+    const a = src.indexOf('function ' + n + '('); const body = src.slice(a, a + 3500);
+    assert(/const total = pool\.length;\s*leoPublishSessionTotal\(total\);/.test(body), n);
+  });
+  const m = src.indexOf('function initMemberPractice('); assert(/leo:free-session-total[\s\S]*SKILL_DESC_FN/.test(src.slice(m, m + 9000)));
+  const c = load(); let got = null; c.document.addEventListener('leo:free-session-total', e => { got = e.detail; });
+  c.__t.freeSessionCap(Array.from({ length:9 }, (_, i) => i)); assert.strictEqual(c.__leoFreeSessionTotal, 9);
+});
+test('texto "Dentro de X, lo que más necesitas reforzar es X" no se repite cuando unidad y tema se llaman igual', ()=>{
+  const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert(/c\.label\)\.trim\(\)\.toLowerCase\(\) !== String\(u\.label\)/.test(src) && /temaLabelOf\(u\.focusTema\.id\)\)\.trim\(\)\.toLowerCase\(\) !== String\(SKILL_LABELS\[skill\]\)/.test(src));
+});
+
 Promise.all(pending).then(() => { console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0); });
