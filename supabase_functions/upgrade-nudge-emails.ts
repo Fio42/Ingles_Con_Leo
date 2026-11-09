@@ -1700,7 +1700,7 @@ const EMAIL_CONTENT: Record<EmailKey, EmailContent> = {
       <li>Clases interactivas y preparación para TOEFL, IELTS y más</li>
     </ul>
     <div style="${BOX}">
-      <strong>$2 USD al mes</strong> (en México, $37 MXN), o <strong>$20 USD al año</strong>,
+      <strong>$2 USD al mes</strong>, o <strong>$20 USD al año</strong>,
       que son 2 meses gratis. Cancelas cuando quieras, sin llamadas ni letras chiquitas.
     </div>`,
     ctaText: 'Conocer Leo AI y la membresía',
