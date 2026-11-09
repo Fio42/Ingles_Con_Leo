@@ -4304,6 +4304,13 @@ function freeMemoryWeakSpots(){
       g.ids.push(id);
       groups.set(tid, g);
     });
+    articleQuizFailedIds().forEach(id => {
+      const tid = getArticleFound(id).tema;
+      if(!tid || !TEMA_BY_ID[tid]) return;
+      const g = groups.get(tid) || { temaId: tid, kind: 'grammar', ids: [], rank: order++ };
+      if(g.ids.indexOf(id) === -1) g.ids.push(id);
+      groups.set(tid, g);
+    });
     return Array.from(groups.values()).sort((a, b) => (b.ids.length - a.ids.length) || (a.rank - b.rank)).slice(0, 3);
   }catch(e){ return []; }
 }
@@ -5426,6 +5433,109 @@ function getMistakesItemIndex(){
   return index;
 }
 
+
+/* ------------------------------------------------------------
+   FASE 3: Reading y quizzes de artículos entran al MISMO seguimiento (mistake_stats + diagnóstico).
+   - Reading: ids estables ya existentes (READING_BANK). Sin tema de gramática a propósito: un fallo de
+     comprensión se cuenta como habilidad "lectura", nunca como regla de gramática no dominada.
+   - Quiz de artículo: id estable 'aq:<artículo>:<quiz>:<n>' (n = posición de la pregunta). Solo las preguntas
+     que ARTICLE_QUIZ_CATALOG (temas.js, generado) relaciona con UN tema entran; las de comprensión no.
+   - No cuentan para el límite diario de 6 ejercicios (ese contador es del servidor y solo suma práctica):
+     un quiz ni lo gasta ni lo regala. Invitados: se pueden hacer, no se guarda nada.
+   ------------------------------------------------------------ */
+let _readingFoundMap;
+function getReadingFound(id){
+  try{
+    if(!_readingFoundMap){
+      _readingFoundMap = new Map();
+      if(typeof READING_BANK !== 'undefined') LEVELS.forEach(level=> (READING_BANK[level] || []).forEach(variant=> variant.forEach(item=> _readingFoundMap.set(item.id, { kind:'reading', item, topic:null }))));
+    }
+    return _readingFoundMap.get(id) || null;
+  }catch(e){ return null; }
+}
+function getTrackedFound(id){ return getMistakesItemIndex().get(id) || getReadingFound(id); }
+
+const ARTICLE_QUIZ_KEY = 'leo_article_quiz_v1';
+function articleQuizSlug(file){ return String(file || '').replace(/^.*\//, '').replace(/^articulo-/, '').replace(/\.html.*$/, ''); }
+function articleQuizId(slug, root, n){ return 'aq:' + slug + ':' + root + ':' + n; }
+function getArticleFound(id){
+  try{
+    const m = /^aq:([^:]+):([^:]+):(\d+)$/.exec(String(id || ''));
+    if(!m || typeof ARTICLE_QUIZ_CATALOG === 'undefined') return null;
+    const a = ARTICLE_QUIZ_CATALOG[m[1]];
+    const count = a && a.quizzes && a.quizzes[m[2]];
+    if(!count || Number(m[3]) >= count) return null;
+    return { kind:'article', item:{ id:id }, topic:null, tema:a.tema, slug:m[1], root:m[2] };
+  }catch(e){ return null; }
+}
+function articleQuizEntries(){
+  const out = [];
+  if(typeof ARTICLE_QUIZ_CATALOG === 'undefined') return out;
+  Object.keys(ARTICLE_QUIZ_CATALOG).forEach(slug=>{
+    const a = ARTICLE_QUIZ_CATALOG[slug];
+    Object.keys(a.quizzes).forEach(root=>{ for(let n=0; n<a.quizzes[root]; n++){ const id = articleQuizId(slug, root, n); out.push([id, getArticleFound(id)]); } });
+  });
+  return out;
+}
+// Historial local por cuenta (LS_P lo separa por usuario). Invitado: nunca se lee ni se escribe.
+function articleQuizLoad(){
+  if(!LeoScope.isAccount()) return {};
+  try{ const v = JSON.parse(LS_P.getItem(ARTICLE_QUIZ_KEY)); return (v && v.r && typeof v.r === 'object') ? v.r : {}; }catch(e){ return {}; }
+}
+function articleQuizAttempts(){
+  const r = articleQuizLoad(), out = [];
+  Object.keys(r).forEach(id=>{
+    const f = getArticleFound(id);
+    if(f) out.push({ itemId:id, ok:r[id].ok === true, when:r[id].at || 0, skill:'gramatica', family:null, tema:f.tema });
+  });
+  return out;
+}
+function articleQuizFailedIds(){ const r = articleQuizLoad(); return Object.keys(r).filter(id => r[id].ok === false && getArticleFound(id)); }
+function articleQuizRecord(d){
+  try{
+    if(!d || typeof d.n !== 'number' || typeof d.ok !== 'boolean') return false;
+    const id = articleQuizId(articleQuizSlug(d.file), String(d.root || ''), d.n);
+    const found = getArticleFound(id);
+    if(!found) return false;                       // comprensión o artículo sin tema único: no entra
+    if(!LeoScope.isAccount()) return false;        // invitado: no se guarda nada
+    const r = articleQuizLoad();
+    r[id] = { ok:d.ok, at:Date.now() };
+    LS_P.setItem(ARTICLE_QUIZ_KEY, JSON.stringify({ v:1, r:r }));
+    _diagItemIndexCache = undefined;
+    if(window.__leoMemberVerified === true && typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
+      LeoBackend.applyMistakeResults([{ item_id:id, kind:'article', topic:null, is_correct:d.ok }]).then(()=>{ _mistakeStatsCache = undefined; }).catch(()=>{});
+    }
+    return true;
+  }catch(e){ return false; }
+}
+// Bloque "Para reforzar" al terminar un quiz con fallos: explicación, práctica y curso publicado (nada apagado ni inexistente).
+function articleQuizReinforceHtml(d){
+  try{
+    const slug = articleQuizSlug(d.file), a = typeof ARTICLE_QUIZ_CATALOG !== 'undefined' ? ARTICLE_QUIZ_CATALOG[slug] : null;
+    if(!a || !a.tema || !(d.failed || []).length) return '';
+    const c = contentForTema(a.tema);
+    if(!c || !c.practiceHref) return '';
+    const esc = x => String(x).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[ch]);
+    const links = [];
+    if(c.quick && c.quick.href) links.push('<a href="' + esc(c.quick.href) + '" target="_blank" rel="noopener">Ver ficha del glosario</a>');
+    links.push('<a href="' + esc(c.practiceHref) + '" target="_blank" rel="noopener">Practicar este tema</a>');
+    const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(a.tema) : null;
+    const memberOk = window.__leoMemberVerified === true;
+    if(course) links.push(memberOk ? '<a href="' + esc(course.href) + '" target="_blank" rel="noopener">Seguir el curso: ' + esc(course.title) + '</a>' : '<a href="academia-de-ingles.html" target="_blank" rel="noopener">Ver el temario del curso (completo con membresía)</a>');
+    return '<div class="aq-reinforce" data-aq-reinforce="1" style="margin-top:12px;padding:12px 14px;border:1px solid #cfe0f5;border-radius:10px;background:#f4f8fd"><strong>Para reforzar: ' + esc(c.label) + '</strong><p style="margin:6px 0 8px">Fallaste ' + d.failed.length + ' en este tema. Estos enlaces abren en otra pestaña: tu quiz sigue aquí.</p><div style="display:flex;flex-wrap:wrap;gap:10px">' + links.join('') + '</div></div>';
+  }catch(e){ return ''; }
+}
+document.addEventListener('leo-article-quiz', e=>{ articleQuizRecord(e.detail); });
+document.addEventListener('leo-article-quiz-done', e=>{
+  try{
+    const d = e.detail || {}, root = document.getElementById(d.root);
+    const box = root && (root.querySelector('.toeic-mini-result') || root.querySelector('[data-result]'));
+    if(!box || box.querySelector('[data-aq-reinforce]')) return;
+    const html = articleQuizReinforceHtml(d);
+    if(html) box.insertAdjacentHTML('beforeend', html);
+  }catch(err){}
+});
+
 // ids de ejercicios cuyo intento más reciente fue incorrecto, del
 // más reciente al más antiguo (para repasar primero lo más fresco).
 function computeMistakeIds(){
@@ -5572,6 +5682,8 @@ function diagTemaIdForFound(found){
   if(found.kind === 'writing') return writingTemaIdForItem(found.item && found.item.id);
   if(found.kind === 'vocab') return vocabTemaIdForItem(found.item && found.item.id);
   if(found.kind === 'listening') return listeningTemaIdForItem(found.item && found.item.id);
+  if(found.kind === 'article') return found.tema || null;
+  if(found.kind === 'reading') return null;   // comprensión: nunca una regla de gramática
   return diagTemaIdForTopic(found.topic);
 }
 // Habilidades (no gramática) que ya tienen temas propios en temas.js.
@@ -5743,7 +5855,7 @@ function updateMistakeStatsFromResults(results){
   const items = [];
   results.forEach(r=>{
     if(r.isCorrect !== true && r.isCorrect !== false) return; // sin calificar (ej. speaking): se ignora
-    const found = index.get(r.itemId);
+    const found = getTrackedFound(r.itemId);
     if(!found) return; // no indexado
     items.push({ item_id:r.itemId, kind:found.kind, topic:found.topic || null, is_correct:r.isCorrect });
   });
@@ -5797,7 +5909,7 @@ async function buildMistakeReviewPool({ mode, skillFilter } = {}){
     return { pool, topStat:null, usedFallback:true };
   }
 
-  let actives = computeActiveMistakesFromStats(statsMap);
+  let actives = computeActiveMistakesFromStats(statsMap).filter(s => s.kind !== 'reading' && s.kind !== 'article');
   if(skillFilter) actives = actives.filter(s => s.kind === skillFilter);
   actives = mode === 'rapido'
     ? actives.slice().sort((a,b) => mistakeScore(b) - mistakeScore(a))
@@ -5831,7 +5943,7 @@ async function renderMistakesBanner(sectionEl, textEl, chipsEl, noteEl){
     count = computeMistakeIds().length;
     countsByKind = computeMistakeCountsByKind();
   } else {
-    const actives = computeActiveMistakesFromStats(statsMap);
+    const actives = computeActiveMistakesFromStats(statsMap).filter(s => s.kind !== 'reading' && s.kind !== 'article');   // no se pueden repasar aquí
     count = actives.length;
     countsByKind = { grammar:0, vocab:0, listening:0, writing:0 };
     actives.forEach(s => { if(countsByKind.hasOwnProperty(s.kind)) countsByKind[s.kind]++; });
@@ -6734,7 +6846,7 @@ const DIAG = {
   MIN_TEMA: 4           // intentos mínimos para señalar un tema concreto dentro de una familia
 };
 const DIAG_SKILLS = ['gramatica','vocabulario','listening','lectura','writing'];
-const DIAG_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening', writing:'writing', reading:'lectura' };
+const DIAG_KIND_TO_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening', writing:'writing', reading:'lectura', article:'gramatica' };
 
 // El orden importa: gana la primera familia cuyo patrón coincide con el
 // tema (por ejemplo "Present Perfect vs Past Simple" es de Presente
@@ -6783,6 +6895,7 @@ function getDiagItemIndex(){
   LEVELS.forEach(level=>{
     READING_BANK[level].forEach(variant=> variant.forEach(item=> index.set(item.id, { kind:'reading', item, topic:null })));
   });
+  articleQuizEntries().forEach(e=>{ if(!index.has(e[0])) index.set(e[0], e[1]); });
   // Academia: las actividades de los cursos entran al MISMO diagnóstico (tema real del motor). Solo aquí, nunca en
   // getMistakesItemIndex: así ningún repaso intenta reproducir una actividad de academia en el reproductor de gramática.
   // Apagado (ACADEMIA_MOTOR.enabled=false) o sin academia-motor.js, todo queda exactamente como antes.
@@ -6812,6 +6925,7 @@ function collectDiagAttempts(p){
         tema: (r.lowEffort ? null : ((skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening' || skill === 'writing') ? diagTemaIdForFound(found) : null)) });
     });
   });
+  articleQuizAttempts().forEach(x=> out.push(x));
   out.sort((a,b)=> a.when - b.when);
   return out;
 }
@@ -8045,8 +8159,8 @@ function sessionReinforceRows(results, ins, covered){
     const groups = new Map();
     (results || []).forEach(r=>{
       if(!r || r.isCorrect !== false) return;
-      const found = index.get(r.itemId);
-      if(!found || (found.kind !== 'grammar' && found.kind !== 'vocab' && found.kind !== 'listening')) return;
+      const found = index.get(r.itemId) || getArticleFound(r.itemId);
+      if(!found || (found.kind !== 'grammar' && found.kind !== 'vocab' && found.kind !== 'listening' && found.kind !== 'article')) return;
       const tid = diagTemaIdForFound(found);
       if(!tid || !TEMA_BY_ID[tid]) return;
       const g = groups.get(tid) || { id: tid, ids: new Set(), micros: new Map(), first: found, lessonOk: false };

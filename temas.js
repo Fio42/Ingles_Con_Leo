@@ -430,6 +430,29 @@ const ACADEMIA_COURSE_BY_TEMA = {
   'do-does':        { course:'do-does', title:'DO / DOES: preguntas y negaciones' },
   'question-words': { course:'wh', title:'WH-QUESTIONS: What, Where, When, Who, Why, How' }
 };
+/* ARTICLE_QUIZ_CATALOG:BEGIN (generado por tools/gen-article-quiz-catalog.js, no editar a mano) */
+const ARTICLE_QUIZ_CATALOG = {
+  "adjetivos-posesivos-ingles": { tema:"posesivos", quizzes:{"grammarQuiz":8} },
+  "adverbios-de-frecuencia-ingles": { tema:"presente-simple", quizzes:{"grammarQuiz":8} },
+  "articulos-a-an-the": { tema:"a-an", quizzes:{"articlesQuiz":6} },
+  "como-hacer-preguntas-en-ingles": { tema:"question-words", quizzes:{"questionsQuiz":6} },
+  "comparativos-y-superlativos": { tema:"comparativos", quizzes:{"comparisonQuiz":4} },
+  "conectores-ingles": { tema:"secuenciadores", quizzes:{"grammarQuiz":8} },
+  "gerundio-e-infinitivo": { tema:"gerundios-infinitivos", quizzes:{"grammarQuiz":4} },
+  "have-y-has-en-ingles": { tema:"verbo-have", quizzes:{"grammarQuiz":6} },
+  "in-on-at": { tema:"in-on-at", quizzes:{"prepQuiz1":7,"prepQuiz2":6,"prepQuiz3":7} },
+  "pasado-continuo": { tema:"pasado-continuo", quizzes:{"grammarQuiz":4} },
+  "presente-continuo": { tema:"presente-continuo", quizzes:{"grammarQuiz":4} },
+  "pronombres-personales-ingles": { tema:"pronombres", quizzes:{"grammarQuiz":4} },
+  "question-tags-ingles": { tema:"question-tags", quizzes:{"grammarQuiz":10} },
+  "sustantivos-contables-incontables": { tema:"contables-incontables", quizzes:{"countableQuiz":6} },
+  "there-is-there-are": { tema:"there-is-are", quizzes:{"thereQuiz":4} },
+  "this-that-these-those": { tema:"this-that", quizzes:{"grammarQuiz":8} },
+  "verbos-irregulares": { tema:"verbos-irregulares", quizzes:{"grammarQuiz":10} },
+  "voz-pasiva-ingles": { tema:"voz-pasiva", quizzes:{"grammarQuiz":10} }
+};
+/* ARTICLE_QUIZ_CATALOG:END */
+
 function academiaCourseForTema(temaId){
   const c = ACADEMIA_COURSE_BY_TEMA[canonicalTemaId(temaId)] || ACADEMIA_COURSE_BY_TEMA[temaId];
   return c ? { course:c.course, title:c.title, demo:!!c.demo, member:true, href:'academia.html#/curso/' + c.course } : null;

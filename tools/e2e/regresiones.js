@@ -140,7 +140,10 @@ const git = f => cp.execSync('git show ' + BASE + ':' + f, { cwd: root, maxBuffe
       computeDiagnosis: [["// Microtemas ACTIVOS con refuerzo o comprobación pendiente: la recomendación nombra el concepto exacto. const microCovered = new Set(); try{ microDiagActions(getUserLevel()).slice(0, 2).forEach(a => { push(a, 'micro:' + a.micro); microCovered.add(a.tema); }); }catch(e){} if(diag.weak && !(diag.weak.focusTema && microCovered.has(diag.weak.focusTema.id))){", 'if(diag.weak){'],
         // Puente con la academia (2026-10): bloque ADITIVO protegido por ACADEMIA_MOTOR.enabled. Solo agrega a.course (enlace extra) a las acciones; no cambia el calculo. Las pruebas de academia-integracion verifican que apagado o sin datos el diagnostico es identico.
         ["// Academia: si el tema de la acción tiene curso, se ofrece repasar la lección exacta (la que más errores activos suma) // y volver aquí después. Es un enlace extra: la acción principal no cambia. if(typeof ACADEMIA_MOTOR !== 'undefined' && ACADEMIA_MOTOR.enabled){ let back = ''; try{ back = location.pathname.split('/').pop() + location.search; }catch(e){} diag.actions.forEach(a=>{ if(!a || !a.tema) return; const failed = mistakes.active.filter(m => m.tema === a.tema && String(m.itemId).indexOf('ac:') === 0).map(m => m.itemId); const link = ACADEMIA_MOTOR.linkForTema(a.tema, failed, back); if(link) a.course = link; }); } ", '']],
-      computeMistakeIds: [['if(isCheckItem(r.itemId)) return; // la comprobación nunca entra a "Mis errores" ', '']]
+      computeMistakeIds: [['if(isCheckItem(r.itemId)) return; // la comprobación nunca entra a "Mis errores" ', '']],
+      // Fase 3: Reading entra al seguimiento (getTrackedFound) y los quizzes de artículos suman sus intentos de la cuenta (aditivo).
+      updateMistakeStatsFromResults: [['getTrackedFound(r.itemId);', 'index.get(r.itemId);']],
+      collectDiagAttempts: [['articleQuizAttempts().forEach(x=> out.push(x)); out.sort(', 'out.sort(']]
     };
     const funcs = ['computeDiagnosis', 'diagMistakeSummary', 'collectDiagAttempts', 'computeActiveMistakesFromStats', 'mistakeScore', 'updateMistakeStatsFromResults', 'diagFamilyForTopic', 'computeMistakeIds'];
     let oldSrc = '', nowSrc = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
