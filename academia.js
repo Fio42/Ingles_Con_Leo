@@ -27,8 +27,23 @@
   /* Contador diario del navegador: el MISMO que usa la practica gratis (app.js, leoLocalDailyCount:<dia>).
      El servidor toma el mayor entre este y el de la cuenta, y nunca los suma. */
   function ymd(){ var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
-  function localDailyCount(){ try{ return parseInt(localStorage.getItem('leoLocalDailyCount:' + ymd()), 10) || 0; }catch(e){ return 0; } }
-  function setLocalDailyCount(n){ try{ var k = 'leoLocalDailyCount:' + ymd(); if(n > (parseInt(localStorage.getItem(k), 10) || 0)) localStorage.setItem(k, String(n)); }catch(e){} }
+  /* Con cuenta iniciada el conteo propio va en la clave de ESA cuenta (mismo formato que LeoScope: <clave>@@u:<id>), como en app.js;
+     el global del navegador solo lo escribe el invitado y cuenta como lo hecho antes de iniciar sesión. */
+  function acctKey(){
+    try{
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i) || '';
+        if(!/^sb-.*-auth-token$/.test(k)) continue;
+        var v = null; try{ v = JSON.parse(localStorage.getItem(k)); }catch(e){ return 'leoAcctDailyCount:' + ymd() + '@@u:?'; }
+        var u = v && (v.user || (v.currentSession && v.currentSession.user)), id = u && u.id;
+        return 'leoAcctDailyCount:' + ymd() + '@@' + ((typeof id === 'string' && /^[\w.-]{1,100}$/.test(id)) ? 'u:' + id : 'u:?');
+      }
+    }catch(e){}
+    return null;
+  }
+  function readN(k){ try{ return parseInt(localStorage.getItem(k), 10) || 0; }catch(e){ return 0; } }
+  function localDailyCount(){ var a = acctKey(); return Math.max(readN('leoLocalDailyCount:' + ymd()), a ? readN(a) : 0); }
+  function setLocalDailyCount(n){ try{ var k = acctKey() || ('leoLocalDailyCount:' + ymd()); if(n > readN(k)) localStorage.setItem(k, String(n)); }catch(e){} }
   function hashParts(){
     var h = (location.hash || '#/').replace(/^#/, ''), q = '', i = h.indexOf('?');
     if(i >= 0){ q = h.slice(i + 1); h = h.slice(0, i); }

@@ -16,7 +16,8 @@ function fakeEl(tag){
 
 function load(opts){
   opts = opts || {};
-  const store = {};
+  const store = opts.store || {};
+  for(const k of Object.keys(store)) if(/^sb-.*-auth-token$/.test(k)) delete store[k];
   if(opts.account) store['sb-test-auth-token'] = JSON.stringify({ user:{ id: opts.account } });
   const handlers = {}, calls = [], noop = ()=>{};
   const ctx = { console, Math, Date, JSON, Map, Set, Array, Object, String, Number, Promise, setTimeout, clearTimeout, URLSearchParams,
@@ -30,16 +31,24 @@ function load(opts){
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(read('data.js'), ctx);
   vm.runInContext(read('temas.js'), ctx);
-  vm.runInContext(read('app.js') + ';this.__t = { freeSessionCap, freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
+  vm.runInContext(read('app.js') + ';this.__t = { getFreeAcctExerciseCount, bumpFreeAcctExerciseCount, freeDailyLimitReached, freeSessionCap, freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
   ctx.__handlers = handlers; ctx.__calls = calls; ctx.__store = store;
   return ctx;
 }
 let passed = 0, failed = 0;
-function test(name, fn){ try{ fn(); passed++; console.log('  ok  ' + name); }catch(e){ failed++; console.log('  FAIL ' + name + '\n       ' + String(e.stack || e.message).split('\n').slice(0, 3).join('\n       ')); } }
+const pending = [];
+function test(name, fn){
+  const fail = e => { failed++; console.log('  FAIL ' + name + '\n       ' + String(e.stack || e.message).split('\n').slice(0, 3).join('\n       ')); };
+  try{
+    const r = fn();
+    if(r && typeof r.then === 'function') pending.push(r.then(() => { passed++; console.log('  ok  ' + name); }, fail));
+    else { passed++; console.log('  ok  ' + name); }
+  }catch(e){ fail(e); }
+}
 console.log('Oferta tras la primera sesión gratis');
 function free(uid, opts){
   opts = opts || {};
-  const c = load({ account:uid }), T = c.__t;
+  const c = load({ account:uid, store:opts.store }), T = c.__t;
   c.ACADEMIA_LIVE = opts.live !== false; c.__leoMemberVerified = false;
   T.setProfile({ id:uid, free_first_exercise_at: opts.firstAt || new Date().toISOString(), free_daily_count: opts.count || 0, free_daily_date: new Date().toISOString().slice(0, 10) });
   return c;
@@ -53,18 +62,19 @@ test('sin primera sesión terminada NO hay invitación (ni a invitados, miembros
   const c = mk('u1'); assert.strictEqual(c.__t.freeFirstOfferEligible(), false);
   const g = load(); assert.strictEqual(g.__t.freeFirstOfferEligible(), false);
 });
-test('tras la primera sesión: aparece UNA vez, con precio, 9 cursos, evaluaciones, insignias, ilimitada y dos decisiones', ()=>{
+test('tras la primera sesión: aparece UNA vez, con el texto pedido, precio y dos decisiones', ()=>{
   const c = mk('u2'); c.localStorage.setItem('leo_first_session_evt@@u:u2', '1');
   const h = c.__t.freeFirstOfferHtml([{ isCorrect:true }, { isCorrect:false }, { isCorrect:true }, { isCorrect:true }]);
-  assert(/\$2 USD al mes/.test(h) && !/MXN|37/.test(h));
-  assert(/9 cursos/.test(h) && /evaluaciones e insignias/.test(h) && /Práctica ilimitada/.test(h));
+  assert(/<h3>¡Terminaste tu primera práctica!<\/h3>/.test(h));
+  assert(h.includes('Ya sabes qué necesitas reforzar. Con la membresía puedes seguir avanzando sin el límite diario.'));
+  assert(/<strong>9 cursos<\/strong>/.test(h) && /Evaluaciones/.test(h) && /Insignias/.test(h) && /Práctica ilimitada/.test(h));
+  assert(/<strong>\$2 USD al mes\.<\/strong>/.test(h) && !/MXN|37/.test(h));
   assert(/Conocer la membresía/.test(h) && /Seguir aprendiendo gratis/.test(h) && /href="miembros\.html"/.test(h));
-  assert(/acertaste <strong>3 de 4<\/strong>/.test(h), 'datos reales de la sesión');
-  assert(!/<script|popup|modal/i.test(h));
+  assert(!/acertaste|costó|\d de \d|4\/6|<script|popup|modal/i.test(h), 'sin puntaje ni temas fallados (ya están en el resumen)');
   assert.strictEqual(c.__t.freeFirstOfferHtml([]), '', 'una sola vez por cuenta');
   assert.strictEqual(c.__events.filter(e => e[0] === 'first_session_offer_viewed').length, 1);
 });
-test('no inventa datos: sin resultados ni errores no muestra aciertos ni tema', ()=>{
+test('con resultados o sin ellos la tarjeta es la misma (no repite puntaje ni temas)', ()=>{
   const c = mk('u3'); c.localStorage.setItem('leo_first_session_evt@@u:u3', '1');
   const h = c.__t.freeFirstOfferHtml(null);
   assert(h && !/acertaste/.test(h) && !/Lo que más te costó/.test(h));
@@ -161,4 +171,54 @@ test('invitado en su resumen: sin cambios (ni oferta ni aviso de cuenta)', ()=>{
   assert(!/free-limit-note|data-first-offer-card/.test(h));
 });
 
-console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0);
+function bumpN(c, n){ for(let i = 0; i < n; i++) c.__t.bumpFreeAcctExerciseCount(); }
+test('AISLAMIENTO: dos cuentas gratis en el MISMO navegador tienen cupo propio (A con 6 no bloquea a B)', ()=>{
+  const store = {};
+  const a = free('acctA', { store }); bumpN(a, 6);
+  assert.strictEqual(a.__t.freeDailyLimitReached(), true);
+  const b = free('acctB', { store });
+  assert.strictEqual(b.__t.getFreeAcctExerciseCount(), 0);
+  assert.strictEqual(b.__t.freeDailyLimitReached(), false);
+  assert.strictEqual(b.__t.freeSessionCap(Array.from({ length:8 }, (_, i) => i)).length, 6);
+  bumpN(b, 2);
+  const a2 = free('acctA', { store, count:6 });
+  assert.strictEqual(a2.__t.getFreeAcctExerciseCount(), 6, 'A conserva lo suyo');
+  assert.strictEqual(a2.__t.freeDailyLimitReached(), true);
+  assert(!Object.keys(store).some(k => /^leoLocalDailyCount:/.test(k)), 'la cuenta ya no escribe el contador global del navegador');
+});
+test('INVITADO aparte: lo del invitado se lleva a la cuenta (3 + 3 = 6) y el invitado no ve lo de las cuentas', ()=>{
+  const store = {};
+  const g = load({ store }); g.__t.setTier('guest'); bumpGuest(g, 3);
+  const a = free('acctG', { store });
+  assert.strictEqual(a.__t.getFreeAcctExerciseCount(), 3);
+  bumpN(a, 3); assert.strictEqual(a.__t.freeDailyLimitReached(), true);
+  const g2 = load({ store }); g2.__t.setTier('guest');
+  assert.strictEqual(g2.__t.freeDailyLimitReached(), true, 'el invitado sigue en su tope de 3');
+  const g3 = load({ store: {} }); g3.__t.setTier('guest'); assert.strictEqual(g3.__t.freeDailyLimitReached(), false);
+});
+function bumpGuest(c, n){ const k = 'leoLocalDailyCount:' + new Date().toISOString().slice(0, 10); c.localStorage.setItem(k, String(n)); }
+test('DOS DISPOSITIVOS: el servidor suma sobre su conteo y esta página adopta el valor real (límite global de la cuenta)', async ()=>{
+  // dispositivo B con perfil viejo (0) mientras el servidor ya tiene 4 (de A)
+  const b = free('acctD', { count:0 });
+  const sum = (n) => n;
+  let serverCount = 4;
+  b.LeoBackend.bumpFreeDailyCount = async (count) => { const out = Math.max(count, serverCount + 1); serverCount = out; return out; };
+  b.__t.bumpFreeAcctExerciseCount();
+  await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(b.__t.getFreeAcctExerciseCount(), 5, 'adopta el conteo del servidor, no 1');
+  b.__t.bumpFreeAcctExerciseCount(); await new Promise(r => setTimeout(r, 5));
+  assert.strictEqual(b.__t.freeDailyLimitReached(), true);
+  assert.strictEqual(b.__t.freeSessionCap([1, 2, 3, 4]).length, 0, 'ya no quedan ejercicios hoy');
+});
+test('ENCABEZADO: freeSessionCap publica el número real de ejercicios (6, 3, 1, 0 y otros)', ()=>{
+  [[0, 8, 6], [3, 8, 3], [5, 8, 1], [6, 8, 0], [0, 3, 3], [4, 3, 2]].forEach(([used, size, want]) => {
+    const c = mk('hd' + used + size, { count:used }); const got = [];
+    c.document.addEventListener('leo:free-session-total', e => got.push(e.detail));
+    const n = c.__t.freeSessionCap(Array.from({ length:size }, (_, i) => i)).length;
+    assert.strictEqual(n, want); assert.strictEqual(c.__leoFreeSessionTotal, want);
+  });
+  const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert(/SKILL_DESC_FN[\s\S]*n \+ ' preguntas cortas'/.test(src) && /1 pregunta corta/.test(src));
+});
+
+Promise.all(pending).then(() => { console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0); });

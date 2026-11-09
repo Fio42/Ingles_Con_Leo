@@ -4089,8 +4089,12 @@ function bumpLocalDailyCount(){
    se suman, siempre se toma el mayor. Si Supabase no responde o esas
    columnas todavía no existen, sigue funcionando solo con
    localStorage (se degrada, no se rompe). */
+function acctDailyKey(){ return `leoAcctDailyCount:${todayStr()}`; }          // contador de ESTA cuenta (LS_P: aislado por usuario)
+function getAcctLocalCount(){ try{ return parseInt(LS_P.getItem(acctDailyKey()), 10) || 0; }catch(e){ return 0; } }
+function setAcctLocalCount(n){ try{ if(n > getAcctLocalCount()) LS_P.setItem(acctDailyKey(), String(n)); }catch(e){} }
 function getFreeAcctExerciseCount(){
-  const local = getLocalDailyCount();
+  // Propio de la cuenta + lo que el navegador ya llevaba como invitado ese día (clave global: solo la escribe el invitado).
+  const local = Math.max(getAcctLocalCount(), getLocalDailyCount());
   const remoteToday = (_leoAccessProfile && _leoAccessProfile.free_daily_date === todayStr() && typeof _leoAccessProfile.free_daily_count === 'number')
     ? _leoAccessProfile.free_daily_count : 0;
   return Math.max(local, remoteToday);
@@ -4099,7 +4103,7 @@ function bumpFreeAcctExerciseCount(){
   const userId = _leoAccessProfile && _leoAccessProfile.id;
   if(!userId) return;
   const next = getFreeAcctExerciseCount() + 1;
-  try{ localStorage.setItem(localDailyCountKey(), String(next)); }catch(e){}
+  setAcctLocalCount(next);
   if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured() && LeoBackend.bumpFreeDailyCount){
     // Estas dos banderas solo se mandan la primera vez que aplican
     // (se guardan en Supabase, así que después de la primera vez
@@ -4112,7 +4116,15 @@ function bumpFreeAcctExerciseCount(){
     // que se manda algunas horas después, no al instante).
     const isFirstEver = !_leoAccessProfile.free_first_exercise_at;
     const justReachedLimit = next === FREE_USER_DAILY_LIMIT;
-    LeoBackend.bumpFreeDailyCount(next, todayStr(), { isFirstEver, justReachedLimit }).catch(function(){});
+    // El servidor suma sobre SU conteo (otro dispositivo de la misma cuenta pudo practicar): si trae más, adoptamos ese valor.
+    LeoBackend.bumpFreeDailyCount(next, todayStr(), { isFirstEver, justReachedLimit }).then(function(n){
+      try{
+        if(typeof n === 'number' && n > next && _leoAccessProfile){
+          setAcctLocalCount(n);
+          _leoAccessProfile.free_daily_count = n; _leoAccessProfile.free_daily_date = todayStr();
+        }
+      }catch(e){}
+    }).catch(function(){});
     if(isFirstEver){
       _leoAccessProfile.free_first_exercise_at = new Date().toISOString();
       trackLeoEvent('first_practice_started', { tier: 'free' });   // una vez por cuenta: lo marca el propio servidor (free_first_exercise_at)
@@ -4211,13 +4223,16 @@ function freeSessionAnswer(skill, level, topics, result){
    resumen normal. Es solo el tamaño de la sesión: el contador y el límite siguen siendo los del servidor. Invitados y miembros no cambian.
    Con 0 disponibles queda vacía y el primer renderItem muestra el muro de siempre. */
 function freeSessionCap(pool){
+  let out = pool;
   try{
     if(_leoAccessTier === 'free' && Array.isArray(pool)){
       const left = Math.max(0, FREE_USER_DAILY_LIMIT - getFreeAcctExerciseCount());
-      if(pool.length > left) return pool.slice(0, left);
+      if(pool.length > left) out = pool.slice(0, left);
     }
   }catch(e){}
-  return pool;
+  // El encabezado de la práctica muestra el número REAL de ejercicios de esta sesión.
+  try{ if(Array.isArray(out)){ window.__leoFreeSessionTotal = out.length; document.dispatchEvent(new CustomEvent('leo:free-session-total', { detail: out.length })); } }catch(e){}
+  return out;
 }
 // ¿Se acaba de cerrar la PRIMERA sesión de esta cuenta? El marcador del servidor (free_first_exercise_at, se pone al primer ejercicio)
 // cae dentro de esa sesión; en una cuenta que ya practicaba (otro dispositivo, otro navegador) es anterior y NO cuenta: así
@@ -9169,17 +9184,12 @@ function freeFirstOfferHtml(results, opts){
     if(!freeFirstOfferEligible(!!(opts && opts.atLimit))) return '';
     LS_P.setItem(FIRST_OFFER_KEY, String(Date.now()));            // se marca al mostrarse: una sola vez
     trackLeoEvent('first_session_offer_viewed');
-    const graded = Array.isArray(results) ? results.filter(r => r && typeof r.isCorrect === 'boolean') : [];
-    let progress = '';
-    if(graded.length >= 3) progress += '<p class="first-offer-progress">En tu primera sesión acertaste <strong>' + graded.filter(r => r.isCorrect).length + ' de ' + graded.length + '</strong>.</p>';
-    const w = freeMemoryWeakSpots()[0], t = w && TEMA_BY_ID[w.temaId];
-    if(t) progress += '<p class="first-offer-progress">Lo que más te costó: <strong>' + commentEscapeHtml(t.label) + '</strong> (' + w.ids.length + (w.ids.length === 1 ? ' error' : ' errores') + ').</p>';
     const nCourses = (window.ACADEMIA_LIVE && typeof ACADEMIA_COURSE_BY_TEMA !== 'undefined') ? new Set(Object.keys(ACADEMIA_COURSE_BY_TEMA).map(k => ACADEMIA_COURSE_BY_TEMA[k].course)).size : 0;
-    return '<div class="first-offer" data-first-offer-card><h3>Terminaste tu primera sesión</h3>' + progress
-      + '<p class="first-offer-lead">Con la membresía sigues sin límite y con un sistema que recuerda lo que te cuesta:</p><ul class="first-offer-list">'
-      + (nCourses ? '<li><strong>' + nCourses + ' cursos</strong> de la Academia, con evaluaciones e insignias</li>' : '')
-      + '<li><strong>Práctica ilimitada</strong>, sin el tope diario</li><li>Repaso automático de tus errores y qué practicar después</li></ul>'
-      + '<p class="first-offer-price"><strong>$2 USD al mes</strong>. Cancela cuando quieras.</p>'
+    return '<div class="first-offer" data-first-offer-card><h3>¡Terminaste tu primera práctica!</h3>'
+      + '<p class="first-offer-lead">Ya sabes qué necesitas reforzar. Con la membresía puedes seguir avanzando sin el límite diario.</p><ul class="first-offer-list">'
+      + (nCourses ? '<li><strong>' + nCourses + ' cursos</strong></li>' : '')
+      + '<li>Evaluaciones</li><li>Insignias</li><li>Práctica ilimitada</li></ul>'
+      + '<p class="first-offer-price"><strong>$2 USD al mes.</strong></p>'
       + '<div class="first-offer-actions"><a class="btn btn-primary" href="miembros.html" data-first-offer="know">Conocer la membresía</a>'
       + '<button type="button" class="btn btn-ghost" data-first-offer="free">Seguir aprendiendo gratis</button></div></div>';
   }catch(e){ return ''; }
@@ -9734,6 +9744,16 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     writing: '4 frases guiadas con revisión honesta.',
     mixto: 'Un poco de todo: gramática, vocabulario, listening, speaking y writing en una sola sesión.'
   };
+  // Descripción con el número real de ejercicios de la sesión (n); sin dato todavía, el texto de siempre.
+  const SKILL_DESC_FN = {
+    gramatica: n => (n === 1 ? '1 pregunta corta' : n + ' preguntas cortas') + ' con explicación y ejemplos.',
+    vocabulario: n => (n === 1 ? '1 palabra útil' : n + ' palabras útiles') + ' en contexto, no solo la traducción.',
+    listening: n => (n === 1 ? '1 audio real' : n + ' audios reales') + ': escucha y responde.',
+    speaking: n => (n === 1 ? '1 frase' : n + ' frases') + ': escucha, grábate y compara.',
+    writing: n => (n === 1 ? '1 frase guiada' : n + ' frases guiadas') + ' con revisión honesta.',
+    mixto: n => 'Un poco de todo en ' + (n === 1 ? '1 ejercicio' : n + ' ejercicios') + ': gramática, vocabulario, listening, speaking y writing.'
+  };
+
   const RUNNERS = {
     gramatica: runFreeGrammarSession,
     vocabulario: runFreeVocabSession,
@@ -9786,9 +9806,16 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     focusTabs();
   }
 
-  function renderHead(){
-    headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${SKILL_DESC[currentSkill]}</p>`;
+  function descFor(n){
+    const f = SKILL_DESC_FN[currentSkill];
+    return (typeof n === 'number' && n > 0 && f) ? f(n) : SKILL_DESC[currentSkill];
   }
+  function renderHead(){
+    headEl.innerHTML = `<h3>${SKILL_LABELS[currentSkill]}</h3><p>${descFor(null)}</p>`;
+  }
+  document.addEventListener('leo:free-session-total', e => {
+    try{ const p = headEl.querySelector('p'); if(p) p.textContent = descFor(e.detail); }catch(err){}
+  });
   function renderTabs(){
     tabsEl.innerHTML = SKILL_ORDER.map(sk => `
       <button type="button" class="skill-tab-btn" data-skill="${sk}" role="tab" aria-selected="${sk===currentSkill}" aria-pressed="${sk===currentSkill}">${SKILL_LABELS[sk]}</button>`).join('');

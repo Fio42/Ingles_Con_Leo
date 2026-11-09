@@ -33,8 +33,8 @@ window.supabase = { createClient: function(){
     from: builder, rpc: async function(n){ await window.__cloud(JSON.stringify({ table:'rpc:' + n, op:'rpc' })); return { data:null, error:null }; }, functions:{ invoke: async function(){ return { data:null, error:null }; } } };
 } };`;
 const today = () => new Date().toLocaleDateString('en-CA');
-async function newPage(browser, user, profile, storage){
-  const ctx = await browser.newContext({ viewport:{ width:375, height:740 }, isMobile:true, hasTouch:true, storageState: storage || undefined });
+async function newPage(browser, user, profile, storage, width){
+  const ctx = await browser.newContext({ viewport:{ width:width || 375, height:740 }, isMobile:true, hasTouch:true, storageState: storage || undefined });
   const page = await ctx.newPage(); const cloud = [];
   await page.exposeFunction('__cloud', s => { cloud.push(JSON.parse(s)); return {}; });
   await page.addInitScript(a => { window.__FAKE = { user:a.u, profile:a.p }; 
@@ -73,11 +73,14 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
     await page.goto(base()); await ready(page);
     // las variantes gratis son de 3 u 8 ejercicios al azar: se recarga hasta tener una de 8 (con el cupo, 6)
     for(let t = 0; t < 15; t++){ const m = /(\d+)\s*(?:\/|de)\s*(\d+)/.exec(await page.locator('#skillBody').innerText()); if(m && Number(m[2]) >= 6) break; await page.reload(); await ready(page); }
+    assert.ok(/6 preguntas cortas/.test(await page.locator('#skillHead, .skill-head').first().innerText().catch(() => '') || await page.locator('body').innerText()), 'encabezado con el número real (6)');
+    assert.ok(!/8 preguntas cortas/.test(await page.locator('body').innerText()), 'ya no dice 8');
     const r = await runSession(page);
     assert.strictEqual(r.answered, 6, 'respondió exactamente 6'); assert.ok(r.summary && !r.wall, 'termina en el resumen, no en el muro');
     assert.ok(/Completaste tu práctica gratis de hoy: 6 de 6/.test(r.txt), 'reconoce la práctica del día');
     assert.strictEqual((r.txt.match(/\$2 USD/g) || []).length, 1, 'un solo mensaje comercial');
-    assert.ok(/Conocer la membresía/.test(r.txt) && /Seguir aprendiendo gratis/.test(r.txt) && /9 cursos/.test(r.txt) && /Práctica ilimitada/.test(r.txt));
+    assert.ok(/Conocer la membresía/.test(r.txt) && /Seguir aprendiendo gratis/.test(r.txt) && /9 cursos/.test(r.txt) && /Práctica ilimitada/.test(r.txt) && /¡Terminaste tu primera práctica!/.test(r.txt) && /\$2 USD al mes\./.test(r.txt));
+    assert.ok(!/acertaste|Lo que más te costó/.test(await page.locator('[data-first-offer-card]').innerText()), 'la tarjeta no repite puntaje ni temas');
     assert.ok(!/Seguir practicando sin límite/.test(r.txt), 'sin el muro');
     await noOverflow(page);
     assert.ok(!(await page.locator('.practice-members-cta').isVisible()), 'el bloque fijo de membresía de la página se oculta mientras está la tarjeta (un solo mensaje)');
@@ -101,12 +104,13 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
     // cambio de cuenta en el mismo navegador: otra cuenta, su propio cupo y sin la bandera de la anterior
     await page.evaluate(() => { localStorage.setItem('sb-test-auth-token', JSON.stringify({ user:{ id:'u9' } })); });
     await ctx.close(); }
-  { const { ctx, page } = await newPage(browser, 'u9', { free_daily_count:3, free_daily_date:today() }, storageA);
+  { const { ctx, page } = await newPage(browser, 'u9', { free_daily_count:0, free_daily_date:today() }, storageA);
     await page.goto(base()); await ready(page);
     assert.strictEqual(await page.locator('[data-first-offer-card]').count(), 0, 'la otra cuenta no hereda la oferta vista');
     await page.waitForFunction(() => document.querySelector('#skillBody .session-card') || document.querySelector('#skillBody .upgrade-block'), null, { timeout: 8000 });
-    assert.ok(/Completaste tus 6 ejercicios gratis de hoy/.test(await page.locator('#skillBody').innerText()), 'el contador del día es del NAVEGADOR (regla existente): ya se usaron 6 aquí, muro de siempre');
-    pass('cambio de cuenta en el mismo navegador: no hereda la oferta y respeta el contador diario del navegador (muro con 0 disponibles)');
+    const t9 = await page.locator('#skillBody').innerText();
+    assert.ok(!/Completaste tus 6 ejercicios gratis de hoy/.test(t9) && await page.locator('#skillBody .session-card').count() === 1, 'el cupo es de CADA cuenta: lo que usó u1 en este navegador no bloquea a u9');
+    pass('dos cuentas gratis en el mismo navegador: u9 tiene su propio cupo (u1 ya usó 6) y no hereda la oferta');
     await ctx.close(); }
   { const { ctx, page } = await newPage(browser, 'u9', { free_daily_count:3, free_daily_date:today() });
     await page.goto(base()); await ready(page);
@@ -117,6 +121,7 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
   // B) 1 disponible
   { const { ctx, page, errors } = await newPage(browser, 'u2', { free_daily_count:5, free_daily_date:today(), free_first_exercise_at:'2026-10-01T00:00:00Z' });
     await page.goto(base()); await ready(page);
+    assert.ok(/1 pregunta corta/.test(await page.locator('body').innerText()), 'encabezado con 1');
     const r = await runSession(page); assert.strictEqual(r.answered, 1); assert.ok(r.summary && !r.wall);
     assert.ok(/Completaste tu práctica gratis de hoy/.test(r.txt));
     assert.ok(!/data-first-offer-card/.test(await page.content()) , 'cuenta que ya practicaba: sin tarjeta de primera sesión');
@@ -148,6 +153,27 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
     assert.deepStrictEqual(errors, []);
     pass('D: sesión incompleta -> sin evento de primera sesión ni oferta');
     await ctx.close(); }
+
+  // E) 320, 360 y 375 px: encabezado dinámico, tarjeta sin desbordar y botones tocables
+  for(const w of [320, 360, 375]){
+    const { ctx, page, errors } = await newPage(browser, 'w' + w, { free_daily_count:3, free_daily_date:today() }, undefined, w);
+    await page.goto(base()); await ready(page);
+    assert.ok(/3 preguntas cortas/.test(await page.locator('body').innerText()), w + ': encabezado con 3');
+    const r = await runSession(page); assert.strictEqual(r.answered, 3);
+    assert.ok(/¡Terminaste tu primera práctica!/.test(r.txt) || /Completaste tu práctica gratis de hoy/.test(r.txt));
+    await noOverflow(page);
+    const card = page.locator('[data-first-offer-card]');
+    if(await card.count()){ const box = await card.boundingBox(); assert.ok(box.x >= 0 && box.x + box.width <= w + 1, w + ': tarjeta cabe');
+      for(const sel of ['[data-first-offer="know"]', '[data-first-offer="free"]']){ const bb = await page.locator(sel).boundingBox(); assert.ok(bb.height >= 44 && bb.x >= 0 && bb.x + bb.width <= w + 1, w + ' ' + sel); } }
+    if(process.env.SHOTDIR) await page.screenshot({ path: process.env.SHOTDIR + '/w' + w + '.png', fullPage: true });
+    assert.deepStrictEqual(errors, []);
+    pass('E: ' + w + ' px -> sesión de 3, encabezado "3 preguntas cortas", sin desbordar'); await ctx.close();
+  }
+  // F) invitado: encabezado y tope de siempre (3), sin tarjeta de cuenta
+  { const { ctx, page } = await newPage(browser, null, null);
+    await page.goto(base()); await ready(page);
+    assert.strictEqual(await page.locator('[data-first-offer-card]').count(), 0);
+    await noOverflow(page); pass('F: invitado sin tarjeta de cuenta'); await ctx.close(); }
 
   await browser.close(); server.close(); console.log(ok + ' ok');
 })().catch(e => { console.log('FALLA ' + (e && e.stack || e)); process.exit(1); });

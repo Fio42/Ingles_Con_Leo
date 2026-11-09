@@ -352,13 +352,20 @@ const LeoBackend = (function(){
      last_seen_at. */
   async function bumpFreeDailyCount(count, dateStr, flags){
     const sb = getClient();
-    if(!sb) return;
+    if(!sb) return count;
     const session = await getSession();
-    if(!session) return;
+    if(!session) return count;
     // Esta misma escritura ya ocurre con cada ejercicio gratis real. El
     // timestamp permite a los correos distinguir con precisión si volvió a
     // practicar después de llegar al límite, sin depender de la fecha local
     // del navegador ni hacer una llamada adicional.
+    // Otro dispositivo de la misma cuenta pudo practicar hoy: el servidor suma sobre SU conteo (nunca lo baja) y devolvemos el valor
+    // real para que esta página también pare en el límite global. Sin cambios de esquema: lee y escribe las mismas columnas de siempre.
+    try{
+      const cur = await sb.from('profiles').select('free_daily_count, free_daily_date').eq('id', session.user.id).maybeSingle();
+      const row = cur && cur.data;
+      if(row && row.free_daily_date === dateStr && typeof row.free_daily_count === 'number') count = Math.max(count, row.free_daily_count + 1);
+    }catch(e){}
     const payload = {
       free_daily_count: count,
       free_daily_date: dateStr,
@@ -373,6 +380,7 @@ const LeoBackend = (function(){
     try{
       await sb.from('profiles').update(payload).eq('id', session.user.id);
     }catch(e){}
+    return count;
   }
 
   /* Trae las sesiones de práctica guardadas en la nube y las
