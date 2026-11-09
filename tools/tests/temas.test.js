@@ -24,6 +24,8 @@ function makeCtx(withTemas){
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), ctx);
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
+  // Fixture: 'to-too-two' hace de "tema sin clase ni glosario" (hoy ya tiene ficha en el sitio; aquí se quita para probar que no se inventa ningún enlace).
+  if(withTemas) vm.runInContext("TEMA_BY_ID['to-too-two'].glossary = null;", ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, contentForTema, computePlanSelection, buildPlanPool, todayStartHref,
   diagFamilyForTopic, DIAG_FAMILY_BY_ID, PROGRESS_KEY, G:GRAMMAR_BANK, V:VOCAB_BANK, hasLocalAccountHint, todayGrammarTema: typeof todayGrammarTema === 'undefined' ? null : todayGrammarTema, leoAiTemaPool, GTS: typeof GRAMMAR_TOPICS_SIN_TEMA === 'undefined' ? [] : GRAMMAR_TOPICS_SIN_TEMA, LEX: typeof LISTENING_EXCLUIDOS === 'undefined' ? [] : LISTENING_EXCLUIDOS, temaForTopic: typeof temaForTopic === 'undefined' ? null : temaForTopic, W:WRITING_BANK, WTB: typeof WRITING_TEMA_BY_ITEM === 'undefined' ? {} : WRITING_TEMA_BY_ITEM, temaForWritingItem: typeof temaForWritingItem === 'undefined' ? null : temaForWritingItem, L:LISTENING_BANK, temaForListeningItem: typeof temaForListeningItem === 'undefined' ? null : temaForListeningItem, temaHasItemsAt, VGS: typeof VOCAB_GRUPOS_SIN_TEMA === 'undefined' ? [] : VOCAB_GRUPOS_SIN_TEMA, diagSkillsHtml, vocabGroupOf: typeof vocabGroupOf === 'undefined' ? null : vocabGroupOf, articleForTopic, diagUnitRowHtml, computeMistakePatterns, mistakePatternsAiCtx, progressAiCtx, sessionInsightAiCtx,
@@ -411,6 +413,7 @@ test('cada clase del registro carga temas.js, backend.js y app.js (si no, el bot
 });
 test('glosario: cada entrada que es el glosario de un tema ofrece practicarlo (oculto para visitantes), sin duplicar la clase', ()=>{
   const byGl = {}; TV.forEach(t => { if(t.glossary && !byGl[t.glossary]) byGl[t.glossary] = t; });
+  byGl['to-vs-too-vs-two'] = TV.find(t => t.id === 'to-too-two');   // el fixture le quita el glosario en memoria; en el sitio sí lo tiene
   let withBlock = 0;
   fs.readdirSync(path.join(root, 'glosario')).forEach(slug=>{
     const f = path.join(root, 'glosario', slug, 'index.html');

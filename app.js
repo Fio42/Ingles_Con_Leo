@@ -7876,11 +7876,12 @@ function renderArticleTema(file, params, body){
   const fromRec = here.find(t => t.id === asked) || null;
   const tema = fromRec || pickArticleTema(here);
   const viaRec = !!fromRec && params.get('via') === 'rec';
+  const course = (typeof academiaCourseForTema === 'function') ? academiaCourseForTema(tema.id) : null;
   const block = document.createElement('div');
   block.className = 'tema-cta';
   block.innerHTML = `<div class="tema-cta-title">¿Listo para practicarlo?</div>
     <p>Ejercicios de <b>${tema.label}</b> en tu Plan de estudio.</p>
-    <div class="tema-cta-actions"><a class="btn btn-primary" href="${temaPracticeHref(tema)}">Practicar este tema →</a>${viaRec ? '<a class="tema-cta-back" href="plan-estudio.html">Volver a mi Plan</a>' : ''}</div>`;
+    <div class="tema-cta-actions"><a class="btn btn-primary" href="${temaPracticeHref(tema)}">Practicar este tema →</a>${viaRec ? '<a class="tema-cta-back" href="plan-estudio.html">Volver a mi Plan</a>' : ''}</div>${course ? `<p class="tema-cta-course" style="margin:12px 0 0;font-size:14px;">Curso relacionado: <a href="${course.href}">${course.title}</a></p>` : ''}`;
   const free = body.querySelector('.article-cta');   // la invitación a "practicar gratis" no aplica a miembros
   if(free){ free.parentNode.insertBefore(block, free); free.hidden = true; free.style.display = 'none'; }
   else body.appendChild(block);

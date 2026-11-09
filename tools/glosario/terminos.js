@@ -833,5 +833,38 @@ module.exports = [
       [`She refused on principle.`,`Ella se negó por principio.`]],
   err:[`The principle called my parents.`,`The principal called my parents.`,`Si hablas de la persona que dirige una escuela, usa _principal_. _Principle_ nombra una regla o valor.`],
   truco:`Recuerda: _the principal is your pal_. La persona de la escuela puede ser tu amiga; _principle_ es el principio o regla.`,
-  prac:'vocabulary' }
+  prac:'vocabulary' },
+
+
+
+{ slug:'who-vs-whom', t:'who vs whom', tipo:'diferencia',
+  resp:`Who es el sujeto (quien hace la acción). Whom es el objeto (quien la recibe) y es más formal.`,
+  pron:'JU / JUM',
+  uso:[`Prueba rápida: cambia la palabra por _he_ o _him_. Si cabe _he_, usa _who_. Si cabe _him_, usa _whom_. _Who called me?_ (he called) · _Whom did you call?_ (you called him).`,
+       `En conversación casi todo el mundo dice _who_ también para el objeto. _Whom_ se ve sobre todo en escritos formales y después de preposición: _to whom_, _with whom_.`],
+  ej:[[`Who wrote this email?`,`¿Quién escribió este correo?`],[`Whom did you invite?`,`¿A quién invitaste?`],[`The manager with whom I spoke was kind.`,`El gerente con quien hablé fue amable.`]],
+  err:[`Whom is calling you?`,`Who is calling you?`,`Quien hace la acción es el sujeto: who.`],
+  truco:`¿Cabe he? Who. ¿Cabe him? Whom.`,
+  prac:'grammar', rel:[] },
+
+
+{ slug:'by-vs-until', t:'by vs until', tipo:'diferencia',
+  resp:`By = antes de un momento límite (a más tardar). Until = hasta ese momento, durante todo el tiempo.`,
+  pron:'BAI / an-TIL',
+  uso:[`_By_ marca una fecha límite: _Send it by Friday_ (el viernes ya debe estar enviado). _Until_ marca hasta cuándo dura algo: _I will be here until Friday_ (estaré todos los días hasta el viernes).`,
+       `Pregunta útil: ¿es una entrega o un plazo? By. ¿Es algo que continúa durante un periodo? Until.`],
+  ej:[[`Please finish the report by 5 p.m.`,`Por favor termina el informe antes de las 5 p. m.`],[`I will work until 5 p.m.`,`Trabajaré hasta las 5 p. m.`],[`The store is open until 9.`,`La tienda está abierta hasta las 9.`]],
+  err:[`I will stay here by 6.`,`I will stay here until 6.`,`Si te quedas durante todo ese tiempo, es until.`],
+  truco:`By = a más tardar (una entrega). Until = hasta que termine (una duración).`,
+  prac:'grammar', rel:['since-vs-for'] },
+
+{ slug:'past-perfect', t:'past perfect (had + participio)', tipo:'gramatica',
+  resp:`Past perfect (had + participio) habla de algo que ya había pasado antes de otro momento del pasado.`,
+  pron:'pást PÉR-fekt',
+  uso:[`Se forma con _had_ + participio: _I had finished_, _she had left_. Sirve para ordenar dos hechos del pasado: el que pasó primero va en past perfect y el segundo en pasado simple.`,
+       `_When I arrived, the meeting had started._ Primero empezó la reunión; después llegué yo. Si no importa el orden, el pasado simple basta.`],
+  ej:[[`She had already left when I called.`,`Ella ya se había ido cuando llamé.`],[`I had never seen snow before that trip.`,`Nunca había visto nieve antes de ese viaje.`],[`They had finished dinner by 8.`,`Ya habían terminado de cenar a las 8.`]],
+  err:[`When I arrived, the meeting started.`,`When I arrived, the meeting had started.`,`Si la reunión empezó antes de que llegaras, usa had started.`],
+  truco:`Dos hechos pasados: el primero lleva had + participio, el segundo va en pasado simple.`,
+  prac:'grammar', rel:['already','yet'] },
 ].concat(require('./confusiones-200.js'));

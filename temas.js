@@ -71,7 +71,7 @@ const TEMAS = [
   { id:'then-vs-than', label:'Then vs than', family:'confusiones', article:null, glossary:'then-vs-than', topics:[`Then vs Than`] },
   { id:'your-vs-youre', label:`Your vs you're`, family:'confusiones', article:null, glossary:'your-vs-youre', topics:[`"Your" vs "You're"`] },
   { id:'there-their-theyre', label:`There, their y they're`, family:'confusiones', article:null, glossary:'their-there-theyre', topics:[`There / Their / They're`] },
-  { id:'to-too-two', label:'To, too y two', family:'confusiones', article:null, glossary:null, topics:[`"To" vs "Too" vs "Two"`] },
+  { id:'to-too-two', label:'To, too y two', family:'confusiones', article:null, glossary:'to-vs-too-vs-two', topics:[`"To" vs "Too" vs "Two"`] },
   { id:'lose-vs-loose', label:'Lose vs loose', family:'confusiones', article:null, glossary:'lose-vs-loose', topics:[`"Lose" vs "Loose"`] },
   { id:'good-vs-well', label:'Good vs well', family:'confusiones', article:null, glossary:'good-vs-well', topics:[`Good vs Well`] },
   { id:'say-vs-tell', label:'Say vs tell', family:'confusiones', article:null, glossary:'say-vs-tell', topics:[`"Say" vs "Tell"`] },
@@ -108,8 +108,8 @@ const TEMAS = [
   { id:'much-many', prereq:['contables-incontables'], label:'Much y many', family:'cuantificadores', article:null, glossary:'much-vs-many',
     topics:[`Much / Many`, `Cuantificadores (a lot of / much / many / few / little)`] },
   { id:'fewer-vs-less', prereq:['contables-incontables'], label:'Fewer vs less', family:'cuantificadores', article:null, glossary:'fewer-vs-less', topics:[`"Fewer" vs "Less"`, `Fewer y less en frases`] },
-  { id:'little-few', prereq:['contables-incontables'], label:'A little, little, a few y few', family:'cuantificadores', article:null, glossary:null, topics:[`A little / Little / A few / Few`] },
-  { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:null, topics:[`Some / Any`, `Some / Any en frases afirmativas y negativas`] },
+  { id:'little-few', prereq:['contables-incontables'], label:'A little, little, a few y few', family:'cuantificadores', article:null, glossary:'little-vs-a-little', topics:[`A little / Little / A few / Few`] },
+  { id:'some-any', label:'Some y any', family:'cuantificadores', article:null, glossary:'any-vs-some', topics:[`Some / Any`, `Some / Any en frases afirmativas y negativas`] },
   { id:'contables-incontables', label:'Sustantivos contables e incontables', family:'cuantificadores', article:'articulo-sustantivos-contables-incontables.html', glossary:null, topics:[`Sustantivos contables e incontables`] },
   /* ---- demostrativos ---- */
   { id:'a-an', label:'A y an', family:'demostrativos', article:'articulo-articulos-a-an-the.html', glossary:'a-vs-an', topics:[`A / An`, `A / An: depende del sonido`],
@@ -168,14 +168,14 @@ const TEMAS = [
       { id:'since-for-eleccion', active:true, label:'Since o for: punto en el tiempo o duración', lesson:{ article:'articulo-presente-perfecto.html', anchor:'for-since' } },
       { id:'since-for-presente-perfecto', active:true, prereq:['since-for-eleccion'], label:'Since y for van con presente perfecto (no con presente)', lesson:{ article:'articulo-presente-perfecto.html', anchor:'errores' } }
     ] },
-  { id:'past-perfect', prereq:['present-perfect-vs-past'], label:'Pasado perfecto (past perfect)', family:'perfecto', article:null, glossary:null, topics:[`Past Perfect`] },
+  { id:'past-perfect', prereq:['present-perfect-vs-past'], label:'Pasado perfecto (past perfect)', family:'perfecto', article:null, glossary:'past-perfect', topics:[`Past Perfect`] },
   /* ---- preposiciones ---- */
   { id:'in-on-at', label:'In, on y at', family:'preposiciones', article:'articulo-in-on-at.html', glossary:null, topics:[`In / On / At`, `In / On / At con tiempo (horas, días, meses)`, `In / On / At con lugares`],
     micros:[
       { id:'in-on-at-tiempo', active:true, label:'In, on y at con el tiempo (horas, días y meses)', lesson:{ article:'articulo-in-on-at.html', anchor:'tiempo' } },
       { id:'in-on-at-lugar', active:true, label:'In, on y at con lugares', lesson:{ article:'articulo-in-on-at.html', anchor:'lugar' } }
     ] },
-  { id:'by-until', label:'By y until', family:'preposiciones', article:null, glossary:null, topics:[`By vs Until`, `By vs Until (en el trabajo)`] },
+  { id:'by-until', label:'By y until', family:'preposiciones', article:null, glossary:'by-vs-until', topics:[`By vs Until`, `By vs Until (en el trabajo)`] },
   { id:'preposiciones-movimiento', label:'Preposiciones de movimiento (to, into, from)', family:'preposiciones', article:null, glossary:null,
     topics:[`Preposiciones de movimiento (to / into / from)`] },
   { id:'preposiciones-sutiles', label:'Preposiciones sutiles (beside, besides...)', family:'preposiciones', article:null, glossary:null,
@@ -208,7 +208,7 @@ const TEMAS = [
   /* ---- relativas ---- */
   { id:'relativas', prereq:['pronombres'], label:'Cláusulas relativas', family:'relativas', article:null, glossary:null,
     topics:[`Cláusulas relativas (who / which / that)`, `Cláusulas relativas reducidas`] },
-  { id:'who-whom', prereq:['relativas'], label:'Who y whom', family:'relativas', article:null, glossary:null, topics:[`Who vs Whom`, `Who / Whom`] },
+  { id:'who-whom', prereq:['relativas'], label:'Who y whom', family:'relativas', article:null, glossary:'who-vs-whom', topics:[`Who vs Whom`, `Who / Whom`] },
   /* ---- to be ---- */
   { id:'to-be-presente', label:'Verbo to be (am, is, are)', family:'to-be', article:'articulo-verbo-to-be.html', glossary:null, noClassTopics:[`Verbo to be, have y there is/are`],
     topics:[`Is / Are (singular y plural)`, `Verbo "to be": am / is / are`, `Verbo to be, have y there is/are`],

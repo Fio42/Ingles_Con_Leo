@@ -36,6 +36,8 @@ function makeCtx(withTemas){
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), ctx);
   if(withTemas) vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
+  // Fixture: 'to-too-two' hace de "tema sin clase ni glosario" (hoy ya tiene ficha en el sitio; aquí se quita para probar que no se inventa ningún enlace).
+  if(withTemas) vm.runInContext("TEMA_BY_ID['to-too-two'].glossary = null;", ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { errorResourceForItem, addErrorLessonLink, computeSessionInsight, sessionInsightHtml, sessionReinforceRows, getMistakesItemIndex, G:GRAMMAR_BANK };`, ctx);
   return ctx.__t;

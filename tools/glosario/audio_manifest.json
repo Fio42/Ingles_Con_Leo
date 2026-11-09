@@ -966,6 +966,48 @@
   "text": "Please record the lesson. She broke the school record."
  },
  {
+  "term": "bored-vs-boring",
+  "kind": "frases",
+  "file": "audio/glosario/bored-vs-boring.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I am bored because this movie is boring. She is bored in class. The class is boring."
+ },
+ {
+  "term": "desert-vs-dessert",
+  "kind": "frases",
+  "file": "audio/glosario/desert-vs-dessert.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We crossed the desert and ate dessert later. I always order dessert after dinner. Camels can live in the desert."
+ },
+ {
+  "term": "principal-vs-principle",
+  "kind": "frases",
+  "file": "audio/glosario/principal-vs-principle.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The principal called my parents. Honesty is an important principle. The principal reason was the cost."
+ },
+ {
+  "term": "who-vs-whom",
+  "kind": "frases",
+  "file": "audio/glosario/who-vs-whom.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Who wrote this email? Whom did you invite? The manager with whom I spoke was kind."
+ },
+ {
+  "term": "by-vs-until",
+  "kind": "frases",
+  "file": "audio/glosario/by-vs-until.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Please finish the report by 5 p.m. I will work until 5 p.m. The store is open until 9."
+ },
+ {
+  "term": "past-perfect",
+  "kind": "frases",
+  "file": "audio/glosario/past-perfect.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She had already left when I called. I had never seen snow before that trip. They had finished dinner by 8."
+ },
+ {
   "term": "accept-vs-except",
   "kind": "frases",
   "file": "audio/glosario/accept-vs-except.mp3",
@@ -1076,13 +1118,6 @@
   "file": "audio/glosario/beside-vs-besides.mp3",
   "voice": "en-US-AvaMultilingualNeural",
   "text": "Sit beside me; besides, there is an empty chair."
- },
- {
-  "term": "bored-vs-boring",
-  "kind": "frases",
-  "file": "audio/glosario/bored-vs-boring.mp3",
-  "voice": "en-US-AvaMultilingualNeural",
-  "text": "I am bored because this movie is boring."
  },
  {
   "term": "bought-vs-brought",
@@ -1230,13 +1265,6 @@
   "file": "audio/glosario/deny-vs-refuse.mp3",
   "voice": "en-US-AvaMultilingualNeural",
   "text": "He denied the accusation and refused to sign."
- },
- {
-  "term": "desert-vs-dessert",
-  "kind": "frases",
-  "file": "audio/glosario/desert-vs-dessert.mp3",
-  "voice": "en-US-AvaMultilingualNeural",
-  "text": "We crossed the desert and ate dessert later."
  },
  {
   "term": "despite-vs-although",
@@ -1825,13 +1853,6 @@
   "file": "audio/glosario/practice-vs-practise.mp3",
   "voice": "en-US-AvaMultilingualNeural",
   "text": "I practice every day at football practice."
- },
- {
-  "term": "principal-vs-principle",
-  "kind": "frases",
-  "file": "audio/glosario/principal-vs-principle.mp3",
-  "voice": "en-US-AvaMultilingualNeural",
-  "text": "The principal explained the school principle."
  },
  {
   "term": "quiet-vs-quietly",

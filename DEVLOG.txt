@@ -1963,3 +1963,17 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
     Misma longitud de sesión y mismo conteo del límite (3 invitado / 6 cuenta). La variante y el curso siguen siendo de Miembros.
   - Refuerzo de memoria: lo fallado en la última sesión solo vuelve si no hay otros ejercicios del tema.
   - Pruebas: memoria-gratis 10 (muestra, curso/clase, miembro intacto). Versión app ?v=20261108g.
+
+2026-11-08 (11) | Academia -> Practicar, artículos y glosario (bidireccional con lo anterior). SIN publicar.
+  - academia.html carga temas.js (registro único de temas). Tras el SEGUNDO fallo de una actividad (lección o repaso, nunca en la evaluación) y en la pantalla
+    final cuando hubo errores: "Para reforzarlo: Leer la explicación · Practicar con otros ejercicios". Explicación = artículo del tema (o ficha del glosario si no hay
+    artículo); práctica = Plan de estudio del tema para miembros, práctica gratis para el resto. En la lección se abre en pestaña nueva (no pierde el avance).
+    Evento academia_refuerzo_clic. Los errores del curso ya iban a mistake_stats ('ac:<curso>:<actividad>') y de ahí al Plan/diagnóstico: no se duplicó nada.
+  - Artículos (miembros): el bloque "¿Listo para practicarlo?" añade "Curso relacionado" (tabla ACADEMIA_COURSE_BY_TEMA).
+  - Contenido nuevo (faltaba explicación para temas con ejercicios): fichas de glosario who-vs-whom, by-vs-until, past-perfect (ligadas a sus temas; sitemap e índice
+    actualizados; audio pendiente: se muestra solo cuando exista). some-any, little-few y to-too-two ahora apuntan a fichas que ya existían (any-vs-some,
+    little-vs-a-little, to-vs-too-vs-two), que además ofrecen "Practicar este tema" a miembros.
+    NOTA: tools/generar_glosario.js regenera ~75 fichas con contenido distinto al publicado (se editaron a mano después). No se corrió sobre las existentes; las 3 nuevas
+    salen de él y el bloque de práctica de las 3 existentes se añadió a mano (1 línea). Revisar el generador antes de usarlo otra vez.
+  - Pruebas: academia-puente (6). temas y conexion-recursos: 'to-too-two' sigue haciendo de "tema sin recurso" (se le quita el glosario en la prueba).
+    Versiones: app ?v=20261108h, temas ?v=20261108e, academia.js ?v=20261108e, academia.css ?v=20261108a.

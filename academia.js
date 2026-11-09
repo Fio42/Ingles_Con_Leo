@@ -779,7 +779,10 @@
         }
         if(item.why) fb.appendChild(el('p', { class: 'ac-fb-p', text: item.why }));
         if(willRetry) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Lo volveremos a ver al final para que lo practiques una vez más.' }));
-        else if(!ok) fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Guardamos este punto en tu repaso.' }));
+        else if(!ok){
+          fb.appendChild(el('p', { class: 'ac-fb-note', text: 'Guardamos este punto en tu repaso.' }));
+          var rfn = refuerzoNode(true); if(rfn) fb.appendChild(rfn);      // tras el segundo fallo: explicación y práctica en otra pestaña (la lección sigue aquí)
+        }
         var sent = academiaSentence(item), pbtn = sent ? phraseButton(sent) : null;
         if(pbtn){ fb.appendChild(el('p', { class: 'ac-fb-p ac-fb-sent' }, [el('span', { lang: 'en', text: sent })])); fb.appendChild(pbtn); }
         fbHost.appendChild(fb);
@@ -813,6 +816,39 @@
     return el('div', { class: 'ac-bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(p)), 'aria-label': label || 'Progreso' }, [el('span', { style: 'width:' + Math.max(0, Math.min(100, p)) + '%' })]);
   }
   function link(href, text, cls){ return el('a', { href: href, class: cls || 'ac-btn', text: text }); }
+  /* Del curso hacia el resto de la plataforma (registro de temas, temas.js: nada se repite aquí). Solo lo que existe:
+     la explicación (artículo, o la ficha del glosario si no hay artículo) y ejercicios distintos del mismo tema
+     (Plan de estudio para miembros; práctica gratis para quien no lo es). Nunca se ofrece en la evaluación. */
+  function refuerzoLinks(){
+    try{
+      var tid = null;                                   // el tema del curso sale de la tabla de temas.js (curso -> tema)
+      if(typeof ACADEMIA_COURSE_BY_TEMA !== 'undefined') Object.keys(ACADEMIA_COURSE_BY_TEMA).forEach(function(k){ if(ACADEMIA_COURSE_BY_TEMA[k].course === courseId) tid = k; });
+      var t = (tid && typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[tid] : null;
+      if(!t) return [];
+      var via = '?tema=' + encodeURIComponent(t.id) + '&via=rec', out = [];
+      if(t.article) out.push({ k: 'articulo', href: t.article + via, text: 'Leer la explicación' });
+      else if(t.glossary) out.push({ k: 'glosario', href: '/glosario/' + t.glossary + '/' + via, text: 'Ver la ficha del glosario' });
+      if(mode === 'member' && t.family) out.push({ k: 'practica', href: SITE.plan + '?foco=' + encodeURIComponent(t.family) + '&tema=' + encodeURIComponent(t.id) + '&empezar=1', text: 'Practicar con otros ejercicios' });
+      else out.push({ k: 'practica', href: SITE.practica + '?skill=grammar', text: 'Practicar con otros ejercicios' });
+      return out;
+    }catch(e){ return []; }
+  }
+  function refuerzoNode(newTab, cls){
+    var ls = refuerzoLinks();
+    if(!ls.length) return null;
+    var kids = [el('span', { text: 'Para reforzarlo: ' })];
+    ls.forEach(function(x, i){
+      if(i) kids.push(document.createTextNode(' · '));
+      var a = el('a', { href: x.href, text: x.text, 'data-rf': x.k });
+      if(newTab){ a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); }
+      kids.push(a);
+    });
+    return el('p', { class: cls || 'ac-fb-p ac-refuerzo' }, kids);
+  }
+  if(root) root.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[data-rf]') : null;
+    if(a) track('refuerzo_clic', { curso: courseId, tipo: a.getAttribute('data-rf') });
+  });
   function setTabs(active){
     tabs.hidden = !active;
     if(!active) return;
@@ -1150,6 +1186,7 @@
           el('ul', { class: 'ac-cansay-list' }, l.canSay.map(function(x){ var pb = itemPlay(x, 'ac-item-play ac-item-play-sm'); return el('li', null, [pb, el('span', { lang: 'en', text: x })]); }))
         ])
       ]);
+      if(res.missedNow.length){ var rfe = refuerzoNode(false, 'ac-text ac-refuerzo'); if(rfe) card2.appendChild(rfe); }
       var acts = el('div', { class: 'ac-nav ac-nav-col' });
       var bb = backButton(safeBack());
       if(bb) acts.appendChild(bb);
@@ -1197,6 +1234,7 @@
           el('h1', { class: 'ac-h1 ac-h1-end', 'data-focus': '', text: '¡Repaso completo!' }),
           el('p', { class: 'ac-text', text: 'Acertaste ' + res.firstOk + ' de ' + res.total + ' a la primera.' + (res.missedNow.length ? ' Los puntos que fallaste siguen guardados para otro repaso.' : ' Ya no tienes pendientes en este tema.') })
         ]));
+        if(res.missedNow.length){ var rfr = refuerzoNode(false, 'ac-text ac-refuerzo'); if(rfr) root.lastChild.appendChild(rfr); }
         var rb = backButton(safeBack());
         root.appendChild(el('div', { class: 'ac-nav ac-nav-col' }, rb ? [rb, link(CB, 'Ver el curso', 'ac-btn ac-btn-outline ac-btn-wide')] : [link(CB, 'Volver al curso', 'ac-btn ac-btn-primary ac-btn-wide'), link('#/', 'Ir a mi ruta', 'ac-btn ac-btn-outline ac-btn-wide')]));
         if(NUBE) cloudFlush();
