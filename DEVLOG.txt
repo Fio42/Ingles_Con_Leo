@@ -1998,3 +1998,5 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Bajo la respuesta: leoAiNextSteps() muestra max 3 enlaces del CATALOGO (clase/ficha, practica en el Plan solo miembros, curso). Cuenta gratis: sin Plan; nota 'en tu proxima sesion incluiremos ejercicios distintos' solo si existen (freeMemoryBoost). Sin venta de membresia.
   - supabase_functions/leo-ai.ts: buildPrompt(explain) agrega UNA linea si history.recurring (pista nueva, max 2 frases). Reglas, tokens maximos, cuotas y presupuestos sin cambios. PENDIENTE: desplegar leo-ai (sin eso la IA ignora history; los enlaces funcionan igual).
   - Pruebas: leo-ai-complementario (13), memoria-gratis (14), leo-ai-server (62). app ?v=20261109a.
+
+(18) supabase/functions/leo-ai/index.ts = copia de supabase_functions/leo-ai.ts (deben ser identicas) para poder desplegar con la CLI: npx supabase functions deploy leo-ai --no-verify-jwt --use-api. Antes se desplegaba desde el panel.
