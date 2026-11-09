@@ -4382,7 +4382,9 @@ function freeMemoryBoost(skill, level, pool){
     const wOrder = id => weak.findIndex(w => w.temaId === id);
     const ranked = shuffleArray(cands).sort((a, b) => (wOrder(a.__tema) - wOrder(b.__tema)) || (varietyRank(hist, a.id) - varietyRank(hist, b.id)));
     const notJustFailed = ranked.filter(i => varietyRank(hist, i.id) < 2);      // lo que falló en la última sesión solo vuelve si no hay otra cosa
-    const picked = (notJustFailed.length ? notJustFailed : ranked).slice(0, FREE_MEMORY_BOOST);
+    const failedNow = new Set(); weak.forEach(w => w.ids.forEach(id => failedNow.add(id)));
+    const brandNew = notJustFailed.filter(i => !failedNow.has(i.id));          // "ejercicios distintos": ni siquiera los que sigue teniendo pendientes (misma regla que la tarjeta)
+    const picked = (brandNew.length ? brandNew : notJustFailed.length ? notJustFailed : ranked).slice(0, FREE_MEMORY_BOOST);
     if(!picked.length) return none;
     const out = pool.slice();
     let removed = 0;

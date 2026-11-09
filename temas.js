@@ -230,7 +230,7 @@ const TEMAS = [
   { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
   /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
   { id:'question-tags', label:'Question tags', family:null, article:'articulo-question-tags-ingles.html', glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
-  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'would-rather', noClassTopics:[`Inversiones enfáticas`, `Oraciones enfáticas con "It is... that" (cleft sentences)`],
+  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:null, noClassTopics:[`Inversiones enfáticas`, `Oraciones enfáticas con "It is... that" (cleft sentences)`],
     topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
   { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:null, topics:[`Subjuntivo formal (It is essential that...)`] },
   { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },

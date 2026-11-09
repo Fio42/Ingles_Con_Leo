@@ -2000,3 +2000,5 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Pruebas: leo-ai-complementario (13), memoria-gratis (14), leo-ai-server (62). app ?v=20261109a.
 
 (18) supabase/functions/leo-ai/index.ts = copia de supabase_functions/leo-ai.ts (deben ser identicas) para poder desplegar con la CLI: npx supabase functions deploy leo-ai --no-verify-jwt --use-api. Antes se desplegaba desde el panel.
+
+(19) Dos arreglos tras probar con cuentas reales (2026-11-09): (a) freeMemoryBoost ya no vuelve a servir lo que el alumno aun tiene pendiente cuando hay otros ejercicios nuevos (la tarjeta y la sesion nombran el mismo tema); (b) temas.js: inversion-enfasis ya no apunta a la ficha 'would-rather' (no tenia relacion): sin ficha, no se ofrece enlace. Revisar phrasal-verbs -> look-for (ficha de un solo verbo). Pruebas de seguridad leo-ai en vivo: sin token / token basura / JWT alg none -> 401 no_session. app ?v=20261109b, temas ?v=20261109a.
