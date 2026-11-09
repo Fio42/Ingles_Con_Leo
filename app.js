@@ -4127,6 +4127,7 @@ function freeSessionAnswer(skill, level, topics, result){
     d.results.push(r);
     d.endedAt = Date.now();
     writeFreePending(list);
+    freeMemoryRemember(d);
   }catch(e){}
 }
 // Fin de la sesión (resumen o límite diario): se cierra y se sube. Sin `skill` cierra todas menos el reto diario.
@@ -4144,7 +4145,7 @@ function freeSessionResume(){
     if(!freeAcctId()) return;
     const list = readFreePending();
     if(closeFreeDrafts(list)) writeFreePending(list);
-    flushFreeSessions();
+    Promise.resolve(flushFreeSessions()).then(freeMemorySync, freeMemorySync);
   }catch(e){}
 }
 async function flushFreeSessions(){
@@ -4180,6 +4181,124 @@ async function flushFreeSessions(){
   }catch(e){}
   finally{ _freeFlushing = false; }
   if(_freeFlushAgain){ _freeFlushAgain = false; return flushFreeSessions(); }
+}
+
+/* ---- Memoria de aprendizaje de la cuenta gratis ----
+   Mismo motor que Miembros, sin motor nuevo: lo que la cuenta gratis responde queda también en SU progreso local
+   (leo_progress de su espacio, ver LeoScope) con la misma forma de sesión, y el progreso que ya está en la nube
+   (las filas tier 'free' que sube flushFreeSessions) se trae con syncProgressFromCloud. Con eso computeMistakeIds,
+   focusHistory y varietyRank funcionan igual que para un miembro.
+   Nada de esto sube datos: no llama a pushSession ni a mistake_stats (la única subida sigue siendo la de arriba, así
+   que no hay filas dobles) y no toca los contadores del límite gratis. Invitados: freeAcctId() es null, no hacen nada. */
+const FREE_MEMORY_BOOST = 4;      // ejercicios de la sesión que se cambian por otros nuevos sobre lo que costó
+const FREE_MEMORY_SKILL_KIND = { gramatica:'grammar', vocabulario:'vocab', listening:'listening' };
+const FREE_MEMORY_KIND_SKILL = { grammar:'gramatica', vocab:'vocabulario', listening:'listening' };
+let _freeMemSynced = false;
+function freeMemoryRemember(d){
+  try{
+    if(!d || !d.uid || d.uid !== freeAcctId() || !Array.isArray(d.results) || !d.results.length) return;
+    const p = loadProgress();
+    let s = p.sessions.find(x => x && x.tier === 'free' && !x.cloudId && x.startedAt === d.startedAt && x.skill === d.skill);
+    if(!s){
+      s = { skill: d.skill, level: d.level, topics: (d.topics || []).slice(), date: localDateStr(new Date(d.startedAt)), startedAt: d.startedAt, durationMs: 0, results: [], tier: 'free' };
+      p.sessions.push(s);
+    }
+    s.results = d.results.map(r => Object.assign({}, r));
+    s.durationMs = Math.max(0, (d.endedAt || d.startedAt) - d.startedAt);
+    p.sessions.sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+    saveProgressRaw(p);
+  }catch(e){}
+}
+// Trae de la nube lo que esta cuenta ya practicó (otro día u otro dispositivo). Una vez por carga de página.
+async function freeMemorySync(){
+  try{
+    if(!freeAcctId() || _freeMemSynced) return;
+    if(typeof LeoBackend === 'undefined' || typeof LeoBackend.syncProgressFromCloud !== 'function') return;
+    _freeMemSynced = true;
+    await LeoBackend.syncProgressFromCloud();
+  }catch(e){}
+}
+// Dificultades pendientes de la cuenta: temas donde el último intento falló (gramática, vocabulario, listening).
+function freeMemoryWeakSpots(){
+  try{
+    if(!freeAcctId() || typeof TEMA_BY_ID === 'undefined') return [];
+    const index = getMistakesItemIndex();
+    const groups = new Map();
+    let order = 0;
+    computeMistakeIds().forEach(id => {
+      const f = index.get(id);
+      if(!f || !FREE_MEMORY_KIND_SKILL[f.kind]) return;
+      const tid = diagTemaIdForFound(f);
+      if(!tid || !TEMA_BY_ID[tid]) return;
+      const g = groups.get(tid) || { temaId: tid, kind: f.kind, ids: [], rank: order++ };
+      g.ids.push(id);
+      groups.set(tid, g);
+    });
+    return Array.from(groups.values()).sort((a, b) => (b.ids.length - a.ids.length) || (a.rank - b.rank)).slice(0, 3);
+  }catch(e){ return []; }
+}
+// Cambia hasta FREE_MEMORY_BOOST ejercicios de la sesión gratis por otros NUEVOS (o, si no hay, los menos recientes) del mismo
+// tema que costó. Solo variantes abiertas a cuentas gratis; el largo de la sesión no cambia, así que sigue contando igual en el límite.
+function freeMemoryBoost(skill, level, pool){
+  const none = { pool, boosted: [], note: '' };
+  try{
+    const kind = FREE_MEMORY_SKILL_KIND[skill];
+    if(!kind || !freeAcctId() || !Array.isArray(pool) || pool.length < 4) return none;
+    const weak = freeMemoryWeakSpots().filter(w => w.kind === kind);
+    if(!weak.length) return none;
+    const temaIds = new Set(weak.map(w => w.temaId));
+    const bank = skill === 'gramatica' ? GRAMMAR_BANK : skill === 'vocabulario' ? VOCAB_BANK : LISTENING_BANK;
+    const blocked = (MEMBERS_ONLY_VARIANT_INDEX[skill] && MEMBERS_ONLY_VARIANT_INDEX[skill][level]) || [];
+    const hist = focusHistory();
+    const inPool = new Set(pool.map(i => i.id));
+    const cands = [];
+    const consider = (item, topic) => {
+      if(!item || inPool.has(item.id) || hist.latest.get(item.id) === true) return;
+      const tid = diagTemaIdForFound({ kind, item, topic: topic || null });
+      if(tid && temaIds.has(tid)) cands.push(topic ? Object.assign({ topic }, item) : item);
+    };
+    (bank[level] || []).forEach((variant, vi) => {
+      if(blocked.indexOf(vi) !== -1) return;
+      if(skill === 'gramatica') variant.forEach(tg => tg.items.forEach(it => consider(it, tg.topic)));
+      else variant.forEach(it => consider(it, null));
+    });
+    const picked = shuffleArray(cands).sort((a, b) => varietyRank(hist, a.id) - varietyRank(hist, b.id)).slice(0, FREE_MEMORY_BOOST);
+    if(!picked.length) return none;
+    const out = pool.slice();
+    let removed = 0;
+    for(let i = out.length - 1; i >= 0 && removed < picked.length; i--){
+      const tid = diagTemaIdForFound({ kind, item: out[i], topic: out[i].topic || null });
+      if(tid && temaIds.has(tid)) continue;     // lo que ya trae sobre el tema se queda
+      out.splice(i, 1); removed++;
+    }
+    const use = picked.slice(0, removed);
+    if(!use.length) return none;
+    const label = TEMA_BY_ID[weak[0].temaId].label;
+    return { pool: use.concat(out), boosted: use.map(i => i.id), note: 'Recordamos que te costó ' + label + '. Empezamos con ejercicios nuevos sobre eso.' };
+  }catch(e){ return none; }
+}
+function freeMemoryNoteHtml(mem, idx){
+  if(!mem || !mem.note || idx !== 0) return '';
+  return '<p class="free-memory-note" style="margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(37,62,204,0.08);font-size:14px;">' + commentEscapeHtml(mem.note) + '</p>';
+}
+// Tarjeta "Recordamos lo que te costó" (arriba de la práctica gratis). Los ejercicios que propone cuentan en el límite de hoy.
+function freeMemoryCardHtml(){
+  try{
+    const weak = freeMemoryWeakSpots();
+    if(!weak.length) return '';
+    const w = weak[0];
+    const tema = TEMA_BY_ID[w.temaId];
+    const c = (typeof contentForTema === 'function') ? contentForTema(w.temaId) : null;
+    const skill = FREE_MEMORY_KIND_SKILL[w.kind];
+    const atLimit = freeDailyLimitReached();
+    const used = _leoAccessTier === 'free' ? getFreeAcctExerciseCount() : 0;
+    const n = w.ids.length;
+    const lesson = c && c.article ? ' <a href="' + commentEscapeHtml(c.article) + '">' + commentEscapeHtml(c.articleLabel || 'Ver la clase') + '</a>' : '';
+    const action = atLimit
+      ? '<span style="color:var(--ink-faint);">Hoy ya usaste tus ' + FREE_USER_DAILY_LIMIT + ' ejercicios gratis. Mañana seguimos con esto.</span>'
+      : '<button type="button" class="btn btn-primary btn-sm" data-free-memory="' + skill + '">Practicar ejercicios nuevos</button> <span style="font-size:13px;color:var(--ink-faint);">Cuentan en tus ' + FREE_USER_DAILY_LIMIT + ' de hoy (' + used + ' usados).</span>';
+    return '<strong>Recordamos lo que te costó</strong><p style="margin:6px 0 10px;">' + commentEscapeHtml(tema.label) + ' (' + n + (n === 1 ? ' error' : ' errores') + '). Te proponemos ejercicios distintos para mejorarlo.' + lesson + '</p>' + action;
+  }catch(e){ return ''; }
 }
 
 /* Un mismo evento (p. ej. el aviso de límite) se pinta muchas veces si la persona recarga o vuelve a la pantalla:
@@ -8803,6 +8922,8 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   for(let i=0;i<maxLen;i++){
     topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
   }
+  const mem = freeMemoryBoost('gramatica', level, pool);
+  if(mem.boosted.length) pool.splice(0, pool.length, ...mem.pool);
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -8814,7 +8935,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Gramática', level, idx+1, total);
+    wrap.innerHTML = freeMemoryNoteHtml(mem, idx) + sessionHeaderHtml('Gramática', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -8850,7 +8971,8 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('vocabulario');
   const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
-  const pool = VOCAB_BANK[level][variantIdx];
+  const memV = freeMemoryBoost('vocabulario', level, VOCAB_BANK[level][variantIdx]);
+  const pool = memV.pool;
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -8862,7 +8984,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Vocabulario', level, idx+1, total);
+    wrap.innerHTML = freeMemoryNoteHtml(memV, idx) + sessionHeaderHtml('Vocabulario', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -8925,7 +9047,8 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('listening');
   const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
-  const pool = LISTENING_BANK[level][variantIdx];
+  const memL = freeMemoryBoost('listening', level, LISTENING_BANK[level][variantIdx]);
+  const pool = memL.pool;
   const total = pool.length;
   const results = [];
   let idx = 0;
@@ -8937,7 +9060,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Listening', level, idx+1, total);
+    wrap.innerHTML = freeMemoryNoteHtml(memL, idx) + sessionHeaderHtml('Listening', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9345,6 +9468,37 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   const onPickLevel = (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); };
   renderLevelSelector(levelsEl, currentLevel, onPickLevel);
   renderTabs();
+  // Memoria de la cuenta gratis: tarjeta con lo que costó (no existe para invitados). Se repinta al llegar el progreso de la nube.
+  let memCard = null;
+  function renderMemoryCard(){
+    try{
+      if(!freeAcctId() || !levelsEl || !levelsEl.parentNode) return;
+      const html = freeMemoryCardHtml();
+      if(!html){ if(memCard) memCard.style.display = 'none'; return; }
+      if(!memCard){
+        memCard = document.createElement('div');
+        memCard.id = 'freeMemoryCard';
+        memCard.className = 'ap-callout';
+        memCard.style.cssText = 'margin:0 0 16px;padding:14px 16px;border-radius:12px;background:rgba(37,62,204,0.06);border:1px solid rgba(37,62,204,0.2);';
+        levelsEl.parentNode.insertBefore(memCard, levelsEl);
+        memCard.addEventListener('click', (e)=>{
+          const b = e.target && e.target.closest ? e.target.closest('[data-free-memory]') : null;
+          if(!b) return;
+          const sk = b.getAttribute('data-free-memory');
+          if(typeof trackLeoEvent === 'function') trackLeoEvent('free_memory_practice_clicked', { skill: sk });
+          currentSkill = sk;
+          renderTabs();
+          renderCurrent();
+          focusTabs();
+        });
+      }
+      memCard.style.display = '';
+      memCard.innerHTML = html;
+      if(typeof trackLeoEventOncePerDay === 'function') trackLeoEventOncePerDay('free_memory_shown', {});
+    }catch(e){}
+  }
+  renderMemoryCard();
+  window.addEventListener('leo-progress-synced', renderMemoryCard);
   renderCurrent();
   // Para practica.html: tras el onboarding (o al llegar con la cuenta recién creada) se muestra el nivel elegido y se
   // baja directo al ejercicio, para que en el móvil la primera pregunta no quede debajo de las tarjetas de nivel.

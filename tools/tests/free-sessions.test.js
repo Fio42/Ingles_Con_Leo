@@ -158,14 +158,16 @@ test('CUENTA GRATIS: al terminar se sube UNA fila con la misma forma que las de 
   assert.strictEqual(B.pending().length, 0, 'subida: ya no queda pendiente');
 });
 
-test('no toca el progreso local, mistake_stats, microtemas ni last_practice_at', async () => {
+test('guarda la memoria en SU progreso local, pero no toca mistake_stats, microtemas ni last_practice_at', async () => {
   const B = makeBrowser({ user:'u1', tier:'free' });
   B.freeSessionBegin('gramatica');
   ['g-medio-fut-gtevid-1', 'g-medio-fut-gtevid-2', 'g-medio-fut-gtevid-3'].forEach(id => answer(B, 'gramatica', 'medio', id, false, 'will'));
   B.freeSessionEnd('gramatica');
   await B.settle();
   assert.strictEqual(CLOUD.sessions.length, 1);
-  assert.strictEqual(B.loadProgress().sessions.length, 0, 'leo_progress sigue vacío');
+  const mem = B.loadProgress().sessions;
+  assert.strictEqual(mem.length, 1, 'memoria de aprendizaje: una sola sesión local, marcada como gratis');
+  assert.strictEqual(mem[0].tier, 'free'); assert.strictEqual(mem[0].results.length, 3);
   assert.strictEqual(B.store[B.pk('leo_micro_stats_v1')], undefined, 'sin señales de microtemas');
   assert.strictEqual(CLOUD.rpc.length, 0, 'no se llama a apply_mistake_results');
   assert.ok(!CLOUD.profileUpdates.some(u => /(^|,)last_practice_at(,|$)/.test(u)), 'last_practice_at es solo de miembros');

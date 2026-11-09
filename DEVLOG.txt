@@ -1942,3 +1942,15 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Textos de Inicio, Practicar y Miembros: ya no dicen "TO BE primer curso / más cursos próximamente"; listan los cursos publicados.
   - Medición: eventos reinforce_shown y reinforce_link_clicked (tier free/member). Se reutilizan los existentes (free_signup_completed, leo_ai_trial_*, guest_exercise_limit_reached, membership_cta_clicked).
   - Pruebas conexion-educativa 13. Versiones app ?v=20261108e.
+
+2026-11-08 (9) | Memoria de aprendizaje para cuentas gratis (mismo motor que Miembros). SIN publicar.
+  - Lo que una cuenta gratis responde queda también en SU progreso local (misma forma de sesión, marcada tier "free") y, al abrir Practicar, se trae de la nube
+    lo ya guardado (filas tier free de progress_sessions) con syncProgressFromCloud. Así computeMistakeIds, focusHistory y varietyRank funcionan igual que en Miembros.
+  - No hay subida nueva: no se llama a pushSession ni a mistake_stats (la única subida sigue siendo la de flushFreeSessions). La copia local y la de la nube
+    tienen la misma identidad, así que no se duplican. Invitados: no guardan ni reciben nada.
+  - Practicar (gratis): tarjeta "Recordamos lo que te costó" (tema + n.º de errores + clase) con botón a ejercicios nuevos. Las sesiones de Gramática,
+    Vocabulario y Listening cambian hasta 4 ejercicios por otros NUEVOS del mismo tema (solo variantes abiertas a cuentas gratis; mismo largo de sesión).
+    Cuentan en el límite de siempre (6 por cuenta). En el límite, la tarjeta no ofrece más ejercicios.
+  - Eventos nuevos: free_memory_shown (1 vez al día), free_memory_practice_clicked. Sin cambios en pagos, membresías, límites ni Supabase.
+  - Aviso: las variantes con Do/Does están reservadas a Miembros; para cuentas gratis el tema se llama "Presente simple" (8 ejercicios libres en Fácil).
+  - Pruebas: memoria-gratis (6), free-sessions actualizada (14). Versión app ?v=20261108f.
