@@ -364,6 +364,13 @@ export function buildPrompt(mode: string, b: any): { rules: string; text: string
   if (base) lines.push(`Explicación que ya leyó (no la repitas): ${base}`)
   const shown = Array.isArray(b.shownExamples) ? b.shownExamples.map((x: unknown) => cleanText(x, 140)).filter(Boolean).slice(0, 3) : []
   if (shown.length) lines.push(`Ejemplos que ya ve en pantalla (no los repitas ni los reutilices): ${shown.join(' | ')}`)
+  // Memoria educativa (solo si el tema es recurrente): una línea. Sin ids, fechas ni datos de la cuenta; no cambia cuotas ni llamadas.
+  const hist = b.history && typeof b.history === 'object' ? b.history : null
+  if (hist && hist.recurring === true && b.isCorrect !== true) {
+    const hn = cleanInt(hist.count, 2, 9)
+    const rel = Array.isArray(hist.related) ? hist.related.map((x: unknown) => cleanText(x, 60)).filter(Boolean).slice(0, 2) : []
+    lines.push(`Dificultad recurrente: el alumno ya ha fallado ${hn === null ? 'varios' : hn} ejercicios de este tema. Dale una pista nueva y sencilla, distinta de lo que ya leyó, en máximo 2 frases.` + (rel.length ? ` Otros temas que también le cuestan (solo contexto; no los menciones salvo que conecten directamente con esta frase): ${rel.join('; ')}.` : ''))
+  }
   if (/question tag|tag question|isn't she|doesn't she|\b(isn't|aren't|doesn't|don't|didn't|wasn't|weren't|hasn't|haven't|won't|can't) (it|he|she|they|you|we|i)\s*\?/i.test(`${b.topic || ''} ${question} ${correctAnswer}`)) lines.push('Pista: es un question tag. Si das ejemplo, contrasta directamente dos auxiliares con frases tipo "She is tired, isn\'t she?" y "She works here, doesn\'t she?" (el auxiliar del tag repite el de la frase; sin auxiliar usa do/does/did).')
   return { rules: EXPLAIN_RULES, text: lines.join('\n'), check: { base, shown, skill: cleanText(b.skill, 20), correct: correctAnswer, chosen: studentAnswer, failed: b.isCorrect !== true, question } }
 }

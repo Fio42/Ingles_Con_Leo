@@ -25,6 +25,7 @@ function makeCtx(store, tier, uid){
 ;this.__t = { freeSessionAnswer, freeSessionEnd, freeMemoryWeakSpots, freeMemoryBoost, freeMemoryCardHtml, freeMemoryNoteHtml, loadProgress, readFreePending,
   progressSessionIdentity, GRAMMAR_BANK, VOCAB_BANK, MEMBERS_ONLY_VARIANT_INDEX, FREE_USER_DAILY_LIMIT, todayStr, localDailyCountKey, flushFreeSessions,
   recordSession, freeSampleApply, FREE_SAMPLE_IDS, freeSampleItems, getMistakesItemIndex, diagTemaIdForFound, diagTemaIdForTopic, computeMistakeIds,
+  leoAiMemory, leoAiNextSteps, buildLeoAiPayload,
   setAcct(t, p){ _leoAccessTier = t; _leoAccessProfile = p; } };`, ctx);
   ctx.__t.ctx = ctx;
   ctx.__t.setAcct(tier, tier === 'free' ? { id: uid } : null);
@@ -105,6 +106,47 @@ const DAY = 86400000;
     m.pool.forEach(it => assert(!('__tema' in it), '__tema no debe filtrarse'));
     assert(ids.some(x => x.id === m.pool[0].id), 'el primero es del tema que nombra la nota');
     assert(/Do|Does|presente simple/i.test(T.freeMemoryNoteHtml(m, 0)), 'la nota nombra ese tema');
+  });
+  await test('Leo AI (cuenta gratis): un solo error no es recurrente; varios del mismo tema sí, con enlaces del catalogo y sin Plan', async () => {
+    const store = {}; const T = makeCtx(store, 'free', 'user-A');
+    const ids = doDoesIds(T, 'facil');
+    assert(ids.length >= 4, 'hacen falta 4 ejercicios del tema');
+    const itemOf = id => { let f = null; T.GRAMMAR_BANK.facil.forEach(v => v.forEach(tg => tg.items.forEach(it => { if(it.id === id) f = it; }))); return f; };
+    const ctxFor = i => ({ kind: 'grammar', item: itemOf(ids[i].id), isCorrect: false, userAnswer: 'x' });
+    assert.strictEqual(T.leoAiMemory(ctxFor(0)).recurring, false, 'primer error: no es recurrente');
+    assert.strictEqual(T.leoAiNextSteps(ctxFor(0)), null, 'primer error: no se ofrece nada extra');
+    assert(!('history' in T.buildLeoAiPayload(ctxFor(0))), 'primer error: el payload no cambia');
+    [0, 1].forEach(i => T.freeSessionAnswer('gramatica', 'facil', [ids[0].topic], { itemId: ids[i].id, isCorrect: false }));
+    T.freeSessionEnd('gramatica');
+    const m = T.leoAiMemory(ctxFor(2));
+    assert(m.recurring && m.count === 3 && m.temaId === 'presente-simple' && m.member === false);
+    const pl = T.buildLeoAiPayload(ctxFor(2));
+    assert.deepStrictEqual(Object.keys(plain(pl.history)).sort(), ['count', 'recurring', 'related'], 'solo cuenta y temas, sin ids ni fechas');
+    assert(pl.history.recurring === true && pl.history.count === 3 && Array.isArray(pl.history.related));
+    const ns = T.leoAiNextSteps(ctxFor(2));
+    assert(ns && ns.links.length <= 3, 'maximo 3 enlaces');
+    assert(!ns.links.some(l => /plan-estudio/.test(l.href) || l.key === 'practice'), 'la cuenta gratis no recibe el Plan');
+    ns.links.forEach(l => assert(/^[a-z0-9\-\/]+(\.html)?(\/)?(\?[^\s]*)?(#[^\s]*)?$/i.test(l.href) && !/^https?:/.test(l.href), 'enlace interno del catalogo: ' + l.href));
+    assert(/próxima sesión/.test(ns.note) || ns.links.length, 'avisa que habra ejercicios distintos o da enlaces');
+    assert(!/membres|\$2/i.test(JSON.stringify(ns)), 'no vende la membresia');
+    assert.strictEqual(calls.pushSession, 0); assert.strictEqual(calls.apply, 0);
+  });
+  await test('Leo AI (invitado): sin memoria, sin historial en el payload', async () => {
+    const T = makeCtx({}, 'guest');
+    const ids = doDoesIds(T, 'facil');
+    let it = null; T.GRAMMAR_BANK.facil.forEach(v => v.forEach(tg => tg.items.forEach(x => { if(x.id === ids[0].id) it = x; })));
+    const ctx = { kind: 'grammar', item: it, isCorrect: false, userAnswer: 'x' };
+    assert.strictEqual(T.leoAiMemory(ctx), null); assert.strictEqual(T.leoAiNextSteps(ctx), null);
+    assert(!('history' in T.buildLeoAiPayload(ctx)));
+  });
+  await test('Leo AI (aislamiento): otra cuenta no hereda la dificultad recurrente', async () => {
+    const A = makeCtx({}, 'free', 'user-A');
+    const ids = doDoesIds(A, 'facil');
+    [0, 1].forEach(i => A.freeSessionAnswer('gramatica', 'facil', [ids[0].topic], { itemId: ids[i].id, isCorrect: false }));
+    A.freeSessionEnd('gramatica');
+    const B = makeCtx({}, 'free', 'user-B');
+    let it = null; B.GRAMMAR_BANK.facil.forEach(v => v.forEach(tg => tg.items.forEach(x => { if(x.id === ids[2].id) it = x; })));
+    assert.strictEqual(B.leoAiMemory({ kind: 'grammar', item: it, isCorrect: false, userAnswer: 'x' }).recurring, false);
   });
   await test('Sin errores pendientes no hay tarjeta ni cambios; si lo acierta, deja de recordarlo', async () => {
     const store = {}; const T = makeCtx(store, 'free', 'user-A');

@@ -1991,3 +1991,10 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 (15) Cuadro de membresia: la linea de Academia ya no dice 'hoy TO BE' sino los cursos publicados. app ?v=20261108k.
 
 (16) academia-de-ingles.html estaba desactualizada (solo 2 cursos). Ahora lista los 9 publicados (7 nuevos con lecciones y enlace), schema Course x9, FAQ y textos al dia. Sitemap lastmod 2026-11-08. Revision rapida del resto del sitio (limites, precios, reto diario, cursos): consistente.
+
+(17) Leo AI conectado con la memoria educativa (2026-11-09)
+  - app.js: leoAiMemory(ctx) reutiliza diagMistakeSummary (mistake_stats para miembros, historial de la cuenta para gratis; ambos ya incluyen errores de Academia 'ac:'). Recurrente = misma regla de LEO_AI_REPEAT_MIN (3 errores distintos en el tema, o 2 si es el mismo ejercicio). Invitado: sin memoria.
+  - Si es recurrente, el payload suma history {recurring,count,related[nombres de temas, max 2]}: sin ids, fechas ni datos de cuenta. Si no, el payload es identico al de antes.
+  - Bajo la respuesta: leoAiNextSteps() muestra max 3 enlaces del CATALOGO (clase/ficha, practica en el Plan solo miembros, curso). Cuenta gratis: sin Plan; nota 'en tu proxima sesion incluiremos ejercicios distintos' solo si existen (freeMemoryBoost). Sin venta de membresia.
+  - supabase_functions/leo-ai.ts: buildPrompt(explain) agrega UNA linea si history.recurring (pista nueva, max 2 frases). Reglas, tokens maximos, cuotas y presupuestos sin cambios. PENDIENTE: desplegar leo-ai (sin eso la IA ignora history; los enlaces funcionan igual).
+  - Pruebas: leo-ai-complementario (13), memoria-gratis (14), leo-ai-server (62). app ?v=20261109a.

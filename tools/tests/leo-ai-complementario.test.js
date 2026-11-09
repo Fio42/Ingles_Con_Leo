@@ -27,7 +27,8 @@ function load(){
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(read('data.js'), ctx);
   vm.runInContext(read('temas.js'), ctx);
-  vm.runInContext(read('app.js') + ';this.__t = { renderLeoAiAnswer, leoAiRepeatPractice, buildLeoAiPayload, setStats:m=>{ _mistakeStatsCache = m; }, G:GRAMMAR_BANK, temaForTopic, LEO_AI_REPEAT_MIN };', ctx);
+  if(global.__withAcademia) vm.runInContext(read('academia-motor.js'), ctx);
+  vm.runInContext(read('app.js') + ';this.__t = { renderLeoAiAnswer, leoAiRepeatPractice, buildLeoAiPayload, leoAiMemory, leoAiNextSteps, ACADEMIA_MOTOR: (typeof ACADEMIA_MOTOR !== "undefined" ? ACADEMIA_MOTOR : null), setStats:m=>{ _mistakeStatsCache = m; }, G:GRAMMAR_BANK, temaForTopic, LEO_AI_REPEAT_MIN };', ctx);
   return ctx;
 }
 let passed = 0, failed = 0;
@@ -90,7 +91,7 @@ test('explicación nueva: se muestra igual y SOLO añade el enlace al Plan cuand
   assert.strictEqual(kids(o, 'a').length, 0, 'sin patrón: nada que recomendar');
   assert(kids(o, 'p').some(p => /Truco/.test(p.textContent)));
   T.setStats(stats([stat(ids[1]), stat(ids[2])])); o = out(); T.renderLeoAiAnswer(o, payload, res, ctxFail);
-  const a = kids(o, 'a'); assert.strictEqual(a.length, 1); assert(/plan-estudio\.html/.test(a[0].href)); assert(/leo-ai-focus/.test(a[0].className));
+  const a = kids(o, 'a'); assert(a.length >= 1 && a.length <= 3, 'entre 1 y 3 enlaces, nunca los cuatro de siempre'); assert(a.some(x => /plan-estudio\.html/.test(x.href)), 'incluye practica en el Plan'); assert(a.every(x => /leo-ai-focus/.test(x.className)));
 });
 test('un fallo técnico (incluida una salida inválida) es un error, nunca un mensaje pedagógico, y no recomienda nada', ()=>{
   c.__leoMemberVerified = true; T.setStats(stats([stat(ids[1]), stat(ids[2])]));
@@ -111,6 +112,67 @@ test('el umbral y el destino reutilizan lo existente (sin motor nuevo)', ()=>{
   assert.strictEqual(T.LEO_AI_REPEAT_MIN, 3);
   assert(/diagMistakeSummary\(collectDiagAttempts\(loadProgress\(\)\), stats, Date\.now\(\)\)/.test(src), 'usa el diagnóstico existente');
   assert(/contentForTema\(temaId\)/.test(src));
+});
+
+test('memoria: el payload SOLO añade history cuando el tema es recurrente, y solo con cuenta, temas y nada más', ()=>{
+  c.__leoMemberVerified = true; T.setStats(stats([]));
+  assert(!('history' in T.buildLeoAiPayload(ctxFail)), 'un error: sin history');
+  T.setStats(stats([stat(ids[1]), stat(ids[2])]));
+  const p = T.buildLeoAiPayload(ctxFail);
+  assert.deepStrictEqual(Object.keys(JSON.parse(JSON.stringify(p.history))).sort(), ['count', 'recurring', 'related']);
+  assert(p.history.recurring === true && p.history.count === 3);
+  assert(!/user|email|@|\d{4}-\d{2}-\d{2}/.test(JSON.stringify(p.history)), 'sin datos personales ni fechas');
+  assert(!('history' in T.buildLeoAiPayload(Object.assign({}, ctxFail, { isCorrect:true }))), 'si acierta: sin history');
+});
+test('memoria: temas relacionados = otros temas con 2+ errores, maximo 2, solo nombres', ()=>{
+  c.__leoMemberVerified = true;
+  const others = [];
+  Object.keys(T.G).forEach(l => T.G[l].forEach(v => v.forEach(g => { const a = T.temaForTopic(g.topic), b = T.temaForTopic(groups.topic); if(a && b && a.id !== b.id && g.items.length >= 2 && !others.some(o => T.temaForTopic(o.topic).id === a.id)) others.push(g); })));
+  assert(others.length >= 1);
+  const extra = others.slice(0, 3).flatMap(g => [stat(g.items[0].id), stat(g.items[1].id)]);
+  T.setStats(stats([stat(ids[1]), stat(ids[2])].concat(extra)));
+  const m = T.leoAiMemory(ctxFail);
+  assert(m.recurring && m.related.length >= 1 && m.related.length <= 3);
+  assert(T.buildLeoAiPayload(ctxFail).history.related.length <= 2, 'al servidor: maximo 2');
+  m.related.forEach(r => assert(typeof r === 'string' && !/ac:|g-/.test(r)));
+});
+test('memoria (miembro): los pasos son del catalogo, maximo 3, sin venta de membresia, y solo si es recurrente', ()=>{
+  c.__leoMemberVerified = true; T.setStats(stats([]));
+  assert.strictEqual(T.leoAiNextSteps(ctxFail), null);
+  T.setStats(stats([stat(ids[1]), stat(ids[2])]));
+  const ns = T.leoAiNextSteps(ctxFail);
+  assert(ns && ns.links.length >= 1 && ns.links.length <= 3);
+  assert(ns.links.every(l => !/^https?:/.test(l.href) && /\.html/.test(l.href)), 'enlaces internos');
+  assert(/te ha costado varias veces/.test(ns.intro));
+  assert(!/membres|\$2|premium/i.test(JSON.stringify(ns)));
+});
+test('Academia alimenta la memoria: errores de un curso (ac:...) cuentan para el tema y se ven en Leo AI, sin duplicar', ()=>{
+  global.__withAcademia = true;
+  const c2 = load(), T2 = c2.__t; global.__withAcademia = false;
+  c2.__leoMemberVerified = true;
+  const entries = T2.ACADEMIA_MOTOR.indexEntries().filter(e => /^ac:/.test(e[0]));
+  let pick = null;
+  Object.keys(T2.ACADEMIA_MOTOR.courses).forEach(cid => {
+    const crs = T2.ACADEMIA_MOTOR.courses[cid];
+    if(pick || !crs.open) return;
+    Object.keys(T2.G).forEach(l => T2.G[l].forEach(v => v.forEach(g => {
+      const tm = T2.temaForTopic(g.topic);
+      if(!pick && tm && tm.id === crs.tema && g.items.length >= 2) pick = { cid, g };
+    })));
+  });
+  assert(pick, 'hay un tema con curso de academia y ejercicios del banco');
+  const item2 = pick.g.items[0], cx = { kind:'grammar', item:item2, isCorrect:false, userAnswer:'x' };
+  const acIds = entries.filter(e => e[0].indexOf('ac:' + pick.cid + ':') === 0).map(e => e[0]).slice(0, 2);
+  assert.strictEqual(acIds.length, 2, 'hay 2 actividades del curso');
+  T2.setStats(stats([]));
+  assert.strictEqual(T2.leoAiMemory(cx).recurring, false);
+  T2.setStats(stats(acIds.map(id => stat(id))));
+  const m = T2.leoAiMemory(cx);
+  assert(m.count === 3 && m.recurring, 'dos errores de academia + este = recurrente (' + m.count + ')');
+  const ns = T2.leoAiNextSteps(cx);
+  assert(ns && ns.links.some(l => l.key === 'course'), 'ofrece el curso relacionado del catalogo');
+  T2.setStats(stats(acIds.map(id => stat(id)).concat([stat(item2.id, 1)])));
+  assert.strictEqual(T2.leoAiMemory(cx).count, 3, 'el mismo ejercicio no se cuenta dos veces');
 });
 console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
 process.exit(failed ? 1 : 0);

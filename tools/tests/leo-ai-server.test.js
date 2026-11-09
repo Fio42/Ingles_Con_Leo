@@ -649,6 +649,21 @@ async function test(name, fn){
     ];
     casos.forEach(k => { const r = QCM.validateOutput('explain', k.o, [], k.c); assert(r && r.explanation === k.o.explanation && r.example_en === k.o.example_en && r.example_es === k.o.example_es, 'se entrega completo: ' + k.o.example_en); });
   });
+  await test('memoria: history solo agrega UNA linea cuando falló y es recurrente; no cambia reglas, tokens ni nada mas', async()=>{
+    const base = QCM.buildPrompt('explain', EXPLAIN);
+    const hist = QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { history:{ recurring:true, count:4, related:['Pasado simple','Preposiciones','Tercero'], userId:'u-123', email:'a@b.c' } }));
+    assert.strictEqual(hist.rules, base.rules, 'las reglas no cambian');
+    const extra = hist.text.split('\n').filter(l => !base.text.split('\n').includes(l));
+    assert.strictEqual(extra.length, 1, 'una sola linea nueva');
+    assert(/Dificultad recurrente/.test(extra[0]) && /4 ejercicios/.test(extra[0]) && /Pasado simple; Preposiciones/.test(extra[0]) && !/Tercero/.test(extra[0]), 'maximo 2 temas');
+    assert(!/u-123|a@b\.c/.test(hist.text), 'ignora campos que no son suyos');
+    ['recurring:false', 'no-es-objeto'].forEach(k => {
+      const h = k === 'no-es-objeto' ? 'x' : { recurring:false, count:5 };
+      assert.strictEqual(QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { history:h })).text, base.text, 'sin recurrencia: identico: ' + k);
+    });
+    assert.strictEqual(QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { isCorrect:true, history:{ recurring:true, count:3, related:[] } })).text.includes('Dificultad recurrente'), false, 'si acerto no aplica');
+    assert(/Dificultad recurrente: el alumno ya ha fallado 9 ejercicios/.test(QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { history:{ recurring:true, count:999 } })).text) || /varios/.test(QCM.buildPrompt('explain', Object.assign({}, EXPLAIN, { history:{ recurring:true, count:999 } })).text), 'cantidad acotada');
+  });
   console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');
   process.exit(failed ? 1 : 0);
 })();

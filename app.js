@@ -2958,6 +2958,8 @@ function buildLeoAiPayload(ctx){
       pageOk: ctx.isOk === true, topic: (typeof temaLabelOf === 'function' && writingTemaIdForItem(it.id)) ? leoAiText(temaLabelOf(writingTemaIdForItem(it.id)), 60) : '' };
   }
   const base = { mode:'explain', level, isCorrect: ctx.isCorrect === true, studentAnswer: leoAiText(ctx.userAnswer, 400) };
+  const mem = leoAiMemory(ctx);
+  if(mem && mem.recurring) base.history = { recurring: true, count: Math.min(mem.count, 9), related: mem.related.slice(0, 2).map(x => leoAiText(x, 60)) };   // solo cuenta y nombres de temas: nunca ids, fechas ni datos de la cuenta
   if(ctx.kind === 'grammar'){
     let topic = '';
     try{ const f = getMistakesItemIndex().get(it.id); topic = f && f.topic ? f.topic : ''; }catch(e){}
@@ -3347,6 +3349,65 @@ function leoAiRepeatPractice(ctx){
   }catch(e){ return null; }
 }
 
+/* ============================================================
+   MEMORIA EDUCATIVA PARA LEO AI
+   ------------------------------------------------------------
+   No es otro sistema de memoria: reutiliza el que ya existe (diagMistakeSummary: mistake_stats en la nube para miembros,
+   el historial de la cuenta en este navegador para cuentas gratis; ambos ya incluyen los errores de Academia 'ac:...').
+   Un solo error NO es dificultad recurrente (misma regla de LEO_AI_REPEAT_MIN). Cuando sí lo es:
+     - al servidor viaja solo { recurring, count, related[nombres de temas] }: ni ids, ni fechas, ni datos de la cuenta,
+       y es una línea de texto más: no cambia cuotas, presupuestos ni la cantidad de llamadas;
+     - debajo de la respuesta salen enlaces del CATÁLOGO (clase/ficha, práctica, curso), nunca generados por la IA.
+   Invitado: no hay memoria (no se guarda nada). Cuenta gratis: sin enlace al Plan (es de miembros); se le dice que sus
+   próximos ejercicios incluirán otros del tema (freeMemoryBoost), solo si de verdad existen para su nivel.
+   ============================================================ */
+function leoAiMemory(ctx){
+  try{
+    if(!ctx || ctx.isCorrect === true || !ctx.item || !ctx.item.id) return null;
+    if(typeof getDiagItemIndex !== 'function' || typeof TEMA_BY_ID === 'undefined') return null;
+    const member = window.__leoMemberVerified === true;
+    if(!member && !(typeof freeAcctId === 'function' && freeAcctId())) return null;   // invitado: nada guardado, nada recordado
+    const id = ctx.item.id;
+    const index = getDiagItemIndex();
+    const found = index && index.get(id);
+    const temaId = found ? diagTemaIdForFound(found) : null;
+    if(!temaId || !TEMA_BY_ID[temaId]) return null;
+    const stats = (member && typeof _mistakeStatsCache !== 'undefined' && _mistakeStatsCache instanceof Map) ? _mistakeStatsCache : null;
+    const active = diagMistakeSummary(collectDiagAttempts(loadProgress()), stats, Date.now()).active.filter(m => m.tema);
+    const own = active.filter(m => m.tema === temaId);
+    const failedBefore = own.some(m => m.itemId === id);
+    const count = own.filter(m => m.itemId !== id).length + 1;   // los anteriores + el de ahora (aún no guardado)
+    const recurring = count >= LEO_AI_REPEAT_MIN || (failedBefore && count >= 2);
+    const byTema = new Map();
+    active.forEach(m => { if(m.tema !== temaId) byTema.set(m.tema, (byTema.get(m.tema) || 0) + 1); });
+    const related = Array.from(byTema.entries()).filter(e => e[1] >= 2).sort((a, b) => b[1] - a[1]).slice(0, 2)
+      .map(e => TEMA_BY_ID[e[0]] && TEMA_BY_ID[e[0]].label).filter(Boolean);
+    return { temaId, kind: found.kind, count, recurring, related, member, ids: own.map(m => m.itemId).concat(failedBefore ? [] : [id]) };
+  }catch(e){ return null; }
+}
+
+/* Pasos siguientes bajo la respuesta de Leo AI: solo si el tema es recurrente. Máximo: clase/ficha + práctica + curso. */
+function leoAiNextSteps(ctx){
+  try{
+    const mem = leoAiMemory(ctx);
+    if(!mem || !mem.recurring) return null;
+    const row = sessionReinforceRows([{ itemId: ctx.item.id, isCorrect: false }], { actions: [] }, null)[0];
+    const label = (TEMA_BY_ID[mem.temaId] && TEMA_BY_ID[mem.temaId].label) || '';
+    const links = [];
+    if(row && row.lesson) links.push({ key: 'lesson', href: row.lesson.href, text: row.lesson.label + ': ' + row.label });
+    let note = '';
+    if(mem.member){
+      if(row && /^plan-estudio\.html/.test(row.practiceHref)) links.push({ key: 'practice', href: row.practiceHref, text: 'Practicar ejercicios distintos de ' + row.label });
+    } else {
+      const lvl = (typeof getUserLevel === 'function') ? getUserLevel() : 'facil';
+      if(freeMemoryHasNew({ kind: mem.kind, temaId: mem.temaId, ids: mem.ids }, lvl)) note = 'En tu próxima sesión de práctica incluiremos ejercicios distintos de este tema.';
+    }
+    if(row && row.course) links.push({ key: 'course', href: row.course.href, text: 'Curso: ' + row.course.title + (mem.member ? '' : (row.course.demo ? ' (demo gratis)' : '')) });
+    if(!links.length && !note) return null;
+    return { intro: label ? `${label} te ha costado varias veces. Para reforzarlo:` : 'Este tema te ha costado varias veces. Para reforzarlo:', links: links.slice(0, 3), note, tema: mem.temaId };
+  }catch(e){ return null; }
+}
+
 function renderLeoAiAnswer(out, payload, res, ctx){
   out.innerHTML = '';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
@@ -3381,8 +3442,17 @@ function renderLeoAiAnswer(out, payload, res, ctx){
       if(a.example_es){ const es = document.createElement('div'); es.className = 'example-es'; es.textContent = a.example_es; ex.appendChild(es); }
       out.appendChild(ex);
     }
-    const rp = leoAiRepeatPractice(ctx);
-    if(rp){ const link = add('a', 'leo-ai-focus', rp.text); link.href = rp.href; }
+    const ns = leoAiNextSteps(ctx);
+    if(ns){
+      add('p', 'leo-ai-tip', ns.intro);
+      ns.links.forEach(l => { const link = add('a', 'leo-ai-focus', l.text); link.href = l.href; link.setAttribute('data-ai-next', l.key); link.style.display = 'block'; });
+      if(ns.note) add('p', 'leo-ai-note', ns.note);
+      try{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_next_shown', { tier: window.__leoMemberVerified === true ? 'member' : 'free', links: ns.links.length }); }catch(e){}
+      out.addEventListener('click', ev => { const a = ev.target && ev.target.closest && ev.target.closest('[data-ai-next]'); if(a){ try{ trackLeoEvent('leo_ai_next_clicked', { tipo: a.getAttribute('data-ai-next') }); }catch(e){} } });
+    } else {
+      const rp = leoAiRepeatPractice(ctx);
+      if(rp){ const link = add('a', 'leo-ai-focus', rp.text); link.href = rp.href; }
+    }
   }
   add('p', 'leo-ai-note', payload.mode === 'insight'
     ? 'Análisis automático de tus resultados. No cambia tu progreso.'
