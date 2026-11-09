@@ -1989,3 +1989,5 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
 (14) Correos: upgrade-nudge-emails ya no dice '$37 MXN', solo $2 USD / $20 USD (pedido de Leo). Las dos copias siguen identicas. PENDIENTE: desplegar upgrade-nudge-emails.
 
 (15) Cuadro de membresia: la linea de Academia ya no dice 'hoy TO BE' sino los cursos publicados. app ?v=20261108k.
+
+(16) academia-de-ingles.html estaba desactualizada (solo 2 cursos). Ahora lista los 9 publicados (7 nuevos con lecciones y enlace), schema Course x9, FAQ y textos al dia. Sitemap lastmod 2026-11-08. Revision rapida del resto del sitio (limites, precios, reto diario, cursos): consistente.
