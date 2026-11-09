@@ -1987,3 +1987,5 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - app.js: se quita 37/40 MXN del cuadro de membresia y de los avisos de cuenta. Quedan solo en miembros.html, en la pantalla de pago (tarjeta/Mercado Pago), y en correos/webhooks/funciones (sin tocar). Version app ?v=20261108j.
 
 (14) Correos: upgrade-nudge-emails ya no dice '$37 MXN', solo $2 USD / $20 USD (pedido de Leo). Las dos copias siguen identicas. PENDIENTE: desplegar upgrade-nudge-emails.
+
+(15) Cuadro de membresia: la linea de Academia ya no dice 'hoy TO BE' sino los cursos publicados. app ?v=20261108k.

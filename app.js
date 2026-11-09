@@ -4396,7 +4396,7 @@ function renderFreeDailyLimitReachedBlock(){
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
         <p class="summary-score">Vas muy bien. Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
         <ul class="upgrade-benefits">
-          ${window.ACADEMIA_LIVE ? '<li><strong>Academia Inglés con Leo</strong>: cursos publicados (hoy TO BE), con evaluaciones e insignias</li>' : ''}
+          ${window.ACADEMIA_LIVE ? '<li><strong>Academia Inglés con Leo</strong>: todos los cursos publicados (TO BE, pronombres, artículos, presente simple, DO / DOES y más), con evaluaciones e insignias</li>' : ''}
           <li>Un sistema que recuerda tus errores y te dice qué practicar después</li>
           <li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>
           <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
