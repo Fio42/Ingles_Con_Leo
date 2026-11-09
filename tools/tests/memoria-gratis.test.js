@@ -24,7 +24,7 @@ function makeCtx(store, tier, uid){
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { freeSessionAnswer, freeSessionEnd, freeMemoryWeakSpots, freeMemoryBoost, freeMemoryCardHtml, freeMemoryNoteHtml, loadProgress, readFreePending,
   progressSessionIdentity, GRAMMAR_BANK, VOCAB_BANK, MEMBERS_ONLY_VARIANT_INDEX, FREE_USER_DAILY_LIMIT, todayStr, localDailyCountKey, flushFreeSessions,
-  getMistakesItemIndex, diagTemaIdForFound, diagTemaIdForTopic, computeMistakeIds,
+  recordSession, freeSampleApply, FREE_SAMPLE_IDS, freeSampleItems, getMistakesItemIndex, diagTemaIdForFound, diagTemaIdForTopic, computeMistakeIds,
   setAcct(t, p){ _leoAccessTier = t; _leoAccessProfile = p; } };`, ctx);
   ctx.__t.ctx = ctx;
   ctx.__t.setAcct(tier, tier === 'free' ? { id: uid } : null);
@@ -128,6 +128,42 @@ const DAY = 86400000;
     assert(A.freeMemoryCardHtml());
     const B = makeCtx({}, 'free', 'user-B');       // otro navegador/espacio local, misma app
     assert.strictEqual(B.freeMemoryCardHtml(), '');
+  });
+  for(const tier of ['guest', 'free']){
+    await test('Muestra gratis de Do/Does (' + tier + '): 2 ejercicios fijos por sesión, mismo largo, solo los 3 elegidos', async () => {
+      const T = makeCtx({}, tier, 'user-S');
+      ['principiante', 'facil'].forEach(level => {
+        const baseVariant = T.GRAMMAR_BANK[level].findIndex((v, i) => T.MEMBERS_ONLY_VARIANT_INDEX.gramatica[level].indexOf(i) === -1);
+        const base = []; T.GRAMMAR_BANK[level][baseVariant].forEach(tg => tg.items.forEach(it => base.push(Object.assign({ topic: tg.topic }, it))));
+        while(base.length < 8) base.push(base[base.length - 1]);
+        const out = T.freeSampleApply(level, base.slice(0, 8));
+        assert.strictEqual(out.length, 8);
+        const s = out.filter(i => T.FREE_SAMPLE_IDS[level].indexOf(i.id) !== -1);
+        assert.strictEqual(s.length, 2); assert(out.indexOf(s[0]) > 0, 'nunca la primera');
+        s.forEach(i => assert(T.diagTemaIdForTopic(i.topic) === 'do-does'));
+      });
+      assert.strictEqual(T.FREE_USER_DAILY_LIMIT, 6);
+    });
+  }
+  await test('Falla Do/Does de la muestra: recibe la clase y el curso relacionado (con membresía); mañana ve otros del tema', async () => {
+    const store = {}; const T = makeCtx(store, 'free', 'user-A');
+    const id = T.FREE_SAMPLE_IDS.facil[0];
+    T.freeSessionAnswer('gramatica', 'facil', ['Preguntas con Do/Does en presente simple'], { itemId: id, isCorrect: false });
+    T.freeSessionEnd('gramatica');
+    const card = T.freeMemoryCardHtml();
+    assert(/articulo-do-vs-does/.test(card), 'clase'); assert(/academia\.html#\/curso\/do-does/.test(card) && /con membresía/.test(card), 'curso');
+    const baseVariant = T.GRAMMAR_BANK.facil.findIndex((v, i) => T.MEMBERS_ONLY_VARIANT_INDEX.gramatica.facil.indexOf(i) === -1);
+    const base = []; T.GRAMMAR_BANK.facil[baseVariant].forEach(tg => tg.items.forEach(it => base.push(Object.assign({ topic: tg.topic }, it))));
+    const m = T.freeMemoryBoost('gramatica', 'facil', base.slice(0, 8));
+    assert(m.boosted.length >= 1 && m.boosted.every(b => b !== id && T.diagTemaIdForFound(T.getMistakesItemIndex().get(b)) === 'do-does'), 'otros del mismo tema');
+  });
+  await test('Miembro: su motor no cambia (se guarda y se sube como siempre; la memoria gratis no interviene)', async () => {
+    const store = {}; const T = makeCtx(store, 'member', null);
+    const ids = doDoesIds(T, 'facil');
+    T.recordSession({ skill: 'gramatica', level: 'facil', topics: [ids[0].topic], results: [{ itemId: ids[0].id, isCorrect: false }], startedAt: Date.now() - 1000 });
+    assert.strictEqual(calls.pushSession, 1); assert.strictEqual(calls.apply, 1);
+    const p = plain(T.loadProgress()); assert.strictEqual(p.sessions.length, 1); assert(!p.sessions[0].tier);
+    assert.strictEqual(T.freeMemoryCardHtml(), ''); assert.strictEqual(calls.free.length, 0);
   });
   console.log(passed + ' pruebas ok');
 })();

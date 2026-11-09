@@ -4237,6 +4237,33 @@ function freeMemoryWeakSpots(){
     return Array.from(groups.values()).sort((a, b) => (b.ids.length - a.ids.length) || (a.rank - b.rank)).slice(0, 3);
   }catch(e){ return []; }
 }
+/* Muestra gratuita de un fundamento: 3 ejercicios fijos de Do/Does (de la variante reservada a Miembros), de los que cada sesión gratis de
+   Gramática (invitado o cuenta) trae 2 en lugar de otros 2 de su cola: mismo largo y mismo conteo del límite diario. No abre la variante
+   ni el curso; sirve para que quien falle Do/Does reciba la explicación, el refuerzo y el curso relacionado. */
+const FREE_SAMPLE_IDS = {
+  principiante: ['g-principiante5-dodoes-1', 'g-principiante5-dodoes-2', 'g-principiante5-dodoes-4'],
+  facil: ['g-facil7-dodoes-1', 'g-facil7-dodoes-2', 'g-facil7-dodoes-4']
+};
+const FREE_SAMPLE_PER_SESSION = 2;
+function freeSampleItems(level){
+  const ids = FREE_SAMPLE_IDS[level] || [];
+  const out = [];
+  (GRAMMAR_BANK[level] || []).forEach(variant => variant.forEach(tg => tg.items.forEach(it => { if(ids.indexOf(it.id) !== -1) out.push(Object.assign({ topic: tg.topic }, it)); })));
+  return out;
+}
+// Mete la muestra en posiciones 2 y 5 de la sesión (nunca la primera). Con historial (cuenta) deja fuera lo que ya acertó.
+function freeSampleApply(level, pool){
+  try{
+    if(!Array.isArray(pool) || pool.length < 6) return pool;
+    let cand = freeSampleItems(level).filter(it => !pool.some(p => p.id === it.id));
+    if(freeAcctId()){ const h = focusHistory(); const fresh = cand.filter(it => h.latest.get(it.id) !== true); if(fresh.length) cand = fresh; }
+    const pick = shuffleArray(cand).slice(0, FREE_SAMPLE_PER_SESSION);
+    if(!pick.length) return pool;
+    const out = pool.slice();
+    [1, 4].slice(0, pick.length).forEach((pos, i) => { out[pos] = pick[i]; });
+    return out;
+  }catch(e){ return pool; }
+}
 // Cambia hasta FREE_MEMORY_BOOST ejercicios de la sesión gratis por otros NUEVOS (o, si no hay, los menos recientes) del mismo
 // tema que costó. Solo variantes abiertas a cuentas gratis; el largo de la sesión no cambia, así que sigue contando igual en el límite.
 function freeMemoryBoost(skill, level, pool){
@@ -4257,18 +4284,21 @@ function freeMemoryBoost(skill, level, pool){
       const tid = diagTemaIdForFound({ kind, item, topic: topic || null });
       if(tid && temaIds.has(tid)) cands.push(topic ? Object.assign({ topic }, item) : item);
     };
+    const sample = (skill === 'gramatica' && FREE_SAMPLE_IDS[level]) || [];
     (bank[level] || []).forEach((variant, vi) => {
-      if(blocked.indexOf(vi) !== -1) return;
+      if(blocked.indexOf(vi) !== -1){ variant.forEach(tg => { if(tg.items) tg.items.forEach(it => { if(sample.indexOf(it.id) !== -1) consider(it, tg.topic); }); }); return; }
       if(skill === 'gramatica') variant.forEach(tg => tg.items.forEach(it => consider(it, tg.topic)));
       else variant.forEach(it => consider(it, null));
     });
-    const picked = shuffleArray(cands).sort((a, b) => varietyRank(hist, a.id) - varietyRank(hist, b.id)).slice(0, FREE_MEMORY_BOOST);
+    const ranked = shuffleArray(cands).sort((a, b) => varietyRank(hist, a.id) - varietyRank(hist, b.id));
+    const notJustFailed = ranked.filter(i => varietyRank(hist, i.id) < 2);      // lo que falló en la última sesión solo vuelve si no hay otra cosa
+    const picked = (notJustFailed.length ? notJustFailed : ranked).slice(0, FREE_MEMORY_BOOST);
     if(!picked.length) return none;
     const out = pool.slice();
     let removed = 0;
     for(let i = out.length - 1; i >= 0 && removed < picked.length; i--){
       const tid = diagTemaIdForFound({ kind, item: out[i], topic: out[i].topic || null });
-      if(tid && temaIds.has(tid)) continue;     // lo que ya trae sobre el tema se queda
+      if((tid && temaIds.has(tid)) || (sample.indexOf(out[i].id) !== -1)) continue;     // lo que ya trae sobre el tema (y la muestra) se queda
       out.splice(i, 1); removed++;
     }
     const use = picked.slice(0, removed);
@@ -4281,26 +4311,30 @@ function freeMemoryNoteHtml(mem, idx){
   if(!mem || !mem.note || idx !== 0) return '';
   return '<p class="free-memory-note" style="margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(37,62,204,0.08);font-size:14px;">' + commentEscapeHtml(mem.note) + '</p>';
 }
-// Tarjeta "Recordamos lo que te costó" (arriba de la práctica gratis). Los ejercicios que propone cuentan en el límite de hoy.
+// Tarjeta "Recordamos lo que te costó" (arriba de la práctica gratis). Mismo orden que el resumen de sesión (sessionReinforceRows):
+// explicación exacta -> artículo o ficha del glosario -> ejercicios distintos -> curso de academia publicado (con membresía).
+// Los ejercicios que propone cuentan en el límite de hoy.
 function freeMemoryCardHtml(){
   try{
     const weak = freeMemoryWeakSpots();
     if(!weak.length) return '';
     const w = weak[0];
     const tema = TEMA_BY_ID[w.temaId];
-    const c = (typeof contentForTema === 'function') ? contentForTema(w.temaId) : null;
+    const row = sessionReinforceRows(w.ids.map(id => ({ itemId: id, isCorrect: false })), { actions: [] }, null)[0] || null;
     const skill = FREE_MEMORY_KIND_SKILL[w.kind];
     const atLimit = freeDailyLimitReached();
     const used = _leoAccessTier === 'free' ? getFreeAcctExerciseCount() : 0;
     const n = w.ids.length;
-    const lesson = c && c.article ? ' <a href="' + commentEscapeHtml(c.article) + '">' + commentEscapeHtml(c.articleLabel || 'Ver la clase') + '</a>' : '';
+    const links = [];
+    if(row && row.lesson) links.push('<a href="' + commentEscapeHtml(row.lesson.href) + '" data-rf="lesson">' + commentEscapeHtml(row.lesson.label) + '</a>');
+    if(row && row.course) links.push('<a href="' + commentEscapeHtml(row.course.href) + '" data-rf="course">Curso: ' + commentEscapeHtml(row.course.title) + '</a> <small style="color:var(--ink-faint);">con membresía' + (row.course.demo ? ' (demo gratis)' : '') + '</small>');
     const action = atLimit
       ? '<span style="color:var(--ink-faint);">Hoy ya usaste tus ' + FREE_USER_DAILY_LIMIT + ' ejercicios gratis. Mañana seguimos con esto.</span>'
       : '<button type="button" class="btn btn-primary btn-sm" data-free-memory="' + skill + '">Practicar ejercicios nuevos</button> <span style="font-size:13px;color:var(--ink-faint);">Cuentan en tus ' + FREE_USER_DAILY_LIMIT + ' de hoy (' + used + ' usados).</span>';
-    return '<strong>Recordamos lo que te costó</strong><p style="margin:6px 0 10px;">' + commentEscapeHtml(tema.label) + ' (' + n + (n === 1 ? ' error' : ' errores') + '). Te proponemos ejercicios distintos para mejorarlo.' + lesson + '</p>' + action;
+    return '<strong>Recordamos lo que te costó</strong><p style="margin:6px 0 10px;">' + commentEscapeHtml(tema.label) + ' (' + n + (n === 1 ? ' error' : ' errores') + '). Te proponemos ejercicios distintos para mejorarlo.</p>'
+      + (links.length ? '<p style="margin:0 0 10px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">' + links.join('') + '</p>' : '') + action;
   }catch(e){ return ''; }
 }
-
 /* Un mismo evento (p. ej. el aviso de límite) se pinta muchas veces si la persona recarga o vuelve a la pantalla:
    se manda UNA vez por pestaña y día para que GA4 cuente personas y no repeticiones. */
 function trackLeoEventOncePerDay(name, params){
@@ -7950,6 +7984,7 @@ function sessionReinforceRows(results, ins, covered){
         const sr = skillErrorResource(g.first.kind, g.first.item.id);
         if(sr) lesson = { href: sr.href, label: sr.label };
       }
+      if(!lesson && c.quick) lesson = { href: c.quick.href, label: 'Ver ficha del glosario' };   // sin artículo: la ficha del glosario del tema
       const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(g.id) : null;
       out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, course, skill: c.skill });
     });
@@ -8922,6 +8957,8 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
   for(let i=0;i<maxLen;i++){
     topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
   }
+  const sampled = freeSampleApply(level, pool);
+  if(sampled !== pool) pool.splice(0, pool.length, ...sampled);
   const mem = freeMemoryBoost('gramatica', level, pool);
   if(mem.boosted.length) pool.splice(0, pool.length, ...mem.pool);
   const total = pool.length;

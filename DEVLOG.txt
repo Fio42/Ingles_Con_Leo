@@ -1954,3 +1954,12 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Eventos nuevos: free_memory_shown (1 vez al día), free_memory_practice_clicked. Sin cambios en pagos, membresías, límites ni Supabase.
   - Aviso: las variantes con Do/Does están reservadas a Miembros; para cuentas gratis el tema se llama "Presente simple" (8 ejercicios libres en Fácil).
   - Pruebas: memoria-gratis (6), free-sessions actualizada (14). Versión app ?v=20261108f.
+
+2026-11-08 (10) | Practica -> academia conectadas para gratis y miembros (sin motor nuevo). SIN publicar.
+  - Tarjeta "Recordamos lo que te costó" ahora usa sessionReinforceRows (el mismo orden del resumen): clase exacta -> artículo o ficha del glosario ->
+    ejercicios nuevos -> curso de academia publicado, marcado "con membresía" (TO BE: demo gratis). Sin glosario/artículo no se inventa nada.
+    sessionReinforceRows ahora cae a la ficha del glosario del tema cuando no hay artículo.
+  - Muestra gratuita de Do/Does (FREE_SAMPLE_IDS: 3 ejercicios fijos en Principiante y Fácil; 2 por sesión de Gramática, en las posiciones 2 y 5).
+    Misma longitud de sesión y mismo conteo del límite (3 invitado / 6 cuenta). La variante y el curso siguen siendo de Miembros.
+  - Refuerzo de memoria: lo fallado en la última sesión solo vuelve si no hay otros ejercicios del tema.
+  - Pruebas: memoria-gratis 10 (muestra, curso/clase, miembro intacto). Versión app ?v=20261108g.
