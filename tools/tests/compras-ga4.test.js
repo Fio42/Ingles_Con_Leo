@@ -49,7 +49,7 @@ test('cobros intactos: las funciones de pago no se tocaron (return_url, webhooks
 test('eventos esenciales instrumentados sin datos personales', ()=>{
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   ['first_practice_started', 'first_session_completed', 'free_daily_limit_reached'].forEach(e => assert(app.indexOf("'" + e + "'") !== -1, e));
-  assert(html.indexOf("trackLeoEvent('checkout_started')") !== -1 && html.indexOf("trackLeoEvent('free_signup_completed')") !== -1);
+  assert(html.indexOf("trackLeoEvent('checkout_started', from") !== -1 && html.indexOf("trackLeoEvent('free_signup_completed')") !== -1);
   assert(!/trackLeoEvent\('(first_practice_started|first_session_completed|checkout_started)'[^)]*(email|uid|userId|\.id)/.test(app + html));
 });
 console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0);

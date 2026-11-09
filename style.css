@@ -2447,3 +2447,9 @@ html:not(.ac-live) .home-main{grid-template-columns:1fr;}
 .sess-rf-name small{display:block;font-weight:500;font-size:0.8rem;color:var(--ink-soft);margin-top:1px;}
 .sess-rf-links{display:flex;flex-wrap:wrap;gap:0 20px;font-size:0.88rem;font-weight:700;}
 .sess-rf-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--blue-deep, var(--blue));text-decoration:underline;text-underline-offset:3px;}
+.first-offer{margin:0 0 16px;padding:18px;border:1px solid #d9e1ff;border-radius:var(--radius-lg);background:var(--blue-tint);text-align:left;}
+.first-offer h3{margin:0 0 8px;font-size:1.05rem;color:var(--ink);}
+.first-offer p{margin:0 0 8px;color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
+.first-offer-list{margin:0 0 10px;padding-left:20px;color:var(--ink-soft);font-size:0.92rem;line-height:1.5;}
+.first-offer-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+.first-offer-actions .btn{flex:1 1 200px;justify-content:center;min-height:44px;text-align:center;}

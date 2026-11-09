@@ -4206,13 +4206,22 @@ function freeSessionAnswer(skill, level, topics, result){
   }catch(e){}
 }
 // Fin de la sesión (resumen o límite diario): se cierra y se sube. Sin `skill` cierra todas menos el reto diario.
+// ¿Se acaba de cerrar la PRIMERA sesión de esta cuenta? El marcador del servidor (free_first_exercise_at, se pone al primer ejercicio)
+// cae dentro de esa sesión; en una cuenta que ya practicaba (otro dispositivo, otro navegador) es anterior y NO cuenta: así
+// first_session_completed no se infla al cambiar de dispositivo.
+function freeFirstSessionClosed(list){
+  const fa = Date.parse((_leoAccessProfile && _leoAccessProfile.free_first_exercise_at) || '');
+  if(!fa) return false;
+  const uid = freeAcctId();
+  return list.some(d => d.uid === uid && !d.open && d.startedAt <= fa + 2000 && fa <= (d.endedAt || Date.now()) + 5000);
+}
 function freeSessionEnd(skill){
   try{
     if(!freeAcctId()) return;
     const list = readFreePending();
     if(closeFreeDrafts(list, skill || null, skill ? undefined : 'reto-diario')){
       writeFreePending(list);
-      try{ if(loadProgress().sessions.length <= 1) trackFirstSessionOnce('free'); }catch(e){}
+      try{ if(freeFirstSessionClosed(list)) trackFirstSessionOnce('free'); }catch(e){}
     }
     flushFreeSessions();
   }catch(e){}
@@ -9128,6 +9137,53 @@ function freeReinforceHtml(results){
     });
   }catch(e){}
 })();
+/* ---------- Invitación a la membresía tras la PRIMERA sesión gratis (una vez por cuenta y navegador) ----------
+   Tarjeta discreta (sin ventana emergente, no interrumpe la práctica) con dos decisiones: conocer la membresía o seguir gratis.
+   Aparece donde la persona ya está leyendo resultados: al final de esa sesión (resumen) o, si la sesión terminó en el muro del límite
+   o se cerró la pestaña, la próxima vez que abre la práctica. Nunca a miembros, invitados ni cuentas que no son nuevas (la bandera de
+   primera sesión solo la pone una primera sesión real: ver freeFirstSessionClosed). No cambia el límite de 6 ni quita nada gratis.
+   Solo muestra datos reales de la persona (aciertos de la sesión, el tema que más le costó); si no los hay, no los inventa. */
+const FIRST_OFFER_KEY = 'leo_first_offer_v1';
+function freeFirstOfferEligible(){
+  try{
+    if(_leoAccessTier !== 'free' || !freeAcctId() || window.__leoMemberVerified === true) return false;
+    if(!LS_P.getItem('leo_first_session_evt') || LS_P.getItem(FIRST_OFFER_KEY)) return false;
+    return !freeDailyLimitReached();   // al llegar al límite ya existe su bloque propio
+  }catch(e){ return false; }
+}
+function freeFirstOfferHtml(results){
+  try{
+    if(!freeFirstOfferEligible()) return '';
+    LS_P.setItem(FIRST_OFFER_KEY, String(Date.now()));            // se marca al mostrarse: una sola vez
+    trackLeoEvent('first_session_offer_viewed');
+    const graded = Array.isArray(results) ? results.filter(r => r && typeof r.isCorrect === 'boolean') : [];
+    let progress = '';
+    if(graded.length >= 3) progress += '<p class="first-offer-progress">En tu primera sesión acertaste <strong>' + graded.filter(r => r.isCorrect).length + ' de ' + graded.length + '</strong>.</p>';
+    const w = freeMemoryWeakSpots()[0], t = w && TEMA_BY_ID[w.temaId];
+    if(t) progress += '<p class="first-offer-progress">Lo que más te costó: <strong>' + commentEscapeHtml(t.label) + '</strong> (' + w.ids.length + (w.ids.length === 1 ? ' error' : ' errores') + ').</p>';
+    const nCourses = (window.ACADEMIA_LIVE && typeof ACADEMIA_COURSE_BY_TEMA !== 'undefined') ? new Set(Object.keys(ACADEMIA_COURSE_BY_TEMA).map(k => ACADEMIA_COURSE_BY_TEMA[k].course)).size : 0;
+    return '<div class="first-offer" data-first-offer-card><h3>Terminaste tu primera sesión</h3>' + progress
+      + '<p class="first-offer-lead">Con la membresía sigues sin límite y con un sistema que recuerda lo que te cuesta:</p><ul class="first-offer-list">'
+      + (nCourses ? '<li><strong>' + nCourses + ' cursos</strong> de la Academia, con evaluaciones e insignias</li>' : '')
+      + '<li><strong>Práctica ilimitada</strong>, sin el tope diario</li><li>Repaso automático de tus errores y qué practicar después</li></ul>'
+      + '<p class="first-offer-price"><strong>$2 USD al mes</strong>. Cancela cuando quieras.</p>'
+      + '<div class="first-offer-actions"><a class="btn btn-primary" href="miembros.html" data-first-offer="know">Conocer la membresía</a>'
+      + '<button type="button" class="btn btn-ghost" data-first-offer="free">Seguir aprendiendo gratis</button></div></div>';
+  }catch(e){ return ''; }
+}
+document.addEventListener('click', e => {
+  try{
+    const b = e.target && e.target.closest ? e.target.closest('[data-first-offer]') : null;
+    if(!b) return;
+    if(b.getAttribute('data-first-offer') === 'know'){
+      trackLeoEvent('first_session_offer_clicked');
+      try{ sessionStorage.setItem('leoOfferFrom', 'first_session'); }catch(err){}   // miembros.html lo suma a checkout_started
+    } else {
+      trackLeoEvent('first_session_offer_dismissed');
+      const card = b.closest('[data-first-offer-card]'); if(card) card.style.display = 'none';
+    }
+  }catch(err){}
+});
 /* ---------- Resumen de sesión gratis (independiente del de Miembros) ---------- */
 function renderFreeSessionSummary({ title, score, topics, results }){
   const wrong = Array.isArray(results) ? results.filter(r => r && r.isCorrect === false).length : 0;
@@ -9159,6 +9215,7 @@ function renderFreeSessionSummary({ title, score, topics, results }){
       </div>
       ${leoVozHtml(vozId)}
       ${reinforce}
+      ${atLimit ? '' : freeFirstOfferHtml(results)}
       ${aiVariant ? leoAiPitchHtml(aiVariant) : !atLimit ? '' : `
       <div class="summary-unlock">
         <p class="summary-unlock-label">Esto es una muestra del sistema.</p>
@@ -9764,6 +9821,12 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   }
   renderMemoryCard();
   window.addEventListener('leo-progress-synced', renderMemoryCard);
+  // Invitación única tras la primera sesión (si esa sesión no terminó en un resumen: muro del límite o pestaña cerrada). Va entre la
+  // tarjeta de memoria y los niveles, sin ventana emergente.
+  try{
+    const offerHtml = (levelsEl && levelsEl.parentNode) ? freeFirstOfferHtml(null) : '';
+    if(offerHtml){ const w = document.createElement('div'); w.innerHTML = offerHtml; levelsEl.parentNode.insertBefore(w.firstChild, levelsEl); }
+  }catch(e){}
   renderCurrent();
   // Para practica.html: tras el onboarding (o al llegar con la cuenta recién creada) se muestra el nivel elegido y se
   // baja directo al ejercicio, para que en el móvil la primera pregunta no quede debajo de las tarjetas de nivel.

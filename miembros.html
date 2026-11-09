@@ -27,7 +27,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261108a">
+<link rel="stylesheet" href="style.css?v=20261109a">
 <link rel="preload" as="style" href="chatbot.css?v=20261031a">
 <link rel="stylesheet" href="chatbot.css?v=20261031a" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261031a"></noscript>
@@ -595,7 +595,7 @@
 <script src="temas.js?v=20261109b"></script>
 <script src="academia-cursos.js?v=20261108a"></script>
 <script src="inicio-alumno.js?v=20261108c"></script>
-<script src="app.js?v=20261109d"></script>
+<script src="app.js?v=20261109e"></script>
 <script src="backend.js?v=20261108c"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -1263,7 +1263,7 @@
       try{ last = parseInt(sessionStorage.getItem('leoIntentAt') || '0', 10) || 0; }catch(e){}
       if(Date.now() - last < 10 * 60000) return;
       try{ sessionStorage.setItem('leoIntentAt', String(Date.now())); }catch(e){}
-      if(typeof trackLeoEvent === 'function') trackLeoEvent('checkout_started');   // mismo momento que checkout_started_at en Supabase (sin datos personales)
+      if(typeof trackLeoEvent === 'function'){ let from = ''; try{ from = sessionStorage.getItem('leoOfferFrom') || ''; }catch(e){} trackLeoEvent('checkout_started', from ? { origen: from } : undefined); }   // mismo momento que checkout_started_at en Supabase (sin datos personales)
       LeoBackend.markPurchaseIntent();
     }catch(e){}
   }
