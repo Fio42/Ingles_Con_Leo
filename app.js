@@ -1303,7 +1303,9 @@ function recordSession({ skill, level, topics, results, startedAt }){
   };
   markChecksConsumed(session.results);
   updateMicroStats(session.results, session.date);
+  const firstEver = p.sessions.length === 0;
   p.sessions.push(session);
+  if(firstEver && skill !== 'check') trackFirstSessionOnce('member');
   if(skill !== 'check') p.lastActivity = { skill, level, topic: (topics && topics[0]) || null, date: session.date };
   saveProgressRaw(p);
   stampDerived();
@@ -4111,7 +4113,10 @@ function bumpFreeAcctExerciseCount(){
     const isFirstEver = !_leoAccessProfile.free_first_exercise_at;
     const justReachedLimit = next === FREE_USER_DAILY_LIMIT;
     LeoBackend.bumpFreeDailyCount(next, todayStr(), { isFirstEver, justReachedLimit }).catch(function(){});
-    if(isFirstEver) _leoAccessProfile.free_first_exercise_at = new Date().toISOString();
+    if(isFirstEver){
+      _leoAccessProfile.free_first_exercise_at = new Date().toISOString();
+      trackLeoEvent('first_practice_started', { tier: 'free' });   // una vez por cuenta: lo marca el propio servidor (free_first_exercise_at)
+    }
     if(justReachedLimit) _leoAccessProfile.free_daily_limit_reached_at = new Date().toISOString();
     // Mantiene el perfil en memoria al día: si se vuelve a llamar a
     // getFreeAcctExerciseCount() en esta misma carga de página (por
@@ -4205,7 +4210,10 @@ function freeSessionEnd(skill){
   try{
     if(!freeAcctId()) return;
     const list = readFreePending();
-    if(closeFreeDrafts(list, skill || null, skill ? undefined : 'reto-diario')) writeFreePending(list);
+    if(closeFreeDrafts(list, skill || null, skill ? undefined : 'reto-diario')){
+      writeFreePending(list);
+      try{ if(loadProgress().sessions.length <= 1) trackFirstSessionOnce('free'); }catch(e){}
+    }
     flushFreeSessions();
   }catch(e){}
 }
@@ -4440,6 +4448,15 @@ function freeMemoryCardHtml(){
 }
 /* Un mismo evento (p. ej. el aviso de límite) se pinta muchas veces si la persona recarga o vuelve a la pantalla:
    se manda UNA vez por pestaña y día para que GA4 cuente personas y no repeticiones. */
+// Primera sesión terminada de una cuenta (invitados no: no hay cuenta). Una vez por cuenta y navegador (LS_P es por cuenta).
+// Sin ids ni datos personales: solo el tipo de cuenta.
+function trackFirstSessionOnce(tier){
+  try{
+    if(!LeoScope.isAccount() || LS_P.getItem('leo_first_session_evt')) return;
+    LS_P.setItem('leo_first_session_evt', '1');
+    trackLeoEvent('first_session_completed', { tier: tier });
+  }catch(e){}
+}
 function trackLeoEventOncePerDay(name, params){
   var key = 'leo_ev_' + name + '_' + new Date().toISOString().slice(0, 10);
   try{ if(sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); }catch(e){}

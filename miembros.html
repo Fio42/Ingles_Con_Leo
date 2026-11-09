@@ -595,7 +595,7 @@
 <script src="temas.js?v=20261109b"></script>
 <script src="academia-cursos.js?v=20261108a"></script>
 <script src="inicio-alumno.js?v=20261108c"></script>
-<script src="app.js?v=20261109c"></script>
+<script src="app.js?v=20261109d"></script>
 <script src="backend.js?v=20261108c"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -775,6 +775,26 @@
   // mostrarse: solo aparece cuando el acceso NO es inmediato.
   const cameFromCheckoutReturn = /(^|[?&])(paypal|stripe|mp)=success(&|$)/.test(window.location.search);
   let checkoutPollTimer = null;
+  // Compra confirmada para Analytics / Pixel: SOLO cuando el webhook del proveedor ya activo la membresia (is_member + member_since)
+  // y la persona vuelve del pago (?stripe|paypal|mp=success). Antes solo se registraba si el webhook llegaba DESPUES de volver
+  // (tardaba en activarse); si ya estaba activa, unlock() corria sin avisar y la compra se perdia (GA4 vio 3 de ~12).
+  // Una sola vez por compra (llave con member_since), solo compras recientes, y las membresias manuales (sin member_since) no cuentan.
+  // El identificador es opaco (derivado de la fecha de activacion): ningun dato personal viaja a GA4.
+  function trackPurchaseOnce(profile){
+    try{
+      if(!cameFromCheckoutReturn || !profile || !profile.is_member || !profile.member_since || typeof trackLeoEvent !== 'function') return;
+      const since = new Date(profile.member_since).getTime();
+      if(!since || Date.now() - since > 24 * 3600 * 1000) return;
+      const key = 'leoPurchaseTracked:' + since;
+      if(localStorage.getItem(key)) return;
+      localStorage.setItem(key, '1');
+      const m = /(^|[?&])(paypal|stripe|mp)=success(&|$)/.exec(window.location.search);
+      const params = getPurchaseParams();
+      params.method = m ? m[2] : 'unknown';
+      params.transaction_id = 'm' + Math.floor(since / 1000).toString(36);
+      trackLeoEvent('membership_purchase_completed', params);
+    }catch(e){}
+  }
   async function pollForMembershipAfterCheckout(attempt){
     attempt = attempt || 0;
     try{
@@ -787,14 +807,7 @@
         // de Stripe/PayPal/Mercado Pago con el pago ya confirmado por
         // el webhook. El sessionStorage evita mandarlo dos veces si la
         // persona recarga esta misma pantalla de "confirmando tu pago".
-        if(typeof trackLeoEvent === 'function'){
-          try{
-            if(!sessionStorage.getItem('leoPurchaseTracked')){
-              sessionStorage.setItem('leoPurchaseTracked', '1');
-              trackLeoEvent('membership_purchase_completed', getPurchaseParams());
-            }
-          }catch(e){ trackLeoEvent('membership_purchase_completed', getPurchaseParams()); }
-        }
+        trackPurchaseOnce(profile);
         unlock();
         return;
       }
@@ -867,6 +880,7 @@
     hasSession = true;
     const profile = await LeoBackend.getMemberProfile();
     if(profile && profile.is_member){
+      trackPurchaseOnce(profile);
       await LeoBackend.syncProgressFromCloud();
       unlock();
     } else if(fromSignup){
@@ -1249,6 +1263,7 @@
       try{ last = parseInt(sessionStorage.getItem('leoIntentAt') || '0', 10) || 0; }catch(e){}
       if(Date.now() - last < 10 * 60000) return;
       try{ sessionStorage.setItem('leoIntentAt', String(Date.now())); }catch(e){}
+      if(typeof trackLeoEvent === 'function') trackLeoEvent('checkout_started');   // mismo momento que checkout_started_at en Supabase (sin datos personales)
       LeoBackend.markPurchaseIntent();
     }catch(e){}
   }
@@ -1436,6 +1451,7 @@
       if(profile){
         hasSession = true;
         if(profile.is_member){
+          trackPurchaseOnce(profile);
           await LeoBackend.syncProgressFromCloud();
           unlock();
         } else if(cameFromCheckoutReturn){
