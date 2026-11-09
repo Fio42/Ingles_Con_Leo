@@ -4,7 +4,7 @@
 -- las cohortes son pequenas, asi que una diferencia de unos pocos pagos entra en el ruido; la cohorte "despues" necesita al menos 7 dias
 -- para poder haber pagado "en 7 dias". Pago CONFIRMADO = id de Stripe o PayPal (lo escribe el webhook), no el evento del navegador.
 with p as (
-  select timestamptz '2026-11-10 12:00+00' as corte, now() as ahora,
+  select timestamptz '2026-11-09 17:08:16+00' as corte, now() as ahora,
          array['f8c0bf1f-57c9-462a-addf-17559aeab69f','8a1dea64-bbdd-4cd1-ab1d-8bb698061fbb']::uuid[] as prueba
 ),
 c as (

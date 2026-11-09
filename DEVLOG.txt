@@ -2017,3 +2017,9 @@ Pruebas: oferta-primera-sesion 20/20 (dos cuentas mismo navegador, invitado, dos
 
 (25) 2026-11-09 - Tarjeta de membresia en escritorio y pruebas finales del modelo 3 + 3
 La tarjeta queda compacta en escritorio (maximo 760 px, beneficios en una linea, botones lado a lado); en movil no cambia. Pruebas nuevas: 3 de invitado + registro = 3 restantes, registro directo = 6, al dia siguiente 6, recargar o abrir otra pestana con perfil de nube viejo no regala ejercicios, miembro sin tarjeta ni muro. No se toco el modelo 3 + 3 ni el contador. Limitacion documentada: con dos dispositivos que contestan al mismo tiempo el limite no es atomico (ver (24)); ademas, quien cierra sesion y practica como invitado en el mismo navegador recibe sus 3 de invitado (el tope de invitado siempre ha sido por navegador).
+
+
+(26) 2026-11-09 - Cierre de fase: despliegue verificado y corte de medicion
+Publicado: origin/main = 5330328 (incluye 3b72a4a, 402ebf5, f947ae8, 5af703e, b40a060, 54d9f4f, 5330328). Produccion verificada (inglesconleo.com): practica.html carga app.js?v=20261109g, backend.js?v=20261109a y style.css?v=20261109c; esos archivos traen el cupo de sesiones, el contador por cuenta, la tarjeta nueva y el estilo de escritorio. app.js Last-Modified 2026-11-09 17:08:16 GMT.
+CORTE para medir conversiones: 2026-11-09 17:08:16 UTC (12:08 Bogota), ya puesto en tools/informe_oferta.sql. Limite: es la hora de publicacion del archivo; quien tenia la pagina abierta o en cache puede ver el cambio un poco despues.
+No verificado en produccion con una cuenta gratuita real (no se crean cuentas de prueba en produccion); el flujo completo 3+3 / sesiones / resumen / tarjeta en 320, 360, 375 y escritorio se probo en Chromium con la nube simulada. Pendiente de observar con datos reales: first_session_offer_viewed/clicked y checkout_started en GA4 en los primeros dias.
