@@ -31,7 +31,7 @@ function load(opts){
   ctx.window = ctx; vm.createContext(ctx);
   vm.runInContext(read('data.js'), ctx);
   vm.runInContext(read('temas.js'), ctx);
-  vm.runInContext(read('app.js') + ';this.__t = { getFreeAcctExerciseCount, bumpFreeAcctExerciseCount, freeDailyLimitReached, freeSessionCap, freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
+  vm.runInContext(read('app.js') + ';this.__t = { sessionReinforceHtml, getFreeAcctExerciseCount, bumpFreeAcctExerciseCount, freeDailyLimitReached, freeSessionCap, freeFirstOfferEligible, freeFirstOfferHtml, freeFirstSessionClosed, renderFreeSessionSummary, setProfile: p => { _leoAccessTier = "free"; _leoAccessProfile = p; }, setTier: t => { _leoAccessTier = t; }, getDiagItemIndex, getTrackedFound, getArticleFound, articleQuizRecord, articleQuizLoad, articleQuizAttempts, articleQuizFailedIds, articleQuizReinforceHtml, collectDiagAttempts, diagMistakeSummary, loadProgress, ARTICLE_QUIZ_CATALOG, TEMA_BY_ID, DIAG_KIND_TO_SKILL, getMistakesItemIndex, READING_BANK, sessionReinforceRows, diagTemaIdForFound, getFreeAcctExerciseCount, freeDailyLimitReached, updateMistakeStatsFromResults, freeMemoryWeakSpots, setFreeAcct: id => { _leoAccessTier = "free"; _leoAccessProfile = { id: id }; }, setStats: m => { _mistakeStatsCache = m; } }', ctx);
   ctx.__handlers = handlers; ctx.__calls = calls; ctx.__store = store;
   return ctx;
 }
@@ -234,6 +234,13 @@ test('3 + 3: invitado con 3 que se registra le quedan 3; registro directo 6; el 
   const y = {}; y['leoAcctDailyCount:' + day(1) + '@@u:nx'] = '6'; y['leoLocalDailyCount:' + day(1)] = '3';
   const n = free('nx', { store: y, count:6 }); n.__t.setProfile({ id:'nx', free_daily_count:6, free_daily_date:day(1), free_first_exercise_at:new Date().toISOString() });
   assert.strictEqual(n.__t.getFreeAcctExerciseCount(), 0, 'al día siguiente: 6 de nuevo');
+});
+
+test('el refuerzo del resumen no le vende la membresía a un miembro (sí a invitados y cuentas gratis)', ()=>{
+  const rows = [{ label:'Pronombres', n:2, course:{ href:'academia.html', title:'Pronombres personales' }, practiceHref:'practica.html' }];
+  const m = mk('mem1'); m.__leoMemberVerified = true; m.gtag = () => {};
+  const hm = m.__t.sessionReinforceHtml(rows); assert(/Pronombres personales/.test(hm) && !/con membresía|demo gratis/.test(hm));
+  const f = mk('free1'); const hf = f.__t.sessionReinforceHtml(rows); assert(/con membresía/.test(hf));
 });
 
 Promise.all(pending).then(() => { console.log('\n' + passed + ' ok, ' + failed + ' fallos'); process.exit(failed ? 1 : 0); });

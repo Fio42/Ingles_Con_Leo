@@ -8262,7 +8262,7 @@ function sessionReinforceHtml(rows){
   return `
       <div class="sess-insight-label sess-insight-next">Para reforzar</div>
       <ul class="sess-reinforce">
-        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" data-rf="course" style="display:inline-block;padding:12px 0">${r.course.title}</a> · con membresía${r.course.demo ? ' (demo gratis)' : ''}</small>` : ''}</span>
+        ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" data-rf="course" style="display:inline-block;padding:12px 0">${r.course.title}</a>${window.__leoMemberVerified === true ? '' : ' · con membresía' + (r.course.demo ? ' (demo gratis)' : '')}</small>` : ''}</span>
           <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}" data-rf="lesson">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}" data-rf="practice">${r.practiceLabel || 'Practicar'}</a></span></li>`).join('')}
       </ul>`;
 }
