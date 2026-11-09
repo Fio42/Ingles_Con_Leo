@@ -1982,3 +1982,6 @@ MEDICION: migracion 20261014150000_first_session_report.sql (vista first_session
   - Bug visto en cuenta gratis real: la nota decia 'Pasado perfecto' pero el primer ejercicio era de otro tema. Ahora los ejercicios nuevos se ordenan por tema flojo (el primero manda) y la nota nombra el tema del primer ejercicio.
   - La tarjeta elige el primer tema flojo que SI tiene ejercicios libres nuevos en tu nivel; si ninguno, solo ofrece explicacion/curso y no el boton de ejercicios.
   - Prueba nueva en memoria-gratis (11). Version app ?v=20261108i.
+
+(13) Precio visible: solo $2 USD (2026-11-08)
+  - app.js: se quita 37/40 MXN del cuadro de membresia y de los avisos de cuenta. Quedan solo en miembros.html, en la pantalla de pago (tarjeta/Mercado Pago), y en correos/webhooks/funciones (sin tocar). Version app ?v=20261108j.
