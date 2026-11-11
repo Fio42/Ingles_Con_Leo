@@ -2033,3 +2033,14 @@ Observaciones menores sin cambiar: el encabezado de miembros dice "8 preguntas" 
 
 (29c) Libro: promo en home y artículos (11 nov 2026)
 Home: seccion pequena "home-book" entre "Guias para empezar" y testimonios (CSS inline en index.html, no se toco style.css). Artículos con nota discreta al libro, debajo del CTA de practica: do-vs-does, in-on-at, presente-simple, verbo-to-be, como-hacer-preguntas-en-ingles. Todos enlazan a libro-100-errores-comunes-ingles.html y disparan el evento gtag book_promo_click (placement). Pendiente de publicar hasta autorizacion de Leo.
+
+(30) AUDITORIA COMPLETA DEL SISTEMA (11 nov 2026)
+Se hizo una auditoria de solo lectura de TODO el sitio con 10 agentes en paralelo. El resultado completo esta en AUDITORIA_SISTEMA_2026-11-11.md (raiz del repo, ~165 KB). LEER ESE ARCHIVO PRIMERO antes de investigar como funciona algo; cada seccion trae flujo de punta a punta, rutas y funciones exactas, "como modificar sin romper" y riesgos.
+Secciones: 01 Leo AI (EOIA) | 02 Pagos y membresia | 03 Base de datos Supabase | 04 Motor de practica (app.js/data.js) | 05 Academia | 06 Examenes TOEFL/IELTS/TOEIC/Cambridge | 07 Contenido y SEO | 08 Audios | 09 Frontend, despliegue y medicion | 10 Historial y estado | 11 Riesgos y seguridad | 12 Libro 100 errores.
+Hallazgos que conviene atender (detalle en el archivo):
+- Medio: CORS abierto (*) en las funciones Edge leo-ai y stripe-checkout (libro-download ya restringe a inglesconleo.com). Ambas validan el JWT, no es explotable sin sesion.
+- Medio: _push.patch (raiz) no esta rastreado ni ignorado; un "git add ." lo subiria al repo publico. Agregarlo a .gitignore o borrarlo.
+- No existe supabase/config.toml: verify_jwt depende de como se despliegue cada funcion.
+- Audio: audio/a0/a0listening-019.mp3 pesa 0 bytes (regenerar) y hay un temporal huerfano audio/dialogo-zapateria.mp3.tmp0.mp3.
+- Higiene: placeholders rotos en articulos.html y version de app.js inconsistente en 5 paginas.
+Estado del libro y de los push pendientes: ver seccion 12 y la entrada (29c). Nota: el commit 1208573 (promo home/articulos) y el cambio de practica.html (promo del libro en lugar del ejemplo TOEFL) requieren git push del dueno.
