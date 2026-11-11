@@ -239,11 +239,35 @@ setTimeout(window.leoShowLate,6000);
           <span class="learn-promo-arrow" aria-hidden="true">→</span>
         </a>
       </div>
-      <div class="section-head" style="margin-top:36px;">
-        <h2>Conoce la preparación para el TOEFL</h2>
-        <p>Así es un ejercicio real de nuestra preparación para el TOEFL. Contesta estas 5 preguntas de muestra.</p>
+      <style>
+        .pr-book{margin-top:36px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;background:var(--blue-tint);border-radius:var(--radius-lg);padding:28px;}
+        .pr-book-imgs{display:flex;gap:14px;align-items:flex-start;}
+        .pr-book-imgs img{height:auto;border-radius:8px;box-shadow:0 6px 18px rgba(27,35,51,.18);}
+        .pr-book-imgs .c1{width:118px;}.pr-book-imgs .c2{width:118px;margin-top:22px;}
+        .pr-book-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);}
+        .pr-book h2{font-size:1.5rem;line-height:1.2;margin:4px 0 8px;}
+        .pr-book p{color:var(--ink-soft);margin:0 0 10px;}
+        .pr-book ul{margin:0 0 16px;padding-left:20px;color:var(--ink);}
+        .pr-book li{margin:3px 0;}
+        @media (max-width:640px){.pr-book{grid-template-columns:1fr;padding:22px 20px;gap:18px;}.pr-book-imgs .c1,.pr-book-imgs .c2{width:104px;}}
+      </style>
+      <div class="pr-book">
+        <div class="pr-book-imgs">
+          <img class="c1" src="assets/libro/libro-portada.webp" alt="Portada del libro 100 errores comunes en inglés" width="118" height="189" loading="lazy">
+          <img class="c2" src="assets/libro/libro-ejemplo-error.webp" alt="Página de ejemplo del libro con un error, su corrección y su ejercicio" width="118" height="189" loading="lazy">
+        </div>
+        <div>
+          <span class="pr-book-eyebrow">Libro en PDF</span>
+          <h2>¿Practicas y sigues cometiendo los mismos errores?</h2>
+          <p>100 errores comunes en inglés, cada uno con su corrección y el porqué:</p>
+          <ul>
+            <li>Un ejercicio con respuestas por cada error</li>
+            <li>Ejemplos reales y explicaciones cortas en español</li>
+            <li>Pago único de $4 USD, sin suscripción</li>
+          </ul>
+          <a href="libro-100-errores-comunes-ingles.html" class="btn btn-primary" onclick="try{gtag('event','book_promo_click',{placement:'practica'})}catch(e){}">Ver el libro</a>
+        </div>
       </div>
-      <div class="session-shell" id="toeflTeaserArea" style="margin-top:16px;"></div>
 
     </div>
   </section>
@@ -305,7 +329,6 @@ setTimeout(window.leoShowLate,6000);
 <script src="leo-voz.js?v=20261003d" defer></script>
 <script src="backend.js?v=20261109a"></script>
 <script src="toefl-data.js?v=20261016a"></script>
-<script src="toefl-teaser.js?v=20260923"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga
@@ -427,7 +450,6 @@ setTimeout(window.leoShowLate,6000);
         setTimeout(function(){ try{ retoInvite.scrollIntoView({ block:'center' }); }catch(e){} }, 300);
       }
     }
-    if(typeof renderToeflTeaser === 'function') renderToeflTeaser(document.getElementById('toeflTeaserArea'));
     if(window.leoShowLate) window.leoShowLate();
     // El onboarding (nombre + nivel) ya no sale a visitantes: solo a quien
     // tiene cuenta (gratis) iniciada, por ejemplo al volver aqui recien
