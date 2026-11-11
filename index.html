@@ -387,6 +387,32 @@
     </div>
   </section>
 
+  <!-- LIBRO (promo discreta) -->
+  <section class="home-book" aria-labelledby="home-book-title">
+    <style>
+      .home-book{padding:8px 0 56px;}
+      .home-book-card{display:flex;align-items:center;gap:28px;background:var(--blue-tint);border-radius:var(--radius-lg);padding:24px 28px;max-width:760px;margin:0 auto;}
+      .home-book-card img{width:96px;height:auto;flex:none;border-radius:8px;box-shadow:0 6px 18px rgba(27,35,51,.18);}
+      .home-book-card h2{font-size:1.25rem;line-height:1.25;margin:4px 0 6px;}
+      .home-book-card p{color:var(--ink-soft);margin:0 0 12px;font-size:.98rem;}
+      .home-book-card .btn{background:#fff;color:var(--blue);border:1.5px solid var(--blue);padding:10px 22px;}
+      .home-book-card .btn:hover{background:var(--blue);color:#fff;}
+      .home-book-eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--blue);}
+      @media (max-width:560px){.home-book-card{flex-direction:column;align-items:flex-start;gap:16px;padding:22px 20px;}.home-book-card img{width:84px;}}
+    </style>
+    <div class="wrap">
+      <div class="home-book-card reveal">
+        <img src="assets/libro/libro-portada.webp" alt="Portada del libro 100 errores comunes en inglés" width="96" height="154" loading="lazy">
+        <div>
+          <span class="home-book-eyebrow">Libro en PDF</span>
+          <h2 id="home-book-title">100 errores comunes en inglés</h2>
+          <p>Cada error con su corrección, el porqué y un ejercicio con respuestas. Pago único de $4 USD.</p>
+          <a href="libro-100-errores-comunes-ingles.html" class="btn" onclick="try{gtag('event','book_promo_click',{placement:'home'})}catch(e){}">Ver el libro</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- TESTIMONIOS -->
   <section class="home-testimonials" aria-labelledby="testimonios-title">
     <div class="wrap">
