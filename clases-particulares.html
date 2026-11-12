@@ -73,6 +73,13 @@ html{scroll-behavior:smooth;}
 .cp-contact .cp-small{margin-top:16px;font-size:0.9rem;color:var(--ink-faint);}
 .cp-btn-wa{background:#1FA463;box-shadow:0 6px 16px rgba(31,164,99,0.28);}
 .cp-btn-wa:hover{background:#178a52;}
+.cp-hero-pack{margin-top:14px;font-size:0.97rem;color:var(--ink-soft);}
+.cp-hero-pack a{color:var(--blue);font-weight:700;}
+.cp-pack{margin-top:16px;border:2px solid var(--blue-tint);background:#fff;border-radius:var(--radius-lg);padding:24px 22px;text-align:center;}
+.cp-pack .cp-kind{font-weight:700;color:var(--blue-deep);font-size:0.85rem;letter-spacing:.04em;text-transform:uppercase;}
+.cp-pack h3{font-size:clamp(1.25rem,4.5vw,1.5rem);margin:6px 0 8px;line-height:1.25;}
+.cp-pack p{color:var(--ink-soft);font-size:0.98rem;line-height:1.65;margin:0 auto;max-width:46ch;}
+.cp-pack .cp-contact-btns{margin-top:18px;}
 @media(max-width:480px){.cp-hero-actions .btn{width:100%;}.cp-contact-btns .btn{white-space:normal;}}
 @media(min-width:700px){
   .cp-grid{grid-template-columns:repeat(3,1fr);}
@@ -143,6 +150,7 @@ html{scroll-behavior:smooth;}
         <a href="https://tidycal.com/m7v6y0v/clase-personalizada-y-privada-50-minutos-ingles-con-leo" target="_blank" rel="noopener" class="btn btn-primary" data-cta="hero">Reservar mi clase</a>
         <span class="cp-chip">Clase individual · 50 min · US$25</span>
       </div>
+      <p class="cp-hero-pack">¿Quieres avanzar más rápido? <a href="https://wa.me/529994996520?text=Hola%20Leo%2C%20quiero%20saber%20de%20tus%20paquetes%20de%20clases." target="_blank" rel="noopener" data-contact="whatsapp_paquetes_hero">Pregunta por mis paquetes</a></p>
     </div>
   </section>
 
@@ -202,6 +210,15 @@ html{scroll-behavior:smooth;}
         <a href="https://tidycal.com/m7v6y0v/clase-personalizada-y-privada-50-minutos-ingles-con-leo" target="_blank" rel="noopener" class="btn btn-primary" data-cta="precio">Reservar mi clase</a>
       </div>
       <p class="cp-note">Las clases las doy personalmente, por eso tengo pocos horarios disponibles. Elige en el calendario el que mejor te quede.</p>
+      <div class="cp-pack" id="paquetes">
+        <div class="cp-kind">Paquetes de clases</div>
+        <h3>¿Quieres resultados más rápidos? Pregunta por mis paquetes</h3>
+        <p>Una clase te ayuda. Varias clases seguidas te hacen avanzar de verdad, porque la constancia es lo que te pone a hablar. Tengo paquetes para quien quiere un plan, no solo una sesión. Escríbeme y te cuento cuál te conviene según tu nivel y tu meta.</p>
+        <div class="cp-contact-btns">
+          <a href="https://wa.me/529994996520?text=Hola%20Leo%2C%20quiero%20saber%20de%20tus%20paquetes%20de%20clases." target="_blank" rel="noopener" class="btn btn-primary cp-btn-wa" data-contact="whatsapp_paquetes">Preguntar por WhatsApp</a>
+          <a href="mailto:hola@inglesconleo.com?subject=Paquetes%20de%20clases&amp;body=Hola%20Leo%2C%20quiero%20saber%20de%20tus%20paquetes%20de%20clases." class="btn btn-ghost" data-contact="email_paquetes">Preguntar por correo</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -246,6 +263,10 @@ html{scroll-behavior:smooth;}
           <p>Cada clase individual dura 50 minutos y cuesta US$25.</p>
         </details>
         <details>
+          <summary>¿Tienes paquetes de varias clases?</summary>
+          <p>Sí. Además de la clase individual de US$25, tengo paquetes para quien quiere avanzar con constancia. Escríbeme por <a href="https://wa.me/529994996520?text=Hola%20Leo%2C%20quiero%20saber%20de%20tus%20paquetes%20de%20clases." target="_blank" rel="noopener" class="inline-link" style="color:var(--blue);font-weight:600;" data-contact="whatsapp_paquetes_faq">WhatsApp</a> o por correo y te cuento cuál te conviene.</p>
+        </details>
+        <details>
           <summary>¿Cómo elijo si me conviene una clase de pago?</summary>
           <p>Puedes practicar gratis en el sitio cuando quieras. Si dudas, lee esta guía sobre <a href="articulo-clases-de-ingles-online.html" class="inline-link" style="color:var(--blue);font-weight:600;">clases de inglés online: gratis vs pagadas</a>.</p>
         </details>
@@ -257,7 +278,7 @@ html{scroll-behavior:smooth;}
     <div class="wrap-narrow">
       <div class="cp-contact" id="disponibilidad">
         <h2>Reserva tu clase</h2>
-        <p>Elige el día y horario que más te convenga directamente en el calendario. Si prefieres resolver una duda antes, escríbeme.</p>
+        <p>Elige el día y horario que más te convenga directamente en el calendario. Si prefieres resolver una duda antes o preguntar por mis paquetes, escríbeme.</p>
         <div class="cp-contact-btns">
           <a href="https://tidycal.com/m7v6y0v/clase-personalizada-y-privada-50-minutos-ingles-con-leo" target="_blank" rel="noopener" class="btn btn-primary" data-cta="final">Reservar mi clase</a>
           <a href="https://wa.me/529994996520?text=Hola%20Leo%2C%20vi%20la%20informaci%C3%B3n%20de%20tus%20clases%20y%20tengo%20una%20duda." target="_blank" rel="noopener" class="btn btn-ghost" data-contact="whatsapp">Dudas por WhatsApp</a>

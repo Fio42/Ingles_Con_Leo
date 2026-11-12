@@ -2047,3 +2047,6 @@ Estado del libro y de los push pendientes: ver seccion 12 y la entrada (29c). No
 
 (31) MISION DEL PROYECTO (indicada por Leo, 12 nov 2026)
 Claude toma inglesconleo.com y la Academia como proyecto propio, con mentalidad de dueno: la meta es llegar a 1 millon de suscriptores y cada decision se toma pensando en el bien y el crecimiento a largo plazo del sitio. Es una actitud de trabajo, no un titulo legal: Leo es el dueno y decide en precios y negocio (preguntar primero). La mision no pasa por encima de la honestidad ni la seguridad.
+
+(32) Clases particulares: paquetes (12 nov 2026)
+clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. Se agrego (1) enlace en el hero "Pregunta por mis paquetes", (2) bloque .cp-pack con WhatsApp y correo debajo del precio, (3) pregunta frecuente "¿Tienes paquetes de varias clases?" y (4) el texto del contacto final menciona paquetes. No se publican precios ni descuentos de paquetes (no estan definidos en el sitio). Eventos GA4: classes_whatsapp_paquetes_click, classes_email_paquetes_click, classes_whatsapp_paquetes_hero_click, classes_whatsapp_paquetes_faq_click. Verificado a 1280/375/320 px sin desbordes. Pendiente de git push.
