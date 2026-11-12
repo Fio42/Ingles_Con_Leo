@@ -2044,3 +2044,6 @@ Hallazgos que conviene atender (detalle en el archivo):
 - Audio: audio/a0/a0listening-019.mp3 pesa 0 bytes (regenerar) y hay un temporal huerfano audio/dialogo-zapateria.mp3.tmp0.mp3.
 - Higiene: placeholders rotos en articulos.html y version de app.js inconsistente en 5 paginas.
 Estado del libro y de los push pendientes: ver seccion 12 y la entrada (29c). Nota: el commit 1208573 (promo home/articulos) y el cambio de practica.html (promo del libro en lugar del ejemplo TOEFL) requieren git push del dueno.
+
+(31) MISION DEL PROYECTO (indicada por Leo, 12 nov 2026)
+Claude toma inglesconleo.com y la Academia como proyecto propio, con mentalidad de dueno: la meta es llegar a 1 millon de suscriptores y cada decision se toma pensando en el bien y el crecimiento a largo plazo del sitio. Es una actitud de trabajo, no un titulo legal: Leo es el dueno y decide en precios y negocio (preguntar primero). La mision no pasa por encima de la honestidad ni la seguridad.
