@@ -19,6 +19,11 @@
   },
   "tiempos": { "inspeccionMs": 90000, "solicitudMs": 240000, "cargaMs": 45000 },
   "prioridad": [
+    "/articulo-examen-ingles-call-center.html",
+    "/articulo-ingles-meseros-camareros.html",
+    "/articulo-ingles-recepcionistas-hotel.html",
+    "/articulo-vocabulario-basico.html",
+    "/ejercicios-ingles-a1.html",
     "/academia-de-ingles.html",
     "/articulo-condicionales-1-y-2.html",
     "/articulo-do-vs-does.html",
