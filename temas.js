@@ -438,6 +438,7 @@ const ARTICLE_QUIZ_CATALOG = {
   "como-hacer-preguntas-en-ingles": { tema:"question-words", quizzes:{"questionsQuiz":6} },
   "comparativos-y-superlativos": { tema:"comparativos", quizzes:{"comparisonQuiz":4} },
   "conectores-ingles": { tema:"secuenciadores", quizzes:{"grammarQuiz":8} },
+  "do-vs-does": { tema:"do-does", quizzes:{"grammarQuiz":10} },
   "gerundio-e-infinitivo": { tema:"gerundios-infinitivos", quizzes:{"grammarQuiz":4} },
   "have-y-has-en-ingles": { tema:"verbo-have", quizzes:{"grammarQuiz":6} },
   "in-on-at": { tema:"in-on-at", quizzes:{"prepQuiz1":7,"prepQuiz2":6,"prepQuiz3":7} },

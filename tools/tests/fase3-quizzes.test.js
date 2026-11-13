@@ -50,7 +50,7 @@ test('cada pregunta del catálogo tiene id estable, tema real y habilidad de gra
   const T = acct.__t; let n = 0;
   Object.keys(T.ARTICLE_QUIZ_CATALOG).forEach(slug => { const a = T.ARTICLE_QUIZ_CATALOG[slug]; assert(T.TEMA_BY_ID[a.tema], 'tema real: ' + a.tema);
     Object.keys(a.quizzes).forEach(r => { for(let i = 0; i < a.quizzes[r]; i++){ const id = 'aq:' + slug + ':' + r + ':' + i; const f = T.getDiagItemIndex().get(id); assert(f && f.kind === 'article' && f.tema === a.tema, id); assert.strictEqual(T.diagTemaIdForFound(f), a.tema); n++; } }); });
-  assert.strictEqual(n, 130);
+  assert.strictEqual(n, 140);
   assert.strictEqual(T.DIAG_KIND_TO_SKILL.article, 'gramatica');
   assert.strictEqual(T.getArticleFound('aq:in-on-at:prepQuiz1:99'), null, 'pregunta inexistente');
   assert.strictEqual(T.getArticleFound('aq:in-on-at:nopeQuiz:0'), null);
