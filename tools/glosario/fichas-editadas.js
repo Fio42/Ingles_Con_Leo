@@ -1148,5 +1148,504 @@ module.exports = {
     "even-though",
     "thought"
   ]
-}
+},
+'ive': {
+  "secciones": [
+    {
+      "h2": "Qué significa I've",
+      "b": [
+        "I've es la contracción de _I have_. Tiene dos significados según lo que viene después. Con un participio (_seen_, _finished_, _been_) significa \"he\": _I've finished_ es \"he terminado\". Con _got_ significa \"tengo\": _I've got a question_ es \"tengo una pregunta\". Se pronuncia ÁIV, en una sola sílaba."
+      ]
+    },
+    {
+      "h2": "Cómo se usa",
+      "b": [
+        "Con un participio forma el presente perfecto: _I've lived here for years_. Con _got_ expresa posesión: _I've got two sisters_. Lo mismo pasa con _you've_, _we've_ y _they've_. Con he, she e it se usa _has_: _she's finished_.",
+        [
+          "I've + participio: I've finished my homework.",
+          "I've got + sustantivo: I've got your message.",
+          "En inglés estadounidense casi nunca se dice _I've a car_. Para poseer algo usa _I have a car_ o _I've got a car_."
+        ],
+        "Si dudas entre las dos formas de tener, mira [have vs have got](/glosario/have-vs-have-got/)."
+      ]
+    },
+    {
+      "h2": "Ejemplos",
+      "b": [
+        {
+          "ej": [
+            "I've lived here for years.",
+            "He vivido aquí durante años."
+          ]
+        },
+        {
+          "ej": [
+            "I've got your message.",
+            "Tengo tu mensaje."
+          ]
+        },
+        {
+          "ej": [
+            "I've never tried sushi.",
+            "Nunca he probado el sushi."
+          ]
+        },
+        {
+          "ej": [
+            "I've already eaten.",
+            "Ya comí."
+          ]
+        },
+        {
+          "ej": [
+            "I've got to go.",
+            "Tengo que irme."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "No se contrae en una respuesta corta",
+      "b": [
+        "Cuando respondes solo con el auxiliar, se dice completo: _Have you finished? Yes, I have_. No se dice _Yes, I've_.",
+        {
+          "ej": [
+            "Have you seen this movie? Yes, I have.",
+            "¿Has visto esta película? Sí."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "Errores comunes",
+      "b": [
+        {
+          "mal": [
+            "I've seen him yesterday.",
+            "I saw him yesterday."
+          ]
+        },
+        "Con ayer, la semana pasada o hace dos años usa el pasado simple. El presente perfecto es para algo sin fecha concreta o que sigue importando ahora. Lo explicamos en la clase de [presente perfecto](/articulo-presente-perfecto.html).",
+        {
+          "mal": [
+            "I've went to the store.",
+            "I've gone to the store."
+          ]
+        },
+        "Después de I've va el participio, no el pasado: _gone_, no _went_."
+      ]
+    },
+    {
+      "h2": "I've, I'd e I'll",
+      "b": [
+        "No los mezcles: [I'll](/glosario/ill-contraction/) es _I will_ (futuro) e [I'd](/glosario/id-contraction/) es _I would_ o _I had_. Tienes todas las contracciones juntas en la [guía de contracciones en inglés](/articulo-contracciones-ingles.html)."
+      ]
+    }
+  ]
+},
+'ill-contraction': {
+  "secciones": [
+    {
+      "h2": "Qué significa I'll",
+      "b": [
+        "I'll es la contracción de _I will_. Significa \"yo haré\", \"voy a\" o \"yo te ayudo\", según la situación. Se pronuncia ÁIL y suena igual que _aisle_ (pasillo) e _isle_ (isla)."
+      ]
+    },
+    {
+      "h2": "Cómo se usa",
+      "b": [
+        "La estructura es sujeto + 'll + verbo en forma base, sin _to_. Funciona igual con you'll, he'll, she'll, we'll y they'll. Se usa en tres situaciones:",
+        [
+          "Una decisión que tomas en el momento: The phone is ringing. I'll answer it.",
+          "Una promesa: I'll call you tonight.",
+          "Un ofrecimiento: I'll carry that for you."
+        ]
+      ]
+    },
+    {
+      "h2": "Ejemplos",
+      "b": [
+        {
+          "ej": [
+            "I'll send it tonight.",
+            "Lo enviaré esta noche."
+          ]
+        },
+        {
+          "ej": [
+            "I'll help you with that.",
+            "Te ayudaré con eso."
+          ]
+        },
+        {
+          "ej": [
+            "I'll have the soup, please.",
+            "Voy a pedir la sopa, por favor."
+          ]
+        },
+        {
+          "ej": [
+            "I'll be there at eight.",
+            "Estaré allí a las ocho."
+          ]
+        },
+        {
+          "ej": [
+            "Don't worry, I'll fix it.",
+            "No te preocupes, yo lo arreglo."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "I'll o I'm going to",
+      "b": [
+        "En español \"voy a\" sirve para todo. En inglés cambia según cuándo decidiste. Si lo decides justo ahora o lo prometes, usa _I'll_. Si ya lo habías planeado antes de hablar, usa _I'm going to_. La comparación completa está en [will vs going to](/articulo-will-vs-going-to.html).",
+        {
+          "ej": [
+            "I'm tired. I'll go to bed early.",
+            "Estoy cansado. Me voy a acostar temprano."
+          ]
+        },
+        {
+          "ej": [
+            "I'm going to study medicine next year.",
+            "Voy a estudiar medicina el año que viene."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "Errores comunes",
+      "b": [
+        {
+          "mal": [
+            "I'll to call you.",
+            "I'll call you."
+          ]
+        },
+        "Después de I'll va el verbo en forma base, sin _to_.",
+        {
+          "mal": [
+            "If I'll see him, I'll tell him.",
+            "If I see him, I'll tell him."
+          ]
+        },
+        "Después de _if_ no se usa will: se usa el presente. Solo la parte del resultado lleva I'll.",
+        "Para negar, no existe _I'llnt_. Usa [won't](/glosario/wont/): _I won't be late_."
+      ]
+    },
+    {
+      "h2": "No lo confundas con ill",
+      "b": [
+        "Sin apóstrofe, _ill_ es un adjetivo: enfermo. _I'm ill_ significa \"estoy enfermo\". Con apóstrofe, _I'll_ es _I will_. Mira también [I've](/glosario/ive/) e [I'd](/glosario/id-contraction/), que se parecen pero significan otra cosa."
+      ]
+    }
+  ]
+},
+'were-contraction': {
+  "secciones": [
+    {
+      "h2": "Qué significa we're",
+      "b": [
+        "We're es la contracción de _we are_. Significa \"nosotros somos\" o \"nosotros estamos\". Se pronuncia UÍR."
+      ]
+    },
+    {
+      "h2": "Cómo se usa",
+      "b": [
+        "Va con we y después puede llevar un adjetivo, un lugar, un verbo en -ing o un sustantivo:",
+        [
+          "Un estado: We're tired.",
+          "Un lugar: We're in Bogotá.",
+          "Una acción en curso: We're leaving now.",
+          "Una identidad: We're students."
+        ],
+        "No se contrae en una respuesta corta: _Are you ready? Yes, we are_."
+      ]
+    },
+    {
+      "h2": "Ejemplos",
+      "b": [
+        {
+          "ej": [
+            "We're going home now.",
+            "Nos vamos a casa ahora."
+          ]
+        },
+        {
+          "ej": [
+            "We're happy to help.",
+            "Estamos felices de ayudar."
+          ]
+        },
+        {
+          "ej": [
+            "We're from Colombia.",
+            "Somos de Colombia."
+          ]
+        },
+        {
+          "ej": [
+            "We're having dinner at eight.",
+            "Cenamos a las ocho."
+          ]
+        },
+        {
+          "ej": [
+            "We're not ready yet.",
+            "Todavía no estamos listos."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "We're, were y where",
+      "b": [
+        "Tres palabras que se parecen y significan cosas distintas:",
+        [
+          "We're = we are: We're here. (Estamos aquí.)",
+          "[Were](/glosario/were/) es el pasado de are: We were here yesterday. (Estuvimos aquí ayer.)",
+          "Where significa dónde: Where are you? (¿Dónde estás?)"
+        ],
+        "We're y were suenan casi igual al hablar rápido. Lo que las distingue es el tiempo: si habla del presente, es _we're_; si habla del pasado, es _were_. Para elegir entre was y were, mira [was vs were](/glosario/was-vs-were/)."
+      ]
+    },
+    {
+      "h2": "Negativo: we're not o we aren't",
+      "b": [
+        "Las dos formas son correctas y significan lo mismo: _We're not ready_ y _We aren't ready_. La primera es muy común al hablar. Mira también [aren't](/glosario/arent/)."
+      ]
+    },
+    {
+      "h2": "Errores comunes",
+      "b": [
+        {
+          "mal": [
+            "Were going to the beach.",
+            "We're going to the beach."
+          ]
+        },
+        "Sin el apóstrofe, _were_ es pasado y la frase pierde sentido.",
+        {
+          "mal": [
+            "We're agree with you.",
+            "We agree with you."
+          ]
+        },
+        "_Agree_ es un verbo, no un adjetivo. En español decimos \"estamos de acuerdo\", pero en inglés no se usa to be con agree."
+      ]
+    },
+    {
+      "h2": "Mira también",
+      "b": [
+        "El mismo patrón existe con otros pronombres: [you're](/glosario/youre/) y [they're](/glosario/theyre/). Todas las contracciones están en la [guía de contracciones en inglés](/articulo-contracciones-ingles.html)."
+      ]
+    }
+  ]
+},
+'isnt': {
+  "secciones": [
+    {
+      "h2": "Qué significa isn't",
+      "b": [
+        "Isn't es la contracción de _is not_. Significa \"no es\" o \"no está\". Se pronuncia Í-znt. Se usa con he, she, it y con sustantivos en singular."
+      ]
+    },
+    {
+      "h2": "Cómo se usa",
+      "b": [
+        "Va con el verbo to be y puede llevar un adjetivo, un lugar, un verbo en -ing o un sustantivo:",
+        [
+          "Un adjetivo: It isn't expensive.",
+          "Un lugar: She isn't at home.",
+          "Una acción en curso: He isn't working today.",
+          "Un sustantivo: This isn't my bag."
+        ],
+        "Es igual decir _It isn't_ que _It's not_. Las dos son correctas."
+      ]
+    },
+    {
+      "h2": "Ejemplos",
+      "b": [
+        {
+          "ej": [
+            "This isn't my bag.",
+            "Esta no es mi bolsa."
+          ]
+        },
+        {
+          "ej": [
+            "He isn't ready yet.",
+            "Él todavía no está listo."
+          ]
+        },
+        {
+          "ej": [
+            "The store isn't open on Sundays.",
+            "La tienda no abre los domingos."
+          ]
+        },
+        {
+          "ej": [
+            "My phone isn't working.",
+            "Mi teléfono no funciona."
+          ]
+        },
+        {
+          "ej": [
+            "That isn't true.",
+            "Eso no es verdad."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "Isn't al final: ¿verdad?",
+      "b": [
+        "Al final de una frase, _isn't it?_ equivale a \"¿verdad?\" o \"¿no?\". Si la frase es afirmativa, la pregunta es negativa. Si la frase es negativa, la pregunta es positiva.",
+        {
+          "ej": [
+            "It's cold today, isn't it?",
+            "Hace frío hoy, ¿verdad?"
+          ]
+        },
+        {
+          "ej": [
+            "That isn't right, is it?",
+            "Eso no está bien, ¿o sí?"
+          ]
+        },
+        "También se usa para preguntar con sorpresa: _Isn't she your sister?_ (¿No es tu hermana?)."
+      ]
+    },
+    {
+      "h2": "Isn't, aren't y doesn't",
+      "b": [
+        "En español siempre decimos \"no\". En inglés la forma cambia según el verbo:",
+        [
+          "Con to be y he, she, it: isn't (He isn't tired).",
+          "Con to be y you, we, they: [aren't](/glosario/arent/) (They aren't tired).",
+          "Con otros verbos: [doesn't](/glosario/doesnt/) (He doesn't work here).",
+          "Para hablar del pasado: [wasn't](/glosario/wasnt/) (He wasn't tired)."
+        ]
+      ]
+    },
+    {
+      "h2": "Errores comunes",
+      "b": [
+        {
+          "mal": [
+            "He isn't work here.",
+            "He doesn't work here."
+          ]
+        },
+        "Isn't solo va con to be. Con un verbo como work, usa doesn't.",
+        {
+          "mal": [
+            "They isn't ready.",
+            "They aren't ready."
+          ]
+        },
+        "Con they, we y you, la forma es aren't.",
+        "En mensajes informales verás _isnt_ sin apóstrofe. En una escritura correcta siempre lleva apóstrofe: _isn't_."
+      ]
+    }
+  ]
+},
+'thought': {
+  "secciones": [
+    {
+      "h2": "Qué significa thought",
+      "b": [
+        "Thought tiene tres usos. Es el pasado de _think_: \"pensé\", \"pensaba\" o \"creía\". Es el participio de think: _I have thought about it_. Y es un sustantivo: \"un pensamiento\" o \"una idea\". Se pronuncia /θɔːt/ y rima con _caught_ y _bought_."
+      ]
+    },
+    {
+      "h2": "Cómo se usa",
+      "b": [
+        [
+          "Pasado de think: I thought about it all night.",
+          "Con that, para algo que creías: I thought that you were at work.",
+          "Participio: Have you thought about it?",
+          "Sustantivo: Any thoughts? (¿Alguna idea?)",
+          "Expresión: I thought so (ya me parecía)."
+        ],
+        "_Think_ es irregular: no se dice _thinked_. Si quieres ver el verbo en presente, mira [think](/glosario/think/)."
+      ]
+    },
+    {
+      "h2": "Ejemplos",
+      "b": [
+        {
+          "ej": [
+            "I thought you were at work.",
+            "Pensé que estabas en el trabajo."
+          ]
+        },
+        {
+          "ej": [
+            "That thought made me smile.",
+            "Ese pensamiento me hizo sonreír."
+          ]
+        },
+        {
+          "ej": [
+            "I thought about it all weekend.",
+            "Lo pensé todo el fin de semana."
+          ]
+        },
+        {
+          "ej": [
+            "Have you thought about moving?",
+            "¿Has pensado en mudarte?"
+          ]
+        },
+        {
+          "ej": [
+            "Just a thought: we could leave earlier.",
+            "Solo una idea: podríamos salir más temprano."
+          ]
+        }
+      ]
+    },
+    {
+      "h2": "Cómo se pronuncia",
+      "b": [
+        "Empieza con el sonido TH sordo, /θ/: pon la punta de la lengua apenas entre los dientes y deja salir el aire, sin hacer vibrar la voz. No es S, ni Z, ni T. Después va una O abierta y larga, y termina en una T suave.",
+        "No la confundas con _taught_ (enseñó, de teach), que empieza con T y suena casi igual al oído."
+      ]
+    },
+    {
+      "h2": "Thought, though, through y tough",
+      "b": [
+        "Se escriben parecido y suenan muy distinto:",
+        [
+          "thought /θɔːt/: pensé o pensamiento.",
+          "[though](/glosario/though/) /ðoʊ/: aunque.",
+          "[through](/glosario/through/) /θruː/: a través de.",
+          "[tough](/glosario/tough/) /tʌf/: difícil o duro."
+        ]
+      ]
+    },
+    {
+      "h2": "Errores comunes",
+      "b": [
+        {
+          "mal": [
+            "I thinked about it.",
+            "I thought about it."
+          ]
+        },
+        {
+          "mal": [
+            "I have thinked a lot.",
+            "I have thought a lot."
+          ]
+        },
+        "Think es un verbo irregular: el pasado y el participio son iguales, _thought_."
+      ]
+    }
+  ]
+},
 };
