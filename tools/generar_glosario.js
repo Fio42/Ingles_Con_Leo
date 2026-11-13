@@ -102,20 +102,64 @@ function vocabEntries() {
   return out;
 }
 
-/* ---------- fechas estables (lastmod no cambia si el contenido no cambia) ---------- */
+/* ---------- fechas estables ----------
+   La fecha de una página (dateModified y lastmod del sitemap) solo cambia cuando cambia su CONTENIDO:
+   título, descripción, datos estructurados y cuerpo. No cuentan la versión del CSS, los scripts ni el pie.
+   Cómo se decide:
+     1. Si el contenido es igual al de la última ejecución (mismo hash), se conserva la fecha.
+     2. Si el hash es nuevo o no existe, se compara con la página que ya está publicada en disco:
+        si es equivalente (mismo texto, aunque difiera en espacios o en cómo se escriben los apóstrofes),
+        se adopta la fecha que ya tiene esa página; no se inventa una fecha nueva.
+     3. Si de verdad cambió, la fecha es hoy.
+   Para forzar la fecha de hoy en fichas cuyo cambio ya se publicó a mano:
+     node tools/generar_glosario.js --actualizadas=doesnt,ive */
 const FECHAS_FILE = path.join(__dirname, 'glosario', 'fechas.json');
 let fechas = {}; try { fechas = JSON.parse(fs.readFileSync(FECHAS_FILE, 'utf8')); } catch (e) {}
+const ACTUALIZADAS = new Set(((process.argv.find(a => a.startsWith('--actualizadas=')) || '').split('=')[1] || '').split(',').filter(Boolean).map(s => 'p:' + s));
 function fechaDe(key, contenido) {
   const h = crypto.createHash('md5').update(contenido).digest('hex').slice(0, 10);
   if (!fechas[key] || fechas[key].h !== h) fechas[key] = { d: TODAY, h };
   return fechas[key].d;
+}
+const MARCA_FECHA = '@@FECHA@@';
+let _lastmods = null;
+function lastmodActual() {  // lastmod que el sitemap ya tiene para cada ficha (el sitemap se reescribe al final del script)
+  if (_lastmods) return _lastmods;
+  _lastmods = {};
+  try {
+    const re = /<loc>[^<]*\/glosario\/([^/<]+)\/<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g; let m;
+    const xml = fs.readFileSync(path.join(ROOT, 'sitemap.xml'), 'utf8');
+    while ((m = re.exec(xml))) _lastmods[m[1]] = m[2];
+  } catch (e) {}
+  return _lastmods;
+}
+const sustancia = html => ((html.match(/<title>[\s\S]*?<\/title>/) || [''])[0]
+  + (html.match(/<meta name="description"[^>]*>/) || [''])[0]
+  + (html.match(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g) || []).join('')
+  + (html.match(/<main>[\s\S]*<\/main>/) || [''])[0]);
+const entidades = s => s.replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const canonico = s => entidades(s.replace(/\r/g, '')).replace(/>\s+</g, '><').replace(/\s+/g, ' ').trim();
+function fechaPagina(key, htmlConMarca, rutaPrevia) {
+  const base = canonico(sustancia(htmlConMarca));
+  const h = crypto.createHash('md5').update(sustancia(htmlConMarca)).digest('hex').slice(0, 10);
+  if (ACTUALIZADAS.has(key)) { fechas[key] = { d: TODAY, h }; return TODAY; }
+  if (fechas[key] && fechas[key].h === h) return fechas[key].d;
+  let previa = null; try { previa = fs.readFileSync(rutaPrevia, 'utf8'); } catch (e) {}
+  const m = previa && /"dateModified":\s*"(\d{4}-\d{2}-\d{2})"/.exec(previa);
+  if (m && canonico(sustancia(previa.replace(m[0], '"dateModified": "' + MARCA_FECHA + '"'))) === base) {
+    // Equivalente a lo publicado: se adopta la fecha más reciente entre la de la página y la del sitemap actual (nunca se retrocede).
+    const d = [m[1], lastmodActual()[key.slice(2)]].filter(Boolean).sort().pop();
+    fechas[key] = { d, h }; return d;
+  }
+  fechas[key] = { d: TODAY, h };
+  return TODAY;
 }
 
 /* ---------- piezas HTML compartidas ---------- */
 const PRACTICE = { grammar: '/practica.html?skill=grammar', vocabulary: '/practica.html?skill=vocabulary', listening: '/practica.html?skill=listening' };
 const TIPO_LABEL = { palabra: 'Palabra', expresion: 'Expresión', phrasal: 'Phrasal verb', diferencia: 'Diferencia', gramatica: 'Gramática' };
 
-function head({ title, desc, canonical, ogType, schema }) {
+function head({ title, desc, descSocial, canonical, ogType, schema }) {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -131,7 +175,7 @@ function head({ title, desc, canonical, ogType, schema }) {
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${canonical}">
 <meta property="og:title" content="${esc(title.replace(/ - Inglés con Leo$/, ''))}">
-<meta property="og:description" content="${esc(desc)}">
+<meta property="og:description" content="${esc(descSocial || desc)}">
 <meta property="og:type" content="${ogType}">
 <meta property="og:url" content="${canonical}">
 <meta property="og:image" content="${SITE}/og-logo.png">
@@ -139,7 +183,7 @@ function head({ title, desc, canonical, ogType, schema }) {
 <meta property="og:site_name" content="Inglés con Leo">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title.replace(/ - Inglés con Leo$/, ''))}">
-<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:description" content="${esc(descSocial || desc)}">
 <meta name="twitter:image" content="${SITE}/og-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -234,14 +278,31 @@ function registerAudio(t) {
 }
 
 /* ---------- pagina de una entrada ---------- */
-function h1Of(t) { return t.tipo === 'diferencia' ? `${cap(t.t)}: diferencia y uso` : `${cap(t.t)}: significado y cómo usarlo`; }
+function h1Of(t) { if (t.h1) return t.h1; return t.tipo === 'diferencia' ? `${cap(t.t)}: diferencia y uso` : `${cap(t.t)}: significado y cómo usarlo`; }
+
+/* Secciones libres de una ficha editada a mano. Cada sección es { h2, b: [bloques] }.
+   Bloque: texto (párrafo, con _énfasis_, **negrita** y [texto](/ruta)), lista de textos (<ul>),
+   { ej: [inglés, español] } (ejemplo) o { mal: [incorrecto, correcto] } (error común). */
+function seccionesHtml(secs) {
+  return secs.map(sec => {
+    const out = [`<h2>${esc(sec.h2)}</h2>`];
+    sec.b.forEach(b => {
+      if (typeof b === 'string') out.push(`<p>${md(b)}</p>`);
+      else if (Array.isArray(b)) out.push(`<ul>\n${b.map(x => `<li>${md(x)}</li>`).join('\n')}\n</ul>`);
+      else if (b.ej) out.push(`<div class="article-example"><div class="en">${md(b.ej[0])}</div><div class="es">${md(b.ej[1])}</div></div>`);
+      else if (b.mal) out.push(`<div class="article-wrong">❌ ${md(b.mal[0])}</div><div class="article-right">✅ ${md(b.mal[1])}</div>`);
+      else throw new Error('Bloque de sección no reconocido: ' + JSON.stringify(b).slice(0, 80));
+    });
+    return out.join('\n');
+  }).join('\n');
+}
 
 function termPage(t) {
   const url = `${SITE}/glosario/${t.slug}/`;
   const h1 = h1Of(t);
-  const title = `${h1} - Inglés con Leo`;
+  const title = t.titulo || `${h1} - Inglés con Leo`;
   const suffix = t.tipo === 'diferencia' ? ' Con ejemplos, errores comunes y audio.' : ' Con ejemplos, pronunciación y audio.';
-  const desc = trunc(plain(t.metaResp || t.resp) + suffix, 158);
+  const desc = t.descripcion || trunc(plain(t.metaResp || t.resp) + suffix, 158);
   const hasAudio = exists(`audio/glosario/${t.slug}.mp3`);
   const hasDialogAudio = t.dialogo && exists(`audio/glosario/${t.slug}-dialogo.mp3`);
   const arts = [t.art, t.art2].filter(Boolean).map(articleInfo);
@@ -252,20 +313,25 @@ function termPage(t) {
   body.push(`<nav class="gl-crumbs" aria-label="Migas de pan"><a href="/index.html">Inicio</a> <span aria-hidden="true">›</span> <a href="/glosario-ingles/">Glosario</a> <span aria-hidden="true">›</span> <span>${esc(t.t)}</span></nav>`);
   body.push(`<span class="badge badge-free gl-badge">${TIPO_LABEL[t.tipo]}</span>`);
   body.push(`<h1>${esc(h1)}</h1>`);
-  body.push(`<div class="gl-answer"><div class="gl-answer-label">Respuesta rápida</div><p>${md(t.resp)}</p></div>`);
+  body.push(`<div class="gl-answer"><div class="gl-answer-label">Respuesta rápida</div><p>${md(t.respuesta || t.resp)}</p></div>`);
   if (t.pron || hasAudio) {
     body.push(`<div class="gl-pron">${t.pron ? `<span class="gl-pron-text"><span class="gl-pron-label">Se pronuncia</span> <strong>${esc(t.pron)}</strong></span>` : ''}${hasAudio ? audioBtn(`/audio/glosario/${t.slug}.mp3`, `Escuchar ejemplos de ${t.t}`) : ''}</div>`);
   }
-  body.push(`<h2>Cómo se usa</h2>`);
-  body.push(t.uso.map(p => `<p>${md(p)}</p>`).join('\n'));
-  body.push(`<h2>Ejemplos</h2>`);
-  body.push(t.ej.map(e => `<div class="article-example"><div class="en">${esc(e[0])}</div><div class="es">${esc(e[1])}</div></div>`).join('\n'));
-  if (t.err) {
-    body.push(`<h2>Error común</h2>`);
-    body.push(`<div class="article-wrong">❌ ${esc(t.err[0])}</div><div class="article-right">✅ ${esc(t.err[1])}</div>`);
-    if (t.err[2]) body.push(`<p>${md(t.err[2])}</p>`);
+  if (t.secciones) {
+    // Ficha con secciones propias (tools/glosario/fichas-editadas.js): sustituye Cómo se usa / Ejemplos / Error / Truco.
+    body.push(seccionesHtml(t.secciones));
+  } else {
+    body.push(`<h2>Cómo se usa</h2>`);
+    body.push(t.uso.map(p => `<p>${md(p)}</p>`).join('\n'));
+    body.push(`<h2>Ejemplos</h2>`);
+    body.push(t.ej.map(e => `<div class="article-example"><div class="en">${esc(e[0])}</div><div class="es">${esc(e[1])}</div></div>`).join('\n'));
+    if (t.err) {
+      body.push(`<h2>Error común</h2>`);
+      body.push(`<div class="article-wrong">❌ ${esc(t.err[0])}</div><div class="article-right">✅ ${esc(t.err[1])}</div>`);
+      if (t.err[2]) body.push(`<p>${md(t.err[2])}</p>`);
+    }
+    if (t.truco) { body.push(`<h2>Truco para recordarlo</h2>`); body.push(`<p>${md(t.truco)}</p>`); }
   }
-  if (t.truco) { body.push(`<h2>Truco para recordarlo</h2>`); body.push(`<p>${md(t.truco)}</p>`); }
   if (t.dialogo) {
     body.push(`<h2>Mini conversación</h2>`);
     if (hasDialogAudio) body.push(`<div class="gl-pron">${audioBtn(`/audio/glosario/${t.slug}-dialogo.mp3`, `Escuchar la conversación de ${t.t}`)}</div>`);
@@ -281,22 +347,24 @@ function termPage(t) {
   }
   body.push(`<div class="article-cta"><h3>¿Quieres practicarlo?</h3><p style="color:var(--ink-soft);">Ejercicios cortos y gratis, sin registrarte.</p><a href="${practice}" class="btn btn-primary" style="width:fit-content;">Practicar gratis →</a></div>`);
   if (rel.length) {
-    body.push(`<h2 class="gl-rel-title">Mira también</h2><ul class="gl-chips">${rel.map(r => `<li><a href="/glosario/${r.slug}/">${esc(r.t)}</a></li>`).join('')}</ul>`);
+    body.push(`<h2 class="gl-rel-title">Mira también</h2><ul class="gl-chips">${rel.map(r => `<li><a href="/glosario/${r.slug}/">${esc(r.etiqueta || r.t)}</a></li>`).join('')}</ul>`);
   }
   body.push(`<p class="gl-back"><a class="inline-link" href="/glosario-ingles/">← Ver todo el glosario de inglés</a></p>`);
 
   const schema = [
-    { '@context': 'https://schema.org', '@type': 'WebPage', '@id': url, url, name: h1, description: plain(t.resp), inLanguage: 'es',
+    { '@context': 'https://schema.org', '@type': 'WebPage', '@id': url, url, name: h1, description: t.descripcionEsquema || plain(t.resp), inLanguage: 'es',
       isPartOf: { '@type': 'WebSite', name: 'Inglés con Leo', url: SITE + '/' },
-      mainEntity: { '@type': 'DefinedTerm', name: t.t, description: plain(t.resp), inDefinedTermSet: SITE + '/glosario-ingles/' },
-      dateModified: fechaDe('p:' + t.slug, JSON.stringify(t)) },
+      mainEntity: { '@type': 'DefinedTerm', name: t.t, description: t.descripcionEsquema || plain(t.resp), inDefinedTermSet: SITE + '/glosario-ingles/' },
+      dateModified: MARCA_FECHA },
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE + '/' },
       { '@type': 'ListItem', position: 2, name: 'Glosario de inglés', item: SITE + '/glosario-ingles/' },
       { '@type': 'ListItem', position: 3, name: t.t, item: url } ] }
   ];
-  return head({ title, desc, canonical: url, ogType: 'article', schema }) +
+  const html = head({ title, desc, descSocial: t.descripcionSocial, canonical: url, ogType: 'article', schema }) +
     `\n<main>\n  <article class="article-body gl-article">\n    ${body.join('\n    ')}\n  </article>\n</main>\n` + FOOT;
+  const fecha = fechaPagina('p:' + t.slug, html, path.join(ROOT, 'glosario', t.slug, 'index.html'));
+  return html.split(MARCA_FECHA).join(fecha);
 }
 
 /* ---------- indice ---------- */
@@ -383,10 +451,21 @@ fs.writeFileSync(FECHAS_FILE, JSON.stringify(fechas, null, 1));
 const indexDate = fechaDe('index', JSON.stringify(entries.map(e => [e.t, e.resp, e.art])));
 fs.writeFileSync(FECHAS_FILE, JSON.stringify(fechas, null, 1));
 const smPath = path.join(ROOT, 'sitemap.xml');
-let sm = fs.readFileSync(smPath, 'utf8').split('\n').filter(l => !/\/glosario/.test(l)).join('\n');
-const urls = [{ loc: `${SITE}/glosario-ingles/`, d: indexDate }].concat(terms.map(t => ({ loc: `${SITE}/glosario/${t.slug}/`, d: fechas['p:' + t.slug].d })));
-sm = sm.replace('</urlset>', urls.map(u => `  <url><loc>${u.loc}</loc><lastmod>${u.d}</lastmod></url>`).join('\n') + '\n</urlset>');
-fs.writeFileSync(smPath, sm);
+const smLineas = fs.readFileSync(smPath, 'utf8').split('\n');
+const urlsNuevas = [{ loc: `${SITE}/glosario-ingles/`, d: indexDate }].concat(terms.map(t => ({ loc: `${SITE}/glosario/${t.slug}/`, d: fechas['p:' + t.slug].d })));
+/* Estable: el bloque del glosario se queda donde ya está en el sitemap y las URLs que ya existen conservan su orden;
+   las nuevas se agregan al final del bloque. Así regenerar no mueve líneas de otras páginas. */
+const locDe = l => (/<loc>([^<]+)<\/loc>/.exec(l) || [])[1];
+const posGlosario = smLineas.findIndex(l => /\/glosario/.test(l));
+const ordenPrevio = smLineas.filter(l => /\/glosario/.test(l)).map(locDe).filter(Boolean);
+const porLoc = new Map(urlsNuevas.map(u => [u.loc, u]));
+const urls = ordenPrevio.filter((l, i) => porLoc.has(l) && ordenPrevio.indexOf(l) === i).map(l => porLoc.get(l))
+  .concat(urlsNuevas.filter(u => !ordenPrevio.includes(u.loc)));
+const bloque = urls.map(u => `  <url><loc>${u.loc}</loc><lastmod>${u.d}</lastmod></url>`);
+const resto = smLineas.filter(l => !/\/glosario/.test(l));
+const destino = posGlosario >= 0 ? posGlosario : resto.findIndex(l => /<\/urlset>/.test(l));
+resto.splice(destino, 0, ...bloque);
+fs.writeFileSync(smPath, resto.join('\n'));
 write('tools/glosario/indexnow_urls.json', JSON.stringify(urls.map(u => u.loc), null, 1));
 
 console.log(`Glosario: ${terms.length} paginas propias, ${extras.length} entradas con clase, ${vocab.length} palabras del curso, ${entries.length} entradas en el indice.`);

@@ -867,4 +867,6 @@ module.exports = [
   err:[`When I arrived, the meeting started.`,`When I arrived, the meeting had started.`,`Si la reunión empezó antes de que llegaras, usa had started.`],
   truco:`Dos hechos pasados: el primero lleva had + participio, el segundo va en pasado simple.`,
   prac:'grammar', rel:['already','yet'] },
-].concat(require('./confusiones-200.js'));
+].concat(require('./confusiones-200.js'))
+  // Mejoras SEO hechas a mano que viven en fichas-editadas.js (se combinan con la ficha base).
+  .map(t => Object.assign(t, require('./fichas-editadas.js')[t.slug] || {}));

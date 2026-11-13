@@ -994,9 +994,24 @@ function ficha([slug, t, resp, pron, en, es]) {
     ],
     ej: [[en, es]],
     truco: `No traduzcas palabra por palabra: identifica qué idea quieres expresar y elige la forma que corresponde al contexto.`,
-    prac: 'vocabulary'
+    prac: PRACTICA_GRAMATICA.has(slug) ? 'grammar' : 'vocabulary'
   };
 }
+
+// Fichas de gramática: su botón "Practicar" lleva a ejercicios de gramática, no de vocabulario.
+// Revisadas una por una (2026-11-13): todas tratan estructura (preposiciones, modales, comparativos,
+// contables/incontables, adjetivo/adverbio...). El resto de la plantilla sigue en vocabulario.
+const PRACTICA_GRAMATICA = new Set([
+  'all-vs-every', 'among-vs-between', 'amount-vs-number', 'any-vs-some',
+  'bad-vs-badly', 'been-vs-gone', 'can-vs-may', 'data-vs-datum',
+  'elder-vs-older', 'excited-vs-exciting', 'feel-vs-feel-like', 'furniture-vs-furnitures',
+  'hard-vs-hardly', 'have-vs-have-got', 'how-much-vs-how-many', 'in-time-vs-on-time',
+  'interesting-vs-interested', 'lay-vs-lie', 'least-vs-less', 'little-vs-a-little',
+  'make-vs-let', 'marry-vs-get-married', 'most-vs-almost', 'must-vs-have-to',
+  'mustnt-vs-dont-have-to', 'near-vs-nearly', 'need-vs-need-to', 'no-vs-not',
+  'other-vs-another', 'quiet-vs-quietly', 'raise-vs-rise', 'these-vs-those',
+  'used-to-vs-be-used-to', 'would-like-vs-like', 'yet-vs-still'
+]);
 
 // El lote editorial de esta publicación son exactamente 200 fichas nuevas.
 // Se conserva el banco ampliado abajo para próximas tandas, sin publicar ni
