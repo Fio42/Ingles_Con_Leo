@@ -2126,3 +2126,11 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Vista previa local: tools/preview (backend simulado, servidor en puerto 8765, abrir-preview.bat). Verificado en navegador real como visitante, cuenta gratis y miembro a 320 y 375 px: sin desbordes, redirecciones correctas, enlaces antiguos intactos.
 - Hallazgo del navegador real: con ?tema= la sesion gratis quedaba 1400 px mas abajo en movil. Corregido: baja sola hasta el ejercicio.
 - Pruebas: todas pasan salvo 4 preexistentes (academia-articulos, checkout-abandonado, error-monitor, glossary-sync), que tambien fallan en main. e2e jsdom 122/122, regresiones y microtemas ok, escaner sin problemas.
+
+2026-11-14 (5) Piloto de conexiones: verificaciones finales (rama piloto-conexiones, sin push)
+- Sesiones cortas: tools/tests/piloto-cierre.e2e.js (46 comprobaciones). Temas reales de 2 y 3 ejercicios, en nivel propio y en otro nivel (xt): 1 sola sesion guardada, cada ejercicio una vez, 1 subida a la nube, 1 actualizacion de errores, nivel guardado intacto, sin sesion a medias, "otra sesion" no duplica.
+- Diagnostico: piloto-diagnostico.test.js ahora 18 comprobaciones. 3 o 6 fallos de otro nivel no crean refuerzo; 10 fallos en 2 temas de la misma familia si piden reforzar esa familia; el porcentaje de Gramatica no se mueve.
+- Limitacion conocida (ya existia en main, no introducida por el piloto): tras crear cuenta o entrar, el parametro volver solo admite el nombre de la pagina (regex ^[a-z0-9-]+\.html$), asi que se pierde ?tema=, ?skill= y ?level=. Solucion minima si se decide: aceptar una query con caracteres seguros en app.js (2 enlaces), miembros.html (2 lecturas) y backend.js (1 redirectTo), y agregar ?cuenta=nueva con & si ya hay ?.
+- Residuo conocido: los errores de otro nivel (xt) entran al repaso de errores del Plan general (hasta ~30% de la sesion) como cualquier error; es el comportamiento de siempre de Mis errores.
+- Fallos preexistentes de run-all, identicos en main y en la rama: academia-articulos (17), checkout-abandonado (1: Stripe/recargar), error-monitor (3), glossary-sync (2). Ninguno toca archivos del piloto.
+- Pendiente: repetir en navegador real los estados "limite diario agotado" y "tema sin ejercicios gratis" (solo verificados por texto en jsdom; el servidor de vista previa se cerro).

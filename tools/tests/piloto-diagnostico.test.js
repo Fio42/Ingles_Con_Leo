@@ -56,5 +56,18 @@ ok(mejora.tema && mejora.tema.acc === 90 && !(mejora.d.weak && mejora.d.weak.id 
 const legacyBase = A.computeSkillAccuracy(base.p, 'gramatica'), legacyFalla = A.computeSkillAccuracy(falla.p, 'gramatica');
 ok(legacyBase === legacyFalla, 'el porcentaje historico por habilidad tampoco cambia (' + legacyBase + ' / ' + legacyFalla + ')');
 
+// 7. Proporcion: pocos fallos de otro nivel NO disparan refuerzos; hacen falta intentos suficientes y repetidos (mismas reglas que siempre)
+[3, 6].forEach(n => { const r = diagWith(T, 0, n, { xt: 1 }); ok(!r.d.weak && /foco=confusiones/.test(r.d.today.href) && r.gram.current === base.gram.current, 'fallar ' + n + ' de ' + n + ' en otro nivel no crea ningun refuerzo nuevo ni cambia la recomendacion de hoy'); });
+{ const fam = A.TEMA_BY_ID[T].family;
+  const otro = Object.keys(A.TEMA_BY_ID).find(id => id !== T && A.TEMA_BY_ID[id].family === fam && temaItems('facil', id).length >= 5);
+  const res = [];
+  [T, otro].forEach(id => temaItems('facil', id).slice(0, 5).forEach(i => res.push({ itemId: i, isCorrect: false, skill: 'gramatica', cl: 'facil', xt: 1 })));
+  const d = A.computeDiagnosis({ sessions: history().concat([{ skill: 'plan', level: 'principiante', startedAt: now - 3600e3, results: res }]) }, null);
+  const g = d.units.find(u => u.key === 'skill:gramatica');
+  ok(d.weak && d.weak.type === 'family' && d.weak.id === fam, '10 fallos repartidos en 2 temas de una familia si piden reforzar ESA familia (evidencia suficiente y repetida)');
+  ok(g.current === base.gram.current && g.state === base.gram.state, '...y aun asi el porcentaje y estado de Gramatica del alumno no se mueven');
+  ok(d.units.filter(u => u.key.indexOf('family:') === 0 && u.key !== 'family:' + fam).every(u => !d.weak || d.weak.id !== u.id), '...y ninguna otra familia se marca debil por esos intentos');
+}
+
 if(fails.length){ console.error('FALLA piloto-diagnostico (' + fails.length + ' de ' + checks + '):\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('piloto-diagnostico: ' + checks + ' comprobaciones, todas bien');
