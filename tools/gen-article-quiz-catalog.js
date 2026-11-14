@@ -37,10 +37,16 @@ function parseQuizzes(html){
   });
   return out;
 }
+// Artículos que SE QUEDAN FUERA del catálogo aunque tengan un solo tema en temas.js: sus preguntas mezclan varios temas
+// y una pregunta fallada no se puede atribuir a uno solo (mismo criterio que arriba para los artículos de 2+ temas).
+const SIN_MEMORIA = {
+  'articulo-pasado-simple.html': 'mezcla verbos regulares, irregulares, did y was/were; el tema pasado-regulares solo cubre -ed'
+};
 function build(){
   const TEMAS = loadTemas();
   const cat = {};
   fs.readdirSync(root).filter(f => /^articulo-.*\.html$/.test(f)).sort().forEach(file => {
+    if(SIN_MEMORIA[file]) return;
     const tema = temaForArticle(TEMAS, file);
     if(!tema) return;
     const quizzes = {};
