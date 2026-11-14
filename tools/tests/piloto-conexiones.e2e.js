@@ -100,6 +100,8 @@ ok(r0.seen.length === 0 && /limit|l[ií]mite|hoy/i.test(r0.html), 'limite agotad
   if(recorded){
     const foco = recorded.results.filter(r => pool.find(e => e.item.id === r.itemId && e.focusLabel !== undefined));
     ok(foco.length > 0 && foco.every(r => r.cl === 'facil'), 'miembro: los ejercicios del tema se guardan con su nivel real (Facil)');
+    ok(foco.every(r => r.xt === 1), 'miembro: quedan marcados xt (otro nivel puesto por el sistema: no mueven su porcentaje por habilidad)');
+    ok(recorded.results.length === foco.length, 'miembro: la sesion es solo del tema: ' + recorded.results.length + ' ejercicios, ninguno de relleno');
     ok(w.getUserLevel() === saved && w.localStorage.getItem('leo_profile') === antes, 'miembro: el nivel guardado y el perfil no cambian');
     // La sugerencia de nivel solo cuenta ejercicios del banco de SU nivel
     const soloOtroNivel = recorded.results.filter(r => r.cl === 'facil');

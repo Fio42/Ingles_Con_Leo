@@ -847,13 +847,14 @@ test('práctica enfocada en un tema de listening: sus ejercicios primero y se co
   assert(focus.length >= 3 && focus.every(e => e.kind === 'listening' && mine.has(e.item.id) && e.focusTema === 'listening-numeros'));
   assert.strictEqual(new Set(pool.map(e => e.item.id)).size, pool.length);
 });
-test('tema con pocos ejercicios en su nivel: usa los que hay y completa; sin ninguno en el nivel o inventado: Plan normal (nunca vacío)', ()=>{
+test('tema con pocos ejercicios en su nivel: la sesión es SOLO de ese tema (no se completa con otros); sin ninguno en el nivel o inventado: Plan normal (nunca vacío)', ()=>{
   setProgress(T, []);
   assert.strictEqual(lisIds('listening-conversaciones', 'principiante').length, 1);
   let sel = T.computePlanSelection('principiante', 12, { focusTema:'listening-conversaciones' });
   const pool = T.buildPlanPool('principiante', sel);
   assert.strictEqual(pool.length, sel.mistakeCount + Object.keys(sel.bySkill).reduce((n, k) => n + sel.bySkill[k], 0));
-  assert(pool.filter(e => e.focus).length <= 1 && pool.length >= 8);
+  assert.strictEqual(pool.length, 1);                                     // el único ejercicio de ese tema, sin relleno de otros temas
+  assert(pool.every(e => e.focusTemaOnly && e.focusShort));                // y la sesión lo avisa desde el principio
   assert.strictEqual(T.temaHasItemsAt('listening-condicionales', 'principiante'), false);
   sel = T.computePlanSelection('principiante', 12, { focusTema:'listening-condicionales' });
   assert(!sel.focus || sel.focus.skill !== 'listening');

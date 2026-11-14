@@ -4734,6 +4734,7 @@ function computeSkillAccuracy(p, skill){
     (s.results||[]).forEach(r=>{
       if((r.skill || s.skill) !== skill) return;
       if(r.isCorrect !== true && r.isCorrect !== false) return; // speaking no calificado, se ignora
+      if(r.xt) return;                                          // ejercicio de otro nivel puesto por el sistema: no mide el nivel de la persona
       graded++;
       if(r.isCorrect) correct++;
     });
@@ -4987,6 +4988,18 @@ function computePlanSelection(level, targetCount, opts){
         target = { id: null, label: diag.weak.focusTema.label, temaId: diag.weak.focusTema.id, temaLabel: diag.weak.focusTema.label };
       }
     }
+    // Pidió practicar UN tema (enlace con ?tema=): la sesión es solo de ese tema, tan larga como ejercicios haya (hasta la duración elegida).
+    const onlyTema = forcedWriting || forcedVocab || (forcedTema && !microFocus && focusSkill === 'gramatica' ? forcedTema : null);
+    if(target && onlyTema){
+      const lvl = (forcedTema && temaAltLevel) ? temaAltLevel : level;
+      const avail = pickTemaOnlyItems(focusSkill, lvl, onlyTema.id, 100000).length;
+      if(avail > 0){
+        const count = Math.min(targetCount, avail);
+        const only = {}; skills.forEach(sk => { only[sk] = 0; }); only[focusSkill] = count;
+        return { mistakeCount: 0, bySkill: only, focus: { skill: focusSkill, familyId: target.id, label: onlyTema.label, temaId: onlyTema.id, microId: null, count, chosen: true,
+          temaLevel: (forcedTema && temaAltLevel) ? temaAltLevel : null, askedTemaLabel: null, temaOnly: true, available: avail, asked: targetCount } };
+      }
+    }
     if(target && (remaining >= 4 || (microFocus && remaining >= 3))){
       const forced = !!(forcedFamily || forcedVocab || forcedWriting);
       const want = forced
@@ -5028,6 +5041,17 @@ function buildPlanPool(level, selection){
     .map(e => Object.assign({ reviewOrigin:true }, e));
   const alreadyIn = new Set(entries.map(e => e.item.id));
   const focusSkill = (selection.focus && selection.focus.skill) || 'gramatica';
+  if(selection.focus && selection.focus.temaOnly){
+    // Sesión de UN tema: solo sus ejercicios (nada de errores pendientes ni otras habilidades para llegar a un número).
+    const lvl = selection.focus.temaLevel || level;
+    const only = pickTemaOnlyItems(focusSkill, lvl, selection.focus.temaId, selection.focus.count);
+    only.forEach((e, i) => {
+      e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId; e.focusTemaOnly = true;
+      e.focusTotal = only.length; e.focusShort = selection.focus.available < selection.focus.asked;
+      if(selection.focus.temaLevel){ e.cl = selection.focus.temaLevel; e.focusOtherLevel = selection.focus.temaLevel; }
+    });
+    return shuffleArray(only);
+  }
   const focusEntries = !selection.focus ? []
     : selection.focus.startRoute ? pickStartRouteItems(level, selection.focus.startRoute.topics, selection.focus.startRoute.perTopic, alreadyIn)
     : focusSkill !== 'gramatica' ? pickSkillFocusItems(focusSkill, level, selection.focus.temaId, selection.focus.count, alreadyIn)
@@ -5217,7 +5241,8 @@ function renderPlanIntro(container, opts){
         <div class="examples-label">Tu sesión de hoy</div>
         ${currentSelection.focus && currentSelection.focus.temaLevel ? `<p class="plan-focus-note" data-honest="otro-nivel"><b>${currentSelection.focus.label}</b> todavía no tiene ejercicios en tu nivel (${LEVEL_META[level].label}). Usamos los de nivel ${LEVEL_META[currentSelection.focus.temaLevel].label}. Tu nivel guardado no cambia.</p>` : ''}
         ${currentSelection.focus && currentSelection.focus.askedTemaLabel ? `<p class="plan-focus-note" data-honest="solo-familia">Todavía no hay ejercicios específicos de <b>${currentSelection.focus.askedTemaLabel}</b>. Practicas otros de su misma familia.</p>` : ''}
-        ${currentSelection.focus ? (currentSelection.focus.startRoute
+        ${currentSelection.focus && currentSelection.focus.temaOnly ? `<p class="plan-focus-note" data-honest="solo-tema">Sesión solo de <b>${currentSelection.focus.label}</b>: ${currentSelection.focus.count} ${currentSelection.focus.count === 1 ? 'ejercicio' : 'ejercicios'}${currentSelection.focus.available < currentSelection.focus.asked ? ', todos los que hay de este tema por ahora' : ''}. No la completamos con otros temas.</p>` : ''}
+        ${currentSelection.focus && !currentSelection.focus.temaOnly ? (currentSelection.focus.startRoute
           ? `<p class="plan-focus-note"><b>Tu ruta inicial.</b> Empezamos por lo esencial de tu nivel${currentSelection.focus.startRoute.seen ? ` (ya viste ${currentSelection.focus.startRoute.seen} de ${currentSelection.focus.startRoute.total} temas)` : ''}. En cuanto veamos qué te conviene reforzar, el Plan se adapta a ti.</p>`
           : currentSelection.focus.chosen
           ? `<p class="plan-focus-note">Hoy tu sesión se enfoca en <b>${currentSelection.focus.label}</b>, junto con tus errores pendientes.</p>`
@@ -5310,16 +5335,18 @@ function renderPlanSessionSummary({ correct, graded, total, topics }){
    exactamente igual que si esos ejercicios se hubieran hecho desde la
    pagina de esa habilidad. */
 // Avisos honestos del refuerzo de un tema: nunca se cambia de tema ni de nivel en silencio.
-function planHonestNoteHtml(entry, level){
+function planHonestNoteHtml(entry, level, idx){
   if(!entry) return '';
   const nm = l => (LEVEL_META[l] && LEVEL_META[l].label) || l;
+  const only = (entry.focusTemaOnly && idx === 0 && entry.focusShort)
+    ? `<p class="plan-focus-note" data-honest="solo-tema">Sesión solo de <b>${entry.focusLabel}</b>: ${entry.focusTotal} ${entry.focusTotal === 1 ? 'ejercicio' : 'ejercicios'}, todos los que hay de este tema por ahora. No la completamos con otros temas.</p>` : '';
   if(entry.focusOtherLevel && entry.focusOtherLevel !== level)
-    return `<p class="plan-focus-note" data-honest="otro-nivel"><b>${entry.focusLabel}</b> todavía no tiene ejercicios en tu nivel (${nm(level)}). Practicas con ejercicios de nivel ${nm(entry.focusOtherLevel)}. Tu nivel guardado no cambia.</p>`;
+    return only + `<p class="plan-focus-note" data-honest="otro-nivel"><b>${entry.focusLabel}</b> todavía no tiene ejercicios en tu nivel (${nm(level)}). Practicas con ejercicios de nivel ${nm(entry.focusOtherLevel)}. Tu nivel guardado no cambia.</p>`;
   if(entry.focusFamilyFill)
     return `<p class="plan-focus-note" data-honest="familia"><b>${entry.focusLabel}</b>: ya usamos los ejercicios de ese tema que hay para hoy. Este es otro ejercicio de su misma familia (${entry.focusFamilyLabel}).</p>`;
   if(entry.focusAsked)
     return `<p class="plan-focus-note" data-honest="solo-familia">Todavía no hay ejercicios específicos de <b>${entry.focusAsked}</b>. Practicas otros ejercicios de <b>${entry.focusLabel}</b>, su misma familia.</p>`;
-  return '';
+  return only;
 }
 function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
   stopActiveAudioFile();
@@ -5338,13 +5365,13 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     wrap.innerHTML = sessionHeaderHtml('Plan de estudio · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
-    const honest = planHonestNoteHtml(entry, level);
+    const honest = planHonestNoteHtml(entry, level, idx);
     if(honest) wrap.insertAdjacentHTML('beforeend', honest);
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
     renderMixItemInto(card, entry, (isCorrect, extra)=>{
-      results.push(Object.assign({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] }, entry.cl ? { cl: entry.cl } : null, extra || null));
+      results.push(Object.assign({ itemId: entry.item.id, isCorrect, skill: PLAN_KIND_TO_SKILL[entry.kind] }, entry.cl ? { cl: entry.cl } : null, (entry.focusOtherLevel && entry.focusOtherLevel !== level) ? { xt: 1 } : null, extra || null));   // xt: ejercicio de OTRO nivel que eligió el sistema (no la persona): cuenta para su tema y familia, no para su porcentaje por habilidad
       showRetryOrNextButtons(card, isCorrect, ()=>{ popRetried(results); renderItem(); }, ()=>{
         idx++;
         if(idx < total) renderItem(); else finish();
@@ -7072,7 +7099,7 @@ function collectDiagAttempts(p){
       const skill = r.skill || (found && DIAG_KIND_TO_SKILL[found.kind]) || s.skill;
       if(DIAG_SKILLS.indexOf(skill) === -1) return;
       const fam = (skill === 'gramatica' && found) ? diagFamilyForTopic(found.topic) : null;
-      out.push({ itemId:r.itemId, ok:r.isCorrect, when, skill, family: fam ? fam.id : null,
+      out.push({ itemId:r.itemId, ok:r.isCorrect, when, skill, xt: !!r.xt, family: fam ? fam.id : null,
         tema: (r.lowEffort ? null : ((skill === 'gramatica' || skill === 'vocabulario' || skill === 'listening' || skill === 'writing') ? diagTemaIdForFound(found) : null)) });
     });
   });
@@ -7231,7 +7258,7 @@ function computeDiagnosis(p, statsMap){
   // Unidades: cada habilidad, y cada familia de gramática.
   const groups = new Map();
   attempts.forEach(a=>{
-    const keys = ['skill:' + a.skill];
+    const keys = a.xt ? [] : ['skill:' + a.skill];     // xt: el porcentaje por habilidad mide TU nivel; el tema y la familia sí cuentan
     if(a.family) keys.push('family:' + a.family);
     keys.forEach(k=>{ if(!groups.has(k)) groups.set(k, []); groups.get(k).push(a); });
   });
@@ -7544,6 +7571,33 @@ function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
   return shuffleArray(candidates).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind: PLAN_SKILL_TO_KIND[skill], item, focus:true }));
 }
 
+/* Sesión "Practicar este tema": SOLO ejercicios de ese tema, sin completar con otros temas para llegar a un número. Primero lo que falló,
+   luego lo no visto y al final lo ya dominado (si el tema tiene pocos, se repiten antes que mezclar otro tema). Solo lee los bancos. */
+function pickTemaOnlyItems(skill, level, temaId, n){
+  if(!temaId || !n) return [];
+  const bank = skill === 'gramatica' ? (typeof GRAMMAR_BANK === 'undefined' ? null : GRAMMAR_BANK)
+    : skill === 'vocabulario' ? (typeof VOCAB_BANK === 'undefined' ? null : VOCAB_BANK)
+    : skill === 'listening' ? (typeof LISTENING_BANK === 'undefined' ? null : LISTENING_BANK)
+    : skill === 'writing' ? (typeof WRITING_BANK === 'undefined' ? null : WRITING_BANK) : null;
+  if(!bank || !bank[level]) return [];
+  const hist = focusHistory();
+  const p = loadProgress();
+  const everFailed = new Set(), seen = new Set();
+  (p.sessions || []).forEach(s=> (s.results || []).forEach(r=>{ seen.add(r.itemId); if(r.isCorrect === false) everFailed.add(r.itemId); }));
+  const kind = skill === 'gramatica' ? 'grammar' : PLAN_SKILL_TO_KIND[skill];
+  const items = [];
+  bank[level].forEach(variant => variant.forEach(entry => {
+    if(skill === 'gramatica'){
+      if(diagTemaIdForTopic(entry.topic) !== temaId) return;
+      entry.items.forEach(it => items.push(it));
+    } else {
+      const idOf = skill === 'vocabulario' ? vocabTemaIdForItem : skill === 'listening' ? listeningTemaIdForItem : writingTemaIdForItem;
+      if(idOf(entry.id) === temaId) items.push(entry);
+    }
+  }));
+  const rank = it => everFailed.has(it.id) ? 0 : (seen.has(it.id) ? (hist.latest.get(it.id) === true ? 3 : 2) : 1);
+  return shuffleArray(items).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind, item, focus:true }));
+}
 // Solo ejercicios de ESE tema en ese nivel (para el caso "el tema está en otro nivel": no se rellena con otros temas de la familia).
 function pickTemaItemsAtLevel(level, familyId, n, excludeIds, temaId){
   const idx = getDiagItemIndex();
@@ -9893,6 +9947,8 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
       askedLevel = currentLevel;
       if(near) currentLevel = near;
     }
+    // Con ?tema= se baja hasta las pestanas/ejercicio (si no, la sesion queda 1400 px debajo de las tarjetas de nivel en movil).
+    if(focusTema) setTimeout(()=>{ if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' }); }, 300);
     // ?level=avanzado (desde las tarjetas "Practica a tu nivel" del inicio)
     const levelParam = params.get('level');
     if(levelParam && LEVELS.includes(levelParam)){

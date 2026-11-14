@@ -53,6 +53,13 @@ PILOTO.forEach(id => {
         const contentLevel = A.resolvePlanContentLevel(level, 'recommended');
         const pool = A.buildPlanPool(contentLevel, sel);
         const foco = pool.filter(e => e.focusLabel !== undefined);
+        // "Practicar este tema" = SOLO ese tema: ni relleno con otros temas ni errores o habilidades ajenas para llegar a un numero.
+        const skillKey = tema.skill === 'vocabulary' ? 'vocabulario' : tema.skill === 'listening' ? 'listening' : 'gramatica';
+        const disponibles = A.pickTemaOnlyItems(skillKey, cercano && !existeEnNivel ? cercano : level, id, 100000).length;
+        ok(pool.length === foco.length && pool.every(e => e.focusTemaOnly), w + 'la sesion es solo del tema: ' + pool.length + ' ejercicios, ninguno ajeno (' + (pool.length - foco.length) + ' de relleno)');
+        ok(pool.length === Math.min(n, disponibles), w + 'largo = min(duracion ' + n + ', disponibles ' + disponibles + ') y no mas');
+        ok(sel.focus.temaOnly === true && !foco.some(e => e.focusFamilyFill), w + 'sin marca de relleno de familia');
+        if(disponibles < n && pool.length) ok(/todos los que hay de este tema/.test(A.planHonestNoteHtml(pool[0], level, 0)), w + 'si hay pocos, el primer ejercicio lo dice desde el principio');
         ok(foco.length >= 1, w + 'hay al menos un ejercicio de foco');
         ok(foco.some(e => (e.kind === 'grammar' ? temaOf(e) : e.focusTema) === id), w + 'al menos un ejercicio es realmente del tema');
         ok(pool.length > 0, w + 'la sesion no esta vacia');
@@ -60,7 +67,7 @@ PILOTO.forEach(id => {
         foco.forEach(e => {
           const t = e.kind === 'grammar' ? temaOf(e) : (e.focusTema || null);
           if(t === id) delTema++;
-          else if(e.focusFamilyFill){
+          else if(false){
             // Completa con la familia SOLO si lo dice: el ejercicio queda marcado y la sesion lo avisa.
             ok(/misma familia/.test(A.planHonestNoteHtml(e, level)), w + 'el ejercicio ' + e.item.id + ' (de ' + t + ') completa con la familia y la sesion lo avisa');
           } else ok(false, w + 'el ejercicio ' + e.item.id + ' no es del tema ' + id + ' (es de ' + t + ') y no esta marcado como relleno de familia');
