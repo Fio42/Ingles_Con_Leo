@@ -2,18 +2,39 @@
 // Inglés con Leo — Edge Function: resend-webhook
 //
 // Resend llama a esta URL cada vez que pasa algo con un correo que
-// enviamos (rebote, marcado como spam, etc). Esta función:
+// enviamos. Esta función:
 //   1. Verifica que el aviso venga realmente de Resend (firma Svix,
 //      misma idea que stripe-webhook.ts pero con el esquema de
-//      Resend/Svix en vez del de Stripe).
-//   2. Si el evento es "email.bounced" (rebote) o "email.complained"
-//      (alguien lo marcó como spam), busca el profile con ese email
-//      y le pone email_invalid=true, email_invalid_at=ahora.
+//      Resend/Svix en vez del de Stripe). Sin secreto configurado,
+//      sin cabeceras de firma, con firma inválida o con una marca de
+//      tiempo de más de 5 minutos (reenvío malicioso) NO procesa nada.
+//   2. Marca el profile con email_invalid=true, email_invalid_at=ahora
+//      SOLO en estos eventos:
+//        - email.bounced con bounce.type = "Permanent" (rebote duro).
+//          Los rebotes temporales (buzón lleno, servidor caído, etc.)
+//          NO bloquean a nadie: la dirección puede funcionar mañana.
+//        - email.complained (alguien marcó el correo como spam).
+//        - email.suppressed (Resend bloqueó la dirección por su lista
+//          de supresión; seguir intentándolo solo suma rebotes).
+//      email.delivery_delayed y el resto de eventos se ignoran.
 //   3. Mientras email_invalid sea true, los correos automáticos
 //      (streak-reminder-email.ts, upgrade-nudge-emails.ts,
-//      survey-15d-email.ts) no le envían nada a ese usuario, para no
+//      survey-15d-email.ts y el aviso de pago fallido de
+//      stripe-webhook.ts) no le envían nada a ese usuario, para no
 //      seguir rebotando contra un email que no sirve y dañar la
-//      reputación del dominio.
+//      reputación del dominio. La recuperación de contraseña NO mira
+//      esta marca (aunque Resend la bloqueará igual si la dirección
+//      está suprimida).
+//   4. Es idempotente: si Resend repite un evento, no cambia nada
+//      (conserva la fecha original de email_invalid_at).
+//   5. Códigos de respuesta: 200 = recibido (aunque no hubiera nada
+//      que hacer); 400 = firma/cabeceras/cuerpo inválidos; 405 = no
+//      es POST; 500 = falta el secreto o falló la base de datos
+//      (Resend reintenta solo en estos casos).
+//
+// Despliegue: SIEMPRE sin verificación JWT, porque quien llama es
+// Resend y no un usuario de Supabase (la protección es la firma):
+//   npx supabase functions deploy resend-webhook --no-verify-jwt --use-api
 //
 // Para corregir un email marcado como inválido por error (o cuando
 // el usuario avisa que ahora sí funciona): Supabase -> Table Editor
@@ -32,16 +53,30 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const RESEND_WEBHOOK_SECRET = Deno.env.get('RESEND_WEBHOOK_SECRET')!
+const RESEND_WEBHOOK_SECRET = Deno.env.get('RESEND_WEBHOOK_SECRET') ?? ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-const BOUNCE_EVENTS = new Set(['email.bounced', 'email.complained'])
+// Eventos que bloquean la dirección (el rebote solo si es permanente).
+const BLOCK_EVENTS = new Set(['email.bounced', 'email.complained', 'email.suppressed'])
+// Margen para la marca de tiempo de Svix (evita reenviar un aviso viejo).
+const TIMESTAMP_TOLERANCE_SECONDS = 5 * 60
+const MAX_RECIPIENTS = 5
 
 Deno.serve(async (req: Request) => {
   try {
+    if (req.method !== 'POST') {
+      return json({ ok: false, error: 'metodo no permitido' }, 405)
+    }
+    // Sin secreto no hay forma de comprobar la firma: no se procesa nada y se
+    // responde 500 para que se note (y Resend reintente cuando se configure).
+    if (!RESEND_WEBHOOK_SECRET) {
+      console.error('resend-webhook: falta RESEND_WEBHOOK_SECRET')
+      return json({ ok: false, error: 'webhook no configurado' }, 500)
+    }
+
     const rawBody = await req.text()
 
     const svixId = req.headers.get('svix-id')
@@ -51,12 +86,23 @@ Deno.serve(async (req: Request) => {
       return json({ ok: false, error: 'faltan headers de firma' }, 400)
     }
 
+    const ts = Number(svixTimestamp)
+    const nowSec = Math.floor(Date.now() / 1000)
+    if (!Number.isFinite(ts) || Math.abs(nowSec - ts) > TIMESTAMP_TOLERANCE_SECONDS) {
+      return json({ ok: false, error: 'marca de tiempo fuera de rango' }, 400)
+    }
+
     const valid = await verifySvixSignature(svixId, svixTimestamp, rawBody, svixSignature)
     if (!valid) {
       return json({ ok: false, error: 'firma invalida' }, 400)
     }
 
-    const event = JSON.parse(rawBody)
+    let event: any
+    try {
+      event = JSON.parse(rawBody)
+    } catch {
+      return json({ ok: false, error: 'cuerpo invalido' }, 400)
+    }
     const type = event?.type as string | undefined
     // Clics en los correos de reactivación de miembros (solo seguimiento de
     // resultados; no cambia nada del alumno). Hay que activar el evento
@@ -65,30 +111,63 @@ Deno.serve(async (req: Request) => {
       await recordReactivationClick(event)
       return json({ ok: true, click: true }, 200)
     }
-    if (!type || !BOUNCE_EVENTS.has(type)) {
+    if (!type || !BLOCK_EVENTS.has(type)) {
+      // Incluye email.delivery_delayed (retraso temporal): no se bloquea a nadie.
+      return json({ ok: true, skipped: true }, 200)
+    }
+    // Un rebote solo bloquea si es permanente. Temporal, indeterminado o sin
+    // tipo: no se toca la cuenta (el alumno puede tener el buzón lleno hoy).
+    if (type === 'email.bounced') {
+      const bounceType = String(event?.data?.bounce?.type ?? '').toLowerCase()
+      if (bounceType !== 'permanent') {
+        return json({ ok: true, skipped: true, reason: 'rebote_no_permanente' }, 200)
+      }
+    }
+
+    const recipients = extractRecipients(event?.data?.to)
+    if (!recipients.length) {
       return json({ ok: true, skipped: true }, 200)
     }
 
-    const email = event?.data?.to?.[0] as string | undefined
-    if (!email) {
-      return json({ ok: true, skipped: true }, 200)
+    let marked = 0
+    for (const email of recipients) {
+      // ilike sin comodines: se escapan % _ \ para que "a_b@x.com" no coincida con "aXb@x.com".
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ email_invalid: true, email_invalid_at: new Date().toISOString() })
+        .ilike('email', escapeLike(email))
+        .eq('email_invalid', false) // idempotente: un evento repetido no cambia nada
+        .select('id')
+      if (error) {
+        console.error('resend-webhook: error marcando email_invalid', error)
+        return json({ ok: false, error: 'base de datos' }, 500) // Resend reintenta
+      }
+      marked += (data || []).length
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ email_invalid: true, email_invalid_at: new Date().toISOString() })
-      .eq('email', email)
-    if (error) {
-      console.error(`Error marcando email_invalid para ${email}:`, error)
-      return json({ ok: false }, 200)
-    }
-
-    return json({ ok: true, marked: email, type }, 200)
+    return json({ ok: true, marked, type }, 200)
   } catch (e) {
     console.error(e)
-    return json({ ok: false }, 200)
+    return json({ ok: false }, 500)
   }
 })
+
+// "to" puede venir como lista o como texto; acepta "Nombre <a@b.com>".
+function extractRecipients(to: unknown): string[] {
+  const raw = Array.isArray(to) ? to : typeof to === 'string' ? [to] : []
+  const out: string[] = []
+  for (const item of raw.slice(0, MAX_RECIPIENTS)) {
+    if (typeof item !== 'string') continue
+    const m = item.match(/<([^<>]+)>/)
+    const addr = (m ? m[1] : item).trim().toLowerCase()
+    if (addr.includes('@') && addr.length <= 254 && !out.includes(addr)) out.push(addr)
+  }
+  return out
+}
+
+function escapeLike(s: string): string {
+  return s.replace(/[\\%_]/g, (c) => '\\' + c)
+}
 
 async function recordReactivationClick(event: any): Promise<void> {
   try {
