@@ -63,21 +63,10 @@ A.TEMAS.forEach(t => LEVELS.forEach(lvl => {
 const literal = (src, name) => { const m = src.match(new RegExp('const ' + name + ' = (\\{[\\s\\S]*?\\n\\});')); if(!m) throw new Error('No encuentro ' + name); return vm.runInNewContext('(' + m[1] + ')'); };
 const LABELS = literal(read('tools/generar_mini_lecciones.js'), 'LABELS');
 const MINI = vm.runInNewContext(read('mini-lecciones.js') + ';MINI_LESSONS');
-const labelOf = tp => LABELS[tp] || tp.replace(/\s*\(.*\)/, '');
-const MO = A.MEMBERS_ONLY_VARIANT_INDEX.gramatica, SAMPLE = A.FREE_SAMPLE_IDS;
-const freeAt = {};   // etiqueta -> { nivel: n }
-Object.keys(A.GRAMMAR_BANK).forEach(l => A.GRAMMAR_BANK[l].forEach((v, vi) => v.forEach(g => {
-  const blocked = (MO[l] || []).indexOf(vi) !== -1;
-  const n = g.items.filter(it => !blocked || (SAMPLE[l] || []).indexOf(it.id) !== -1).length;
-  if(n){ const o = freeAt[labelOf(g.topic)] || (freeAt[labelOf(g.topic)] = {}); o[l] = (o[l] || 0) + n; }
-})));
+// Cada tarjeta del inicio trae (columna 4) lo que abre su boton: tema = practica gratis de ese tema; clase = su explicacion; general = practica general con texto honesto.
+// La prueba de aceptacion (piloto-conexiones.test.js) exige que eso sea verdad; aqui solo se vigila que ninguna tarjeta EMPEORE.
 const cards = {};
-MINI.forEach(m => {
-  const o = freeAt[m[0]];
-  // La tarjeta abre practica.html?skill=grammar sin nivel: un visitante empieza en Facil. 'azar' = hay ejercicios de ese tema en Facil, pero la sesion es una variante al azar.
-  cards['inicio|' + m[0]] = !o ? 'imposible' : (o.facil ? 'azar' : 'otro_nivel');
-});
-
+MINI.forEach(m => { cards['inicio|' + m[0]] = m[3] || 'general'; });
 
 /* ---- 4. Botones nuevos que prometen un tema: detector de frases de promesa ----
    Cuenta, por archivo, las frases que prometen practica de un tema. Si aparece un sitio NUEVO o mas frases que en la linea base,
@@ -102,7 +91,7 @@ const realFails = [];
 Object.keys(cells).forEach(k => { const [g, id, lvl] = k.split('|'); if(cells[k] === 'tema') split[g].tema++; else if(A.temaHasItemsAt(id, lvl)){ split[g].conEjerciciosYNoLlega++; realFails.push(k + ' -> ' + cells[k]); } else split[g].sinEjerciciosEnNivel++; });
 if(realFails.length) console.log('  fallos reales (hay ejercicios en el nivel y no llega): ' + realFails.join(' ; '));
 console.log('  de ellas, sin ejercicios del tema en ese nivel / con ejercicios y aun asi no llega: ' + JSON.stringify(split));
-console.log('Tarjetas del inicio hacia la practica gratis (' + MINI.length + '): ' + JSON.stringify(T2.inicio));
+console.log('Tarjetas del inicio por lo que abre su boton (' + MINI.length + '): ' + JSON.stringify(T2.inicio));
 
 const current = Object.assign({}, cells, cards);
 Object.keys(promCount).forEach(f => { current['frases|' + f] = promCount[f]; });
@@ -113,7 +102,7 @@ if(UPDATE){
 }
 if(!fs.existsSync(BASE_FILE)){ console.error('FALLA promesas: falta ' + BASE_FILE + ' (corre con --actualizar-linea-base la primera vez)'); process.exit(1); }
 const base = JSON.parse(read('tools/conexiones/linea-base-promesas.json')).celdas;
-const order = { tema: 0, familia: 1, sin_foco: 2, general: 3, azar: 1, otro_nivel: 2, imposible: 3 };
+const order = { tema: 0, clase: 1, familia: 1, sin_foco: 2, general: 3 };
 const worse = [], better = [], added = [], gone = [];
 const phraseWorse = [];
 Object.keys(current).forEach(k => { if(k.indexOf('frases|') === 0){ if(!(k in base) || current[k] > base[k]) phraseWorse.push(k.slice(7) + ': ' + (base[k] || 0) + ' -> ' + current[k]); return; } if(!(k in base)){ added.push(k); return; } const d = order[current[k]] - order[base[k]]; if(d > 0) worse.push(k + ': ' + base[k] + ' -> ' + current[k]); else if(d < 0) better.push(k + ': ' + base[k] + ' -> ' + current[k]); });

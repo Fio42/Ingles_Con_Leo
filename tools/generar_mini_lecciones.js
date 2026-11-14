@@ -15,6 +15,15 @@ const root = path.join(__dirname, '..');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8') + '\n;this.GB = GRAMMAR_BANK;', ctx);
+// El registro de temas (temas.js) dice a que tema pertenece cada tema de data.js: la tarjeta lo usa para que su boton abra practica DE ESE tema.
+vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8') + '\n;this.temaOf = topic => { const t = temaForTopic(topic); return t ? t.id : null; }; this.TBI = TEMA_BY_ID;', ctx);
+// Que ejercicios son GRATIS (misma regla que freeGrammarItemsOfTema en app.js: variantes no reservadas a miembros + muestra fija).
+// tools/tests/piloto-conexiones.test.js comprueba que esta copia y la de app.js digan lo mismo.
+const appSrc = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const literal = name => { const m = appSrc.match(new RegExp('const ' + name + ' = (\\{[\\s\\S]*?\\n\\});')); if(!m) throw new Error('No encuentro ' + name + ' en app.js'); return vm.runInNewContext('(' + m[1] + ')'); };
+const MO = literal('MEMBERS_ONLY_VARIANT_INDEX').gramatica, SAMPLE = literal('FREE_SAMPLE_IDS');
+const freeTemas = new Set();
+Object.keys(ctx.GB).forEach(l => ctx.GB[l].forEach((variant, vi) => variant.forEach(tg => { const id = ctx.temaOf(tg.topic); if(!id) return; const blocked = (MO[l] || []).indexOf(vi) !== -1; if(tg.items.some(it => !blocked || (SAMPLE[l] || []).indexOf(it.id) !== -1)) freeTemas.add(id); })));
 
 const LABELS = {
   'Los números (1-10)': 'Números 1-10',
@@ -242,14 +251,27 @@ const TIPS = {
 const topics = new Set();
 Object.keys(ctx.GB).forEach(level => ctx.GB[level].forEach(variant => variant.forEach(t => topics.add(t.topic))));
 const pool = new Map();
+const temaByLabel = new Map();   // etiqueta -> id de tema (solo si TODOS los temas de esa etiqueta son del mismo tema; si no, '' y la tarjeta no promete practica del tema)
 topics.forEach(t => {
   if(!LABELS[t]) console.warn('Tema sin etiqueta corta (usando nombre sin parentesis):', t);
   const label = LABELS[t] || t.replace(/\s*\(.*?\)/g, '').replace(/"/g, '');
   if(!TIPS[label]) console.warn('Etiqueta sin microexplicacion:', label);
   if(!pool.has(label)) pool.set(label, TIPS[label] || '');
+  const tid = ctx.temaOf(t) || '';
+  temaByLabel.set(label, temaByLabel.has(label) && temaByLabel.get(label) !== tid ? '' : tid);
 });
-const list = Array.from(pool, ([label, tip]) => [label, tip]);
-const out = '/* Archivo generado por tools/generar_mini_lecciones.js a partir de data.js.\n   No editar a mano: edita las etiquetas y microexplicaciones en ese script y vuelve a correrlo. */\n' +
+// Sin microexplicacion no hay tarjeta (saldria un texto vacio): esos temas quedan fuera, igual que antes de que existieran.
+// Cada fila: [etiqueta, microexplicacion, tema, que abre el boton, destino]. Que abre: 'tema' = practica gratis de ESE tema; 'clase' = su explicacion
+// (no hay practica gratis de ese tema); 'general' = ni lo uno ni lo otro (el boton lo dice: practica de gramatica en general).
+const list = Array.from(pool).filter(([label, tip]) => tip).map(([label, tip]) => {
+  const id = temaByLabel.get(label) || '';
+  const t = id ? ctx.TBI[id] : null;
+  if(t && freeTemas.has(id)) return [label, tip, id, 'tema', 'practica.html?skill=grammar&tema=' + id];
+  if(t && t.article) return [label, tip, id, 'clase', t.article];
+  if(t && t.glossary) return [label, tip, id, 'clase', '/glosario/' + t.glossary + '/'];
+  return [label, tip, id, 'general', 'practica.html?skill=grammar'];
+});
+const out = '/* Archivo generado por tools/generar_mini_lecciones.js a partir de data.js y temas.js.\n   Cada fila: [etiqueta, microexplicacion, id de tema, que abre el boton (tema|clase|general), destino].\n   No editar a mano: edita las etiquetas y microexplicaciones en ese script y vuelve a correrlo. */\n' +
   'const MINI_LESSONS = ' + JSON.stringify(list) + ';\n';
 fs.writeFileSync(path.join(root, 'mini-lecciones.js'), out);
 console.log('mini-lecciones.js:', list.length, 'temas,', out.length, 'bytes');

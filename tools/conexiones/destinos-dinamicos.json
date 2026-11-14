@@ -4,14 +4,14 @@
     {
       "id": "D01", "tipo": "JS", "archivo": "app.js", "aguja": "function renderDailyMiniLesson",
       "origen": "Inicio: tarjeta Siguiente refuerzo (index.html .hero-v2-card-link)",
-      "texto": "Practicar este tema",
-      "tema": "aleatorio entre 101 tarjetas (mini-lecciones.js)",
-      "destino_real": "practica.html?skill=grammar (siempre el mismo; un miembro es redirigido a practica-miembros.html?skill=grammar)",
-      "destino_esperado": "Practica enfocada en el tema que muestra la tarjeta",
+      "texto": "Practicar este tema / Ver la explicacion / Practicar gramatica (segun lo que abre)",
+      "tema": "aleatorio entre las tarjetas de mini-lecciones.js (95; las 6 sin microexplicacion ya no salen)",
+      "destino_real": "Columna 5 de mini-lecciones.js, decidida al generar: tema = practica.html?skill=grammar&tema=<id> (practica gratis de ESE tema; un miembro es llevado a su Plan de ese tema); clase = su articulo o ficha; general = practica.html?skill=grammar con el texto Practicar gramatica",
+      "destino_esperado": "Lo que dice el boton",
       "acceso": "todos",
-      "estado": "enlace_incorrecto",
-      "verificacion": "navegador",
-      "nota": "Probado en produccion el 2026-11-14: la tarjeta mostro 'It is ... that' (avanzado) y el boton abrio una sesion normal de Principiante sin ese tema. 38 de las 101 tarjetas son de temas que las cuentas gratis no pueden practicar. Ver PLAN P1."
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "Corregido en la rama piloto-conexiones (aun sin publicar). Lo exigen tools/tests/piloto-conexiones.test.js (cada tarjeta: texto, tema y destino coherentes; un boton de tema exige ejercicios gratis de ese tema) y piloto-conexiones.e2e.js (sesion real). Antes: abria siempre la practica general."
     },
     {
       "id": "D02", "tipo": "JS", "archivo": "app.js", "aguja": "function articleQuizReinforceHtml",
@@ -21,9 +21,9 @@
       "destino_real": "contentForTema(tema).practiceHref = plan-estudio.html?foco=..&tema=..&empezar=1 (o ?tema= en vocabulario y listening; gramatica.html si el tema no tiene familia). Se muestra a TODOS.",
       "destino_esperado": "Miembro: practica del tema. Visitante y cuenta gratis: un texto honesto o una practica gratis, no una pagina de miembros",
       "acceso": "solo_miembros",
-      "estado": "enlace_incorrecto",
+      "estado": "parcial",
       "verificacion": "codigo",
-      "nota": "El codigo no distingue el tipo de usuario para este enlace (si lo hace para el curso). Un visitante o una cuenta gratis llega a plan-estudio.html, cuya guardia (guardMemberPage > requireMemberAsync) lo manda a miembros.html sin mensaje y se pierde el tema. No se pudo probar con navegador como visitante porque el navegador integrado tiene abierta la sesion de miembro de Leo y no se cierra. Ver PLAN P2."
+      "nota": "Gramatica: el enlace pasa por practica.html?tema= (visitante y cuenta gratis: practica gratis de ese tema o aviso honesto; miembro: su Plan del tema, con el texto que dice lo que abre). Vocabulario y listening siguen apuntando a plan-estudio.html (un no miembro es redirigido a miembros.html sin aviso): pendiente."
     },
     {
       "id": "D03", "tipo": "JS", "archivo": "app.js", "aguja": "function renderArticleTema",
@@ -33,9 +33,9 @@
       "destino_real": "temaPlanHref: plan-estudio.html?foco=<familia>&tema=<id>&empezar=1 (vocabulario y listening: ?tema=)",
       "destino_esperado": "Sesion del Plan enfocada en ese tema en el nivel del alumno",
       "acceso": "solo_miembros",
-      "estado": "parcial",
-      "verificacion": "codigo",
-      "nota": "Funciona cuando el tema tiene ejercicios en el nivel del alumno. No usa temaHasItemsAt (a diferencia de contentForTema), asi que si no los hay el Plan cae a la familia o a una sesion normal sin avisar. Ver PLAN P3 y la columna niveles_miembro de INVENTARIO_TEMAS.csv."
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "El Plan ya maneja un tema sin ejercicios en el nivel del alumno: usa el nivel mas cercano sin cambiar el nivel guardado y lo avisa dentro de la sesion; si el tema no tiene ejercicios en ningun nivel, practica su familia y lo dice. Lo exige tools/tests/piloto-conexiones.test.js."
     },
     {
       "id": "D04", "tipo": "JS", "archivo": "tools/generar_glosario.js", "aguja": "class=\"gl-tema\"",
@@ -45,9 +45,9 @@
       "destino_real": "/plan-estudio.html?foco=<familia>&tema=<id>&empezar=1",
       "destino_esperado": "Practica del tema",
       "acceso": "solo_miembros",
-      "estado": "parcial",
-      "verificacion": "codigo",
-      "nota": "Honesto: el bloque esta oculto y solo se muestra a miembros. Mismo limite que D03 (no comprueba el nivel). Quien no es miembro ve el bloque generico 'Practicar gratis' (D05)."
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "Honesto: bloque oculto salvo para miembros. Llega al Plan, que ahora avisa cuando usa otro nivel o la familia (ver D03). Quien no es miembro ve el bloque generico Practicar gratis (D05)."
     },
     {
       "id": "D05", "tipo": "JS", "archivo": "tools/generar_glosario.js", "aguja": "article-cta",
@@ -158,16 +158,16 @@
       "nota": "Cubierto por tools/tests/inicio-alumno.test.js e inicio-alumno-recorridos.e2e.js."
     },
     {
-      "id": "R01", "tipo": "REDIRECCION", "archivo": "practica.html", "aguja": "practica-miembros.html' + window.location.search",
+      "id": "R01", "tipo": "REDIRECCION", "archivo": "practica.html", "aguja": "window.location.replace(dest);",
       "origen": "practica.html abierta por un MIEMBRO",
       "texto": "(automatica)",
       "tema": "-",
-      "destino_real": "practica-miembros.html conservando la URL completa (?skill=, ?level=)",
+      "destino_real": "practica-miembros.html conservando la URL (?skill=, ?level=); con ?tema=<id> de gramatica, el Plan de ese tema (contentForTema(id).practiceHref)",
       "destino_esperado": "Igual",
       "acceso": "solo_miembros",
       "estado": "verificado",
       "verificacion": "navegador",
-      "nota": "Probado en produccion el 2026-11-14 con la sesion de miembro del navegador integrado: practica.html?skill=grammar > practica-miembros.html?skill=grammar. Cualquier parametro nuevo (por ejemplo ?tema=) sobreviviria al salto, pero practica-miembros.html no lo lee."
+      "nota": "Probado en produccion el 2026-11-14 (sin ?tema=). El salto con ?tema= se agrego en la rama piloto-conexiones y se prueba en tools/tests/piloto-conexiones.test.js (destino calculado con el codigo real)."
     },
     {
       "id": "R02", "tipo": "REDIRECCION", "archivo": "backend.js", "aguja": "async function requireMemberAsync",
@@ -216,6 +216,30 @@
       "estado": "verificado",
       "verificacion": "codigo",
       "nota": "Visitantes y cuentas gratis ven el CTA gratis (practica.html, general_intencional)."
+    },
+    {
+      "id": "D14", "tipo": "JS", "archivo": "app.js", "aguja": "function freeGrammarItemsOfTema",
+      "origen": "practica.html?skill=grammar&tema=<id> (visitantes y cuentas gratis)",
+      "texto": "(sesion gratis de un tema)",
+      "tema": "el tema del enlace",
+      "destino_real": "runFreeGrammarSession con temaId: solo ejercicios gratis de ese tema (variantes no reservadas a miembros + muestra fija), en el nivel pedido o el gratis mas cercano, con aviso. Sin ejercicios gratis del tema: la practica general de siempre y un aviso.",
+      "destino_esperado": "Practica gratis de ese tema",
+      "acceso": "todos",
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "Reutiliza los bancos y los limites diarios tal cual (freeSessionCap, bumpFreeDailyExerciseCount); no usa la memoria de la cuenta gratis en ese modo. Pruebas: piloto-conexiones.test.js y piloto-conexiones.e2e.js (visitante, cuenta gratis, limite agotado)."
+    },
+    {
+      "id": "D15", "tipo": "JS", "archivo": "app.js", "aguja": "function nearestLevelWithTema",
+      "origen": "Plan de estudio de MIEMBROS enfocado en un tema (?foco=&tema=)",
+      "texto": "Practicar <tema> (contentForTema.practiceLabel)",
+      "tema": "el tema pedido",
+      "destino_real": "plan-estudio.html?foco=<familia>&tema=<id>&empezar=1. Si el tema no tiene ejercicios en el nivel guardado, usa el nivel mas cercano que los tenga (empate: el mas facil), marca cada ejercicio con su nivel real (cl) y avisa en la sesion; el nivel guardado no cambia y esos ejercicios no cuentan para la sugerencia de nivel.",
+      "destino_esperado": "Ejercicios de ese tema",
+      "acceso": "solo_miembros",
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "Si el tema se agota en la sesion, el relleno de su familia queda marcado y avisado. Sin ejercicios del tema en ningun nivel (cuantificadores) o sin familia (question-tags, inversion-enfasis, subjuntivo-formal, hedging): el texto del boton ya no nombra el tema (practiceKind familia/general). Las cuatro familias que faltan siguen pendientes porque tocan el diagnostico."
     }
   ]
 }

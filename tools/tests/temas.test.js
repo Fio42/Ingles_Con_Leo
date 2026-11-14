@@ -177,9 +177,15 @@ test('solo ?tema= deduce la familia', ()=>{
   assert.strictEqual(sel.focus.familyId, 'pasado');
   assert.strictEqual(sel.focus.temaId, 'verbos-irregulares');
 });
-test('tema sin ejercicios en el nivel: se practica la familia, nunca vacío', ()=>{
+test('tema sin ejercicios en el nivel: se usan los del nivel más cercano (sin cambiar el nivel guardado) y la sesión lo avisa', ()=>{
   const sel = T.computePlanSelection('principiante', 12, { focusFamily:'pasado', focusTema:'verbos-irregulares' });
-  assert(!sel.focus || sel.focus.temaId === null);
+  assert(sel.focus && sel.focus.temaId === 'verbos-irregulares');
+  assert.strictEqual(sel.focus.temaLevel, 'facil');   // el único nivel con ejercicios de ese tema
+});
+test('tema sin ejercicios en NINGÚN nivel: se practica su familia, pero la sesión lo dice (nunca en silencio)', ()=>{
+  const sel = T.computePlanSelection('medio', 12, { focusFamily:'cuantificadores', focusTema:'cuantificadores' });
+  assert(sel.focus && sel.focus.temaId === null);
+  assert.strictEqual(sel.focus.askedTemaLabel, T.TEMA_BY_ID.cuantificadores.label);
 });
 test('el Plan sin foco en la URL sigue al tema que detectó el diagnóstico', ()=>{
   const sel = T.computePlanSelection('facil', 12, {});

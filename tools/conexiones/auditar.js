@@ -77,7 +77,10 @@ const temaRows = T.TEMAS.map(t => {
   else if(gram && !t.family){ practicaMiembros = 'gramatica.html (el tema no tiene familia)'; estadoMiembros = 'enlace_incorrecto'; }
   else {
     practicaMiembros = gram ? 'plan-estudio.html?foco=' + t.family + '&tema=' + t.id + '&empezar=1' : 'plan-estudio.html?tema=' + t.id + '&empezar=1';
-    estadoMiembros = memberLevels.length === LEVELS.length ? 'verificado' : 'parcial';
+    // Con ejercicios en algun nivel, el Plan los ofrece: en los demas niveles usa el nivel mas cercano SIN cambiar el nivel guardado y lo avisa
+    // (app.js: nearestLevelWithTema, planHonestNoteHtml; lo exige tools/tests/piloto-conexiones.test.js).
+    estadoMiembros = 'verificado';
+    if(memberLevels.length < LEVELS.length) practicaMiembros += '  [niveles sin ejercicios: usa el nivel mas cercano y avisa]';
   }
   const estadoGratis = freeN ? 'recurso_sin_conectar' : (memberN ? 'solo_miembros' : 'por_construir');
   const falta = [];
@@ -244,16 +247,29 @@ const cardsFree = cardFree.filter(Boolean).length;
 const labelFree = {};
 Object.keys(D.GRAMMAR_BANK).forEach(l => D.GRAMMAR_BANK[l].forEach((v, vi) => v.forEach(g => { const blocked = ((MO.gramatica || {})[l] || []).indexOf(vi) !== -1; const n = g.items.filter(it => !blocked || (SAMPLE[l] || []).indexOf(it.id) !== -1).length; if(n) labelFree[labelOfTopic(g.topic)] = true; })));
 const cardsFreeExact = MINI.filter(m => labelFree[m[0]]).length;
-const gaps = temaRows.filter(r => r.estado_miembros === 'parcial').length;
+// Que abre el boton de cada tarjeta (mini-lecciones.js, columna 4): tema | clase | general. Un boton 'tema' exige practica gratis de ESE tema.
+const cardKinds = {}; MINI.forEach(m => { cardKinds[m[3]] = (cardKinds[m[3]] || 0) + 1; });
+MINI.forEach(m => { if(m[3] === 'tema' && !(stats[m[2]] && sum(stats[m[2]].free))) problems.push('Tarjeta "' + m[0] + '": el boton promete practicar el tema ' + m[2] + ' y ese tema no tiene ejercicios gratis'); });
+const gaps = temaRows.filter(r => r.niveles_miembro !== '-' && r.niveles_miembro.split(' ').length < LEVELS.length).length;
+// Prioridad de los temas sin clase ni ficha: no se crea contenido por crearlo; primero lo que mas se promete y mas se practica.
+const cardsOfTema = {}; MINI.forEach(m => { if(m[2]) cardsOfTema[m[2]] = (cardsOfTema[m[2]] || 0) + 1; });
+const sinExplicacion = temaRows.filter(r => !r.clase && !r.glosario).map(r => {
+  const total = stats[r.tema_id] ? sum(stats[r.tema_id].all) : 0, gram = !r.habilidad || r.habilidad === 'grammar';
+  const score = (cardsOfTema[r.tema_id] || 0) * 3 + (gram ? 2 : 0) + Math.min(total, 40) / 10 + (total ? 0 : -5);
+  const nivel = !total ? 'Ninguna (primero faltan ejercicios)' : (cardsOfTema[r.tema_id] && gram) ? 'Alta' : gram ? 'Media' : 'Baja (su propia seccion ya practica el tema)';
+  return { id: r.tema_id, tarjetas: cardsOfTema[r.tema_id] || 0, ejercicios: total, nivel, score };
+}).sort((a, b) => b.score - a.score);
 const blocks = {
   resumen: tbl(['Estado', 'Enlaces y destinos (INVENTARIO_CONEXIONES.csv)', 'Temas: practica de miembros', 'Temas: practica gratis'], ES.map(e => [e, cL[e] || 0, cT[e] || 0, cG[e] || 0])) +
     '\n\n' + temaRows.length + ' temas en temas.js. ' + invRows.length + ' filas de enlaces: ' + linkList.length + ' agrupadas desde ' + htmlFiles.length + ' paginas HTML y ' + dyn.length + ' destinos dinamicos o redirecciones curados.',
   cifras: '- Temas de temas.js: ' + temaRows.length + '. Con ejercicios gratis: ' + freeTemas + '. Solo con ejercicios de Miembros: ' + memberOnlyTemas + '. Sin ejercicios: ' + (cG.por_construir || 0) + '.\n' +
-    '- Temas cuya practica de miembros solo existe en algunos niveles (en los demas el Plan cae a otra sesion): ' + gaps + ' de ' + temaRows.length + '.\n' +
+    '- Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): ' + gaps + ' de ' + temaRows.length + '.\n' +
     '- Tarjetas del inicio (mini-lecciones.js): ' + MINI.length + '. Con ejercicios gratis del mismo tema (nivel tema): ' + cardsFree + '; del mismo tema exacto (mismo nombre de la tarjeta): ' + cardsFreeExact + '. Sin ningun ejercicio gratis del tema exacto: ' + (MINI.length - cardsFreeExact) + '.\n' +
+    '- Que abre el boton de cada tarjeta del inicio: ' + Object.keys(cardKinds).map(k => k + ' ' + cardKinds[k]).join(', ') + ' (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).\n' +
     '- Enlaces HTML con destino o ancla inexistente: ' + invRows.filter(r => r.tipo === 'HTML' && /no existe/.test(r.nota)).length + '. Enlaces HTML que prometen un tema y abren la practica general: ' + invRows.filter(r => r.tipo === 'HTML' && /^promete un tema/.test(r.nota)).length + '. Paginas publicas que enlazan a paginas de miembros sin explicarlo: ' + invRows.filter(r => r.tipo === 'HTML' && /pagina publica enlaza/.test(r.nota)).length + '.\n' +
     '- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): ' + temaRows.filter(r => stats[r.tema_id] && sum(stats[r.tema_id].free) > 0 && sum(stats[r.tema_id].free) <= 6).length + '. Temas con ejercicios gratis en un solo nivel: ' + temaRows.filter(r => stats[r.tema_id] && Object.keys(stats[r.tema_id].free).length === 1).length + '.\n' +
     '- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): ' + temaRows.filter(r => !r.clase && !r.glosario).length + '. Temas con clase: ' + temaRows.filter(r => r.clase).length + '. Con ficha: ' + temaRows.filter(r => r.glosario).length + '.',
+  prioridad: tbl(['Tema', 'Tarjetas del inicio que lo prometen', 'Ejercicios', 'Prioridad de una explicacion'], sinExplicacion.map(x => ['`' + x.id + '`', x.tarjetas, x.ejercicios, x.nivel])) + '\n\nCriterio: primero los temas de gramatica que una tarjeta del inicio ya promete y que tienen ejercicios; el tamano recomendado es una ficha corta del glosario, no una clase completa. Vocabulario y listening tienen su propia seccion.',
   faltantes: [
     '- Sin clase ni ficha (' + temaRows.filter(r => !r.clase && !r.glosario).length + '): ' + temaRows.filter(r => !r.clase && !r.glosario).map(r => '`' + r.tema_id + '`').join(', '),
     '- Sin ejercicios (' + temaRows.filter(r => r.estado_miembros === 'por_construir').length + '): ' + temaRows.filter(r => r.estado_miembros === 'por_construir').map(r => '`' + r.tema_id + '`').join(', '),

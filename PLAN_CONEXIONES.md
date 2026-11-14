@@ -15,9 +15,10 @@ Lo mejor que ya existe y conviene reutilizar, no reescribir:
 
 <!-- GENERADO:cifras -->
 - Temas de temas.js: 79. Con ejercicios gratis: 65. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
-- Temas cuya practica de miembros solo existe en algunos niveles (en los demas el Plan cae a otra sesion): 70 de 79.
-- Tarjetas del inicio (mini-lecciones.js): 101. Con ejercicios gratis del mismo tema (nivel tema): 90; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 36.
-- Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 1. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
+- Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
+- Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
+- Que abre el boton de cada tarjeta del inicio: tema 76, clase 17, general 2 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
+- Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
 - Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 34. Temas con ejercicios gratis en un solo nivel: 39.
 - Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 21. Temas con clase: 32. Con ficha: 30.
 <!-- /GENERADO:cifras -->
@@ -68,7 +69,35 @@ Lista actualizada automáticamente:
 - Con curso en el codigo pero cerrado: ninguno
 <!-- /GENERADO:faltantes -->
 
-Sugerencia de orden: primero los temas con más ejercicios y más errores de los alumnos (hoy los de la familia confusiones y condicionales), luego vocabulario y listening. Para cada uno se necesita una ficha corta del glosario antes que una clase completa, porque es lo más barato de producir y ya está integrado en todos los puntos de refuerzo.
+Prioridad de una explicación para esos temas (generado; sin crear contenido innecesario):
+
+<!-- GENERADO:prioridad -->
+| Tema | Tarjetas del inicio que lo prometen | Ejercicios | Prioridad de una explicacion |
+|---|---|---|---|
+| `basicos-ingles` | 5 | 23 | Alta |
+| `palabras-parecidas` | 4 | 14 | Alta |
+| `condicionales` | 3 | 27 | Alta |
+| `inversion-enfasis` | 3 | 19 | Alta |
+| `estilo-indirecto` | 2 | 13 | Alta |
+| `relativas` | 2 | 11 | Alta |
+| `matices-formales` | 2 | 9 | Alta |
+| `preposiciones-sutiles` | 2 | 7 | Alta |
+| `hedging` | 1 | 9 | Alta |
+| `wish` | 1 | 5 | Alta |
+| `subjuntivo-formal` | 1 | 5 | Alta |
+| `preposiciones-movimiento` | 1 | 4 | Alta |
+| `causativos` | 1 | 3 | Alta |
+| `vocab-confusas` | 0 | 68 | Baja (su propia seccion ya practica el tema) |
+| `vocab-vida-diaria` | 0 | 24 | Baja (su propia seccion ya practica el tema) |
+| `vocab-trabajo` | 0 | 20 | Baja (su propia seccion ya practica el tema) |
+| `listening-condicionales` | 0 | 17 | Baja (su propia seccion ya practica el tema) |
+| `listening-conversaciones` | 0 | 10 | Baja (su propia seccion ya practica el tema) |
+| `vocab-viajes` | 0 | 8 | Baja (su propia seccion ya practica el tema) |
+| `vocab-compras` | 0 | 8 | Baja (su propia seccion ya practica el tema) |
+| `cuantificadores` | 0 | 0 | Ninguna (primero faltan ejercicios) |
+
+Criterio: primero los temas de gramatica que una tarjeta del inicio ya promete y que tienen ejercicios; el tamano recomendado es una ficha corta del glosario, no una clase completa. Vocabulario y listening tienen su propia seccion.
+<!-- /GENERADO:prioridad -->
 
 ## 5. Plan por fases
 
@@ -127,6 +156,19 @@ Recorridos que se prueban por tema (tarjeta del inicio, ficha del glosario, quiz
 - Miembro: destino por tema solo si hay ejercicios en su nivel; si no, texto honesto. La guardia y la redirección de `practica.html` no cambian.
 
 Cómo se prueba: la matriz en Node con el `app.js` real (como `conexion-recursos.test.js`), el e2e en Chromium móvil a 320, 360 y 375 px con la nube simulada (como `free-cap.browser.js`), y una última pasada en el sitio real con cuentas de prueba (para esto hace falta una cuenta gratis y una de miembro; el navegador integrado hoy tiene la sesión de Leo, que no se toca).
+
+### Estado del piloto (rama `piloto-conexiones`, sin publicar)
+
+Temas probados en el piloto: `by-until`, `presente-simple`, `your-vs-youre`, `cuantificadores`, `question-tags` y `vocab-confusas` (cubren: gratis en dos niveles, gratis en uno, solo miembros, sin ejercicios en ningún nivel, sin familia y vocabulario).
+
+Hecho:
+
+- Miembros (P3): el Plan usa el nivel más cercano que tenga ejercicios del tema (empate: el más fácil) cuando el nivel guardado no los tiene. Cada ejercicio queda marcado con su nivel real (`cl`), no cuenta para la sugerencia de nivel, el nivel guardado no cambia y la sesión lo avisa. Si el tema se agota, el relleno de su familia queda marcado y avisado. Sin ejercicios en ningún nivel o sin familia, el texto del botón deja de nombrar el tema.
+- Tarjeta del inicio (P1): el botón dice lo que abre (`tema`, `clase` o `general`), decidido al generar `mini-lecciones.js`. Se descubrió que 6 tarjetas no tenían microexplicación y salían con el texto vacío; ya no salen.
+- Práctica gratis por tema (P5): `practica.html?skill=grammar&tema=<id>`, mismos bancos, mismos límites; un miembro es llevado a su Plan de ese tema. Sin ejercicios gratis del tema, lo dice.
+- Quizzes de artículos (P2), solo gramática: el enlace pasa por `practica.html?tema=`.
+
+Pendiente: P2 en vocabulario y listening, P6, P7 (curso WH, sin tocar Supabase), P8 (las cuatro familias, por tocar el diagnóstico), P9 (fichas) y P10 (decisión de negocio).
 
 ## 7. Cómo se mantiene actualizado
 

@@ -325,7 +325,7 @@ setTimeout(window.leoShowLate,6000);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261108a"></script>
 <script src="temas.js?v=20261109b"></script>
-<script src="app.js?v=20261109h"></script>
+<script src="app.js?v=20261114a"></script>
 <script src="leo-voz.js?v=20261003d" defer></script>
 <script src="backend.js?v=20261109a"></script>
 <script src="toefl-data.js?v=20261016a"></script>
@@ -391,7 +391,16 @@ setTimeout(window.leoShowLate,6000);
       // aunque la persona ya tenía su sesión iniciada).
       const cta = document.getElementById('navCta');
       if(cta) cta.style.display = 'none';
-      window.location.replace('practica-miembros.html' + window.location.search); // conserva ?skill= y ?level=
+      // Con ?tema= (el botón de practicar un tema) un miembro va al Plan enfocado en ESE tema, no a la práctica general.
+      var dest = 'practica-miembros.html' + window.location.search; // conserva ?skill= y ?level=
+      try{
+        var temaQ = new URLSearchParams(window.location.search).get('tema');
+        if(temaQ){
+          if(document.readyState === 'loading') await new Promise(function(r){ document.addEventListener('DOMContentLoaded', r); });   // app.js es defer
+          if(typeof contentForTema === 'function'){ var cft = contentForTema(temaQ); if(cft && /^plan-estudio\.html/.test(cft.practiceHref)) dest = cft.practiceHref; }
+        }
+      }catch(e){}
+      window.location.replace(dest);
       return;
     }
 

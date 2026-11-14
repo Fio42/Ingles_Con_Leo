@@ -4373,6 +4373,41 @@ function freeSampleItems(level){
   (GRAMMAR_BANK[level] || []).forEach(variant => variant.forEach(tg => tg.items.forEach(it => { if(ids.indexOf(it.id) !== -1) out.push(Object.assign({ topic: tg.topic }, it)); })));
   return out;
 }
+/* Práctica gratis de UN tema (?tema= en practica.html). Solo reutiliza lo que ya es gratis: las variantes que no están reservadas a miembros
+   más la muestra fija (FREE_SAMPLE_IDS). No crea ejercicios, no toca los límites diarios ni la sesión de nadie: solo elige cuáles se muestran. */
+const FREE_TEMA_SESSION_MAX = 8;
+function freeGrammarItemsOfTema(level, temaId){
+  const out = [];
+  if(!temaId || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return out;
+  const blocked = (MEMBERS_ONLY_VARIANT_INDEX.gramatica && MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]) || [];
+  const sample = FREE_SAMPLE_IDS[level] || [];
+  GRAMMAR_BANK[level].forEach((variant, vi) => variant.forEach(tg => {
+    if(diagTemaIdForTopic(tg.topic) !== temaId) return;
+    tg.items.forEach(it => { if(blocked.indexOf(vi) === -1 || sample.indexOf(it.id) !== -1) out.push(Object.assign({ topic: tg.topic }, it)); });
+  }));
+  return out;
+}
+// Nivel más cercano al pedido (empate: el más fácil) que tiene ejercicios GRATIS de ese tema; null si en ningún nivel.
+function freeLevelForTema(temaId, level){
+  const idx = LEVELS.indexOf(level);
+  const found = LEVELS.filter(l => freeGrammarItemsOfTema(l, temaId).length > 0);
+  if(!found.length) return null;
+  return found.slice().sort((a,b)=> (Math.abs(LEVELS.indexOf(a) - idx) - Math.abs(LEVELS.indexOf(b) - idx)) || (LEVELS.indexOf(a) - LEVELS.indexOf(b)))[0];
+}
+// Aviso honesto de la práctica gratis por tema (texto HTML o '').
+function freeTemaNoteHtml(temaId, level, askedLevel, n){
+  const t = (typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[temaId] : null;
+  if(!t) return '';
+  const nm = l => (LEVEL_META[l] && LEVEL_META[l].label) || l;
+  let msg;
+  if(!n) msg = 'Todavía no hay ejercicios gratis de <b>' + commentEscapeHtml(t.label) + '</b> en el nivel ' + nm(level) + '. Esta es la práctica general de gramática.';
+  else {
+    msg = 'Practicas solo ejercicios de <b>' + commentEscapeHtml(t.label) + '</b>.';
+    if(askedLevel && askedLevel !== level) msg += ' No hay ejercicios gratis de este tema en el nivel ' + nm(askedLevel) + ', así que usamos los de ' + nm(level) + '.';
+    if(n < FREE_TEMA_SESSION_MAX) msg += ' Son todos los gratis que hay de este tema en este nivel.';
+  }
+  return '<p class="free-memory-note" data-honest="tema-gratis" style="margin:0 0 12px;padding:10px 14px;border-radius:10px;background:rgba(37,62,204,0.08);font-size:14px;">' + msg + '</p>';
+}
 // Mete la muestra en posiciones 2 y 5 de la sesión (nunca la primera). Con historial (cuenta) deja fuera lo que ya acertó.
 function freeSampleApply(level, pool){
   try{
@@ -4841,10 +4876,16 @@ function computePlanSelection(level, targetCount, opts){
   const forcedWriting = (opts && opts.focusSkill === 'writing' && urlTema && temaHasItemsAt(urlTema.id, level, 'writing')) ? urlTema : null;
   const forcedVocab = (!forcedWriting && !(opts && opts.focusSkill) && urlTema && TEMA_SKILL_KEY[urlTema.skill] && temaHasItemsAt(urlTema.id, level)) ? urlTema : null;   // vocabulario o listening
   const famId = (forcedWriting || (opts && opts.focusSkill)) ? null : ((opts && opts.focusFamily) || (urlTema && urlTema.family) || null);
-  const forcedFamily = (famId && DIAG_FAMILY_BY_ID[famId] && familyHasItemsAt(famId, level))
+  // Tema de gramática sin ejercicios en el nivel guardado pero con ejercicios en otro: se usan esos, SIN cambiar el nivel guardado
+  // (cada ejercicio queda marcado con su nivel real en buildPlanPool y la sesión lo avisa).
+  const temaAltLevel = (urlTema && !TEMA_SKILL_KEY[urlTema.skill] && !(opts && opts.focusSkill) && urlTema.family && !temaHasItemsAt(urlTema.id, level))
+    ? nearestLevelWithTema(urlTema.id, level) : null;
+  const forcedFamily = (famId && DIAG_FAMILY_BY_ID[famId] && (familyHasItemsAt(famId, level) || (temaAltLevel && urlTema.family === famId)))
     ? DIAG_FAMILY_BY_ID[famId] : null;
-  // El tema solo vale si pertenece a esa familia y tiene ejercicios en este nivel.
-  const forcedTema = (urlTema && forcedFamily && urlTema.family === forcedFamily.id && temaHasItemsAt(urlTema.id, level)) ? urlTema : null;
+  // El tema solo vale si pertenece a esa familia y tiene ejercicios (en este nivel o, avisando, en el más cercano).
+  const forcedTema = (urlTema && forcedFamily && urlTema.family === forcedFamily.id && (temaHasItemsAt(urlTema.id, level) || temaAltLevel)) ? urlTema : null;
+  // Se pidió un tema concreto y no hay ejercicios de ese tema en ningún nivel: la sesión sigue con su familia, pero lo dice (no lo disimula).
+  const familyOnlyFallback = !!(urlTema && forcedFamily && !forcedTema && !forcedVocab && !forcedWriting);
 
   // Prioridad 1: errores recientes. Hasta ~30% de la sesion (dejando
   // siempre al menos 2 lugares para el resto), reutilizando tal cual
@@ -4957,7 +4998,9 @@ function computePlanSelection(level, targetCount, opts){
         bySkill[donor]--; bySkill[focusSkill] = (bySkill[focusSkill] || 0) + 1;
       }
       const count = Math.min(want, bySkill[focusSkill] || 0);
-      if(count > 0) focus = { skill: focusSkill, familyId: target.id, label: (microFocus && focusSkill === 'gramatica') ? microFocus.label : (target.temaLabel || target.label), temaId: target.temaId || null, microId: (microFocus && focusSkill === 'gramatica') ? microFocus.id : null, count, chosen: forced };
+      if(count > 0) focus = { skill: focusSkill, familyId: target.id, label: (microFocus && focusSkill === 'gramatica') ? microFocus.label : (target.temaLabel || target.label), temaId: target.temaId || null, microId: (microFocus && focusSkill === 'gramatica') ? microFocus.id : null, count, chosen: forced,
+        temaLevel: (forcedTema && temaAltLevel && focusSkill === 'gramatica') ? temaAltLevel : null,
+        askedTemaLabel: familyOnlyFallback ? urlTema.label : null };
     }
   }catch(e){ focus = null; }
 
@@ -4988,8 +5031,19 @@ function buildPlanPool(level, selection){
   const focusEntries = !selection.focus ? []
     : selection.focus.startRoute ? pickStartRouteItems(level, selection.focus.startRoute.topics, selection.focus.startRoute.perTopic, alreadyIn)
     : focusSkill !== 'gramatica' ? pickSkillFocusItems(focusSkill, level, selection.focus.temaId, selection.focus.count, alreadyIn)
+    : selection.focus.temaLevel ? pickTemaItemsAtLevel(selection.focus.temaLevel, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId)
     : pickDiagFocusItems(level, selection.focus.familyId, selection.focus.count, alreadyIn, selection.focus.temaId, selection.focus.microId);
-  focusEntries.forEach(e=>{ e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null; entries.push(e); alreadyIn.add(e.item.id); });
+  focusEntries.forEach(e=>{
+    e.focusLabel = selection.focus.label; e.focusTema = selection.focus.temaId || null;
+    if(selection.focus.temaLevel){ e.cl = selection.focus.temaLevel; e.focusOtherLevel = selection.focus.temaLevel; }   // banco real del ejercicio: no cuenta para la sugerencia de nivel
+    if(selection.focus.askedTemaLabel) e.focusAsked = selection.focus.askedTemaLabel;
+    // El tema pedido se agotó y se completó con su familia: queda marcado para decirlo (no se hace pasar por ejercicio del tema).
+    if(e.kind === 'grammar' && selection.focus.temaId && !selection.focus.microId && !selection.focus.temaLevel && !selection.focus.startRoute){
+      const f = getDiagItemIndex().get(e.item.id);
+      if(!f || diagTemaIdForFound(f) !== selection.focus.temaId){ e.focusFamilyFill = true; e.focusFamilyLabel = (DIAG_FAMILY_BY_ID[selection.focus.familyId] || {}).label || ''; }
+    }
+    entries.push(e); alreadyIn.add(e.item.id);
+  });
   DASH_SKILLS.forEach(sk=>{
     let count = selection.bySkill[sk] || 0;
     if(sk === focusSkill) count -= focusEntries.length;
@@ -5161,6 +5215,8 @@ function renderPlanIntro(container, opts){
         </div>
         <div class="lengths" id="planDifficultySelector" style="margin:${diffPanelOpen ? '12px 0 24px' : '0'};${diffPanelOpen ? '' : 'display:none;'}"></div>
         <div class="examples-label">Tu sesión de hoy</div>
+        ${currentSelection.focus && currentSelection.focus.temaLevel ? `<p class="plan-focus-note" data-honest="otro-nivel"><b>${currentSelection.focus.label}</b> todavía no tiene ejercicios en tu nivel (${LEVEL_META[level].label}). Usamos los de nivel ${LEVEL_META[currentSelection.focus.temaLevel].label}. Tu nivel guardado no cambia.</p>` : ''}
+        ${currentSelection.focus && currentSelection.focus.askedTemaLabel ? `<p class="plan-focus-note" data-honest="solo-familia">Todavía no hay ejercicios específicos de <b>${currentSelection.focus.askedTemaLabel}</b>. Practicas otros de su misma familia.</p>` : ''}
         ${currentSelection.focus ? (currentSelection.focus.startRoute
           ? `<p class="plan-focus-note"><b>Tu ruta inicial.</b> Empezamos por lo esencial de tu nivel${currentSelection.focus.startRoute.seen ? ` (ya viste ${currentSelection.focus.startRoute.seen} de ${currentSelection.focus.startRoute.total} temas)` : ''}. En cuanto veamos qué te conviene reforzar, el Plan se adapta a ti.</p>`
           : currentSelection.focus.chosen
@@ -5195,7 +5251,7 @@ function renderPlanIntro(container, opts){
     started = true;
     const contentLevel = resolvePlanContentLevel(level, currentDiff);
     const pool = buildPlanPool(contentLevel, currentSelection);
-    pool.forEach(e => { if(e && typeof e === 'object') e.cl = contentLevel; });   // banco real de cada ejercicio (la sugerencia de nivel lo exige)
+    pool.forEach(e => { if(e && typeof e === 'object' && !e.cl) e.cl = contentLevel; });   // banco real de cada ejercicio (la sugerencia de nivel lo exige)
     runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
   }
   // ¿Podría tocarle la ruta inicial y aún no se confirmó el historial de la nube? (Con una sesión de Plan a medias
@@ -5253,6 +5309,18 @@ function renderPlanSessionSummary({ correct, graded, total, topics }){
    habilidad, la cobertura del banco y "Mis errores" se actualicen
    exactamente igual que si esos ejercicios se hubieran hecho desde la
    pagina de esa habilidad. */
+// Avisos honestos del refuerzo de un tema: nunca se cambia de tema ni de nivel en silencio.
+function planHonestNoteHtml(entry, level){
+  if(!entry) return '';
+  const nm = l => (LEVEL_META[l] && LEVEL_META[l].label) || l;
+  if(entry.focusOtherLevel && entry.focusOtherLevel !== level)
+    return `<p class="plan-focus-note" data-honest="otro-nivel"><b>${entry.focusLabel}</b> todavía no tiene ejercicios en tu nivel (${nm(level)}). Practicas con ejercicios de nivel ${nm(entry.focusOtherLevel)}. Tu nivel guardado no cambia.</p>`;
+  if(entry.focusFamilyFill)
+    return `<p class="plan-focus-note" data-honest="familia"><b>${entry.focusLabel}</b>: ya usamos los ejercicios de ese tema que hay para hoy. Este es otro ejercicio de su misma familia (${entry.focusFamilyLabel}).</p>`;
+  if(entry.focusAsked)
+    return `<p class="plan-focus-note" data-honest="solo-familia">Todavía no hay ejercicios específicos de <b>${entry.focusAsked}</b>. Practicas otros ejercicios de <b>${entry.focusLabel}</b>, su misma familia.</p>`;
+  return '';
+}
 function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
   stopActiveAudioFile();
   const saved = loadInflightSession('plan', level);
@@ -5270,6 +5338,8 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
     wrap.innerHTML = sessionHeaderHtml('Plan de estudio · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
+    const honest = planHonestNoteHtml(entry, level);
+    if(honest) wrap.insertAdjacentHTML('beforeend', honest);
     wrap.appendChild(card);
     container.innerHTML = '';
     container.appendChild(wrap);
@@ -5572,7 +5642,13 @@ function articleQuizReinforceHtml(d){
     const esc = x => String(x).replace(/[&<>"]/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[ch]);
     const links = [];
     if(c.quick && c.quick.href) links.push('<a href="' + esc(c.quick.href) + '" target="_blank" rel="noopener">Ver ficha del glosario</a>');
-    links.push('<a href="' + esc(c.practiceHref) + '" target="_blank" rel="noopener">Practicar este tema</a>');
+    // Gramática: el enlace pasa por practica.html?tema=. Visitante y cuenta gratis llegan a la práctica gratis de ESE tema (o a un aviso honesto
+    // si no hay); un miembro es redirigido al Plan de ese tema. El texto de un miembro dice lo que de verdad abre (practiceLabel).
+    const memberNow = window.__leoMemberVerified === true;
+    const gramatica = c.skill === 'gramatica' && !!c.family;
+    const practiceUrl = gramatica ? 'practica.html?skill=grammar&tema=' + encodeURIComponent(a.tema) : c.practiceHref;
+    const practiceText = (memberNow && c.practiceKind && c.practiceKind !== 'tema' && c.practiceKind !== 'otro-nivel') ? c.practiceLabel : 'Practicar este tema';
+    links.push('<a href="' + esc(practiceUrl) + '" target="_blank" rel="noopener">' + esc(practiceText) + '</a>');
     const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(a.tema) : null;
     const memberOk = window.__leoMemberVerified === true;
     if(course) links.push(memberOk ? '<a href="' + esc(course.href) + '" target="_blank" rel="noopener">Seguir el curso: ' + esc(course.title) + '</a>' : '<a href="academia-de-ingles.html" target="_blank" rel="noopener">Ver el temario del curso (completo con membresía)</a>');
@@ -5767,6 +5843,15 @@ function temaHasItemsAt(temaId, level, skill){
     return !!t && t.id === temaId && group.items.length > 0;
   }));
 }
+/* Nivel MÁS CERCANO al guardado que sí tiene ejercicios de ese tema de gramática (empate: el más fácil).
+   Solo lee los bancos: no cambia el nivel guardado de nadie. null si el tema no tiene ejercicios en ningún nivel. */
+function nearestLevelWithTema(temaId, level){
+  const idx = LEVELS.indexOf(level);
+  if(idx === -1) return null;
+  const found = LEVELS.filter(l => temaHasItemsAt(temaId, l));
+  if(!found.length) return null;
+  return found.slice().sort((a,b)=> (Math.abs(LEVELS.indexOf(a) - idx) - Math.abs(LEVELS.indexOf(b) - idx)) || (LEVELS.indexOf(a) - LEVELS.indexOf(b)))[0];
+}
 // Un solo recurso real por tema para la acción secundaria: la clase completa
 // si existe; si no, la explicación rápida del glosario; si no, nada.
 // { id, label, family, practiceHref, practiceLabel, lesson, quick, article,
@@ -5788,8 +5873,20 @@ function contentForTema(id, onlySkill){
     : skillKey ? (temaHasItemsAt(id, level) ? temaPlanHref(t, true) : SKILL_PAGE[skillKey])
     : !t.family ? 'gramatica.html'
     : temaHasItemsAt(id, level) ? planFocusHref(t.family, true, id)
+    : nearestLevelWithTema(id, level) ? planFocusHref(t.family, true, id)         // el tema existe en otro nivel: el Plan lo usa y lo avisa
     : familyHasItemsAt(t.family, level) ? planFocusHref(t.family, true)
     : 'gramatica.html';
+  // Qué abre de verdad el botón: 'tema' | 'otro-nivel' | 'familia' | 'general'. El texto lo dice, nunca promete más de lo que abre.
+  const practiceKind = asWriting ? (temaHasItemsAt(id, level, 'writing') ? 'tema' : 'general')
+    : skillKey ? (temaHasItemsAt(id, level) ? 'tema' : 'general')
+    : !t.family ? 'general'
+    : temaHasItemsAt(id, level) ? 'tema'
+    : nearestLevelWithTema(id, level) ? 'otro-nivel'
+    : familyHasItemsAt(t.family, level) ? 'familia' : 'general';
+  const fam = t.family && typeof DIAG_FAMILY_BY_ID !== 'undefined' ? DIAG_FAMILY_BY_ID[t.family] : null;
+  const practiceLabel = practiceKind === 'familia' ? `Practicar ${fam ? fam.label : 'gramática'} (sin ejercicios solo de este tema)`
+    : practiceKind === 'general' ? (asWriting ? 'Practicar Writing en general' : skillKey ? `Practicar ${(SKILL_LABELS[skillKey] || skillKey)} en general` : 'Practicar gramática en general')
+    : `Practicar ${t.label}`;
   // ?tema=&via=rec: la clase o el glosario saben que el sistema lo recomendó (y para qué tema).
   const via = '?tema=' + encodeURIComponent(t.id) + '&via=rec';
   const lesson = t.article ? { href: t.article + via, title: ARTICLE_TITLE_BY_HREF[t.article] || t.label } : null;
@@ -5797,7 +5894,7 @@ function contentForTema(id, onlySkill){
   return {
     id: t.id, label: t.label, family: t.family, skill: skillKey || 'gramatica',
     unitKey: skillKey ? 'skill:' + skillKey : (t.family ? 'family:' + t.family : null),
-    practiceHref, practiceLabel: `Practicar ${t.label}`,
+    practiceHref, practiceLabel, practiceKind,
     lesson, quick,
     article: lesson ? lesson.href : (quick ? quick.href : null),
     articleTitle: lesson ? lesson.title : (quick ? quick.title : null),
@@ -7447,6 +7544,13 @@ function pickSkillFocusItems(skill, level, temaId, n, excludeIds){
   return shuffleArray(candidates).sort((a,b)=> rank(a) - rank(b)).slice(0, n).map(item => ({ kind: PLAN_SKILL_TO_KIND[skill], item, focus:true }));
 }
 
+// Solo ejercicios de ESE tema en ese nivel (para el caso "el tema está en otro nivel": no se rellena con otros temas de la familia).
+function pickTemaItemsAtLevel(level, familyId, n, excludeIds, temaId){
+  const idx = getDiagItemIndex();
+  return pickDiagFocusItems(level, familyId, 100000, excludeIds, temaId, null)
+    .filter(e => diagTemaIdForFound(idx.get(e.item.id)) === temaId)
+    .slice(0, n);
+}
 function pickDiagFocusItems(level, familyId, n, excludeIds, temaId, microId){
   if(!familyId || !n || typeof GRAMMAR_BANK === 'undefined' || !GRAMMAR_BANK[level]) return [];
   const hist = focusHistory();
@@ -9261,19 +9365,27 @@ function wireFreeSummaryButtons(container, { onAgain, onOtherSkill }){
 }
 
 /* ---------- Gramática gratis: los 8 ítems del nivel (igual pool que Miembros) ---------- */
-function runFreeGrammarSession({ container, level, onOtherSkill }){
+function runFreeGrammarSession({ container, level, onOtherSkill, temaId, askedLevel }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('gramatica');
-  const variantIdx = pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]);
-  const topics = GRAMMAR_BANK[level][variantIdx];
+  // ?tema=: solo ejercicios gratis de ESE tema (mismos bancos, mismos límites diarios). Sin ellos en este nivel, la práctica general de siempre y un aviso.
+  const temaItems = temaId ? freeGrammarItemsOfTema(level, temaId) : [];
+  const temaMode = temaItems.length > 0;
+  const temaNote = temaId ? freeTemaNoteHtml(temaId, level, askedLevel, temaItems.length) : '';
+  const variantIdx = temaMode ? 0 : pickVariantIndex('gramatica', level, GRAMMAR_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.gramatica[level]);
+  const topics = temaMode ? Array.from(new Set(temaItems.map(it => it.topic))).map(tp => ({ topic: tp })) : GRAMMAR_BANK[level][variantIdx];
   const pool = [];
-  const maxLen = Math.max(...topics.map(t=>t.items.length));
-  for(let i=0;i<maxLen;i++){
-    topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
+  if(temaMode){
+    shuffleArray(temaItems).slice(0, FREE_TEMA_SESSION_MAX).forEach(it => pool.push(it));
+  } else {
+    const maxLen = Math.max(...topics.map(t=>t.items.length));
+    for(let i=0;i<maxLen;i++){
+      topics.forEach(t=>{ if(t.items[i]) pool.push(Object.assign({ topic:t.topic }, t.items[i])); });
+    }
+    const sampled = freeSampleApply(level, pool);
+    if(sampled !== pool) pool.splice(0, pool.length, ...sampled);
   }
-  const sampled = freeSampleApply(level, pool);
-  if(sampled !== pool) pool.splice(0, pool.length, ...sampled);
-  const mem = freeMemoryBoost('gramatica', level, pool);
+  const mem = temaMode ? { boosted: [], pool, note: '' } : freeMemoryBoost('gramatica', level, pool);
   if(mem.boosted.length) pool.splice(0, pool.length, ...mem.pool);
   pool.splice(0, pool.length, ...freeSessionCap(pool));
   const total = pool.length;
@@ -9287,7 +9399,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = freeMemoryNoteHtml(mem, idx) + sessionHeaderHtml('Gramática', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(mem, idx) + sessionHeaderHtml('Gramática', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9311,7 +9423,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill }){
       topics: topics.map(t=>t.topic)
     });
     wireFreeSummaryButtons(container, {
-      onAgain: ()=>runFreeGrammarSession({ container, level, onOtherSkill }),
+      onAgain: ()=>runFreeGrammarSession({ container, level, onOtherSkill, temaId, askedLevel }),
       onOtherSkill
     });
   }
@@ -9767,10 +9879,20 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   let currentLevel = 'facil';
   try{ if(_leoAccessTier === 'free' && getProfile()) currentLevel = getUserLevel(); }catch(e){}
   let currentSkill = 'gramatica';
+  let focusTema = null, askedLevel = null;   // ?tema=<id>: práctica gratis de ese tema (solo gramática)
   try{
     const params = new URLSearchParams(window.location.search);
     const skillParam = params.get('skill');
     if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
+    const temaParam = params.get('tema');
+    if(temaParam && typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[temaParam] && TEMA_BY_ID[temaParam].skill !== 'vocabulary' && TEMA_BY_ID[temaParam].skill !== 'listening' && currentSkill === 'gramatica') focusTema = temaParam;
+    // Con ?tema= y sin ?level=: el nivel más cercano que tenga ejercicios gratis de ese tema (se avisa dentro de la sesión).
+    const lvParam = params.get('level');
+    if(focusTema && !(lvParam && LEVELS.includes(lvParam))){
+      const near = freeLevelForTema(focusTema, currentLevel);
+      askedLevel = currentLevel;
+      if(near) currentLevel = near;
+    }
     // ?level=avanzado (desde las tarjetas "Practica a tu nivel" del inicio)
     const levelParam = params.get('level');
     if(levelParam && LEVELS.includes(levelParam)){
@@ -9831,10 +9953,10 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   function renderCurrent(){
     renderHead();
     const run = RUNNERS[currentSkill] || runFreeGrammarSession;
-    run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill });
+    run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill, temaId: currentSkill === 'gramatica' ? focusTema : null, askedLevel });
   }
 
-  const onPickLevel = (lvl)=>{ currentLevel = lvl; renderCurrent(); focusTabs(); };
+  const onPickLevel = (lvl)=>{ currentLevel = lvl; askedLevel = lvl; renderCurrent(); focusTabs(); };
   renderLevelSelector(levelsEl, currentLevel, onPickLevel);
   renderTabs();
   // Memoria de la cuenta gratis: tarjeta con lo que costó (no existe para invitados). Se repinta al llegar el progreso de la nube.
@@ -9979,6 +10101,19 @@ function renderDailyMiniLesson(){
   enEl.appendChild(document.createElement('br'));
   enEl.appendChild(strong);
   esEl.textContent = lesson[1];
+  // El botón dice lo que abre de verdad (decidido al generar mini-lecciones.js; lo comprueba tools/tests/piloto-conexiones.test.js):
+  //   tema    -> práctica gratis de ESE tema        "Practicar este tema"
+  //   clase   -> su explicación (no hay práctica gratis de ese tema)   "Ver la explicación"
+  //   general -> práctica de gramática en general     "Practicar gramática"
+  const link = document.querySelector('.hero-v2-card-link');
+  if(link && lesson[3] && lesson[4]){
+    link.setAttribute('href', lesson[4]);
+    link.setAttribute('data-card-kind', lesson[3]);
+    const text = lesson[3] === 'tema' ? 'Practicar este tema' : lesson[3] === 'clase' ? 'Ver la explicación' : 'Practicar gramática';
+    link.textContent = text + ' ';
+    const arrow = document.createElement('span'); arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '→';
+    link.appendChild(arrow);
+  }
 }
 
 /* ============================================================
