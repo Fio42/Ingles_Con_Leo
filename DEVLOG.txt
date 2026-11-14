@@ -2091,3 +2091,7 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Botones: principal "Empieza a practicar gratis" (practica.html), secundario "Explorar la academia" (academia.html, mismo id). Nota: "Sin registro para empezar. ¿No sabes tu nivel? Haz el test gratis".
 - Sin cambios: title, metadescripción, canonical, datos estructurados, URLs, CSS, academia, pagos y miembros.
 - Probado a 320, 360, 375 y 1280 px: sin desbordes ni errores JS; el botón principal queda visible sin scroll.
+
+2026-11-14 - Portada: ajuste del mensaje principal
+- index.html: H1 "Aprende inglés y habla sin miedo a equivocarte." y subtítulo "Practica desde tu nivel y convierte cada error en progreso real." (reemplazan el H1 y subtítulo del 13-nov). Botones, nota, title, metadescripción, canonical y datos estructurados sin cambios.
+- Probado a 320, 360, 375 y 1280 px: un solo H1, sin desbordes ni errores JS; el botón principal queda visible sin scroll (pruebas con fuente genérica; la fuente real del sitio es más ancha).
