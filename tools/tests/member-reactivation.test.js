@@ -490,7 +490,7 @@ const okBilling = (days) => ({ state: 'ok', periodEndMs: NOW + days * D, results
     const hook = read('supabase_functions', 'resend-webhook.ts');
     assert.match(hook, /type === 'email\.clicked'/);
     assert.match(hook, /'member_reactivation'/);
-    assert.match(hook, /BOUNCE_EVENTS\.has\(type\)/); // los rebotes siguen igual
+    assert.match(hook, /BLOCK_EVENTS\.has\(type\)/); // los rebotes siguen igual
   });
   test('los correos esenciales de pago no se tocaron: los webhooks de pago no se modificaron para esto', () => {
     for (const f of ['stripe-webhook.ts', 'paypal-webhook.ts', 'mp-webhook.ts']) {
