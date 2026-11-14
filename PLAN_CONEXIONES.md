@@ -168,6 +168,9 @@ Hecho:
 - Práctica gratis por tema (P5): `practica.html?skill=grammar&tema=<id>`, mismos bancos, mismos límites; un miembro es llevado a su Plan de ese tema. Sin ejercicios gratis del tema, lo dice.
 - Quizzes de artículos (P2), solo gramática: el enlace pasa por `practica.html?tema=`.
 
+- Volver al tema tras crear cuenta o entrar (P11, limitación que ya existía en `main`): `?volver=` ahora conserva `skill`, `tema` y `level` con validación estricta (ver Mapa, sección 3). Cambios: `app.js` (`leoSafeVolver`, `leoVolverActual` y los enlaces), `miembros.html` (consumo tras registro, entrada y Google) y `practica.html` (no borra el tema al quitar `?cuenta=nueva`). No se tocó `backend.js`, ni autenticación, ni pagos, ni membresías.
+- Residuo conocido, documentado y sin cambiar: los errores de otro nivel (`xt`) entran al repaso de errores del Plan general (hasta ~30% de la sesión, como cualquier error de "Mis errores"), sin marca `xt` ni `cl`, así que al responderlos de nuevo sí cuentan para el porcentaje por habilidad. Efecto acotado (hasta 3 de 9 ejercicios de una sesión). Si algún día se quiere cerrar: que `buildMistakePool` marque `xt` cuando el ejercicio sea de otro nivel que el guardado.
+
 Pendiente: P2 en vocabulario y listening, P6, P7 (curso WH, sin tocar Supabase), P8 (las cuatro familias, por tocar el diagnóstico), P9 (fichas) y P10 (decisión de negocio).
 
 ## 7. Cómo se mantiene actualizado

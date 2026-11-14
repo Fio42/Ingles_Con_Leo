@@ -3284,6 +3284,36 @@ function leoAiAttachTrial(host, ctx){
 }
 
 /* Invitado que falla un ejercicio: UNA invitación al día a crear su cuenta gratis y probar Leo AI. No da acceso a la IA. */
+/* Destino interno al que volver despues de crear cuenta o iniciar sesion (?volver=). Validacion estricta:
+   - solo un nombre de pagina simple del propio sitio (nada de URLs, rutas, "//", "javascript:" ni la pagina de miembros);
+   - solo practica.html puede llevar parametros, y solo estos: skill, tema y level, con valores de un formato fijo
+     (skill y level de una lista cerrada, tema = identificador en minusculas). Cualquier otro parametro se descarta.
+   Devuelve '' si no es valido. Lo usan los enlaces de registro/entrada (aqui) y miembros.html al regresar. */
+const LEO_VOLVER_SKILLS = ['grammar', 'vocabulary', 'listening', 'speaking', 'writing', 'mix'];
+const LEO_VOLVER_LEVELS = ['principiante', 'facil', 'medio', 'avanzado'];
+function leoSafeVolver(raw){
+  if(typeof raw !== 'string' || raw.length > 200) return '';
+  const m = /^([a-z0-9-]+\.html)(?:\?([A-Za-z0-9=&_-]*))?$/.exec(raw);
+  if(!m || m[1] === 'miembros.html') return '';
+  if(m[1] !== 'practica.html' || !m[2]) return m[1];
+  const keep = {};
+  m[2].split('&').forEach(function(pair){
+    const kv = pair.split('='); if(kv.length !== 2) return;
+    const k = kv[0], v = kv[1];
+    if(Object.prototype.hasOwnProperty.call(keep, k)) return;
+    if(k === 'skill' && LEO_VOLVER_SKILLS.indexOf(v) !== -1) keep.skill = v;
+    else if(k === 'level' && LEO_VOLVER_LEVELS.indexOf(v) !== -1) keep.level = v;
+    else if(k === 'tema' && /^[a-z0-9-]{1,60}$/.test(v)) keep.tema = v;
+  });
+  const q = ['skill', 'tema', 'level'].filter(function(k){ return keep[k]; }).map(function(k){ return k + '=' + keep[k]; }).join('&');
+  return q ? m[1] + '?' + q : m[1];
+}
+// La pagina actual (con sus parametros permitidos) lista para ir dentro de ?volver=. Sin parametros validos: solo el nombre de la pagina, como siempre.
+function leoVolverActual(){
+  let page = (window.location.pathname.split('/').pop() || '');
+  if(!/^[a-z0-9-]+\.html$/.test(page)) page = 'practica.html';
+  return leoSafeVolver(page + (window.location.search || '')) || page;
+}
 function leoAiAttachGuestTeaser(host){
   if(!LEO_AI_TRIAL_PUBLIC) return null;
   if(_leoTeaserShownThisPage) return null;
@@ -3291,8 +3321,7 @@ function leoAiAttachGuestTeaser(host){
   try{ if(localStorage.getItem(LEO_AI_TEASER_DAY_KEY) === day) return null; }catch(e){}
   _leoTeaserShownThisPage = true;
   try{ localStorage.setItem(LEO_AI_TEASER_DAY_KEY, day); }catch(e){}
-  let volver = (window.location.pathname.split('/').pop() || '');
-  if(!/^[a-z0-9-]+\.html$/.test(volver)) volver = 'practica.html';
+  let volver = leoVolverActual();
   const box = document.createElement('div');
   box.className = 'leo-ai is-teaser';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; box.appendChild(el); return el; };
@@ -3300,7 +3329,7 @@ function leoAiAttachGuestTeaser(host){
   add('p', 'leo-ai-teaser-text', `Leo AI te ayuda a entender tus errores. Crea tu cuenta gratis y prueba ${LEO_AI_TRIAL_CREDITS_COPY} explicaciones.`);
   const a = document.createElement('a');
   a.className = 'btn btn-primary leo-ai-upsell-cta';
-  a.href = 'miembros.html?modo=registro&volver=' + volver;
+  a.href = 'miembros.html?modo=registro&volver=' + encodeURIComponent(volver);
   a.textContent = 'Crear mi cuenta gratis';
   a.addEventListener('click', ()=>{ if(typeof trackLeoEvent === 'function') trackLeoEvent('leo_ai_teaser_clicked'); });
   box.appendChild(a);
@@ -4587,15 +4616,15 @@ function renderFreeDailyLimitReachedBlock(){
   // Al crear la cuenta, miembros.html regresa a la persona a esta
   // misma pagina (?volver=...) para que siga practicando sin perder
   // el hilo, en vez de dejarla en la pantalla de pago.
-  var volverPage = (window.location.pathname.split('/').pop() || '');
-  if(!/^[a-z0-9-]+\.html$/.test(volverPage)) volverPage = 'practica.html';
+  var volverPage = encodeURIComponent(leoVolverActual());
+  var volverEntrar = (volverPage.indexOf('%3F') !== -1) ? '?volver=' + volverPage : '';   // solo con tema/nivel: el acceso sin parametros queda como siempre
   return `
     <div class="session-summary">
       <h2>¡Buen trabajo! Ya completaste tus ejercicios de prueba.</h2>
       <p class="summary-score">Crea tu cuenta gratis y sigue ahora mismo: tienes ${FREE_USER_DAILY_LIMIT - GUEST_EXERCISE_LIMIT} ejercicios más hoy (${FREE_USER_DAILY_LIMIT} al día en total), con tu racha y tu progreso guardados. No pide tarjeta.</p>
       <div class="summary-actions">
         <a href="miembros.html?modo=registro&volver=${volverPage}" class="btn btn-primary">Crear cuenta gratis</a>
-        <a href="miembros.html" class="btn btn-ghost">Ya tengo cuenta</a>
+        <a href="miembros.html${volverEntrar}" class="btn btn-ghost">Ya tengo cuenta</a>
       </div>
     </div>`;
 }

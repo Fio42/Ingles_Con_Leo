@@ -100,9 +100,10 @@ flowchart TD
 Reglas del código que explican el diagrama (para no romperlas):
 
 - Un solo lugar decide el destino de práctica de un tema para un miembro: `contentForTema()` en `app.js`, que usa `temas.js` y `temaHasItemsAt()` (solo ofrece el Plan con foco si el tema tiene ejercicios en el nivel).
-- La práctica gratis (`practica.html`) solo entiende `?skill=` y `?level=`. No existe una ruta por tema. Lo más cercano es `freeMemoryBoost()`, que cambia hasta 4 ejercicios de la sesión de una cuenta gratis por otros del tema que le costó.
-- Un miembro que abre `practica.html` pasa a `practica-miembros.html` conservando la URL (R01). Esa página tampoco lee `?tema=`.
+- La práctica gratis (`practica.html`) entiende `?skill=`, `?level=` y, para gramática, `?tema=<id>` (piloto): solo ejercicios gratis de ese tema, mismos bancos y mismos límites; sin ejercicios gratis del tema lo dice y sigue con la práctica general. `freeMemoryBoost()` sigue cambiando hasta 4 ejercicios de la sesión de una cuenta gratis por otros del tema que le costó.
+- Un miembro que abre `practica.html?tema=` pasa a su Plan de ese tema (o a `practica-miembros.html` si el tema no tiene Plan), conservando la URL (R01).
 - Todas las páginas con `guardMemberPage()` mandan a `miembros.html`, sin mensaje, a quien no es miembro (R02).
+- Volver al tema después de crear cuenta o entrar: `?volver=` lleva un destino interno validado por `leoSafeVolver()` (`app.js`). Solo páginas simples del sitio; en `practica.html` únicamente `skill` (lista cerrada), `level` (lista cerrada) y `tema` (identificador en minúsculas); todo lo demás se descarta, y nunca URLs externas, `//`, `javascript:` ni `miembros.html`. Lo genera `leoVolverActual()` (enlaces "Crear cuenta gratis", "Ya tengo cuenta" y el aviso de Leo AI) y lo consume `miembros.html` (registro por correo, entrada por correo y regreso de Google; para Google el destino completo se guarda en `sessionStorage` y a Supabase solo se le pasa el nombre de la página, así su dirección de regreso no cambia). Los enlaces antiguos (solo el nombre de la página) y los accesos sin parámetros se comportan igual que antes. `practica.html` quita `?cuenta=nueva` pero conserva el tema. Prueba: `tools/tests/piloto-volver.e2e.js`.
 
 ## 4. Los temas (identificadores estables de `temas.js`)
 

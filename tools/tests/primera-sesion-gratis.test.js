@@ -38,7 +38,9 @@ test('Los pasos de pago y el regreso con ?volver= no cambiaron', () => {
   assert(/function goToPayment\(\)\{ registerPurchaseIntent\(\); showPaymentStep\(\); \}/.test(html));
   assert(/previewActivateBtn\.addEventListener\('click', goToPayment\)/.test(html) && /get\('pagar'\) === '1'/.test(html));
   /* el boton de la vista previa ahora usa goToPayment (ver arriba) */
-  assert(/window\.location\.href = volver \+ '\?cuenta=nueva'/.test(html));
+  // 2026-11-14: el regreso ahora pasa por irAlDestino(true) con el destino validado (leoSafeVolver); sigue agregando ?cuenta=nueva (o &cuenta=nueva si ya hay query).
+  assert(/window\.location\.href = volverDestino \+ \(conMarcaCuentaNueva \? \(volverDestino\.indexOf\('\?'\) === -1 \? '\?' : '&'\) \+ 'cuenta=nueva' : ''\)/.test(html));
+  assert(/setTimeout\(function\(\)\{ irAlDestino\(true\); \}, 700\)/.test(html));
   assert(/else if\(fromSignup\)\{[\s\S]{0,200}free_signup_completed/.test(html));
 });
 test('Eventos de medicion (solo Analytics, no van al Pixel de Meta)', () => {

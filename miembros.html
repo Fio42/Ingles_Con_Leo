@@ -876,13 +876,33 @@
     maybeOnboard();
   }
 
+  // Destino al que volver (?volver=), validado por leoSafeVolver (app.js): solo paginas internas y, en practica.html, skill/tema/level.
+  // Tras Google el destino completo viene del guardado de esta pestana (la direccion de regreso a Supabase no cambia). Se lee una sola vez.
+  const volverDestino = (function(){
+    let raw = '', full = '';
+    try{ raw = new URLSearchParams(window.location.search).get('volver') || ''; }catch(e){}
+    try{ full = sessionStorage.getItem('leo_volver_full') || ''; sessionStorage.removeItem('leo_volver_full'); }catch(e){}
+    const safe = function(v){ return typeof leoSafeVolver === 'function' ? leoSafeVolver(v) : (/^[a-z0-9-]+\.html$/.test(v) && v !== 'miembros.html' ? v : ''); };
+    let dest = safe(raw);
+    const fromGoogle = (function(){ try{ return new URLSearchParams(window.location.search).get('oauth') === 'google'; }catch(e){ return false; } })();
+    if(fromGoogle && dest && dest.indexOf('?') === -1){ const f = safe(full); if(f && f.split('?')[0] === dest) dest = f; }
+    return dest;
+  })();
+  function irAlDestino(conMarcaCuentaNueva){
+    window.location.href = volverDestino + (conMarcaCuentaNueva ? (volverDestino.indexOf('?') === -1 ? '?' : '&') + 'cuenta=nueva' : '');
+  }
   async function afterAuthSuccess(fromSignup){
     hasSession = true;
     const profile = await LeoBackend.getMemberProfile();
+    // Entrar (no registrarse) desde un tema concreto: de vuelta a ese tema. Solo si el destino trae tema/nivel (los enlaces antiguos sin parametros no cambian).
+    const volverATema = !fromSignup && volverDestino.indexOf('?') !== -1;
     if(profile && profile.is_member){
       trackPurchaseOnce(profile);
       await LeoBackend.syncProgressFromCloud();
+      if(volverATema){ irAlDestino(false); return; }   // practica.html con ?tema= lleva a un miembro a su Plan
       unlock();
+    } else if(volverATema){
+      irAlDestino(false);
     } else if(fromSignup){
       if(typeof trackLeoEvent === 'function') trackLeoEvent('free_signup_completed');
       // Si creo la cuenta desde una pagina de practica (?volver=...),
@@ -893,12 +913,10 @@
       // (nada de enlaces externos). La pequena espera deja que Google
       // Analytics y el Pixel de Meta registren el evento de registro
       // antes de cambiar de pagina.
-      let volver = '';
-      try{ volver = new URLSearchParams(window.location.search).get('volver') || ''; }catch(e){}
-      if(/^[a-z0-9-]+\.html$/.test(volver) && volver !== 'miembros.html'){
+      if(volverDestino){
         authBtn.disabled = true;
         authBtn.textContent = '¡Cuenta creada! Volviendo a tu práctica...';
-        setTimeout(function(){ window.location.href = volver + '?cuenta=nueva'; }, 700);
+        setTimeout(function(){ irAlDestino(true); }, 700);
         return;
       }
       if(wantsPay()){ goToPaymentAuto(); return; } // vino de un botón "Hazte miembro": directo al pago
@@ -1356,8 +1374,9 @@
     googleLoginBtn.addEventListener('click', async ()=>{
       loginError.classList.remove('show');
       googleLoginBtn.disabled = true;
-      let volver = '';
-      try{ volver = new URLSearchParams(window.location.search).get('volver') || ''; }catch(e){}
+      // backend.js no cambia: a Google se le pasa solo el nombre de la pagina (como siempre) y el destino completo se guarda en esta pestana.
+      let volver = volverDestino;
+      try{ if(volver && volver.indexOf('?') !== -1){ sessionStorage.setItem('leo_volver_full', volver); volver = volver.split('?')[0]; } }catch(e){ volver = (volver || '').split('?')[0]; }
       const res = await LeoBackend.signInWithGoogle(volver);
       if(!res.ok){
         googleLoginBtn.disabled = false;

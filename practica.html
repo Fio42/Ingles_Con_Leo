@@ -428,7 +428,9 @@ setTimeout(window.leoShowLate,6000);
             banner.innerHTML = '<strong>¡Listo, tu cuenta gratis está creada!</strong> Tu progreso y tu racha ahora se guardan. Elige tu nivel y sigue practicando.';
             banner.style.display = 'block';
           }
-          history.replaceState(null, '', window.location.pathname);
+          // Solo se quita ?cuenta=nueva: skill, tema y level se conservan (initFreePractice los lee despues y debe seguir en el tema pedido).
+          const restoQuery = new URLSearchParams(window.location.search); restoQuery.delete('cuenta');
+          history.replaceState(null, '', window.location.pathname + (restoQuery.toString() ? '?' + restoQuery.toString() : ''));
         }
       }catch(e){}
       // Nota: ya no hace falta comparar aquí a mano el conteo de
