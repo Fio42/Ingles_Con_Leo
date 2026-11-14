@@ -443,7 +443,7 @@ const ARTICLE_QUIZ_CATALOG = {
   "have-y-has-en-ingles": { tema:"verbo-have", quizzes:{"grammarQuiz":6} },
   "in-on-at": { tema:"in-on-at", quizzes:{"prepQuiz1":7,"prepQuiz2":6,"prepQuiz3":7} },
   "pasado-continuo": { tema:"pasado-continuo", quizzes:{"grammarQuiz":4} },
-  "presente-continuo": { tema:"presente-continuo", quizzes:{"grammarQuiz":4} },
+  "presente-continuo": { tema:"presente-continuo", quizzes:{"grammarQuiz":10,"questionsQuiz":6} },
   "pronombres-personales-ingles": { tema:"pronombres", quizzes:{"grammarQuiz":4} },
   "question-tags-ingles": { tema:"question-tags", quizzes:{"grammarQuiz":10} },
   "sustantivos-contables-incontables": { tema:"contables-incontables", quizzes:{"countableQuiz":6} },
