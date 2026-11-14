@@ -19,6 +19,7 @@
   },
   "tiempos": { "inspeccionMs": 90000, "solicitudMs": 240000, "cargaMs": 45000 },
   "prioridad": [
+    "/articulo-abecedario-ingles.html",
     "/articulo-ingles-cajeros-tiendas.html",
     "/articulo-examen-ingles-call-center.html",
     "/articulo-ingles-meseros-camareros.html",
