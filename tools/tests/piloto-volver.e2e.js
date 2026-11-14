@@ -97,6 +97,24 @@ async function regreso({ url, profile, fromSignup, session, click }){
   });
 })();
 
+
+// ---- 5. Enlace "Crea una cuenta gratis" de practica.html (texto fijo): el mismo codigo real de la pagina lo actualiza ----
+(function(){
+  const pr = read('practica.html');
+  const m = /(try\{ const hintLink = [^\n]*\}catch\(e\)\{\}\r?\n)/.exec(pr);
+  ok(!!m, 'practica.html actualiza el enlace "Crea una cuenta gratis"');
+  const fijo = /<a href="(miembros\.html\?modo=registro&volver=practica\.html)"[^>]*>Crea una cuenta gratis<\/a>/.exec(pr);
+  ok(!!fijo, 'sin JavaScript el enlace sigue siendo el de siempre');
+  if(!m || !fijo) return;
+  [['?skill=grammar&tema=causativos&level=medio', 'practica.html%3Fskill%3Dgrammar%26tema%3Dcausativos%26level%3Dmedio'], ['?skill=grammar', 'practica.html%3Fskill%3Dgrammar'], ['', 'practica.html'],
+   ['?tema=%3Cscript%3E&evil=1', 'practica.html'], ['?level=facil&skill=vocabulary', 'practica.html%3Fskill%3Dvocabulary%26level%3Dfacil']].forEach(([q, esperado]) => {
+    const w = page('<!doctype html><body><p id="freeAccountHint"><a href="' + fijo[1] + '">Crea una cuenta gratis</a></p></body>', 'https://inglesconleo.com/practica.html' + q);
+    load(w, ['data.js', 'temas.js', 'app.js']); w.run(m[1]);
+    const h = w.document.querySelector('#freeAccountHint a').getAttribute('href');
+    ok(h === 'miembros.html?modo=registro&volver=' + esperado, 'enlace "Crea una cuenta gratis" en ' + (q || 'sin parametros') + ' -> ' + h);
+  });
+})();
+
 (async function(){
   const V = 'practica.html%3Fskill%3Dgrammar%26tema%3Dcausativos';
   const dest = 'practica.html?skill=grammar&tema=causativos';

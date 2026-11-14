@@ -445,6 +445,8 @@ setTimeout(window.leoShowLate,6000);
     }
     const main = document.getElementById('practicaMain');
     if(main) main.style.visibility = 'visible';
+    // El enlace de registro de abajo ("Crea una cuenta gratis") vuelve a esta misma practica, con su tema/nivel si los hay (mismo destino validado que los botones del resumen).
+    try{ const hintLink = document.querySelector('#freeAccountHint a'); if(hintLink && typeof leoVolverActual === 'function') hintLink.href = 'miembros.html?modo=registro&volver=' + encodeURIComponent(leoVolverActual()); }catch(e){}
     const freePractice = initFreePractice({
       levelsEl: document.getElementById('levelSelector'),
       tabsEl: document.getElementById('skillTabs'),

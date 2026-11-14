@@ -2141,3 +2141,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - No se toco: backend.js, autenticacion, sesiones, pagos ni membresias. Enlaces antiguos (solo el nombre de la pagina) y accesos sin parametros: iguales que antes (la entrada de una cuenta existente solo redirige si el destino trae tema, skill o level).
 - Prueba: tools/tests/piloto-volver.e2e.js (71 comprobaciones, codigo real de app.js y miembros.html): visitante -> registro -> tema, visitante -> entrar (gratis y miembro) -> tema, Google, enlaces antiguos y destinos manipulados.
 - Residuo documentado sin cambiar: errores de otro nivel (xt) reaparecen en el repaso del Plan general (ver PLAN_CONEXIONES, estado del piloto).
+
+2026-11-14 (7) Correccion: el enlace "Crea una cuenta gratis" de practica.html tambien conserva el tema
+- Era el unico enlace de registro del flujo con destino fijo (volver=practica.html). Ahora practica.html lo actualiza con leoVolverActual() (mismo destino validado de los otros dos botones). Sin JavaScript sigue siendo el enlace de siempre.
+- Revisado en el mismo flujo, sin cambios: "Descubrir el sistema completo", "Conocer la membresia", la oferta de Leo AI y "Entrar a miembros" del menu son entradas a la membresia/panel (no prometen volver a la practica); el registro desde el test de nivel vuelve a la practica general a proposito (no hay tema).
+- Prueba: tools/tests/piloto-volver.e2e.js ahora 78 comprobaciones (tema, skill, level, sin parametros y parametros manipulados).
