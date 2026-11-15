@@ -372,7 +372,7 @@
     btn.addEventListener('click',function(){
       try{ d=JSON.parse(decodeURIComponent(escape(atob(D)))); }catch(e){ return; }
       out.textContent='';
-      [['Banco',d.b],['CLABE',d.c],['Titular',d.t],['Monto','$74 MXN']].forEach(function(r){
+      [['Banco',d.b],['CLABE',d.c],['Titular',d.t],['Monto','$4 USD. En México: $79 MXN']].forEach(function(r){
         var l=document.createElement('span'); l.textContent=r[0]+': '+r[1]; out.appendChild(l); out.appendChild(document.createElement('br'));
       });
       out.hidden=false; cp.hidden=false; btn.hidden=true;
