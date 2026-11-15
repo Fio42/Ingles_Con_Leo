@@ -39,6 +39,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+// Respaldo de correo (2026-11-15): por defecto los correos salen directo por Resend. Si algun dia Resend
+// pausa los envios, basta crear el secreto MAIL_API_URL con la direccion de la funcion mail-relay
+// (y MAIL_PROVIDER=brevo en esa funcion). Sin ese secreto no cambia nada.
+const MAIL_API_URL = Deno.env.get('MAIL_API_URL') || 'https://api.resend.com/emails'
 const RESET_EMAIL_FROM = Deno.env.get('RESET_EMAIL_FROM') || 'Inglés con Leo <onboarding@resend.dev>'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
@@ -83,10 +87,11 @@ Deno.serve(async (req: Request) => {
 
     const actionLink = data.properties.action_link
 
-    const emailRes = await fetch('https://api.resend.com/emails', {
+    const emailRes = await fetch(MAIL_API_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
+        'x-mail-flow': 'critical',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

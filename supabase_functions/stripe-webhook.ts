@@ -47,6 +47,10 @@ const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
+// Respaldo de correo (2026-11-15): por defecto los correos salen directo por Resend. Si algun dia Resend
+// pausa los envios, basta crear el secreto MAIL_API_URL con la direccion de la funcion mail-relay
+// (y MAIL_PROVIDER=brevo en esa funcion). Sin ese secreto no cambia nada.
+const MAIL_API_URL = Deno.env.get('MAIL_API_URL') || 'https://api.resend.com/emails'
 
 const FROM_EMAIL = 'Inglés con Leo <hola@inglesconleo.com>'
 // Para que si alguien responde el correo de bienvenida, te llegue a ti
@@ -381,9 +385,9 @@ async function ensurePaymentFailedEmail(customerId: string, subscription: any): 
 async function mandarCorreoPagoFallido(destinatario: string, link: string | null): Promise<boolean> {
   for (let intento = 1; intento <= 3; intento++) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch(MAIL_API_URL, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'x-mail-flow': 'transactional', 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: FROM_EMAIL,
           to: [destinatario],
@@ -585,10 +589,11 @@ async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
   // Hasta 3 intentos (Resend a veces responde 429 o falla un instante).
   for (let intento = 1; intento <= 3; intento++) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      const res = await fetch(MAIL_API_URL, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'x-mail-flow': 'critical',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
