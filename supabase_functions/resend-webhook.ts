@@ -9,13 +9,17 @@
 //      sin cabeceras de firma, con firma inválida o con una marca de
 //      tiempo de más de 5 minutos (reenvío malicioso) NO procesa nada.
 //   2. Marca el profile con email_invalid=true, email_invalid_at=ahora
-//      SOLO en estos eventos:
+//      SOLO en estos eventos (bloqueo, no reversible solo):
 //        - email.bounced con bounce.type = "Permanent" (rebote duro).
-//          Los rebotes temporales (buzón lleno, servidor caído, etc.)
-//          NO bloquean a nadie: la dirección puede funcionar mañana.
 //        - email.complained (alguien marcó el correo como spam).
 //        - email.suppressed (Resend bloqueó la dirección por su lista
 //          de supresión; seguir intentándolo solo suma rebotes).
+//   2b. Un email.bounced que NO es permanente (temporal, indeterminado o
+//      sin tipo) PAUSA los correos automáticos de esa dirección durante
+//      14 días: profiles.email_paused_until = ahora + 14 días (2026-11-15).
+//      Es reversible (email_paused_until = null) y se vence sola. No
+//      bloquea nada de la cuenta: ni la academia, ni la recuperación de
+//      contraseña, ni el aviso de pago fallido, que siguen igual.
 //      email.delivery_delayed y el resto de eventos se ignoran.
 //   3. Mientras email_invalid sea true, los correos automáticos
 //      (streak-reminder-email.ts, upgrade-nudge-emails.ts,
@@ -64,6 +68,8 @@ const BLOCK_EVENTS = new Set(['email.bounced', 'email.complained', 'email.suppre
 // Margen para la marca de tiempo de Svix (evita reenviar un aviso viejo).
 const TIMESTAMP_TOLERANCE_SECONDS = 5 * 60
 const MAX_RECIPIENTS = 5
+// Pausa por rebote no permanente: cuantos dias se suspenden los correos automaticos.
+const PAUSE_DAYS = 14
 
 Deno.serve(async (req: Request) => {
   try {
@@ -117,16 +123,34 @@ Deno.serve(async (req: Request) => {
     }
     // Un rebote solo bloquea si es permanente. Temporal, indeterminado o sin
     // tipo: no se toca la cuenta (el alumno puede tener el buzón lleno hoy).
-    if (type === 'email.bounced') {
-      const bounceType = String(event?.data?.bounce?.type ?? '').toLowerCase()
-      if (bounceType !== 'permanent') {
-        return json({ ok: true, skipped: true, reason: 'rebote_no_permanente' }, 200)
-      }
-    }
-
     const recipients = extractRecipients(event?.data?.to)
     if (!recipients.length) {
       return json({ ok: true, skipped: true }, 200)
+    }
+    if (type === 'email.bounced') {
+      const bounceType = String(event?.data?.bounce?.type ?? '').toLowerCase()
+      if (bounceType !== 'permanent') {
+        // Temporal / indeterminado / sin tipo: se pausan los correos automaticos
+        // 14 dias (reversible). Idempotente: si ya esta en pausa o bloqueada, no cambia nada.
+        const nowIso = new Date().toISOString()
+        const untilIso = new Date(Date.now() + PAUSE_DAYS * 86400000).toISOString()
+        let paused = 0
+        for (const email of recipients) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .update({ email_paused_until: untilIso })
+            .ilike('email', escapeLike(email))
+            .eq('email_invalid', false)
+            .or(`email_paused_until.is.null,email_paused_until.lt.${nowIso}`)
+            .select('id')
+          if (error) {
+            console.error('resend-webhook: error pausando correos', error)
+            return json({ ok: false, error: 'base de datos' }, 500) // Resend reintenta
+          }
+          paused += (data || []).length
+        }
+        return json({ ok: true, paused, type, reason: 'rebote_no_permanente' }, 200)
+      }
     }
 
     let marked = 0

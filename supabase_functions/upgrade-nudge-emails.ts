@@ -592,6 +592,7 @@ Deno.serve(async (req: Request) => {
         .not('email', 'is', null)
         .is('email_opt_out_at', null)
         .eq('email_invalid', false)
+        .or(notPausedFilter())
         .order('id', { ascending: true })
         .range(page * 1000, page * 1000 + 999)
       if (e) { error = e; break }
@@ -619,6 +620,7 @@ Deno.serve(async (req: Request) => {
       .not('email', 'is', null)
       .is('email_opt_out_at', null)
         .eq('email_invalid', false)
+      .or(notPausedFilter())
       .gte('created_at', new Date(Date.now() - 3 * 86400000).toISOString())
       .order('created_at', { ascending: false })
       .limit(MAX_PER_RUN)
@@ -672,6 +674,7 @@ Deno.serve(async (req: Request) => {
         .not('email', 'is', null)
         .is('email_opt_out_at', null)
         .eq('email_invalid', false)
+        .or(notPausedFilter())
         .order('id', { ascending: true })
         .range(page * 1000, page * 1000 + 999)
       if (e) { memberError = e; break }
@@ -1259,7 +1262,7 @@ async function sendIfStillEligible(
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at, email_invalid, last_marketing_email_at, checkout_started_at')
+    .select('is_member, lifecycle_emails, email_opt_out_at, display_name, free_first_exercise_at, email_invalid, email_paused_until, last_marketing_email_at, checkout_started_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || fresh.is_member !== expectedIsMember) return false
@@ -1270,6 +1273,8 @@ async function sendIfStillEligible(
   // Correo rebotado o marcado como spam (lo pone resend-webhook): ninguna
   // automatización le escribe más (2026-10-08).
   if (fresh.email_invalid) return false
+  // Pausa temporal por rebote no permanente (2026-11-15): reversible, 14 dias.
+  if (isEmailPaused(fresh)) return false
   // Checkout: re-verificar con datos frescos que sigue siendo el intento
   // más reciente y que esta etapa todavía le toca (conversión, intento
   // nuevo o envío duplicado cancelan el correo).
@@ -2245,8 +2250,17 @@ const LONG_TERM_EMAILS: EmailContent[] = [
 // ============================================================
 const MAX_REACTIVATION_PER_RUN = 25
 
+// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
+// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
+function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
+  const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN
+  return Number.isFinite(t) && t > Date.now()
+}
+const notPausedFilter = () => `email_paused_until.is.null,email_paused_until.lt.${new Date().toISOString()}`
+
 const REACT_PROFILE_COLS =
-  'id, email, is_member, display_name, member_since, last_seen_at, last_practice_at, lifecycle_emails, last_marketing_email_at, streak_reminder_last_sent, survey_15d_sent_at, upgrade_email_1_sent_at, upgrade_email_2_sent_at, upgrade_email_3_sent_at, email_opt_out_at, email_invalid, next_renewal_at, stripe_customer_id, paypal_subscription_id, mp_preapproval_id'
+  'id, email, email_paused_until, is_member, display_name, member_since, last_seen_at, last_practice_at, lifecycle_emails, last_marketing_email_at, streak_reminder_last_sent, survey_15d_sent_at, upgrade_email_1_sent_at, upgrade_email_2_sent_at, upgrade_email_3_sent_at, email_opt_out_at, email_invalid, next_renewal_at, stripe_customer_id, paypal_subscription_id, mp_preapproval_id'
 
 function cancunDay(): string {
   return new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 10)
@@ -2491,6 +2505,7 @@ async function runReactivationFor(userId: string, dryRun: boolean): Promise<Reac
     .eq('is_member', true)
     .is('email_opt_out_at', null)
     .eq('email_invalid', false)
+    .or(notPausedFilter())
     .or(`last_marketing_email_at.is.null,last_marketing_email_at.lt.${slotCutoff}`)
     .select('id')
   if (slotError) console.error('Error reservando el freno global (reactivación):', slotError)

@@ -162,6 +162,8 @@ export function precheck(input) {
   if (!p.email) return { ok: false, reason: 'no_email', loggable: false }
   if (p.email_opt_out_at) return { ok: false, reason: 'unsubscribed', loggable: false }
   if (p.email_invalid) return { ok: false, reason: 'email_invalid', loggable: false }
+  // Pausa temporal por rebote no permanente (resend-webhook): reversible, sin ruido en la bitacora.
+  if (p.email_paused_until && Date.parse(p.email_paused_until) > nowMs) return { ok: false, reason: 'email_paused', loggable: false }
 
   const activity = lastActivityMs(p, lastSessionAt)
   const cls = classifyMember(p, activity)

@@ -476,6 +476,56 @@ test('No se tocan precios ni membresia: los webhooks y funciones de pago conserv
   assert(/PRICE_MXN = 40/.test(read('supabase_functions/create-checkout.ts')));
 });
 
+/* ---------------- 9. pausa temporal por rebote no permanente (email_paused_until) ---------------- */
+const FUT = () => iso(state.now + 5 * 24 * H), PAST = () => iso(state.now - 1000);
+test('Pausa: correo de ciclo de vida (checkout) NO sale con la pausa activa, ni en 25 h; con pausa vencida SI sale', async () => {
+  reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: FUT() })]); await callCron(NUDGE);
+  state.now += 25 * H; await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
+  reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: PAST() })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 1);
+  reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: null })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 1);
+});
+test('Pausa: se respeta aunque la lista este vieja (relectura fresca justo antes de enviar)', async () => {
+  reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: FUT() })]);
+  assert.strictEqual(await NUDGE.ctx.sendIfStillEligible('u1', 'a@x.com', 'checkout_abandoned'), false);
+  assert.strictEqual(state.mails.length, 0);
+});
+test('Pausa que llega DESPUES de armar la lista y ANTES de enviar: cancela el envio', async () => {
+  reset(() => [user({ checkout_started_at: ago(2.5) })]); P().email_paused_until = FUT();
+  assert.strictEqual(await NUDGE.ctx.sendIfStillEligible('u1', 'a@x.com', 'checkout_abandoned'), false);
+});
+test('Pausa: solo afecta a la cuenta pausada (otra cuenta sana sigue recibiendo)', async () => {
+  reset(() => [user({ id: 'u1', email: 'a@x.com', checkout_started_at: ago(2.5), email_paused_until: FUT() }), user({ id: 'u2', email: 'b@x.com', checkout_started_at: ago(2.5) })]); await callCron(NUDGE);
+  assert.strictEqual(state.mails.length, 1); assert.strictEqual(state.mails[0].to, 'b@x.com');
+});
+test('Pausa: racha NO sale con pausa activa; con pausa vencida SI', async () => {
+  streakFixture({ email_paused_until: FUT() }); await callCron(STREAK); assert.strictEqual(state.mails.length, 0);
+  streakFixture({ email_paused_until: PAST() }); await callCron(STREAK); assert.strictEqual(state.mails.length, 1);
+});
+test('Pausa: encuesta de 15 dias NO sale con pausa activa (y queda pendiente); con pausa vencida SI', async () => {
+  reset(() => [member({ member_since: ago(24 * 16), email_paused_until: FUT() })]); await callCron(SURVEY); assert.strictEqual(state.mails.length, 0); assert.strictEqual(P().survey_15d_sent_at, null);
+  reset(() => [member({ member_since: ago(24 * 16), email_paused_until: PAST() })]); await callCron(SURVEY); assert.strictEqual(state.mails.length, 1);
+});
+test('Pausa: el cron de nudges tampoco manda reactivacion de miembro con pausa activa', async () => {
+  reset(() => [member({ last_seen_at: ago(24 * 20), last_practice_at: ago(24 * 20), email_paused_until: FUT() })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
+});
+test('Pausa NO toca academia, recuperacion de contrasena ni cobros: ningun archivo del sitio ni funcion de pago/contrasena la mira', () => {
+  const fs2 = require('fs'), path2 = require('path');
+  const quienes = fs2.readdirSync(root).filter(f => /\.(js|html)$/.test(f)).concat(['supabase_functions/send-password-reset.ts', 'supabase_functions/stripe-webhook.ts', 'supabase_functions/paypal-webhook.ts', 'supabase_functions/mp-webhook.ts', 'supabase_functions/leo-ai.ts', 'supabase_functions/create-checkout.ts', 'supabase_functions/stripe-checkout.ts', 'supabase_functions/paypal-checkout.ts', 'supabase_functions/email-unsubscribe.ts', 'supabase_functions/submit-survey.ts']);
+  const tocan = quienes.filter(f => fs2.existsSync(path2.join(root, f)) && /email_paused_until/.test(fs2.readFileSync(path2.join(root, f), 'utf8')));
+  assert.deepStrictEqual(tocan, []);
+});
+test('Codigo: toda automatizacion revisa la pausa justo antes de enviar', () => {
+  for(const f of ['upgrade-nudge-emails.ts', 'streak-reminder-email.ts', 'survey-15d-email.ts']){
+    const s = read('supabase_functions/' + f);
+    assert(/isEmailPaused\((fresh|prof)\)/.test(s), f + ' relee y revisa la pausa');
+  }
+  const n = read('supabase_functions/upgrade-nudge-emails.ts');
+  assert.strictEqual((n.match(/\.or\(notPausedFilter\(\)\)/g) || []).length, 4); // 3 listas + reserva atomica de la reactivacion
+  assert(/email_paused_until/.test(read('supabase_functions/member-reactivation-core.mjs')));
+  assert.strictEqual(read('supabase_functions/upgrade-nudge-emails.ts').replace(/\r/g, ''), read('supabase/functions/upgrade-nudge-emails/index.ts').replace(/\r/g, ''));
+  assert.strictEqual(read('supabase_functions/member-reactivation-core.mjs').replace(/\r/g, ''), read('supabase/functions/upgrade-nudge-emails/member-reactivation-core.mjs').replace(/\r/g, ''));
+});
+
 (async () => {
   for(const t of queue){
     try { await t.fn(); passed++; console.log('  ok   ' + t.name); }

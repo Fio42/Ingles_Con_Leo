@@ -129,6 +129,7 @@ Deno.serve(async (req: Request) => {
       .is('survey_15d_sent_at', null)
       .is('email_opt_out_at', null)
       .eq('email_invalid', false)
+      .or(notPausedFilter())
       .gte('member_since', from)
       .lte('member_since', to)
       .order('member_since', { ascending: true })
@@ -154,16 +155,26 @@ Deno.serve(async (req: Request) => {
 // candidatos) y, si sigue siendo miembro, genera un token al azar,
 // manda el correo con el link de la encuesta, y marca que ya se le
 // mandó (para no repetirlo nunca).
+// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
+// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
+function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
+  const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN
+  return Number.isFinite(t) && t > Date.now()
+}
+const notPausedFilter = () => `email_paused_until.is.null,email_paused_until.lt.${new Date().toISOString()}`
+
 async function sendSurveyIfStillEligible(userId: string, email: string | null, manual: boolean = false): Promise<boolean> {
   if (!email) return false
   const { data: fresh } = await supabase
     .from('profiles')
-    .select('is_member, email_opt_out_at, survey_15d_sent_at, survey_15d_token, email_invalid, last_marketing_email_at')
+    .select('is_member, email_opt_out_at, survey_15d_sent_at, survey_15d_token, email_invalid, email_paused_until, last_marketing_email_at')
     .eq('id', userId)
     .maybeSingle()
   if (!fresh || !fresh.is_member) return false
   if (fresh.email_opt_out_at) return false // se dio de baja de los correos
   if (fresh.email_invalid) return false // rebotó o marcó spam: no se le escribe más
+  if (isEmailPaused(fresh)) return false // pausa temporal por rebote no permanente (reversible)
   if (fresh.survey_15d_sent_at) return false // ya se mandó
 
   // Si ya había un token de un intento anterior que quedó a medias, se

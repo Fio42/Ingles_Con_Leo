@@ -164,15 +164,25 @@ async function fetchUserIdsForDate(dateStr: string): Promise<string[] | null> {
 // candidatos, que pudo quedar vieja mientras se mandaban los correos
 // anteriores de esta misma corrida): que siga sin practicar hoy, que
 // siga siendo miembro, y que no se le haya mandado ya este aviso hoy.
+// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
+// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
+function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
+  const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN
+  return Number.isFinite(t) && t > Date.now()
+}
+const notPausedFilter = () => `email_paused_until.is.null,email_paused_until.lt.${new Date().toISOString()}`
+
 async function sendIfStillEligible(userId: string, todayStr: string): Promise<boolean> {
   const { data: prof } = await supabase
     .from('profiles')
-    .select('email, is_member, streak_reminder_last_sent, email_opt_out_at, email_invalid, last_marketing_email_at')
+    .select('email, is_member, streak_reminder_last_sent, email_opt_out_at, email_invalid, email_paused_until, last_marketing_email_at')
     .eq('id', userId)
     .maybeSingle()
   if (!prof || !prof.is_member || !prof.email) return false
   if (prof.email_opt_out_at) return false // se dio de baja de estos correos
   if (prof.email_invalid) return false // rebotó o marcó spam: no se le escribe más
+  if (isEmailPaused(prof)) return false // pausa temporal por rebote no permanente (reversible)
   if (prof.streak_reminder_last_sent === todayStr) return false
 
   const { data: hoy } = await supabase

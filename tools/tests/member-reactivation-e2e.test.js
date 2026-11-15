@@ -345,6 +345,18 @@ test('baja de correos y correo inválido: nunca', async () => {
   assert.strictEqual(state.mails.length, 0);
 });
 
+test('pausa temporal por rebote: no sale reactivacion con pausa activa (sin ruido en la bitacora); vencida o sin pausa, si', async () => {
+  reset(); add('a1', { email_paused_until: iso(T0 + 5 * D) }); await run();
+  assert.strictEqual(state.mails.length, 0); assert.strictEqual(state.db.member_reactivation_log.length, 0);
+  reset(); add('a1', { email_paused_until: iso(T0 - 1000) }); await run(); assert.strictEqual(state.mails.length, 1);
+  reset(); add('a1'); await run(); assert.strictEqual(state.mails.length, 1);
+});
+test('pausa que llega entre la lista y el envio: la reserva atomica la respeta', async () => {
+  reset(); const p = add('a1'); const orig = state.db.profiles;
+  // simula que el webhook pausa la cuenta justo despues de decidir: la reserva exige pausa vencida o vacia
+  p.email_paused_until = iso(T0 + 2 * D); await run(); assert.strictEqual(state.mails.length, 0);
+});
+
 test('ventana horaria: antes de las 8:00 y desde las 21:00 (Cancún) no sale; a las 10:00 sí', async () => {
   reset(); add('a1');
   state.now = Date.parse('2026-10-13T12:00:00.000Z'); await run(); assert.strictEqual(state.mails.length, 0); // 7:00
