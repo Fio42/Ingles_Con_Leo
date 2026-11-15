@@ -2175,3 +2175,5 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Clave de Brevo rotada: nueva "supabase-respaldo-2" (solo Emails transaccionales) guardada en BREVO_API_KEY; la anterior eliminada en Brevo. Entrega a fiocchettaleandro@gmail.com confirmada solo con la clave nueva. Historial de Brevo: solo 3 envios, todos pruebas a ese buzon, todos entregados.
 - Borrada la cuenta de prueba spanishbyleo@gmail.com (sin membresia ni datos). El alta SI mando el correo de bienvenida (Resend directo); Auth no manda confirmacion.
 - brevo-check ahora anota el fallo en app_errors (kind email) antes de intentar el correo de alerta. MAIL_API_URL sigue sin configurar.
+
+2026-11-15 (11:40) Libro de 100 errores: el precio visible dice solo "$4 USD". Quitado "En México: $74 MXN" del encabezado de libro-100-errores-comunes-ingles.html y el "$74 MXN" del boton de Mercado Pago. No se tocaron los datos de transferencia (monto en pesos y banco) ni el precio de la membresia (miembros.html), pendientes de decision de Leo.
