@@ -79,7 +79,7 @@ const base = () => 'http://localhost:' + server.address().port + '/practica.html
     assert.strictEqual(r.answered, 6, 'respondió exactamente 6'); assert.ok(r.summary && !r.wall, 'termina en el resumen, no en el muro');
     assert.ok(/Completaste tu práctica gratis de hoy: 6 de 6/.test(r.txt), 'reconoce la práctica del día');
     assert.strictEqual((r.txt.match(/\$2 USD/g) || []).length, 1, 'un solo mensaje comercial');
-    assert.ok(/Conocer la membresía/.test(r.txt) && /Seguir aprendiendo gratis/.test(r.txt) && /9 cursos/.test(r.txt) && /Práctica ilimitada/.test(r.txt) && /¡Terminaste tu primera práctica!/.test(r.txt) && /\$2 USD al mes\./.test(r.txt));
+    assert.ok(/Conocer la membresía/.test(r.txt) && /Seguir aprendiendo gratis/.test(r.txt) && /11 cursos/.test(r.txt) && /Práctica ilimitada/.test(r.txt) && /¡Terminaste tu primera práctica!/.test(r.txt) && /\$2 USD al mes\./.test(r.txt));
     assert.ok(!/acertaste|Lo que más te costó/.test(await page.locator('[data-first-offer-card]').innerText()), 'la tarjeta no repite puntaje ni temas');
     assert.ok(!/Seguir practicando sin límite/.test(r.txt), 'sin el muro');
     await noOverflow(page);

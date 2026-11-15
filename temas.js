@@ -417,7 +417,7 @@ const GUIDE_BY_SKILL_LEVEL = {
 };
 
 /* Academia: curso PUBLICADO (open:true en academia-motor.js) que corresponde a un tema. Todos requieren membresía; TO BE además
-   tiene una demo gratis. Los cursos apagados (in-on-at, presente-continuo) NO están aquí. tools/tests/conexion-educativa.test.js
+   tiene una demo gratis. Los cursos apagados NO están aquí (hoy están abiertos los 11). tools/tests/conexion-educativa.test.js
    exige que esta tabla coincida con academia-motor.js: cuando se abre o cierra un curso, hay que actualizarla. */
 const ACADEMIA_COURSE_BY_TEMA = {
   'to-be-presente': { course:'to-be', title:'Domina el verbo TO BE', demo:true },
@@ -428,7 +428,9 @@ const ACADEMIA_COURSE_BY_TEMA = {
   'can-cant':       { course:'can', title:'CAN / CAN\'T' },
   'presente-simple':{ course:'presente-simple', title:'Presente simple' },
   'do-does':        { course:'do-does', title:'DO / DOES: preguntas y negaciones' },
-  'question-words': { course:'wh', title:'WH-QUESTIONS: What, Where, When, Who, Why, How' }
+  'question-words': { course:'wh', title:'WH-QUESTIONS: What, Where, When, Who, Why, How' },
+  'presente-continuo': { course:'presente-continuo', title:'Presente continuo: lo que pasa ahora' },
+  'in-on-at':       { course:'in-on-at', title:'IN / ON / AT: lugar y tiempo' }
 };
 /* ARTICLE_QUIZ_CATALOG:BEGIN (generado por tools/gen-article-quiz-catalog.js, no editar a mano) */
 const ARTICLE_QUIZ_CATALOG = {

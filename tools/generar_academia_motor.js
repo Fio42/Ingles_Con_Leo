@@ -23,12 +23,12 @@ const COURSES = {
   'presente-simple': { tema: 'presente-simple', engineTopic: 'Presente simple: la -s de he / she / it', level: 'facil', open: true },
   // Curso 8 (OCULTO y apagado hasta que Leo lo autorice): open=false, el sitio no lo recomienda.
   'do-does': { tema: 'do-does', engineTopic: 'Do / Does', level: 'facil', open: true },
-  // Curso 11 (OCULTO hasta que Leo lo autorice): open=false.
-  'in-on-at': { tema: 'in-on-at', engineTopic: 'In / On / At', level: 'facil', open: false },
+  // Curso 11: abierto en el codigo el 15-nov-2026 (falta enabled=true en Supabase).
+  'in-on-at': { tema: 'in-on-at', engineTopic: 'In / On / At', level: 'facil', open: true },
   // Curso 9: publicado el 8-nov-2026.
   'wh': { tema: 'question-words', engineTopic: "Question words (What / Where / When / Who)", level: 'facil', open: true },
-  // Curso 10 (OCULTO hasta que Leo lo autorice): open=false.
-  'presente-continuo': { tema: 'presente-continuo', engineTopic: "Presente continuo (I am ___ing)", level: 'facil', open: false }
+  // Curso 10: abierto en el codigo el 15-nov-2026 (falta enabled=true en Supabase).
+  'presente-continuo': { tema: 'presente-continuo', engineTopic: "Presente continuo (I am ___ing)", level: 'facil', open: true }
 };
 
 // Encendido: lo manda ACADEMIA_MOTOR_ENABLED (1/0) si existe; si no, sigue a PUBLIC de academia-lanzamiento.js, asi regenerar sin variable no apaga la academia publicada.

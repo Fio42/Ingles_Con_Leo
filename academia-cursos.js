@@ -44,7 +44,7 @@ var ACADEMIA_CURSOS = {
   },
   "in-on-at": {
    "title": "IN / ON / AT: lugar y tiempo",
-   "open": false,
+   "open": true,
    "lessons": 5
   },
   "wh": {
@@ -54,7 +54,7 @@ var ACADEMIA_CURSOS = {
   },
   "presente-continuo": {
    "title": "Presente continuo: lo que pasa ahora",
-   "open": false,
+   "open": true,
    "lessons": 5
   }
  }

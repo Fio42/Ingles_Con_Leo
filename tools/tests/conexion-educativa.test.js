@@ -87,7 +87,7 @@ test('La tabla de cursos coincide con academia-motor.js: solo cursos publicados,
   const tabla = plain(T.ACADEMIA_COURSE_BY_TEMA);
   assert.deepStrictEqual(Object.keys(tabla).sort(), Object.keys(open).sort(), 'mismos temas publicados');
   Object.keys(tabla).forEach(t => { assert.strictEqual(tabla[t].course, open[t].course); assert.strictEqual(tabla[t].title, open[t].title); assert(T.TEMA_BY_ID[t], 'tema inexistente ' + t); });
-  assert(!tabla['in-on-at'] && !tabla['presente-continuo']);
+  assert(tabla['in-on-at'] && tabla['in-on-at'].course === 'in-on-at' && tabla['presente-continuo'] && tabla['presente-continuo'].course === 'presente-continuo');   // abiertos el 15-nov-2026
 });
 test('Resumen de sesión: errores de DO/DOES ofrecen explicación, practicar y el curso (con membresía)', () => {
   const ids = [];
@@ -101,8 +101,10 @@ test('Resumen de sesión: errores de DO/DOES ofrecen explicación, practicar y e
   assert(/Curso: <a href="academia\.html#\/curso\/do-does"/.test(html) && /con membresía/.test(html));
 });
 test('Un tema sin curso publicado no muestra curso; to-be indica la demo gratis', () => {
-  assert.strictEqual(T.academiaCourseForTema('in-on-at'), null);
-  assert.strictEqual(T.academiaCourseForTema('presente-continuo'), null);
+  assert.strictEqual(T.academiaCourseForTema('pasado-continuo'), null);
+  assert.strictEqual(T.academiaCourseForTema('comparativos'), null);
+  assert.strictEqual(plain(T.academiaCourseForTema('in-on-at')).course, 'in-on-at');
+  assert.strictEqual(plain(T.academiaCourseForTema('presente-continuo')).course, 'presente-continuo');
   assert.strictEqual(plain(T.academiaCourseForTema('to-be-presente')).demo, true);
   assert.strictEqual(plain(T.academiaCourseForTema('do-does')).demo, false);
 });

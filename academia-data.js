@@ -54,9 +54,9 @@ var ACADEMIA = {
       { id: 'can', title: "CAN / CAN'T", blurb: 'Habilidades y permisos.' },
       { id: 'presente-simple', title: 'Presente simple', blurb: 'Rutinas y hábitos.' },
       { id: 'do-does', title: 'DO / DOES', blurb: 'Preguntas y negaciones en presente.' },
-      { id: 'in-on-at', title: 'IN / ON / AT', soon: true, blurb: 'Lugar y tiempo.' },
+      { id: 'in-on-at', title: 'IN / ON / AT', blurb: 'Lugar y tiempo.' },
       { id: 'wh', title: 'WH-QUESTIONS', blurb: 'Preguntar con what, where, when, who, why y how.' },
-      { id: 'presente-continuo', title: 'PRESENTE CONTINUO', soon: true, blurb: 'Lo que pasa ahora.' }
+      { id: 'presente-continuo', title: 'PRESENTE CONTINUO', blurb: 'Lo que pasa ahora.' }
     ]
   },
 

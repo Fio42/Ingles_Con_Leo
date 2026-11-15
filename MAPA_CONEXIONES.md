@@ -33,10 +33,10 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 | enlace_incorrecto | 1 | 4 | 0 |
 | recurso_sin_conectar | 0 | 0 | 65 |
 | por_construir | 0 | 1 | 1 |
-| solo_miembros | 33 | 0 | 13 |
-| general_intencional | 48 | 0 | 0 |
+| solo_miembros | 35 | 0 | 13 |
+| general_intencional | 51 | 0 | 0 |
 
-79 temas en temas.js. 200 filas de enlaces: 180 agrupadas desde 442 paginas HTML y 20 destinos dinamicos o redirecciones curados.
+79 temas en temas.js. 205 filas de enlaces: 185 agrupadas desde 442 paginas HTML y 20 destinos dinamicos o redirecciones curados.
 <!-- /GENERADO:resumen -->
 
 Cifras clave:
@@ -133,6 +133,7 @@ flowchart LR
   n_tpresente_continuo["Presente continuo"]:::tema
   n_tpresente_continuo --> n_cpresente_continuo["clase"]:::ok
   n_tpresente_continuo --> n_qpresente_continuo["quiz 16 preg."]:::ok
+  n_tpresente_continuo --> n_kpresente_continuo["curso presente-continuo"]:::miembros
   n_tpresente_continuo -.-> n_ppresente_continuo["Miembros: verificado"]:::ok
   n_tpresente_continuo -.-> n_fpresente_continuo["Gratis: recurso_sin_conectar"]:::warn
   n_tpasado_continuo["Pasado continuo"]:::tema
@@ -175,6 +176,7 @@ flowchart LR
   n_tin_on_at["In, on y at"]:::tema
   n_tin_on_at --> n_cin_on_at["clase"]:::ok
   n_tin_on_at --> n_qin_on_at["quiz 20 preg."]:::ok
+  n_tin_on_at --> n_kin_on_at["curso in-on-at"]:::miembros
   n_tin_on_at -.-> n_pin_on_at["Miembros: verificado"]:::ok
   n_tin_on_at -.-> n_fin_on_at["Gratis: recurso_sin_conectar"]:::warn
   n_tpresente_simple["Presente simple"]:::tema
@@ -263,7 +265,7 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `actually-currently` | gram | - | si | - | - | - | medio:5 | verificado | solo_miembros | - |
 | `palabras-parecidas` | gram | - | - | - | - | avanzado:8 | medio:3 avanzado:3 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
 | `matices-formales` | gram | - | - | - | - | avanzado:4 | avanzado:5 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `presente-continuo` | gram | si | - | - | 16 | facil:5 | - | verificado | recurso_sin_conectar | - |
+| `presente-continuo` | gram | si | - | presente-continuo | 16 | facil:5 | - | verificado | recurso_sin_conectar | - |
 | `pasado-continuo` | gram | si | - | - | 4 | - | facil:8 | verificado | solo_miembros | - |
 | `cuantificadores` | gram | - | - | - | - | - | - | por_construir | por_construir | explicacion (ni clase ni ficha); ejercicios |
 | `much-many` | gram | - | si | - | - | facil:2 | facil:5 medio:9 | verificado | recurso_sin_conectar | - |
@@ -287,7 +289,7 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `present-perfect-vs-past` | gram | si | - | - | - | medio:6 | medio:9 | verificado | recurso_sin_conectar | - |
 | `since-for` | gram | si | si | - | - | facil:1 medio:5 | medio:8 | verificado | recurso_sin_conectar | - |
 | `past-perfect` | gram | - | si | - | - | medio:7 | - | verificado | recurso_sin_conectar | - |
-| `in-on-at` | gram | si | - | - | 20 | facil:4 | facil:8 | verificado | recurso_sin_conectar | - |
+| `in-on-at` | gram | si | - | in-on-at | 20 | facil:4 | facil:8 | verificado | recurso_sin_conectar | - |
 | `by-until` | gram | - | si | - | - | facil:4 medio:2 | - | verificado | recurso_sin_conectar | - |
 | `preposiciones-movimiento` | gram | - | - | - | - | - | principiante:4 | verificado | solo_miembros | explicacion (ni clase ni ficha) |
 | `preposiciones-sutiles` | gram | - | - | - | - | avanzado:4 | avanzado:3 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |

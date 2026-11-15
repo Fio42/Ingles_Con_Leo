@@ -1396,7 +1396,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "in-on-at",
   "engineTopic": "In / On / At",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "que": "Qué son in, on y at",
    "lug": "Lugar",
@@ -1742,7 +1742,7 @@ var ACADEMIA_MOTOR = (function(){
   "tema": "presente-continuo",
   "engineTopic": "Presente continuo (I am ___ing)",
   "level": "facil",
-  "open": false,
+  "open": true,
   "topics": {
    "ing": "Am, is, are + verbo con ing",
    "afi": "Frases afirmativas ahora",

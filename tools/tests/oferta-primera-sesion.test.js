@@ -67,7 +67,7 @@ test('tras la primera sesión: aparece UNA vez, con el texto pedido, precio y do
   const h = c.__t.freeFirstOfferHtml([{ isCorrect:true }, { isCorrect:false }, { isCorrect:true }, { isCorrect:true }]);
   assert(/<h3>¡Terminaste tu primera práctica!<\/h3>/.test(h));
   assert(h.includes('Ya sabes qué necesitas reforzar. Con la membresía puedes seguir avanzando sin el límite diario.'));
-  assert(/<strong>9 cursos<\/strong>/.test(h) && /Evaluaciones/.test(h) && /Insignias/.test(h) && /Práctica ilimitada/.test(h));
+  assert(/<strong>11 cursos<\/strong>/.test(h) && /Evaluaciones/.test(h) && /Insignias/.test(h) && /Práctica ilimitada/.test(h));
   assert(/<strong>\$2 USD al mes\.<\/strong>/.test(h) && !/MXN|37/.test(h));
   assert(/Conocer la membresía/.test(h) && /Seguir aprendiendo gratis/.test(h) && /href="miembros\.html"/.test(h));
   assert(!/acertaste|costó|\d de \d|4\/6|<script|popup|modal/i.test(h), 'sin puntaje ni temas fallados (ya están en el resumen)');

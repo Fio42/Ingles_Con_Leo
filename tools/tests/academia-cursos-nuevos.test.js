@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path'), vm = require('vm'), assert = r
 const root = path.join(__dirname, '..', '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const IDS = ['wh', 'presente-continuo', 'in-on-at'];
-const ABIERTOS = ['wh'];   // cursos ya publicados: Curso 9 abierto el 8-nov-2026
+const ABIERTOS = ['wh', 'presente-continuo', 'in-on-at'];   // cursos ya abiertos en el codigo: Curso 9 el 8-nov-2026; Cursos 10 y 11 el 15-nov-2026 (falta enabled=true en Supabase)
 let ok = 0, bad = 0;
 function test(name, fn){ try{ fn(); ok++; console.log('  ok  ' + name); }catch(e){ bad++; console.log('  FALLA ' + name + '\n  ' + (e && e.message)); } }
 const A = vm.runInNewContext(read('academia-data.js') + ';ACADEMIA');

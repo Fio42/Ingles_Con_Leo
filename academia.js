@@ -1000,12 +1000,14 @@
 
     /* Lo que viene: sin dar la impresion de una ruta ya avanzada */
     var soon = ACADEMIA.route.courses.filter(function(c){ return c.soon; });
-    var next = el('section', { class: 'ac-soon', 'aria-label': 'Próximos cursos' }, [
-      el('h2', { class: 'ac-h2 ac-h2-in', text: 'Lo que viene' }),
-      el('p', { class: 'ac-text', text: (apps.length > 1 ? 'Seguimos con la ruta ' + ACADEMIA.route.title + '. Estos cursos llegan después:' : 'TO BE es el primer curso abierto de la academia. Estamos preparando la ruta ' + ACADEMIA.route.title + ', con estos cursos más:') }),
-      el('ul', { class: 'ac-soon-list' }, soon.map(function(c){ return el('li', { text: c.title }); }))
-    ]);
-    root.appendChild(next);
+    if(soon.length){
+      var next = el('section', { class: 'ac-soon', 'aria-label': 'Próximos cursos' }, [
+        el('h2', { class: 'ac-h2 ac-h2-in', text: 'Lo que viene' }),
+        el('p', { class: 'ac-text', text: (apps.length > 1 ? 'Seguimos con la ruta ' + ACADEMIA.route.title + '. Estos cursos llegan después:' : 'TO BE es el primer curso abierto de la academia. Estamos preparando la ruta ' + ACADEMIA.route.title + ', con estos cursos más:') }),
+        el('ul', { class: 'ac-soon-list' }, soon.map(function(c){ return el('li', { text: c.title }); }))
+      ]);
+      root.appendChild(next);
+    }
     focusMain();
   }
 
