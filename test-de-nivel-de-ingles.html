@@ -308,15 +308,16 @@
 <script>
 /* ============================================================
    Test de nivel de inglés (gratis, sin registro).
-   30 preguntas: 5 por nivel (A1, A2, B1, B2, C1, C2), de fácil a
-   difícil; la quinta de cada nivel es de listening (audio en
-   audio/test-nivel/, generado con tools/generar_audios.py). Un
-   nivel se "aprueba" con 4 de 5 correctas; el resultado es el
-   último nivel aprobado seguido (ver computeLevel: tolera un solo
-   tropiezo de 3 de 5 si el nivel siguiente se aprueba). Para
-   agregar preguntas basta añadirlas a QUESTIONS con su band. Las opciones se barajan con
-   shuffleOptions() de app.js, y el avance se guarda en el
-   navegador para poder continuar si se cierra la pestaña.
+   Banco QUESTIONS: preguntas de opción múltiple por nivel (A1 a C2),
+   de fácil a difícil, con un listening por nivel (audio en
+   audio/test-nivel/, generado con tools/generar_audios.py). El
+   conteo, las barras y el cálculo se derivan del banco: para ampliarlo
+   basta añadir preguntas con su band. El nivel se estima con TODAS las
+   respuestas (ver computeLevel: umbrales provisionales P_MASTERED,
+   RANGE_MARGIN, IRREGULAR_GAP) y puede mostrarse como rango (B1–B2).
+   Las opciones se barajan con shuffleOptions() de app.js, y el avance
+   se guarda en el navegador (con firma del banco) para poder continuar.
+   Documentación: DEVLOG.txt y tools/tests/placement-test.test.js.
    ============================================================ */
 (function(){
   var QUESTIONS = [
@@ -335,17 +336,17 @@
     { band:'B1', prompt:"I ___ in this city since 2019.", options:["have lived","live","am living","lived"], correct:0, explain:"Con since y una acción que empezó en el pasado y sigue hoy se usa el present perfect: have lived." },
     { band:'B1', prompt:"The monthly report ___ by the finance team last week.", options:["was written","wrote","has written","is writing"], correct:0, explain:"Voz pasiva en pasado: was + participio (written). El reporte no escribe, lo escriben." },
     { band:'B1', prompt:"Can you ___ my plants while I'm on vacation?", options:["look after","look for","look up","look into"], correct:0, explain:"Look after significa cuidar. Look for es buscar, look up es consultar y look into es investigar." },
-    { band:'B1', prompt:"The receptionist asked us what time ___.", options:["we had arrived","had we arrived","did we arrive","we did arrive"], correct:0, explain:"En preguntas indirectas el orden es como en una afirmación (sujeto + verbo), sin did." },
+    { band:'B1', prompt:"Excuse me, could you tell me where ___?", options:["the station is","is the station","the station does","does the station be"], correct:0, explain:"En preguntas indirectas (could you tell me...) el orden es como en una afirmación: sujeto + verbo (the station is), sin invertir." },
     { band:'B1', listen:'audio/test-nivel/lt-b1.mp3', transcript:"— Are you coming to the gym after work?\n— I'd love to, but I promised my sister I'd help her move some furniture.\n— No problem. Maybe on Thursday, then?\n— Sure, Thursday works for me.", prompt:"What is the man going to do after work?", options:["Help his sister","Go to the gym","Stay late at the office","Buy new furniture"], correct:0, explain:"Él dice que le prometió a su hermana ayudarle a mover unos muebles (help her move some furniture). Al gimnasio irán el jueves." },
 
     { band:'B2', prompt:"If I ___ about the road closure, I would have taken the train.", options:["had known","knew","have known","would know"], correct:0, explain:"Tercer condicional: if + had + participio, would have + participio." },
-    { band:'B2', prompt:"By the time we got to the station, the last bus ___.", options:["had already left","already left","has already left","was already leaving"], correct:0, explain:"Para algo que pasó antes de otro momento del pasado se usa el past perfect: had already left." },
+    { band:'B2', prompt:"By the time we got to the station, the last bus ___.", options:["had already left","has already left","will have already left","is already leaving"], correct:0, explain:"Para algo que pasó antes de otro momento del pasado (got to the station) se usa el past perfect: had already left. Las otras opciones no encajan con ese pasado." },
     { band:'B2', prompt:"I'm not used to ___ up so early on weekends.", options:["getting","get","got","have got"], correct:0, explain:"Después de be used to va el verbo con -ing: getting." },
     { band:'B2', context:"Although the new software was expensive, it paid for itself within a year by reducing costly errors.", prompt:"What does the sentence suggest?", options:["The software saved more money than it cost.","The software was too expensive to use.","The software caused more errors.","The company returned the software."], correct:0, explain:"Paid for itself significa que el ahorro que generó cubrió lo que costó." },
     { band:'B2', listen:'audio/test-nivel/lt-b2.mp3', transcript:"Hi Daniel, it's Laura from the clinic. Your appointment on Friday has been moved to Monday at the same time, because the doctor will be at a conference. If that doesn't suit you, just give us a call.", prompt:"Why was Daniel's appointment changed?", options:["The doctor won't be available on Friday.","Daniel asked to change it.","The clinic will be closed on Monday.","Daniel missed his last appointment."], correct:0, explain:"Laura explica que el doctor va a estar en una conferencia (the doctor will be at a conference) el viernes." },
 
     { band:'C1', prompt:"Not only ___ late, but he also forgot the documents.", options:["did he arrive","he arrived","he did arrive","arrived he"], correct:0, explain:"Después de not only al inicio de la oración se invierte el orden, como en una pregunta: did he arrive." },
-    { band:'C1', prompt:"The committee insisted that the proposal ___ reviewed again.", options:["be","is","was","will be"], correct:0, explain:"Después de insist that en inglés formal se usa el verbo base (subjuntivo): be reviewed." },
+    { band:'C1', prompt:"It wasn't until the results were published ___ anyone noticed the error.", options:["that","what","than","so"], correct:0, explain:"La estructura enfática es it wasn't until... that... (no fue hasta que... que...): que se dice that." },
     { band:'C1', prompt:"Her argument was so ___ that nobody in the room could disagree.", options:["compelling","compulsive","complacent","compliant"], correct:0, explain:"Compelling significa muy convincente. Las otras se parecen, pero significan compulsivo, conformista y obediente." },
     { band:'C1', context:"After the exam, Laura said: I could have done it with my eyes closed.", prompt:"What does Laura mean?", options:["The exam was very easy for her.","She didn't see the questions.","She failed because she was tired.","She needed her glasses."], correct:0, explain:"With my eyes closed es una expresión que significa que algo fue facilísimo." },
     { band:'C1', listen:'audio/test-nivel/lt-c1.mp3', transcript:"— So, what did you make of the new manager's plan?\n— Well, it's ambitious, I'll give him that. Whether we can pull it off with half the budget is another matter.", prompt:"What does the man suggest about the plan?", options:["He doubts it can be done with the money available.","He thinks it is too simple.","He wants to lead the project himself.","He believes the budget is too big."], correct:0, explain:"I'll give him that reconoce algo bueno (es ambicioso), y whether we can pull it off... is another matter significa que duda que se pueda lograr con la mitad del presupuesto." },
@@ -353,24 +354,49 @@
     { band:'C2', prompt:"The CEO's remarks were deliberately ___, leaving investors unsure whether the merger would go ahead.", options:["equivocal","unequivocal","eloquent","candid"], correct:0, explain:"Equivocal significa ambiguo, que se puede interpretar de más de una forma. Unequivocal es lo contrario: claro y sin dudas." },
     { band:'C2', prompt:"Seldom ___ such a blatant disregard for the rules.", options:["have I witnessed","I have witnessed","witnessed I","I did witness"], correct:0, explain:"Después de un adverbio negativo al inicio (seldom, rarely, never) se invierte el orden: have I witnessed." },
     { band:'C2', context:"The minister's apology was couched in such carefully hedged terms that many critics dismissed it as little more than a non-apology.", prompt:"What do the critics think of the apology?", options:["It avoided taking real responsibility.","It was sincere and complete.","It was far too emotional.","It was too long to be believable."], correct:0, explain:"Hedged terms (palabras muy cautelosas) y non-apology (una disculpa que no lo es) indican que evitó asumir responsabilidad real." },
-    { band:'C2', listen:'audio/test-nivel/lt-c2.mp3', transcript:"— Did the board approve the merger?\n— On paper, yes. But they attached so many conditions that it's hard to see how the deal can go ahead as planned.", prompt:"What does the woman imply?", options:["The approval may not lead to the deal happening.","The board rejected the merger.","The deal was approved without conditions.","She is sure the deal will be a success."], correct:0, explain:"Dice que, aunque la aprobó en papel, tantas condiciones dificultan que el acuerdo siga adelante." },
+    { band:'C2', listen:'audio/test-nivel/lt-c2.mp3', transcript:"— Did the board approve the merger?\n— On paper, yes. But they attached so many conditions that it's hard to see how the deal can go ahead as planned.", prompt:"What does the man imply?", options:["The approval may not lead to the deal happening.","The board rejected the merger.","The deal was approved without conditions.","She is sure the deal will be a success."], correct:0, explain:"Dice que, aunque la aprobó en papel, tantas condiciones dificultan que el acuerdo siga adelante." },
   ];
-  var BANDS = ['A1','A2','B1','B2','C1','C2'];
+  /* ---- Reglas del cálculo (valores PROVISIONALES: se calibran con el piloto) ---- */
+  var LEVEL_ORDER = ['A1','A2','B1','B2','C1','C2'];
+  // Niveles que realmente tiene el banco, en orden de dificultad. Se calcula:
+  // para agregar preguntas (o un nivel) basta con sumarlas a QUESTIONS.
+  var BANDS = LEVEL_ORDER.filter(function(b){ return QUESTIONS.some(function(q){ return q.band === b; }); });
+  var P_MASTERED = 0.9;     // probabilidad de acertar una pregunta de un nivel que ya dominas (con 0.9, 4 de 5 domina y 3 de 5 queda en duda)
+  var RANGE_MARGIN = 1.0;   // si el nivel vecino queda a menos de esto (log-verosimilitud), se muestra un rango
+  var IRREGULAR_GAP = 0.5;  // si un bloque alto supera a uno bajo por esta proporción, se avisa que fue irregular
   var RESULTS = {
     A0: { title:'Estás empezando', site:'principiante', text:'Todavía te cuestan las bases, y eso está perfecto para arrancar. Empieza con lo esencial: el verbo to be, los números, los saludos y frases del día a día.' },
     A1: { title:'Básico', site:'facil', text:'Entiendes frases sencillas y puedes presentarte y hablar de cosas cotidianas. El siguiente paso es dominar el pasado simple y ampliar tu vocabulario.' },
     A2: { title:'Pre-intermedio', site:'facil', text:'Te defiendes en situaciones cotidianas y entiendes textos cortos. Para subir a B1, practica el present perfect, los condicionales y a hablar de tus experiencias.' },
     B1: { title:'Intermedio', site:'medio', text:'Puedes mantener conversaciones sobre temas conocidos y entender las ideas principales. Para llegar a B2, trabaja el tercer condicional, el past perfect y vocabulario más preciso.' },
     B2: { title:'Intermedio alto', site:'medio', text:'Te comunicas con bastante soltura y entiendes textos complejos. Para llegar a C1, enfócate en expresiones naturales, matices y estructuras formales.' },
-    C2: { title:'Dominio', site:'avanzado', text:'Tu nivel es casi nativo: entiendes matices, ironía y lenguaje formal, y resuelves estructuras muy complejas. Para seguir creciendo, lee y escucha contenido auténtico y practica tu speaking y writing, que este test no mide.' },
-    C1: { title:'Avanzado', site:'avanzado', text:'Tienes un nivel avanzado: manejas estructuras complejas y matices del idioma. Sigue puliendo tu fluidez y precisión con práctica avanzada.' }
+    C1: { title:'Avanzado', site:'avanzado', text:'Tienes un nivel avanzado: manejas estructuras complejas y matices del idioma. Sigue puliendo tu fluidez y precisión con práctica avanzada.' },
+    C2: { title:'Dominio', site:'avanzado', text:'Tu nivel es casi nativo: entiendes matices, ironía y lenguaje formal, y resuelves estructuras muy complejas. Para seguir creciendo, lee y escucha contenido auténtico y practica tu speaking y writing, que este test no mide.' }
   };
-  var STORE = 'leoLevelTestV3'; // V3: 30 preguntas, 5 por nivel de A1 a C2 (V1 y V2 ya no son compatibles)
-  var PASS_RATIO = 0.8, BORDER_RATIO = 0.6; // 4 de 5 aprueba; 3 de 5 es nivel dudoso
+  var SITE_LABELS = { principiante:'Principiante', facil:'Fácil', medio:'Medio', avanzado:'Avanzado' };
+  var STORE = 'leoLevelTestV3';
   try{ localStorage.removeItem('leoLevelTestV1'); localStorage.removeItem('leoLevelTestV2'); }catch(e){}
   var root = document.getElementById('levelTest');
 
-  function load(){ try{ return JSON.parse(localStorage.getItem(STORE)) || null; }catch(e){ return null; } }
+  // Firma del banco: si cambian las preguntas, un intento guardado con otra
+  // versión se descarta solo (no hay que acordarse de cambiar la clave).
+  var SIG = (function(){
+    var s = QUESTIONS.map(function(q){ return q.band + q.prompt + q.options.join('|') + q.correct; }).join('~'), h = 7;
+    for(var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return QUESTIONS.length + ':' + h;
+  })();
+
+  function valid(st){
+    return !!st && st.sig === SIG && typeof st.idx === 'number' && st.idx >= 0 && st.idx <= QUESTIONS.length &&
+      Array.isArray(st.orders) && st.orders.length === QUESTIONS.length && Array.isArray(st.answers);
+  }
+  function load(){
+    var st = null;
+    try{ st = JSON.parse(localStorage.getItem(STORE)); }catch(e){ st = null; }
+    if(!valid(st)){ if(st) clear(); return null; }
+    if(!st.skipped) st.skipped = {};
+    return st;
+  }
   function save(st){ try{ localStorage.setItem(STORE, JSON.stringify(st)); }catch(e){} }
   function clear(){ try{ localStorage.removeItem(STORE); }catch(e){} }
   function track(name, params){ try{ if(typeof trackLeoEvent === 'function') trackLeoEvent(name, params); }catch(e){} }
@@ -384,7 +410,7 @@
       var idxs = q.options.map(function(_, i){ return i; });
       return (typeof shuffleOptions === 'function') ? shuffleOptions(idxs, q.correct).options : idxs;
     });
-    return { idx:0, answers:[], orders:orders, done:false };
+    return { sig:SIG, idx:0, answers:[], skipped:{}, orders:orders, done:false };
   }
 
   function renderStart(st){
@@ -407,9 +433,82 @@
     if(r) r.addEventListener('click', function(){ var s = newState(); track('level_test_started'); save(s); renderQuestion(s); });
   }
 
+  var curAudio = null;
+  function stopAudio(){
+    if(curAudio){ try{ curAudio.pause(); }catch(e){} curAudio = null; }
+    if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile();
+  }
+
+  function advance(st){
+    st.idx += 1;
+    save(st);
+    setTimeout(function(){
+      if(st.idx >= QUESTIONS.length){ st.done = true; save(st); renderResult(st, true); }
+      else renderQuestion(st);
+    }, 220);
+  }
+
+  // Listening: si el audio no carga o falla, se puede reintentar o seguir sin él.
+  // Esa pregunta se marca como "sin audio" y NO cuenta como incorrecta.
+  function setupListening(st, q, list){
+    var box = document.getElementById('ltListen'), btn = document.getElementById('ltPlay');
+    if(!box || !btn) return;
+    var failed = false, playing = false, attempt = 0;
+    function setOpts(on){ list.querySelectorAll('button').forEach(function(x){ x.disabled = !on; }); }
+    function makeAudio(){
+      var a;
+      try{ a = new Audio(attempt ? q.listen + '?r=' + attempt + '-' + Date.now() : q.listen); }catch(e){ return null; }
+      a.addEventListener('error', fail, { once:true });
+      return a;
+    }
+    function fail(){
+      if(failed) return;
+      failed = true; playing = false;
+      if(curAudio){ try{ curAudio.pause(); }catch(e){} curAudio = null; }
+      btn.disabled = true; setOpts(false);
+      var note = document.createElement('div');
+      note.id = 'ltAudioFail';
+      note.innerHTML = '<p class="audio-missing-note" style="font-style:normal;">No pudimos reproducir este audio. Puedes reintentar o continuar sin él: no cuenta como respuesta incorrecta.</p>' +
+        '<div class="lt-actions"><button type="button" class="btn btn-ghost btn-sm" id="ltAudioRetry">Reintentar el audio</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="ltAudioSkip">Continuar sin este audio</button></div>';
+      box.appendChild(note);
+      track('level_test_audio_failed', { band: q.band });
+      document.getElementById('ltAudioRetry').addEventListener('click', function(){
+        failed = false; attempt += 1;
+        note.innerHTML = ''; note.id = '';
+        btn.disabled = false; setOpts(true);
+        curAudio = makeAudio();
+        if(!curAudio) fail(); else play();
+      });
+      document.getElementById('ltAudioSkip').addEventListener('click', function(){
+        stopAudio();
+        st.answers[st.idx] = null; st.skipped[st.idx] = true;
+        advance(st);
+      });
+    }
+    function play(){
+      if(failed || playing) return;
+      if(!curAudio) curAudio = makeAudio();
+      if(!curAudio) return fail();
+      playing = true; btn.disabled = true;
+      var a = curAudio;
+      a.addEventListener('ended', function(){ playing = false; if(!failed) btn.disabled = false; }, { once:true });
+      var p;
+      try{ p = a.play(); }catch(e){ playing = false; return fail(); }
+      if(p && typeof p.catch === 'function') p.catch(function(err){
+        playing = false;
+        if(err && err.name === 'NotAllowedError'){ btn.disabled = false; return; } // el navegador pide un toque: no es un fallo
+        fail();
+      });
+    }
+    btn.addEventListener('click', play);
+    curAudio = makeAudio();           // precarga: si el archivo falta o falla, se avisa antes de que respondan
+    if(!curAudio) fail();
+  }
+
   function renderQuestion(st){
     save(st);
-    if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile();
+    stopAudio();
     var q = QUESTIONS[st.idx];
     var order = st.orders[st.idx];
     var pct = Math.round(st.idx / QUESTIONS.length * 100);
@@ -421,10 +520,6 @@
       '<div class="lt-prompt">' + esc(q.prompt) + '</div>' +
       '<div class="option-list" id="ltOpts"></div>';
     var list = document.getElementById('ltOpts');
-    var playBtn = document.getElementById('ltPlay');
-    if(playBtn) playBtn.addEventListener('click', function(){
-      if(typeof playAudioFile === 'function') playAudioFile(q.listen, document.getElementById('ltListen'), playBtn);
-    });
     order.forEach(function(origIdx){
       var b = document.createElement('button');
       b.className = 'option';
@@ -433,67 +528,99 @@
         list.querySelectorAll('button').forEach(function(x){ x.disabled = true; });
         b.style.borderColor = 'var(--blue)'; b.style.background = 'var(--blue-tint)';
         st.answers[st.idx] = origIdx;
-        st.idx += 1;
-        setTimeout(function(){
-          if(st.idx >= QUESTIONS.length){ st.done = true; save(st); renderResult(st, true); }
-          else renderQuestion(st);
-        }, 220);
+        advance(st);
       });
       list.appendChild(b);
     });
+    if(q.listen) setupListening(st, q, list);
     window.scrollTo({ top: root.getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth' });
   }
 
-  function need(n, ratio){ return Math.ceil(n * ratio - 1e-9); }
+  /* Cálculo del nivel: usa las respuestas de TODAS las preguntas.
+     Se prueba cada posible nivel k (0 = A0, 1 = A1 ... n = último). Para cada k se
+     calcula qué tan probable es el patrón de respuestas si la persona domina los
+     niveles menores o iguales a k (acierta con P_MASTERED) y adivina en los demás
+     (acierta con 1 / nº de opciones). Gana el k más probable. Así un bloque bajo
+     aislado no borra varios bloques altos sólidos, y un bloque alto aislado no
+     infla el resultado. Si el nivel vecino queda a menos de RANGE_MARGIN, se
+     muestra un rango (por ejemplo B1–B2) y se practica desde el nivel más bajo.
+     Las preguntas de audio que no se pudieron reproducir (st.skipped) no cuentan. */
+  function labelOf(k){ return k === 0 ? 'A0' : BANDS[k - 1]; }
   function computeLevel(st){
-    var perBand = {}, count = {};
+    var perBand = {}, count = {}, answered = 0, right = 0, skipped = 0;
     BANDS.forEach(function(b){ perBand[b] = 0; count[b] = 0; });
-    QUESTIONS.forEach(function(q, i){ count[q.band] += 1; if(st.answers[i] === q.correct) perBand[q.band] += 1; });
-    // Nivel = el más alto aprobado (4 de 5) con todos los anteriores aprobados.
-    // Se tolera UN solo tropiezo (3 de 5) si el nivel siguiente sí se aprueba:
-    // un descuido no debe bajarte de nivel, pero adivinar tampoco te sube.
-    var level = 'A0', slipUsed = false;
-    for(var i = 0; i < BANDS.length; i++){
-      var b = BANDS[i];
-      if(perBand[b] >= need(count[b], PASS_RATIO)){ level = b; continue; }
-      var next = BANDS[i + 1];
-      var slip = !slipUsed && next && perBand[b] >= need(count[b], BORDER_RATIO) && perBand[next] >= need(count[next], PASS_RATIO);
-      if(slip){ slipUsed = true; continue; }
-      break;
+    QUESTIONS.forEach(function(q, i){
+      var a = st.answers[i];
+      if(typeof a !== 'number'){ if(st.skipped && st.skipped[i]) skipped += 1; return; }
+      count[q.band] += 1; answered += 1;
+      if(a === q.correct){ perBand[q.band] += 1; right += 1; }
+    });
+    var LL = [];
+    for(var k = 0; k <= BANDS.length; k++){
+      var s = 0;
+      QUESTIONS.forEach(function(q, i){
+        var a = st.answers[i];
+        if(typeof a !== 'number') return;
+        var p = BANDS.indexOf(q.band) < k ? P_MASTERED : 1 / q.options.length;
+        s += Math.log(a === q.correct ? p : 1 - p);
+      });
+      LL.push(s);
     }
-    return { level:level, perBand:perBand, count:count };
+    var best = 0;
+    for(var j = 1; j < LL.length; j++){ if(LL[j] > LL[best] + 1e-9) best = j; }
+    var lo = best, hi = best;
+    if(answered > 0){
+      var below = best > 0 ? LL[best - 1] : -Infinity, above = best < BANDS.length ? LL[best + 1] : -Infinity;
+      var nb = below >= above ? best - 1 : best + 1, nbLL = Math.max(below, above);
+      if(nbLL > -Infinity && LL[best] - nbLL < RANGE_MARGIN){ lo = Math.min(best, nb); hi = Math.max(best, nb); }
+    }
+    var ratios = BANDS.filter(function(b){ return count[b] > 0; }).map(function(b){ return perBand[b] / count[b]; });
+    var irregular = false;
+    for(var x = 0; x < ratios.length; x++) for(var y = x + 1; y < ratios.length; y++){ if(ratios[y] - ratios[x] >= IRREGULAR_GAP - 1e-9) irregular = true; }
+    var low = labelOf(lo), high = labelOf(hi);
+    return { level:labelOf(best), low:low, high:high, range:lo !== hi, start:RESULTS[low].site,
+      perBand:perBand, count:count, answered:answered, right:right, skipped:skipped, irregular:irregular, scores:LL };
   }
 
   function renderResult(st, justFinished){
-    if(typeof stopActiveAudioFile === 'function') stopActiveAudioFile();
+    stopAudio();
     var r = computeLevel(st);
     var info = RESULTS[r.level];
-    if(justFinished){ track('level_test_completed', { level: r.level }); track('test_complete', { level: r.level }); }
+    var label = r.range ? r.low + '–' + r.high : r.level;
+    if(justFinished){ track('level_test_completed', { level: r.level, level_range: r.range ? label : '' }); track('test_complete', { level: r.level }); }
     // Guarda el nivel en el perfil del sitio, para que la práctica
-    // gratis y la de miembros arranquen en el nivel correcto.
+    // gratis y la de miembros arranquen en el nivel correcto. Si hay rango,
+    // se guarda (y se enlaza) el nivel de práctica del extremo más bajo.
     try{
-      if(typeof setUserLevel === 'function') setUserLevel(info.site, 'test');   // guarda el nivel también en la nube (cuenta iniciada)
+      if(typeof setUserLevel === 'function') setUserLevel(r.start, 'test');   // guarda el nivel también en la nube (cuenta iniciada)
       var p = (typeof getProfile === 'function' && getProfile()) || { name:'', createdAt: Date.now() };
-      p.level = info.site; p.levelTest = r.level; p.levelTestAt = Date.now();
+      p.level = r.start; p.levelTest = r.level; p.levelTestRange = r.range ? label : ''; p.levelTestAt = Date.now();
       if(typeof saveProfile === 'function') saveProfile(p);
     }catch(e){}
-    var total = 0; BANDS.forEach(function(b){ total += r.perBand[b]; });
     var bars = BANDS.map(function(b){
-      return '<div class="lt-bar-row"><span>' + b + '</span><div class="lt-bar"><div class="lt-bar-fill" style="width:' + Math.round(r.perBand[b] / r.count[b] * 100) + '%"></div></div><span>' + r.perBand[b] + '/' + r.count[b] + '</span></div>';
+      var n = r.count[b];
+      return '<div class="lt-bar-row"><span>' + b + '</span><div class="lt-bar"><div class="lt-bar-fill" style="width:' + (n ? Math.round(r.perBand[b] / n * 100) : 0) + '%"></div></div><span>' + (n ? r.perBand[b] + '/' + n : '-') + '</span></div>';
     }).join('');
-    var shareText = 'Hice el test de nivel de inglés de Inglés con Leo y mi nivel es ' + (r.level === 'A0' ? 'principiante' : r.level) + '. ¿Y el tuyo? https://inglesconleo.com/test-de-nivel-de-ingles.html';
+    var shareText = 'Hice el test de nivel de inglés de Inglés con Leo y mi nivel es ' + (label === 'A0' ? 'principiante' : label) + '. ¿Y el tuyo? https://inglesconleo.com/test-de-nivel-de-ingles.html';
+    var name = r.range ? 'Nivel entre ' + r.low + ' y ' + r.high : info.title;
+    var text = r.range
+      ? 'Tus respuestas quedan entre ' + r.low + ' y ' + r.high + '. Empieza a practicar en el nivel ' + SITE_LABELS[r.start] + ' y, si se te hace fácil, sube. ' + RESULTS[r.low].text
+      : info.text;
     root.innerHTML =
       '<div style="text-align:center;">' +
         '<p style="color:var(--ink-faint);font-weight:600;margin:0;">Tu nivel estimado</p>' +
-        '<div class="lt-level">' + (r.level === 'A0' ? 'A0' : r.level) + '</div>' +
-        '<div class="lt-level-name">' + info.title + '</div>' +
-        '<p style="color:var(--ink-soft);line-height:1.6;">' + info.text + '</p>' +
-        '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;">Acertaste ' + total + ' de ' + QUESTIONS.length + ' preguntas.</p>' +
+        '<div class="lt-level">' + label + '</div>' +
+        '<div class="lt-level-name">' + esc(name) + '</div>' +
+        '<p style="color:var(--ink-soft);line-height:1.6;">' + esc(text) + '</p>' +
+        '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;" id="ltBasis">Es un nivel estimado: se basa en tus respuestas de lectura, listening, gramática y vocabulario.</p>' +
+        (r.irregular ? '<p style="color:var(--ink-faint);font-size:0.9rem;" id="ltIrregular">Algunos bloques salieron irregulares (por ejemplo, fallaste varias preguntas fáciles y acertaste otras más difíciles). Tómalo como una guía y, si quieres afinarlo, repite el test con calma.</p>' : '') +
+        (r.skipped ? '<p style="color:var(--ink-faint);font-size:0.9rem;" id="ltSkipped">No contamos ' + r.skipped + (r.skipped === 1 ? ' pregunta de audio que no se pudo reproducir.' : ' preguntas de audio que no se pudieron reproducir.') + '</p>' : '') +
+        '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;">Acertaste ' + r.right + ' de ' + r.answered + ' preguntas.</p>' +
         '<div class="lt-bars">' + bars + '</div>' +
         '<div class="lt-cta-main">' +
           '<p class="lt-cta-lead">Ya sabemos tu nivel. Ahora úsalo para practicar.</p>' +
           '<h2 class="lt-cta-title">Practica ahora a tu nivel</h2>' +
-          '<a href="practica.html?level=' + encodeURIComponent(info.site) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar práctica gratis →</a>' +
+          '<a href="practica.html?level=' + encodeURIComponent(r.start) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar práctica gratis →</a>' +
         '</div>' +
         '<div class="lt-actions">' +
           '<a href="miembros.html?modo=registro&volver=practica.html" class="btn btn-ghost btn-block" id="ltSignup">Crear mi cuenta gratis</a>' +
@@ -512,14 +639,16 @@
       if(box.style.display === 'none'){
         box.innerHTML = QUESTIONS.map(function(q, i){
           var chosen = st.answers[i];
+          var wasSkipped = !!(st.skipped && st.skipped[i]);
           var ok = chosen === q.correct;
           return '<div class="lt-review-item"><div style="font-size:0.8rem;color:var(--ink-faint);font-weight:700;">' + (i + 1) + '. Nivel ' + q.band + '</div>' +
             (q.context ? '<div style="margin:4px 0;">' + esc(q.context) + '</div>' : '') +
             (q.transcript ? '<div class="lt-transcript"><span>Lo que dice el audio:</span><br>' + esc(q.transcript).replace(/\n/g, '<br>') + '</div>' : '') +
             '<div style="font-weight:600;margin:4px 0;">' + esc(q.prompt) + '</div>' +
-            (ok ? '<div class="lt-ok">Correcta: ' + esc(q.options[q.correct]) + '</div>'
+            (wasSkipped ? '<div class="lt-bad">Audio sin reproducir: no contó.</div><div class="lt-ok">Correcta: ' + esc(q.options[q.correct]) + '</div>'
+              : ok ? '<div class="lt-ok">Correcta: ' + esc(q.options[q.correct]) + '</div>'
                 : '<div class="lt-bad">Tu respuesta: ' + esc(typeof chosen === 'number' ? q.options[chosen] : 'sin responder') + '</div><div class="lt-ok">Correcta: ' + esc(q.options[q.correct]) + '</div>') +
-            (ok ? '' : '<div style="color:var(--ink-soft);margin-top:4px;">' + esc(q.explain) + '</div>') +
+            ((ok && !wasSkipped) ? '' : '<div style="color:var(--ink-soft);margin-top:4px;">' + esc(q.explain) + '</div>') +
           '</div>';
         }).join('');
         box.style.display = 'grid';
