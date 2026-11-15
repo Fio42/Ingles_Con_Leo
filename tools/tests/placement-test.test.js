@@ -55,7 +55,7 @@ function boot(opts){
 function answerNow(b,kind){const st=b.state(),q=b.lt.QUESTIONS[st.idx],order=st.orders[st.idx];
   const target=kind==='right'?q.correct:kind==='wrong'?(q.correct+1)%q.options.length:kind;
   const btns=b.els.ltOpts.children;assert.strictEqual(btns.length,q.options.length);btns[order.indexOf(target)].handlers.click();}
-const finished=b=>/Tu nivel estimado/.test(b.text());
+const finished=b=>/Tu nivel estimado|Resultado no concluyente|Rango provisional/.test(b.text());
 function runAll(b,fn){b.els.ltStart.handlers.click();let g=0;
   while(!finished(b)&&g++<200){const st=b.state(),q=b.lt.QUESTIONS[st.idx];answerNow(b,fn(q,st.idx));}
   assert(finished(b),'el test debio terminar');}
@@ -124,18 +124,22 @@ const scen=[
  ['5,4,3,1,0,0',[5,4,3,1,0,0]],
  ['3,1,0,0,0,0  (principiante dudoso)',[3,1,0,0,0,0]],
  ['4,3,2,1,0,0  (descenso gradual)',[4,3,2,1,0,0]],
- ['5,5,5,3,2,0',[5,5,5,3,2,0]]];
+ ['5,5,5,3,2,0',[5,5,5,3,2,0]],
+ ['5,5,2,4,1,0  (B1 flojo, B2 solido)',[5,5,2,4,1,0]]];
 console.log('\n  Ejemplos de puntuacion (aciertos por bloque A1..C2) | produccion | 021c3f0 | nueva');
-const table={};scen.forEach(([n,c])=>{const r=calc(c);table[n]=r;console.log('  '+n.padEnd(66)+' | '+oldProd(c).padEnd(3)+' | '+old021(c).padEnd(3)+' | '+show(r)+(r.irregular?'  (aviso: irregular)':'')+'  inicio: '+r.start)});
+const table={};scen.forEach(([n,c])=>{const r=calc(c);table[n]=r;console.log('  '+n.padEnd(66)+' | '+oldProd(c).padEnd(3)+' | '+old021(c).padEnd(3)+' | '+show(r)+(r.inconclusive?'  (NO CONCLUYENTE: sin nivel unico)':'')+'  inicio: '+r.start)});
 console.log('');
 // requisitos del encargo
 const T=n=>table[scen.find(s=>s[0].startsWith(n))[0]];
-assert.notStrictEqual(T('2,5,5,5,5,5').level,'A0');assert.notStrictEqual(T('2,5,5,5,5,5').low,'A0');assert(T('2,5,5,5,5,5').irregular,'se avisa que fue irregular');
-assert(BANDS.indexOf(T('5,5,5,5,0,5').high)<=3,'un bloque alto aislado no infla: nunca pasa de B2');assert.strictEqual(T('5,5,5,5,0,5').level,'B2');
-assert(BANDS.indexOf(T('5,5,0,5,5,5').level)>=4,'un bloque bajo aislado no borra los altos solidos');assert(T('5,5,0,5,5,5').irregular);
+['2,5,5,5,5,5','5,5,0,5,5,5'].forEach(k=>{assert(T(k).inconclusive,'patron contradictorio = sin nivel unico: '+k);assert(T(k).starts.length>=1&&T(k).starts.indexOf('principiante')<0,'nunca manda a principiante a quien tiene bloques altos solidos: '+k)});
+assert.strictEqual(J(T('2,5,5,5,5,5').weak),J(['A1']));assert.strictEqual(J(T('2,5,5,5,5,5').starts),J(['facil','avanzado']));
+assert(!T('5,5,3,3,0,0').inconclusive&&!T('5,5,4,2,0,0').inconclusive&&!T('3,1,0,0,0,0').inconclusive,'los casos normales siguen dando nivel o rango');
+// un solo bloque alto suelto no contradice ni infla; B1 flojo con B2 solido conserva recomendacion de practica
+assert(!T('5,5,5,5,0,5').inconclusive&&T('5,5,5,5,0,5').level==='B2'&&!T('5,5,5,5,0,5').range,'un bloque alto aislado no infla: B2');
+assert(!T('5,5,2,4,1,0').inconclusive&&T('5,5,2,4,1,0').starts.length>=0&&T('5,5,2,4,1,0').start==='facil','5,5,2,4,1,0 conserva recomendacion (nivel o rango, practica en Facil)');
 assert(T('5,5,3,3,0,0').range,'evidencia entre vecinos = rango');
 assert.strictEqual(T('5,5,4,2,0,0').level,'B1');assert(!T('5,5,4,2,0,0').range);
-ok('casos del encargo: 2/5 en A1 + 5/5 despues NO es A0; bloque alto aislado no infla; bloque bajo aislado no borra altos');
+ok('contradiccion: 2/5 en A1 con 5/5 despues y un bajo con varios altos solidos NO dan nivel unico ni mandan a principiante; un alto aislado no infla; 5,5,2,4,1,0 conserva recomendacion');
 
 // rangos coherentes en TODAS las combinaciones de aciertos (6^6)
 let combos=0,ranges=0;const rangeSet={};
@@ -143,7 +147,7 @@ for(let a=0;a<=5;a++)for(let b=0;b<=5;b++)for(let c=0;c<=5;c++)for(let d=0;d<=5;
   const r=calc([a,b,c,d,e,f]);combos++;const L=['A0',...BANDS];const lo=L.indexOf(r.low),hi=L.indexOf(r.high),bs=L.indexOf(r.level);
   assert(lo<=bs&&bs<=hi&&hi-lo<=1,'rango vecino y contiene el mejor '+[a,b,c,d,e,f]);
   assert.strictEqual(r.start,RESULTS[r.low].site,'inicio = nivel de practica del extremo bajo');
-  assert.strictEqual(r.right,a+b+c+d+e+f);if(r.range){ranges++;rangeSet[r.low+'-'+r.high]=[a,b,c,d,e,f]}}
+  assert.strictEqual(r.right,a+b+c+d+e+f);if(r.range&&!r.inconclusive){ranges++;rangeSet[r.low+'-'+r.high]=[a,b,c,d,e,f]}}
 console.log('  '+combos+' combinaciones; '+ranges+' con rango ('+(ranges/combos*100).toFixed(1)+'%)');
 ok('rangos siempre entre niveles vecinos, contienen el mejor y practican desde el extremo bajo');
 // monotonia: acertar una pregunta mas nunca baja el nivel estimado
@@ -200,10 +204,23 @@ Object.keys(rangeSet).forEach(k=>{const c=rangeSet[k],seen={};const bb=boot();
   assert(new RegExp('Empieza a practicar en el nivel').test(bb.text()));});
 console.log('  rangos probados por clics: '+Object.keys(rangeSet).join(', '));
 ok('rango por clics: se muestra, se guarda y se enlaza el nivel de practica del extremo bajo');
-// patron irregular por clics
-{const c=[2,5,5,5,5,5],seen={};const bb=boot();runAll(bb,q=>{seen[q.band]=(seen[q.band]||0)+1;return seen[q.band]<=c[BANDS.indexOf(q.band)]?'right':'wrong'});
- assert(!/class="lt-level">A0</.test(bb.text()));assert(/id="ltIrregular"/.test(bb.text()));}
-ok('bloques contradictorios por clics: 2/5 en A1 y 5/5 despues no da A0 y avisa que fue irregular');
+// patron contradictorio por clics: no se da nivel, no se guarda nada y se conserva el nivel anterior
+{const prev={name:'Ana',createdAt:1,level:'medio',src:'self'};const mk=()=>{const bb=boot();bb.profile.p=JSON.parse(JSON.stringify(prev));return bb};
+ [[2,5,5,5,5,5],[5,5,0,5,5,5]].forEach(c=>{const seen={};const bb=mk();runAll(bb,q=>{seen[q.band]=(seen[q.band]||0)+1;return seen[q.band]<=c[BANDS.indexOf(q.band)]?'right':'wrong'});
+  const T_=bb.text();assert(/Resultado no concluyente/.test(T_)&&/No pudimos fijar un nivel único/.test(T_),'pantalla sin nivel unico '+c);
+  assert(!/class="lt-level">(A0|A1|A2|B1|B2|C1|C2)</.test(T_),'no muestra un nivel concreto '+c);
+  assert(/no cambiamos el nivel que ya ten/.test(T_)&&/Seguir con mi nivel actual/.test(T_));
+  assert.strictEqual(bb.levelCalls.length,0,'no se llama a setUserLevel '+c);assert.strictEqual(J(bb.profile.p),J(prev),'el perfil queda intacto '+c);
+  assert(!/id="ltShare"/.test(T_),'no se comparte un nivel que no existe');
+  assert(/href="practica\.html"[^>]*id="ltKeepLevel"|id="ltKeepLevel"/.test(T_));
+  assert(!/level=principiante/.test(T_)&&/data-start=/.test(T_),'ofrece elegir donde empezar, sin principiante');
+  assert(bb.events.some(e=>e[0]==='level_test_completed'&&e[1].level==='inconclusive'));});
+ // sin perfil previo tampoco se crea uno
+ const bb=boot();const seen={},c=[2,5,5,5,5,5];runAll(bb,q=>{seen[q.band]=(seen[q.band]||0)+1;return seen[q.band]<=c[BANDS.indexOf(q.band)]?'right':'wrong'});assert.strictEqual(bb.profile.p,undefined,'no se crea perfil');}
+ok('bloques contradictorios por clics: pantalla "no concluyente", no se guarda nivel, el perfil anterior queda intacto, se puede elegir donde practicar');
+{const c=[5,5,2,4,1,0],seen={};const bb=boot();runAll(bb,q=>{seen[q.band]=(seen[q.band]||0)+1;return seen[q.band]<=c[BANDS.indexOf(q.band)]?'right':'wrong'});
+ assert(!/Resultado no concluyente/.test(bb.text())&&/Tu nivel estimado/.test(bb.text()));assert(/href="practica\.html\?level=facil"/.test(bb.text()));assert.strictEqual(bb.profile.p.level,'facil');}
+ok('5,5,2,4,1,0 por clics: muestra nivel A2, enlaza y guarda practica Facil (no queda sin recomendacion)');
 // revision de respuestas
 {const bb=boot();runAll(bb,(q,i)=>i===0?'wrong':'right');bb.ctx.document.getElementById('ltReview').style.display='none';bb.els.ltReviewBtn.handlers.click.call(bb.els.ltReviewBtn);assert(/Tu respuesta:/.test(bb.els.ltReview.innerHTML));}
 ok('"Ver mis respuestas" muestra la correccion con explicacion');
@@ -224,8 +241,19 @@ ok('opciones barajadas: la respuesta correcta aparece en las 4 posiciones');
   a.els.ltAudioSkip.handlers.click();
   let st=a.state();assert.strictEqual(st.idx,5);assert.strictEqual(st.answers[4],null);assert.strictEqual(st.skipped[4],true);
   while(!finished(a)){const cur=a.state(),q=a.lt.QUESTIONS[cur.idx];if(q.listen){await tick();a.els.ltAudioSkip.handlers.click();}else answerNow(a,'right');}
-  assert(/>C2</.test(a.text())&&/24 de 24/.test(a.text())&&/No contamos 6 preguntas de audio/.test(a.text()),'6 audios omitidos no bajan el nivel');
-  ok('fallo de audio: opciones bloqueadas, "Continuar sin este audio" no cuenta como incorrecta (C2 con 24 de 24)');
+  assert(/class="lt-level">C1–C2</.test(a.text())&&/24 de 24/.test(a.text())&&/No contamos 6 preguntas de audio/.test(a.text())&&/id="ltLowEvidence"/.test(a.text()),'6 audios omitidos: no bajan el nivel pero se muestra como rango');
+  assert(/Rango provisional/.test(a.text())&&/href="practica\.html\?level=avanzado"/.test(a.text())&&/id="ltKeepLevel"/.test(a.text()),'rango provisional con enlace de practica y opcion de seguir con el nivel actual');
+  assert.strictEqual(a.levelCalls.length,0,'con rango provisional no se llama a setUserLevel');assert.strictEqual(a.profile.p,undefined,'no se crea ni cambia el perfil');
+  ok('fallo de audio: opciones bloqueadas; omitir no cuenta como incorrecta; con 6 omitidos sale un rango provisional (C1–C2) que NO cambia el perfil y permite practicar');
+  { // con perfil previo, el rango provisional lo deja intacto
+    const prev={name:'Ana',createdAt:1,level:'medio',src:'self'};const ap=boot({audio:'error'});ap.profile.p=JSON.parse(JSON.stringify(prev));ap.els.ltStart.handlers.click();
+    while(!finished(ap)){const cur=ap.state(),q=ap.lt.QUESTIONS[cur.idx];if(q.listen){await tick();ap.els.ltAudioSkip.handlers.click();}else answerNow(ap,'right');}
+    assert.strictEqual(J(ap.profile.p),J(prev),'perfil previo intacto con rango provisional');assert.strictEqual(ap.levelCalls.length,0);}
+  // con 1 o 2 audios omitidos el resultado normal se mantiene; con 3 o mas pasa a rango
+  for(const n of [1,2,3]){const ab=boot({audio:'error'});ab.els.ltStart.handlers.click();let sk=0;
+    while(!finished(ab)){const cur=ab.state(),q=ab.lt.QUESTIONS[cur.idx];if(q.listen&&sk<n){await tick();ab.els.ltAudioSkip.handlers.click();sk++;}else if(q.listen){ab.Audio.mode='ok';await tick();ab.audios[ab.audios.length-1].l.error=null;answerNow(ab,'right');}else answerNow(ab,'right');}
+    assert.strictEqual(/id="ltLowEvidence"/.test(ab.text()),n>=3,'rango forzado desde 3 audios omitidos (n='+n+')');if(n<3)assert(/class="lt-level">C2</.test(ab.text()));}
+  ok('umbral de evidencia: 1 o 2 audios omitidos no cambian el resultado; 3 o mas lo muestran como rango');
   // b) reintento que funciona
   a=boot({audio:'error'});a.els.ltStart.handlers.click();for(let i=0;i<4;i++)answerNow(a,'right');await tick();
   a.Audio.mode='ok';a.els.ltAudioRetry.handlers.click();await tick();

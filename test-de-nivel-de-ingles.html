@@ -363,7 +363,10 @@
   var BANDS = LEVEL_ORDER.filter(function(b){ return QUESTIONS.some(function(q){ return q.band === b; }); });
   var P_MASTERED = 0.9;     // probabilidad de acertar una pregunta de un nivel que ya dominas (con 0.9, 4 de 5 domina y 3 de 5 queda en duda)
   var RANGE_MARGIN = 1.0;   // si el nivel vecino queda a menos de esto (log-verosimilitud), se muestra un rango
-  var IRREGULAR_GAP = 0.5;  // si un bloque alto supera a uno bajo por esta proporción, se avisa que fue irregular
+  var CONTRADICTION_LOW = 0.4;   // un bloque con este porcentaje de aciertos o menos es "flojo"...
+  var CONTRADICTION_HIGH = 0.8;  // ...y uno de nivel mayor con este porcentaje o más es "sólido": el patrón es contradictorio
+  var MIN_SOLID_ABOVE = 2;       // un bloque flojo solo contradice si hay al menos tantos bloques sólidos por encima (un solo bloque alto suelto no cuenta)
+  var LOW_EVIDENCE_SKIPS = 3;    // con tantos audios sin reproducir o más, el resultado se muestra siempre como rango
   var RESULTS = {
     A0: { title:'Estás empezando', site:'principiante', text:'Todavía te cuestan las bases, y eso está perfecto para arrancar. Empieza con lo esencial: el verbo to be, los números, los saludos y frases del día a día.' },
     A1: { title:'Básico', site:'facil', text:'Entiendes frases sencillas y puedes presentarte y hablar de cosas cotidianas. El siguiente paso es dominar el pasado simple y ampliar tu vocabulario.' },
@@ -572,14 +575,25 @@
     if(answered > 0){
       var below = best > 0 ? LL[best - 1] : -Infinity, above = best < BANDS.length ? LL[best + 1] : -Infinity;
       var nb = below >= above ? best - 1 : best + 1, nbLL = Math.max(below, above);
-      if(nbLL > -Infinity && LL[best] - nbLL < RANGE_MARGIN){ lo = Math.min(best, nb); hi = Math.max(best, nb); }
+      var forceRange = skipped >= LOW_EVIDENCE_SKIPS;
+      if(nbLL > -Infinity && (forceRange || LL[best] - nbLL < RANGE_MARGIN)){ lo = Math.min(best, nb); hi = Math.max(best, nb); }
     }
-    var ratios = BANDS.filter(function(b){ return count[b] > 0; }).map(function(b){ return perBand[b] / count[b]; });
-    var irregular = false;
-    for(var x = 0; x < ratios.length; x++) for(var y = x + 1; y < ratios.length; y++){ if(ratios[y] - ratios[x] >= IRREGULAR_GAP - 1e-9) irregular = true; }
+    // Patrón contradictorio: un bloque flojo (<= CONTRADICTION_LOW) por debajo de uno sólido (>= CONTRADICTION_HIGH).
+    // En ese caso NO se da un nivel único (sería más certeza de la que hay): se muestran los bloques
+    // en conflicto y se deja elegir dónde practicar, sin tocar el nivel guardado.
+    var solid = [], weak = [];
+    BANDS.forEach(function(b){ if(count[b] > 0 && perBand[b] / count[b] >= CONTRADICTION_HIGH - 1e-9) solid.push(b); });
+    BANDS.forEach(function(b){
+      if(count[b] > 0 && perBand[b] / count[b] <= CONTRADICTION_LOW + 1e-9 && solid.filter(function(s){ return BANDS.indexOf(s) > BANDS.indexOf(b); }).length >= MIN_SOLID_ABOVE) weak.push(b);
+    });
+    var inconclusive = weak.length > 0;
+    var solidLow = solid.length ? solid[0] : null, solidHigh = solid.length ? solid[solid.length - 1] : null;
+    var starts = [];
+    if(solidLow){ starts.push(RESULTS[solidLow].site); if(RESULTS[solidHigh].site !== RESULTS[solidLow].site) starts.push(RESULTS[solidHigh].site); }
     var low = labelOf(lo), high = labelOf(hi);
     return { level:labelOf(best), low:low, high:high, range:lo !== hi, start:RESULTS[low].site,
-      perBand:perBand, count:count, answered:answered, right:right, skipped:skipped, irregular:irregular, scores:LL };
+      perBand:perBand, count:count, answered:answered, right:right, skipped:skipped, scores:LL,
+      inconclusive:inconclusive, weak:weak, solid:solid, starts:starts, lowEvidence:skipped >= LOW_EVIDENCE_SKIPS };
   }
 
   function renderResult(st, justFinished){
@@ -587,11 +601,13 @@
     var r = computeLevel(st);
     var info = RESULTS[r.level];
     var label = r.range ? r.low + '–' + r.high : r.level;
-    if(justFinished){ track('level_test_completed', { level: r.level, level_range: r.range ? label : '' }); track('test_complete', { level: r.level }); }
+    if(justFinished){ track('level_test_completed', { level: r.inconclusive ? 'inconclusive' : r.level, level_range: r.range && !r.inconclusive ? label : '' }); track('test_complete', { level: r.inconclusive ? 'inconclusive' : r.level }); }
     // Guarda el nivel en el perfil del sitio, para que la práctica
     // gratis y la de miembros arranquen en el nivel correcto. Si hay rango,
     // se guarda (y se enlaza) el nivel de práctica del extremo más bajo.
-    try{
+    // Si el resultado es no concluyente, o provisional por faltar audios, NO se guarda nada: el nivel anterior se conserva.
+    var keepProfile = r.inconclusive || r.lowEvidence;
+    if(!keepProfile) try{
       if(typeof setUserLevel === 'function') setUserLevel(r.start, 'test');   // guarda el nivel también en la nube (cuenta iniciada)
       var p = (typeof getProfile === 'function' && getProfile()) || { name:'', createdAt: Date.now() };
       p.level = r.start; p.levelTest = r.level; p.levelTestRange = r.range ? label : ''; p.levelTestAt = Date.now();
@@ -606,32 +622,46 @@
     var text = r.range
       ? 'Tus respuestas quedan entre ' + r.low + ' y ' + r.high + '. Empieza a practicar en el nivel ' + SITE_LABELS[r.start] + ' y, si se te hace fácil, sube. ' + RESULTS[r.low].text
       : info.text;
+    if(r.inconclusive){
+      label = '?'; name = 'No pudimos fijar un nivel único';
+      text = 'Tus respuestas no siguen un patrón claro: fallaste casi todo en ' + r.weak.join(', ') + ' y acertaste casi todo en niveles más altos (' + r.solid.filter(function(s){ return BANDS.indexOf(s) > BANDS.indexOf(r.weak[0]); }).join(', ') + '). Por eso no te damos un solo nivel, y no cambiamos el nivel que ya tenías guardado.';
+    }
     root.innerHTML =
       '<div style="text-align:center;">' +
-        '<p style="color:var(--ink-faint);font-weight:600;margin:0;">Tu nivel estimado</p>' +
+        '<p style="color:var(--ink-faint);font-weight:600;margin:0;">' + (r.inconclusive ? 'Resultado no concluyente' : r.lowEvidence ? 'Rango provisional' : 'Tu nivel estimado') + '</p>' +
         '<div class="lt-level">' + label + '</div>' +
         '<div class="lt-level-name">' + esc(name) + '</div>' +
         '<p style="color:var(--ink-soft);line-height:1.6;">' + esc(text) + '</p>' +
         '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;" id="ltBasis">Es un nivel estimado: se basa en tus respuestas de lectura, listening, gramática y vocabulario.</p>' +
-        (r.irregular ? '<p style="color:var(--ink-faint);font-size:0.9rem;" id="ltIrregular">Algunos bloques salieron irregulares (por ejemplo, fallaste varias preguntas fáciles y acertaste otras más difíciles). Tómalo como una guía y, si quieres afinarlo, repite el test con calma.</p>' : '') +
+        (r.lowEvidence && !r.inconclusive ? '<p style="color:var(--ink-faint);font-size:0.9rem;" id="ltLowEvidence">Como no pudimos usar varios audios, este rango es provisional y no cambiamos el nivel que ya tenías guardado.</p>' : '') +
         (r.skipped ? '<p style="color:var(--ink-faint);font-size:0.9rem;" id="ltSkipped">No contamos ' + r.skipped + (r.skipped === 1 ? ' pregunta de audio que no se pudo reproducir.' : ' preguntas de audio que no se pudieron reproducir.') + '</p>' : '') +
         '<p style="color:var(--ink-faint);font-size:0.9rem;margin-top:6px;">Acertaste ' + r.right + ' de ' + r.answered + ' preguntas.</p>' +
         '<div class="lt-bars">' + bars + '</div>' +
-        '<div class="lt-cta-main">' +
-          '<p class="lt-cta-lead">Ya sabemos tu nivel. Ahora úsalo para practicar.</p>' +
-          '<h2 class="lt-cta-title">Practica ahora a tu nivel</h2>' +
-          '<a href="practica.html?level=' + encodeURIComponent(r.start) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar práctica gratis →</a>' +
-        '</div>' +
+        (r.inconclusive
+          ? '<div class="lt-cta-main"><p class="lt-cta-lead">Elige dónde quieres empezar a practicar.</p><h2 class="lt-cta-title">Practica a tu ritmo</h2>' +
+            r.starts.map(function(s, i){ return '<a href="practica.html?level=' + encodeURIComponent(s) + '" class="btn ' + (i === 0 ? 'btn-primary' : 'btn-ghost') + ' btn-block lt-cta-btn" data-start="' + s + '">Empezar en nivel ' + SITE_LABELS[s] + ' →</a>'; }).join('') +
+            '<a href="practica.html" class="lt-link" id="ltKeepLevel">Seguir con mi nivel actual</a></div>'
+          : r.lowEvidence
+          ? '<div class="lt-cta-main"><p class="lt-cta-lead">Puedes practicar sin cambiar tu nivel guardado.</p><h2 class="lt-cta-title">Practica a tu ritmo</h2>' +
+            '<a href="practica.html?level=' + encodeURIComponent(r.start) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar en nivel ' + SITE_LABELS[r.start] + ' →</a>' +
+            '<a href="practica.html" class="lt-link" id="ltKeepLevel">Seguir con mi nivel actual</a></div>'
+          : '<div class="lt-cta-main">' +
+              '<p class="lt-cta-lead">Ya sabemos tu nivel. Ahora úsalo para practicar.</p>' +
+              '<h2 class="lt-cta-title">Practica ahora a tu nivel</h2>' +
+              '<a href="practica.html?level=' + encodeURIComponent(r.start) + '" class="btn btn-primary btn-block lt-cta-btn" id="ltPractice">Empezar práctica gratis →</a>' +
+            '</div>') +
         '<div class="lt-actions">' +
           '<a href="miembros.html?modo=registro&volver=practica.html" class="btn btn-ghost btn-block" id="ltSignup">Crear mi cuenta gratis</a>' +
-          '<a href="https://wa.me/?text=' + encodeURIComponent(shareText) + '" target="_blank" rel="noopener" class="lt-link" id="ltShare">Compartir mi resultado por WhatsApp</a>' +
+          (r.inconclusive ? '' : '<a href="https://wa.me/?text=' + encodeURIComponent(shareText) + '" target="_blank" rel="noopener" class="lt-link" id="ltShare">Compartir mi resultado por WhatsApp</a>') +
           '<button class="lt-link" id="ltReviewBtn">Ver mis respuestas</button>' +
           '<button class="lt-link" id="ltAgain" style="color:var(--ink-faint);">Repetir el test</button>' +
         '</div>' +
         '<div class="lt-review" id="ltReview" style="display:none;"></div>' +
       '</div>';
-    document.getElementById('ltPractice').addEventListener('click', function(){ track('test_to_practice_click', { level: r.level }); });
-    document.getElementById('ltShare').addEventListener('click', function(){ track('level_test_shared', { level: r.level }); });
+    var pr = document.getElementById('ltPractice');
+    if(pr) pr.addEventListener('click', function(){ track('test_to_practice_click', { level: r.level }); });
+    var sh = document.getElementById('ltShare');
+    if(sh) sh.addEventListener('click', function(){ track('level_test_shared', { level: r.level }); });
     document.getElementById('ltSignup').addEventListener('click', function(){ track('level_test_signup_clicked', { level: r.level }); });
     document.getElementById('ltAgain').addEventListener('click', function(){ clear(); renderStart(null); });
     document.getElementById('ltReviewBtn').addEventListener('click', function(){
