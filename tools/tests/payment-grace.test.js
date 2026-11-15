@@ -76,12 +76,13 @@ Query.prototype = {
 /* ---------- Proveedores falsos ---------- */
 function newNet(cfg){
   const net = Object.assign({ resendOk: true, invoices: {}, paypalSubs: {}, paypalDown: false, calls: [] }, cfg || {});
-  net.emails = () => net.calls.filter(c => c.url.includes('api.resend.com')).map(c => JSON.parse(c.body));
+  net.emails = () => net.calls.filter(c => c.url.includes('api.resend.com') || c.url.includes('/mail-relay')).map(c => JSON.parse(c.body));
+  net.mailCalls = () => net.calls.filter(c => c.url.includes('api.resend.com') || c.url.includes('/mail-relay'));
   net.fetch = async (url, init) => {
     url = String(url); init = init || {};
-    net.calls.push({ url, body: init.body || '' });
+    net.calls.push({ url, body: init.body || '', headers: init.headers || {} });
     const J = (obj, status) => ({ ok: (status || 200) < 300, status: status || 200, json: async () => obj, text: async () => JSON.stringify(obj) });
-    if(url.includes('api.resend.com')) return net.resendOk ? J({ id: 'e1' }) : J({ error: 'x' }, 500);
+    if(url.includes('api.resend.com') || url.includes('/mail-relay')) return net.resendOk ? J({ id: 'e1' }) : J({ error: 'x' }, 500);
     const inv = /api\.stripe\.com\/v1\/invoices\/(.+)$/.exec(url);
     if(inv) return net.invoices[inv[1]] ? J(net.invoices[inv[1]]) : J({}, 404);
     if(url.includes('/v1/oauth2/token')) return net.paypalDown ? J({}, 500) : J({ access_token: 'tok' });
@@ -119,7 +120,7 @@ const INV_OK = { id: 'in_1', customer: 'cus_1', status: 'open', hosted_invoice_u
 function stripe(opts){
   const db = newDb(opts), net = newNet(Object.assign({ invoices: { in_1: INV_OK } }, opts && opts.net));
   db.rows.push(Object.assign({ id: 'u1', email: 'ana@mail.com', is_member: true, stripe_customer_id: 'cus_1', email_invalid: false }, opts && opts.row));
-  const handler = loadFunction('stripe-webhook.ts', db, net, STRIPE_ENV);
+  const handler = loadFunction('stripe-webhook.ts', db, net, Object.assign({}, STRIPE_ENV, opts && opts.env));
   const row = () => db.rows.find(r => r.id === 'u1');
   async function send(type, obj, created){
     const body = JSON.stringify({ id: 'evt_' + Math.random(), type, created, data: { object: obj } });
@@ -473,6 +474,43 @@ function sweepJs(row, nowSec, hours){
     await p.send('BILLING.SUBSCRIPTION.ACTIVATED', { id: 'I-SUB1', custom_id: 'u1', subscriber: { email_address: 'ana@mail.com' }, billing_info: { last_payment: { amount: { value: '2.00', currency_code: 'USD' } } } });
     assert.strictEqual(p.row().is_member, true);
     assert.strictEqual(p.net.emails().length, 1);
+  });
+
+  /* ---------- Respaldo de correo: gancho MAIL_API_URL (Resend por defecto) ---------- */
+  console.log('Respaldo de correo: Resend por defecto, relevo solo con MAIL_API_URL');
+  const RELAY = 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/mail-relay';
+  const CHK = { id: 'cs_9', mode: 'subscription', client_reference_id: 'u1', customer: 'cus_1', amount_total: 200, currency: 'usd', customer_details: { email: 'ana@mail.com' } };
+  await test('Stripe, SIN MAIL_API_URL: aviso de cobro fallido y bienvenida salen por api.resend.com (cabecera x-mail-flow transactional / critical)', async()=>{
+    const s = stripe({ row: { is_member: false, member_welcome_sent_at: null } });
+    await s.send('customer.subscription.updated', s.sub('past_due'), H(0));
+    await s.send('checkout.session.completed', CHK, H(1));
+    const c = s.net.mailCalls(); assert.strictEqual(c.length, 2); assert.ok(c.every(x => x.url === 'https://api.resend.com/emails'));
+    assert.deepStrictEqual(c.map(x => x.headers['x-mail-flow']), ['transactional', 'critical']); assert.ok(c.every(x => x.headers.Authorization === 'Bearer r'));
+  });
+  await test('Stripe, CON MAIL_API_URL: ambos salen por el relevo con la misma llave y mismo cuerpo', async()=>{
+    const s = stripe({ env: { MAIL_API_URL: RELAY }, row: { is_member: false, member_welcome_sent_at: null } });
+    await s.send('customer.subscription.updated', s.sub('past_due'), H(0));
+    await s.send('checkout.session.completed', CHK, H(1));
+    const c = s.net.mailCalls(); assert.strictEqual(c.length, 2); assert.ok(c.every(x => x.url === RELAY && x.headers.Authorization === 'Bearer r'));
+    assert.deepStrictEqual(c.map(x => x.headers['x-mail-flow']), ['transactional', 'critical']); assert.deepStrictEqual(JSON.parse(c[0].body).to, ['ana@mail.com']);
+  });
+  await test('Stripe: cuenta con rebote PERMANENTE (email_invalid) NO recibe el aviso de cobro, ni por Resend ni por el relevo (no hay reenvio por el otro proveedor)', async()=>{
+    for(const env of [undefined, { MAIL_API_URL: RELAY }]){
+      const s = stripe({ env, row: { email_invalid: true } }); await s.send('customer.subscription.updated', s.sub('past_due'), H(0));
+      assert.strictEqual(s.net.mailCalls().length, 0);
+    }
+  });
+  await test('Stripe: si el relevo falla, se reintenta SOLO por el mismo camino (3 intentos) y nunca por api.resend.com directo', async()=>{
+    const s = stripe({ env: { MAIL_API_URL: RELAY }, net: { resendOk: false } });
+    await s.send('customer.subscription.updated', s.sub('past_due'), H(0));
+    const c = s.net.mailCalls(); assert.ok(c.length >= 1 && c.length <= 3); assert.ok(c.every(x => x.url === RELAY));
+  });
+  await test('PayPal (bienvenida/acceso): sin MAIL_API_URL -> Resend; con MAIL_API_URL -> relevo; siempre flujo critical', async()=>{
+    for(const [env, url] of [[undefined, 'https://api.resend.com/emails'], [{ MAIL_API_URL: RELAY }, RELAY]]){
+      const p = paypal({ env, row: { is_member: false, member_welcome_sent_at: null } });
+      await p.send('BILLING.SUBSCRIPTION.ACTIVATED', { id: 'I-SUB1', custom_id: 'u1', subscriber: { email_address: 'ana@mail.com' }, billing_info: { last_payment: { amount: { value: '2.00', currency_code: 'USD' } } } });
+      const c = p.net.mailCalls(); assert.strictEqual(c.length, 1); assert.strictEqual(c[0].url, url); assert.strictEqual(c[0].headers['x-mail-flow'], 'critical');
+    }
   });
 
   /* ---------- Campanas de conversion ---------- */

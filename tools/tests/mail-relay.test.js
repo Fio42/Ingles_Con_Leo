@@ -93,6 +93,39 @@ test('las funciones criticas usan MAIL_API_URL (por defecto Resend) y declaran s
   }
   for(const f of ['upgrade-nudge-emails.ts', 'streak-reminder-email.ts', 'survey-15d-email.ts']) assert(!/MAIL_API_URL/.test(rd(f)), f + ' sigue directo por Resend');
 });
+function loadFn(file, env, calls, extra){
+  const src = fs.readFileSync(path.join(root, 'supabase_functions', file), 'utf8').replace(/^import .*createClient.*$/m, '');
+  const js = ts.transpileModule(src, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
+  let served; const sb = Object.assign({ from(){ return { insert: async () => ({ error: null }), select(){ return this; }, eq(){ return this; }, maybeSingle: async () => ({ data: null, error: null }) }; } }, extra || {});
+  const ctx = { exports: {}, console: { log(){}, error(){}, warn(){} }, TextEncoder, Request, Response, URL, JSON, Promise, Set, Map, Math, Number, String, Array, Object, Date, Error, setTimeout, encodeURIComponent, btoa, atob, Uint8Array, crypto: require('crypto').webcrypto,
+    fetch: async (url, init) => { calls.push({ url: String(url), headers: init && init.headers || {}, body: init && init.body ? JSON.parse(init.body) : null }); return new Response(JSON.stringify({ id: 'x' }), { status: 200 }); },
+    Deno: { env: { get: k => env[k] }, serve: h => { served = h; } }, createClient: () => sb };
+  vm.createContext(ctx); vm.runInContext(js, ctx); ctx.__handler = served; return ctx;
+}
+const RELAYURL = 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/mail-relay';
+test('send-password-reset: sin MAIL_API_URL -> Resend; con MAIL_API_URL -> relevo; siempre flujo critical y misma llave', async () => {
+  for(const [extraEnv, url] of [[{}, 'https://api.resend.com/emails'], [{ MAIL_API_URL: RELAYURL }, RELAYURL]]){
+    const calls = [];
+    const ctx = loadFn('send-password-reset.ts', Object.assign({ SUPABASE_URL: 'http://x', SUPABASE_SERVICE_ROLE_KEY: 'k', RESEND_API_KEY: 're_k' }, extraEnv), calls,
+      { auth: { admin: { generateLink: async () => ({ data: { properties: { action_link: 'https://x/reset?t=1' } }, error: null }) } } });
+    const r = await ctx.__handler(new Request('https://x/f', { method: 'POST', body: JSON.stringify({ email: 'ana@x.com' }) }));
+    assert.strictEqual(r.status, 200); assert.strictEqual(calls.length, 1); assert.strictEqual(calls[0].url, url);
+    assert.strictEqual(calls[0].headers['x-mail-flow'], 'critical'); assert.strictEqual(calls[0].headers.Authorization, 'Bearer re_k'); assert.deepStrictEqual([].concat(calls[0].body.to), ['ana@x.com']);
+  }
+});
+test('mp-webhook (correo de acceso): sin MAIL_API_URL -> Resend; con MAIL_API_URL -> relevo; flujo critical', async () => {
+  for(const [extraEnv, url] of [[{}, 'https://api.resend.com/emails'], [{ MAIL_API_URL: RELAYURL }, RELAYURL]]){
+    const calls = [];
+    const ctx = loadFn('mp-webhook.ts', Object.assign({ SUPABASE_URL: 'http://x', SUPABASE_SERVICE_ROLE_KEY: 'k', RESEND_API_KEY: 're_k', MP_ACCESS_TOKEN: 't' }, extraEnv), calls);
+    const ok = await ctx.mandarCorreoBienvenida('ana@x.com');
+    assert.strictEqual(ok, true); assert.strictEqual(calls.length, 1); assert.strictEqual(calls[0].url, url); assert.strictEqual(calls[0].headers['x-mail-flow'], 'critical'); assert.strictEqual(calls[0].headers.Authorization, 'Bearer re_k');
+  }
+});
+test('el relevo y Resend NO se reenvian entre si: un fallo del relevo/Brevo devuelve error a quien llama y no hay segundo envio por otro proveedor', async () => {
+  const h = load(ENV({ MAIL_PROVIDER: 'brevo', BREVO_API_KEY: 'k' }), [], { brevoFail: true });
+  const r = await post(h, MAIL, { flow: 'critical' }); assert.strictEqual(r.status, 400); assert.strictEqual(h.calls.length, 1); assert.ok(h.calls.every(c => c.url.includes('brevo')));
+  const h2 = load(ENV(), [T.dura]); const r2 = await post(h2, MAIL.to ? Object.assign({}, MAIL, { to: ['dura@x.com'] }) : MAIL, { flow: 'marketing' }); assert.strictEqual((await r2.json()).skipped, true); assert.strictEqual(h2.calls.length, 0);
+});
 test('el codigo no contiene llaves reales', () => {
   const s = fs.readFileSync(path.join(root, 'supabase_functions', 'mail-relay.ts'), 'utf8'); assert(!/re_[A-Za-z0-9]{20,}|xkeysib-[A-Za-z0-9]{20,}/.test(s));
 });
