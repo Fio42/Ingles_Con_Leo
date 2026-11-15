@@ -33,6 +33,24 @@ const TEST_ALLOWED = new Set([NOTIFY.toLowerCase(), 'inglesconleoreal@gmail.com'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
+// Registro central de errores (error-monitoring.sql): queda guardado en la base aunque el correo de alerta no
+// pueda salir (por ejemplo, si Resend esta pausado). Nunca lanza ni espera mas de 2 s.
+async function reportServerError(message: string, code: string) {
+  let timer: any
+  try {
+    const base = `email|brevo-check|${code}|${message}`.replace(/\d+/g, '#').slice(0, 200)
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(base))
+    const fp = Array.from(new Uint8Array(buf)).slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('')
+    await Promise.race([
+      Promise.resolve(supabase.rpc('log_app_error', {
+        p_fp: fp, p_kind: 'email', p_source: 'server', p_severity: 'error', p_section: 'brevo-check', p_message: message,
+        p_error_name: null, p_stack_top: null, p_code: code, p_release: null, p_browser: null, p_platform: null, p_sample: null,
+      })).then(() => {}, () => {}),
+      new Promise((resolve) => { timer = setTimeout(resolve, 2000) }),
+    ])
+  } catch (_) { /* el registro de errores nunca rompe nada */ } finally { clearTimeout(timer) }
+}
+
 async function sendAlert(detail: string) {
   try {
     await fetch('https://api.resend.com/emails', {
@@ -64,7 +82,7 @@ export async function handle(req: Request): Promise<Response> {
     const out: Record<string, unknown> = { ok: false, to }
     const fail = async (why: string) => {
       out.error = why
-      if (!isTest) await sendAlert(why)
+      if (!isTest) { await reportServerError('El respaldo de Brevo no paso la comprobacion', 'check_failed'); await sendAlert(why) }
       return json(out, 200)
     }
 
@@ -117,6 +135,7 @@ export async function handle(req: Request): Promise<Response> {
     return json(out)
   } catch (e) {
     console.error('brevo-check', e)
+    await reportServerError('brevo-check fallo de forma inesperada', 'unexpected')
     return json({ ok: false, error: 'interno' }, 500)
   }
 }

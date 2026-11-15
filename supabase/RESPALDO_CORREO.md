@@ -1,7 +1,7 @@
 # Respaldo de correo: Resend (activo) y Brevo (reserva)
 
 Estado (2026-11-15): TODO sale por Resend. Brevo es solo reserva y YA ESTA LISTO: cuenta, dominio y remitente verificados,
-llave `BREVO_API_KEY` guardada (permiso solo "Emails transaccionales"), `MAIL_PROVIDER` = `brevo`, `mail-relay` y los 4 ganchos
+llave `BREVO_API_KEY` guardada (permiso solo "Emails transaccionales"), rotada el 2026-11-15 (clave actual "supabase-respaldo-2"; la anterior se elimino en Brevo), `MAIL_PROVIDER` = `brevo`, `mail-relay` y los 4 ganchos
 desplegados. Mientras NO exista el secreto `MAIL_API_URL`, nada pasa por el relevo y todo sale directo por Resend.
 Prueba real (2026-11-15): mail-relay -> Brevo -> fiocchettaleandro@gmail.com, Brevo reporto "delivered".
 
@@ -33,12 +33,12 @@ Supabase -> Edge Functions -> Secrets -> borrar `MAIL_API_URL`. Vuelve todo a Re
 
 ## Que NO cubre el respaldo
 Marketing, reactivacion, racha, encuestas, seguimientos y avisos internos siguen directo por Resend: si Resend se pausa, esos se detienen.
-La confirmacion de cuenta NO existe: "Confirm email" esta APAGADO en Supabase Auth (verificado 2026-11-15 con un registro real: el alta devuelve sesion al instante y no manda correo).
+La confirmacion de cuenta NO existe: "Confirm email" esta APAGADO en Supabase Auth (verificado 2026-11-15 con un registro real: el alta devuelve sesion al instante y Auth no manda ningun correo). Ojo: el alta SI dispara el correo de bienvenida "Tu cuenta esta lista" (trigger profiles_send_welcome -> upgrade-nudge-emails), que sale directo por Resend y no pasa por el relevo.
 
 ## Comprobacion automatica (cada 2 meses)
 Cron `inglesconleo-brevo-check` (jobid 17, `0 15 1 */2 *`, meses 1,3,5,7,9,11: nunca mas de 62 dias entre corridas) llama a la funcion `brevo-check`
 con la llave interna de Vault. Hace una llamada a Brevo y manda un correo de prueba a inglesconleoreal@gmail.com POR `mail-relay`.
-Si falla, manda una alerta por Resend a inglesconleoreal@gmail.com. Brevo borra las llaves tras 90 dias sin uso y expiran el 15 nov 2027:
+Si falla, primero anota el error en el registro central (tabla app_errors, tipo email, seccion brevo-check: queda guardado aunque Resend este caido y sale en el resumen diario de errores) y luego manda una alerta por Resend a inglesconleoreal@gmail.com. Brevo borra las llaves tras 90 dias sin uso y expiran el 15 nov 2027:
 antes de esa fecha crear otra llave (Brevo -> Configuracion -> SMTP y API -> Claves API, solo "Emails transaccionales") y reemplazar el secreto `BREVO_API_KEY`.
 Prueba manual a un buzon permitido (no manda a alumnos): SQL Editor ->
 `select net.http_post(url := 'https://iviksyhzhiygkuaojply.supabase.co/functions/v1/brevo-check', headers := jsonb_build_object('Content-Type','application/json','x-internal-secret',(select decrypted_secret from vault.decrypted_secrets where name='internal_functions_secret')), body := jsonb_build_object('event','test','to','fiocchettaleandro@gmail.com'), timeout_milliseconds := 40000);`

@@ -2170,3 +2170,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Prueba real mail-relay -> Brevo -> fiocchettaleandro@gmail.com: delivered. Fallo hallado y corregido: Brevo exige name en replyTo (relevo redesplegado).
 - Nueva funcion brevo-check + cron inglesconleo-brevo-check (cada 2 meses) con alerta si falla. Guia en supabase/RESPALDO_CORREO.md.
 - Registro publico: "Confirm email" apagado; verificado con alta real (spanishbyleo@gmail.com): sesion inmediata, ningun correo.
+
+2026-11-15 (10:00) - Brevo: clave rotada y limpieza
+- Clave de Brevo rotada: nueva "supabase-respaldo-2" (solo Emails transaccionales) guardada en BREVO_API_KEY; la anterior eliminada en Brevo. Entrega a fiocchettaleandro@gmail.com confirmada solo con la clave nueva. Historial de Brevo: solo 3 envios, todos pruebas a ese buzon, todos entregados.
+- Borrada la cuenta de prueba spanishbyleo@gmail.com (sin membresia ni datos). El alta SI mando el correo de bienvenida (Resend directo); Auth no manda confirmacion.
+- brevo-check ahora anota el fallo en app_errors (kind email) antes de intentar el correo de alerta. MAIL_API_URL sigue sin configurar.
