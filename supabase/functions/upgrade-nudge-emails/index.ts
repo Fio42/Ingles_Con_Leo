@@ -1273,7 +1273,7 @@ async function sendIfStillEligible(
   // Correo rebotado o marcado como spam (lo pone resend-webhook): ninguna
   // automatización le escribe más (2026-10-08).
   if (fresh.email_invalid) return false
-  // Pausa temporal por rebote no permanente (2026-11-15): reversible, 14 dias.
+  // Pausa por rebote no permanente (2026-11-15): por direccion y sin vencimiento.
   if (isEmailPaused(fresh)) return false
   // Checkout: re-verificar con datos frescos que sigue siendo el intento
   // más reciente y que esta etapa todavía le toca (conversión, intento
@@ -2250,8 +2250,8 @@ const LONG_TERM_EMAILS: EmailContent[] = [
 // ============================================================
 const MAX_REACTIVATION_PER_RUN = 25
 
-// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
-// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// Pausa por rebote no permanente: la pone la base de datos por DIRECCION de correo, sin vencimiento (9999-12-31).
+// Reversible: delete from email_suppressions where email = ... NO afecta el
 // acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
 function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
   const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN

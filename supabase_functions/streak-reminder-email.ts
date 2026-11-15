@@ -164,8 +164,8 @@ async function fetchUserIdsForDate(dateStr: string): Promise<string[] | null> {
 // candidatos, que pudo quedar vieja mientras se mandaban los correos
 // anteriores de esta misma corrida): que siga sin practicar hoy, que
 // siga siendo miembro, y que no se le haya mandado ya este aviso hoy.
-// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
-// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// Pausa por rebote no permanente: la pone la base de datos por DIRECCION de correo, sin vencimiento (9999-12-31).
+// Reversible: delete from email_suppressions where email = ... NO afecta el
 // acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
 function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
   const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN

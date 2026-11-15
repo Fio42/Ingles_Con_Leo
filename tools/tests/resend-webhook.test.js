@@ -15,6 +15,7 @@ const SECRET_BYTES = nodeCrypto.randomBytes(24);
 const SECRET = 'whsec_' + SECRET_BYTES.toString('base64'); // secreto de PRUEBA, generado en cada ejecucion
 const state = { db: {}, dbError: false, now: Date.now() };
 const T0 = Date.UTC(2026, 10, 14, 18, 0, 0);
+const NEVER = '9999-12-31T00:00:00+00:00'; // "sin vencimiento" (lo pone el trigger de la base)
 
 function like(pattern, value){ // ilike con escape de barra invertida, como Postgres
   let re = '';
@@ -45,6 +46,16 @@ function makeSupabase(){
       };
       async function run(){
         if(state.dbError) return { data: null, error: { message: 'boom' } };
+        if(ups && table === 'email_suppressions'){ // upsert por correo + trigger de la base (email_suppressions_sync)
+          const ex = rows.find(r => r.email === ups.row.email);
+          if(ex && ups.opts.ignoreDuplicates) return { data: [], error: null };
+          if(ex) Object.assign(ex, ups.row); else rows.push(Object.assign({}, ups.row));
+          (state.db.profiles || []).filter(r => (r.email || '').toLowerCase() === ups.row.email).forEach(r => {
+            if(ups.row.reason === 'transient_bounce') r.email_paused_until = NEVER;
+            else if(!r.email_invalid){ r.email_invalid = true; r.email_invalid_at = r.email_invalid_at || new Date(state.now).toISOString(); }
+          });
+          return { data: [{ email: ups.row.email }], error: null };
+        }
         if(ups){ rows.push(Object.assign({ id: rows.length + 1 }, ups.row)); return { data: null, error: null }; }
         const hit = rows.filter(r => filters.every(f => f(r)));
         if(upd){ hit.forEach(r => Object.assign(r, JSON.parse(JSON.stringify(upd)))); return { data: hit.map(r => ({ id: r.id })), error: null }; }
@@ -146,11 +157,13 @@ test('rebote PERMANENTE: marca email_invalid y guarda la fecha', async () => {
   assert.strictEqual(nInvalid(), 1);
   assert(!JSON.stringify(r.body).includes('@'), 'la respuesta no devuelve correos');
 });
-test('rebote TEMPORAL (Transient / Temporary / Undetermined / sin tipo): 200, PAUSA 14 dias y NO bloquea', async () => {
+const supp = () => state.db.email_suppressions || [];
+test('rebote TEMPORAL (Transient / Temporary / Undetermined / sin tipo): 200, pausa SIN vencimiento por DIRECCION y NO bloquea', async () => {
   for(const t of ['Transient', 'Temporary', 'Undetermined', '']){
     reset(); const h = load(SECRET);
     const r = await send(h, bounced(t)); assert.strictEqual(r.status, 200); assert.strictEqual(r.body.paused, 1, 'tipo ' + t);
-    assert.strictEqual(prof('u1').email_paused_until, new Date(T0 + 14 * 86400000).toISOString());
+    assert.deepStrictEqual(supp().map(x => [x.email, x.reason]), [['ana@x.com', 'transient_bounce']]);
+    assert.strictEqual(prof('u1').email_paused_until, NEVER);
     assert.strictEqual(prof('u1').email_invalid, false); assert.strictEqual(nInvalid(), 0);
     assert.strictEqual(state.db.profiles.filter(p => p.email_paused_until).length, 1, 'solo esa cuenta');
   }
@@ -159,30 +172,40 @@ test('rebote sin objeto bounce: se trata como no permanente (pausa, no bloqueo)'
   reset(); const h = load(SECRET);
   const r = await send(h, evt('email.bounced')); assert.strictEqual(r.status, 200); assert.strictEqual(r.body.paused, 1); assert.strictEqual(nInvalid(), 0);
 });
-test('pausa idempotente: un evento repetido o un segundo rebote durante la pausa NO la alargan', async () => {
+test('pausa idempotente: un evento repetido o un segundo rebote NO cambian nada (una sola fila)', async () => {
   reset(); const h = load(SECRET);
-  await send(h, bounced('Transient'), { id: 'p1' }); const first = prof('u1').email_paused_until;
-  state.now = T0 + 3600000;
+  await send(h, bounced('Transient'), { id: 'p1' }); const first = JSON.stringify(supp());
+  state.now = T0 + 30 * 86400000;
   const r2 = await send(h, bounced('Transient'), { id: 'p1' }); const r3 = await send(h, bounced('Temporary'));
-  assert.strictEqual(r2.body.paused, 0); assert.strictEqual(r3.body.paused, 0); assert.strictEqual(prof('u1').email_paused_until, first);
+  assert.strictEqual(r2.body.paused, 0); assert.strictEqual(r3.body.paused, 0); assert.strictEqual(JSON.stringify(supp()), first); assert.strictEqual(prof('u1').email_paused_until, NEVER);
 });
-test('pausa vencida: un rebote nuevo la renueva', async () => {
-  reset(); const h = load(SECRET); prof('u1').email_paused_until = new Date(T0 - 1000).toISOString();
-  const r = await send(h, bounced('Transient')); assert.strictEqual(r.body.paused, 1); assert.strictEqual(prof('u1').email_paused_until, new Date(T0 + 14 * 86400000).toISOString());
+test('la pausa es de la DIRECCION: se registra aunque no exista cuenta (y se aplicara a una cuenta futura), sin tocar a otros', async () => {
+  reset(); const h = load(SECRET);
+  const r = await send(h, evt('email.bounced', { bounce: { type: 'Transient' } }, ['nadie@x.com'])); assert.strictEqual(r.status, 200); assert.strictEqual(r.body.paused, 1);
+  assert.deepStrictEqual(supp().map(x => x.email), ['nadie@x.com']); assert.strictEqual(state.db.profiles.filter(p => p.email_paused_until).length, 0);
 });
-test('cuenta ya bloqueada (email_invalid) o inexistente: el rebote temporal no la toca', async () => {
-  reset(); const h = load(SECRET); prof('u1').email_invalid = true;
-  const r = await send(h, bounced('Transient')); assert.strictEqual(r.body.paused, 0); assert.strictEqual(prof('u1').email_paused_until, null);
-  reset(); const r2 = await send(h, evt('email.bounced', { bounce: { type: 'Transient' } }, ['nadie@x.com'])); assert.strictEqual(r2.body.paused, 0);
+test('mayusculas / formato "Nombre <correo>": la direccion se guarda normalizada en minusculas', async () => {
+  reset(); const h = load(SECRET);
+  await send(h, evt('email.bounced', { bounce: { type: 'Transient' } }, ['Ana Perez <ANA@X.com>'])); assert.deepStrictEqual(supp().map(x => x.email), ['ana@x.com']); assert.strictEqual(prof('u1').email_paused_until, NEVER);
+});
+test('un rebote temporal NO degrada un bloqueo permanente ya registrado', async () => {
+  reset(); const h = load(SECRET);
+  await send(h, bounced('Permanent')); const r = await send(h, bounced('Transient'));
+  assert.strictEqual(r.body.paused, 0); assert.strictEqual(supp()[0].reason, 'permanent_bounce'); assert.strictEqual(prof('u1').email_paused_until, null);
+});
+test('un rebote permanente posterior ENDURECE una pausa temporal (reason pasa a permanent_bounce y email_invalid=true)', async () => {
+  reset(); const h = load(SECRET);
+  await send(h, bounced('Transient')); const r = await send(h, bounced('Permanent'));
+  assert.strictEqual(supp().length, 1); assert.strictEqual(supp()[0].reason, 'permanent_bounce'); assert.strictEqual(prof('u1').email_invalid, true); assert.strictEqual(r.body.marked, 1);
 });
 test('rebote PERMANENTE sigue bloqueando (email_invalid) y no usa la pausa', async () => {
   reset(); const h = load(SECRET); const r = await send(h, bounced('Permanent'));
-  assert.strictEqual(r.body.marked, 1); assert.strictEqual(prof('u1').email_invalid, true); assert.strictEqual(prof('u1').email_paused_until, null);
+  assert.strictEqual(r.body.marked, 1); assert.strictEqual(prof('u1').email_invalid, true); assert.strictEqual(prof('u1').email_paused_until, null); assert.strictEqual(supp()[0].reason, 'permanent_bounce');
 });
 test('rebote temporal con firma invalida o sin firma: NO pausa a nadie', async () => {
   reset(); const h = load(SECRET);
   const r1 = await send(h, bounced('Transient'), { noHeaders: true }); const r2 = await send(h, bounced('Transient'), { sig: 'v1,AAAA' });
-  assert.strictEqual(r1.status, 400); assert.strictEqual(r2.status, 400); assert.strictEqual(state.db.profiles.filter(p => p.email_paused_until).length, 0);
+  assert.strictEqual(r1.status, 400); assert.strictEqual(r2.status, 400); assert.strictEqual(state.db.profiles.filter(p => p.email_paused_until).length, 0); assert.strictEqual(supp().length, 0);
 });
 test('error de base de datos al pausar: 500 y el reintento si funciona', async () => {
   reset(); const h = load(SECRET); state.dbError = true;

@@ -155,8 +155,8 @@ Deno.serve(async (req: Request) => {
 // candidatos) y, si sigue siendo miembro, genera un token al azar,
 // manda el correo con el link de la encuesta, y marca que ya se le
 // mandó (para no repetirlo nunca).
-// Pausa temporal por rebote no permanente (la pone resend-webhook por 14 dias).
-// Es reversible: basta poner profiles.email_paused_until = null. NO afecta el
+// Pausa por rebote no permanente: la pone la base de datos por DIRECCION de correo, sin vencimiento (9999-12-31).
+// Reversible: delete from email_suppressions where email = ... NO afecta el
 // acceso a la academia ni la recuperacion de contrasena ni los avisos de cobro.
 function isEmailPaused(row: { email_paused_until?: string | null } | null | undefined): boolean {
   const t = row && row.email_paused_until ? Date.parse(row.email_paused_until) : NaN

@@ -484,6 +484,11 @@ test('Pausa: correo de ciclo de vida (checkout) NO sale con la pausa activa, ni 
   reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: PAST() })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 1);
   reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: null })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 1);
 });
+test('Pausa SIN vencimiento (9999-12-31, la pone el trigger por direccion): no sale ni en 400 dias', async () => {
+  reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: '9999-12-31T00:00:00+00:00' })]); await callCron(NUDGE);
+  state.now += 400 * 24 * H; await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
+  streakFixture({ email_paused_until: '9999-12-31T00:00:00+00:00' }); await callCron(STREAK); assert.strictEqual(state.mails.length, 0);
+});
 test('Pausa: se respeta aunque la lista este vieja (relectura fresca justo antes de enviar)', async () => {
   reset(() => [user({ checkout_started_at: ago(2.5), email_paused_until: FUT() })]);
   assert.strictEqual(await NUDGE.ctx.sendIfStillEligible('u1', 'a@x.com', 'checkout_abandoned'), false);

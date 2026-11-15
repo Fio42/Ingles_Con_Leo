@@ -15,12 +15,18 @@
 //        - email.suppressed (Resend bloqueó la dirección por su lista
 //          de supresión; seguir intentándolo solo suma rebotes).
 //   2b. Un email.bounced que NO es permanente (temporal, indeterminado o
-//      sin tipo) PAUSA los correos automáticos de esa dirección durante
-//      14 días: profiles.email_paused_until = ahora + 14 días (2026-11-15).
-//      Es reversible (email_paused_until = null) y se vence sola. No
-//      bloquea nada de la cuenta: ni la academia, ni la recuperación de
-//      contraseña, ni el aviso de pago fallido, que siguen igual.
+//      sin tipo) PAUSA, SIN FECHA DE VENCIMIENTO, los correos de marketing,
+//      reactivación, racha, encuestas y seguimientos a esa DIRECCION
+//      (2026-11-15). Se guarda en la tabla email_suppressions (clave = el
+//      correo en minusculas, no la cuenta); un trigger de la base de datos
+//      marca profiles.email_paused_until (9999-12-31) en toda cuenta con
+//      ese correo, hoy o en el futuro. Reversible a mano:
+//        delete from public.email_suppressions where email = 'a@b.com';
+//      No bloquea nada critico: ni la academia, ni la confirmacion, ni la
+//      recuperacion de contraseña, ni pagos, ni la entrega del libro.
 //      email.delivery_delayed y el resto de eventos se ignoran.
+//      Los rebotes permanentes, quejas y supresiones tambien quedan
+//      registrados en email_suppressions (y marcan email_invalid).
 //   3. Mientras email_invalid sea true, los correos automáticos
 //      (streak-reminder-email.ts, upgrade-nudge-emails.ts,
 //      survey-15d-email.ts y el aviso de pago fallido de
@@ -68,8 +74,10 @@ const BLOCK_EVENTS = new Set(['email.bounced', 'email.complained', 'email.suppre
 // Margen para la marca de tiempo de Svix (evita reenviar un aviso viejo).
 const TIMESTAMP_TOLERANCE_SECONDS = 5 * 60
 const MAX_RECIPIENTS = 5
-// Pausa por rebote no permanente: cuantos dias se suspenden los correos automaticos.
-const PAUSE_DAYS = 14
+const SUPPRESS_REASON: Record<string, string> = {
+  'email.complained': 'complaint',
+  'email.suppressed': 'suppressed',
+}
 
 Deno.serve(async (req: Request) => {
   try {
@@ -130,19 +138,15 @@ Deno.serve(async (req: Request) => {
     if (type === 'email.bounced') {
       const bounceType = String(event?.data?.bounce?.type ?? '').toLowerCase()
       if (bounceType !== 'permanent') {
-        // Temporal / indeterminado / sin tipo: se pausan los correos automaticos
-        // 14 dias (reversible). Idempotente: si ya esta en pausa o bloqueada, no cambia nada.
-        const nowIso = new Date().toISOString()
-        const untilIso = new Date(Date.now() + PAUSE_DAYS * 86400000).toISOString()
+        // Temporal / indeterminado / sin tipo: se pausan los correos automaticos de esa
+        // DIRECCION sin vencimiento. Idempotente: si la direccion ya esta registrada
+        // (pausa o bloqueo) no se cambia nada, ni se degrada un bloqueo permanente.
         let paused = 0
         for (const email of recipients) {
           const { data, error } = await supabase
-            .from('profiles')
-            .update({ email_paused_until: untilIso })
-            .ilike('email', escapeLike(email))
-            .eq('email_invalid', false)
-            .or(`email_paused_until.is.null,email_paused_until.lt.${nowIso}`)
-            .select('id')
+            .from('email_suppressions')
+            .upsert({ email, reason: 'transient_bounce', event_id: svixId }, { onConflict: 'email', ignoreDuplicates: true })
+            .select('email')
           if (error) {
             console.error('resend-webhook: error pausando correos', error)
             return json({ ok: false, error: 'base de datos' }, 500) // Resend reintenta
@@ -153,6 +157,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    const reason = type === 'email.bounced' ? 'permanent_bounce' : SUPPRESS_REASON[type]
     let marked = 0
     for (const email of recipients) {
       // ilike sin comodines: se escapan % _ \ para que "a_b@x.com" no coincida con "aXb@x.com".
@@ -167,6 +172,15 @@ Deno.serve(async (req: Request) => {
         return json({ ok: false, error: 'base de datos' }, 500) // Resend reintenta
       }
       marked += (data || []).length
+      // Registro por direccion (sobrescribe una pausa temporal previa: el bloqueo es mas fuerte).
+      // Va despues de marcar el perfil para que 'marked' cuente las cuentas marcadas aqui.
+      const { error: sErr } = await supabase
+        .from('email_suppressions')
+        .upsert({ email, reason, event_id: svixId }, { onConflict: 'email' })
+      if (sErr) {
+        console.error('resend-webhook: error registrando bloqueo', sErr)
+        return json({ ok: false, error: 'base de datos' }, 500) // Resend reintenta
+      }
     }
 
     return json({ ok: true, marked, type }, 200)
