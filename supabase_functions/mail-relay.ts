@@ -93,7 +93,7 @@ async function sendBrevo(mail: any, to: Array<{ email: string; raw: string }>): 
   if (mail.html) body.htmlContent = mail.html
   if (mail.text) body.textContent = mail.text
   const rt = mail.reply_to ?? mail.replyTo
-  if (rt) body.replyTo = parseAddress(String(Array.isArray(rt) ? rt[0] : rt))
+  if (rt) { const r = parseAddress(String(Array.isArray(rt) ? rt[0] : rt)); body.replyTo = { email: r.email, name: r.name || 'Inglés con Leo' } } // Brevo exige name en replyTo
   if (mail.headers && typeof mail.headers === 'object') body.headers = mail.headers
   if (Array.isArray(mail.tags)) body.tags = mail.tags.map((t: any) => (t && t.name ? `${t.name}:${t.value ?? ''}` : String(t))).slice(0, 10)
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {

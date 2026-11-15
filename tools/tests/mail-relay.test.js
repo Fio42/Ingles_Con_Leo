@@ -52,7 +52,7 @@ test('proveedor brevo: formato de la API de Brevo (sender, to, htmlContent, repl
   assert.strictEqual(r.status, 200); assert.strictEqual((await r.json()).id, '<b1@brevo>'); assert.strictEqual(h.calls.length, 1);
   const c = h.calls[0]; assert.strictEqual(c.url, 'https://api.brevo.com/v3/smtp/email'); assert.strictEqual(c.init.headers['api-key'], 'xkeysib-test'); assert(!/Authorization/i.test(Object.keys(c.init.headers).join()));
   assert.deepStrictEqual(c.body.sender, { email: 'hola@inglesconleo.com', name: 'Inglés con Leo' }); assert.deepStrictEqual(c.body.to, [{ email: 'ana@x.com' }]); assert.strictEqual(c.body.htmlContent, '<p>hi</p>');
-  assert.deepStrictEqual(c.body.replyTo, { name: '', email: 'leo@inglesconleo.com' }); assert.deepStrictEqual(c.body.tags, ['flow:access']); assert.strictEqual(c.body.subject, 'Hola');
+  assert.deepStrictEqual(c.body.replyTo, { email: 'leo@inglesconleo.com', name: 'Inglés con Leo' }) /* Brevo exige name en replyTo */; assert.deepStrictEqual(c.body.tags, ['flow:access']); assert.strictEqual(c.body.subject, 'Hola');
 });
 test('brevo sin BREVO_API_KEY: 500 y no sale nada; error de Brevo: se devuelve el error (quien llama reintenta)', async () => {
   const h = load(ENV({ MAIL_PROVIDER: 'brevo' }), []); assert.strictEqual((await post(h, MAIL, { flow: 'critical' })).status, 500); assert.strictEqual(h.calls.length, 0);

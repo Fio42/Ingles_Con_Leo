@@ -2164,3 +2164,9 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Desplegados los 4 ganchos (mp-webhook = rapid-service, paypal-webhook, stripe-webhook, send-password-reset = clever-responder). Resend sigue activo: sin el secreto MAIL_API_URL todo sale directo por Resend como antes.
 - Falta solo la llave BREVO_API_KEY (requiere verificar telefono por SMS en Brevo).
 - Activar: secretos MAIL_PROVIDER=brevo (en Supabase) y MAIL_API_URL=https://iviksyhzhiygkuaojply.supabase.co/functions/v1/mail-relay. Revertir: borrar MAIL_API_URL.
+
+2026-11-15 (09:45) - Brevo listo y probado
+- BREVO_API_KEY (solo Emails transaccionales) y MAIL_PROVIDER=brevo guardados en Supabase. Resend sigue activo: sin MAIL_API_URL nada pasa por el relevo.
+- Prueba real mail-relay -> Brevo -> fiocchettaleandro@gmail.com: delivered. Fallo hallado y corregido: Brevo exige name en replyTo (relevo redesplegado).
+- Nueva funcion brevo-check + cron inglesconleo-brevo-check (cada 2 meses) con alerta si falla. Guia en supabase/RESPALDO_CORREO.md.
+- Registro publico: "Confirm email" apagado; verificado con alta real (spanishbyleo@gmail.com): sesion inmediata, ningun correo.
