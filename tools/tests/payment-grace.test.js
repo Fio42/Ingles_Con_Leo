@@ -20,7 +20,7 @@ async function test(name, fn){
 function newDb(opts){
   const db = { rows: [], missing: new Set((opts && opts.missing) || []) };
   db.client = {
-    from(){ return new Query(db); },
+    from(t){ const q = new Query(db); q.table = t; return q; },
     rpc(){ return Promise.resolve({ data: null, error: null }); },
   };
   return db;
@@ -54,6 +54,11 @@ Query.prototype = {
   then(a, b){ return this.exec().then(a, b); },
   async exec(){
     const db = this.db;
+    if(this.table === 'payment_recovery'){
+      if(db.noRecoveryTable) return { data: null, error: { code: '42P01', message: 'relation "payment_recovery" does not exist' } };
+      const rec = (db.recovery || []).filter(r => this.filters.every(f => f(r)));
+      return { data: this.single ? (rec[0] ? { user_id: rec[0].user_id } : null) : rec.map(r => ({ user_id: r.user_id })), error: null };
+    }
     const touched = [...this.cols, ...(this.fcols || []), ...(this.payload ? Object.keys(this.payload) : [])];
     const bad = touched.find(c => db.missing.has(c));
     if(bad) return { data: null, error: { code: '42703', message: 'column profiles.' + bad + ' does not exist' } };
@@ -592,6 +597,19 @@ function sweepJs(row, nowSec, hours){
     assert.deepStrictEqual([...ids], ['a']);
     assert.strictEqual(await f.hasPendingPayment('a'), true);
     for(const id of ['b', 'c', 'd', 'zzz']) assert.strictEqual(await f.hasPendingPayment(id), false, id);
+  });
+  await test('Episodio ABIERTO de recuperacion de pagos: excluido (aunque el cobro fallido tenga mas de 45 dias); cerrado: no; sin la tabla: no rompe', async()=>{
+    const db = newDb();
+    db.rows.push({ id: 'r1', payment_failed_at: ago(60) }, { id: 'r2', payment_failed_at: ago(60) }, { id: 'r3' });
+    db.recovery = [{ user_id: 'r1', closed_at: null }, { user_id: 'r2', closed_at: '2026-11-10T00:00:00Z' }];
+    const f = nudgeFns(db);
+    assert.deepStrictEqual([...(await f.loadPendingPaymentIds())], ['r1']);
+    assert.strictEqual(await f.hasPendingPayment('r1'), true);
+    for(const id of ['r2', 'r3', 'zzz']) assert.strictEqual(await f.hasPendingPayment(id), false, id);
+    const sinTabla = newDb({}); sinTabla.noRecoveryTable = true; sinTabla.rows.push({ id: 'a', payment_failed_at: ago(2) }, { id: 'b' });
+    const g = nudgeFns(sinTabla);
+    assert.deepStrictEqual([...(await g.loadPendingPaymentIds())], ['a']);
+    assert.strictEqual(await g.hasPendingPayment('b'), false);
   });
   await test('Si la migracion no esta aplicada, no excluye a nadie y no rompe el envio', async()=>{
     const db = newDb({ missing: ['payment_failed_at'] });

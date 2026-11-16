@@ -350,8 +350,11 @@ const LIMIT_REACHED_MAX_HOURS = 1.5
 const LIMIT_REACHED_COOLDOWN_DAYS = 7
 const LIMIT_RESET_MIN_HOURS = 24
 const LIMIT_RESET_MAX_HOURS = 28
-const CHECKOUT_ABANDONED_MIN_HOURS = 2
-// El correo 1 sale normalmente a las 2 a 4 h. El tope de 30 h solo existe
+// (2026-11-16) Espera del primer correo: 30 minutos desde el ultimo intento
+// real (antes 2 h). Todo lo demas (horario, correo 2, bajas, freno de 24 h)
+// queda igual.
+const CHECKOUT_ABANDONED_MIN_HOURS = 0.5
+// El correo 1 sale normalmente entre 30 min y 4 h. El tope de 30 h solo existe
 // para que NO se pierda si justo cae de madrugada (horas sin envío) o si
 // otro correo (p. ej. limit_reached) ocupó el lugar de las 24 h: queda
 // pendiente y sale en la primera oportunidad permitida.
@@ -1223,6 +1226,17 @@ async function loadPendingPaymentIds(): Promise<Set<string>> {
       .limit(1000)
     if (!error) for (const r of data || []) ids.add(r.id as string)
   } catch (_e) { /* sin la columna o sin red: no se excluye a nadie */ }
+  // (2026-11-16) Tambien quien tiene un episodio ABIERTO de recuperacion de
+  // pagos (tabla payment_recovery): ese correo lo manda la recuperacion, no
+  // las campanas de "hazte miembro".
+  try {
+    const { data, error } = await supabase
+      .from('payment_recovery')
+      .select('user_id')
+      .is('closed_at', null)
+      .limit(1000)
+    if (!error) for (const r of data || []) ids.add(r.user_id as string)
+  } catch (_e) { /* sin la tabla: no se excluye a nadie por este motivo */ }
   return ids
 }
 
@@ -1233,8 +1247,17 @@ async function hasPendingPayment(userId: string): Promise<boolean> {
       .select('payment_failed_at')
       .eq('id', userId)
       .maybeSingle()
-    if (error || !data || !data.payment_failed_at) return false
-    return Date.parse(data.payment_failed_at as string) >= Date.parse(pendingPaymentCutoffIso())
+    if (!error && data && data.payment_failed_at &&
+        Date.parse(data.payment_failed_at as string) >= Date.parse(pendingPaymentCutoffIso())) return true
+  } catch (_e) { /* sigue con la comprobacion de recuperacion */ }
+  try {
+    const { data: rec, error: recErr } = await supabase
+      .from('payment_recovery')
+      .select('user_id')
+      .eq('user_id', userId)
+      .is('closed_at', null)
+      .maybeSingle()
+    return !recErr && !!rec
   } catch (_e) {
     return false
   }

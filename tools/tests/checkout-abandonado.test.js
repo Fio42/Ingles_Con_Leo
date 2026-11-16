@@ -224,8 +224,9 @@ test('Correo 1 sale entre 2 y 4 h, con el asunto, el CTA y el Reply-To pedidos',
   assert(!/falló el pago|rechazaron la tarjeta|última oportunidad|descuento|—/i.test(m.html), 'copy sin presion ni rayas largas');
   assert(m.headers['List-Unsubscribe'], 'incluye baja en un clic');
 });
-test('Antes de 2 h no sale nada; pasadas 30 h sin correo 1 ya no se manda (nada atrasado)', async () => {
-  reset(() => [user({ checkout_started_at: ago(1.5) })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
+test('Antes de 30 min no sale nada; a los 35 min sale el correo 1; pasadas 30 h sin correo 1 ya no se manda (nada atrasado)', async () => {
+  reset(() => [user({ checkout_started_at: ago(0.4) })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 0, 'a los 24 min todavia no');
+  reset(() => [user({ checkout_started_at: ago(0.6) })]); await callCron(NUDGE); assert.deepStrictEqual(subjects(), [E1], 'a los 36 min si');
   reset(() => [user({ checkout_started_at: ago(31) })]); await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
 });
 test('Correo 2: 24 a 48 h despues del 1, con el texto pedido y enlace discreto (sin boton)', async () => {
@@ -366,7 +367,7 @@ test('Correo 2 de madrugada tambien espera a la manana', async () => {
 });
 const NOISY = { last_seen_at: ago(24 * 5) }; // candidato a reactivacion
 test('Ventana especial: reactivacion, tips y limit_reset NO salen mientras dura el seguimiento', async () => {
-  reset(() => [user(Object.assign({ checkout_started_at: ago(1), lifecycle_emails: Object.assign({}, BASE_LIFE, { long_term_count: '0', reactivation_3d_count: '0' }) }, NOISY))]);
+  reset(() => [user(Object.assign({ checkout_started_at: ago(0.3), lifecycle_emails: Object.assign({}, BASE_LIFE, { long_term_count: '0', reactivation_3d_count: '0' }) }, NOISY))]);
   await callCron(NUDGE); assert.strictEqual(state.mails.length, 0);
   assert.strictEqual(NUDGE.ctx.checkoutWindowActive(P(), state.now), true);
 });
@@ -404,9 +405,9 @@ test('limit_reached NO reaparece atrasado despues (ni durante ni al cerrar la ve
   assert.deepStrictEqual(subjects().filter(x => x === E1 || x === E2), [E1, E2]);
 });
 test('Durante la ventana activa limit_reached no puede retrasar el correo 1', async () => {
-  reset(() => [user({ checkout_started_at: ago(1), free_daily_limit_reached_at: ago(1), free_daily_count: 10 })]);
+  reset(() => [user({ checkout_started_at: ago(0.3), free_daily_limit_reached_at: ago(1), free_daily_count: 10 })]);
   await callCron(NUDGE); assert.strictEqual(state.mails.length, 0, 'ni limit_reached ni checkout todavia');
-  state.now += 1.5 * H; await callCron(NUDGE); assert.deepStrictEqual(subjects(), [E1], 'el seguimiento sale a tiempo, sin 24 h de retraso');
+  state.now += 0.5 * H; await callCron(NUDGE); assert.deepStrictEqual(subjects(), [E1], 'el seguimiento sale a tiempo, sin 24 h de retraso');
 });
 test('Sin checkout activo, limit_reached funciona exactamente como antes', async () => {
   reset(() => [user({ checkout_started_at: null, free_daily_limit_reached_at: ago(1), free_daily_count: 10 })]);
