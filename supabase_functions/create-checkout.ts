@@ -39,6 +39,57 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '
 const PRICE_MXN = 40
 const BACK_URL = 'https://inglesconleo.com/miembros.html'
 
+// ---- Cuenta ligada a Stripe: renovacion pendiente y estado no confirmado (2026-11-16) ----
+// Antes de abrir CUALQUIER membresia nueva (Stripe, PayPal o Mercado Pago) se revisa en Stripe si esta cuenta ya
+// tiene una renovacion fallida que Stripe sigue reintentando. Crear otra suscripcion podria cobrarle dos veces.
+//   pending     -> se devuelve el enlace seguro de Stripe para pagar ESA factura (no se crea nada nuevo).
+//   unavailable -> la cuenta esta ligada a Stripe y no se pudo confirmar su estado (Stripe no responde, error de
+//                  red, clave ausente, o hay una renovacion pendiente sin enlace seguro): error temporal 503 para
+//                  que la persona reintente. Nunca se abre una membresia a ciegas.
+//   ok          -> cuenta sin Stripe (alta nueva), o Stripe confirmo que no hay nada pendiente: flujo normal.
+const STRIPE_SECRET_KEY_GUARD = Deno.env.get('STRIPE_SECRET_KEY') || ''
+const STRIPE_INVOICE_URL_RE = /^https:\/\/invoice\.stripe\.com\/[A-Za-z0-9_\-\/?=&%.]+$/
+type StripeGuard = { kind: 'ok' } | { kind: 'pending'; url: string } | { kind: 'unavailable' }
+async function checkStripeAccount(userId: string): Promise<StripeGuard> {
+  // Sin la clave de servicio no se puede ni leer el perfil: igual que antes de este cambio (nunca fue obligatoria).
+  if (!SUPABASE_SERVICE_ROLE_KEY) return { kind: 'ok' }
+  try {
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    const { data: prof, error } = await admin.from('profiles').select('stripe_customer_id').eq('id', userId).maybeSingle()
+    if (error) return { kind: 'unavailable' }
+    const customerId = prof && prof.stripe_customer_id ? String(prof.stripe_customer_id) : ''
+    if (!customerId) return { kind: 'ok' }
+    if (!STRIPE_SECRET_KEY_GUARD) return { kind: 'unavailable' }
+    const res = await fetch(
+      `https://api.stripe.com/v1/subscriptions?customer=${encodeURIComponent(customerId)}&status=all&limit=20&expand[]=data.latest_invoice`,
+      { headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY_GUARD}` }, signal: AbortSignal.timeout(4000) },
+    )
+    if (!res.ok) {
+      // Cliente que ya no existe en Stripe: no hay nada pendiente que proteger.
+      if (res.status === 404) {
+        const e = await res.json().catch(() => null)
+        if (e && e.error && e.error.code === 'resource_missing') return { kind: 'ok' }
+      }
+      return { kind: 'unavailable' }
+    }
+    const list = await res.json()
+    if (!list || !Array.isArray(list.data)) return { kind: 'unavailable' }
+    let unresolved = false
+    for (const sub of list.data) {
+      if (!sub || (sub.status !== 'past_due' && sub.status !== 'unpaid')) continue
+      const inv = sub.latest_invoice
+      const url = inv && typeof inv === 'object' ? String(inv.hosted_invoice_url || '') : ''
+      if (sub.customer === customerId && inv && typeof inv === 'object' && inv.customer === customerId && inv.status === 'open' && STRIPE_INVOICE_URL_RE.test(url)) {
+        return { kind: 'pending', url }
+      }
+      unresolved = true
+    }
+    return unresolved ? { kind: 'unavailable' } : { kind: 'ok' }
+  } catch (_e) {
+    return { kind: 'unavailable' }
+  }
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -87,6 +138,11 @@ Deno.serve(async (req: Request) => {
         console.error('No se pudo registrar checkout_started_at:', e)
       }
     }
+
+    // Cuenta ligada a Stripe: renovacion pendiente -> pagar esa factura; Stripe sin responder -> error temporal.
+    const stripeGuard = await checkStripeAccount(user.id)
+    if (stripeGuard.kind === 'pending') return json({ pending_payment_url: stripeGuard.url }, 200)
+    if (stripeGuard.kind === 'unavailable') return json({ error: 'stripe_unavailable' }, 503)
 
     const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
       method: 'POST',

@@ -272,6 +272,9 @@ async function handleSubscriptionChange(type: string, obj: any, eventCreated: un
       // Ya había un fallo registrado (reintento): solo se refresca el orden de avisos.
       await supabase.from('profiles').update({ stripe_event_at: eventIso }).eq('stripe_customer_id', customerId)
         .or(`stripe_event_at.is.null,stripe_event_at.lte.${eventIso}`)
+    } else {
+      // Primer fallo del episodio: abre el seguimiento (recordatorio, aviso de pausa y seguimientos).
+      await openRecovery(customerId, eventIso)
     }
     await ensurePaymentFailedEmail(customerId, obj)
     return
@@ -311,6 +314,7 @@ async function handleSubscriptionChange(type: string, obj: any, eventCreated: un
     return
   }
   if (!applied) return // aviso viejo o cliente desconocido: no se hace nada
+  if (isActive) await closeRecovery(customerId, 'paid')
 
   if (status === 'unpaid') {
     // Reintentos agotados pero la suscripción sigue existiendo y por cobrar:
@@ -343,6 +347,26 @@ async function findPaymentLink(subscription: any, customerId: string): Promise<s
   } catch (e) {
     console.error('Error buscando el enlace de pago (Stripe):', e)
     return null
+  }
+}
+
+// Seguimiento de cobros fallidos (payment-recovery-emails.ts, migración 20261116120000). A prueba de
+// fallos: si la tabla o las funciones aún no existen, solo queda un aviso en los registros y todo lo
+// demás (gracia, correo de pago fallido, activación) funciona exactamente igual.
+async function openRecovery(customerId: string, eventIso: string): Promise<void> {
+  try {
+    const { error } = await supabase.rpc('payment_recovery_open', { p_customer: customerId, p_started: eventIso })
+    if (error) console.error('No se pudo abrir el seguimiento de cobro fallido:', error)
+  } catch (e) {
+    console.error('No se pudo abrir el seguimiento de cobro fallido:', e)
+  }
+}
+async function closeRecovery(customerId: string, reason: string): Promise<void> {
+  try {
+    const { error } = await supabase.rpc('payment_recovery_close', { p_customer: customerId, p_reason: reason })
+    if (error) console.error('No se pudo cerrar el seguimiento de cobro fallido:', error)
+  } catch (e) {
+    console.error('No se pudo cerrar el seguimiento de cobro fallido:', e)
   }
 }
 
@@ -520,6 +544,7 @@ Deno.serve(async (req: Request) => {
           .from('profiles')
           .update({ payment_failed_at: null, payment_failed_email_sent_at: null, payment_failed_email_claimed_at: null })
           .eq('id', userId)
+        if (customerId) await closeRecovery(String(customerId), 'paid')
         if (correoDestino) {
           await ensureMemberWelcome(userId, correoDestino, plan)
         }

@@ -577,6 +577,10 @@ const LeoBackend = (function(){
         body: JSON.stringify({ payer_email: mpEmail })
       });
       const data = await res.json();
+      // Renovacion pendiente en Stripe: el servidor devuelve el enlace para pagar ESA factura en vez de abrir otra membresia.
+      if(res.ok && data && typeof data.pending_payment_url === 'string' && /^https:\/\/invoice\.stripe\.com\//.test(data.pending_payment_url)){
+        return { ok:false, error:'pending_payment', pendingUrl: data.pending_payment_url };
+      }
       if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
       return { ok:true, url: data.init_point };
     }catch(e){
@@ -624,6 +628,10 @@ const LeoBackend = (function(){
           body: JSON.stringify({ plan: plan === 'annual' ? 'annual' : 'monthly', ...(opts && opts.track === false ? { track:false } : {}) })
         });
         const data = await res.json();
+        // Renovacion pendiente: el servidor devuelve el enlace seguro de Stripe para pagarla en vez de crear otra suscripcion.
+        if(res.ok && data && typeof data.pending_payment_url === 'string' && /^https:\/\/invoice\.stripe\.com\//.test(data.pending_payment_url)){
+          return { ok:false, error:'pending_payment', pendingUrl: data.pending_payment_url };
+        }
         if(res.ok && data.client_secret) return { ok:true, clientSecret: data.client_secret };
         last = { ok:false, error: (data && data.error) || 'checkout_error' };
         if(last.error === 'annual_not_configured') return last; // no tiene sentido reintentar
@@ -788,6 +796,10 @@ const LeoBackend = (function(){
         body: JSON.stringify({})
       });
       const data = await res.json();
+      // Renovacion pendiente en Stripe: el servidor devuelve el enlace para pagar ESA factura en vez de abrir otra membresia.
+      if(res.ok && data && typeof data.pending_payment_url === 'string' && /^https:\/\/invoice\.stripe\.com\//.test(data.pending_payment_url)){
+        return { ok:false, error:'pending_payment', pendingUrl: data.pending_payment_url };
+      }
       if(!res.ok || !data.init_point) return { ok:false, error: (data && data.error) || 'checkout_error' };
       return { ok:true, url: data.init_point };
     }catch(e){

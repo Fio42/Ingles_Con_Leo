@@ -8,7 +8,7 @@ const fs = require('fs'), vm = require('vm'), path = require('path'), assert = r
 const { createRequire } = require('module'), { pathToFileURL } = require('url');
 const root = path.join(__dirname, '..', '..');
 const ts = require(path.join(root, 'node_modules', 'typescript'));
-const read = f => fs.readFileSync(path.join(root, f), 'utf8');
+const read = f => fs.readFileSync(f === 'supabase_functions/stripe-webhook.ts' && process.env.WEBHOOK_FILE ? process.env.WEBHOOK_FILE : path.join(root, f), 'utf8'); // WEBHOOK_FILE=ruta prueba otra version del webhook sin tocar el del repo
 
 let passed = 0, failed = 0;
 async function test(name, fn){
