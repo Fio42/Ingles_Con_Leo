@@ -350,11 +350,11 @@ const LIMIT_REACHED_MAX_HOURS = 1.5
 const LIMIT_REACHED_COOLDOWN_DAYS = 7
 const LIMIT_RESET_MIN_HOURS = 24
 const LIMIT_RESET_MAX_HOURS = 28
-// (2026-11-16) Espera del primer correo: 30 minutos desde el ultimo intento
-// real (antes 2 h). Todo lo demas (horario, correo 2, bajas, freno de 24 h)
-// queda igual.
-const CHECKOUT_ABANDONED_MIN_HOURS = 0.5
-// El correo 1 sale normalmente entre 30 min y 4 h. El tope de 30 h solo existe
+// (2026-11-16) Se probo 30 min y se REVIRTIO a 2 h: los pagos pendientes de
+// confirmacion (Mercado Pago 'pending', PayPal, Stripe 3DS 'incomplete') aun
+// no se guardan, asi que no se pueden excluir. Retomar 0.5 cuando se omitan.
+const CHECKOUT_ABANDONED_MIN_HOURS = 2
+// El correo 1 sale normalmente a las 2 a 4 h. El tope de 30 h solo existe
 // para que NO se pierda si justo cae de madrugada (horas sin envío) o si
 // otro correo (p. ej. limit_reached) ocupó el lugar de las 24 h: queda
 // pendiente y sale en la primera oportunidad permitida.
