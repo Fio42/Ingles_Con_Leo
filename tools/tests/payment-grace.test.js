@@ -75,7 +75,7 @@ Query.prototype = {
 
 /* ---------- Proveedores falsos ---------- */
 function newNet(cfg){
-  const net = Object.assign({ resendOk: true, invoices: {}, paypalSubs: {}, paypalDown: false, calls: [] }, cfg || {});
+  const net = Object.assign({ resendOk: true, invoices: {}, stripeSubs: {}, paypalSubs: {}, paypalDown: false, calls: [] }, cfg || {});
   net.emails = () => net.calls.filter(c => c.url.includes('api.resend.com') || c.url.includes('/mail-relay')).map(c => JSON.parse(c.body));
   net.mailCalls = () => net.calls.filter(c => c.url.includes('api.resend.com') || c.url.includes('/mail-relay'));
   net.fetch = async (url, init) => {
@@ -83,6 +83,8 @@ function newNet(cfg){
     net.calls.push({ url, body: init.body || '', headers: init.headers || {} });
     const J = (obj, status) => ({ ok: (status || 200) < 300, status: status || 200, json: async () => obj, text: async () => JSON.stringify(obj) });
     if(url.includes('api.resend.com') || url.includes('/mail-relay')) return net.resendOk ? J({ id: 'e1' }) : J({ error: 'x' }, 500);
+    const ssub = /api\.stripe\.com\/v1\/subscriptions\/(.+)$/.exec(url);
+    if(ssub) return net.stripeSubs[ssub[1]] ? J(net.stripeSubs[ssub[1]]) : J({}, 404);
     const inv = /api\.stripe\.com\/v1\/invoices\/(.+)$/.exec(url);
     if(inv) return net.invoices[inv[1]] ? J(net.invoices[inv[1]]) : J({}, 404);
     if(url.includes('/v1/oauth2/token')) return net.paypalDown ? J({}, 500) : J({ access_token: 'tok' });
@@ -493,6 +495,64 @@ function sweepJs(row, nowSec, hours){
     await s.send('checkout.session.completed', CHK, H(1));
     const c = s.net.mailCalls(); assert.strictEqual(c.length, 2); assert.ok(c.every(x => x.url === RELAY && x.headers.Authorization === 'Bearer r'));
     assert.deepStrictEqual(c.map(x => x.headers['x-mail-flow']), ['transactional', 'critical']); assert.deepStrictEqual(JSON.parse(c[0].body).to, ['ana@mail.com']);
+  });
+  /* ---------- Plan anual: bienvenida propia (2026-11-15) ---------- */
+  const CHK_A = Object.assign({}, CHK, { id: 'cs_a', subscription: 'sub_a', amount_total: 37000, currency: 'mxn', customer_details: { email: 'ana@mail.com', name: 'Ana Prueba' } });
+  const subAnnual = { id: 'sub_a', metadata: { plan: 'annual' }, items: { data: [{ price: { recurring: { interval: 'year' } } }] } };
+  const subMonthly = { id: 'sub_a', metadata: { plan: 'monthly' }, items: { data: [{ price: { recurring: { interval: 'month' } } }] } };
+  const nuevo = (net) => stripe({ net, row: { is_member: false, member_welcome_sent_at: null } });
+  await test('Plan ANUAL: la bienvenida es la version anual (asunto y cuerpo propios) y llega al alumno', async()=>{
+    const s = nuevo({ stripeSubs: { sub_a: subAnnual } });
+    await s.send('checkout.session.completed', CHK_A, H(1));
+    const w = s.net.emails().find(m => (m.to || [])[0] === 'ana@mail.com');
+    assert.ok(w, 'bienvenida al alumno'); assert.ok(/año/.test(w.subject) && /plan anual/.test(w.html) && /12 meses/.test(w.html));
+    assert.ok(!/—/.test(w.subject + w.html), 'sin rayas largas');
+  });
+  await test('Plan MENSUAL o desconocido (Stripe no responde): bienvenida de siempre', async()=>{
+    for(const stripeSubs of [{ sub_a: subMonthly }, {}]){
+      const s = nuevo({ stripeSubs }); await s.send('checkout.session.completed', CHK_A, H(1));
+      const w = s.net.emails().find(m => (m.to || [])[0] === 'ana@mail.com');
+      assert.strictEqual(w.subject, 'Tu acceso a Inglés con Leo ya está listo 🎉'); assert.ok(!/plan anual/.test(w.html));
+    }
+  });
+  await test('Alta anual: UNA sola bienvenida (anual) y NINGUN correo a otra direccion, aunque Stripe repita el evento', async()=>{
+    const s = nuevo({ stripeSubs: { sub_a: subAnnual } });
+    for(let i = 0; i < 3; i++) await s.send('checkout.session.completed', CHK_A, H(1));
+    const m = s.net.emails();
+    assert.strictEqual(m.length, 1); assert.deepStrictEqual(m[0].to, ['ana@mail.com']); assert.ok(/año/.test(m[0].subject));
+    assert.ok(s.row().member_welcome_sent_at);
+  });
+  await test('Dos copias del evento a la vez: una sola bienvenida', async()=>{
+    const s = nuevo({ stripeSubs: { sub_a: subAnnual } });
+    await Promise.all([s.send('checkout.session.completed', CHK_A, H(1)), s.send('checkout.session.completed', CHK_A, H(1))]);
+    assert.strictEqual(s.net.emails().length, 1); assert.strictEqual(s.row().is_member, true);
+  });
+  await test('Si el correo falla, la membresia queda activa y el reintento de Stripe manda la bienvenida anual UNA vez', async()=>{
+    const s = nuevo({ stripeSubs: { sub_a: subAnnual }, resendOk: false });
+    const r = await s.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(r.status, 200); assert.strictEqual(s.row().is_member, true); assert.strictEqual(s.row().member_welcome_sent_at, null);
+    s.net.resendOk = true; s.net.calls.length = 0;
+    await s.send('checkout.session.completed', CHK_A, H(2)); await s.send('checkout.session.completed', CHK_A, H(3));
+    const m = s.net.emails(); assert.strictEqual(m.length, 1); assert.ok(/año/.test(m[0].subject)); assert.ok(s.row().member_welcome_sent_at);
+  });
+  await test('Si Stripe no responde al buscar el plan, la membresia igual se activa y sale la bienvenida de siempre', async()=>{
+    const s = nuevo({ stripeSubs: {} });
+    const r = await s.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(r.status, 200); assert.strictEqual(s.row().is_member, true);
+    assert.strictEqual(s.net.emails().length, 1); assert.ok(!/año/.test(s.net.emails()[0].subject));
+  });
+  await test('Si Stripe no confirmo el plan y salio la bienvenida normal, un reintento posterior (ya con plan anual) NO manda una segunda', async()=>{
+    const s = nuevo({ stripeSubs: {} });
+    await s.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(s.net.emails().length, 1); assert.ok(!/año/.test(s.net.emails()[0].subject));
+    s.net.stripeSubs.sub_a = subAnnual;
+    await s.send('checkout.session.completed', CHK_A, H(2)); await s.send('checkout.session.completed', CHK_A, H(3));
+    assert.strictEqual(s.net.emails().length, 1, 'sigue habiendo una sola bienvenida'); assert.ok(s.row().member_welcome_sent_at);
+  });
+  await test('Quien ya era miembro (repeticion del evento) no recibe otra bienvenida', async()=>{
+    const s = stripe({ net: { stripeSubs: { sub_a: subAnnual } }, row: { is_member: true, member_welcome_sent_at: '2026-11-01T00:00:00Z' } });
+    await s.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(s.net.emails().length, 0);
   });
   await test('Stripe: cuenta con rebote PERMANENTE (email_invalid) NO recibe el aviso de cobro, ni por Resend ni por el relevo (no hay reenvio por el otro proveedor)', async()=>{
     for(const env of [undefined, { MAIL_API_URL: RELAY }]){

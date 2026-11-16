@@ -474,6 +474,9 @@ Deno.serve(async (req: Request) => {
           .maybeSingle()
 
         const yaEraMiembro = !!(existing && existing.is_member)
+        // Plan comprado (anual o mensual) leído de la suscripción en Stripe. Si no se puede
+        // saber (Stripe no responde), queda null y se manda el correo de siempre.
+        const plan = await detectPlan(obj)
         const correoDestino = (existing && existing.email) || obj.customer_details?.email || obj.customer_email
 
         // Reclamo atómico de "pasó de gratis a miembro" (auditoría
@@ -518,7 +521,7 @@ Deno.serve(async (req: Request) => {
           .update({ payment_failed_at: null, payment_failed_email_sent_at: null, payment_failed_email_claimed_at: null })
           .eq('id', userId)
         if (correoDestino) {
-          await ensureMemberWelcome(userId, correoDestino)
+          await ensureMemberWelcome(userId, correoDestino, plan)
         }
         if (esNuevo) {
           // amount_total/currency son el monto REAL cobrado en esta sesión
@@ -585,7 +588,38 @@ async function verifyStripeSignature(payload: string, signatureHeader: string, s
   return computedSig === expectedSig
 }
 
-async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
+// ---- Plan comprado (2026-11-15) ----
+// 'annual' | 'monthly' | null (null = no se pudo saber; se trata como mensual y no se rompe nada).
+type Plan = 'annual' | 'monthly' | null
+
+// La sesión de checkout no dice si el plan es anual, así que se consulta la suscripción en Stripe
+// (el intervalo del precio es la fuente de verdad; la etiqueta metadata.plan que pone stripe-checkout
+// es el respaldo). Con tiempo límite de 5 s: si Stripe tarda o falla, devuelve null.
+async function detectPlan(session: any): Promise<Plan> {
+  try {
+    const secret = Deno.env.get('STRIPE_SECRET_KEY') || ''
+    const subId = typeof session?.subscription === 'string' ? session.subscription : session?.subscription?.id
+    if (!secret || !subId) return null
+    const res = await fetch(`https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subId)}`, {
+      headers: { Authorization: `Bearer ${secret}` },
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return null
+    const sub = await res.json()
+    const interval = sub?.items?.data?.[0]?.price?.recurring?.interval
+    if (interval === 'year') return 'annual'
+    if (interval === 'month') return 'monthly'
+    if (sub?.metadata?.plan === 'annual') return 'annual'
+    if (sub?.metadata?.plan === 'monthly') return 'monthly'
+    return null
+  } catch (e) {
+    console.error('Error detectando el plan (Stripe):', e)
+    return null
+  }
+}
+
+async function mandarCorreoBienvenida(destinatario: string, plan: Plan = null): Promise<boolean> {
+  const anual = plan === 'annual'
   // Hasta 3 intentos (Resend a veces responde 429 o falla un instante).
   for (let intento = 1; intento <= 3; intento++) {
     try {
@@ -600,8 +634,8 @@ async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
           from: FROM_EMAIL,
           to: [destinatario],
           reply_to: REPLY_TO_EMAIL,
-          subject: 'Tu acceso a Inglés con Leo ya está listo 🎉',
-          html: HTML_BIENVENIDA,
+          subject: anual ? 'Bienvenido a tu año con Inglés con Leo 🎉' : 'Tu acceso a Inglés con Leo ya está listo 🎉',
+          html: anual ? HTML_BIENVENIDA_ANUAL : HTML_BIENVENIDA,
         }),
       })
       if (res.ok) return true
@@ -624,7 +658,7 @@ async function mandarCorreoBienvenida(destinatario: string): Promise<boolean> {
 // si la bienvenida falla, el barrido de upgrade-nudge-emails (cada 30
 // min) y cualquier aviso repetido del proveedor la reintentan.
 const WELCOME_LEASE_MINUTES = 15
-async function ensureMemberWelcome(userId: string, email: string): Promise<void> {
+async function ensureMemberWelcome(userId: string, email: string, plan: Plan = null): Promise<void> {
   try {
     const { data: row } = await supabase
       .from('profiles')
@@ -641,7 +675,7 @@ async function ensureMemberWelcome(userId: string, email: string): Promise<void>
       .or(`member_welcome_claimed_at.is.null,member_welcome_claimed_at.lt.${leaseCutoff}`)
       .select('id')
     if (!reclamado || !reclamado.length) return
-    const ok = await mandarCorreoBienvenida(email)
+    const ok = await mandarCorreoBienvenida(email, plan)
     await supabase
       .from('profiles')
       .update(ok ? { member_welcome_sent_at: new Date().toISOString(), member_welcome_claimed_at: null } : { member_welcome_claimed_at: null })
@@ -695,6 +729,56 @@ const HTML_BIENVENIDA = `
     </p>
     <p style="color:#333; font-size:15px; margin-bottom:0;">
       Gracias por formar parte de Inglés con Leo. ¡Bienvenida(o)!
+    </p>
+  </div>
+</div>
+`.trim()
+
+// Bienvenida para quien compra el plan ANUAL (2026-11-15). Mismo estilo que HTML_BIENVENIDA, pero
+// reconoce la decisión de comprometerse un año y lo guía a construir el hábito. Sin promesas extra:
+// no menciona renovaciones, descuentos ni reembolsos.
+const HTML_BIENVENIDA_ANUAL = `
+<div style="font-family: Arial, Helvetica, sans-serif; background-color:#faf6ef; padding:32px 16px;">
+  <div style="max-width:520px; margin:0 auto; background-color:#ffffff; border-radius:12px; padding:32px; border:1px solid #eee2cf;">
+    <h1 style="color:#253ECC; font-size:22px; margin-top:0;">¡Bienvenido a tu año con Inglés con Leo!</h1>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Gracias por elegir el plan anual. Tu membresía ya está activa y tienes
+      12 meses completos para practicar a tu ritmo. Que decidas comprometerte
+      un año con tu inglés dice mucho de ti, y yo quiero que lo aproveches.
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Con un año por delante, lo que más importa es la constancia: unos minutos
+      casi todos los días rinden más que una sesión larga de vez en cuando.
+      Aquí tienes cómo empezar:
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;">
+      <tr><td style="color:#253ECC; font-size:15px; vertical-align:top; padding:4px 10px 4px 0;">1.</td><td style="color:#333; font-size:15px; line-height:1.5; padding:4px 0;">Entra a tu plan de estudio: está armado con tu nivel y tus puntos débiles.</td></tr>
+      <tr><td style="color:#253ECC; font-size:15px; vertical-align:top; padding:4px 10px 4px 0;">2.</td><td style="color:#333; font-size:15px; line-height:1.5; padding:4px 0;">Haz una sesión corta hoy mismo, aunque sean 10 minutos.</td></tr>
+      <tr><td style="color:#253ECC; font-size:15px; vertical-align:top; padding:4px 10px 4px 0;">3.</td><td style="color:#333; font-size:15px; line-height:1.5; padding:4px 0;">Elige una meta semanal en la Academia y ve completando los cursos uno por uno.</td></tr>
+    </table>
+    <div style="background-color:#1d2f7a; background-image:linear-gradient(135deg,#0b1736 0%,#1d2f7a 55%,#3554F0 100%); border-radius:12px; padding:20px 18px; margin:18px 0; color:#ffffff;">
+      <span style="display:inline-block; background-color:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); color:#ffffff; font-size:11px; font-weight:bold; letter-spacing:0.5px; text-transform:uppercase; border-radius:999px; padding:3px 10px;">✦ Leo AI · Incluido</span>
+      <p style="color:#ffffff; font-size:18px; font-weight:bold; line-height:1.3; margin:10px 0 6px;">Tu profesor de apoyo con IA ya está activo</p>
+      <p style="color:#dfe5ff; font-size:14px; line-height:1.5; margin:0 0 10px;">Después de contestar un ejercicio, busca los botones con la estrellita ✦:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Explícame por qué</strong>: te explica tu error en español sencillo</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Revisar mi frase con Leo AI</strong>: en Writing, te dice qué corregir</td></tr>
+        <tr><td style="color:#9fb1ff; font-size:14px; vertical-align:top; padding:3px 8px 3px 0;">✦</td><td style="color:#ffffff; font-size:14px; line-height:1.45; padding:3px 0;"><strong>Analizar mi sesión con Leo AI</strong>: al terminar, te dice qué reforzar</td></tr>
+      </table>
+    </div>
+    <p style="text-align:center; margin:28px 0;">
+      <a href="https://inglesconleo.com/miembros.html"
+         style="background-color:#253ECC; color:#ffffff; text-decoration:none;
+                padding:12px 24px; border-radius:8px; font-size:15px; display:inline-block;">
+        Entrar a mi cuenta
+      </a>
+    </p>
+    <p style="color:#333; font-size:15px; line-height:1.6;">
+      Si en algún momento tienes una duda o necesitas ayuda, puedes responder
+      directamente a este correo. Me llega a mí.
+    </p>
+    <p style="color:#333; font-size:15px; margin-bottom:0;">
+      Gracias por confiar en Inglés con Leo. ¡Nos vemos dentro!
     </p>
   </div>
 </div>
