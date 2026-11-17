@@ -554,6 +554,39 @@ function sweepJs(row, nowSec, hours){
     await s.send('checkout.session.completed', CHK_A, H(2)); await s.send('checkout.session.completed', CHK_A, H(3));
     assert.strictEqual(s.net.emails().length, 1, 'sigue habiendo una sola bienvenida'); assert.ok(s.row().member_welcome_sent_at);
   });
+  /* ---------- Fin del periodo pagado desde el primer pago (2026-11-17) ---------- */
+  const END_Y = 1826000000, END_M = 1797000000;
+  const subAnnualEnd = { id: 'sub_a', metadata: { plan: 'annual' }, items: { data: [{ current_period_end: END_Y, price: { recurring: { interval: 'year' } } }] } };
+  const subMonthlyEnd = { id: 'sub_a', metadata: { plan: 'monthly' }, items: { data: [{ current_period_end: END_M, price: { recurring: { interval: 'month' } } }] } };
+  await test('Primer pago: guarda el fin del periodo pagado (anual y mensual) con la fecha exacta de Stripe, sin cambiar la bienvenida', async()=>{
+    for(const [sub, end, anual] of [[subAnnualEnd, END_Y, true], [subMonthlyEnd, END_M, false]]){
+      const s = nuevo({ stripeSubs: { sub_a: sub } });
+      await s.send('checkout.session.completed', CHK_A, H(1));
+      assert.strictEqual(s.row().is_member, true);
+      assert.strictEqual(s.row().next_renewal_at, iso(end));
+      assert.strictEqual(s.net.emails().length, 1); assert.strictEqual(/año/.test(s.net.emails()[0].subject), anual);
+    }
+  });
+  await test('Repetir el aviso del primer pago deja la misma fecha y una sola bienvenida', async()=>{
+    const s = nuevo({ stripeSubs: { sub_a: subAnnualEnd } });
+    for(let i = 0; i < 3; i++) await s.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(s.row().next_renewal_at, iso(END_Y)); assert.strictEqual(s.net.emails().length, 1);
+  });
+  await test('Si Stripe no responde o la suscripcion no trae fecha, no se inventa ninguna y la membresia igual se activa', async()=>{
+    const sinFecha = { id: 'sub_a', metadata: { plan: 'annual' }, items: { data: [{ price: { recurring: { interval: 'year' } } }] } };
+    for(const stripeSubs of [{}, { sub_a: sinFecha }]){
+      const s = nuevo({ stripeSubs }); const r = await s.send('checkout.session.completed', CHK_A, H(1));
+      assert.strictEqual(r.status, 200); assert.strictEqual(s.row().is_member, true);
+      assert.ok(s.row().next_renewal_at == null, 'sin fecha de Stripe no se escribe ninguna');
+    }
+  });
+  await test('Un aviso atrasado del primer pago NO pisa una fecha mas nueva; una fecha vieja se actualiza', async()=>{
+    const mk = (fecha) => stripe({ net: { stripeSubs: { sub_a: subAnnualEnd } }, row: { is_member: false, member_welcome_sent_at: null, next_renewal_at: fecha } });
+    const nueva = mk(iso(END_Y + 86400 * 30)); await nueva.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(nueva.row().next_renewal_at, iso(END_Y + 86400 * 30));
+    const vieja = mk(iso(END_Y - 86400 * 30)); await vieja.send('checkout.session.completed', CHK_A, H(1));
+    assert.strictEqual(vieja.row().next_renewal_at, iso(END_Y));
+  });
   await test('Quien ya era miembro (repeticion del evento) no recibe otra bienvenida', async()=>{
     const s = stripe({ net: { stripeSubs: { sub_a: subAnnual } }, row: { is_member: true, member_welcome_sent_at: '2026-11-01T00:00:00Z' } });
     await s.send('checkout.session.completed', CHK_A, H(1));

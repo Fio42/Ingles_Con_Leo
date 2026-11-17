@@ -500,7 +500,8 @@ Deno.serve(async (req: Request) => {
         const yaEraMiembro = !!(existing && existing.is_member)
         // Plan comprado (anual o mensual) leído de la suscripción en Stripe. Si no se puede
         // saber (Stripe no responde), queda null y se manda el correo de siempre.
-        const plan = await detectPlan(obj)
+        const subInfo = await detectSubscriptionInfo(obj)
+        const plan = subInfo.plan
         const correoDestino = (existing && existing.email) || obj.customer_details?.email || obj.customer_email
 
         // Reclamo atómico de "pasó de gratis a miembro" (auditoría
@@ -545,6 +546,7 @@ Deno.serve(async (req: Request) => {
           .update({ payment_failed_at: null, payment_failed_email_sent_at: null, payment_failed_email_claimed_at: null })
           .eq('id', userId)
         if (customerId) await closeRecovery(String(customerId), 'paid')
+        await saveRenewalDate(userId, subInfo.periodEnd)
         if (correoDestino) {
           await ensureMemberWelcome(userId, correoDestino, plan)
         }
@@ -621,25 +623,55 @@ type Plan = 'annual' | 'monthly' | null
 // (el intervalo del precio es la fuente de verdad; la etiqueta metadata.plan que pone stripe-checkout
 // es el respaldo). Con tiempo límite de 5 s: si Stripe tarda o falla, devuelve null.
 async function detectPlan(session: any): Promise<Plan> {
+  return (await detectSubscriptionInfo(session)).plan
+}
+
+// (2026-11-17) La misma consulta a la suscripcion devuelve ademas el FIN DEL PERIODO
+// pagado (mensual o anual), para guardarlo desde el primer pago confirmado. Si Stripe no
+// responde o no trae la fecha, queda null y no se escribe nada (no se inventa una fecha;
+// la completa el siguiente aviso de la suscripcion).
+async function detectSubscriptionInfo(session: any): Promise<{ plan: Plan; periodEnd: string | null }> {
+  const none = { plan: null as Plan, periodEnd: null as string | null }
   try {
     const secret = Deno.env.get('STRIPE_SECRET_KEY') || ''
     const subId = typeof session?.subscription === 'string' ? session.subscription : session?.subscription?.id
-    if (!secret || !subId) return null
+    if (!secret || !subId) return none
     const res = await fetch(`https://api.stripe.com/v1/subscriptions/${encodeURIComponent(subId)}`, {
       headers: { Authorization: `Bearer ${secret}` },
       signal: AbortSignal.timeout(5000),
     })
-    if (!res.ok) return null
+    if (!res.ok) return none
     const sub = await res.json()
+    let plan: Plan = null
     const interval = sub?.items?.data?.[0]?.price?.recurring?.interval
-    if (interval === 'year') return 'annual'
-    if (interval === 'month') return 'monthly'
-    if (sub?.metadata?.plan === 'annual') return 'annual'
-    if (sub?.metadata?.plan === 'monthly') return 'monthly'
-    return null
+    if (interval === 'year') plan = 'annual'
+    else if (interval === 'month') plan = 'monthly'
+    else if (sub?.metadata?.plan === 'annual') plan = 'annual'
+    else if (sub?.metadata?.plan === 'monthly') plan = 'monthly'
+    // Stripe movio este dato al "item" desde la API 2025-03-31 ("basil"): se mira primero ahi.
+    const endUnix = sub?.items?.data?.[0]?.current_period_end ?? sub?.current_period_end
+    const periodEnd = typeof endUnix === 'number' && Number.isFinite(endUnix) && endUnix > 0 ? new Date(endUnix * 1000).toISOString() : null
+    return { plan, periodEnd }
   } catch (e) {
     console.error('Error detectando el plan (Stripe):', e)
-    return null
+    return none
+  }
+}
+
+// Guarda el fin del periodo pagado SOLO si no hay fecha o la guardada es mas vieja: un aviso
+// atrasado del primer pago nunca pisa una fecha mas nueva (p. ej. de una renovacion).
+// Aparte y sin romper la activacion si falla.
+async function saveRenewalDate(userId: string, periodEndIso: string | null): Promise<void> {
+  if (!periodEndIso) return
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ next_renewal_at: periodEndIso })
+      .eq('id', userId)
+      .or(`next_renewal_at.is.null,next_renewal_at.lt.${periodEndIso}`)
+    if (error) console.error('No se pudo guardar next_renewal_at:', error)
+  } catch (e) {
+    console.error('No se pudo guardar next_renewal_at:', e)
   }
 }
 
