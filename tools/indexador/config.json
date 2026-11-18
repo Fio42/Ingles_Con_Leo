@@ -40,6 +40,7 @@
     "/glosario/little-vs-a-little/"
   ],
   "excluir": [
+    { "patron": "/glosario/", "hasta": null, "motivo": "Glosario fuera del robot: Google rechaza las solicitudes y gasta la cuota diaria (decision 18-nov)" },
     { "patron": "/glosario/despite-vs-although/", "hasta": "2026-10-26", "motivo": "Ventana de medicion hasta el 26-oct" },
     { "patron": "/glosario/mustnt-vs-dont-have-to/", "hasta": "2026-10-26", "motivo": "Ventana de medicion hasta el 26-oct" },
     { "patron": "/glosario/though/", "hasta": "2026-10-26", "motivo": "Ventana de medicion hasta el 26-oct" },
