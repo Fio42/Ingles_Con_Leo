@@ -587,7 +587,7 @@
     },
 
     privateClasses: {
-      text:'Leo da clases particulares online: clase individual de 50 minutos por US$25. Consultas la disponibilidad por WhatsApp o correo desde la página de clases particulares.',
+      text:'Leo da clases particulares online: clase individual de 50 minutos. Para coordinar tu clase y conocer los detalles, escríbele por WhatsApp o correo desde la página de clases particulares.',
       options:[
         { label:'Ver clases particulares →', href:'clases-particulares.html' }
       ]

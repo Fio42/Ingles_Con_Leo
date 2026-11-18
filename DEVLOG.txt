@@ -2224,3 +2224,11 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Pruebas: payment-recovery 41 ok, stripe-checkout-pendiente 65 ok (Stripe/PayPal/MP; mutacion verificada), payment-grace 54 PASS. Fallos que YA existian: checkout-abandonado (cuenta 4 llamadas de checkout en miembros.html, espera 3; HEAD ya tenia 2 de Stripe), academia-articulos (17, datos del curso).
 - Bienvenida anual: NO es parte de este commit; ya esta en el commit d2a801b y NO esta desplegada. El webhook desplegado hoy es el de 6272b9f (SHA-256 fc906cd7). Al desplegar el archivo actual salen juntos: d2a801b (bienvenida anual, ~96 lineas) + recuperacion (~4 lineas).
 - Pendiente para activar: aplicar SQL, desplegar stripe-webhook, stripe-checkout, paypal-checkout, create-checkout (super-service) y payment-recovery-emails (Verify JWT apagado), dry_run, programar cron, cambiar reintentos a 1 mes en Stripe.
+
+2026-11-18 (14:10) - Clases particulares: se quita el precio (US$25) y queda solo el contacto. Nada desplegado hasta que Leo haga push.
+- Pedido de Leo: que no aparezca el costo de las clases personalizadas, solo que lo contacten.
+- clases-particulares.html: fuera el precio del titulo, la descripcion, og/twitter, el chip del hero, el bloque de precio, la pregunta frecuente de costo, el texto de paquetes y el pie. Se quita "offers" (price 25 USD) del JSON-LD Service (sigue siendo JSON valido). Los botones "Reservar mi clase" (calendario de TidyCal) pasan a WhatsApp con mensaje prellenado; el bloque final ofrece WhatsApp y correo. Eventos: ahora data-contact (classes_whatsapp_*_click + Meta Contact) en lugar de classes_availability_click, que ya no existe en la pagina.
+- chatbot.js: la respuesta sobre clases particulares ya no dice el precio.
+- sitemap.xml: lastmod de clases-particulares.html a 2026-11-18.
+- Comprobado en Chrome a 390 px: sin desborde horizontal, sin texto de precio, sin enlaces a TidyCal.
+- Pendiente de Leo: el calendario de TidyCal sigue mostrando el precio a quien tenga el enlace (se cambia en TidyCal, no en el sitio). Google puede seguir mostrando "US$25" en el resultado hasta que vuelva a rastrear la pagina.
