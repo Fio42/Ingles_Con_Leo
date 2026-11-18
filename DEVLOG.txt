@@ -4093,3 +4093,4 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - index.html: nueva seccion "Miralo en 35 segundos" justo despues del hero. Portada (poster webp de 42 KB) con boton de play; el mp4 (2,7 MB) NO se descarga hasta que la persona toca play (sin autoplay, sin ruido al cargar). aspect-ratio 16/9 reservado, sin saltos de layout. Incluye VideoObject en JSON-LD y evento GA4 video_promo_play.
 - video/promo-ingles-con-leo.mp4 (1280x720, H.264 + AAC, faststart) y video/promo-ingles-con-leo-poster.webp. Musica: NastelBom "Corporate Soft" (Pixabay Content License).
 - style.css: bloque .home-video* al final; index.html pide style.css?v=20261118v.
+- Video del inicio: titulo ahora "Asi funciona Ingles con Leo en 35 segundos" (tambien en el VideoObject) y encabezado + recuadro centrados desde 700 px; en telefono queda como estaba.

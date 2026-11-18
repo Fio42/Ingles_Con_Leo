@@ -2482,4 +2482,5 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 .home-video-el{display:block;width:100%;height:100%;background:#000;}
 .home-video-nojs{margin-top:10px;}
 @media (max-width:599px){ .home-video-btn{height:40px;padding:0 18px 0 13px;font-size:.9rem;bottom:15%;} .home-video-btn svg{width:18px;height:18px;} }
+@media (min-width:700px){ .home-video .section-head{max-width:760px;margin-left:auto;margin-right:auto;text-align:center;} .home-video-box{margin-left:auto;margin-right:auto;} }
 @media (min-width:900px){ .home-video{padding-top:56px;} }
