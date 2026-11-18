@@ -2232,3 +2232,11 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - sitemap.xml: lastmod de clases-particulares.html a 2026-11-18.
 - Comprobado en Chrome a 390 px: sin desborde horizontal, sin texto de precio, sin enlaces a TidyCal.
 - Pendiente de Leo: el calendario de TidyCal sigue mostrando el precio a quien tenga el enlace (se cambia en TidyCal, no en el sitio). Google puede seguir mostrando "US$25" en el resultado hasta que vuelva a rastrear la pagina.
+
+2026-11-18 (15:05) - Foto real de Leo con mas presencia en la portada (nada desplegado hasta que Leo haga push)
+- Pedido de Leo: mas seriedad, no solo avatar. La foto formal ya estaba en el sitio (leo-real.webp, 360 px); se reutiliza, no se sube otra.
+- index.html: el bloque "Detras del sistema esta el Profe Leo" sube al segundo lugar (justo despues de "Como funciona"; antes era el cuarto), con la foto mas grande (168 px, borde y sombra) y dos chips: "+12 anos ensenando ingles" y "Metodo creado por Leo". Solo datos que Leo ya afirmaba en el sitio. En "Gratis o miembro" se anade la linea "Disenado y dirigido por el Profe Leo" con la foto a 36 px.
+- sobre-leo.html: misma foto a 168 px (usa la misma clase).
+- style.css: .home-trust-photo 168 px con borde y sombra; estilos nuevos .home-trust-chips y .home-plans-by (al final del archivo).
+- Comprobado en Chrome a 390 y 1280 px: sin desborde horizontal; secciones y divs balanceados (12/12 y 78/78); no se tocaron glosario ni articulos (experimento del 13-nov intacto).
+- Hero: sin cambios. Ya muestra la foto real a 42 px en la barra "Un mensaje del Profe Leo". No se agrando para no mover el layout ni sumar CLS. Pendiente de decidir: foto en la firma de los articulos y junto al video de la portada.
