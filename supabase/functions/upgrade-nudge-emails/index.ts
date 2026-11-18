@@ -2085,174 +2085,202 @@ const REACTIVATION_VARIANTS: Partial<Record<EmailKey, EmailContent[]>> = {
 
 // ---------------- Correos después del día 30 (long_term) ----------------
 // Se mandan en este orden, uno cada LONG_TERM_INTERVAL_DAYS. Cada uno
-// trae algo útil (un tip real) para que valga la pena abrirlo; solo
-// algunos mencionan la membresía, y siempre de forma suave. Para
-// alargar la secuencia, agrega correos nuevos AL FINAL (nunca en medio
+// (reescritos el 2026-11-17) enseña algo que se aplica de inmediato y trae un
+// mini ejercicio con su respuesta en el mismo correo; el objetivo es que la
+// persona vuelva y complete UN ejercicio gratis. La membresía solo se
+// menciona en el correo 7, y su botón también lleva a práctica gratis.
+// Para alargar la secuencia, agrega correos nuevos AL FINAL (nunca en medio
 // ni reordenando: el orden es lo que usa long_term_count). No repetir
 // tips que ya salen en otros correos (edad con to be, falsos amigos,
 // people are, English Rush, test de nivel, reto diario).
+//
+// Medición: cada botón lleva utm_campaign=reactivacion_gratis y un
+// utm_content distinto por correo (lt_01 a lt_07). GA4 los toma solo de la
+// URL de aterrizaje; no llevan datos personales. NO cambiar el orden sin
+// cambiar también su número lt_0N.
+function ltUrl(path: string, n: number): string {
+  const sep = path.includes('?') ? '&' : '?'
+  return `${SITE}/${path}${sep}utm_source=email&utm_medium=email&utm_campaign=reactivacion_gratis&utm_content=lt_0${n}`
+}
 const LONG_TERM_EMAILS: EmailContent[] = [
+  // 1. Frases naturales
   {
-    subject: '4 frases para sonar más natural en inglés',
-    preheader: 'Las usan los nativos todo el tiempo y casi nunca salen en los libros.',
+    subject: '¿Cómo dices «ya voy en camino» en inglés?',
+    preheader: 'Una frase que puedes usar hoy mismo.',
     greeting: '¡Hola! 👋',
-    title: 'Suena más natural con estas 4 frases',
+    title: 'Ya voy en camino',
     bodyHtml: `
+    <p style="${P}">
+      Te escriben «¿Ya vienes?» y tú ya saliste de casa. ¿Qué responderías?
+    </p>
     <div style="${BOX}">
-      <strong>No worries.</strong> No te preocupes / No pasa nada.<br>
-      <strong>Sounds good.</strong> Me parece bien.<br>
-      <strong>I'm on my way.</strong> Voy en camino.<br>
-      <strong>How's it going?</strong> ¿Cómo va todo?
+      <strong>A.</strong> I’m on my way.<br>
+      <strong>B.</strong> Sounds good.
     </div>
     <p style="${P}">
-      Son cortas, sirven en casi cualquier conversación y te hacen sonar
-      mucho menos "de libro". Pruébalas esta semana en un mensaje.
+      La respuesta es <strong>A</strong>. <em>I’m on my way</em> significa
+      «Voy en camino». <em>Sounds good</em> significa «Me parece bien» y lo
+      puedes usar cuando alguien te propone un plan.
+    </p>
+    <p style="${P}">
+      Si hoy tienes un minuto, prueba otro ejercicio en la academia.
     </p>`,
-    ctaText: 'Practicar un poco hoy',
-    ctaUrl: `${SITE}/practica.html`,
+    ctaText: 'Hacer un ejercicio gratis',
+    ctaUrl: ltUrl('practica.html', 1),
     footerNote: '¿Qué frase te cuesta decir en inglés? Respóndeme y te ayudo.',
   },
+  // 2. Los sonidos de -ed
   {
-    subject: '¿Worked se pronuncia "work-ed"? 🤔',
-    preheader: 'La terminación -ed tiene 3 sonidos distintos. Así los distingues.',
+    subject: '¿Worked se pronuncia «work-ed»?',
+    preheader: 'Prueba una regla con tres palabras que ya conoces.',
     greeting: '¡Hola! 👋',
-    title: 'Los 3 sonidos de la -ed',
+    title: 'Escucha la diferencia',
     bodyHtml: `
     <p style="${P}">
-      En pasado, la -ed casi nunca se pronuncia "ed". Tiene 3 sonidos:
+      <em>Worked</em> (trabajé) termina con sonido <strong>/t/</strong>.
+      <em>Played</em> (jugué) termina con <strong>/d/</strong>. En
+      <em>wanted</em> (quería), la terminación suena <strong>/ɪd/</strong> y
+      añade una sílaba.
+    </p>
+    <p style="${P}">
+      Ahora prueba con <em>needed</em> (necesitaba). ¿Termina como
+      <em>played</em> o como <em>wanted</em>?
     </p>
     <div style="${BOX}">
-      <strong>/t/</strong> worked, stopped, watched (suena "workt")<br>
-      <strong>/d/</strong> played, called, lived (suena "pleid")<br>
-      <strong>/id/</strong> wanted, needed (solo después de t o d)
-    </div>
-    <p style="${P}">
-      La mejor forma de agarrarle el oído es escuchando frases reales.
-      Los ejercicios de listening son justo para eso.
-    </p>`,
-    ctaText: 'Hacer un listening',
-    ctaUrl: `${SITE}/practica.html?skill=listening`,
+      Como <strong>wanted</strong>. Si el verbo termina en sonido /t/ o /d/,
+      la terminación <em>-ed</em> añade una sílaba.
+    </div>`,
+    ctaText: 'Hacer una práctica de listening',
+    ctaUrl: ltUrl('practica.html?skill=listening', 2),
     footerNote: '¿Dudas? Responde este correo, lo leo yo.',
   },
+  // 3. Verbos irregulares
   {
-    subject: 'Los 5 verbos irregulares que más vas a usar',
-    preheader: 'Si te sabes estos, ya cubres una buena parte de las conversaciones.',
+    subject: '¿Yesterday I go o Yesterday I went?',
+    preheader: 'Completa una frase sobre algo que hiciste ayer.',
     greeting: '¡Hola! 👋',
-    title: '5 verbos irregulares que no pueden faltar',
-    bodyHtml: `
-    <div style="${BOX}">
-      <strong>go / went</strong> ir / fui<br>
-      <strong>have / had</strong> tener / tuve<br>
-      <strong>make / made</strong> hacer / hice<br>
-      <strong>get / got</strong> conseguir, llegar / conseguí, llegué<br>
-      <strong>say / said</strong> decir / dije
-    </div>
-    <p style="${P}">
-      Si quieres la lista completa con traducción, está en
-      <a href="${SITE}/articulo-verbos-irregulares.html" style="${LINK}">esta guía gratis</a>.
-      Y si quieres practicarlos sin límite y que Leo AI te explique cada
-      vez que te equivocas, la membresía cuesta $2 USD al mes.
-    </p>`,
-    ctaText: 'Practicar gramática',
-    ctaUrl: `${SITE}/practica.html?skill=grammar`,
-    footerNote: 'Tu cuenta gratis sigue funcionando igual, sin presión.',
-  },
-  {
-    subject: '¿Make o do? El truco para no confundirlos',
-    preheader: 'Los dos significan "hacer", pero no se usan igual.',
-    greeting: '¡Hola! 👋',
-    title: 'Make vs do, en 30 segundos',
+    title: 'Habla de ayer en inglés',
     bodyHtml: `
     <p style="${P}">
-      Regla rápida: <strong>make</strong> es crear o producir algo;
-      <strong>do</strong> es realizar una tarea o actividad.
+      ¿Cómo dirías «Ayer fui al trabajo»?
     </p>
     <div style="${BOX}">
-      make a mistake, make a decision, make dinner<br>
-      do homework, do the dishes, do exercise
+      <em>Yesterday I ___ to work.</em><br><br>
+      <strong>A.</strong> go<br>
+      <strong>B.</strong> went
     </div>
     <p style="${P}">
-      Hay excepciones, pero con esta regla aciertas la mayoría de las veces.
+      La respuesta es <strong>B</strong>. <em>Went</em> es el pasado de
+      <em>go</em>. También puedes cambiar el final para hablar de tu día:
+      <em>Yesterday I went to the store.</em> Ayer fui a la tienda.
     </p>`,
-    ctaText: 'Ponerlo a prueba',
-    ctaUrl: `${SITE}/practica.html?skill=grammar`,
+    ctaText: 'Practicar gramática gratis',
+    ctaUrl: ltUrl('practica.html?skill=grammar&tema=verbos-irregulares', 3),
+    footerNote: '¿Dudas? Responde este correo, lo leo yo.',
+  },
+  // 4. Make vs. do
+  {
+    subject: '¿Make o do a decision?',
+    preheader: 'Dos formas de decir «hacer» y un ejemplo para recordarlas.',
+    greeting: '¡Hola! 👋',
+    title: '¿Make o do?',
+    bodyHtml: `
+    <p style="${P}">
+      Completa esta frase: <em>I need to ___ a decision.</em> Necesito tomar
+      una decisión.
+    </p>
+    <div style="${BOX}">
+      <strong>A.</strong> make<br>
+      <strong>B.</strong> do
+    </div>
+    <p style="${P}">
+      La respuesta es <strong>A</strong>. En inglés decimos
+      <em>make a decision</em> para «tomar una decisión» y
+      <em>do your homework</em> para «hacer la tarea». Aprender la expresión
+      completa te ayuda a usarla en una conversación.
+    </p>`,
+    ctaText: 'Hacer otro ejercicio de gramática',
+    ctaUrl: ltUrl('practica.html?skill=grammar', 4),
     footerNote: '¿Te sirven estos tips? Respóndeme y dime qué tema quieres en el próximo.',
   },
+  // 5. Entrevista de trabajo
   {
-    subject: '"Tell me about yourself": cómo responder en inglés',
-    preheader: 'La pregunta que abre casi todas las entrevistas de trabajo.',
+    subject: 'Qué decir cuando te preguntan «Tell me about yourself»',
+    preheader: 'Arma tu respuesta con tres frases sencillas.',
     greeting: '¡Hola! 👋',
-    title: 'Tu respuesta en 3 pasos',
+    title: 'Cuéntame sobre ti',
     bodyHtml: `
     <p style="${P}">
-      Si algún día tienes una entrevista en inglés, casi seguro empieza con
-      esta pregunta. Una estructura simple que funciona:
+      Si te hacen esta pregunta en una entrevista, empieza con lo que haces
+      hoy, menciona una experiencia anterior y termina con lo que buscas.
     </p>
     <div style="${BOX}">
-      <strong>1. Presente:</strong> I'm a sales assistant at...<br>
-      <strong>2. Pasado:</strong> Before that, I worked in...<br>
-      <strong>3. Futuro:</strong> Now I'm looking for...
+      <em>I work in customer service.</em> Trabajo en atención al cliente.<br><br>
+      <em>Before that, I worked in sales.</em> Antes trabajaba en ventas.<br><br>
+      <em>Now I’m looking for a role where I can use my English.</em> Ahora
+      busco un puesto donde pueda usar mi inglés.
     </div>
     <p style="${P}">
-      En <a href="${SITE}/articulo-entrevista-trabajo-ingles.html" style="${LINK}">esta guía</a>
-      tienes más preguntas comunes con ejemplos de respuesta.
+      Ahora cambia la primera frase por algo sobre ti y dila en voz alta.
     </p>`,
-    ctaText: 'Leer la guía',
-    ctaUrl: `${SITE}/articulo-entrevista-trabajo-ingles.html`,
+    ctaText: 'Ver más ejemplos de entrevista',
+    ctaUrl: ltUrl('articulo-entrevista-trabajo-ingles.html', 5),
     footerNote: '¿Tienes una entrevista pronto? Respóndeme y cuéntame para qué puesto.',
   },
+  // 6. In, on, at
   {
-    subject: '¿In, on o at? Así se usan con el tiempo',
-    preheader: 'Una regla de "de grande a pequeño" que te ahorra muchos errores.',
+    subject: '¿In, on o at 7 p.m.?',
+    preheader: 'Una pregunta rápida para hablar de horarios.',
     greeting: '¡Hola! 👋',
-    title: 'In, on, at: de grande a pequeño',
+    title: '¿A qué hora?',
     bodyHtml: `
+    <p style="${P}">
+      Completa esta frase: <em>The class starts ___ 7 p.m.</em> La clase
+      empieza a las siete.
+    </p>
     <div style="${BOX}">
-      <strong>in</strong> para lo más grande: in 2026, in March, in summer<br>
-      <strong>on</strong> para días: on Monday, on my birthday<br>
-      <strong>at</strong> para horas exactas: at 7 pm, at night
+      <strong>A.</strong> in<br>
+      <strong>B.</strong> on<br>
+      <strong>C.</strong> at
     </div>
     <p style="${P}">
-      Llevas un buen tiempo con tu cuenta. Si quieres dar el siguiente
-      paso, la membresía te da práctica sin límite diario, Leo AI para
-      entender tus errores y preparación para exámenes por $2 USD al mes
-      (o $20 USD al año).
+      La respuesta es <strong>C</strong>. Usa <strong>at</strong> para horas
+      (<em>at 7 p.m.</em>) y en expresiones como <em>at night</em> (por la
+      noche). Usa <strong>on</strong> para días (<em>on Monday</em>, el
+      lunes) e <strong>in</strong> para meses (<em>in March</em>, en marzo).
     </p>`,
-    ctaText: 'Seguir practicando',
-    ctaUrl: `${SITE}/practica.html`,
+    ctaText: 'Practicar gramática gratis',
+    ctaUrl: ltUrl('practica.html?skill=grammar', 6),
     footerNote: 'Gracias por seguir aquí. Si algo se puede mejorar, respóndeme: lo leo yo.',
   },
-  // 2026-10-02: presentación de Leo AI. Va al final a propósito: quien ya
-  // terminó la lista lo recibe en su siguiente turno (sin correo masivo
-  // aparte) y quien va a la mitad lo recibe cuando le toque.
+  // 7. Leo AI (única mención de la membresía; el botón lleva a práctica gratis)
   {
-    subject: '¿Por qué "I didn\'t went" está mal? 🤖',
-    preheader: 'Así te lo explicaría Leo AI, la nueva herramienta de la membresía.',
+    subject: '¿Por qué decimos I didn’t go?',
+    preheader: 'Una regla que puedes usar cada vez que hables en pasado.',
     greeting: '¡Hola! 👋',
-    title: 'Equivocarte está bien. Quedarte con la duda, no',
+    title: 'Así te explica Leo AI un error',
     bodyHtml: `
-    <p style="${P}">Mira este error, de los más comunes:</p>
+    <p style="${P}">
+      ¿Cómo dirías «Ayer no fui al trabajo»?
+    </p>
     <div style="${BOX}">
-      ✗ I didn't went to work yesterday.<br>
-      ✓ I didn't go to work yesterday.<br><br>
-      <em>Después de <strong>didn't</strong> el verbo va en su forma base. El
-      "pasado" ya lo lleva did, así que no hace falta ponerlo dos veces.</em>
+      <strong>A.</strong> I didn’t went to work yesterday.<br>
+      <strong>B.</strong> I didn’t go to work yesterday.
     </div>
     <p style="${P}">
-      Ese tipo de explicación, pensada para tu error y en español, es lo que
-      hace Leo AI dentro de cada ejercicio de la membresía.
+      La respuesta es <strong>B</strong>. <em>Didn’t</em> ya marca el pasado.
+      Después, el verbo vuelve a su forma base. Por eso usamos <em>go</em>.
     </p>
-    ${aiCard(
-      'Leo AI: tu profesor de apoyo con IA',
-      'Incluido en la membresía de $2 USD al mes, sin costo extra:',
-      [
-        'Te explica cada error en segundos, con un ejemplo',
-        'Revisa tus frases de Writing y te dice qué corregir',
-        'Analiza tus errores y tu progreso para decirte qué reforzar',
-      ],
-    )}`,
-    ctaText: 'Conocer Leo AI',
-    ctaUrl: `${SITE}/miembros.html`,
+    <p style="${P}">
+      Así te ayuda <strong>Leo AI</strong> en la membresía. Si te equivocas,
+      te explica en español qué pasó y te da un ejemplo para que puedas
+      intentarlo otra vez.
+    </p>
+    <p style="${P}">
+      Puedes volver a practicar hoy con tu cuenta gratis.
+    </p>`,
+    ctaText: 'Hacer un ejercicio gratis',
+    ctaUrl: ltUrl('practica.html', 7),
     footerNote: 'Sin presión: tu cuenta gratis sigue funcionando igual si prefieres seguir así.',
   },
 ]
