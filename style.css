@@ -2469,3 +2469,17 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 .home-trust-chips li{background:var(--blue-tint);color:var(--blue-deep);font-weight:700;font-size:0.84rem;line-height:1.2;padding:7px 12px;border-radius:999px;}
 .home-plans-by{display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:700;font-size:0.92rem;color:var(--ink);}
 .home-plans-by img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:center top;border:2px solid #fff;box-shadow:0 2px 8px rgba(27,35,51,0.18);flex-shrink:0;}
+
+/* Video promo del inicio (18-nov): portada con play, el video carga solo al tocar */
+.home-video{padding:40px 0 8px;}
+.home-video .section-head{margin-bottom:18px;}
+.home-video-box{position:relative;max-width:880px;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:#E7E2D6;box-shadow:0 10px 34px rgba(27,35,51,0.16);}
+.home-video-play{display:block;position:relative;width:100%;height:100%;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.home-video-play img{display:block;width:100%;height:100%;object-fit:cover;}
+.home-video-btn{position:absolute;left:6%;bottom:24%;height:54px;padding:0 24px 0 18px;gap:8px;border-radius:999px;background:var(--blue);color:#fff;font-weight:700;font-size:1.02rem;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 26px rgba(53,84,240,0.45);transition:transform .2s ease;}
+.home-video-play:hover .home-video-btn,.home-video-play:focus-visible .home-video-btn{transform:scale(1.06);}
+.home-video-play:focus-visible{outline:3px solid var(--blue);outline-offset:-3px;}
+.home-video-el{display:block;width:100%;height:100%;background:#000;}
+.home-video-nojs{margin-top:10px;}
+@media (max-width:599px){ .home-video-btn{height:40px;padding:0 18px 0 13px;font-size:.9rem;bottom:15%;} .home-video-btn svg{width:18px;height:18px;} }
+@media (min-width:900px){ .home-video{padding-top:56px;} }

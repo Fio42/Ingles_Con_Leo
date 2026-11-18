@@ -28,7 +28,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261109c">
+<link rel="stylesheet" href="style.css?v=20261118x">
 <link rel="preload" as="style" href="chatbot.css?v=20261031a">
 <link rel="stylesheet" href="chatbot.css?v=20261031a" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261031a"></noscript>
@@ -53,6 +53,19 @@
   "@type": "WebSite",
   "name": "Inglés con Leo",
   "url": "https://inglesconleo.com/"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "Inglés con Leo en 35 segundos",
+  "description": "Practica inglés desde tu nivel y recibe explicaciones en español de Leo AI cuando te equivocas.",
+  "thumbnailUrl": "https://inglesconleo.com/video/promo-ingles-con-leo-poster.webp",
+  "uploadDate": "2026-11-18",
+  "duration": "PT35S",
+  "contentUrl": "https://inglesconleo.com/video/promo-ingles-con-leo.mp4",
+  "inLanguage": "es"
 }
 </script>
 <!-- Google Analytics (gtag.js) + Meta Pixel.
@@ -170,6 +183,38 @@
       </div>
     </div>
   </section>
+
+  <!-- VIDEO PROMO: portada con boton; el video solo se descarga al dar play -->
+  <section class="home-video" id="video" aria-labelledby="home-video-title">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2 id="home-video-title">Míralo en 35 segundos</h2>
+        <p>Así practicas y así te explica Leo AI cada error.</p>
+      </div>
+      <div class="home-video-box reveal">
+        <button type="button" class="home-video-play" id="homeVideoPlay" aria-label="Reproducir el video de Inglés con Leo">
+          <img src="video/promo-ingles-con-leo-poster.webp" alt="" width="1280" height="720" loading="lazy" decoding="async">
+          <span class="home-video-btn" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>Ver video</span>
+        </button>
+      </div>
+      <noscript><p class="home-video-nojs"><a href="video/promo-ingles-con-leo.mp4">Ver el video (35 s)</a></p></noscript>
+    </div>
+  </section>
+  <script>
+  (function(){
+    var b=document.getElementById('homeVideoPlay'); if(!b) return;
+    b.addEventListener('click',function(){
+      var box=b.parentNode, v=document.createElement('video');
+      v.controls=true; v.autoplay=true; v.playsInline=true; v.setAttribute('playsinline','');
+      v.preload='auto'; v.poster='video/promo-ingles-con-leo-poster.webp'; v.src='video/promo-ingles-con-leo.mp4';
+      v.setAttribute('aria-label','Video de Inglés con Leo');
+      v.className='home-video-el';
+      box.replaceChild(v,b);
+      var p=v.play(); if(p&&p.catch) p.catch(function(){});
+      try{ if(window.gtag) gtag('event','video_promo_play',{video_title:'promo_inicio'}); }catch(e){}
+    });
+  })();
+  </script>
 
   <!-- CÓMO FUNCIONA -->
   <section class="how-v2">
