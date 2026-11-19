@@ -1,4 +1,4 @@
-# SITE HEALTH — 2026-11-18
+# SITE HEALTH — 2026-11-19
 
 🔴 Críticos: 0
 🟠 Importantes: 1
@@ -40,52 +40,52 @@ Acción: Nada que hacer, salvo que algún día se quite el pixel.
 
 | Página | Performance | SEO | Accesibilidad | Best Practices | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|
-| Home | 89/100 | 100/100 | 100/100 | 100/100 | 3151ms | 0.002 | 236ms |
-| Práctica (gratis) | 95/100 | 100/100 | 94/100 | 100/100 | 1095ms | 0.002 | 246ms |
-| Artículos (índice) | 93/100 | 100/100 | 96/100 | 100/100 | 1994ms | 0.003 | 237ms |
-| Artículo: verbo to be | 96/100 | 100/100 | 100/100 | 100/100 | 1094ms | 0.004 | 227ms |
-| Artículo: presente simple | 92/100 | 100/100 | 100/100 | 100/100 | 1060ms | 0.022 | 342ms |
-| Artículo: cómo aprender desde cero | 93/100 | 100/100 | 100/100 | 100/100 | 2101ms | 0.002 | 241ms |
-| Miembros (landing de pago) | 86/100 | 100/100 | 98/100 | 77/100 | 1145ms | 0.033 | 550ms |
+| Home | 94/100 | 100/100 | 100/100 | 100/100 | 2807ms | 0.002 | 152ms |
+| Práctica (gratis) | 97/100 | 100/100 | 94/100 | 100/100 | 1128ms | 0.002 | 184ms |
+| Artículos (índice) | 96/100 | 100/100 | 96/100 | 100/100 | 2027ms | 0.003 | 158ms |
+| Artículo: verbo to be | 98/100 | 100/100 | 100/100 | 100/100 | 1146ms | 0.004 | 150ms |
+| Artículo: presente simple | 97/100 | 100/100 | 100/100 | 100/100 | 1117ms | 0.022 | 209ms |
+| Artículo: cómo aprender desde cero | 98/100 | 100/100 | 100/100 | 100/100 | 1121ms | 0.002 | 153ms |
+| Miembros (landing de pago) | 91/100 | 100/100 | 98/100 | 77/100 | 1125ms | 0.078 | 337ms |
 
 ### Detalle de rendimiento (qué retrasa cada página)
 
-- home: LCP 3151ms en `div.wrap > div.hero-v2-media > div.hero-v2-character-wrap > img.hero-v` (timeToFirstByte 38ms, resourceLoadDelay 10ms, resourceLoadDuration 24ms, elementRenderDelay 80ms)
-  - Bloquean el render: inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms); inglesconleo.com/style.css (317ms)
-  - Peticiones más lentas: xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 186ms (tercero); connect.facebook.net/en_US/fbevents.js 109ms (tercero); www.googletagmanager.com/gtag/js 69ms (tercero)
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 2990, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 46 y 98 (mediana 83); este valor (89) ya se había visto.
-- practica: LCP 1095ms en `main#practicaMain > section.page-hero > div.wrap > h1` (timeToFirstByte 122ms, elementRenderDelay 199ms)
+- home: LCP 2807ms en `div.wrap > div.hero-v2-media > div.hero-v2-character-wrap > img.hero-v` (timeToFirstByte 55ms, resourceLoadDelay 17ms, resourceLoadDuration 34ms, elementRenderDelay 68ms)
+  - Bloquean el render: inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/style.css (328ms); inglesconleo.com/academia-lanzamiento.js (nullms)
+  - Peticiones más lentas: www.googletagmanager.com/gtag/js 139ms (tercero); xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 112ms (tercero); fonts.googleapis.com/css2 98ms (tercero)
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4101, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 46 y 98 (mediana 83); este valor (94) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- practica: LCP 1128ms en `main#practicaMain > section.page-hero > div.wrap > h1` (timeToFirstByte 102ms, elementRenderDelay 192ms)
   - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms)
-  - Peticiones más lentas: inglesconleo.com/data.js 279ms; xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 192ms (tercero); inglesconleo.com/practica.html 121ms
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 2974, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 53 y 98 (mediana 85); este valor (95) ya se había visto.
-- articulos: LCP 1994ms en `div.wrap > a.article-featured > div.article-featured-body > p` (timeToFirstByte 35ms, elementRenderDelay 117ms)
-  - Bloquean el render: inglesconleo.com/style.css (158ms); inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms)
-  - Peticiones más lentas: xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 182ms (tercero); connect.facebook.net/en_US/fbevents.js 134ms (tercero); img.youtube.com/vi/JPq1KBBsbtI/hqdefault.jpg 101ms (tercero)
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 2970, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 54 y 98 (mediana 89); este valor (93) ya se había visto.
-- articulo-verbo-to-be: LCP 1094ms en `body > main > article.article-body > p` (timeToFirstByte 132ms, elementRenderDelay 181ms)
-  - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/style.css (317ms); inglesconleo.com/error-monitor.js (nullms)
-  - Peticiones más lentas: iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 245ms (tercero); xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 207ms (tercero); inglesconleo.com/article-quiz.js 164ms
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 3059, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 75 y 98 (mediana 87); este valor (96) ya se había visto.
-- articulo-presente-simple: LCP 1060ms en `body > main > article.article-body > p` (timeToFirstByte 104ms, elementRenderDelay 73ms)
-  - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/style.css (303ms)
-  - Peticiones más lentas: xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 217ms (tercero); iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 183ms (tercero); connect.facebook.net/en_US/fbevents.js 122ms (tercero)
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 2995, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 69 y 98 (mediana 87); este valor (92) ya se había visto.
-- articulo-como-aprender-desde-cero: LCP 2101ms en `body > main > article.article-body > p` (timeToFirstByte 36ms, elementRenderDelay 90ms)
-  - Bloquean el render: inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms)
-  - Peticiones más lentas: xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 209ms (tercero); iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 160ms (tercero); connect.facebook.net/en_US/fbevents.js 111ms (tercero)
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 2947, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 50 y 98 (mediana 86); este valor (93) ya se había visto.
-- miembros: LCP 1145ms en `main > div#gate > div > h1` (timeToFirstByte 125ms, elementRenderDelay 300ms)
-  - Bloquean el render: inglesconleo.com/style.css (151ms); inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms)
-  - Peticiones más lentas: inglesconleo.com/app.js 274ms; inglesconleo.com/data.js 265ms; xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 209ms (tercero)
+  - Peticiones más lentas: www.googletagmanager.com/gtag/js 196ms (tercero); inglesconleo.com/data.js 152ms; inglesconleo.com/meta-pixel.js 114ms
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4037, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 53 y 98 (mediana 85.5); este valor (97) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- articulos: LCP 2027ms en `div.wrap > a.article-featured > div.article-featured-body > p` (timeToFirstByte 108ms, elementRenderDelay 161ms)
+  - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/style.css (164ms); inglesconleo.com/error-monitor.js (nullms)
+  - Peticiones más lentas: connect.facebook.net/signals/config/2182739922655837 235ms (tercero); www.googletagmanager.com/gtag/js 182ms (tercero); img.youtube.com/vi/fhbmGfsFAwY/hqdefault.jpg 150ms (tercero)
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4108, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 54 y 98 (mediana 89); este valor (96) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- articulo-verbo-to-be: LCP 1146ms en `body > main > article.article-body > p` (timeToFirstByte 103ms, elementRenderDelay 73ms)
+  - Bloquean el render: inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/style.css (326ms)
+  - Peticiones más lentas: iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 384ms (tercero); www.googletagmanager.com/gtag/js 187ms (tercero); fonts.googleapis.com/css2 136ms (tercero)
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4176, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 75 y 98 (mediana 87.5); este valor (98) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- articulo-presente-simple: LCP 1117ms en `body > main > article.article-body > p` (timeToFirstByte 106ms, elementRenderDelay 103ms)
+  - Bloquean el render: inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms); inglesconleo.com/meta-pixel.js (nullms)
+  - Peticiones más lentas: www.googletagmanager.com/gtag/js 185ms (tercero); iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 162ms (tercero); xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 143ms (tercero)
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4020, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 69 y 98 (mediana 87.5); este valor (97) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- articulo-como-aprender-desde-cero: LCP 1121ms en `body > main > article.article-body > p` (timeToFirstByte 55ms, elementRenderDelay 87ms)
+  - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/style.css (332ms); inglesconleo.com/error-monitor.js (nullms)
+  - Peticiones más lentas: iviksyhzhiygkuaojply.supabase.co/rest/v1/article_comments 364ms (tercero); www.googletagmanager.com/gtag/js 187ms (tercero); xd-f1cf3d4fdb19408ea770fc6f80817dcb.ecs.us-east-1.on.aws/events 100ms (tercero)
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4014, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 50 y 98 (mediana 86.5); este valor (98) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
+- miembros: LCP 1125ms en `main > div#gate > div > h1` (timeToFirstByte 54ms, elementRenderDelay 74ms)
+  - Bloquean el render: inglesconleo.com/meta-pixel.js (nullms); inglesconleo.com/error-monitor.js (nullms); inglesconleo.com/academia-lanzamiento.js (nullms)
+  - Peticiones más lentas: accounts.google.com/gsi/button 187ms (tercero); www.googletagmanager.com/gtag/js 172ms (tercero); m.stripe.com/6 171ms (tercero)
   - Best Practices no pasa: Uses third-party cookies (2); Missing source maps for large first-party JavaScript (2); Issues were logged in the `Issues` panel in Chrome Devtools (1)
-  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 3093, Lighthouse 13.6.0
-  - Variación: Probable ruido de medición: en las últimas 39 corridas osciló entre 67 y 93 (mediana 77); este valor (86) ya se había visto.
+  - Condiciones: mobile, simulate, CPU x4, RTT 150ms, benchmark 4029, Lighthouse 13.6.0
+  - Variación: Probable ruido de medición: en las últimas 40 corridas osciló entre 67 y 93 (mediana 77); este valor (91) ya se había visto. La máquina de medición fue distinta a la habitual (benchmarkIndex).
 
 El historial completo está en tools/site-health/lighthouse-history.json.
 
