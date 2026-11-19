@@ -29,6 +29,13 @@
 //                              para instrucciones.
 //   PAYPAL_MODE                'live' o 'sandbox', igual que en
 //                              paypal-checkout.ts
+//   PAYPAL_PLAN_ID_ANNUAL      (OPCIONAL, 2026-11-19) id del Plan ANUAL de
+//                              PayPal ($20 USD cada 12 meses). Sin el, esta
+//                              funcion se comporta exactamente como antes
+//                              (solo mensual). NO se borra al apagar la venta
+//                              del anual (eso lo hace PAYPAL_ANNUAL_CHECKOUT en
+//                              paypal-checkout.ts): asi quien ya contrato el
+//                              anual sigue siendo atendido.
 //   SUPABASE_URL                (ya viene puesta sola)
 //   SUPABASE_SERVICE_ROLE_KEY   la "service_role" key (Project Settings -> API).
 //                               Esta SÍ es secreta — nunca va en el sitio web,
@@ -58,6 +65,11 @@ const MAIL_API_URL = Deno.env.get('MAIL_API_URL') || 'https://api.resend.com/ema
 const PAYPAL_API_BASE = PAYPAL_MODE === 'sandbox'
   ? 'https://api-m.sandbox.paypal.com'
   : 'https://api-m.paypal.com'
+
+// Plan ANUAL de PayPal (2026-11-19). Opcional y con respaldo vacio: sin el, nada de lo anual se activa.
+const PAYPAL_PLAN_ID_ANNUAL = (Deno.env.get('PAYPAL_PLAN_ID_ANNUAL') || '').trim()
+const ANNUAL_PRICE = 20
+const ANNUAL_CURRENCY = 'USD'
 
 const FROM_EMAIL = 'Inglés con Leo <hola@inglesconleo.com>'
 // Para que si alguien responde el correo de bienvenida, te llegue a ti
@@ -220,6 +232,28 @@ Deno.serve(async (req: Request) => {
     const event = JSON.parse(rawBody)
     const type = event.event_type
     const resource = event.resource || {}
+
+    // ---- Plan ANUAL de PayPal (2026-11-19) ----
+    // Solo entra aqui lo que PayPal identifica como del plan anual (PAYPAL_PLAN_ID_ANNUAL configurado). Lo demas, en
+    // especial TODO lo mensual, sigue por el codigo de abajo sin ningun cambio.
+    if (PAYPAL_PLAN_ID_ANNUAL && type === 'BILLING.SUBSCRIPTION.ACTIVATED' && resource.plan_id === PAYPAL_PLAN_ID_ANNUAL) {
+      const r = await activateAnnualFromPaypal(String(resource.id || ''), null)
+      // 'retry': PayPal aun no muestra el cobro o no se pudo confirmar -> 503 para que reintente el aviso.
+      return r === 'retry' ? new Response('retry', { status: 503 }) : new Response('ok', { status: 200 })
+    }
+    if (PAYPAL_PLAN_ID_ANNUAL && type === 'PAYMENT.SALE.COMPLETED' && resource.billing_agreement_id) {
+      const r = await handleAnnualSale(String(resource.billing_agreement_id), resource)
+      if (r === 'retry') return new Response('retry', { status: 503 })
+      if (r === 'done') return new Response('ok', { status: 200 })
+      // 'not_annual': no es del plan anual (o no se pudo saber) -> sigue el flujo mensual de siempre, abajo.
+    }
+    // Cancelar el plan ANUAL detiene la renovacion pero conserva el acceso hasta la fecha ya pagada (2026-11-19).
+    // SUSPENDED y EXPIRED del anual, y TODO lo mensual, siguen quitando el acceso al instante como siempre.
+    if (PAYPAL_PLAN_ID_ANNUAL && type === 'BILLING.SUBSCRIPTION.CANCELLED' && resource.id) {
+      const r = await handleAnnualCancellation(String(resource.id), resource.plan_id)
+      if (r === 'done') return new Response('ok', { status: 200 })
+      // 'not_annual': no es del anual -> sigue el flujo mensual de siempre, abajo.
+    }
 
     if (type === 'BILLING.SUBSCRIPTION.ACTIVATED') {
       const userId = resource.custom_id
@@ -481,7 +515,7 @@ async function reactivateMemberFromPaypal(subscriptionId: string): Promise<strin
     if (details.id && details.id !== subscriptionId) return 'not_active'
     if (String(details.status || '').toUpperCase() !== 'ACTIVE') return 'not_active'
     const expectedPlan = Deno.env.get('PAYPAL_PLAN_ID') || ''
-    if (expectedPlan && details.plan_id && details.plan_id !== expectedPlan) {
+    if (expectedPlan && details.plan_id && details.plan_id !== expectedPlan && !(PAYPAL_PLAN_ID_ANNUAL && details.plan_id === PAYPAL_PLAN_ID_ANNUAL)) {
       await reportServerError('payment', 'paypal-webhook', 'Reactivacion de un plan que no es el de la tienda', 'reactivate_wrong_plan', 'warning')
       return 'wrong_plan'
     }
@@ -518,6 +552,179 @@ async function reactivateMemberFromPaypal(subscriptionId: string): Promise<strin
     console.error('Error reactivando miembro (PayPal):', e)
     return 'unavailable'
   }
+}
+
+// ---- Plan ANUAL de PayPal (2026-11-19) ----
+// Cobro del plan anual confirmado con datos de PayPal. Fuente: el aviso de pago (PAYMENT.SALE.COMPLETED) si lo hay,
+// y si no el ultimo cobro de la suscripcion (billing_info.last_payment). Devuelve:
+//   { value, currency }  cobro de $20 USD confirmado
+//   'none'               PayPal aun no muestra ningun cobro (puede tardar unos segundos)
+//   'wrong'              hay un cobro pero NO es de $20 USD (plan mal configurado): no se da acceso
+function confirmedAnnualPayment(details: any, sale: any | null): { value: number; currency: string } | 'none' | 'wrong' {
+  let value: number | null = null
+  let currency = ''
+  if (sale) {
+    if (String(sale.state || '').toLowerCase() !== 'completed') return 'none'
+    value = sale.amount ? Number(sale.amount.total) : NaN
+    currency = sale.amount ? String(sale.amount.currency || '').toUpperCase() : ''
+  } else {
+    const lp = details && details.billing_info && details.billing_info.last_payment
+    if (!lp || !lp.amount) return 'none'
+    value = Number(lp.amount.value)
+    currency = String(lp.amount.currency_code || '').toUpperCase()
+  }
+  if (Number.isFinite(value) && value === ANNUAL_PRICE && currency === ANNUAL_CURRENCY) return { value, currency }
+  return 'wrong'
+}
+
+// Activa el acceso de quien contrato el plan ANUAL, solo despues de confirmar con PayPal: la suscripcion (id y estado
+// ACTIVE), que sea del plan anual y el cobro de $20 USD. El usuario sale del custom_id que PayPal guarda en la
+// suscripcion (no de un dato suelto). Es seguro repetirla: un aviso duplicado solo refresca la fecha, sin bienvenida
+// ni evento a Meta de nuevo. Devuelve 'ok' (atendido o ignorado a proposito) o 'retry' (PayPal debe reintentar el aviso).
+async function activateAnnualFromPaypal(subscriptionId: string, sale: any | null, prefetched?: any): Promise<'ok' | 'retry'> {
+  try {
+    if (!subscriptionId) return 'ok'
+    const details = prefetched || await fetchPaypalSubscriptionDetails(subscriptionId)
+    if (!details) return 'retry'
+    if (details.id !== subscriptionId || details.plan_id !== PAYPAL_PLAN_ID_ANNUAL) {
+      await reportServerError('payment', 'paypal-webhook', 'Aviso del plan anual que no coincide con la suscripcion en PayPal', 'annual_plan_mismatch', 'warning')
+      return 'ok'
+    }
+    if (String(details.status || '').toUpperCase() !== 'ACTIVE') return 'ok'
+    const payment = confirmedAnnualPayment(details, sale)
+    if (payment === 'none') return 'retry'
+    if (payment === 'wrong') {
+      await reportServerError('payment', 'paypal-webhook', 'Cobro del plan anual distinto de 20 USD: no se dio acceso', 'annual_wrong_amount', 'critical')
+      return 'ok'
+    }
+    const userId = typeof details.custom_id === 'string' ? details.custom_id : ''
+    if (!userId) {
+      await reportServerError('payment', 'paypal-webhook', 'Suscripcion anual sin usuario asociado (custom_id)', 'annual_no_user', 'critical')
+      return 'ok'
+    }
+    const paypalEmail = details.subscriber && details.subscriber.email_address
+    const { data: existing, error: readError } = await supabase
+      .from('profiles')
+      .select('is_member, email, paypal_subscription_id')
+      .eq('id', userId)
+      .maybeSingle()
+    if (readError) {
+      console.error('Error leyendo el perfil (PayPal anual):', readError)
+      return 'retry'
+    }
+    const correoDestino = (existing && existing.email) || paypalEmail
+    if (existing && existing.is_member) {
+      if (existing.paypal_subscription_id === subscriptionId) {
+        // Aviso repetido o renovacion: solo la fecha (nunca hacia atras) y la bienvenida si faltara. Sin Meta.
+        await refreshNextRenewal(subscriptionId, details, true)
+        if (correoDestino) await ensureMemberWelcome(userId, correoDestino)
+        return 'ok'
+      }
+      // Ya era miembro por otra suscripcion: no se pisa nada. Se avisa porque puede haber un cobro doble por devolver.
+      await reportServerError('payment', 'paypal-webhook', 'Plan anual pagado por una cuenta que ya tenia membresia: revisar cobro doble', 'annual_duplicate_subscription', 'critical')
+      return 'ok'
+    }
+    const ahora = new Date().toISOString()
+    if (existing) {
+      // Un solo paso atomico: solo UNA copia del aviso logra pasar de no-miembro a miembro (filtra is_member=false).
+      const { data: reclamado, error } = await supabase
+        .from('profiles')
+        .update({ is_member: true, member_since: ahora, member_welcome_sent_at: null, member_welcome_claimed_at: null, paypal_subscription_id: subscriptionId })
+        .eq('id', userId)
+        .eq('is_member', false)
+        .select('id')
+      if (error) {
+        console.error('Error activando miembro anual (PayPal):', error)
+        await reportServerError('payment', 'paypal-webhook', 'Error activando miembro anual tras un pago', 'annual_activate_' + (error.code || 'db'), 'critical')
+        return 'retry'
+      }
+      if (!reclamado || !reclamado.length) {
+        // Otra copia del mismo aviso ganó la carrera: ella ya activo, mando la bienvenida y el evento. Aqui solo la fecha.
+        await refreshNextRenewal(subscriptionId, details, true)
+        return 'ok'
+      }
+    } else {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, email: paypalEmail, is_member: true, member_since: ahora, paypal_subscription_id: subscriptionId }, { onConflict: 'id' })
+      if (error) {
+        console.error('Error creando miembro anual (PayPal):', error)
+        await reportServerError('payment', 'paypal-webhook', 'Error activando miembro anual tras un pago', 'annual_activate_' + (error.code || 'db'), 'critical')
+        return 'retry'
+      }
+    }
+    if (correoDestino) await ensureMemberWelcome(userId, correoDestino)
+    // Meta: una sola vez por suscripcion (solo la copia que activo), con el importe REAL del cobro.
+    fireMetaSubscribeInBackground({
+      userId,
+      email: correoDestino,
+      value: payment.value,
+      currency: payment.currency,
+      eventId: `paypal_subscribe_${subscriptionId}`,
+    })
+    await refreshNextRenewal(subscriptionId, details)
+    return 'ok'
+  } catch (e) {
+    console.error('Error en el plan anual de PayPal:', e)
+    return 'retry'
+  }
+}
+
+// Cancelacion del plan ANUAL: NO quita el acceso. Deja anotado hasta cuando esta pagado (paypal_access_until, que es el
+// next_renewal_at guardado al confirmar el cobro) y de que suscripcion es (paypal_access_sub). Una tarea de la base de datos
+// (suspend_expired_paypal_annual, ver supabase/migrations/20261119180000_paypal_annual_access_until.sql) quita el acceso al
+// llegar esa fecha, y solo si la cuenta sigue ligada a esa misma suscripcion (si despues contrato otra, no se le toca).
+// Si no hay fecha futura guardada, o la base no tiene aun las columnas, se aplica la regla de siempre (quitar el acceso)
+// y se avisa: es mejor cortar que regalar acceso sin fecha. Es seguro repetirla.
+async function handleAnnualCancellation(subscriptionId: string, planIdFromEvent: any): Promise<'done' | 'not_annual'> {
+  let planId = typeof planIdFromEvent === 'string' ? planIdFromEvent : ''
+  if (!planId) {
+    const details = await fetchPaypalSubscriptionDetails(subscriptionId)
+    planId = details && typeof details.plan_id === 'string' ? details.plan_id : ''
+  }
+  if (planId !== PAYPAL_PLAN_ID_ANNUAL) return 'not_annual'
+  const { data: prof, error: readError } = await supabase
+    .from('profiles')
+    .select('id, is_member, next_renewal_at')
+    .eq('paypal_subscription_id', subscriptionId)
+    .maybeSingle()
+  const removeNow = async () => {
+    const { error } = await supabase.from('profiles').update({ is_member: false }).eq('paypal_subscription_id', subscriptionId)
+    if (error) {
+      console.error('Error desactivando miembro anual (PayPal):', error)
+      await reportServerError('payment', 'paypal-webhook', 'Error desactivando miembro', 'deactivate_' + (error.code || 'db'), 'error')
+    }
+  }
+  if (readError) {
+    console.error('Error leyendo el perfil (cancelacion anual):', readError)
+    await removeNow()
+    return 'done'
+  }
+  if (!prof) return 'done'
+  const until = prof.next_renewal_at ? Date.parse(String(prof.next_renewal_at)) : NaN
+  if (!prof.is_member || Number.isNaN(until) || until <= Date.now()) {
+    await removeNow()
+    return 'done'
+  }
+  const { error } = await supabase
+    .from('profiles')
+    .update({ paypal_access_until: new Date(until).toISOString(), paypal_access_sub: subscriptionId })
+    .eq('paypal_subscription_id', subscriptionId)
+  if (error) {
+    console.error('Error guardando el fin de acceso anual (PayPal):', error)
+    await reportServerError('payment', 'paypal-webhook', 'No se pudo guardar el fin de acceso del anual (falta aplicar la migracion?): se quito el acceso', 'annual_access_until_' + (error.code || 'db'), 'critical')
+    await removeNow()
+  }
+  return 'done'
+}
+
+// PAYMENT.SALE.COMPLETED: solo si la suscripcion es del plan ANUAL se atiende aqui. Si PayPal no responde o no es del
+// anual, devuelve 'not_annual' y el aviso sigue por el flujo mensual de siempre (que no depende de esta consulta).
+async function handleAnnualSale(billingAgreementId: string, sale: any): Promise<'done' | 'retry' | 'not_annual'> {
+  const details = await fetchPaypalSubscriptionDetails(billingAgreementId)
+  if (!details || details.plan_id !== PAYPAL_PLAN_ID_ANNUAL) return 'not_annual'
+  const r = await activateAnnualFromPaypal(billingAgreementId, sale, details)
+  return r === 'retry' ? 'retry' : 'done'
 }
 
 // Guarda billing_info.next_billing_time (si viene) en next_renewal_at.

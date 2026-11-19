@@ -20,6 +20,16 @@
 //   PAYPAL_MODE           'live' o 'sandbox'. Usa 'sandbox' mientras
 //                         estés haciendo pruebas, y 'live' cuando ya
 //                         quieras cobrar de verdad.
+//   PAYPAL_PLAN_ID_ANNUAL (OPCIONAL, 2026-11-19) id del Plan ANUAL de
+//                         PayPal ($20 USD cada 12 meses, empieza con P-).
+//                         Distinto del mensual. Sin este secreto, el plan
+//                         anual responde 'annual_not_configured' y el
+//                         mensual funciona exactamente igual que siempre.
+//   PAYPAL_ANNUAL_CHECKOUT (OPCIONAL) interruptor de venta del anual:
+//                         solo el valor 'on' permite crear suscripciones
+//                         anuales nuevas. Cualquier otro valor (o ausente)
+//                         las rechaza. El webhook NO lo mira: sigue
+//                         atendiendo a quien ya contrato el anual.
 //   SUPABASE_URL          (ya viene puesta sola en Supabase)
 //   SUPABASE_ANON_KEY     (ya viene puesta sola en Supabase)
 //   SUPABASE_SERVICE_ROLE_KEY  la "service_role" key (Project Settings -> API).
@@ -33,6 +43,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID')!
 const PAYPAL_CLIENT_SECRET = Deno.env.get('PAYPAL_CLIENT_SECRET')!
 const PAYPAL_PLAN_ID = Deno.env.get('PAYPAL_PLAN_ID')!
+// Plan ANUAL (2026-11-19). A proposito SIN el "!" y con respaldo vacio: si falta, esto NO tumba nada y el mensual
+// sigue operando solo. El anual solo se ofrece si hay id Y el interruptor esta en 'on' (ver cabecera).
+const PAYPAL_PLAN_ID_ANNUAL = (Deno.env.get('PAYPAL_PLAN_ID_ANNUAL') || '').trim()
+const PAYPAL_ANNUAL_CHECKOUT_ON = (Deno.env.get('PAYPAL_ANNUAL_CHECKOUT') || '').trim().toLowerCase() === 'on'
 const PAYPAL_MODE = (Deno.env.get('PAYPAL_MODE') || 'live').trim().toLowerCase()
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
@@ -101,6 +115,35 @@ async function checkStripeAccount(userId: string): Promise<StripeGuard> {
   }
 }
 
+// ---- Plan anual: evitar un segundo cobro recurrente (2026-11-19) ----
+// Solo se usa cuando se pide el plan ANUAL; el mensual no pasa por aqui y no cambia.
+//   member      -> la cuenta ya es miembro, o ya tiene una suscripcion de PayPal ACTIVE/SUSPENDED: no se crea otra.
+//   unavailable -> no se pudo confirmar (sin clave de servicio, perfil ilegible, PayPal no responde): error temporal.
+//   ok          -> sin membresia ni suscripcion viva: se puede crear la anual.
+type AnnualEligibility = 'ok' | 'member' | 'unavailable'
+async function checkAnnualEligibility(userId: string, accessToken: string): Promise<AnnualEligibility> {
+  if (!SUPABASE_SERVICE_ROLE_KEY) return 'unavailable'
+  try {
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    const { data: prof, error } = await admin.from('profiles').select('is_member, paypal_subscription_id').eq('id', userId).maybeSingle()
+    if (error) return 'unavailable'
+    if (prof && prof.is_member) return 'member'
+    const subId = prof && prof.paypal_subscription_id ? String(prof.paypal_subscription_id) : ''
+    if (!subId) return 'ok'
+    const res = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions/${encodeURIComponent(subId)}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(4000),
+    })
+    if (res.status === 404) return 'ok'
+    if (!res.ok) return 'unavailable'
+    const sub = await res.json()
+    const status = String((sub && sub.status) || '').toUpperCase()
+    return status === 'ACTIVE' || status === 'SUSPENDED' ? 'member' : 'ok'
+  } catch (_e) {
+    return 'unavailable'
+  }
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -127,6 +170,18 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'invalid_session' }, 401)
     }
     const user = userData.user
+
+    // Plan pedido (2026-11-19). SOLO el valor exacto 'annual' cambia algo: sin cuerpo, cuerpo no-JSON o cualquier
+    // otro valor = mensual, el flujo de siempre. El plan lo decide el servidor, nunca el navegador (el navegador
+    // no manda ids de plan).
+    let plan: 'monthly' | 'annual' = 'monthly'
+    try {
+      const reqBody = await req.json()
+      if (reqBody && reqBody.plan === 'annual') plan = 'annual'
+    } catch (_e) { /* sin cuerpo o no-JSON: mensual */ }
+    if (plan === 'annual' && (!PAYPAL_ANNUAL_CHECKOUT_ON || !PAYPAL_PLAN_ID_ANNUAL)) {
+      return json({ error: 'annual_not_configured' }, 400)
+    }
 
     // Registra que este usuario llegó hasta el proceso de pago (aunque
     // no lo termine). Es solo para analítica (ver punto 9 del pedido de
@@ -160,6 +215,13 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'paypal_auth_error' }, 500)
     }
 
+    // Solo el plan anual: no abrir una segunda suscripcion recurrente a quien ya tiene membresia.
+    if (plan === 'annual') {
+      const elig = await checkAnnualEligibility(user.id, accessToken)
+      if (elig === 'member') return json({ error: 'already_member' }, 409)
+      if (elig === 'unavailable') return json({ error: 'member_check_unavailable' }, 503)
+    }
+
     const subRes = await fetch(`${PAYPAL_API_BASE}/v1/billing/subscriptions`, {
       method: 'POST',
       headers: {
@@ -168,7 +230,7 @@ Deno.serve(async (req: Request) => {
         'PayPal-Request-Id': `sub-${user.id}-${Date.now()}`,
       },
       body: JSON.stringify({
-        plan_id: PAYPAL_PLAN_ID,
+        plan_id: plan === 'annual' ? PAYPAL_PLAN_ID_ANNUAL : PAYPAL_PLAN_ID,
         // custom_id es lo que nos permite, en el webhook, saber a
         // qué usuario de Supabase corresponde esta suscripción sin
         // importar con qué correo haya pagado dentro de PayPal.

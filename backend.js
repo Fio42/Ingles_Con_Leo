@@ -787,7 +787,7 @@ const LeoBackend = (function(){
      { ok:true, url } o { ok:false, error }. Depende de que la
      función de Supabase "paypal-checkout" esté desplegada (ver
      supabase_functions/paypal-checkout.ts). */
-  async function startPaypalCheckout(){
+  async function startPaypalCheckout(plan){
     if(!isConfigured()) return { ok:false, error:'not_configured' };
     const session = await getSession();
     if(!session) return { ok:false, error:'no_session' };
@@ -798,7 +798,8 @@ const LeoBackend = (function(){
           'Authorization': 'Bearer ' + session.access_token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({})
+        // Solo el plan anual manda selector (2026-11-19). Mensual o sin argumento: cuerpo vacio, exactamente como siempre.
+        body: JSON.stringify(plan === 'annual' ? { plan:'annual' } : {})
       });
       const data = await res.json();
       // Renovacion pendiente en Stripe: el servidor devuelve el enlace para pagar ESA factura en vez de abrir otra membresia.
