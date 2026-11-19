@@ -76,11 +76,16 @@ const LeoBackend = (function(){
   /* Crea la cuenta con correo + contraseña. No manda ningún
      correo (la confirmación de email está apagada en Supabase),
      así que si no hay error queda logueado al instante. */
-  async function signUp(email, password){
+  /* heardFrom (opcional): de dónde conoció Inglés con Leo. Se guarda
+     en los datos de la cuenta (user_metadata.heard_from). Si viene
+     vacío, no se manda nada y el alta funciona igual que siempre. */
+  async function signUp(email, password, heardFrom){
     const sb = getClient();
     if(!sb) return { ok:false, error:'not_configured' };
     try{
-      const { data, error } = await sb.auth.signUp({ email, password });
+      const creds = { email, password };
+      if(heardFrom && /^[a-z]{2,20}$/.test(heardFrom)) creds.options = { data: { heard_from: heardFrom } };
+      const { data, error } = await sb.auth.signUp(creds);
       if(error) return { ok:false, error: error.message };
       if(!data.session) return { ok:false, error: 'no_session' };
       if(typeof LeoScope !== 'undefined') LeoScope.rebind();   // esta página pasa al espacio de la cuenta nueva

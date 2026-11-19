@@ -4094,3 +4094,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - video/promo-ingles-con-leo.mp4 (1280x720, H.264 + AAC, faststart) y video/promo-ingles-con-leo-poster.webp. Musica: NastelBom "Corporate Soft" (Pixabay Content License).
 - style.css: bloque .home-video* al final; index.html pide style.css?v=20261118v.
 - Video del inicio: titulo ahora "Asi funciona Ingles con Leo en 35 segundos" (tambien en el VideoObject) y encabezado + recuadro centrados desde 700 px; en telefono queda como estaba.
+2026-11-18 (registro: de donde nos conocio)
+- miembros.html: al crear cuenta aparece un selector '¿Como nos conociste?' debajo de la contrasena (Facebook, Instagram, TikTok, YouTube, Google, amigo o familiar, otro). No es obligatorio ni dice 'opcional': si lo dejan vacio la cuenta se crea igual. En 'Entrar' no se ve.
+- backend.js: signUp(email, password, heardFrom) lo guarda en user_metadata.heard_from de Supabase Auth (sin migracion). Solo altas por correo.
+- Google queda como estaba: NO guarda heard_from (no hay aun una forma fiable de confirmar que esa operacion creo la cuenta; se retoma despues). Sin evento GA4 nuevo: el conteo se hace en Supabase (auth.users, raw_user_meta_data->>'heard_from').
+- miembros.html pide backend.js?v=20261118a.
