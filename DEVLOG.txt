@@ -4109,3 +4109,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - paypal-webhook.ts: CANCELLED del plan anual ya no quita el acceso: guarda paypal_access_until (= next_renewal_at confirmado al cobrar) y paypal_access_sub. Sin fecha futura, o sin las columnas, aplica la regla de siempre (quitar). SUSPENDED/EXPIRED del anual y todo lo mensual: sin cambios.
 - Migracion nueva supabase/migrations/20261119180000_paypal_annual_access_until.sql (2 columnas + tarea cada 15 min suspend_expired_paypal_annual). APLICAR ANTES de desplegar el webhook.
 - Pruebas sandbox reales de PayPal: PENDIENTES (sin credenciales). Detalle en docs/paypal-anual-despliegue.md.
+2026-11-19 (Terminos y condiciones)
+- terminos.html (nuevo, estilo de privacidad.html): que ofrece la membresia, planes y cobros (mensual $2 USD, anual $20 USD solo tarjeta; con tarjeta el importe sale en la moneda del pais, p. ej. MXN en Mexico; Mercado Pago $40 MXN/mes), Cancelacion y reembolsos (ancla #cancelacion-y-reembolsos, texto dado por Leo), contacto y enlace a privacidad. En sitemap.xml.
+- Pie: enlace 'Terminos y condiciones' junto a Privacidad en las 102 paginas raiz y en glosario-ingles/. NO se toco el pie de las ~340 fichas de glosario/ (experimento del 13-nov congelado hasta el 11-dic).
+- miembros.html: 'Para cancelar, escribenos por correo. Consulta la politica de cancelacion y reembolsos' (lleva a la ancla) bajo el boton Activar membresia y en la pantalla de pago.
+- privacidad.html: se corrige 'cancelarla desde tu cuenta o escribiendonos' a cancelacion por correo (no existe cancelacion desde la cuenta).
