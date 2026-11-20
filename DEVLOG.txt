@@ -4114,3 +4114,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Pie: enlace 'Terminos y condiciones' junto a Privacidad en las 102 paginas raiz y en glosario-ingles/. NO se toco el pie de las ~340 fichas de glosario/ (experimento del 13-nov congelado hasta el 11-dic).
 - miembros.html: 'Para cancelar, escribenos por correo. Consulta la politica de cancelacion y reembolsos' (lleva a la ancla) bajo el boton Activar membresia y en la pantalla de pago.
 - privacidad.html: se corrige 'cancelarla desde tu cuenta o escribiendonos' a cancelacion por correo (no existe cancelacion desde la cuenta).
+
+2026-11-20 (video del inicio: titulo y uploadDate)
+- Titulo: "Asi funciona la Academia Ingles con Leo en 35 segundos" (pedido de Leo), igual en el h2 visible de la seccion del video y en VideoObject.name de index.html.
+- uploadDate del VideoObject: de "2026-11-18" a "2026-11-18T15:57:59-05:00" (fecha y hora con zona horaria). Corrige los 2 avisos de Search Console (valor de fecha invalido y falta de zona horaria).
+- Fuente de la hora: registro de despliegue de GitHub Pages del commit a8c6a1f (el que publico el video), estado success a las 2026-11-18T20:57:59Z (= 15:57:59 hora de Colombia). Confirmado por Leo en https://api.github.com/repos/Fio42/Ingles_Con_Leo/deployments/7896018281/statuses
