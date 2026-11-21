@@ -4119,3 +4119,13 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Titulo: "Asi funciona la Academia Ingles con Leo en 35 segundos" (pedido de Leo), igual en el h2 visible de la seccion del video y en VideoObject.name de index.html.
 - uploadDate del VideoObject: de "2026-11-18" a "2026-11-18T15:57:59-05:00" (fecha y hora con zona horaria). Corrige los 2 avisos de Search Console (valor de fecha invalido y falta de zona horaria).
 - Fuente de la hora: registro de despliegue de GitHub Pages del commit a8c6a1f (el que publico el video), estado success a las 2026-11-18T20:57:59Z (= 15:57:59 hora de Colombia). Confirmado por Leo en https://api.github.com/repos/Fio42/Ingles_Con_Leo/deployments/7896018281/statuses
+
+
+2026-11-21 (piloto de videos en las guias: BE, DO y HAVE)
+- video-guia.css (nuevo): estilos del bloque de video reutilizable (reproductor 9:16, enlace de respaldo, boton de practica). Enlazado solo desde las guias con video (?v=20261121a); style.css no se toco.
+- articulo-be-do-have.html (nuevo): guia de cuando usar be, do y have. Video principal wLZlbCRKOaA + boton a su quiz (#ejercicios, 16 preguntas, 10 presente y 6 pasado); seccion de pasado con ThmytVgxKR4 + boton a las preguntas de pasado (#ejercicios-pasado). Enlaza las guias de to be, do vs does, have y has, did was were. JSON-LD Article + 2 VideoObject + FAQPage. Sin tema nuevo en temas.js (no entra en ARTICLE_QUIZ_CATALOG).
+- articulo-verbo-to-be.html: bloque con HBq0uVtB4VA en la seccion am, is, are, boton al quiz de la misma pagina (#ejercicios); VideoObject; enlace a la guia nueva; dateModified 2026-11-21.
+- articulo-in-on-at.html: mismo bloque reutilizable; se agrega enlace de respaldo a YouTube y boton "Practicar in, on y at gratis" (practica.html?skill=grammar&tema=in-on-at); se quita el CSS en linea del reproductor.
+- articulos.html: tarjeta de la guia nueva. sitemap.xml: URL nueva y lastmod de to be. Enlaces de una linea a la guia nueva en do-vs-does, have-y-has y did-was-were.
+- Recorrido desde Shorts: por ahora enlace al perfil. Con la clase larga: Short -> video relacionado -> enlace a la guia en la descripcion de la clase.
+- PENDIENTE: pruebas en celulares reales (iOS Safari, Android Chrome) y en navegadores internos de Instagram y TikTok.
