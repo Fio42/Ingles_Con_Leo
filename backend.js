@@ -893,7 +893,7 @@ const LeoBackend = (function(){
      Function leobot-notify, igual que postArticleComment ya hace con
      notify-new-comment. Funciona con o sin sesión iniciada: userId/
      email quedan null para invitados. */
-  async function submitLeobotReport({ type, message, pageUrl, pageName, userId, email, browser, device, context }){
+  async function submitLeobotReport({ type, message, pageUrl, pageName, userId, email, browser, device, context, imageBlob }){
     const sb = getClient();
     if(!sb) return { ok:false, error:'not_configured' };
     try{
@@ -922,16 +922,28 @@ const LeoBackend = (function(){
       };
       const { error } = await sb.from('leobot_reports').insert(row);
       if(error) return { ok:false, error: error.message };
+      /* Captura de pantalla opcional. Se sube DESPUES de guardar el reporte: la base solo deja subir a
+         <id-del-reporte>/captura.jpg si ese reporte existe, es reciente y es de esta misma persona (bucket
+         privado leobot-reports, una sola imagen por reporte). Si falla (sin red, archivo muy grande, bucket
+         sin crear) el reporte ya esta guardado y se avisa a Leo igual. */
+      let imageState = 'none';
+      if(imageBlob){
+        imageState = 'failed';
+        try{
+          const up = await sb.storage.from('leobot-reports').upload(id + '/captura.jpg', imageBlob, { contentType:'image/jpeg', upsert:false });
+          if(!(up && up.error)) imageState = 'ok';
+        }catch(e){}
+      }
       /* Aviso a Leo por correo. No bloquea ni rompe nada si falla
          (fire-and-forget): el reporte ya quedo guardado. */
       try{
         fetch(SUPABASE_URL + '/functions/v1/leobot-notify', {
           method: 'POST',
           headers: { 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ report_id: id })
+          body: JSON.stringify({ report_id: id, image: imageState })
         });
       }catch(e){}
-      return { ok:true, id: id };
+      return { ok:true, id: id, imageFailed: imageState === 'failed' };
     }catch(e){
       return { ok:false, error: String(e) };
     }

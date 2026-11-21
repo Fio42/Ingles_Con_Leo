@@ -187,7 +187,135 @@
     return ua.slice(0, 120);
   }
 
-  function sendLeobotReport(type, message, contact){
+  /* ------------------------------------------------------------
+     REPORTE COMPLETO (2026-11-21): para no tener que volver a escribirle
+     a la persona, el reporte de problema ahora pide de entrada tipo de
+     problema, en que parte paso, que curso/leccion y, si quiere, una
+     captura de pantalla y los datos tecnicos de su sesion con un solo
+     check. Solo son datos TECNICOS Y NO SENSIBLES: nunca contrasenas,
+     tokens, correos de terceros, nombre ni nada de pagos. */
+  var REPORT_CATEGORIES = [
+    'No carga o se queda en blanco',
+    'No se escucha el audio',
+    'Un ejercicio tiene un error o no deja responder',
+    'El curso o las lecciones salen desordenados o faltan',
+    'No puedo entrar a mi cuenta o a Miembros',
+    'Pago o membresía',
+    'Se ve mal en mi teléfono',
+    'Otro'
+  ];
+  var REPORT_SECTIONS = [
+    'Página de inicio', 'Cursos de la Academia', 'Gramática', 'Vocabulario', 'Listening', 'Speaking', 'Writing',
+    'Lectura', 'Práctica mixta', 'Plan de estudio', 'Mi panel y progreso', 'Test de nivel', 'Artículos',
+    'Clases particulares', 'Pagos y membresía', 'Otra parte'
+  ];
+  var SECTION_BY_PAGE = {
+    'index.html':'Página de inicio', 'gramatica.html':'Gramática', 'vocabulario.html':'Vocabulario', 'listening.html':'Listening',
+    'speaking.html':'Speaking', 'writing.html':'Writing', 'lectura.html':'Lectura', 'mixto.html':'Práctica mixta',
+    'plan-estudio.html':'Plan de estudio', 'progreso.html':'Mi panel y progreso', 'miembros.html':'Mi panel y progreso',
+    'practica.html':'Práctica mixta', 'practica-miembros.html':'Mi panel y progreso', 'test-de-nivel-de-ingles.html':'Test de nivel',
+    'articulos.html':'Artículos', 'clases-particulares.html':'Clases particulares'
+  };
+  function guessSection(){
+    var p = currentPage();
+    if(SECTION_BY_PAGE[p]) return SECTION_BY_PAGE[p];
+    if(/^articulo-/.test(p)) return 'Artículos';
+    if(/academia|curso/i.test(p) || /academia|curso/i.test(location.pathname)) return 'Cursos de la Academia';
+    return '';
+  }
+
+  /* Foto de la sesion (solo si la persona marca el check, que viene DESMARCADO): pagina, ejercicio en pantalla,
+     version del sitio y datos tecnicos del dispositivo. El historial reciente (sesiones a medias y ultimas sesiones)
+     se incluye UNICAMENTE cuando el problema es de un ejercicio o de un curso, que es donde ayuda al diagnostico. */
+  var CATEGORIES_WITH_HISTORY = [REPORT_CATEGORIES[2], REPORT_CATEGORIES[3]];
+  function collectSessionSnapshot(categoria){
+    var s = {};
+    function put(k, fn){ try{ var v = fn(); if(v !== undefined && v !== null && v !== '') s[k] = v; }catch(e){} }
+    put('hora', function(){ return new Date().toISOString(); });
+    put('zona_horaria', function(){ return Intl.DateTimeFormat().resolvedOptions().timeZone; });
+    put('idioma', function(){ return navigator.language; });
+    put('internet', function(){ return navigator.onLine === false ? 'sin conexión' : 'con conexión'; });
+    put('red', function(){ var c = navigator.connection; return c ? ((c.effectiveType || '') + (c.saveData ? ' (ahorro de datos)' : '')) : null; });
+    put('agente', function(){ return String(navigator.userAgent || '').slice(0, 300); });
+    put('pantalla', function(){ return screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x'; });
+    put('ventana', function(){ return window.innerWidth + 'x' + window.innerHeight + (window.matchMedia && window.matchMedia('(orientation: landscape)').matches ? ' horizontal' : ' vertical'); });
+    put('app_instalada', function(){ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; });
+    put('url', function(){ return location.href.slice(0, 300); });
+    put('titulo', function(){ return String(document.title || '').slice(0, 120); });
+    put('viene_de', function(){ return document.referrer ? document.referrer.split('?')[0].slice(0, 200) : null; });
+    put('archivos', function(){
+      var out = [];
+      Array.prototype.forEach.call(document.scripts, function(sc){
+        var m = /([a-z-]+\.js)\?v=([0-9a-z]+)/i.exec(sc.src || '');
+        if(m && /^(app|data|temas|backend|chatbot)\.js$/.test(m[1])) out.push(m[1] + '?v=' + m[2]);
+      });
+      return out.join(', ');
+    });
+    put('nivel', function(){ return (typeof getUserLevel === 'function') ? getUserLevel() : null; });
+    put('almacenamiento', function(){
+      try{ localStorage.setItem('__leo_t', '1'); localStorage.removeItem('__leo_t'); return 'ok'; }catch(e){ return 'bloqueado'; }
+    });
+    put('ejercicio', function(){
+      var p = readPracticeContext();
+      if(!p) return null;
+      var q = document.querySelector('.session-card .practice-prompt, .practice-prompt, .vocab-word, .error-sentence');
+      var txt = q ? String(q.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 140) : '';
+      return { etiqueta: p.levelSkillText, avance: p.progressText, en_sesion: p.inSession, enunciado: txt || null };
+    });
+    var withHistory = CATEGORIES_WITH_HISTORY.indexOf(categoria) !== -1;
+    if(withHistory) put('sesiones_a_medias', function(){
+      var out = [];
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i) || '';
+        if(k.indexOf('leo_inflight_') !== 0) continue;
+        try{
+          var d = JSON.parse(localStorage.getItem(k));
+          out.push({ clave: k.replace(/@@u:[^_]+/, '').replace('leo_inflight_', ''), pregunta: d && d.idx != null ? d.idx + 1 : null, de: d && d.total != null ? d.total : null });
+        }catch(e){}
+        if(out.length >= 6) break;
+      }
+      return out.length ? out : null;
+    });
+    if(withHistory) put('ultimas_sesiones', function(){
+      if(typeof loadProgress !== 'function') return null;
+      var list = (loadProgress().sessions || []).slice(-6);
+      return list.map(function(x){
+        var res = x.results || [], ok = 0;
+        res.forEach(function(r){ if(r && r.isCorrect === true) ok++; });
+        return { habilidad: x.skill, nivel: x.level, fecha: x.date, respuestas: res.length, correctas: ok };
+      });
+    });
+    var json = JSON.stringify(s);
+    if(json.length > 6000){ delete s.ultimas_sesiones; delete s.agente; }
+    return s;
+  }
+
+  /* Reduce la captura (los celulares sacan fotos pesadas) a un JPG liviano. */
+  function compressImage(file){
+    return new Promise(function(resolve){
+      try{
+        if(!file || !/^image\//.test(file.type || '')){ resolve(null); return; }
+        var url = URL.createObjectURL(file), img = new Image();
+        img.onload = function(){
+          try{
+            var max = 1400, w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+            var k = Math.min(1, max / Math.max(w, h));
+            var cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(w * k)); cv.height = Math.max(1, Math.round(h * k));
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            URL.revokeObjectURL(url);
+            cv.toBlob(function(b){ resolve(b && b.size <= 4 * 1024 * 1024 ? b : null); }, 'image/jpeg', 0.8);
+          }catch(e){ resolve(null); }
+        };
+        img.onerror = function(){ URL.revokeObjectURL(url); resolve(null); };
+        img.src = url;
+      }catch(e){ resolve(null); }
+    });
+  }
+
+  var lastReportImageFailed = false;
+
+  function sendLeobotReport(type, message, contact, extra){
     return new Promise(function(resolve){
       (async function(){
         try{
@@ -217,7 +345,20 @@
              escribió nada se usa el correo de su cuenta, si tiene sesión. */
           var contactClean = (contact || '').trim();
           if(contactClean) context.contact_type = contactClean.indexOf('@') !== -1 ? 'correo' : 'telefono';
+          var imageBlob = null;
+          lastReportImageFailed = false;
+          if(extra){
+            if(extra.categoria) context.categoria = extra.categoria;
+            if(extra.seccion) context.seccion = extra.seccion;
+            if(extra.detalle) context.detalle = extra.detalle;
+            if(extra.incluirSesion) context.sesion = collectSessionSnapshot(extra.categoria);
+            if(extra.imageFile){
+              imageBlob = await compressImage(extra.imageFile);
+              if(!imageBlob){ lastReportImageFailed = true; context.captura_error = 'no_se_pudo_leer_la_imagen'; }
+            }
+          }
           var res = await LeoBackend.submitLeobotReport({
+            imageBlob: imageBlob,
             type: type,
             message: message,
             pageUrl: window.location.href,
@@ -228,6 +369,7 @@
             device: detectDevice(),
             context: context
           });
+          if(res && res.imageFailed) lastReportImageFailed = true;
           resolve(!!(res && res.ok));
         }catch(e){
           resolve(false);
@@ -640,15 +782,16 @@
     },
 
     reportBug: {
-      text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Se manda junto con información técnica de esta página (URL, navegador, qué estabas practicando si aplica) para poder ayudarte más rápido, nunca datos sensibles.',
+      text:'¿Algo no funcionó como esperabas? Cuéntame qué pasó y lo reviso. Solo te pido lo importante: el tipo de problema y qué ocurrió. Lo demás es opcional, pero ayuda mucho a resolverlo más rápido.',
       form: {
+        rich: true,
         contact: 'optional',
-        placeholder:'¿Qué pasó? (ej: "el audio no se reproduce", "no puedo completar el ejercicio")',
+        placeholder:'¿Qué pasó? Cuéntame qué esperabas ver y qué viste. (ej: "el audio no se reproduce")',
         submitLabel:'Enviar reporte',
-        successText:'Gracias. Ya recibí tu reporte y lo voy a revisar. 🙏',
+        successText:function(){ return lastReportImageFailed ? 'Gracias. Tu reporte llegó completo, pero la captura no se pudo subir. Si quieres, mándala por WhatsApp. 🙏' : 'Gracias. Ya recibí tu reporte con todos los datos y lo voy a revisar. 🙏'; },
         errorText:'No se pudo enviar el reporte. Intenta de nuevo en un momento, o escríbenos por WhatsApp.',
         errorExtra:[{ label:'Escribir por WhatsApp →', href:'https://wa.me/529994996520?text=' + encodeURIComponent('Hola, encontré un problema en Inglés con Leo: '), external:true }],
-        onSubmit: function(message, contact){ return sendLeobotReport('bug', message, contact); }
+        onSubmit: function(message, contact, extra){ return sendLeobotReport('bug', message, contact, extra); }
       }
     },
 
@@ -957,7 +1100,7 @@
           window.setTimeout(function(){
             var t = document.getElementById('leobotTyping');
             if(t) t.remove();
-            addBotBubble(ok ? formSpec.successText : formSpec.errorText);
+            addBotBubble(ok ? (typeof formSpec.successText === 'function' ? formSpec.successText() : formSpec.successText) : formSpec.errorText);
             renderOptions(nodeId, (!ok && formSpec.errorExtra) ? formSpec.errorExtra : []);
           }, 380);
         });
@@ -966,6 +1109,174 @@
       textarea.addEventListener('keydown', function(e){
         if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) trySend();
       });
+
+      var menuBtn = document.createElement('button');
+      menuBtn.type = 'button';
+      menuBtn.className = 'leobot-opt-btn ghost';
+      menuBtn.style.marginTop = '8px';
+      menuBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Menú principal</span>';
+      menuBtn.addEventListener('click', function(){ goTo('root', true); });
+      optionsEl.appendChild(menuBtn);
+    }
+
+    /* Formulario completo de "Reportar un problema". Obligatorio: tipo de
+       problema y que paso. Opcional: parte del sitio, curso/leccion,
+       captura, datos de la sesion (marcado por defecto) y contacto. */
+    function renderRichForm(nodeId, formSpec){
+      optionsEl.innerHTML = '';
+      var wrap = document.createElement('div');
+      wrap.className = 'leobot-form';
+
+      function field(labelText, control, hint){
+        var box = document.createElement('div');
+        box.className = 'leobot-field';
+        var lab = document.createElement('label');
+        lab.className = 'leobot-label';
+        lab.textContent = labelText;
+        box.appendChild(lab);
+        box.appendChild(control);
+        if(hint){ var h = document.createElement('div'); h.className = 'leobot-hint'; h.textContent = hint; box.appendChild(h); }
+        wrap.appendChild(box);
+        return lab;
+      }
+      function makeSelect(placeholder, list, label){
+        var sel = document.createElement('select');
+        sel.className = 'leobot-select';
+        sel.setAttribute('aria-label', label);
+        var o0 = document.createElement('option'); o0.value = ''; o0.textContent = placeholder; sel.appendChild(o0);
+        list.forEach(function(t){ var o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
+        return sel;
+      }
+
+      var catSel = makeSelect('Elige una opción', REPORT_CATEGORIES, 'Tipo de problema');
+      field('¿Qué tipo de problema es? (obligatorio)', catSel);
+      var secSel = makeSelect('No estoy seguro', REPORT_SECTIONS, 'En qué parte pasó');
+      var guess = guessSection();
+      if(guess) secSel.value = guess;
+      field('¿En qué parte del sitio pasó?', secSel);
+      var detailInput = document.createElement('input');
+      detailInput.type = 'text'; detailInput.className = 'leobot-input'; detailInput.maxLength = 120; detailInput.autocomplete = 'off';
+      detailInput.placeholder = 'Ej: Curso de Presente simple, lección 3';
+      detailInput.setAttribute('aria-label', 'Curso, lección o ejercicio');
+      field('¿Qué curso, lección o ejercicio? (opcional)', detailInput);
+
+      var textarea = document.createElement('textarea');
+      textarea.className = 'leobot-textarea';
+      textarea.maxLength = 1500; textarea.rows = 3;
+      textarea.placeholder = formSpec.placeholder;
+      textarea.setAttribute('aria-label', formSpec.placeholder);
+      field('Cuéntame qué pasó (obligatorio)', textarea);
+
+      /* Captura de pantalla (opcional). En el celular abre galería o cámara. */
+      var fileInput = document.createElement('input');
+      fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.className = 'leobot-file';
+      fileInput.setAttribute('aria-label', 'Adjuntar captura de pantalla');
+      var attachBtn = document.createElement('button');
+      attachBtn.type = 'button'; attachBtn.className = 'leobot-opt-btn ghost leobot-attach';
+      attachBtn.textContent = 'Adjuntar captura de pantalla (opcional)';
+      var preview = document.createElement('div');
+      preview.className = 'leobot-preview'; preview.hidden = true;
+      var thumb = document.createElement('img'); thumb.alt = 'Vista previa de la captura';
+      var removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'leobot-preview-remove'; removeBtn.textContent = 'Quitar';
+      preview.appendChild(thumb); preview.appendChild(removeBtn);
+      var chosenFile = null, thumbUrl = null;
+      function clearFile(){
+        chosenFile = null; fileInput.value = '';
+        if(thumbUrl){ URL.revokeObjectURL(thumbUrl); thumbUrl = null; }
+        preview.hidden = true; attachBtn.hidden = false;
+      }
+      attachBtn.addEventListener('click', function(){ fileInput.click(); });
+      removeBtn.addEventListener('click', clearFile);
+      fileInput.addEventListener('change', function(){
+        var f = fileInput.files && fileInput.files[0];
+        if(!f) return;
+        if(!/^image\//.test(f.type || '')){ clearFile(); errorEl.textContent = 'Ese archivo no es una imagen. Elige una captura o una foto.'; errorEl.hidden = false; return; }
+        errorEl.hidden = true;
+        chosenFile = f;
+        if(thumbUrl) URL.revokeObjectURL(thumbUrl);
+        thumbUrl = URL.createObjectURL(f);
+        thumb.src = thumbUrl; preview.hidden = false; attachBtn.hidden = true;
+      });
+      var fileBox = document.createElement('div');
+      fileBox.className = 'leobot-field';
+      fileBox.appendChild(attachBtn); fileBox.appendChild(preview); fileBox.appendChild(fileInput);
+      wrap.appendChild(fileBox);
+
+      /* Datos de la sesion: un solo check, marcado por defecto, con el detalle de que se manda. */
+      var sessBox = document.createElement('div');
+      sessBox.className = 'leobot-check';
+      var sessInput = document.createElement('input');
+      sessInput.type = 'checkbox'; sessInput.id = 'leobotSess'; sessInput.checked = false;
+      var sessLab = document.createElement('label');
+      sessLab.htmlFor = 'leobotSess';
+      sessLab.textContent = 'Enviar información técnica de mi sesión (opcional)';
+      sessBox.appendChild(sessInput); sessBox.appendChild(sessLab);
+      wrap.appendChild(sessBox);
+      var what = document.createElement('details');
+      what.className = 'leobot-what';
+      var sum = document.createElement('summary'); sum.textContent = '¿Qué se envía?'; what.appendChild(sum);
+      var wp = document.createElement('p');
+      wp.textContent = 'Solo si lo marcas: la página en la que estás, el ejercicio que ves en pantalla, la versión del sitio y datos técnicos de tu teléfono o computadora (navegador, pantalla, conexión). Si tu problema es de un ejercicio o de un curso, también tus últimas sesiones (habilidad, fecha y cuántas respondiste). Nunca contraseñas, nombre, datos de pago ni nada personal.';
+      what.appendChild(wp);
+      wrap.appendChild(what);
+
+      var contactInput = document.createElement('input');
+      contactInput.type = 'text'; contactInput.className = 'leobot-input'; contactInput.maxLength = 120; contactInput.autocomplete = 'off';
+      contactInput.setAttribute('autocapitalize', 'off'); contactInput.setAttribute('inputmode', 'email');
+      contactInput.placeholder = 'Correo o teléfono (opcional)';
+      contactInput.setAttribute('aria-label', 'Correo o teléfono (opcional)');
+      field('¿Dónde te respondemos? (opcional)', contactInput);
+      try{
+        if(typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured()){
+          LeoBackend.getSession().then(function(sess){
+            if(sess && sess.user && sess.user.email && !contactInput.value) contactInput.value = sess.user.email;
+          }).catch(function(){});
+        }
+      }catch(e){}
+
+      var errorEl = document.createElement('div');
+      errorEl.className = 'leobot-form-error'; errorEl.setAttribute('role', 'alert'); errorEl.hidden = true;
+      wrap.appendChild(errorEl);
+      [catSel, textarea, contactInput].forEach(function(el){ el.addEventListener('input', function(){ errorEl.hidden = true; }); });
+      catSel.addEventListener('change', function(){ errorEl.hidden = true; });
+
+      var actions = document.createElement('div');
+      actions.className = 'leobot-form-actions';
+      var sendBtn = document.createElement('button');
+      sendBtn.type = 'button'; sendBtn.className = 'btn btn-primary leobot-form-send';
+      sendBtn.textContent = formSpec.submitLabel;
+      actions.appendChild(sendBtn);
+      wrap.appendChild(actions);
+      optionsEl.appendChild(wrap);
+
+      var sending = false;
+      function fail(msg, el){ errorEl.textContent = msg; errorEl.hidden = false; if(el) el.focus(); }
+      function trySend(){
+        if(sending) return;
+        if(!catSel.value){ fail('Elige qué tipo de problema es.', catSel); return; }
+        var msg = (textarea.value || '').trim();
+        if(!msg){ fail('Cuéntame brevemente qué pasó.', textarea); return; }
+        var contactVal = (contactInput.value || '').trim();
+        if(contactVal && !isValidContact(contactVal)){ fail('Revisa tu dato: escribe un correo válido (nombre@correo.com) o un teléfono con al menos 7 números.', contactInput); return; }
+        sending = true; sendBtn.disabled = true;
+        var originalLabel = sendBtn.textContent;
+        sendBtn.textContent = chosenFile ? 'Enviando con la captura…' : 'Enviando…';
+        var extra = { categoria: catSel.value, seccion: secSel.value, detalle: (detailInput.value || '').trim(), incluirSesion: !!sessInput.checked, imageFile: chosenFile };
+        formSpec.onSubmit(msg, contactVal, extra).then(function(ok){
+          sending = false; sendBtn.disabled = false; sendBtn.textContent = originalLabel;
+          var shown = '[' + catSel.value + '] ' + msg;
+          if(shown.length > 140) shown = shown.slice(0, 140) + '…';
+          addUserBubble(shown);
+          addTypingIndicator();
+          window.setTimeout(function(){
+            var t = document.getElementById('leobotTyping');
+            if(t) t.remove();
+            addBotBubble(ok ? (typeof formSpec.successText === 'function' ? formSpec.successText() : formSpec.successText) : formSpec.errorText);
+            renderOptions(nodeId, (!ok && formSpec.errorExtra) ? formSpec.errorExtra : []);
+          }, 380);
+        });
+      }
+      sendBtn.addEventListener('click', trySend);
 
       var menuBtn = document.createElement('button');
       menuBtn.type = 'button';
@@ -986,7 +1297,7 @@
         addBotBubble(text);
         setAvatarState(headerAvatar, 'happy', 700);
         if(node.form){
-          renderForm(nodeId, node.form);
+          if(node.form.rich) renderRichForm(nodeId, node.form); else renderForm(nodeId, node.form);
         } else {
           renderOptions(nodeId, resolveOptions(node));
         }
