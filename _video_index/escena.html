@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../style.css">
+<style>
+@font-face{font-family:'Baloo 2';font-weight:600;src:url(fonts/baloo-2-latin-600-normal.woff2) format('woff2');}
+@font-face{font-family:'Baloo 2';font-weight:700;src:url(fonts/baloo-2-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Baloo 2';font-weight:800;src:url(fonts/baloo-2-latin-800-normal.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-weight:400;src:url(fonts/inter-latin-400-normal.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-weight:500;src:url(fonts/inter-latin-500-normal.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-weight:600;src:url(fonts/inter-latin-600-normal.woff2) format('woff2');}
+@font-face{font-family:'Inter';font-weight:700;src:url(fonts/inter-latin-700-normal.woff2) format('woff2');}
+html,body{margin:0;padding:0;width:1280px;height:720px;overflow:hidden;background:#FBF8F2;font-family:'Inter',Arial,sans-serif}
+.scene{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:hidden;opacity:0;pointer-events:none}
+.fadein{position:absolute;inset:0;background:#FBF8F2;opacity:0;z-index:50;pointer-events:none}
+/* subtitulos */
+.sub{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);max-width:1000px;text-align:center;background:rgba(27,35,51,.92);color:#fff;font-weight:600;font-size:30px;line-height:1.25;padding:12px 26px;border-radius:16px;z-index:40;opacity:0;white-space:nowrap}
+/* S1 */
+#s1{background:radial-gradient(900px 600px at 78% 40%,#EEF1FE 0%,#FBF8F2 62%)}
+#s1 h1{position:absolute;left:84px;top:150px;width:640px;margin:0;font-family:'Baloo 2';font-weight:800;font-size:76px;line-height:1.02;color:#1B2333;letter-spacing:-1px}
+#s1 h1 .w{display:inline-block;opacity:0;transform:translateY(18px)}
+#s1 h1 em{font-style:normal;color:#3554F0}
+#s1 .leo{position:absolute;right:100px;bottom:-10px;height:600px}
+#s1 .bubble{position:absolute;right:300px;top:46px;width:170px;height:100px;border-radius:50px;background:#fff;border:3px solid #E7E2D6;box-shadow:0 10px 30px rgba(27,35,51,.12);display:flex;align-items:center;justify-content:center;gap:12px}
+#s1 .bubble i{display:block;width:16px;height:16px;border-radius:50%;background:#3554F0;opacity:.15}
+#s1 .tail1,#s1 .tail2{position:absolute;border-radius:50%;background:#fff;border:3px solid #E7E2D6}
+#s1 .tail1{right:370px;top:152px;width:26px;height:26px}
+#s1 .tail2{right:392px;top:186px;width:15px;height:15px}
+/* S2 */
+#s2 iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;transform-origin:0 0;background:#FBF8F2}
+.lower{position:absolute;left:60px;bottom:120px;z-index:30;background:#fff;border:2px solid #E7E2D6;border-radius:18px;box-shadow:0 14px 40px rgba(27,35,51,.18);padding:14px 22px 14px 14px;display:flex;align-items:center;gap:14px;opacity:0}
+.lower img{width:60px;height:60px;border-radius:50%;object-fit:cover}
+.lower b{display:block;font-family:'Baloo 2';font-weight:800;font-size:28px;color:#1B2333;line-height:1}
+.lower span{font-size:17px;color:#5B6472;font-weight:500}
+.ring{position:absolute;z-index:25;border:4px solid #3554F0;border-radius:999px;box-shadow:0 0 0 8px rgba(53,84,240,.18);opacity:0;pointer-events:none}
+/* S3/S4 */
+#app{position:absolute;left:0;top:0;width:1280px;transform-origin:0 0;background:#FBF8F2}
+#app header{position:relative}
+.tag{position:absolute;z-index:30;background:#fff;border:2px solid #3554F0;color:#253ECC;font-weight:700;font-size:24px;padding:10px 20px;border-radius:999px;box-shadow:0 12px 34px rgba(53,84,240,.22);display:flex;align-items:center;gap:10px;opacity:0;white-space:nowrap}
+.tag svg{width:24px;height:24px}
+.chips3{position:absolute;z-index:30;display:flex;gap:12px;opacity:0}
+.chips3 span{background:#3554F0;color:#fff;font-weight:700;font-size:25px;padding:12px 22px;border-radius:999px;box-shadow:0 12px 30px rgba(53,84,240,.3)}
+.cursor{position:absolute;z-index:45;width:34px;height:34px;pointer-events:none;opacity:0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
+.rip{position:absolute;z-index:44;width:20px;height:20px;border-radius:50%;border:4px solid #3554F0;pointer-events:none;opacity:0}
+.badge-inc{position:absolute;z-index:32;background:linear-gradient(135deg,#3554F0,#6C4CF0);color:#fff;font-weight:800;font-size:24px;padding:11px 22px;border-radius:999px;box-shadow:0 14px 36px rgba(53,84,240,.4);display:flex;gap:10px;align-items:center;opacity:0;white-space:nowrap}
+.badge-inc svg{width:24px;height:24px}
+/* S5 */
+#s5{background:radial-gradient(900px 600px at 25% 50%,#EEF1FE 0%,#FBF8F2 62%)}
+#s5 .leo{position:absolute;left:90px;bottom:-6px;height:620px}
+#s5 .a,#s5 .b{position:absolute;left:520px;width:680px}
+#s5 .a{top:200px}
+#s5 .big{font-family:'Baloo 2';font-weight:800;font-size:96px;line-height:1;color:#3554F0;letter-spacing:-2px}
+#s5 .lbl{font-family:'Baloo 2';font-weight:700;font-size:44px;line-height:1.05;color:#1B2333;margin-top:10px}
+#s5 .b{top:170px}
+#s5 h2{font-family:'Baloo 2';font-weight:800;font-size:84px;line-height:1;margin:0 0 14px;color:#1B2333;letter-spacing:-1.5px}
+#s5 p{font-size:30px;color:#5B6472;margin:0 0 30px;font-weight:500;line-height:1.3}
+#s5 .cta{display:inline-flex;align-items:center;gap:12px;background:#3554F0;color:#fff;font-weight:700;font-size:32px;padding:22px 40px;border-radius:999px;box-shadow:0 18px 44px rgba(53,84,240,.4)}
+#s5 .url{margin-top:26px;font-weight:700;font-size:28px;color:#253ECC}
+#s5 .photo5{position:absolute;left:96px;top:70px;width:420px;height:540px;border-radius:40px;overflow:hidden;border:7px solid #fff;box-shadow:0 26px 70px rgba(27,35,51,.28);opacity:0;background:#E7E2D6}
+#s5 .photo5 img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+#s5 .photo5 .ptag{position:absolute;left:0;right:0;bottom:0;padding:46px 26px 22px;background:linear-gradient(to top,rgba(20,26,40,.88),rgba(20,26,40,0));color:#fff}
+#s5 .photo5 .ptag b{display:block;font-family:'Baloo 2';font-weight:800;font-size:40px;line-height:1}
+#s5 .photo5 .ptag span{font-size:22px;font-weight:600;opacity:.92}
+#s5 .proof{display:inline-flex;align-items:center;gap:12px;margin-top:26px;background:#EEF1FE;border:2px solid #3554F0;color:#253ECC;font-weight:800;font-size:34px;padding:14px 28px;border-radius:34px;line-height:1.2;opacity:0}
+#s5 .proof svg{width:34px;height:34px;flex-shrink:0}
+</style></head><body>
+
+<!-- ============ S1 ============ -->
+<div id="s1" class="scene">
+  <h1><span class="w">¿Estudias</span> <span class="w">inglés,</span> <span class="w">pero</span> <span class="w">al</span> <span class="w">hablar</span> <span class="w"><em>te</em></span> <span class="w"><em>quedas</em></span> <span class="w"><em>en</em></span> <span class="w"><em>blanco?</em></span></h1>
+  <div class="tail2"></div><div class="tail1"></div>
+  <div class="bubble"><i></i><i></i><i></i></div>
+  <img class="leo" src="../leo-thinking.png" alt="">
+</div>
+
+<!-- ============ S2 ============ -->
+<div id="s2" class="scene">
+  <iframe id="ifr" src="../index.html"></iframe>
+  <div class="ring" id="ring2"></div>
+  <div class="lower" id="lower2"><img src="../leo-real.webp" alt=""><div><b>Soy Leo</b><span>Creé Inglés con Leo · una academia que se adapta a ti</span></div></div>
+</div>
+
+<!-- ============ S3 / S4 (misma pagina) ============ -->
+<div id="s34" class="scene">
+ <div id="app">
+<header>
+  <div class="wrap nav">
+    <a class="logo"><img src="../logo.png" class="logo-mark" alt="">Inglés con <span class="leo">Leo</span></a>
+    <nav class="nav-links"><a>Inicio</a><a>Academia</a><a class="current">Practicar</a><a>Mi progreso</a><a>Aprende inglés</a><a>Clases particulares</a><a>Contacto</a></nav>
+    <div class="nav-actions" style="display:flex"><div class="nav-profile-wrap"><button type="button" class="nav-profile-btn"><span class="nav-avatar">L</span><span class="nav-profile-name">Leo</span></button></div></div>
+  </div>
+</header>
+<main>
+  <section class="page-hero" style="padding-bottom:8px;"><div class="wrap"><span class="badge badge-members">Miembros</span><h1 style="margin-top:10px;">Practicar</h1><p class="lead">Tu plan de estudio, el repaso de tus errores y ejercicios por habilidad. Tu progreso se guarda.</p></div></section>
+  <section style="padding-top:8px;"><div class="wrap">
+    <a class="plan-feature-card plan-feature-hero today-hero" id="planHero">
+      <div class="today-hero-eyebrow">Plan de estudio personalizado</div>
+      <h2>Tu práctica recomendada de hoy</h2>
+      <p class="plan-feature-desc">Según tu nivel, tu progreso y tus errores. Tú eliges la duración: 5 a 25 minutos.</p>
+      <span class="btn btn-primary btn-block">Empezar mi plan →</span>
+    </a>
+    <div class="hub-grid dash-top-grid">
+      <div class="mistakes-card" id="mistakesCard">
+        <div class="mistakes-card-top"><div class="stat-card-icon" style="background:var(--coral-tint);color:var(--coral);"><svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 10-2.6 5.9" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M20 7v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><span class="mistakes-eyebrow">Repaso personal</span></div>
+        <h2>Tus errores frecuentes</h2>
+        <p class="mistakes-sub"><span class="mistakes-count">118 ejercicios</span> para reforzar.</p>
+        <div class="mistakes-chips" id="mChips"><a class="mistakes-chip">Gramática <b>39</b></a><a class="mistakes-chip">Vocabulario <b>67</b></a><a class="mistakes-chip">Listening <b>2</b></a><a class="mistakes-chip">Writing <b>8</b></a></div>
+        <div class="mistakes-actions"><a class="mistakes-btn">Repaso rápido →</a><a class="mistakes-btn-all">Ver todos</a></div>
+      </div>
+      <div class="daily-card"><div class="daily-card-top"><div class="stat-card-icon" style="background:var(--amber-tint);color:var(--amber);"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3c1 3-2 4-2 7a4 4 0 108 0c0-1-.5-2-1-2.5.3 1.5-.5 2.5-1.5 2.5-1.5 0-2-1.3-1-2.5C15.5 6 13 5 12 3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M8 14a4 4 0 108 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></div><span class="daily-eyebrow">Reto diario</span></div>
+        <h2>5 ejercicios rápidos al día</h2><p class="daily-sub">Gramática, vocabulario, listening y writing.</p><button type="button" class="daily-btn">Empezar reto diario →</button></div>
+    </div>
+    <h2 class="home-h">Practicar por habilidad</h2>
+    <p class="home-hint">Elige tu nivel y una habilidad, y haz una sesión de varios ejercicios.</p>
+    <div class="levels" id="levels">
+      <button class="level-card lvl-principiante" aria-pressed="false"><div class="level-top"><div><div class="level-name">Principiante</div><div class="level-range">A0</div></div></div><div class="tone-bar"></div><p class="level-desc">Lo más básico: saludos, números, colores y palabras simples.</p></button>
+      <button class="level-card lvl-facil" id="lvlFacil" aria-pressed="false"><div class="level-top"><div><div class="level-name">Fácil</div><div class="level-range">A1–A2</div></div></div><div class="tone-bar"></div><p class="level-desc">Palabras y frases del día a día.</p></button>
+      <button class="level-card lvl-medio" aria-pressed="false"><div class="level-top"><div><div class="level-name">Medio</div><div class="level-range">B1–B2</div></div></div><div class="tone-bar"></div><p class="level-desc">Conversaciones más largas y matices.</p></button>
+      <button class="level-card lvl-avanzado" aria-pressed="false"><div class="level-top"><div><div class="level-name">Avanzado</div><div class="level-range">C1+</div></div></div><div class="tone-bar"></div><p class="level-desc">Matices y precisión de nativo.</p></button>
+    </div>
+    <div class="skill-tabs"><button type="button" class="skill-tab-btn" aria-selected="true" aria-pressed="true">Gramática</button><button type="button" class="skill-tab-btn">Vocabulario</button><button type="button" class="skill-tab-btn">Listening</button><button type="button" class="skill-tab-btn">Speaking</button><button type="button" class="skill-tab-btn">Writing</button><button type="button" class="skill-tab-btn">Mixto</button></div>
+    <div class="skill-section" style="margin-top:20px;" id="skillSec">
+      <div class="skill-section-head"><h3>Gramática</h3><p>8 preguntas cortas con explicación y ejemplos.</p></div>
+      <div class="skill-section-body"><div>
+        <div class="session-head"><span class="practice-level-tag">Gramática · Fácil A1–A2</span><span class="session-count">Pregunta 1 de 9</span></div>
+        <div class="session-progress"><div class="session-progress-fill" style="width:11%;"></div></div>
+        <div class="session-card" id="sessCard">
+          <div class="practice-instruction">Completa la frase</div>
+          <div class="blank-row"><span class="blank-slot" id="blank"></span><span style="font-weight:600;font-size:1.05rem;">she</span><span style="font-weight:600;font-size:1.05rem;">work</span><span style="font-weight:600;font-size:1.05rem;">on</span><span style="font-weight:600;font-size:1.05rem;">Saturdays</span><span style="font-weight:600;font-size:1.05rem;">?</span></div>
+          <div class="practice-translation">¿Ella trabaja los sábados?</div>
+          <div class="word-bank" id="bank"><button class="word-chip" id="chipDo">Do</button><button class="word-chip" id="chipDoes">Does</button><button class="word-chip" id="chipIs">Is</button></div>
+          <div class="feedback" id="fb" style="display:none">
+            <div class="fb-head"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#EF5A45"></circle><path d="M7 7l6 6M13 7l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"></path></svg><span>Casi.</span></div>
+            <p class="fb-explain">Con “she/he/it” usamos “Does”.</p>
+            <div class="examples-block"><div class="examples-label">Mira otros ejemplos</div><div class="example-pair"><div class="example-en">Does he study at night?</div><div class="example-es">¿Él estudia de noche?</div></div><div class="example-pair"><div class="example-en">Does he live near here?</div><div class="example-es">¿Él vive cerca de aquí?</div></div></div>
+            <p class="fb-lesson"><a>Ver la clase: Do y does ↗</a></p>
+            <div class="leo-ai" id="leoAi">
+              <button type="button" class="leo-ai-btn" id="aiBtn"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" fill="currentColor"/><path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" fill="currentColor"/></svg><span>Explícame por qué</span></button>
+              <div class="leo-ai-answer" id="aiAns" style="display:none">
+                <div class="leo-ai-head">Leo AI</div>
+                <p class="leo-ai-loading" id="aiLoad" style="display:none">Leo AI está pensando…</p>
+                <div id="aiBody">
+                  <p class="leo-ai-text" id="aiText"></p>
+                  <div class="leo-ai-example" id="aiEx"><div class="example-en">Does she cook on Sundays?</div><div class="example-es">¿Ella cocina los domingos?</div></div>
+                  <p class="leo-ai-tip" id="aiTip">Do y does te ha costado varias veces. Para reforzarlo:</p>
+                  <a class="leo-ai-focus ai-l" style="display:block">Ver la clase: Do y does</a>
+                  <a class="leo-ai-focus ai-l" style="display:block">Practicar ejercicios distintos de Do y does</a>
+                  <a class="leo-ai-focus ai-l" style="display:block">Curso: DO / DOES: preguntas y negaciones</a>
+                  <p class="leo-ai-note" id="aiNote">Explicación automática. La calificación del ejercicio no cambia.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div></section>
+  <div style="height:700px"></div>
+</main>
+ </div>
+ <div class="tag" id="tag1"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Empiezas a tu nivel</span></div>
+ <div class="tag" id="tag2"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="3"/><path d="M21 21l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg><span>Detecta qué se te complica</span></div>
+ <div class="chips3" id="chips3"><span>Ejercicios</span><span>Artículos</span><span>Cursos</span></div>
+ <div class="ring" id="ring34"></div>
+ <div class="badge-inc" id="badge"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" fill="currentColor"/></svg>Leo AI · incluido en la membresía</div>
+</div>
+
+<!-- ============ S5 ============ -->
+<div id="s5" class="scene">
+  <div class="photo5" id="photo5"><img src="leo_foto_video.jpg" alt=""><div class="ptag"><b>Leo</b><span>Profesor de inglés</span></div></div>
+  <img class="leo" id="leo5" src="../leo-pointing.png" alt="" style="opacity:0">
+  <div class="a" id="s5a"><div class="big">+12 años</div><div class="lbl">enseñando inglés de verdad.</div><div class="proof" id="proof5"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#3554F0"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Experiencia real.<br>Un método que da resultados.</span></div></div>
+  <div class="b" id="s5b"><h2>Empieza gratis</h2><p>Haz tu primer ejercicio aquí mismo.<br>Sin registro, sin tarjeta.</p><span class="cta" id="cta5">Empieza a practicar gratis <span>→</span></span><div class="url">inglesconleo.com</div></div>
+</div>
+
+<div class="cursor" id="cursor"><svg viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.6L21 10.8z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+<div class="rip" id="rip"></div>
+<div class="sub" id="sub"></div>
+<div class="fadein" id="fade"></div>
+<script src="draw.js"></script>
+</body></html>
