@@ -66,24 +66,24 @@
       "origen": "Resumen de sesion de MIEMBROS: Para reforzar",
       "texto": "Practicar <tema>",
       "tema": "los temas con mas errores de la sesion",
-      "destino_real": "contentForTema(tema).practiceHref (Plan con foco; solo se ofrece si el tema tiene ejercicios en el nivel, o si no, la familia)",
+      "destino_real": "contentForTema(tema).practiceHref (Plan con foco; solo se ofrece si el tema tiene ejercicios en el nivel, o si no, la familia). Si solo existiria la practica general (practiceKind general), el boton Practicar NO se muestra; sin practica, clase ni curso la fila se omite",
       "destino_esperado": "Practica del tema",
       "acceso": "solo_miembros",
       "estado": "verificado",
       "verificacion": "prueba",
-      "nota": "Cubierto por tools/tests/conexion-recursos.test.js y memoria-gratis.test.js. Sin familia cae a gramatica.html (general)."
+      "nota": "Cubierto por tools/tests/conexion-recursos.test.js, memoria-gratis.test.js y refuerzo-exacto.test.js. Sin familia ya no se manda a gramatica.html: se omite el boton (lo que falta queda en REFUERZOS_FALTANTES.md)."
     },
     {
       "id": "D07", "tipo": "JS", "archivo": "app.js", "aguja": "function freeReinforceHtml",
       "origen": "Resumen de sesion GRATIS: Para reforzar",
-      "texto": "Practicar mas",
+      "texto": "Practicar este tema",
       "tema": "temas con errores de la sesion",
-      "destino_real": "practica.html?skill=<grammar|vocabulary|listening>",
-      "destino_esperado": "Practica gratis de la habilidad",
+      "destino_real": "Gramatica con ejercicios gratis del tema: practica.html?skill=grammar&tema=<id>. Vocabulario, listening o tema sin ejercicios gratis: no hay boton de practica (queda la explicacion o el curso; si no hay ninguno la fila no sale)",
+      "destino_esperado": "Practica gratis de ESE tema o nada",
       "acceso": "todos",
-      "estado": "general_intencional",
-      "verificacion": "codigo",
-      "nota": "El texto es honesto (no dice 'este tema'). La mejora real ya ocurre dentro: freeMemoryBoost cambia hasta 4 ejercicios de la siguiente sesion por otros del tema que costo (solo cuentas gratis con historial)."
+      "estado": "verificado",
+      "verificacion": "prueba",
+      "nota": "Cubierto por refuerzo-exacto.test.js (nunca una pagina general). Ademas ocurre dentro: freeMemoryBoost cambia hasta 4 ejercicios de la siguiente sesion por otros del tema que costo (solo cuentas gratis con historial)."
     },
     {
       "id": "D08", "tipo": "JS", "archivo": "app.js", "aguja": "function freeMemoryBoost",

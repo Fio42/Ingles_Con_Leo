@@ -117,7 +117,7 @@ test('Resumen gratis tras errores: muestra qué reforzar (explicación, práctic
   assert.strictEqual(T.freeDailyLimitReached(), false);
   const html = T.renderFreeSessionSummary({ title:'¡Listo!', score:'1 / 3', topics:['x'], results: wrongRes(doDoesIds(2)) });
   assert(/Para reforzar/.test(html) && /data-rf="lesson"/.test(html));
-  assert(/practica\.html\?skill=grammar/.test(html) && /Practicar más/.test(html), 'practicar lleva a la práctica gratis');
+  assert(/practica\.html\?skill=grammar&tema=do-does/.test(html) && /Practicar este tema/.test(html) && !/Practicar más/.test(html), 'practicar lleva a la práctica gratis de ESE tema');
   assert(/curso\/do-does/.test(html) && /con membresía/.test(html));
   assert(!/summary-unlock/.test(html) && !/Descubrir el sistema completo/.test(html) && !/href="miembros\.html/.test(html), 'sin invitación a pagar fuera del límite');
   assert(!/ai-pitch/.test(html), 'sin pitch de Leo AI fuera del límite');

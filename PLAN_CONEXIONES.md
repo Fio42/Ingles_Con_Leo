@@ -14,7 +14,7 @@ Lo mejor que ya existe y conviene reutilizar, no reescribir:
 - El registro `temas.js` con sus pruebas (`temas.test.js`, `conexion-recursos.test.js`).
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 65. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 10. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
 - Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 17, general 2 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
@@ -172,6 +172,14 @@ Hecho:
 - Residuo conocido, documentado y sin cambiar: los errores de otro nivel (`xt`) entran al repaso de errores del Plan general (hasta ~30% de la sesión, como cualquier error de "Mis errores"), sin marca `xt` ni `cl`, así que al responderlos de nuevo sí cuentan para el porcentaje por habilidad. Efecto acotado (hasta 3 de 9 ejercicios de una sesión). Si algún día se quiere cerrar: que `buildMistakePool` marque `xt` cuando el ejercicio sea de otro nivel que el guardado.
 
 Pendiente: P2 en vocabulario y listening, P6, P7 (curso WH, sin tocar Supabase), P8 (las cuatro familias, por tocar el diagnóstico), P9 (fichas) y P10 (decisión de negocio).
+
+Actualizacion 2026-11-21 (el piloto ya esta en `main`; fase 4 parcial):
+
+- Clase -> ejercicio: 20 clases (`articulo-*.html`) con 3 o mas ejercicios gratis de su tema enlazan su boton "Practicar gratis" a `practica.html?skill=grammar&tema=<id>`. Las mantiene `node tools/conexiones/enlazar-articulos.js` (sin argumentos comprueba, con `--write` aplica) y la prueba `refuerzo-exacto.test.js`.
+- Error -> refuerzo (visitante y cuenta gratis): el "Para reforzar" abre la practica gratis de ESE tema (nunca la general). Vocabulario, listening o un tema sin ejercicios gratis: queda la explicacion o el curso, sin boton de practica. Sin nada exacto que ofrecer, la fila no sale.
+- Error -> refuerzo (miembro): si el tema solo tendria la practica general (sin familia, o sin ejercicios en ningun nivel), no se muestra el boton Practicar hacia `gramatica.html`. Con 2 o mas errores de un tema, ese tema va primero (ya era asi).
+- Lo que falta queda en `REFUERZOS_FALTANTES.md` (generado con `node tools/conexiones/faltantes.js --write`): tema, ejemplo de un ejercicio y recurso a crear.
+- Sigue pendiente: P2 en vocabulario y listening (ruta gratis por tema), P6, P7, P8 (4 temas sin familia), P9 (fichas) y P10 (decision de Leo).
 
 ## 7. Cómo se mantiene actualizado
 

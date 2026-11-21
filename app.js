@@ -8438,7 +8438,9 @@ function sessionReinforceRows(results, ins, covered){
       }
       if(!lesson && c.quick) lesson = { href: c.quick.href, label: 'Ver ficha del glosario' };   // sin artículo: la ficha del glosario del tema
       const course = typeof academiaCourseForTema === 'function' ? academiaCourseForTema(g.id) : null;
-      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, course, skill: c.skill });
+      // Refuerzo exacto o nada: si el tema no tiene practica propia (solo la general de la habilidad), ni explicacion ni curso, la fila no ofrece nada que resuelva la duda y se omite.
+      if(c.practiceKind === 'general' && !lesson && !course) return;
+      out.push({ label: c.label, n: g.ids.size, lesson, practiceHref: c.practiceHref, practiceKind: c.practiceKind, practiceLabel: c.practiceKind === 'tema' ? null : c.practiceLabel, temaId: g.id, course, skill: c.skill });
     });
     return out;
   }catch(e){ return []; }
@@ -8450,7 +8452,7 @@ function sessionReinforceHtml(rows){
       <div class="sess-insight-label sess-insight-next">Para reforzar</div>
       <ul class="sess-reinforce">
         ${rows.map(r=>`<li><span class="sess-rf-name">${r.label}<small>${r.n} ${r.n === 1 ? 'error' : 'errores'} hoy</small>${r.course ? `<small class="sess-rf-course">Curso: <a href="${r.course.href}" data-rf="course" style="display:inline-block;padding:12px 0">${r.course.title}</a>${window.__leoMemberVerified === true ? '' : ' · con membresía' + (r.course.demo ? ' (demo gratis)' : '')}</small>` : ''}</span>
-          <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}" data-rf="lesson">${r.lesson.label}</a>` : ''}<a href="${r.practiceHref}" data-rf="practice">${r.practiceLabel || 'Practicar'}</a></span></li>`).join('')}
+          <span class="sess-rf-links">${r.lesson ? `<a href="${r.lesson.href}" data-rf="lesson">${r.lesson.label}</a>` : ''}${r.practiceHref && r.practiceKind !== 'general' ? `<a href="${r.practiceHref}" data-rf="practice">${r.practiceLabel || 'Practicar'}</a>` : ''}</span></li>`).join('')}
       </ul>`;
 }
 
@@ -9336,9 +9338,14 @@ function leoAiPitchHtml(variant){
 // "Para reforzar" de la práctica gratis: lo que ya calcula Miembros, con "Practicar" llevando a la práctica gratis de esa habilidad (respeta el límite diario).
 function freeReinforceHtml(results){
   try{
-    const rows = sessionReinforceRows(results, { actions: [] }, null).map(r => {
-      const sk = r.skill === 'vocabulario' ? 'vocabulary' : r.skill === 'listening' ? 'listening' : 'grammar';
-      return Object.assign({}, r, { practiceHref: 'practica.html?skill=' + sk, practiceLabel: 'Practicar más' });
+    const lvl = (typeof getUserLevel === 'function') ? getUserLevel() : 'facil';
+    const rows = [];
+    sessionReinforceRows(results, { actions: [] }, null).forEach(r => {
+      // Gramatica con ejercicios gratis de ESE tema: practica.html?skill=grammar&tema=<id>. Cualquier otro caso no ofrece practica (la pagina general no resuelve la duda).
+      const exact = r.skill === 'gramatica' && r.temaId && typeof freeLevelForTema === 'function' && freeLevelForTema(r.temaId, lvl);
+      const row = Object.assign({}, r, exact ? { practiceHref: 'practica.html?skill=grammar&tema=' + encodeURIComponent(r.temaId), practiceKind: 'tema', practiceLabel: 'Practicar este tema' } : { practiceHref: null, practiceKind: 'general' });
+      if(!exact && !row.lesson && !row.course) return;
+      rows.push(row);
     });
     return sessionReinforceHtml(rows);
   }catch(e){ return ''; }

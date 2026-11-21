@@ -28,21 +28,21 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 117 | 74 | 0 |
+| verificado | 143 | 74 | 55 |
 | parcial | 3 | 0 | 0 |
 | enlace_incorrecto | 1 | 4 | 0 |
-| recurso_sin_conectar | 0 | 0 | 65 |
+| recurso_sin_conectar | 0 | 0 | 10 |
 | por_construir | 0 | 1 | 1 |
 | solo_miembros | 35 | 0 | 13 |
-| general_intencional | 55 | 0 | 0 |
+| general_intencional | 48 | 0 | 0 |
 
-79 temas en temas.js. 211 filas de enlaces: 191 agrupadas desde 446 paginas HTML y 20 destinos dinamicos o redirecciones curados.
+79 temas en temas.js. 230 filas de enlaces: 210 agrupadas desde 446 paginas HTML y 20 destinos dinamicos o redirecciones curados.
 <!-- /GENERADO:resumen -->
 
 Cifras clave:
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 65. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 10. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
 - Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 17, general 2 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
@@ -119,23 +119,23 @@ flowchart LR
   n_tquestion_words --> n_qquestion_words["quiz 6 preg."]:::ok
   n_tquestion_words --> n_kquestion_words["curso wh"]:::miembros
   n_tquestion_words -.-> n_pquestion_words["Miembros: verificado"]:::ok
-  n_tquestion_words -.-> n_fquestion_words["Gratis: recurso_sin_conectar"]:::warn
+  n_tquestion_words -.-> n_fquestion_words["Gratis: verificado"]:::warn
   n_tcomparativos["Comparativos"]:::tema
   n_tcomparativos --> n_ccomparativos["clase"]:::ok
   n_tcomparativos --> n_qcomparativos["quiz 4 preg."]:::ok
   n_tcomparativos -.-> n_pcomparativos["Miembros: verificado"]:::ok
-  n_tcomparativos -.-> n_fcomparativos["Gratis: recurso_sin_conectar"]:::warn
+  n_tcomparativos -.-> n_fcomparativos["Gratis: verificado"]:::warn
   n_tsecuenciadores["Secuenciadores (first, then, finally)"]:::tema
   n_tsecuenciadores --> n_csecuenciadores["clase"]:::ok
   n_tsecuenciadores --> n_qsecuenciadores["quiz 8 preg."]:::ok
   n_tsecuenciadores -.-> n_psecuenciadores["Miembros: verificado"]:::ok
-  n_tsecuenciadores -.-> n_fsecuenciadores["Gratis: recurso_sin_conectar"]:::warn
+  n_tsecuenciadores -.-> n_fsecuenciadores["Gratis: verificado"]:::warn
   n_tpresente_continuo["Presente continuo"]:::tema
   n_tpresente_continuo --> n_cpresente_continuo["clase"]:::ok
   n_tpresente_continuo --> n_qpresente_continuo["quiz 16 preg."]:::ok
   n_tpresente_continuo --> n_kpresente_continuo["curso presente-continuo"]:::miembros
   n_tpresente_continuo -.-> n_ppresente_continuo["Miembros: verificado"]:::ok
-  n_tpresente_continuo -.-> n_fpresente_continuo["Gratis: recurso_sin_conectar"]:::warn
+  n_tpresente_continuo -.-> n_fpresente_continuo["Gratis: verificado"]:::warn
   n_tpasado_continuo["Pasado continuo"]:::tema
   n_tpasado_continuo --> n_cpasado_continuo["clase"]:::ok
   n_tpasado_continuo --> n_qpasado_continuo["quiz 4 preg."]:::ok
@@ -152,61 +152,61 @@ flowchart LR
   n_ta_an --> n_qa_an["quiz 6 preg."]:::ok
   n_ta_an --> n_ka_an["curso articulos"]:::miembros
   n_ta_an -.-> n_pa_an["Miembros: verificado"]:::ok
-  n_ta_an -.-> n_fa_an["Gratis: recurso_sin_conectar"]:::warn
+  n_ta_an -.-> n_fa_an["Gratis: verificado"]:::warn
   n_tthis_that["This, that, these y those"]:::tema
   n_tthis_that --> n_cthis_that["clase"]:::ok
   n_tthis_that --> n_qthis_that["quiz 8 preg."]:::ok
   n_tthis_that -.-> n_pthis_that["Miembros: verificado"]:::ok
-  n_tthis_that -.-> n_fthis_that["Gratis: recurso_sin_conectar"]:::warn
+  n_tthis_that -.-> n_fthis_that["Gratis: verificado"]:::warn
   n_tcan_cant["Can y can't"]:::tema
   n_tcan_cant --> n_ccan_cant["clase"]:::ok
   n_tcan_cant --> n_kcan_cant["curso can"]:::miembros
   n_tcan_cant -.-> n_pcan_cant["Miembros: verificado"]:::ok
-  n_tcan_cant -.-> n_fcan_cant["Gratis: recurso_sin_conectar"]:::warn
+  n_tcan_cant -.-> n_fcan_cant["Gratis: verificado"]:::warn
   n_tverbos_irregulares["Verbos irregulares en pasado"]:::tema
   n_tverbos_irregulares --> n_cverbos_irregulares["clase"]:::ok
   n_tverbos_irregulares --> n_qverbos_irregulares["quiz 10 preg."]:::ok
   n_tverbos_irregulares -.-> n_pverbos_irregulares["Miembros: verificado"]:::ok
-  n_tverbos_irregulares -.-> n_fverbos_irregulares["Gratis: recurso_sin_conectar"]:::warn
+  n_tverbos_irregulares -.-> n_fverbos_irregulares["Gratis: verificado"]:::warn
   n_tvoz_pasiva["Voz pasiva"]:::tema
   n_tvoz_pasiva --> n_cvoz_pasiva["clase"]:::ok
   n_tvoz_pasiva --> n_qvoz_pasiva["quiz 10 preg."]:::ok
   n_tvoz_pasiva -.-> n_pvoz_pasiva["Miembros: verificado"]:::ok
-  n_tvoz_pasiva -.-> n_fvoz_pasiva["Gratis: recurso_sin_conectar"]:::warn
+  n_tvoz_pasiva -.-> n_fvoz_pasiva["Gratis: verificado"]:::warn
   n_tin_on_at["In, on y at"]:::tema
   n_tin_on_at --> n_cin_on_at["clase"]:::ok
   n_tin_on_at --> n_qin_on_at["quiz 20 preg."]:::ok
   n_tin_on_at --> n_kin_on_at["curso in-on-at"]:::miembros
   n_tin_on_at -.-> n_pin_on_at["Miembros: verificado"]:::ok
-  n_tin_on_at -.-> n_fin_on_at["Gratis: recurso_sin_conectar"]:::warn
+  n_tin_on_at -.-> n_fin_on_at["Gratis: verificado"]:::warn
   n_tpresente_simple["Presente simple"]:::tema
   n_tpresente_simple --> n_cpresente_simple["clase"]:::ok
   n_tpresente_simple --> n_kpresente_simple["curso presente-simple"]:::miembros
   n_tpresente_simple -.-> n_ppresente_simple["Miembros: verificado"]:::ok
-  n_tpresente_simple -.-> n_fpresente_simple["Gratis: recurso_sin_conectar"]:::warn
+  n_tpresente_simple -.-> n_fpresente_simple["Gratis: verificado"]:::warn
   n_tdo_does["Do y does"]:::tema
   n_tdo_does --> n_cdo_does["clase"]:::ok
   n_tdo_does --> n_qdo_does["quiz 10 preg."]:::ok
   n_tdo_does --> n_kdo_does["curso do-does"]:::miembros
   n_tdo_does -.-> n_pdo_does["Miembros: verificado"]:::ok
-  n_tdo_does -.-> n_fdo_does["Gratis: recurso_sin_conectar"]:::warn
+  n_tdo_does -.-> n_fdo_does["Gratis: verificado"]:::warn
   n_tpronombres["Pronombres (sujeto y objeto)"]:::tema
   n_tpronombres --> n_cpronombres["clase"]:::ok
   n_tpronombres --> n_qpronombres["quiz 4 preg."]:::ok
   n_tpronombres --> n_kpronombres["curso pronombres"]:::miembros
   n_tpronombres -.-> n_ppronombres["Miembros: verificado"]:::ok
-  n_tpronombres -.-> n_fpronombres["Gratis: recurso_sin_conectar"]:::warn
+  n_tpronombres -.-> n_fpronombres["Gratis: verificado"]:::warn
   n_tposesivos["Posesivos (my, your, his, her...)"]:::tema
   n_tposesivos --> n_cposesivos["clase"]:::ok
   n_tposesivos --> n_qposesivos["quiz 8 preg."]:::ok
   n_tposesivos --> n_kposesivos["curso posesivos"]:::miembros
   n_tposesivos -.-> n_pposesivos["Miembros: verificado"]:::ok
-  n_tposesivos -.-> n_fposesivos["Gratis: recurso_sin_conectar"]:::warn
+  n_tposesivos -.-> n_fposesivos["Gratis: verificado"]:::warn
   n_tto_be_presente["Verbo to be (am, is, are)"]:::tema
   n_tto_be_presente --> n_cto_be_presente["clase"]:::ok
   n_tto_be_presente --> n_kto_be_presente["curso to-be"]:::miembros
   n_tto_be_presente -.-> n_pto_be_presente["Miembros: verificado"]:::ok
-  n_tto_be_presente -.-> n_fto_be_presente["Gratis: recurso_sin_conectar"]:::warn
+  n_tto_be_presente -.-> n_fto_be_presente["Gratis: verificado"]:::warn
   n_tthere_is_are["There is y there are"]:::tema
   n_tthere_is_are --> n_cthere_is_are["clase"]:::ok
   n_tthere_is_are --> n_qthere_is_are["quiz 4 preg."]:::ok
@@ -217,17 +217,17 @@ flowchart LR
   n_tgerundios_infinitivos --> n_cgerundios_infinitivos["clase"]:::ok
   n_tgerundios_infinitivos --> n_qgerundios_infinitivos["quiz 4 preg."]:::ok
   n_tgerundios_infinitivos -.-> n_pgerundios_infinitivos["Miembros: verificado"]:::ok
-  n_tgerundios_infinitivos -.-> n_fgerundios_infinitivos["Gratis: recurso_sin_conectar"]:::warn
+  n_tgerundios_infinitivos -.-> n_fgerundios_infinitivos["Gratis: verificado"]:::warn
   n_tverbo_have["Verbo have"]:::tema
   n_tverbo_have --> n_cverbo_have["clase"]:::ok
   n_tverbo_have --> n_qverbo_have["quiz 6 preg."]:::ok
   n_tverbo_have -.-> n_pverbo_have["Miembros: verificado"]:::ok
-  n_tverbo_have -.-> n_fverbo_have["Gratis: recurso_sin_conectar"]:::warn
+  n_tverbo_have -.-> n_fverbo_have["Gratis: verificado"]:::warn
   n_tquestion_tags["Question tags"]:::tema
   n_tquestion_tags --> n_cquestion_tags["clase"]:::ok
   n_tquestion_tags --> n_qquestion_tags["quiz 10 preg."]:::ok
   n_tquestion_tags -.-> n_pquestion_tags["Miembros: enlace_incorrecto"]:::warn
-  n_tquestion_tags -.-> n_fquestion_tags["Gratis: recurso_sin_conectar"]:::warn
+  n_tquestion_tags -.-> n_fquestion_tags["Gratis: verificado"]:::warn
   classDef tema fill:#e8edff,stroke:#253ecc,color:#111
   classDef ok fill:#e6f6ea,stroke:#2e7d32,color:#111
   classDef warn fill:#fff4d6,stroke:#b26a00,color:#111
@@ -241,75 +241,75 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 <!-- GENERADO:matriz -->
 | Tema | Hab. | Clase | Ficha | Curso | Quiz | Gratis (por nivel) | Solo miembros | Miembros | Gratis | Falta |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `numeros-basicos` | gram | si | - | - | - | principiante:8 | - | verificado | recurso_sin_conectar | - |
-| `basicos-ingles` | gram | - | - | - | - | principiante:16 | principiante:7 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `question-words` | gram | si | - | wh | 6 | facil:6 | - | verificado | recurso_sin_conectar | - |
-| `comparativos` | gram | si | - | - | 4 | facil:9 medio:3 | facil:3 medio:3 | verificado | recurso_sin_conectar | - |
-| `condicionales` | gram | - | - | - | - | facil:1 medio:6 avanzado:10 | medio:9 avanzado:1 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `wish` | gram | - | - | - | - | medio:1 avanzado:4 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `conectores-contraste` | gram | - | si | - | - | medio:1 avanzado:2 | medio:5 avanzado:7 | verificado | recurso_sin_conectar | - |
-| `secuenciadores` | gram | si | - | - | 8 | facil:1 | facil:4 | verificado | recurso_sin_conectar | - |
-| `conectores-avanzados` | gram | - | si | - | - | avanzado:7 | avanzado:1 | verificado | recurso_sin_conectar | - |
-| `its-vs-its` | gram | - | si | - | - | facil:4 | - | verificado | recurso_sin_conectar | - |
-| `then-vs-than` | gram | - | si | - | - | facil:4 | - | verificado | recurso_sin_conectar | - |
+| `numeros-basicos` | gram | si | - | - | - | principiante:8 | - | verificado | verificado | - |
+| `basicos-ingles` | gram | - | - | - | - | principiante:16 | principiante:7 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `question-words` | gram | si | - | wh | 6 | facil:6 | - | verificado | verificado | - |
+| `comparativos` | gram | si | - | - | 4 | facil:9 medio:3 | facil:3 medio:3 | verificado | verificado | - |
+| `condicionales` | gram | - | - | - | - | facil:1 medio:6 avanzado:10 | medio:9 avanzado:1 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `wish` | gram | - | - | - | - | medio:1 avanzado:4 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `conectores-contraste` | gram | - | si | - | - | medio:1 avanzado:2 | medio:5 avanzado:7 | verificado | verificado | - |
+| `secuenciadores` | gram | si | - | - | 8 | facil:1 | facil:4 | verificado | verificado | - |
+| `conectores-avanzados` | gram | - | si | - | - | avanzado:7 | avanzado:1 | verificado | verificado | - |
+| `its-vs-its` | gram | - | si | - | - | facil:4 | - | verificado | verificado | - |
+| `then-vs-than` | gram | - | si | - | - | facil:4 | - | verificado | verificado | - |
 | `your-vs-youre` | gram | - | si | - | - | - | facil:4 | verificado | solo_miembros | - |
-| `there-their-theyre` | gram | - | si | - | - | facil:4 | - | verificado | recurso_sin_conectar | - |
+| `there-their-theyre` | gram | - | si | - | - | facil:4 | - | verificado | verificado | - |
 | `to-too-two` | gram | - | si | - | - | - | facil:6 | verificado | solo_miembros | - |
 | `lose-vs-loose` | gram | - | si | - | - | - | avanzado:4 | verificado | solo_miembros | - |
-| `good-vs-well` | gram | - | si | - | - | principiante:5 | - | verificado | recurso_sin_conectar | - |
+| `good-vs-well` | gram | - | si | - | - | principiante:5 | - | verificado | verificado | - |
 | `say-vs-tell` | gram | - | si | - | - | - | medio:4 | verificado | solo_miembros | - |
-| `borrow-vs-lend` | gram | - | si | - | - | principiante:5 facil:1 | principiante:1 | verificado | recurso_sin_conectar | - |
-| `bring-vs-take` | gram | - | si | - | - | avanzado:3 | principiante:1 | verificado | recurso_sin_conectar | - |
-| `affect-vs-effect` | gram | - | si | - | - | medio:6 | - | verificado | recurso_sin_conectar | - |
-| `as-vs-like` | gram | - | si | - | - | medio:3 | - | verificado | recurso_sin_conectar | - |
+| `borrow-vs-lend` | gram | - | si | - | - | principiante:5 facil:1 | principiante:1 | verificado | verificado | - |
+| `bring-vs-take` | gram | - | si | - | - | avanzado:3 | principiante:1 | verificado | verificado | - |
+| `affect-vs-effect` | gram | - | si | - | - | medio:6 | - | verificado | verificado | - |
+| `as-vs-like` | gram | - | si | - | - | medio:3 | - | verificado | verificado | - |
 | `actually-currently` | gram | - | si | - | - | - | medio:5 | verificado | solo_miembros | - |
-| `palabras-parecidas` | gram | - | - | - | - | avanzado:8 | medio:3 avanzado:3 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `matices-formales` | gram | - | - | - | - | avanzado:4 | avanzado:5 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `presente-continuo` | gram | si | - | presente-continuo | 16 | facil:5 | - | verificado | recurso_sin_conectar | - |
+| `palabras-parecidas` | gram | - | - | - | - | avanzado:8 | medio:3 avanzado:3 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `matices-formales` | gram | - | - | - | - | avanzado:4 | avanzado:5 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `presente-continuo` | gram | si | - | presente-continuo | 16 | facil:5 | - | verificado | verificado | - |
 | `pasado-continuo` | gram | si | - | - | 4 | - | facil:8 | verificado | solo_miembros | - |
 | `cuantificadores` | gram | - | - | - | - | - | - | por_construir | por_construir | explicacion (ni clase ni ficha); ejercicios |
-| `much-many` | gram | - | si | - | - | facil:2 | facil:5 medio:9 | verificado | recurso_sin_conectar | - |
+| `much-many` | gram | - | si | - | - | facil:2 | facil:5 medio:9 | verificado | verificado | - |
 | `fewer-vs-less` | gram | - | si | - | - | - | medio:6 | verificado | solo_miembros | - |
-| `little-few` | gram | - | si | - | - | facil:5 | - | verificado | recurso_sin_conectar | - |
-| `some-any` | gram | - | si | - | - | facil:5 | facil:7 | verificado | recurso_sin_conectar | - |
+| `little-few` | gram | - | si | - | - | facil:5 | - | verificado | verificado | - |
+| `some-any` | gram | - | si | - | - | facil:5 | facil:7 | verificado | verificado | - |
 | `contables-incontables` | gram | si | - | - | 6 | - | facil:4 | verificado | solo_miembros | - |
-| `a-an` | gram | si | si | articulos | 6 | facil:4 | facil:2 | verificado | recurso_sin_conectar | - |
-| `this-that` | gram | si | - | - | 8 | principiante:4 facil:4 | principiante:5 | verificado | recurso_sin_conectar | - |
-| `will-going-to` | gram | si | - | - | - | facil:3 medio:6 | facil:2 medio:20 | verificado | recurso_sin_conectar | - |
-| `estilo-indirecto` | gram | - | - | - | - | medio:7 avanzado:6 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `can-cant` | gram | si | - | can | - | principiante:1 facil:6 | principiante:1 facil:2 | verificado | recurso_sin_conectar | - |
-| `modales-obligacion` | gram | si | - | - | - | facil:1 medio:6 | facil:1 medio:10 | verificado | recurso_sin_conectar | - |
+| `a-an` | gram | si | si | articulos | 6 | facil:4 | facil:2 | verificado | verificado | - |
+| `this-that` | gram | si | - | - | 8 | principiante:4 facil:4 | principiante:5 | verificado | verificado | - |
+| `will-going-to` | gram | si | - | - | - | facil:3 medio:6 | facil:2 medio:20 | verificado | verificado | - |
+| `estilo-indirecto` | gram | - | - | - | - | medio:7 avanzado:6 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `can-cant` | gram | si | - | can | - | principiante:1 facil:6 | principiante:1 facil:2 | verificado | verificado | - |
+| `modales-obligacion` | gram | si | - | - | - | facil:1 medio:6 | facil:1 medio:10 | verificado | verificado | - |
 | `modales-posibilidad` | gram | si | - | - | - | - | medio:5 | verificado | solo_miembros | - |
-| `modales-perfectos` | gram | - | si | - | - | avanzado:1 | medio:1 avanzado:5 | verificado | recurso_sin_conectar | - |
+| `modales-perfectos` | gram | - | si | - | - | avanzado:1 | medio:1 avanzado:5 | verificado | verificado | - |
 | `pasado-regulares` | gram | si | - | - | - | - | facil:5 | verificado | solo_miembros | - |
-| `verbos-irregulares` | gram | si | - | - | 10 | facil:6 | - | verificado | recurso_sin_conectar | - |
-| `used-to` | gram | - | si | - | - | medio:5 | medio:1 | verificado | recurso_sin_conectar | - |
-| `voz-pasiva` | gram | si | - | - | 10 | medio:5 avanzado:9 | medio:1 avanzado:1 | verificado | recurso_sin_conectar | - |
+| `verbos-irregulares` | gram | si | - | - | 10 | facil:6 | - | verificado | verificado | - |
+| `used-to` | gram | - | si | - | - | medio:5 | medio:1 | verificado | verificado | - |
+| `voz-pasiva` | gram | si | - | - | 10 | medio:5 avanzado:9 | medio:1 avanzado:1 | verificado | verificado | - |
 | `causativos` | gram | - | - | - | - | - | medio:3 | verificado | solo_miembros | explicacion (ni clase ni ficha) |
-| `present-perfect-vs-past` | gram | si | - | - | - | medio:6 | medio:9 | verificado | recurso_sin_conectar | - |
-| `since-for` | gram | si | si | - | - | facil:1 medio:5 | medio:8 | verificado | recurso_sin_conectar | - |
-| `past-perfect` | gram | - | si | - | - | medio:7 | - | verificado | recurso_sin_conectar | - |
-| `in-on-at` | gram | si | - | in-on-at | 20 | facil:4 | facil:8 | verificado | recurso_sin_conectar | - |
-| `by-until` | gram | - | si | - | - | facil:4 medio:2 | - | verificado | recurso_sin_conectar | - |
+| `present-perfect-vs-past` | gram | si | - | - | - | medio:6 | medio:9 | verificado | verificado | - |
+| `since-for` | gram | si | si | - | - | facil:1 medio:5 | medio:8 | verificado | verificado | - |
+| `past-perfect` | gram | - | si | - | - | medio:7 | - | verificado | verificado | - |
+| `in-on-at` | gram | si | - | in-on-at | 20 | facil:4 | facil:8 | verificado | verificado | - |
+| `by-until` | gram | - | si | - | - | facil:4 medio:2 | - | verificado | verificado | - |
 | `preposiciones-movimiento` | gram | - | - | - | - | - | principiante:4 | verificado | solo_miembros | explicacion (ni clase ni ficha) |
-| `preposiciones-sutiles` | gram | - | - | - | - | avanzado:4 | avanzado:3 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `presente-simple` | gram | si | - | presente-simple | - | principiante:2 facil:10 | principiante:1 facil:15 | verificado | recurso_sin_conectar | - |
-| `do-does` | gram | si | - | do-does | 10 | principiante:3 facil:5 | principiante:4 facil:4 | verificado | recurso_sin_conectar | - |
-| `pronombres` | gram | si | - | pronombres | 4 | facil:1 | principiante:8 | verificado | recurso_sin_conectar | - |
-| `posesivos` | gram | si | - | posesivos | 8 | facil:5 | principiante:7 | verificado | recurso_sin_conectar | - |
-| `relativas` | gram | - | - | - | - | medio:6 avanzado:5 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `who-whom` | gram | - | si | - | - | medio:4 | avanzado:5 | verificado | recurso_sin_conectar | - |
-| `to-be-presente` | gram | si | - | to-be | - | principiante:8 facil:1 | principiante:4 | verificado | recurso_sin_conectar | - |
-| `was-were` | gram | si | si | - | - | principiante:4 facil:1 | - | verificado | recurso_sin_conectar | - |
+| `preposiciones-sutiles` | gram | - | - | - | - | avanzado:4 | avanzado:3 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `presente-simple` | gram | si | - | presente-simple | - | principiante:2 facil:10 | principiante:1 facil:15 | verificado | verificado | - |
+| `do-does` | gram | si | - | do-does | 10 | principiante:3 facil:5 | principiante:4 facil:4 | verificado | verificado | - |
+| `pronombres` | gram | si | - | pronombres | 4 | facil:1 | principiante:8 | verificado | verificado | - |
+| `posesivos` | gram | si | - | posesivos | 8 | facil:5 | principiante:7 | verificado | verificado | - |
+| `relativas` | gram | - | - | - | - | medio:6 avanzado:5 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `who-whom` | gram | - | si | - | - | medio:4 | avanzado:5 | verificado | verificado | - |
+| `to-be-presente` | gram | si | - | to-be | - | principiante:8 facil:1 | principiante:4 | verificado | verificado | - |
+| `was-were` | gram | si | si | - | - | principiante:4 facil:1 | - | verificado | verificado | - |
 | `there-is-are` | gram | si | - | there-is-are | 4 | - | principiante:8 | verificado | solo_miembros | - |
-| `phrasal-verbs` | gram | si | si | - | - | medio:5 | medio:1 | verificado | recurso_sin_conectar | - |
-| `gerundios-infinitivos` | gram | si | - | - | 4 | medio:7 | - | verificado | recurso_sin_conectar | - |
-| `verbo-have` | gram | si | - | - | 6 | principiante:9 facil:1 | - | verificado | recurso_sin_conectar | - |
-| `colocaciones` | gram | - | si | - | - | avanzado:5 | facil:1 | verificado | recurso_sin_conectar | - |
-| `question-tags` | gram | si | - | - | 10 | medio:6 | - | enlace_incorrecto | recurso_sin_conectar | familia en temas.js |
-| `inversion-enfasis` | gram | - | - | - | - | avanzado:14 | avanzado:5 | enlace_incorrecto | recurso_sin_conectar | explicacion (ni clase ni ficha); familia en temas.js |
-| `subjuntivo-formal` | gram | - | - | - | - | avanzado:5 | - | enlace_incorrecto | recurso_sin_conectar | explicacion (ni clase ni ficha); familia en temas.js |
-| `hedging` | gram | - | - | - | - | avanzado:8 | avanzado:1 | enlace_incorrecto | recurso_sin_conectar | explicacion (ni clase ni ficha); familia en temas.js |
+| `phrasal-verbs` | gram | si | si | - | - | medio:5 | medio:1 | verificado | verificado | - |
+| `gerundios-infinitivos` | gram | si | - | - | 4 | medio:7 | - | verificado | verificado | - |
+| `verbo-have` | gram | si | - | - | 6 | principiante:9 facil:1 | - | verificado | verificado | - |
+| `colocaciones` | gram | - | si | - | - | avanzado:5 | facil:1 | verificado | verificado | - |
+| `question-tags` | gram | si | - | - | 10 | medio:6 | - | enlace_incorrecto | verificado | familia en temas.js |
+| `inversion-enfasis` | gram | - | - | - | - | avanzado:14 | avanzado:5 | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
+| `subjuntivo-formal` | gram | - | - | - | - | avanzado:5 | - | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
+| `hedging` | gram | - | - | - | - | avanzado:8 | avanzado:1 | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
 | `vocab-confusas` | voca | - | - | - | - | facil:8 medio:8 avanzado:12 | principiante:9 facil:10 medio:11 avanzado:10 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
 | `vocab-numeros` | voca | si | - | - | - | principiante:8 facil:6 medio:6 | - | verificado | recurso_sin_conectar | - |
 | `vocab-trabajo` | voca | - | - | - | - | medio:8 avanzado:8 | medio:4 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
