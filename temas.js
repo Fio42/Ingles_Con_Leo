@@ -41,7 +41,7 @@ const TEMAS = [
   /* ---- bases ---- */
   { id:'numeros-basicos', label:'Los números en inglés', family:'bases', article:'articulo-numeros-en-ingles.html', glossary:null,
     topics:[`Los números (1-10)`, `Números parecidos que confunden (13 vs 30, 14 vs 40...)`] },
-  { id:'basicos-ingles', label:'Plural, colores, días y respuestas básicas', family:'bases', article:null, glossary:null,
+  { id:'basicos-ingles', label:'Plural, colores, días y respuestas básicas', family:'bases', article:null, glossary:'plural-colores-dias',
     topics:[`Los colores`, `Los días de la semana`, `Plural: agregar "-s"`, `Yes / No básico`, `Preguntas simples: "What is this?"`] },
   { id:'question-words', label:'Palabras de pregunta (what, where, when, who)', family:'bases', article:'articulo-como-hacer-preguntas-en-ingles.html', glossary:null,
     topics:[`Question words (What / Where / When / Who)`] },
@@ -80,9 +80,9 @@ const TEMAS = [
   { id:'affect-vs-effect', label:'Affect vs effect', family:'confusiones', article:null, glossary:'affect-vs-effect', topics:[`Affect vs Effect`] },
   { id:'as-vs-like', label:'As vs like', family:'confusiones', article:null, glossary:'as-vs-like', topics:[`As vs Like`] },
   { id:'actually-currently', label:'Actually y currently', family:'confusiones', article:null, glossary:'actually', topics:[`Actually / Currently`] },
-  { id:'palabras-parecidas', label:'Palabras que se parecen (advice, lay, further, quiet)', family:'confusiones', article:null, glossary:null,
+  { id:'palabras-parecidas', label:'Palabras que se parecen (advice, lay, further, quiet)', family:'confusiones', article:null, glossary:'advice-lay-further-quiet',
     topics:[`"Advice" vs "Advise"`, `"Lay" vs "Lie"`, `Farther vs Further`, `Quiet vs Quite vs Quit`] },
-  { id:'matices-formales', label:'Matices: formal, natural y -ed vs -ing', family:'confusiones', article:null, glossary:null,
+  { id:'matices-formales', label:'Matices: formal, natural y -ed vs -ing', family:'confusiones', article:null, glossary:'formal-natural-ed-ing',
     topics:[`Formal vs natural / matices`, `Participios como adjetivos (-ed vs -ing)`] },
   /* ---- presente continuo ---- */
   { id:'presente-continuo', prereq:['to-be-presente'], label:'Presente continuo', family:'continuo', article:'articulo-presente-continuo.html', glossary:null, topics:[`Presente continuo (I am ___ing)`] },
@@ -230,10 +230,10 @@ const TEMAS = [
   { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
   /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
   { id:'question-tags', label:'Question tags', family:null, article:'articulo-question-tags-ingles.html', glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
-  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:null, noClassTopics:[`Inversiones enfáticas`, `Oraciones enfáticas con "It is... that" (cleft sentences)`],
+  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'inversion-enfatica',
     topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
-  { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:null, topics:[`Subjuntivo formal (It is essential that...)`] },
-  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:null, topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },
+  { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:'formal-subjunctive', topics:[`Subjuntivo formal (It is essential that...)`] },
+  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:'hedging-arguably-tend-to', topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },
 
   /* ---- VOCABULARIO (skill:'vocabulary') ----
      VOCAB_BANK no trae etiquetas por palabra, pero cada grupo de palabras tiene un

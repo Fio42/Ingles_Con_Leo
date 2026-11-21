@@ -1064,6 +1064,48 @@
   "text": "I'm interested in this topic. She is responsible for the entire project. He is married to a doctor."
  },
  {
+  "term": "plural-colores-dias",
+  "kind": "frases",
+  "file": "audio/glosario/plural-colores-dias.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I have two cats. What is this? It's a book. Is this a dog? No, it isn't."
+ },
+ {
+  "term": "advice-lay-further-quiet",
+  "kind": "frases",
+  "file": "audio/glosario/advice-lay-further-quiet.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She gave me good advice. I am going to lie down for a nap. The street was quite quiet tonight."
+ },
+ {
+  "term": "formal-natural-ed-ing",
+  "kind": "frases",
+  "file": "audio/glosario/formal-natural-ed-ing.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "If you need help, just let us know. The movie is boring, so I am bored. I look forward to seeing you."
+ },
+ {
+  "term": "inversion-enfatica",
+  "kind": "frases",
+  "file": "audio/glosario/inversion-enfatica.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Rarely have we seen such dedication. Only after she left did I understand the situation. It was the client who complained."
+ },
+ {
+  "term": "formal-subjunctive",
+  "kind": "frases",
+  "file": "audio/glosario/formal-subjunctive.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "It is essential that she be present. The committee recommended that he reconsider the proposal. It's important that everyone arrive on time."
+ },
+ {
+  "term": "hedging-arguably-tend-to",
+  "kind": "frases",
+  "file": "audio/glosario/hedging-arguably-tend-to.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "This is arguably the best option. Prices tend to rise in December. The market is likely to recover soon."
+ },
+ {
   "term": "accept-vs-except",
   "kind": "frases",
   "file": "audio/glosario/accept-vs-except.mp3",

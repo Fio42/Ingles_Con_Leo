@@ -24,6 +24,8 @@ const idsOf = (temaId, n) => { const out = []; T.LEVELS.forEach(l => (T.GRAMMAR_
 const wrong = ids => ids.map(itemId => ({ itemId, isCorrect: false }));
 const free = id => T.freeReinforceHtml(wrong(idsOf(id, 2)));
 const member = id => T.sessionReinforceHtml(JSON.parse(JSON.stringify(T.sessionReinforceRows(wrong(idsOf(id, 2)), { actions: [] }, new Set()))));
+// Todos los temas de gramatica ya tienen explicacion: para probar la regla "sin nada exacto, la fila no sale" se les quita la ficha un momento.
+const sinFicha = (ids, fn) => { const prev = {}; ids.forEach(id => { prev[id] = vm.runInContext("TEMA_BY_ID['" + id + "'].glossary", ctx); vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = null", ctx); }); try { fn(); } finally { ids.forEach(id => { vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = " + JSON.stringify(prev[id]), ctx); }); } };
 const practiceLinks = html => (html.match(/<a href="[^"]*" data-rf="practice">/g) || []);
 
 console.log('Error -> refuerzo (visitante y cuenta gratis)');
@@ -41,8 +43,8 @@ test('tema con clase pero sin ejercicios gratis (todo de Miembros): ofrece la ex
     assert.strictEqual(practiceLinks(h).length, 0, id + ' no debe ofrecer practica');
   });
 });
-test('tema sin explicacion, sin curso y sin ejercicios gratis: la fila no sale', () => {
-  ['hedging', 'inversion-enfasis'].forEach(id => assert.strictEqual(free(id), '', id));
+test('tema sin explicacion, sin curso y sin ejercicios gratis (se les quita la ficha): la fila no sale', () => {
+  sinFicha(['hedging', 'inversion-enfasis'], () => ['hedging', 'inversion-enfasis'].forEach(id => assert.strictEqual(free(id), '', id)));
 });
 test('ningun enlace de practica del resumen gratis es una pagina general', () => {
   T.TEMAS.filter(t => t.skill !== 'vocabulary' && t.skill !== 'listening').forEach(t => {
@@ -56,8 +58,8 @@ test('tema sin familia (question-tags): clase si, pero ningun boton Practicar ha
   const h = member('question-tags');
   assert(/data-rf="lesson"/.test(h)); assert.strictEqual(practiceLinks(h).length, 0); assert(!/gramatica\.html/.test(h));
 });
-test('tema sin familia, sin clase, ficha ni curso (hedging, inversion-enfasis, subjuntivo-formal): no sale ninguna fila', () => {
-  ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => assert.strictEqual(member(id), '', id));
+test('tema sin familia, sin clase, ficha ni curso (se les quita la ficha a hedging, inversion-enfasis y subjuntivo-formal): no sale ninguna fila', () => {
+  sinFicha(['hedging', 'inversion-enfasis', 'subjuntivo-formal'], () => ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => assert.strictEqual(member(id), '', id)));
 });
 test('tema normal de miembro: conserva clase, practica del tema y curso', () => {
   const h = member('do-does');
@@ -91,12 +93,15 @@ test('REFUERZOS_FALTANTES.md esta al dia', () => {
 test('las fichas del glosario de un tema abren la practica de ese tema', () => {
   const r = cp.spawnSync(process.execPath, [path.join(root, 'tools', 'conexiones', 'enlazar-fichas.js')], { encoding: 'utf8' });
   assert.strictEqual(r.status, 0, r.stderr);
-  const map = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'conexiones', 'fichas-tema.json'), 'utf8'));
+  const map = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'glosario', 'fichas-tema.json'), 'utf8'));
   assert(Object.keys(map).length >= 10);
   Object.keys(map).forEach(slug => {
     const h = fs.readFileSync(path.join(root, 'glosario', slug, 'index.html'), 'utf8');
     assert(h.indexOf('practica.html?skill=grammar&amp;tema=' + map[slug]) !== -1, slug);
     assert(T.LEVELS.some(l => T.freeGrammarItemsOfTema(l, map[slug]).length), slug + ' sin ejercicios gratis');
   });
+});
+test('hedging, inversion-enfasis y subjuntivo-formal ya tienen ficha: el error ofrece la explicacion', () => {
+  ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => assert(/data-rf="lesson"/.test(member(id)), id));
 });
 console.log(passed + ' pruebas ok');

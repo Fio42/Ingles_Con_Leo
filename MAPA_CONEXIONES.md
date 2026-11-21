@@ -28,7 +28,7 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 166 | 74 | 55 |
+| verificado | 172 | 74 | 55 |
 | parcial | 3 | 0 | 0 |
 | enlace_incorrecto | 1 | 4 | 0 |
 | recurso_sin_conectar | 0 | 0 | 10 |
@@ -36,7 +36,7 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 | solo_miembros | 35 | 0 | 13 |
 | general_intencional | 48 | 0 | 0 |
 
-79 temas en temas.js. 253 filas de enlaces: 233 agrupadas desde 454 paginas HTML y 20 destinos dinamicos o redirecciones curados.
+79 temas en temas.js. 259 filas de enlaces: 239 agrupadas desde 460 paginas HTML y 20 destinos dinamicos o redirecciones curados.
 <!-- /GENERADO:resumen -->
 
 Cifras clave:
@@ -48,7 +48,7 @@ Cifras clave:
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
 - Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
 - Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 33. Temas con ejercicios gratis en un solo nivel: 39.
-- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 14. Temas con clase: 32. Con ficha: 37.
+- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 8. Temas con clase: 32. Con ficha: 43.
 <!-- /GENERADO:cifras -->
 
 ## 3. Cómo se conecta hoy todo (vista general)
@@ -242,7 +242,7 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | Tema | Hab. | Clase | Ficha | Curso | Quiz | Gratis (por nivel) | Solo miembros | Miembros | Gratis | Falta |
 |---|---|---|---|---|---|---|---|---|---|---|
 | `numeros-basicos` | gram | si | - | - | - | principiante:8 | - | verificado | verificado | - |
-| `basicos-ingles` | gram | - | - | - | - | principiante:16 | principiante:7 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `basicos-ingles` | gram | - | si | - | - | principiante:16 | principiante:7 | verificado | verificado | - |
 | `question-words` | gram | si | - | wh | 6 | facil:6 | - | verificado | verificado | - |
 | `comparativos` | gram | si | - | - | 4 | facil:9 medio:3 | facil:3 medio:3 | verificado | verificado | - |
 | `condicionales` | gram | - | si | - | - | facil:1 medio:6 avanzado:10 | medio:9 avanzado:1 | verificado | verificado | - |
@@ -263,8 +263,8 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `affect-vs-effect` | gram | - | si | - | - | medio:6 | - | verificado | verificado | - |
 | `as-vs-like` | gram | - | si | - | - | medio:3 | - | verificado | verificado | - |
 | `actually-currently` | gram | - | si | - | - | - | medio:5 | verificado | solo_miembros | - |
-| `palabras-parecidas` | gram | - | - | - | - | avanzado:8 | medio:3 avanzado:3 | verificado | verificado | explicacion (ni clase ni ficha) |
-| `matices-formales` | gram | - | - | - | - | avanzado:4 | avanzado:5 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `palabras-parecidas` | gram | - | si | - | - | avanzado:8 | medio:3 avanzado:3 | verificado | verificado | - |
+| `matices-formales` | gram | - | si | - | - | avanzado:4 | avanzado:5 | verificado | verificado | - |
 | `presente-continuo` | gram | si | - | presente-continuo | 16 | facil:5 | - | verificado | verificado | - |
 | `pasado-continuo` | gram | si | - | - | 4 | - | facil:8 | verificado | solo_miembros | - |
 | `cuantificadores` | gram | - | - | - | - | - | - | por_construir | por_construir | explicacion (ni clase ni ficha); ejercicios |
@@ -307,9 +307,9 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `verbo-have` | gram | si | - | - | 6 | principiante:9 facil:1 | - | verificado | verificado | - |
 | `colocaciones` | gram | - | si | - | - | avanzado:5 | facil:1 | verificado | verificado | - |
 | `question-tags` | gram | si | - | - | 10 | medio:6 | - | enlace_incorrecto | verificado | familia en temas.js |
-| `inversion-enfasis` | gram | - | - | - | - | avanzado:14 | avanzado:5 | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
-| `subjuntivo-formal` | gram | - | - | - | - | avanzado:5 | - | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
-| `hedging` | gram | - | - | - | - | avanzado:8 | avanzado:1 | enlace_incorrecto | verificado | explicacion (ni clase ni ficha); familia en temas.js |
+| `inversion-enfasis` | gram | - | si | - | - | avanzado:14 | avanzado:5 | enlace_incorrecto | verificado | familia en temas.js |
+| `subjuntivo-formal` | gram | - | si | - | - | avanzado:5 | - | enlace_incorrecto | verificado | familia en temas.js |
+| `hedging` | gram | - | si | - | - | avanzado:8 | avanzado:1 | enlace_incorrecto | verificado | familia en temas.js |
 | `vocab-confusas` | voca | - | - | - | - | facil:8 medio:8 avanzado:12 | principiante:9 facil:10 medio:11 avanzado:10 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
 | `vocab-numeros` | voca | si | - | - | - | principiante:8 facil:6 medio:6 | - | verificado | recurso_sin_conectar | - |
 | `vocab-trabajo` | voca | - | - | - | - | medio:8 avanzado:8 | medio:4 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
@@ -353,7 +353,7 @@ Recursos existentes todavía sin conectar
 Contenidos que necesitamos construir (generado)
 
 <!-- GENERADO:faltantes -->
-- Sin clase ni ficha (14): `basicos-ingles`, `palabras-parecidas`, `matices-formales`, `cuantificadores`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
+- Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
 - Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (4): `question-tags`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`
 - Solo con ejercicios de Miembros, nada gratis (13): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `there-is-are`

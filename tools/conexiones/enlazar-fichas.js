@@ -2,7 +2,7 @@
 /* Ficha del glosario -> ejercicio del mismo tema: el boton "Practicar gratis" de una ficha (glosario/<slug>/) abre la practica gratis
    de SU tema (practica.html?skill=grammar&tema=<id>) cuando la ficha es la explicacion de UN solo tema de gramatica con 3 ejercicios
    gratis o mas (sumando niveles). Si dos temas comparten ficha, o el tema tiene menos, el boton se queda general: no se promete un tema.
-   Escribe tools/conexiones/fichas-tema.json (lo lee tools/generar_glosario.js, asi una regeneracion no lo deshace).
+   Escribe tools/glosario/fichas-tema.json (lo lee tools/generar_glosario.js, asi una regeneracion no lo deshace).
    Corre con:  node tools/conexiones/enlazar-fichas.js --write   (aplica)
                node tools/conexiones/enlazar-fichas.js            (solo comprueba) */
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -36,7 +36,7 @@ Object.keys(bySlug).sort().forEach(slug => {
   if(fs.existsSync(pg) && fs.readFileSync(pg, 'utf8').indexOf('href="/practica.html?skill=vocabulary" class="btn btn-primary"') !== -1) return;
   map[slug] = ts[0].id;
 });
-const jsonPath = path.join(root, 'tools', 'conexiones', 'fichas-tema.json');
+const jsonPath = path.join(root, 'tools', 'glosario', 'fichas-tema.json');
 const json = JSON.stringify(map, null, 2) + '\n';
 const write = process.argv.includes('--write');
 const problems = [];

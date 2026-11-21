@@ -145,7 +145,7 @@
  },
  "index": {
   "d": "2026-11-21",
-  "h": "f8ad197ad6"
+  "h": "a7bd221cb7"
  },
  "p:mustnt": {
   "d": "2026-10-12",
@@ -1426,5 +1426,29 @@
  "p:adjective-prepositions": {
   "d": "2026-11-21",
   "h": "c2b5abf4a2"
+ },
+ "p:plural-colores-dias": {
+  "d": "2026-11-21",
+  "h": "039674e029"
+ },
+ "p:advice-lay-further-quiet": {
+  "d": "2026-11-21",
+  "h": "a6a7e9d5d1"
+ },
+ "p:formal-natural-ed-ing": {
+  "d": "2026-11-21",
+  "h": "51ad345e50"
+ },
+ "p:inversion-enfatica": {
+  "d": "2026-11-21",
+  "h": "05731515d3"
+ },
+ "p:formal-subjunctive": {
+  "d": "2026-11-21",
+  "h": "b8d03c0a11"
+ },
+ "p:hedging-arguably-tend-to": {
+  "d": "2026-11-21",
+  "h": "3603e9792c"
  }
 }

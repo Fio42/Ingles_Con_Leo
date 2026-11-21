@@ -81,10 +81,10 @@ test('sin recurso real no se muestra nada: tema sin clase ni glosario', ()=>{
   assert(id, 'debe existir un ejercicio de to-too-two');
   assert.strictEqual(linkOf(T, id, false), null);
 });
-test('etiquetas que mezclan reglas o que la clase no explica (noClassTopics): sin enlace, salvo que tengan microtema propio', ()=>{
+test('etiquetas que mezclan reglas o que la clase no explica (noClassTopics): sin enlace, salvo que tengan microtema propio; la inversion enfatica ya tiene ficha y la enlaza', ()=>{
   ['g-principiante-m400-2', 'g-facil-tobe-4'].forEach(id => assert.strictEqual(linkOf(T, id, false), null, id));   // "has breakfast" y "in my bag" no son to be
   const cleft = []; T.getMistakesItemIndex().forEach((f, id) => { if(f.topic === 'Inversiones enfáticas' || /cleft/.test(f.topic || '')) cleft.push(id); });
-  assert(cleft.length >= 6); cleft.forEach(id => assert.strictEqual(linkOf(T, id, false), null, id));
+  assert(cleft.length >= 6); cleft.forEach(id => assert(/\/glosario\/inversion-enfatica\//.test(JSON.stringify(linkOf(T, id, false))), id + ' ahora lleva a la ficha que si explica la inversion y las oraciones enfaticas'));
   assert(anchorOf(linkOf(T, 'g-principiante-m200-tobe-1', false)), 'un ejercicio de to be con microtema sigue enlazando');
 });
 test('resumen: si todos los errores de un tema son de una etiqueta sin clase, solo se ofrece Practicar', ()=>{

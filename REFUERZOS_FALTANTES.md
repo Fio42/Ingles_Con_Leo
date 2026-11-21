@@ -12,12 +12,8 @@ Hoy el error de estos temas no ofrece "Ver la clase". Recurso a crear: una ficha
 
 | Tema | Ejercicios | Ejemplo de un ejercicio | Recurso a crear |
 |---|---|---|---|
-| `basicos-ingles` | 23 | `One dog, two dog.` (opcion equivocada) / `One dog, two dogs.` (correcta) | Ficha de glosario "Plural, colores, días y respuestas básicas" |
-| `palabras-parecidas` | 14 | `Can you give me some advise?` (opcion equivocada) / `Can you give me some advice?` (correcta) | Ficha de glosario "Palabras que se parecen (advice, lay, further, quiet)" |
-| `matices-formales` | 9 | `¿Cuál suena más natural en una conversación casual?` (opcion equivocada) / `¿Cuál suena más natural en una conversación casual?` (correcta) | Ficha de glosario "Matices: formal, natural y -ed vs -ing" |
-| `inversion-enfasis` | 19 | `No sooner did she arrived than it started raining.` (opcion equivocada) / `No sooner had she arrived than it started raining.` (correcta) | Ficha de glosario "Inversión y oraciones enfáticas" |
-| `subjuntivo-formal` | 5 | `It is essential that she is present at the meeting.` (opcion equivocada) / `It is essential that she be present at the meeting.` (correcta) | Ficha de glosario "Subjuntivo formal" |
-| `hedging` | 9 | `This is argue the best decision the company has ever made.` (opcion equivocada) / `This is arguably the best decision the company has ever made.` (correcta) | Ficha de glosario "Enfatizadores y hedging" |
+
+Ninguno: todos los temas con ejercicios tienen clase o ficha.
 
 ## 2. Falta practica gratis del tema (todo es solo de Miembros)
 

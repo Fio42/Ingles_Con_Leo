@@ -20,7 +20,7 @@ Lo mejor que ya existe y conviene reutilizar, no reescribir:
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
 - Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
 - Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 33. Temas con ejercicios gratis en un solo nivel: 39.
-- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 14. Temas con clase: 32. Con ficha: 37.
+- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 8. Temas con clase: 32. Con ficha: 43.
 <!-- /GENERADO:cifras -->
 
 ## 2. Una solución mejor que arreglar enlaces uno por uno
@@ -62,7 +62,7 @@ Escala: impacto en alumnos y retención, dificultad y riesgo (alto, medio, bajo)
 Lista actualizada automáticamente:
 
 <!-- GENERADO:faltantes -->
-- Sin clase ni ficha (14): `basicos-ingles`, `palabras-parecidas`, `matices-formales`, `cuantificadores`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
+- Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
 - Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (4): `question-tags`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`
 - Solo con ejercicios de Miembros, nada gratis (13): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `there-is-are`
@@ -74,12 +74,6 @@ Prioridad de una explicación para esos temas (generado; sin crear contenido inn
 <!-- GENERADO:prioridad -->
 | Tema | Tarjetas del inicio que lo prometen | Ejercicios | Prioridad de una explicacion |
 |---|---|---|---|
-| `basicos-ingles` | 5 | 23 | Alta |
-| `palabras-parecidas` | 4 | 14 | Alta |
-| `inversion-enfasis` | 3 | 19 | Alta |
-| `matices-formales` | 2 | 9 | Alta |
-| `hedging` | 1 | 9 | Alta |
-| `subjuntivo-formal` | 1 | 5 | Alta |
 | `vocab-confusas` | 0 | 68 | Baja (su propia seccion ya practica el tema) |
 | `vocab-vida-diaria` | 0 | 24 | Baja (su propia seccion ya practica el tema) |
 | `vocab-trabajo` | 0 | 20 | Baja (su propia seccion ya practica el tema) |

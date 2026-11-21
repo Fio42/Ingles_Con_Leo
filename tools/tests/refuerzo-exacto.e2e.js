@@ -42,8 +42,9 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   const h2 = hrefs(w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'pasado-continuo', 2)) }));
   ok(h2.some(h => h.kind === 'lesson') && !h2.some(h => h.kind === 'practice'), where + 'pasado-continuo: explicacion y ninguna practica general (' + JSON.stringify(h2) + ')');
   // 3) tema sin refuerzo exacto: no sale el bloque
+  w.run("TEMA_BY_ID['hedging'].glossary = null");
   const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'hedging', 2)) });
-  ok(!/Para reforzar/.test(h3), where + 'hedging: sin refuerzo exacto no se ofrece nada');
+  ok(!/Para reforzar/.test(h3), where + 'hedging sin ficha: sin refuerzo exacto no se ofrece nada');
   // 4) error repetido: el tema con mas errores va primero
   const rep = w.renderFreeSessionSummary({ title: '¡Listo!', score: '0 / 3', topics: ['x'], results: wrong(idsOf(w, 'do-does', 2).concat(idsOf(w, 'verbo-have', 1))) });
   ok(/tema=do-does/.test(rep) && !/tema=verbo-have/.test(rep), where + 'error repetido: do-does (2 errores) desplaza a verbo-have (1)');
@@ -58,6 +59,7 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   ok(rows.length === 1 && /^plan-estudio\.html\?/.test(rows[0].practiceHref) && /tema=do-does/.test(rows[0].practiceHref), where + 'do-does abre su Plan enfocado en el tema');
   const hq = w.sessionReinforceHtml(JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, 'question-tags', 2)), { actions: [] }, new Set()))));
   ok(/data-rf="lesson"/.test(hq) && !/data-rf="practice"/.test(hq) && !/gramatica\.html/.test(hq), where + 'question-tags (sin familia): explicacion, sin boton hacia la practica general');
+  ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => w.run("TEMA_BY_ID['" + id + "'].glossary = null"));
   ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => ok(w.sessionReinforceHtml(JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, id, 2)), { actions: [] }, new Set())))) === '', where + id + ': sin refuerzo exacto no sale la fila'));
 }
 // Recorrido nuevo: ejercicio -> error -> explicacion (fichas escritas a partir de los errores de los propios ejercicios)
@@ -67,7 +69,7 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
     const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows([{ itemId, isCorrect: false }], { actions: [] }, new Set())));
     ok(rows.length === 1 && rows[0].lesson && new RegExp('/glosario/' + slug + '/').test(JSON.stringify(rows[0].lesson)), where + itemId + ' lleva a la ficha ' + slug + ' (' + JSON.stringify(rows[0] && rows[0].lesson) + ')');
   });
-  [['condicionales', 'articulo-condicionales-1-y-2.html'], ['wish', 'wish-if-only'], ['estilo-indirecto', 'reported-speech'], ['relativas', 'relative-clauses'], ['causativos', 'have-something-done'], ['preposiciones-movimiento', 'to-into-from'], ['preposiciones-sutiles', 'adjective-prepositions']].forEach(([tema, slug]) => {
+  [['condicionales', 'articulo-condicionales-1-y-2.html'], ['wish', 'wish-if-only'], ['estilo-indirecto', 'reported-speech'], ['relativas', 'relative-clauses'], ['causativos', 'have-something-done'], ['preposiciones-movimiento', 'to-into-from'], ['preposiciones-sutiles', 'adjective-prepositions'], ['basicos-ingles', 'plural-colores-dias'], ['palabras-parecidas', 'advice-lay-further-quiet'], ['matices-formales', 'formal-natural-ed-ing'], ['inversion-enfasis', 'inversion-enfatica'], ['subjuntivo-formal', 'formal-subjunctive'], ['hedging', 'hedging-arguably-tend-to']].forEach(([tema, slug]) => {
     const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, tema, 1)), { actions: [] }, new Set())));
     ok(rows.length === 1 && rows[0].lesson && JSON.stringify(rows[0].lesson).indexOf(slug.indexOf('.html') > 0 ? slug : '/glosario/' + slug + '/') !== -1, where + tema + ' -> ' + slug + ' (' + JSON.stringify(rows[0] && rows[0].lesson) + ')');
   });

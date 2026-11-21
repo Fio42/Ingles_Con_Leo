@@ -71,6 +71,7 @@ function build(){
   L.push('## 1. Falta una explicacion (ni clase ni ficha del glosario)', '');
   L.push('Hoy el error de estos temas no ofrece "Ver la clase". Recurso a crear: una ficha corta en `/glosario/<tema>/` (no hace falta una clase completa) y enlazarla en `temas.js` (`glossary`).', '');
   L.push('| Tema | Ejercicios | Ejemplo de un ejercicio | Recurso a crear |', '|---|---|---|---|');
+  if(!sinExpl.length) L.push('', 'Ninguno: todos los temas con ejercicios tienen clase o ficha.');
   sinExpl.forEach(r => { const e = exampleFor(r.tema_id); L.push('| `' + r.tema_id + '` | ' + (n(r.ejercicios_gratis) + n(r.ejercicios_solo_miembros)) + ' | ' + ex(r.tema_id) + ' | Ficha de glosario "' + r.etiqueta + '" |'); });
   L.push('', '## 2. Falta practica gratis del tema (todo es solo de Miembros)', '');
   const exclusivos = sinGratis.filter(r => /plan-estudio\.html/.test(r.practica_miembros || ''));

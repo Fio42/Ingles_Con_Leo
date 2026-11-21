@@ -28,7 +28,7 @@ const VOICE_B = 'en-US-AndrewMultilingualNeural';
 
 const terms = require('./glosario/terminos.js');
 let FICHA_TEMA = {};
-try { FICHA_TEMA = JSON.parse(fs.readFileSync(path.join(__dirname, 'conexiones', 'fichas-tema.json'), 'utf8')); } catch (e) { FICHA_TEMA = {}; }
+try { FICHA_TEMA = JSON.parse(fs.readFileSync(path.join(__dirname, 'glosario', 'fichas-tema.json'), 'utf8')); } catch (e) { FICHA_TEMA = {}; }
 
 /* Registro de temas (temas.js, raíz del sitio): una entrada del glosario que es la
    explicación rápida de un tema ofrece "Practicar este tema" a los miembros.
