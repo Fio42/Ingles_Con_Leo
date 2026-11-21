@@ -42,7 +42,7 @@ test('tema con clase pero sin ejercicios gratis (todo de Miembros): ofrece la ex
   });
 });
 test('tema sin explicacion, sin curso y sin ejercicios gratis: la fila no sale', () => {
-  ['causativos', 'preposiciones-movimiento'].forEach(id => assert.strictEqual(free(id), '', id));
+  ['hedging', 'inversion-enfasis'].forEach(id => assert.strictEqual(free(id), '', id));
 });
 test('ningun enlace de practica del resumen gratis es una pagina general', () => {
   T.TEMAS.filter(t => t.skill !== 'vocabulary' && t.skill !== 'listening').forEach(t => {

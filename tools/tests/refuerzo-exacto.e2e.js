@@ -42,8 +42,8 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   const h2 = hrefs(w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'pasado-continuo', 2)) }));
   ok(h2.some(h => h.kind === 'lesson') && !h2.some(h => h.kind === 'practice'), where + 'pasado-continuo: explicacion y ninguna practica general (' + JSON.stringify(h2) + ')');
   // 3) tema sin refuerzo exacto: no sale el bloque
-  const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'causativos', 2)) });
-  ok(!/Para reforzar/.test(h3), where + 'causativos: sin refuerzo exacto no se ofrece nada');
+  const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'hedging', 2)) });
+  ok(!/Para reforzar/.test(h3), where + 'hedging: sin refuerzo exacto no se ofrece nada');
   // 4) error repetido: el tema con mas errores va primero
   const rep = w.renderFreeSessionSummary({ title: '¡Listo!', score: '0 / 3', topics: ['x'], results: wrong(idsOf(w, 'do-does', 2).concat(idsOf(w, 'verbo-have', 1))) });
   ok(/tema=do-does/.test(rep) && !/tema=verbo-have/.test(rep), where + 'error repetido: do-does (2 errores) desplaza a verbo-have (1)');
@@ -60,5 +60,17 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   ok(/data-rf="lesson"/.test(hq) && !/data-rf="practice"/.test(hq) && !/gramatica\.html/.test(hq), where + 'question-tags (sin familia): explicacion, sin boton hacia la practica general');
   ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => ok(w.sessionReinforceHtml(JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, id, 2)), { actions: [] }, new Set())))) === '', where + id + ': sin refuerzo exacto no sale la fila'));
 }
+// Recorrido nuevo: ejercicio -> error -> explicacion (fichas escritas a partir de los errores de los propios ejercicios)
+['guest', 'free', 'member'].forEach(tier => {
+  const w = boot(tier); const where = tier + ' (ficha nueva): ';
+  [['g-facil-alo-2', 'a-lot-of', 'much-many'], ['g-facil-sap-2', 'any-vs-some', 'some-any']].forEach(([itemId, slug]) => {
+    const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows([{ itemId, isCorrect: false }], { actions: [] }, new Set())));
+    ok(rows.length === 1 && rows[0].lesson && new RegExp('/glosario/' + slug + '/').test(JSON.stringify(rows[0].lesson)), where + itemId + ' lleva a la ficha ' + slug + ' (' + JSON.stringify(rows[0] && rows[0].lesson) + ')');
+  });
+  [['condicionales', 'articulo-condicionales-1-y-2.html'], ['wish', 'wish-if-only'], ['estilo-indirecto', 'reported-speech'], ['relativas', 'relative-clauses'], ['causativos', 'have-something-done'], ['preposiciones-movimiento', 'to-into-from'], ['preposiciones-sutiles', 'adjective-prepositions']].forEach(([tema, slug]) => {
+    const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, tema, 1)), { actions: [] }, new Set())));
+    ok(rows.length === 1 && rows[0].lesson && JSON.stringify(rows[0].lesson).indexOf(slug.indexOf('.html') > 0 ? slug : '/glosario/' + slug + '/') !== -1, where + tema + ' -> ' + slug + ' (' + JSON.stringify(rows[0] && rows[0].lesson) + ')');
+  });
+});
 if(fails.length){ console.error('FALLA refuerzo-exacto.e2e (' + fails.length + ' de ' + checks + '):\n - ' + fails.join('\n - ')); process.exit(1); }
 console.log('refuerzo-exacto.e2e: ' + checks + ' comprobaciones (visitante, cuenta gratis y miembro, con y sin refuerzo exacto), todas bien');

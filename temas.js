@@ -49,7 +49,7 @@ const TEMAS = [
   { id:'comparativos', label:'Comparativos', family:'comparativos', article:'articulo-comparativos-y-superlativos.html', glossary:null,
     topics:[`Comparativos (-er / more ... than)`, `Comparativos de igualdad (as...as)`] },
   /* ---- condicionales ---- */
-  { id:'condicionales', prereq:['will-going-to'], label:'Condicionales', family:'condicionales', article:null, glossary:null,
+  { id:'condicionales', prereq:['will-going-to'], label:'Condicionales', family:'condicionales', article:null, glossary:'condicionales-if',
     topics:[`Conditionals (tipo 1 y 2)`, `Condicional 1: algo probable`, `Condicional 2: algo imaginario`, `Condicional tipo 3`, `Condicionales mixtos`],
     micros:[
       { id:'cond-1-probable', active:true, label:'Condicional 1: algo probable', lesson:{ article:'articulo-condicionales-1-y-2.html', anchor:'cond-1-probable' } },
@@ -57,7 +57,7 @@ const TEMAS = [
       { id:'cond-3-pasado-irreal', prereq:['cond-2-imaginario'], label:'Condicional 3: el pasado que ya no se puede cambiar' },
       { id:'cond-mixto', prereq:['cond-3-pasado-irreal'], label:'Condicionales mixtos' }
     ] },
-  { id:'wish', prereq:['condicionales'], label:'Wish e if only', family:'condicionales', article:null, glossary:null,
+  { id:'wish', prereq:['condicionales'], label:'Wish e if only', family:'condicionales', article:null, glossary:'wish-if-only',
     topics:[`Wish / If only`] },
   /* ---- conectores ---- */
   { id:'conectores-contraste', label:'Although, despite y even though', family:'conectores', article:null, glossary:'although',
@@ -99,9 +99,9 @@ const TEMAS = [
     label:'Cuantificadores', family:'cuantificadores', article:null, glossary:null, topics:[],
     micros:[
       { id:'much-many-contable-incontable', active:true, glossary:'much-vs-many', label:'Much y many: contable o incontable' },
-      { id:'a-lot-of', prereq:['much-many-contable-incontable'], label:'A lot of: sirve para los dos' },
+      { id:'a-lot-of', active:true, glossary:'a-lot-of', prereq:['much-many-contable-incontable'], label:'A lot of: sirve para los dos' },
       { id:'some-any-afirm-neg', active:true, glossary:'any-vs-some', label:'Some y any: frases afirmativas y negativas' },
-      { id:'some-any-pregunta-oferta', prereq:['some-any-afirm-neg'], label:'Some y any: preguntas y ofrecimientos' },
+      { id:'some-any-pregunta-oferta', active:true, glossary:'any-vs-some', prereq:['some-any-afirm-neg'], label:'Some y any: preguntas y ofrecimientos' },
       { id:'little-few-matiz', active:true, glossary:'little-vs-a-little', prereq:['much-many-contable-incontable'], label:'A little, little, a few y few' },
       { id:'fewer-less', active:true, prereq:['much-many-contable-incontable'], glossary:'fewer-vs-less', label:'Fewer y less' }
     ] },
@@ -129,7 +129,7 @@ const TEMAS = [
       { id:'going-to-evidencia', active:true, label:'Going to: lo que se ve venir', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'going-to-evidencia' } },
       { id:'will-forma-verbo-base', active:true, label:'Will + verbo base (sin "to")', lesson:{ article:'articulo-will-vs-going-to.html', anchor:'will-forma-verbo-base' } }
     ] },
-  { id:'estilo-indirecto', prereq:['pasado-regulares'], label:'Estilo indirecto (reported speech)', family:'indirecto', article:null, glossary:null,
+  { id:'estilo-indirecto', prereq:['pasado-regulares'], label:'Estilo indirecto (reported speech)', family:'indirecto', article:null, glossary:'reported-speech',
     topics:[`Reported Speech`, `Discurso indirecto con matices`] },
   /* ---- modales ---- */
   { id:'can-cant', label:'Can y can\'t', family:'modales', article:'articulo-verbos-modales.html', glossary:null, topics:[`Can / Can't (habilidad)`, `Can / Can't: después va el verbo base`],
@@ -155,7 +155,7 @@ const TEMAS = [
   /* ---- pasiva ---- */
   { id:'voz-pasiva', prereq:['verbos-irregulares'], label:'Voz pasiva', family:'pasiva', article:'articulo-voz-pasiva-ingles.html', glossary:null,
     topics:[`Voz pasiva (presente y pasado simple)`, `Voz pasiva con modales (should be / must have been)`] },
-  { id:'causativos', label:'Verbos causativos (have something done)', family:'pasiva', article:null, glossary:null, topics:[`Verbos causativos (have something done)`] },
+  { id:'causativos', label:'Verbos causativos (have something done)', family:'pasiva', article:null, glossary:'have-something-done', topics:[`Verbos causativos (have something done)`] },
   /* ---- perfecto ---- */
   { id:'present-perfect-vs-past', prereq:['verbos-irregulares'], label:'Presente perfecto vs pasado simple', family:'perfecto', article:'articulo-presente-perfecto.html', glossary:null,
     topics:[`Present Perfect vs Past Simple`, `Presente perfecto: experiencias sin fecha`, `Presente perfecto o pasado simple: con fecha terminada`],
@@ -176,9 +176,9 @@ const TEMAS = [
       { id:'in-on-at-lugar', active:true, label:'In, on y at con lugares', lesson:{ article:'articulo-in-on-at.html', anchor:'lugar' } }
     ] },
   { id:'by-until', label:'By y until', family:'preposiciones', article:null, glossary:'by-vs-until', topics:[`By vs Until`, `By vs Until (en el trabajo)`] },
-  { id:'preposiciones-movimiento', label:'Preposiciones de movimiento (to, into, from)', family:'preposiciones', article:null, glossary:null,
+  { id:'preposiciones-movimiento', label:'Preposiciones de movimiento (to, into, from)', family:'preposiciones', article:null, glossary:'to-into-from',
     topics:[`Preposiciones de movimiento (to / into / from)`] },
-  { id:'preposiciones-sutiles', label:'Preposiciones sutiles (beside, besides...)', family:'preposiciones', article:null, glossary:null,
+  { id:'preposiciones-sutiles', label:'Preposiciones sutiles (beside, besides...)', family:'preposiciones', article:null, glossary:'adjective-prepositions',
     topics:[`Preposiciones sutiles`, `"Beside" vs "Besides"`] },
   /* ---- presente simple ---- */
   { id:'presente-simple', prereq:['to-be-presente'], label:'Presente simple', family:'presente-simple', article:'articulo-presente-simple.html', glossary:null, noClassTopics:[`Presente simple y "to be"`],
@@ -206,7 +206,7 @@ const TEMAS = [
       { id:'poss-elegir-posesivo', label:'My, your, his, her, our o their según quién es el dueño', lesson:{ article:'articulo-adjetivos-posesivos-ingles.html', anchor:'tabla-posesivos' } }
     ] },
   /* ---- relativas ---- */
-  { id:'relativas', prereq:['pronombres'], label:'Cláusulas relativas', family:'relativas', article:null, glossary:null,
+  { id:'relativas', prereq:['pronombres'], label:'Cláusulas relativas', family:'relativas', article:null, glossary:'relative-clauses',
     topics:[`Cláusulas relativas (who / which / that)`, `Cláusulas relativas reducidas`] },
   { id:'who-whom', prereq:['relativas'], label:'Who y whom', family:'relativas', article:null, glossary:'who-vs-whom', topics:[`Who vs Whom`, `Who / Whom`] },
   /* ---- to be ---- */

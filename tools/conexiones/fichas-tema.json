@@ -1,18 +1,23 @@
 {
   "a-vs-an": "a-an",
+  "adjective-prepositions": "preposiciones-sutiles",
   "any-vs-some": "some-any",
   "as-vs-like": "as-vs-like",
   "borrow-vs-lend": "borrow-vs-lend",
   "bring-vs-take": "bring-vs-take",
   "by-vs-until": "by-until",
+  "condicionales-if": "condicionales",
   "good-vs-well": "good-vs-well",
   "its-vs-it-s": "its-vs-its",
   "little-vs-a-little": "little-few",
   "past-perfect": "past-perfect",
+  "relative-clauses": "relativas",
+  "reported-speech": "estilo-indirecto",
   "since-vs-for": "since-for",
   "their-there-theyre": "there-their-theyre",
   "then-vs-than": "then-vs-than",
   "used-to": "used-to",
   "was-vs-were": "was-were",
-  "who-vs-whom": "who-whom"
+  "who-vs-whom": "who-whom",
+  "wish-if-only": "wish"
 }

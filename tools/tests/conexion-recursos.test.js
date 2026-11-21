@@ -91,10 +91,12 @@ test('resumen: si todos los errores de un tema son de una etiqueta sin clase, so
   const rows = T.sessionReinforceRows(wrong(['g-facil-tobe-2', 'g-facil-tobe-4']), { actions: [] }, new Set());
   assert.strictEqual(rows.length, 1); assert.strictEqual(rows[0].lesson, null); assert(rows[0].practiceHref);
 });
-test('condicional 3 (la clase solo cubre 1 y 2): no se manda a una clase que no corresponde', ()=>{
+test('condicional 3 (la clase solo cubre 1 y 2): no se manda a la clase, sino a la ficha que si explica el tipo 3', ()=>{
   const id = firstItemOfMicro(T, 'cond-3-pasado-irreal');
   assert(id, 'debe existir un ejercicio de cond-3');
-  assert.strictEqual(linkOf(T, id, false), null);
+  const l = linkOf(T, id, false);
+  assert(l && /\/glosario\/condicionales-if\//.test(JSON.stringify(l)), 'debe llevar a la ficha condicionales-if');
+  assert(!/articulo-condicionales-1-y-2/.test(JSON.stringify(l)), 'no debe llevar a la clase de 1 y 2');
 });
 test('sin temas.js (práctica gratis) el feedback queda como siempre y no falla', ()=>{
   assert.strictEqual(linkOf(T0, 'g-facil7-dodoes-1', false), null);

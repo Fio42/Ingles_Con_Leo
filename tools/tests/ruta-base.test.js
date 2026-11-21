@@ -177,7 +177,7 @@ test('los 29 ejercicios que ya existían conservan su id y su texto y solo ganar
 });
 
 test('el banco de práctica solo creció en 18 ejercicios (454 -> 472) y en 25 más en la auditoría (-> 497) y ninguna etiqueta existente cambió de nombre', () => {
-  assert.strictEqual(real.practice.length, 497);
+  assert.strictEqual(real.practice.length, 505);
   const topics = new Set(real.practice.map(r => r.topic));
   ['Presente simple y "to be"', 'Adverbios de frecuencia (always / usually / sometimes / never)', 'Do / Does', 'Preguntas con Do/Does en presente simple', 'Is / Are (singular y plural)',
     'Verbo "to be": am / is / are', 'Can / Can\'t (habilidad)', 'A / An'].forEach(t => assert.ok(topics.has(t), 'desapareció la etiqueta ' + t));

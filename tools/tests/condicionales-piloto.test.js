@@ -51,9 +51,9 @@ const ARTICLE = 'articulo-condicionales-1-y-2.html';
 const practiceAt = (micro, level) => real.practice.filter(r => r.item.micro === micro && r.level === level);
 
 console.log('Contenido del piloto');
-test('los dos microtemas están activos; cond-3, cond-mixto, a-lot-of y some-any-pregunta-oferta siguen sin activar (los otros 4 cuantificadores se activaron en la ampliación)', () => {
+test('los dos microtemas están activos; cond-3 y cond-mixto siguen sin activar', () => {
   MICROS.forEach(id => assert.strictEqual(real.microById[id].active, true, id));
-  ['cond-3-pasado-irreal', 'cond-mixto', 'a-lot-of', 'some-any-pregunta-oferta']
+  ['cond-3-pasado-irreal', 'cond-mixto']
     .forEach(id => assert.ok(!real.microById[id].active, id + ' no debe estar activo'));
   MICROS.forEach(id => assert.strictEqual(T.microIsActive(id), true));
 });

@@ -49,12 +49,15 @@ function exampleFor(temaId){
 function build(){
   const rows = parseCsv(read('INVENTARIO_TEMAS.csv')).filter(r => r.habilidad === 'grammar');
   const n = s => { const m = String(s || '').match(/\d+/g); return m ? m.reduce((a, b) => a + Number(b), 0) : 0; };
+  const paraguas = new Set((read('temas.js').match(/id:'([a-z0-9-]+)',\s*merges:/g) || []).map(m => m.match(/'([^']+)'/)[1]));
   const sinExpl = [], sinGratis = [], sinFamilia = [], sinEjercicios = [];
   rows.forEach(r => {
     const gratis = n(r.ejercicios_gratis), miembros = n(r.ejercicios_solo_miembros);
     const sinExp = !r.clase && !r.glosario;
     const total = gratis + miembros;
-    if(!total){ sinEjercicios.push(r); return; }
+    // Un tema paraguas (merges) no tiene ejercicios propios: viven en los temas antiguos que absorbe y en sus microtemas.
+    if(!total && !paraguas.has(r.tema_id)){ sinEjercicios.push(r); return; }
+    if(!total) return;
     if(sinExp) sinExpl.push(r);
     if(!gratis) sinGratis.push(r);
     if(!r.familia && /gramatica\.html/.test(r.practica_miembros || '')) sinFamilia.push(r);
@@ -85,6 +88,7 @@ function build(){
   L.push('La practica gratis por tema (`practica.html?skill=grammar&tema=<id>`) solo existe en gramatica. Estos temas tienen ejercicios gratis, pero el resumen de errores no puede abrir una practica solo de ese tema: ofrece su explicacion (ficha por pareja de palabras) y no un boton de practica. Recurso a crear: la misma ruta `?skill=vocabulary&tema=<id>` y `?skill=listening&tema=<id>` en `initFreePractice` (app.js).', '');
   sinRutaSkill.forEach(r => L.push('- `' + r.tema_id + '` (' + r.habilidad + '): ' + (n(r.ejercicios_gratis)) + ' ejercicios gratis'));
   L.push('', '## 5. Sin ejercicios en ningun nivel', '');
+  if(!sinEjercicios.length) L.push('Ninguno. (`cuantificadores` es un tema paraguas: sus ejercicios viven en much-many, some-any, little-few, fewer-vs-less y contables-incontables, y en sus microtemas a-lot-of y some-any-pregunta-oferta, ya activos.)');
   sinEjercicios.forEach(r => L.push('- `' + r.tema_id + '` (' + r.etiqueta + '): crear ejercicios antes que cualquier refuerzo.'));
   L.push('');
   return L.join('\n');

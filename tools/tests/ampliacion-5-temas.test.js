@@ -75,7 +75,7 @@ const levelsOf = micro => Array.from(new Set(practiceOf(micro).map(r => r.level)
 console.log('Contenido de los 12 microtemas');
 test('los 12 microtemas están activos, en su tema, y los que siguen declarados no se activaron', () => {
   IDS.forEach(id => { assert.strictEqual(real.microById[id].active, true, id); assert.strictEqual(real.microById[id].tema, MICROS[id].tema, id); assert.strictEqual(T.microIsActive(id), true, id); });
-  ['cond-3-pasado-irreal', 'cond-mixto', 'a-lot-of', 'some-any-pregunta-oferta'].forEach(id => assert.ok(!real.microById[id].active, id + ' no debe estar activo'));
+  ['cond-3-pasado-irreal', 'cond-mixto'].forEach(id => assert.ok(!real.microById[id].active, id + ' no debe estar activo'));
 });
 
 test('cada microtema: >=6 de práctica con >=2 tipos, 6 de comprobación (2 rondas de 3) y su recurso real', () => {
@@ -146,8 +146,8 @@ test('los 15 ejercicios que ya existían conservan su id, su texto y solo ganaro
   assert.ok(!first('g-medio4-mod-4').micro, 'mod-4 (must to) no se etiquetó: no es obligación vs consejo');
 });
 
-test('el banco de práctica solo creció en 38 ejercicios en la ampliación (416 -> 454) y en 18 más en la ruta base (454 -> 472) y en 21 más en la auditoría (472 -> 497: 9 para completar little-few y do/does, 16 de pasado continuo y there is/are), y ninguna etiqueta existente cambió de nombre', () => {
-  assert.strictEqual(real.practice.length, 497);
+test('el banco de práctica solo creció en 38 ejercicios en la ampliación (416 -> 454) y en 18 más en la ruta base (454 -> 472) y en 21 más en la auditoría (472 -> 497, y 8 más con a lot of y some/any en preguntas y ofrecimientos -> 505: 9 para completar little-few y do/does, 16 de pasado continuo y there is/are), y ninguna etiqueta existente cambió de nombre', () => {
+  assert.strictEqual(real.practice.length, 505);
   const topics = new Set(real.practice.map(r => r.topic));
   ['Present Perfect vs Past Simple', 'Since / For', 'In / On / At', 'Some / Any', '"Fewer" vs "Less"', 'Much / Many', 'A little / Little / A few / Few',
     'Verbos modales de obligación (must / have to / should)', 'Cuantificadores (a lot of / much / many / few / little)'].forEach(t => assert.ok(topics.has(t), 'desapareció la etiqueta ' + t));
@@ -298,8 +298,8 @@ IDS.forEach(m => {
   });
 });
 
-test('un microtema que no se activó (a-lot-of, some-any-pregunta-oferta) no recomienda ni comprueba nada aunque haya errores', () => {
-  ['a-lot-of', 'some-any-pregunta-oferta'].forEach(m => {
+test('un microtema que no se activó (cond-3-pasado-irreal, cond-mixto) no recomienda ni comprueba nada aunque haya errores', () => {
+  ['cond-3-pasado-irreal', 'cond-mixto'].forEach(m => {
     const rows = practiceOf(m);
     rows.forEach((r, i) => T.recordSession({ skill:'gramatica', level:r.level, topics:[], startedAt: 10 + i, results:[{ itemId:r.item.id, isCorrect:false }] }));
     rows.map(r => r.level).forEach(lv => assert.strictEqual(T.microDiagActions(lv).filter(a => a.micro === m).length, 0, m));

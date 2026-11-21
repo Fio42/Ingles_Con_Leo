@@ -13,15 +13,8 @@ Hoy el error de estos temas no ofrece "Ver la clase". Recurso a crear: una ficha
 | Tema | Ejercicios | Ejemplo de un ejercicio | Recurso a crear |
 |---|---|---|---|
 | `basicos-ingles` | 23 | `One dog, two dog.` (opcion equivocada) / `One dog, two dogs.` (correcta) | Ficha de glosario "Plural, colores, días y respuestas básicas" |
-| `condicionales` | 27 | `If it rains tomorrow, we stay at home.` (opcion equivocada) / `If it rains tomorrow, we will stay at home.` (correcta) | Ficha de glosario "Condicionales" |
-| `wish` | 5 | `I wish I have more free time.` (opcion equivocada) / `I wish I had more free time.` (correcta) | Ficha de glosario "Wish e if only" |
 | `palabras-parecidas` | 14 | `Can you give me some advise?` (opcion equivocada) / `Can you give me some advice?` (correcta) | Ficha de glosario "Palabras que se parecen (advice, lay, further, quiet)" |
 | `matices-formales` | 9 | `¿Cuál suena más natural en una conversación casual?` (opcion equivocada) / `¿Cuál suena más natural en una conversación casual?` (correcta) | Ficha de glosario "Matices: formal, natural y -ed vs -ing" |
-| `estilo-indirecto` | 13 | `She said (that) she is tired.` (opcion equivocada) / `She said (that) she was tired.` (correcta) | Ficha de glosario "Estilo indirecto (reported speech)" |
-| `causativos` | 3 | `I'm going to have my car repair tomorrow.` (opcion equivocada) / `I'm going to have my car repaired tomorrow.` (correcta) | Ficha de glosario "Verbos causativos (have something done)" |
-| `preposiciones-movimiento` | 4 | `I walk from school every morning.` (opcion equivocada) / `I walk to school every morning.` (correcta) | Ficha de glosario "Preposiciones de movimiento (to, into, from)" |
-| `preposiciones-sutiles` | 7 | `She is responsible of the entire project.` (opcion equivocada) / `She is responsible for the entire project.` (correcta) | Ficha de glosario "Preposiciones sutiles (beside, besides...)" |
-| `relativas` | 11 | `The woman which lives next door is a doctor.` (opcion equivocada) / `The woman who lives next door is a doctor.` (correcta) | Ficha de glosario "Cláusulas relativas" |
 | `inversion-enfasis` | 19 | `No sooner did she arrived than it started raining.` (opcion equivocada) / `No sooner had she arrived than it started raining.` (correcta) | Ficha de glosario "Inversión y oraciones enfáticas" |
 | `subjuntivo-formal` | 5 | `It is essential that she is present at the meeting.` (opcion equivocada) / `It is essential that she be present at the meeting.` (correcta) | Ficha de glosario "Subjuntivo formal" |
 | `hedging` | 9 | `This is argue the best decision the company has ever made.` (opcion equivocada) / `This is arguably the best decision the company has ever made.` (correcta) | Ficha de glosario "Enfatizadores y hedging" |
@@ -76,4 +69,4 @@ La practica gratis por tema (`practica.html?skill=grammar&tema=<id>`) solo exist
 
 ## 5. Sin ejercicios en ningun nivel
 
-- `cuantificadores` (Cuantificadores): crear ejercicios antes que cualquier refuerzo.
+Ninguno. (`cuantificadores` es un tema paraguas: sus ejercicios viven en much-many, some-any, little-few, fewer-vs-less y contables-incontables, y en sus microtemas a-lot-of y some-any-pregunta-oferta, ya activos.)

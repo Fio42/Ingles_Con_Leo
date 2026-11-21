@@ -28,7 +28,7 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 161 | 74 | 55 |
+| verificado | 166 | 74 | 55 |
 | parcial | 3 | 0 | 0 |
 | enlace_incorrecto | 1 | 4 | 0 |
 | recurso_sin_conectar | 0 | 0 | 10 |
@@ -36,7 +36,7 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 | solo_miembros | 35 | 0 | 13 |
 | general_intencional | 48 | 0 | 0 |
 
-79 temas en temas.js. 248 filas de enlaces: 228 agrupadas desde 446 paginas HTML y 20 destinos dinamicos o redirecciones curados.
+79 temas en temas.js. 253 filas de enlaces: 233 agrupadas desde 454 paginas HTML y 20 destinos dinamicos o redirecciones curados.
 <!-- /GENERADO:resumen -->
 
 Cifras clave:
@@ -45,10 +45,10 @@ Cifras clave:
 - Temas de temas.js: 79. Con ejercicios gratis: 10. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
 - Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
-- Que abre el boton de cada tarjeta del inicio: tema 76, clase 17, general 2 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
+- Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
 - Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
-- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 34. Temas con ejercicios gratis en un solo nivel: 39.
-- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 21. Temas con clase: 32. Con ficha: 30.
+- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 33. Temas con ejercicios gratis en un solo nivel: 39.
+- Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 14. Temas con clase: 32. Con ficha: 37.
 <!-- /GENERADO:cifras -->
 
 ## 3. Cómo se conecta hoy todo (vista general)
@@ -245,8 +245,8 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `basicos-ingles` | gram | - | - | - | - | principiante:16 | principiante:7 | verificado | verificado | explicacion (ni clase ni ficha) |
 | `question-words` | gram | si | - | wh | 6 | facil:6 | - | verificado | verificado | - |
 | `comparativos` | gram | si | - | - | 4 | facil:9 medio:3 | facil:3 medio:3 | verificado | verificado | - |
-| `condicionales` | gram | - | - | - | - | facil:1 medio:6 avanzado:10 | medio:9 avanzado:1 | verificado | verificado | explicacion (ni clase ni ficha) |
-| `wish` | gram | - | - | - | - | medio:1 avanzado:4 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `condicionales` | gram | - | si | - | - | facil:1 medio:6 avanzado:10 | medio:9 avanzado:1 | verificado | verificado | - |
+| `wish` | gram | - | si | - | - | medio:1 avanzado:4 | - | verificado | verificado | - |
 | `conectores-contraste` | gram | - | si | - | - | medio:1 avanzado:2 | medio:5 avanzado:7 | verificado | verificado | - |
 | `secuenciadores` | gram | si | - | - | 8 | facil:1 | facil:4 | verificado | verificado | - |
 | `conectores-avanzados` | gram | - | si | - | - | avanzado:7 | avanzado:1 | verificado | verificado | - |
@@ -268,15 +268,15 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `presente-continuo` | gram | si | - | presente-continuo | 16 | facil:5 | - | verificado | verificado | - |
 | `pasado-continuo` | gram | si | - | - | 4 | - | facil:8 | verificado | solo_miembros | - |
 | `cuantificadores` | gram | - | - | - | - | - | - | por_construir | por_construir | explicacion (ni clase ni ficha); ejercicios |
-| `much-many` | gram | - | si | - | - | facil:2 | facil:5 medio:9 | verificado | verificado | - |
+| `much-many` | gram | - | si | - | - | facil:2 | facil:10 medio:9 | verificado | verificado | - |
 | `fewer-vs-less` | gram | - | si | - | - | - | medio:6 | verificado | solo_miembros | - |
 | `little-few` | gram | - | si | - | - | facil:5 | - | verificado | verificado | - |
-| `some-any` | gram | - | si | - | - | facil:5 | facil:7 | verificado | verificado | - |
+| `some-any` | gram | - | si | - | - | facil:8 | facil:7 | verificado | verificado | - |
 | `contables-incontables` | gram | si | - | - | 6 | - | facil:4 | verificado | solo_miembros | - |
 | `a-an` | gram | si | si | articulos | 6 | facil:4 | facil:2 | verificado | verificado | - |
 | `this-that` | gram | si | - | - | 8 | principiante:4 facil:4 | principiante:5 | verificado | verificado | - |
 | `will-going-to` | gram | si | - | - | - | facil:3 medio:6 | facil:2 medio:20 | verificado | verificado | - |
-| `estilo-indirecto` | gram | - | - | - | - | medio:7 avanzado:6 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `estilo-indirecto` | gram | - | si | - | - | medio:7 avanzado:6 | - | verificado | verificado | - |
 | `can-cant` | gram | si | - | can | - | principiante:1 facil:6 | principiante:1 facil:2 | verificado | verificado | - |
 | `modales-obligacion` | gram | si | - | - | - | facil:1 medio:6 | facil:1 medio:10 | verificado | verificado | - |
 | `modales-posibilidad` | gram | si | - | - | - | - | medio:5 | verificado | solo_miembros | - |
@@ -285,19 +285,19 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `verbos-irregulares` | gram | si | - | - | 10 | facil:6 | - | verificado | verificado | - |
 | `used-to` | gram | - | si | - | - | medio:5 | medio:1 | verificado | verificado | - |
 | `voz-pasiva` | gram | si | - | - | 10 | medio:5 avanzado:9 | medio:1 avanzado:1 | verificado | verificado | - |
-| `causativos` | gram | - | - | - | - | - | medio:3 | verificado | solo_miembros | explicacion (ni clase ni ficha) |
+| `causativos` | gram | - | si | - | - | - | medio:3 | verificado | solo_miembros | - |
 | `present-perfect-vs-past` | gram | si | - | - | - | medio:6 | medio:9 | verificado | verificado | - |
 | `since-for` | gram | si | si | - | - | facil:1 medio:5 | medio:8 | verificado | verificado | - |
 | `past-perfect` | gram | - | si | - | - | medio:7 | - | verificado | verificado | - |
 | `in-on-at` | gram | si | - | in-on-at | 20 | facil:4 | facil:8 | verificado | verificado | - |
 | `by-until` | gram | - | si | - | - | facil:4 medio:2 | - | verificado | verificado | - |
-| `preposiciones-movimiento` | gram | - | - | - | - | - | principiante:4 | verificado | solo_miembros | explicacion (ni clase ni ficha) |
-| `preposiciones-sutiles` | gram | - | - | - | - | avanzado:4 | avanzado:3 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `preposiciones-movimiento` | gram | - | si | - | - | - | principiante:4 | verificado | solo_miembros | - |
+| `preposiciones-sutiles` | gram | - | si | - | - | avanzado:4 | avanzado:3 | verificado | verificado | - |
 | `presente-simple` | gram | si | - | presente-simple | - | principiante:2 facil:10 | principiante:1 facil:15 | verificado | verificado | - |
 | `do-does` | gram | si | - | do-does | 10 | principiante:3 facil:5 | principiante:4 facil:4 | verificado | verificado | - |
 | `pronombres` | gram | si | - | pronombres | 4 | facil:1 | principiante:8 | verificado | verificado | - |
 | `posesivos` | gram | si | - | posesivos | 8 | facil:5 | principiante:7 | verificado | verificado | - |
-| `relativas` | gram | - | - | - | - | medio:6 avanzado:5 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `relativas` | gram | - | si | - | - | medio:6 avanzado:5 | - | verificado | verificado | - |
 | `who-whom` | gram | - | si | - | - | medio:4 | avanzado:5 | verificado | verificado | - |
 | `to-be-presente` | gram | si | - | to-be | - | principiante:8 facil:1 | principiante:4 | verificado | verificado | - |
 | `was-were` | gram | si | si | - | - | principiante:4 facil:1 | - | verificado | verificado | - |
@@ -353,7 +353,7 @@ Recursos existentes todavía sin conectar
 Contenidos que necesitamos construir (generado)
 
 <!-- GENERADO:faltantes -->
-- Sin clase ni ficha (21): `basicos-ingles`, `condicionales`, `wish`, `palabras-parecidas`, `matices-formales`, `cuantificadores`, `estilo-indirecto`, `causativos`, `preposiciones-movimiento`, `preposiciones-sutiles`, `relativas`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
+- Sin clase ni ficha (14): `basicos-ingles`, `palabras-parecidas`, `matices-formales`, `cuantificadores`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
 - Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (4): `question-tags`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`
 - Solo con ejercicios de Miembros, nada gratis (13): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `there-is-are`

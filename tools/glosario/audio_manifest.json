@@ -1008,6 +1008,62 @@
   "text": "She had already left when I called. I had never seen snow before that trip. They had finished dinner by 8."
  },
  {
+  "term": "a-lot-of",
+  "kind": "frases",
+  "file": "audio/glosario/a-lot-of.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "We have a lot of homework today. There are a lot of people here. Lots of tourists visit this city."
+ },
+ {
+  "term": "condicionales-if",
+  "kind": "frases",
+  "file": "audio/glosario/condicionales-if.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "If it rains tomorrow, we will stay at home. If I were a bird, I would fly over the city. If he were the manager, he would change the schedule."
+ },
+ {
+  "term": "wish-if-only",
+  "kind": "frases",
+  "file": "audio/glosario/wish-if-only.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I wish I had more free time. I wish I were taller. If only she had arrived earlier!"
+ },
+ {
+  "term": "reported-speech",
+  "kind": "frases",
+  "file": "audio/glosario/reported-speech.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "She said she was tired. He told me he would come to the party. She asked me if I could help her."
+ },
+ {
+  "term": "relative-clauses",
+  "kind": "frases",
+  "file": "audio/glosario/relative-clauses.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "The woman who lives next door is a doctor. The house where I grew up was sold. That's the man whose car was stolen."
+ },
+ {
+  "term": "have-something-done",
+  "kind": "frases",
+  "file": "audio/glosario/have-something-done.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm going to have my car repaired tomorrow. He had the software installed by a technician. She had her hair cut yesterday."
+ },
+ {
+  "term": "to-into-from",
+  "kind": "frases",
+  "file": "audio/glosario/to-into-from.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I walk to school every morning. The cat jumped into the box. They come from Spain."
+ },
+ {
+  "term": "adjective-prepositions",
+  "kind": "frases",
+  "file": "audio/glosario/adjective-prepositions.mp3",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "I'm interested in this topic. She is responsible for the entire project. He is married to a doctor."
+ },
+ {
   "term": "accept-vs-except",
   "kind": "frases",
   "file": "audio/glosario/accept-vs-except.mp3",
