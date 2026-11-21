@@ -5321,7 +5321,9 @@ function renderPlanIntro(container, opts){
     const contentLevel = resolvePlanContentLevel(level, currentDiff);
     const pool = buildPlanPool(contentLevel, currentSelection);
     pool.forEach(e => { if(e && typeof e === 'object' && !e.cl) e.cl = contentLevel; });   // banco real de cada ejercicio (la sugerencia de nivel lo exige)
-    runPlanSessionCore({ container, level, pool, onAnother: ()=> renderPlanIntro(container) });
+    // Con un tema pedido en el enlace (Practicar este tema) la sesión es APARTE: se guarda con su propia clave y no toca el Plan a medias.
+    // "Continuar mi plan" (sin tema) sigue retomando la sesión guardada.
+    runPlanSessionCore({ container, level, pool, temaKey: opts.focusTema || null, onAnother: ()=> renderPlanIntro(container) });
   }
   // ¿Podría tocarle la ruta inicial y aún no se confirmó el historial de la nube? (Con una sesión de Plan a medias
   // no se pregunta nada: se retoma tal cual.)
@@ -5392,9 +5394,11 @@ function planHonestNoteHtml(entry, level, idx){
     return `<p class="plan-focus-note" data-honest="solo-familia">Todavía no hay ejercicios específicos de <b>${entry.focusAsked}</b>. Practicas otros ejercicios de <b>${entry.focusLabel}</b>, su misma familia.</p>`;
   return only;
 }
-function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
+function runPlanSessionCore({ container, level, pool, onExit, onAnother, temaKey }){
   stopActiveAudioFile();
-  const saved = loadInflightSession('plan', level);
+  // Sesión de un tema pedido: clave propia (plantema + id del tema). Retomable si se deja a medias, pero nunca pisa ni borra la del Plan.
+  const inflSkill = temaKey ? 'plantema' : 'plan', inflKey = temaKey ? String(temaKey) : level;
+  const saved = loadInflightSession(inflSkill, inflKey);
   const useSaved = !!(saved && Array.isArray(saved.pool) && typeof saved.idx === 'number' && saved.idx < saved.pool.length);
   const activePool = useSaved ? saved.pool : pool;
   const total = activePool.length;
@@ -5404,7 +5408,7 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
 
   function renderItem(){
     const entry = activePool[idx];
-    saveInflightSession('plan', level, { pool: activePool, idx, results, startedAt });
+    saveInflightSession(inflSkill, inflKey, { pool: activePool, idx, results, startedAt });
     const wrap = document.createElement('div');
     wrap.innerHTML = sessionHeaderHtml('Plan de estudio · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
     const card = document.createElement('div');
@@ -5424,7 +5428,7 @@ function runPlanSessionCore({ container, level, pool, onExit, onAnother }){
   }
 
   function finish(){
-    clearInflightSession('plan', level);
+    clearInflightSession(inflSkill, inflKey);
     const graded = results.filter(r=> r.isCorrect === true || r.isCorrect === false);
     const correct = graded.filter(r=>r.isCorrect).length;
     const realSkillsUsed = [...new Set(results.map(r=>r.skill))];

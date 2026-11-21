@@ -4175,3 +4175,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 
 2026-11-21 (8) g-facil-sap-3: una sola respuesta valida
 - "Is there ___ soup left in the pot?" admitia any y some (some vale si quien pregunta espera que quede sopa). Ahora es "There isn't ___ soup left in the pot." (No queda sopa en la olla.): en negativa solo any es correcto, some no va y many no va con un incontable. Explicacion y ejemplos actualizados; mismo ID y nivel. data-quality pasa.
+
+2026-11-21 (9) "Practicar este tema" ya no pisa el Plan a medias
+- Problema visto en produccion: un miembro con una sesion del Plan sin terminar pulsaba "Practicar este tema" (plan-estudio.html?foco=..&tema=..&empezar=1) y el Plan retomaba la sesion vieja (otro tema) en vez de abrir el pedido.
+- Ahora, si el enlace trae un tema explicito, la sesion se guarda aparte (clave leo_inflight_plantema_<tema>): abre ese tema, se puede terminar (o dejar a medias y retomar con el mismo enlace) y NO toca ni borra la sesion pendiente del Plan. "Continuar mi plan" (sin tema) sigue retomando la sesion guardada. Al terminar se registra como sesion del Plan, como antes.
+- Prueba: tools/tests/practicar-tema-plan.e2e.js (9 comprobaciones; con el codigo anterior falla). Version app.js ?v=20261121c.
