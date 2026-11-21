@@ -70,9 +70,12 @@ function build(){
   L.push('| Tema | Ejercicios | Ejemplo de un ejercicio | Recurso a crear |', '|---|---|---|---|');
   sinExpl.forEach(r => { const e = exampleFor(r.tema_id); L.push('| `' + r.tema_id + '` | ' + (n(r.ejercicios_gratis) + n(r.ejercicios_solo_miembros)) + ' | ' + ex(r.tema_id) + ' | Ficha de glosario "' + r.etiqueta + '" |'); });
   L.push('', '## 2. Falta practica gratis del tema (todo es solo de Miembros)', '');
+  const exclusivos = sinGratis.filter(r => /plan-estudio\.html/.test(r.practica_miembros || ''));
+  const soloGeneral = sinGratis.filter(r => !/plan-estudio\.html/.test(r.practica_miembros || ''));
+  L.push('Resumen de los ' + sinGratis.length + ' temas: ' + exclusivos.length + ' tienen practica EXCLUSIVA para Miembros (hay ejercicios y el Plan abre una practica enfocada en el tema, verificado) y ' + soloGeneral.length + ' carecen de practica propia tambien para Miembros. Ninguno esta sin ejercicios: lo que falta es la version gratis.', '');
   L.push('A visitantes y cuentas gratis el resumen les ofrece la explicacion, pero no "Practicar este tema". Recurso a crear: una muestra fija de 6 ejercicios abiertos (como ya existe para Do/Does). Es una decision de monetizacion de Leo.', '');
-  L.push('| Tema | Ejercicios de Miembros | Ejemplo de un ejercicio | Recurso a crear |', '|---|---|---|---|');
-  sinGratis.forEach(r => L.push('| `' + r.tema_id + '` | ' + n(r.ejercicios_solo_miembros) + ' | ' + ex(r.tema_id) + ' | Muestra gratis de 6 ejercicios |'));
+  L.push('| Tema | Ejercicios de Miembros (nivel) | Practica de Miembros | Practica gratis | Ejemplo de un ejercicio | Recurso a crear |', '|---|---|---|---|---|---|');
+  sinGratis.forEach(r => L.push('| `' + r.tema_id + '` | ' + n(r.ejercicios_solo_miembros) + ' (' + (r.niveles_miembro || '-') + ') | ' + (/plan-estudio\.html/.test(r.practica_miembros || '') ? 'Exclusiva: Plan enfocado en el tema' : 'Solo la general') + ' | Ninguna | ' + ex(r.tema_id) + ' | Muestra gratis de 6 ejercicios |'));
   L.push('', '## 3. Practica de Miembros sin familia (el Plan no puede enfocar el tema)', '');
   L.push('Estos temas tienen ejercicios, pero no pertenecen a ninguna familia del diagnostico, asi que el Plan no puede abrir una practica solo de ese tema y el resumen no ofrece "Practicar". Recurso a crear: asignar una familia en `temas.js` (toca el diagnostico: se prueba aparte).', '');
   L.push('| Tema | Ejercicios | Ejemplo de un ejercicio |', '|---|---|---|');

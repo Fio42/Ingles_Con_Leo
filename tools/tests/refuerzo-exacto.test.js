@@ -88,4 +88,15 @@ test('REFUERZOS_FALTANTES.md esta al dia', () => {
   const r = cp.spawnSync(process.execPath, [path.join(root, 'tools', 'conexiones', 'faltantes.js')], { encoding: 'utf8' });
   assert.strictEqual(r.status, 0, r.stderr);
 });
+test('las fichas del glosario de un tema abren la practica de ese tema', () => {
+  const r = cp.spawnSync(process.execPath, [path.join(root, 'tools', 'conexiones', 'enlazar-fichas.js')], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 0, r.stderr);
+  const map = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'conexiones', 'fichas-tema.json'), 'utf8'));
+  assert(Object.keys(map).length >= 10);
+  Object.keys(map).forEach(slug => {
+    const h = fs.readFileSync(path.join(root, 'glosario', slug, 'index.html'), 'utf8');
+    assert(h.indexOf('practica.html?skill=grammar&amp;tema=' + map[slug]) !== -1, slug);
+    assert(T.LEVELS.some(l => T.freeGrammarItemsOfTema(l, map[slug]).length), slug + ' sin ejercicios gratis');
+  });
+});
 console.log(passed + ' pruebas ok');

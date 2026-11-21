@@ -27,6 +27,11 @@ T.TEMAS.forEach(t => {
   if(!t.article || t.skill === 'vocabulary' || t.skill === 'listening' || plan[t.article]) return;
   if(freeCount(t.id) >= MIN_FREE) plan[t.article] = t.id;
 });
+// Clases que el tema solo conecta por sus microtemas (micros[].lesson.article), p. ej. condicionales-1-y-2: tambien abren la practica del tema.
+T.TEMAS.forEach(t => {
+  if(t.skill === 'vocabulary' || t.skill === 'listening' || freeCount(t.id) < MIN_FREE) return;
+  (t.micros || []).forEach(m => { const a = m.active && m.lesson && m.lesson.article; if(a && !plan[a]) plan[a] = t.id; });
+});
 const hrefFor = id => 'practica.html?skill=grammar&amp;tema=' + id;
 const GENERIC = /href="practica\.html(?:\?skill=grammar)?"/;
 const problems = []; let changed = 0;

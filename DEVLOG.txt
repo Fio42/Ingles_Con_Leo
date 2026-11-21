@@ -4137,3 +4137,10 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Nuevo: tools/conexiones/faltantes.js y REFUERZOS_FALTANTES.md (tema, ejemplo de un ejercicio y recurso a crear: 13 sin explicacion, 13 sin practica gratis, 4 sin familia, 10 de vocabulario y listening sin ruta por tema, 1 sin ejercicios).
 - Pruebas: tools/tests/refuerzo-exacto.test.js (11) y refuerzo-exacto.e2e.js (23, jsdom: visitante, cuenta gratis y miembro). conexion-educativa.test.js: una asercion cambiada a proposito (ahora exige practica del tema y no "Practicar mas"). Siguen fallando igual que antes (tambien con el app.js original): academia-articulos, checkout-abandonado, error-monitor y glossary-sync.
 - PENDIENTE: probar en el sitio real ya publicado (visitante, cuenta gratis, miembro) y en celulares.
+
+2026-11-21 (3) Conexiones: fichas del glosario y 2 clases mas hacia la practica de su tema (local, sin publicar)
+- 16 fichas de glosario/<slug>/ (a-vs-an, any-vs-some, as-vs-like, borrow-vs-lend, bring-vs-take, by-vs-until, good-vs-well, its-vs-it-s, little-vs-a-little, past-perfect, since-vs-for, their-there-theyre, then-vs-than, used-to, was-vs-were, who-vs-whom): el boton "Practicar gratis" abre practica.html?skill=grammar&tema=<id>. Solo fichas de UN tema de gramatica con 3 ejercicios gratis o mas; las de vocabulario o con tema compartido siguen generales. Herramienta: tools/conexiones/enlazar-fichas.js (--write aplica y escribe fichas-tema.json); tools/generar_glosario.js lee ese json para que regenerar el glosario no lo deshaga.
+- 2 clases mas (condicionales-1-y-2 y adverbios-de-frecuencia) enlazadas por los microtemas de su tema (enlazar-articulos.js ya total 22).
+- REFUERZOS_FALTANTES.md seccion 2 aclara: los 13 temas sin practica gratis tienen practica EXCLUSIVA de Miembros (con ejercicios y Plan enfocado); ninguno esta sin ejercicios.
+- Microlecciones (95 con enlace) y videos ya apuntaban a su tema; 2 microlecciones (to/into/from y have it done) siguen con la practica general porque su tema no tiene ejercicios gratis.
+- Pruebas: refuerzo-exacto.test.js 12 ok, escaner OK.

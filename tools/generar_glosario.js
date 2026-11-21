@@ -27,6 +27,8 @@ const VOICE_A = 'en-US-AvaMultilingualNeural';
 const VOICE_B = 'en-US-AndrewMultilingualNeural';
 
 const terms = require('./glosario/terminos.js');
+let FICHA_TEMA = {};
+try { FICHA_TEMA = JSON.parse(fs.readFileSync(path.join(__dirname, 'conexiones', 'fichas-tema.json'), 'utf8')); } catch (e) { FICHA_TEMA = {}; }
 
 /* Registro de temas (temas.js, raíz del sitio): una entrada del glosario que es la
    explicación rápida de un tema ofrece "Practicar este tema" a los miembros.
@@ -306,7 +308,9 @@ function termPage(t) {
   const hasAudio = exists(`audio/glosario/${t.slug}.mp3`);
   const hasDialogAudio = t.dialogo && exists(`audio/glosario/${t.slug}-dialogo.mp3`);
   const arts = [t.art, t.art2].filter(Boolean).map(articleInfo);
-  const practice = PRACTICE[t.prac] || '/practica.html';
+  let practice = PRACTICE[t.prac] || '/practica.html';
+  // Ficha de UN tema con ejercicios gratis: la practica abre ese tema (tools/conexiones/enlazar-fichas.js).
+  if (t.prac === 'grammar' && FICHA_TEMA[t.slug]) practice += '&amp;tema=' + FICHA_TEMA[t.slug];
 
   const rel = (t.rel || []).map(s => terms.find(x => x.slug === s)).filter(Boolean);
   const body = [];
