@@ -4172,3 +4172,6 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - g-facil-sap-3 (Some / Any, facil): la frase repetia a g-facil9-someany-2 ("Is there ___ milk in the fridge?"). Ahora es "Is there ___ soup left in the pot?" (¿Queda sopa en la olla?). Misma respuesta unica: any; se cambio tambien el primer ejemplo.
 - g-facil-alo-3 (A lot of, facil): el enunciado "Which sentence is correct?" era identico al de g-facil-freqpos-1. Ahora "Choose the correct sentence about people." Las tres opciones y la respuesta (a lot of + are) no cambian.
 - ID, nivel y objetivo se conservan. data-quality pasa completa; refuerzo-exacto, micros, temas y e2e siguen bien. Version data.js ?v=20261121d.
+
+2026-11-21 (8) g-facil-sap-3: una sola respuesta valida
+- "Is there ___ soup left in the pot?" admitia any y some (some vale si quien pregunta espera que quede sopa). Ahora es "There isn't ___ soup left in the pot." (No queda sopa en la olla.): en negativa solo any es correcto, some no va y many no va con un incontable. Explicacion y ejemplos actualizados; mismo ID y nivel. data-quality pasa.

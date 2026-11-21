@@ -15198,7 +15198,7 @@ GRAMMAR_BANK.facil[2].push({
   items:[
     {id:"g-facil-sap-1",micro:"some-any-pregunta-oferta",translation:"¿Quieres té?",type:"choice",prompt:"Would you like ___ tea?",options:["some","any","a"],correct:0,explain:"En un ofrecimiento usamos “some”, aunque sea una pregunta.",examples:[{en:"Would you like some tea?",es:"¿Quieres té?"},{en:"Would you like some cake?",es:"¿Quieres pastel?"}]},
     {id:"g-facil-sap-2",micro:"some-any-pregunta-oferta",translation:"¿Quieres un poco de pastel?",type:"error",wrong:"Would you like any cake?",wrongWord:"any",right:"Would you like some cake?",rightWord:"some",explain:"Cuando ofreces algo usamos “some”, no “any”.",examples:[{en:"Would you like some cake?",es:"¿Quieres un poco de pastel?"},{en:"Would you like some rice?",es:"¿Quieres arroz?"}]},
-    {id:"g-facil-sap-3",micro:"some-any-pregunta-oferta",translation:"¿Queda sopa en la olla?",type:"fill",sentence:["Is","there","___","soup","left","in","the","pot","?"],blankIndex:2,bank:["any","some","many"],correct:"any",explain:"En una pregunta normal, sin ofrecer nada, usamos “any”.",examples:[{en:"Is there any soup?",es:"¿Hay sopa?"},{en:"Is there any bread?",es:"¿Hay pan?"}]}
+    {id:"g-facil-sap-3",micro:"some-any-pregunta-oferta",translation:"No queda sopa en la olla.",type:"fill",sentence:["There","isn't","___","soup","left","in","the","pot","."],blankIndex:2,bank:["any","some","many"],correct:"any",explain:"En una frase negativa usamos “any”: “isn't any soup”. “Some” no va aquí y “many” no se usa con “soup”, que es incontable.",examples:[{en:"There isn't any bread.",es:"No hay pan."},{en:"There isn't any rice left.",es:"No queda arroz."}]}
   ]
 });
 
