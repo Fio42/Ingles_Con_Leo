@@ -106,7 +106,7 @@
 "E105","HTML","examenes.html","TOEFL Reading, Listening, Speaking y Writing.","","toefl.html","toefl.html","solo_miembros","solo_miembros","1","escaner",""
 "E106","HTML","examenes.html","TOEIC El examen que más piden las empresas: Listening, Reading, Speaki","","toeic.html","toeic.html","solo_miembros","solo_miembros","1","escaner",""
 "E107","HTML","GLOSARIO (bloque solo para miembros)","(enlaces de lectura a articulo)","","articulo-*.html","articulo-*.html","todos","verificado","1","escaner","Todos los destinos y anclas existen (comprobado)"
-"E108","HTML","GLOSARIO (bloque solo para miembros)","Practicar este tema →","(uno por pagina)","plan-estudio.html?foco=<familia>&tema=<tema>&empezar=1","plan-estudio.html?foco=<familia>&tema=<tema>&empezar=1","solo_miembros","solo_miembros","39","escaner",""
+"E108","HTML","GLOSARIO (bloque solo para miembros)","Practicar este tema →","(uno por pagina)","plan-estudio.html?foco=<familia>&tema=<tema>&empezar=1","plan-estudio.html?foco=<familia>&tema=<tema>&empezar=1","solo_miembros","solo_miembros","42","escaner",""
 "E109","HTML","GLOSARIO (fichas, 353 paginas)","(enlaces de lectura a articulo)","","articulo-*.html","articulo-*.html","todos","verificado","46","escaner","Todos los destinos y anclas existen (comprobado)"
 "E110","HTML","GLOSARIO (fichas, 353 paginas)","(enlaces de lectura a glosario)","","glosario/*/","glosario/*/","todos","verificado","353","escaner","Todos los destinos y anclas existen (comprobado)"
 "E111","HTML","GLOSARIO (fichas, 353 paginas)","Practicar gratis →","","practica.html?skill=grammar","practica.html?skill=grammar","todos","general_intencional","84","escaner","el texto no promete un tema"

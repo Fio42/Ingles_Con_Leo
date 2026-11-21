@@ -82,9 +82,9 @@ const temaRows = T.TEMAS.map(t => {
     estadoMiembros = 'verificado';
     if(memberLevels.length < LEVELS.length) practicaMiembros += '  [niveles sin ejercicios: usa el nivel mas cercano y avisa]';
   }
-  // Gramatica con ejercicios gratis: practica.html?skill=grammar&tema=<id> existe (app.js: focusTema, freeLevelForTema; lo exigen piloto-conexiones y refuerzo-exacto).
-  // Vocabulario y listening todavia no tienen ruta gratis por tema.
-  const estadoGratis = freeN ? (gram ? 'verificado' : 'recurso_sin_conectar') : (memberN ? 'solo_miembros' : 'por_construir');
+  // Con ejercicios gratis, practica.html?skill=grammar|vocabulary|listening&tema=<id> existe (app.js: focusTema, freeTemaItems, freeLevelForTema; lo exigen piloto-conexiones y refuerzo-exacto).
+  const urlSkill = gram ? 'grammar' : t.skill;
+  const estadoGratis = freeN ? 'verificado' : (memberN ? 'solo_miembros' : 'por_construir');
   const falta = [];
   if(!t.article && !t.glossary) falta.push('explicacion (ni clase ni ficha)');
   if(!allN) falta.push('ejercicios');
@@ -97,7 +97,7 @@ const temaRows = T.TEMAS.map(t => {
     ejercicios_gratis: fmt(s.free), ejercicios_solo_miembros: fmt(s.member), niveles_miembro: memberLevels.join(' ') || '-',
     tarjeta_inicio: temaHasCard(t) ? 'si' : 'no',
     practica_miembros: practicaMiembros, estado_miembros: estadoMiembros,
-    practica_gratis: freeN ? (gram ? 'practica.html?skill=grammar&tema=' + t.id + '  [avisa si el tema esta en otro nivel]' : 'practica.html?skill=... (vocabulario y listening: sin ruta por tema todavia)') : '(sin ejercicios gratis)', estado_gratis: estadoGratis,
+    practica_gratis: freeN ? 'practica.html?skill=' + urlSkill + '&tema=' + t.id + '  [avisa si el tema esta en otro nivel]' : '(sin ejercicios gratis)', estado_gratis: estadoGratis,
     falta: falta.join('; ')
   };
 });
@@ -186,10 +186,10 @@ function addLink(originName, file, text, href, memberOnlyBlock){
   }
   else if(promiseTema && type === 'practica' && !temaId){ estado = 'enlace_incorrecto'; nota = 'promete un tema y abre la practica general'; }
   else if(type === 'practica' && temaId){
-    // practica.html?skill=grammar&tema=<id>: practica gratis de ESE tema. Solo vale si el tema existe y tiene ejercicios gratis (si no, el aviso diria que no hay).
+    // practica.html?skill=grammar|vocabulary|listening&tema=<id>: practica gratis de ESE tema. Solo vale si el tema existe y tiene ejercicios gratis (si no, el aviso diria que no hay).
     const tt = T.TEMA_BY_ID[temaId], st = stats[temaId];
     if(!tt){ estado = 'enlace_incorrecto'; nota = 'el tema ' + temaId + ' no existe en temas.js'; }
-    else if(tt.skill === 'vocabulary' || tt.skill === 'listening' || q.get('skill') !== 'grammar'){ estado = 'enlace_incorrecto'; nota = 'la practica gratis por tema solo existe en gramatica'; }
+    else if(q.get('skill') !== (tt.skill === 'vocabulary' || tt.skill === 'listening' ? tt.skill : 'grammar')){ estado = 'enlace_incorrecto'; nota = 'el tema ' + temaId + ' no pertenece a la practica ' + q.get('skill'); }
     else if(!st || !sum(st.free)){ estado = 'enlace_incorrecto'; nota = 'el tema ' + temaId + ' no tiene ejercicios gratis'; }
     else nota = 'abre la practica gratis de ese tema';
   }

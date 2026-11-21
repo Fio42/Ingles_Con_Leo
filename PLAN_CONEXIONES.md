@@ -14,7 +14,7 @@ Lo mejor que ya existe y conviene reutilizar, no reescribir:
 - El registro `temas.js` con sus pruebas (`temas.test.js`, `conexion-recursos.test.js`).
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 10. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
 - Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
@@ -64,7 +64,7 @@ Lista actualizada automáticamente:
 <!-- GENERADO:faltantes -->
 - Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
-- Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (4): `question-tags`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`
+- Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (0): 
 - Solo con ejercicios de Miembros, nada gratis (13): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `there-is-are`
 - Con curso en el codigo pero cerrado: ninguno
 <!-- /GENERADO:faltantes -->

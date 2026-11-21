@@ -24,8 +24,8 @@ const idsOf = (temaId, n) => { const out = []; T.LEVELS.forEach(l => (T.GRAMMAR_
 const wrong = ids => ids.map(itemId => ({ itemId, isCorrect: false }));
 const free = id => T.freeReinforceHtml(wrong(idsOf(id, 2)));
 const member = id => T.sessionReinforceHtml(JSON.parse(JSON.stringify(T.sessionReinforceRows(wrong(idsOf(id, 2)), { actions: [] }, new Set()))));
-// Todos los temas de gramatica ya tienen explicacion: para probar la regla "sin nada exacto, la fila no sale" se les quita la ficha un momento.
-const sinFicha = (ids, fn) => { const prev = {}; ids.forEach(id => { prev[id] = vm.runInContext("TEMA_BY_ID['" + id + "'].glossary", ctx); vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = null", ctx); }); try { fn(); } finally { ids.forEach(id => { vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = " + JSON.stringify(prev[id]), ctx); }); } };
+// Todos los temas de gramatica ya tienen explicacion y familia: para probar la regla "sin nada exacto, la fila no sale" se les quita la ficha y la familia un momento.
+const sinFicha = (ids, fn) => { const prev = {}; ids.forEach(id => { prev[id] = [vm.runInContext("TEMA_BY_ID['" + id + "'].glossary", ctx), vm.runInContext("TEMA_BY_ID['" + id + "'].family", ctx)]; vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = null; TEMA_BY_ID['" + id + "'].family = null", ctx); }); try { fn(); } finally { ids.forEach(id => { vm.runInContext("TEMA_BY_ID['" + id + "'].glossary = " + JSON.stringify(prev[id][0]) + "; TEMA_BY_ID['" + id + "'].family = " + JSON.stringify(prev[id][1]), ctx); }); } };
 const practiceLinks = html => (html.match(/<a href="[^"]*" data-rf="practice">/g) || []);
 
 console.log('Error -> refuerzo (visitante y cuenta gratis)');
@@ -44,7 +44,7 @@ test('tema con clase pero sin ejercicios gratis (todo de Miembros): ofrece la ex
   });
 });
 test('tema sin explicacion, sin curso y sin ejercicios gratis (se les quita la ficha): la fila no sale', () => {
-  sinFicha(['hedging', 'inversion-enfasis'], () => ['hedging', 'inversion-enfasis'].forEach(id => assert.strictEqual(free(id), '', id)));
+  sinFicha(['causativos', 'preposiciones-movimiento'], () => ['causativos', 'preposiciones-movimiento'].forEach(id => assert.strictEqual(free(id), '', id)));
 });
 test('ningun enlace de practica del resumen gratis es una pagina general', () => {
   T.TEMAS.filter(t => t.skill !== 'vocabulary' && t.skill !== 'listening').forEach(t => {
@@ -54,9 +54,10 @@ test('ningun enlace de practica del resumen gratis es una pagina general', () =>
 });
 
 console.log('Error -> refuerzo (miembro)');
-test('tema sin familia (question-tags): clase si, pero ningun boton Practicar hacia gramatica.html', () => {
+test('question-tags ya tiene familia: la clase y Practicar abre el Plan enfocado en ESE tema (nunca gramatica.html)', () => {
   const h = member('question-tags');
-  assert(/data-rf="lesson"/.test(h)); assert.strictEqual(practiceLinks(h).length, 0); assert(!/gramatica\.html/.test(h));
+  assert(/data-rf="lesson"/.test(h)); assert.strictEqual(practiceLinks(h).length, 1); assert(/plan-estudio\.html\?foco=preguntas&(amp;)?tema=question-tags/.test(h), h); assert(!/gramatica\.html/.test(h));
+  sinFicha(['question-tags'], () => { const g = member('question-tags'); assert(/data-rf="lesson"/.test(g)); assert.strictEqual(practiceLinks(g).length, 0); assert(!/gramatica\.html/.test(g)); });
 });
 test('tema sin familia, sin clase, ficha ni curso (se les quita la ficha a hedging, inversion-enfasis y subjuntivo-formal): no sale ninguna fila', () => {
   sinFicha(['hedging', 'inversion-enfasis', 'subjuntivo-formal'], () => ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => assert.strictEqual(member(id), '', id)));

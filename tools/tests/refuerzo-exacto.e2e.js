@@ -42,9 +42,9 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   const h2 = hrefs(w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'pasado-continuo', 2)) }));
   ok(h2.some(h => h.kind === 'lesson') && !h2.some(h => h.kind === 'practice'), where + 'pasado-continuo: explicacion y ninguna practica general (' + JSON.stringify(h2) + ')');
   // 3) tema sin refuerzo exacto: no sale el bloque
-  w.run("TEMA_BY_ID['hedging'].glossary = null");
-  const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'hedging', 2)) });
-  ok(!/Para reforzar/.test(h3), where + 'hedging sin ficha: sin refuerzo exacto no se ofrece nada');
+  w.run("TEMA_BY_ID['causativos'].glossary = null");
+  const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'causativos', 2)) });
+  ok(!/Para reforzar/.test(h3), where + 'causativos sin ficha ni practica gratis: sin refuerzo exacto no se ofrece nada');
   // 4) error repetido: el tema con mas errores va primero
   const rep = w.renderFreeSessionSummary({ title: '¡Listo!', score: '0 / 3', topics: ['x'], results: wrong(idsOf(w, 'do-does', 2).concat(idsOf(w, 'verbo-have', 1))) });
   ok(/tema=do-does/.test(rep) && !/tema=verbo-have/.test(rep), where + 'error repetido: do-does (2 errores) desplaza a verbo-have (1)');
@@ -58,8 +58,8 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, 'do-does', 2)), { actions: [] }, new Set())));
   ok(rows.length === 1 && /^plan-estudio\.html\?/.test(rows[0].practiceHref) && /tema=do-does/.test(rows[0].practiceHref), where + 'do-does abre su Plan enfocado en el tema');
   const hq = w.sessionReinforceHtml(JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, 'question-tags', 2)), { actions: [] }, new Set()))));
-  ok(/data-rf="lesson"/.test(hq) && !/data-rf="practice"/.test(hq) && !/gramatica\.html/.test(hq), where + 'question-tags (sin familia): explicacion, sin boton hacia la practica general');
-  ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => w.run("TEMA_BY_ID['" + id + "'].glossary = null"));
+  ok(/data-rf="lesson"/.test(hq) && /plan-estudio\.html\?foco=preguntas/.test(hq) && !/gramatica\.html/.test(hq), where + 'question-tags: explicacion y Plan enfocado en el tema, sin practica general');
+  ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => w.run("TEMA_BY_ID['" + id + "'].glossary = null; TEMA_BY_ID['" + id + "'].family = null"));
   ['hedging', 'inversion-enfasis', 'subjuntivo-formal'].forEach(id => ok(w.sessionReinforceHtml(JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, id, 2)), { actions: [] }, new Set())))) === '', where + id + ': sin refuerzo exacto no sale la fila'));
 }
 // Recorrido nuevo: ejercicio -> error -> explicacion (fichas escritas a partir de los errores de los propios ejercicios)
@@ -73,6 +73,34 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
     const rows = JSON.parse(JSON.stringify(w.sessionReinforceRows(wrong(idsOf(w, tema, 1)), { actions: [] }, new Set())));
     ok(rows.length === 1 && rows[0].lesson && JSON.stringify(rows[0].lesson).indexOf(slug.indexOf('.html') > 0 ? slug : '/glosario/' + slug + '/') !== -1, where + tema + ' -> ' + slug + ' (' + JSON.stringify(rows[0] && rows[0].lesson) + ')');
   });
+});
+/* Enlaces directos por tema (gramatica sin familia antes, vocabulario y listening): se abre la URL real y cada ejercicio mostrado es del tema exacto. */
+function abrir(tier, search){
+  const w = boot(tier);
+  w.history.pushState({}, '', '/practica.html' + search);
+  w.document.body.innerHTML = '<div id="lv"></div><div id="tabs"></div><div id="head"></div><div id="body"></div>';
+  w.run("initFreePractice({ levelsEl: document.getElementById('lv'), tabsEl: document.getElementById('tabs'), headEl: document.getElementById('head'), bodyEl: document.getElementById('body') })");
+  return w;
+}
+const IDS_VOCAB = "(function(t){ var o = {}; Object.keys(VOCAB_BANK).forEach(function(l){ VOCAB_BANK[l].forEach(function(v){ v.forEach(function(it){ if(vocabTemaIdForItem(it.id) === t) o[it.word] = 1; }); }); }); return Object.keys(o); })";
+['guest', 'free'].forEach(tier => {
+  const where = tier + ' (enlace por tema): ';
+  [['vocabulary', 'vocab-numeros', 'vocabTemaIdForItem'], ['listening', 'listening-numeros', 'listeningTemaIdForItem'], ['grammar', 'question-tags', null]].forEach(([skill, tema, fn]) => {
+    const w = abrir(tier, '?skill=' + skill + '&tema=' + tema);
+    const body = w.document.getElementById('body').textContent + w.document.getElementById('head').textContent;
+    const label = w.run("TEMA_BY_ID['" + tema + "'].label");
+    ok(body.indexOf(label) !== -1 || /Practicas solo ejercicios|Todav/.test(body), where + tema + ' muestra el aviso del tema (' + body.slice(0, 120) + ')');
+    ok(/Practicas solo ejercicios de/.test(w.document.body.innerHTML), where + tema + ' abre en modo tema, no en la practica general');
+    // Los ejercicios que el nivel tiene gratis de este tema, y solo esos, son los que se pueden sacar.
+    const lvl = w.run("freeLevelForTema('" + tema + "', getUserLevel ? getUserLevel() : 'facil') || 'facil'");
+    const items = w.run("freeTemaItems('" + lvl + "', '" + tema + "').length");
+    ok(items > 0, where + tema + ' tiene ejercicios gratis en ' + lvl);
+    if(fn) ok(w.run("freeTemaItems('" + lvl + "', '" + tema + "').every(function(it){ return " + fn + "(it.id) === '" + tema + "'; })"), where + tema + ': todos los ejercicios son del tema exacto');
+    else { const all = idsOf(w, tema, 9999); ok(w.run("freeTemaItems('" + lvl + "', '" + tema + "').map(function(it){ return it.id; })").every(id => all.indexOf(id) !== -1), where + tema + ': todos los ejercicios son de gramatica del tema exacto'); }
+  });
+  // Un tema de otra habilidad no se cuela: ?skill=grammar&tema=vocab-numeros ignora el tema.
+  const x = abrir(tier, '?skill=grammar&tema=vocab-numeros');
+  ok(!/Practicas solo ejercicios de/.test(x.document.body.innerHTML), where + 'tema de vocabulario en la pestana de gramatica se ignora');
 });
 if(fails.length){ console.error('FALLA refuerzo-exacto.e2e (' + fails.length + ' de ' + checks + '):\n - ' + fails.join('\n - ')); process.exit(1); }
 console.log('refuerzo-exacto.e2e: ' + checks + ' comprobaciones (visitante, cuenta gratis y miembro, con y sin refuerzo exacto), todas bien');

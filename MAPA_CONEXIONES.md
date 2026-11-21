@@ -28,10 +28,10 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 172 | 74 | 55 |
+| verificado | 172 | 78 | 65 |
 | parcial | 3 | 0 | 0 |
-| enlace_incorrecto | 1 | 4 | 0 |
-| recurso_sin_conectar | 0 | 0 | 10 |
+| enlace_incorrecto | 1 | 0 | 0 |
+| recurso_sin_conectar | 0 | 0 | 0 |
 | por_construir | 0 | 1 | 1 |
 | solo_miembros | 35 | 0 | 13 |
 | general_intencional | 48 | 0 | 0 |
@@ -42,7 +42,7 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 Cifras clave:
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 10. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 13. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
 - Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 84; del mismo tema exacto (mismo nombre de la tarjeta): 65. Sin ningun ejercicio gratis del tema exacto: 30.
 - Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
@@ -226,7 +226,7 @@ flowchart LR
   n_tquestion_tags["Question tags"]:::tema
   n_tquestion_tags --> n_cquestion_tags["clase"]:::ok
   n_tquestion_tags --> n_qquestion_tags["quiz 10 preg."]:::ok
-  n_tquestion_tags -.-> n_pquestion_tags["Miembros: enlace_incorrecto"]:::warn
+  n_tquestion_tags -.-> n_pquestion_tags["Miembros: verificado"]:::ok
   n_tquestion_tags -.-> n_fquestion_tags["Gratis: verificado"]:::warn
   classDef tema fill:#e8edff,stroke:#253ecc,color:#111
   classDef ok fill:#e6f6ea,stroke:#2e7d32,color:#111
@@ -306,20 +306,20 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `gerundios-infinitivos` | gram | si | - | - | 4 | medio:7 | - | verificado | verificado | - |
 | `verbo-have` | gram | si | - | - | 6 | principiante:9 facil:1 | - | verificado | verificado | - |
 | `colocaciones` | gram | - | si | - | - | avanzado:5 | facil:1 | verificado | verificado | - |
-| `question-tags` | gram | si | - | - | 10 | medio:6 | - | enlace_incorrecto | verificado | familia en temas.js |
-| `inversion-enfasis` | gram | - | si | - | - | avanzado:14 | avanzado:5 | enlace_incorrecto | verificado | familia en temas.js |
-| `subjuntivo-formal` | gram | - | si | - | - | avanzado:5 | - | enlace_incorrecto | verificado | familia en temas.js |
-| `hedging` | gram | - | si | - | - | avanzado:8 | avanzado:1 | enlace_incorrecto | verificado | familia en temas.js |
-| `vocab-confusas` | voca | - | - | - | - | facil:8 medio:8 avanzado:12 | principiante:9 facil:10 medio:11 avanzado:10 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `vocab-numeros` | voca | si | - | - | - | principiante:8 facil:6 medio:6 | - | verificado | recurso_sin_conectar | - |
-| `vocab-trabajo` | voca | - | - | - | - | medio:8 avanzado:8 | medio:4 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `vocab-viajes` | voca | - | - | - | - | medio:8 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `vocab-compras` | voca | - | - | - | - | facil:8 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `vocab-vida-diaria` | voca | - | - | - | - | facil:24 | - | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `listening-numeros` | list | si | - | - | - | principiante:9 facil:7 medio:4 avanzado:3 | principiante:3 facil:1 | verificado | recurso_sin_conectar | - |
-| `listening-conversaciones` | list | - | - | - | - | principiante:1 facil:2 medio:2 avanzado:2 | facil:1 medio:1 avanzado:1 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `listening-condicionales` | list | - | - | - | - | facil:1 medio:7 avanzado:7 | medio:2 | verificado | recurso_sin_conectar | explicacion (ni clase ni ficha) |
-| `listening-contraste` | list | - | si | - | - | facil:7 medio:6 avanzado:7 | principiante:1 medio:2 avanzado:2 | verificado | recurso_sin_conectar | - |
+| `question-tags` | gram | si | - | - | 10 | medio:6 | - | verificado | verificado | - |
+| `inversion-enfasis` | gram | - | si | - | - | avanzado:14 | avanzado:5 | verificado | verificado | - |
+| `subjuntivo-formal` | gram | - | si | - | - | avanzado:5 | - | verificado | verificado | - |
+| `hedging` | gram | - | si | - | - | avanzado:8 | avanzado:1 | verificado | verificado | - |
+| `vocab-confusas` | voca | - | - | - | - | facil:8 medio:8 avanzado:12 | principiante:9 facil:10 medio:11 avanzado:10 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `vocab-numeros` | voca | si | - | - | - | principiante:8 facil:6 medio:6 | - | verificado | verificado | - |
+| `vocab-trabajo` | voca | - | - | - | - | medio:8 avanzado:8 | medio:4 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `vocab-viajes` | voca | - | - | - | - | medio:8 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `vocab-compras` | voca | - | - | - | - | facil:8 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `vocab-vida-diaria` | voca | - | - | - | - | facil:24 | - | verificado | verificado | explicacion (ni clase ni ficha) |
+| `listening-numeros` | list | si | - | - | - | principiante:9 facil:7 medio:4 avanzado:3 | principiante:3 facil:1 | verificado | verificado | - |
+| `listening-conversaciones` | list | - | - | - | - | principiante:1 facil:2 medio:2 avanzado:2 | facil:1 medio:1 avanzado:1 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `listening-condicionales` | list | - | - | - | - | facil:1 medio:7 avanzado:7 | medio:2 | verificado | verificado | explicacion (ni clase ni ficha) |
+| `listening-contraste` | list | - | si | - | - | facil:7 medio:6 avanzado:7 | principiante:1 medio:2 avanzado:2 | verificado | verificado | - |
 <!-- /GENERADO:matriz -->
 
 ## 5. Qué hay en cada categoría
@@ -355,7 +355,7 @@ Contenidos que necesitamos construir (generado)
 <!-- GENERADO:faltantes -->
 - Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
-- Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (4): `question-tags`, `inversion-enfasis`, `subjuntivo-formal`, `hedging`
+- Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (0): 
 - Solo con ejercicios de Miembros, nada gratis (13): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `there-is-are`
 - Con curso en el codigo pero cerrado: ninguno
 <!-- /GENERADO:faltantes -->

@@ -4416,10 +4416,25 @@ function freeGrammarItemsOfTema(level, temaId){
   }));
   return out;
 }
+/* Lo mismo para un tema de vocabulario o listening: solo las variantes que no son de miembros y solo las palabras o audios de ESE tema (temas.js).
+   Gramática sigue por freeGrammarItemsOfTema. Tampoco crea ejercicios ni toca límites diarios. */
+function freeTemaItems(level, temaId){
+  const t = (typeof TEMA_BY_ID !== 'undefined') ? TEMA_BY_ID[temaId] : null;
+  if(!t || (t.skill !== 'vocabulary' && t.skill !== 'listening')) return freeGrammarItemsOfTema(level, temaId);
+  const isVocab = t.skill === 'vocabulary';
+  const bank = isVocab ? (typeof VOCAB_BANK === 'undefined' ? null : VOCAB_BANK) : (typeof LISTENING_BANK === 'undefined' ? null : LISTENING_BANK);
+  if(!bank || !bank[level]) return [];
+  const key = isVocab ? 'vocabulario' : 'listening';
+  const blocked = (MEMBERS_ONLY_VARIANT_INDEX[key] && MEMBERS_ONLY_VARIANT_INDEX[key][level]) || [];
+  const idOf = isVocab ? vocabTemaIdForItem : listeningTemaIdForItem;
+  const out = [];
+  bank[level].forEach((variant, vi) => { if(blocked.indexOf(vi) !== -1) return; variant.forEach(it => { if(idOf(it.id) === temaId) out.push(it); }); });
+  return out;
+}
 // Nivel más cercano al pedido (empate: el más fácil) que tiene ejercicios GRATIS de ese tema; null si en ningún nivel.
 function freeLevelForTema(temaId, level){
   const idx = LEVELS.indexOf(level);
-  const found = LEVELS.filter(l => freeGrammarItemsOfTema(l, temaId).length > 0);
+  const found = LEVELS.filter(l => freeTemaItems(l, temaId).length > 0);
   if(!found.length) return null;
   return found.slice().sort((a,b)=> (Math.abs(LEVELS.indexOf(a) - idx) - Math.abs(LEVELS.indexOf(b) - idx)) || (LEVELS.indexOf(a) - LEVELS.indexOf(b)))[0];
 }
@@ -4429,7 +4444,7 @@ function freeTemaNoteHtml(temaId, level, askedLevel, n){
   if(!t) return '';
   const nm = l => (LEVEL_META[l] && LEVEL_META[l].label) || l;
   let msg;
-  if(!n) msg = 'Todavía no hay ejercicios gratis de <b>' + commentEscapeHtml(t.label) + '</b> en el nivel ' + nm(level) + '. Esta es la práctica general de gramática.';
+  if(!n) msg = 'Todavía no hay ejercicios gratis de <b>' + commentEscapeHtml(t.label) + '</b> en el nivel ' + nm(level) + '. Esta es la práctica general de ' + ({ vocabulary: 'vocabulario', listening: 'listening' }[t.skill] || 'gramática') + '.';
   else {
     msg = 'Practicas solo ejercicios de <b>' + commentEscapeHtml(t.label) + '</b>.';
     if(askedLevel && askedLevel !== level) msg += ' No hay ejercicios gratis de este tema en el nivel ' + nm(askedLevel) + ', así que usamos los de ' + nm(level) + '.';
@@ -7080,6 +7095,8 @@ const DIAG_GRAMMAR_FAMILIES = [
   { id:'demostrativos', label:'A/an y this/that', re:/a \/ an|this|these/i },
   { id:'conectores', label:'Conectores', re:/conector|despite|although|secuenciador/i },
   { id:'verbos', label:'Verbos y phrasal verbs', re:/phrasal|gerundio|verbo "have"|colocacion/i, article:'articulo-phrasal-verbs.html' },
+  { id:'preguntas', label:'Question tags', re:/question tags/i, article:'articulo-question-tags-ingles.html' },
+  { id:'formal', label:'Inglés formal y énfasis', re:/inversi|enfátic|enfatizad|subjuntivo|hedging/i },
   { id:'confusiones', label:'Palabras que se confunden', re:/ vs |"to" vs|your|their|actually/i },
 ];
 const DIAG_FAMILY_BY_ID = DIAG_GRAMMAR_FAMILIES.reduce((m,f)=>{ m[f.id] = f; return m; }, {});
@@ -9342,8 +9359,10 @@ function freeReinforceHtml(results){
     const rows = [];
     sessionReinforceRows(results, { actions: [] }, null).forEach(r => {
       // Gramatica con ejercicios gratis de ESE tema: practica.html?skill=grammar&tema=<id>. Cualquier otro caso no ofrece practica (la pagina general no resuelve la duda).
-      const exact = r.skill === 'gramatica' && r.temaId && typeof freeLevelForTema === 'function' && freeLevelForTema(r.temaId, lvl);
-      const row = Object.assign({}, r, exact ? { practiceHref: 'practica.html?skill=grammar&tema=' + encodeURIComponent(r.temaId), practiceKind: 'tema', practiceLabel: 'Practicar este tema' } : { practiceHref: null, practiceKind: 'general' });
+      // Vocabulario y listening: igual, practica.html?skill=vocabulary|listening&tema=<id> si ese tema tiene palabras o audios gratis.
+      const urlSkill = { gramatica: 'grammar', vocabulario: 'vocabulary', listening: 'listening' }[r.skill];
+      const exact = !!urlSkill && r.temaId && typeof freeLevelForTema === 'function' && freeLevelForTema(r.temaId, lvl);
+      const row = Object.assign({}, r, exact ? { practiceHref: 'practica.html?skill=' + urlSkill + '&tema=' + encodeURIComponent(r.temaId), practiceKind: 'tema', practiceLabel: 'Practicar este tema' } : { practiceHref: null, practiceKind: 'general' });
       if(!exact && !row.lesson && !row.course) return;
       rows.push(row);
     });
@@ -9521,11 +9540,15 @@ function runFreeGrammarSession({ container, level, onOtherSkill, temaId, askedLe
 }
 
 /* ---------- Vocabulario gratis: los 8 ítems del nivel ---------- */
-function runFreeVocabSession({ container, level, onOtherSkill }){
+function runFreeVocabSession({ container, level, onOtherSkill, temaId, askedLevel }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('vocabulario');
-  const variantIdx = pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level]);
-  const memV = freeMemoryBoost('vocabulario', level, VOCAB_BANK[level][variantIdx]);
+  // ?tema=vocab-...: solo palabras gratis de ESE tema (mismos bancos y límites). Sin ellas en este nivel: la práctica general y un aviso.
+  const temaItems = temaId ? freeTemaItems(level, temaId) : [];
+  const temaMode = temaItems.length > 0;
+  const temaNote = temaId ? freeTemaNoteHtml(temaId, level, askedLevel, temaItems.length) : '';
+  const memV = temaMode ? { boosted: [], pool: shuffleArray(temaItems).slice(0, FREE_TEMA_SESSION_MAX), note: '' }
+    : freeMemoryBoost('vocabulario', level, VOCAB_BANK[level][pickVariantIndex('vocabulario', level, VOCAB_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.vocabulario[level])]);
   const pool = freeSessionCap(memV.pool);
   const total = pool.length;
   const results = [];
@@ -9538,7 +9561,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = freeMemoryNoteHtml(memV, idx) + sessionHeaderHtml('Vocabulario', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memV, idx) + sessionHeaderHtml('Vocabulario', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9589,7 +9612,7 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
       topics: ['Vocabulario en contexto']
     });
     wireFreeSummaryButtons(container, {
-      onAgain: ()=>runFreeVocabSession({ container, level, onOtherSkill }),
+      onAgain: ()=>runFreeVocabSession({ container, level, onOtherSkill, temaId, askedLevel }),
       onOtherSkill
     });
   }
@@ -9597,11 +9620,15 @@ function runFreeVocabSession({ container, level, onOtherSkill }){
 }
 
 /* ---------- Listening gratis: los 3 MP3 existentes del nivel ---------- */
-function runFreeListeningSession({ container, level, onOtherSkill }){
+function runFreeListeningSession({ container, level, onOtherSkill, temaId, askedLevel }){
   stopActiveAudioFile(); // corta cualquier audio que haya quedado sonando de otra sección/nivel.
   freeSessionBegin('listening');
-  const variantIdx = pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level]);
-  const memL = freeMemoryBoost('listening', level, LISTENING_BANK[level][variantIdx]);
+  // ?tema=listening-...: solo audios gratis de ESE tema. Sin ellos en este nivel: la práctica general y un aviso.
+  const temaItems = temaId ? freeTemaItems(level, temaId) : [];
+  const temaMode = temaItems.length > 0;
+  const temaNote = temaId ? freeTemaNoteHtml(temaId, level, askedLevel, temaItems.length) : '';
+  const memL = temaMode ? { boosted: [], pool: shuffleArray(temaItems).slice(0, FREE_TEMA_SESSION_MAX), note: '' }
+    : freeMemoryBoost('listening', level, LISTENING_BANK[level][pickVariantIndex('listening', level, LISTENING_BANK[level].length, MEMBERS_ONLY_VARIANT_INDEX.listening[level])]);
   const pool = freeSessionCap(memL.pool);
   const total = pool.length;
   const results = [];
@@ -9614,7 +9641,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = freeMemoryNoteHtml(memL, idx) + sessionHeaderHtml('Listening', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memL, idx) + sessionHeaderHtml('Listening', level, idx+1, total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9677,7 +9704,7 @@ function runFreeListeningSession({ container, level, onOtherSkill }){
       topics: ['Comprensión auditiva']
     });
     wireFreeSummaryButtons(container, {
-      onAgain: ()=>runFreeListeningSession({ container, level, onOtherSkill }),
+      onAgain: ()=>runFreeListeningSession({ container, level, onOtherSkill, temaId, askedLevel }),
       onOtherSkill
     });
   }
@@ -9975,7 +10002,8 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
     const skillParam = params.get('skill');
     if(skillParam && SKILL_URL_TO_KEY[skillParam]) currentSkill = SKILL_URL_TO_KEY[skillParam];
     const temaParam = params.get('tema');
-    if(temaParam && typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[temaParam] && TEMA_BY_ID[temaParam].skill !== 'vocabulary' && TEMA_BY_ID[temaParam].skill !== 'listening' && currentSkill === 'gramatica') focusTema = temaParam;
+    // El tema solo vale en la pestaña de su habilidad: gramática, vocabulario (vocab-...) o listening (listening-...).
+    if(temaParam && typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[temaParam] && (TEMA_SKILL_KEY[TEMA_BY_ID[temaParam].skill] || 'gramatica') === currentSkill && currentSkill !== 'writing') focusTema = temaParam;
     // Con ?tema= y sin ?level=: el nivel más cercano que tenga ejercicios gratis de ese tema (se avisa dentro de la sesión).
     const lvParam = params.get('level');
     if(focusTema && !(lvParam && LEVELS.includes(lvParam))){
@@ -10045,7 +10073,7 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   function renderCurrent(){
     renderHead();
     const run = RUNNERS[currentSkill] || runFreeGrammarSession;
-    run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill, temaId: currentSkill === 'gramatica' ? focusTema : null, askedLevel });
+    run({ container: bodyEl, level: currentLevel, onOtherSkill: tryAnotherSkill, temaId: (focusTema && (TEMA_SKILL_KEY[TEMA_BY_ID[focusTema].skill] || 'gramatica') === currentSkill) ? focusTema : null, askedLevel });
   }
 
   const onPickLevel = (lvl)=>{ currentLevel = lvl; askedLevel = lvl; renderCurrent(); focusTabs(); };

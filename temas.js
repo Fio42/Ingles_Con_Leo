@@ -229,11 +229,11 @@ const TEMAS = [
   { id:'verbo-have', label:'Verbo have', family:'verbos', article:'articulo-have-y-has-en-ingles.html', glossary:null, topics:[`Verbo "have" (tengo / tienes / tiene)`] },
   { id:'colocaciones', label:'Make y do (colocaciones)', family:'verbos', article:null, glossary:'make-vs-do', topics:[`Colocaciones avanzadas (make vs do)`] },
   /* ---- temas que todavia no pertenecen a ninguna familia (no entran al diagnostico) ---- */
-  { id:'question-tags', label:'Question tags', family:null, article:'articulo-question-tags-ingles.html', glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
-  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:null, article:null, glossary:'inversion-enfatica',
+  { id:'question-tags', label:'Question tags', family:'preguntas', article:'articulo-question-tags-ingles.html', glossary:null, topics:[`Question tags (¿verdad? / ¿no es así?)`] },
+  { id:'inversion-enfasis', label:'Inversión y oraciones enfáticas', family:'formal', article:null, glossary:'inversion-enfatica',
     topics:[`Inversiones enfáticas`, `Inversión, would rather y it's high time`, `Oraciones enfáticas con "It is... that" (cleft sentences)`] },
-  { id:'subjuntivo-formal', label:'Subjuntivo formal', family:null, article:null, glossary:'formal-subjunctive', topics:[`Subjuntivo formal (It is essential that...)`] },
-  { id:'hedging', label:'Enfatizadores y hedging', family:null, article:null, glossary:'hedging-arguably-tend-to', topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },
+  { id:'subjuntivo-formal', label:'Subjuntivo formal', family:'formal', article:null, glossary:'formal-subjunctive', topics:[`Subjuntivo formal (It is essential that...)`] },
+  { id:'hedging', label:'Enfatizadores y hedging', family:'formal', article:null, glossary:'hedging-arguably-tend-to', topics:[`Enfatizadores y hedging (arguably, tend to, likely)`] },
 
   /* ---- VOCABULARIO (skill:'vocabulary') ----
      VOCAB_BANK no trae etiquetas por palabra, pero cada grupo de palabras tiene un

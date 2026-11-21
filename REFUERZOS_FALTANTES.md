@@ -4,7 +4,7 @@ Generado por `node tools/conexiones/faltantes.js --write`. No editar a mano.
 
 Cuando un alumno se equivoca, el sitio solo le recomienda recursos que existen y que resuelven ese tema: la clase o ficha del tema, su practica propia y su curso publicado. Si falta el recurso exacto, esa recomendacion se omite (no se manda a una pagina general). Esta lista dice que habria que crear para que ese error tenga refuerzo.
 
-Alcance: solo gramatica. Vocabulario y listening tienen su propia seccion de practica y se explican con fichas del glosario por pareja de palabras (ver `INVENTARIO_TEMAS.csv`).
+Secciones 1 a 3 y 5: gramatica. La seccion 4 cubre vocabulario y listening (ver `INVENTARIO_TEMAS.csv`).
 
 ## 1. Falta una explicacion (ni clase ni ficha del glosario)
 
@@ -41,27 +41,24 @@ A visitantes y cuentas gratis el resumen les ofrece la explicacion, pero no "Pra
 
 Estos temas tienen ejercicios, pero no pertenecen a ninguna familia del diagnostico, asi que el Plan no puede abrir una practica solo de ese tema y el resumen no ofrece "Practicar". Recurso a crear: asignar una familia en `temas.js` (toca el diagnostico: se prueba aparte).
 
-| Tema | Ejercicios | Ejemplo de un ejercicio |
-|---|---|---|
-| `question-tags` | 6 | `You like coffee, doesn't you?` (opcion equivocada) / `You like coffee, don't you?` (correcta) |
-| `inversion-enfasis` | 19 | `No sooner did she arrived than it started raining.` (opcion equivocada) / `No sooner had she arrived than it started raining.` (correcta) |
-| `subjuntivo-formal` | 5 | `It is essential that she is present at the meeting.` (opcion equivocada) / `It is essential that she be present at the meeting.` (correcta) |
-| `hedging` | 9 | `This is argue the best decision the company has ever made.` (opcion equivocada) / `This is arguably the best decision the company has ever made.` (correcta) |
+Ninguno: question-tags (familia `preguntas`) e inversion-enfasis, subjuntivo-formal y hedging (familia `formal`) ya tienen familia, asi que el Plan y el resumen abren su practica exacta.
 
-## 4. Vocabulario y listening: ejercicios gratis sin ruta por tema
+## 4. Vocabulario y listening: practica gratis por tema
 
-La practica gratis por tema (`practica.html?skill=grammar&tema=<id>`) solo existe en gramatica. Estos temas tienen ejercicios gratis, pero el resumen de errores no puede abrir una practica solo de ese tema: ofrece su explicacion (ficha por pareja de palabras) y no un boton de practica. Recurso a crear: la misma ruta `?skill=vocabulary&tema=<id>` y `?skill=listening&tema=<id>` en `initFreePractice` (app.js).
+Hecho: `practica.html?skill=vocabulary&tema=<id>` y `practica.html?skill=listening&tema=<id>` abren solo las palabras o audios gratis de ESE tema (mismos bancos, mismos limites; si el nivel pedido no tiene, usa el mas cercano y lo avisa). El resumen de errores ofrece "Practicar este tema" con esa ruta.
 
-- `vocab-confusas` (vocabulary): 28 ejercicios gratis
-- `vocab-numeros` (vocabulary): 20 ejercicios gratis
-- `vocab-trabajo` (vocabulary): 16 ejercicios gratis
-- `vocab-viajes` (vocabulary): 8 ejercicios gratis
-- `vocab-compras` (vocabulary): 8 ejercicios gratis
-- `vocab-vida-diaria` (vocabulary): 24 ejercicios gratis
-- `listening-numeros` (listening): 23 ejercicios gratis
-- `listening-conversaciones` (listening): 7 ejercicios gratis
-- `listening-condicionales` (listening): 15 ejercicios gratis
-- `listening-contraste` (listening): 20 ejercicios gratis
+- `vocab-confusas` (vocabulary): 28 ejercicios gratis, ruta activa
+- `vocab-numeros` (vocabulary): 20 ejercicios gratis, ruta activa
+- `vocab-trabajo` (vocabulary): 16 ejercicios gratis, ruta activa
+- `vocab-viajes` (vocabulary): 8 ejercicios gratis, ruta activa
+- `vocab-compras` (vocabulary): 8 ejercicios gratis, ruta activa
+- `vocab-vida-diaria` (vocabulary): 24 ejercicios gratis, ruta activa
+- `listening-numeros` (listening): 23 ejercicios gratis, ruta activa
+- `listening-conversaciones` (listening): 7 ejercicios gratis, ruta activa
+- `listening-condicionales` (listening): 15 ejercicios gratis, ruta activa
+- `listening-contraste` (listening): 20 ejercicios gratis, ruta activa
+
+Ninguno queda sin ejercicios gratis: los 10 temas tienen ruta.
 
 ## 5. Sin ejercicios en ningun nivel
 
