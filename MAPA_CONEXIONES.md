@@ -28,15 +28,15 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 115 | 74 | 0 |
+| verificado | 117 | 74 | 0 |
 | parcial | 3 | 0 | 0 |
 | enlace_incorrecto | 1 | 4 | 0 |
 | recurso_sin_conectar | 0 | 0 | 65 |
 | por_construir | 0 | 1 | 1 |
 | solo_miembros | 35 | 0 | 13 |
-| general_intencional | 51 | 0 | 0 |
+| general_intencional | 55 | 0 | 0 |
 
-79 temas en temas.js. 205 filas de enlaces: 185 agrupadas desde 442 paginas HTML y 20 destinos dinamicos o redirecciones curados.
+79 temas en temas.js. 211 filas de enlaces: 191 agrupadas desde 446 paginas HTML y 20 destinos dinamicos o redirecciones curados.
 <!-- /GENERADO:resumen -->
 
 Cifras clave:
