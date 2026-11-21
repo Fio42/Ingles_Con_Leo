@@ -4167,3 +4167,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Escaner: reconoce las tres rutas (grammar, vocabulary, listening); REFUERZOS_FALTANTES.md: seccion 3 sin pendientes, seccion 4 lista los 10 temas con ruta activa y deja anotado cualquier tema sin ejercicios gratis (hoy ninguno). Los accesos de visitante, cuenta gratis y miembro no cambian.
 - Pruebas: refuerzo-exacto (test y e2e de 94 comprobaciones con tres enlaces reales: vocab-numeros, listening-numeros y question-tags, como visitante y cuenta gratis).
 - Version ?v=20261121b para app.js y ?v=20261121d para temas.js.
+
+2026-11-21 (7) Dos parejas de frases repetidas corregidas (data-quality)
+- g-facil-sap-3 (Some / Any, facil): la frase repetia a g-facil9-someany-2 ("Is there ___ milk in the fridge?"). Ahora es "Is there ___ soup left in the pot?" (¿Queda sopa en la olla?). Misma respuesta unica: any; se cambio tambien el primer ejemplo.
+- g-facil-alo-3 (A lot of, facil): el enunciado "Which sentence is correct?" era identico al de g-facil-freqpos-1. Ahora "Choose the correct sentence about people." Las tres opciones y la respuesta (a lot of + are) no cambian.
+- ID, nivel y objetivo se conservan. data-quality pasa completa; refuerzo-exacto, micros, temas y e2e siguen bien. Version data.js ?v=20261121d.
