@@ -1482,17 +1482,62 @@ function saveLastVariantMap(map){
   try{ LS_P.setItem(LAST_VARIANT_KEY, JSON.stringify(map)); }
   catch(e){ /* localStorage no disponible: simplemente no recordamos la última variante */ }
 }
-/* Indice exacto (dentro de cada BANK[skill][level]) de la variante que se
-   agrego pensada solo para Miembros (ver DEVLOG). Se guarda por indice fijo,
-   no por posicion relativa, para que agregar mas contenido despues (para
-   todos o solo miembros) nunca desordene cual variante sigue bloqueada. */
-const MEMBERS_ONLY_VARIANT_INDEX = {
-  gramatica:   { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
-  vocabulario: { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
-  listening:   { principiante:[5,7,8,9], facil:[10,12,13,14], medio:[7,9,10,11], avanzado:[7,9,10,11] },
-  writing:     { principiante:[2,4,5,6], facil:[6,8,9,10], medio:[6,8,9,10], avanzado:[6,8,9,10] },
-  speaking:    { principiante:[5,7,8], facil:[6,8,9], medio:[6,8,9], avanzado:[6,8,9] }
+/* ACCESS-START */
+/* Que variantes (bloques de ejercicios) son EXCLUSIVAS de Miembros.
+   Se decide por la IDENTIFICACION de los ejercicios, nunca por la posicion de la variante en data.js:
+   agregar, mover o reordenar bloques en data.js no puede cambiar que contenido es gratis.
+   1) Lotes exclusivos: toda variante con ejercicios cuyo id lleva el marcador de un lote de esta lista
+      (-m100-, -m300-) es solo de Miembros. Para un lote nuevo exclusivo, agrega su marcador aqui.
+   2) Variantes exclusivas anteriores a los lotes: se reconocen por el id de su primer ejercicio.
+   Los lotes m200, m400, numeros y el resto de ids son gratis. MEMBERS_ONLY_VARIANT_INDEX conserva la forma de siempre
+   ({ habilidad: { nivel: [indices] } }), pero ahora se calcula a partir de data.js cada vez que se usa, asi que siempre coincide con el data.js cargado. tools/tests/acceso-ejercicios.test.js
+   protege todo esto. Las herramientas de tools/ leen este bloque entre ACCESS-START y ACCESS-END. */
+const MEMBERS_ONLY_BATCHES = ['m100', 'm300'];
+const MEMBERS_ONLY_MARKER = new RegExp('-(' + MEMBERS_ONLY_BATCHES.join('|') + ')-');
+const MEMBERS_ONLY_LEGACY_VARIANT_IDS = {
+  gramatica:   { principiante:['g-principiante3-days-1','g-principiante6-1','g-principiante5-thisthese-1'], facil:['g-facil7-ed-1','g-facil10-1','g-facil9-someany-1'], medio:['g-medio7-modal-1','g-medio10-1','g-medio9-actcurr-1'], avanzado:['g-avanzado7-edng-1','g-avanzado10-1','g-avanzado9-whowhom-1'] },
+  vocabulario: { principiante:['v-principiante3-1','v-principiante6-1','v-principiante5-1'], facil:['v-facil7-1','v-facil10-1','v-facil9-1'], medio:['v-medio7-1','v-medio10-1','v-medio9-1'], avanzado:['v-avanzado7-1','v-avanzado10-1','v-avanzado9-1'] },
+  listening:   { principiante:['l-principiante6-1','l-principiante9-1','l-principiante8-1'], facil:['l-facil11-1','l-facil14-1','l-facil13-1'], medio:['l-medio8-1','l-medio11-1','l-medio10-1'], avanzado:['l-avanzado8-1','l-avanzado11-1','l-avanzado10-1'] },
+  writing:     { principiante:['w-principiante3-1','w-principiante6-1','w-principiante5-1'], facil:['w-facil7-1','w-facil10-1','w-facil9-1'], medio:['w-medio7-1','w-medio10-1','w-medio9-1'], avanzado:['w-avanzado7-1','w-avanzado10-1','w-avanzado9-1'] },
+  speaking:    { principiante:['s-principiante6-1','s-principiante8-1'], facil:['s-facil8-1','s-facil10-1'], medio:['s-medio8-1','s-medio10-1'], avanzado:['s-avanzado7-1','s-avanzado9-1'] }
 };
+/* ids de los ejercicios de una variante (gramatica: lista de temas con items; las demas: lista de ejercicios) */
+function variantExerciseIds(variant){
+  const out = [];
+  (variant || []).forEach(x => { if(x && x.items) x.items.forEach(i => out.push(i.id)); else if(x) out.push(x.id); });
+  return out;
+}
+function isMembersOnlyVariant(skill, level, variant){
+  const ids = variantExerciseIds(variant);
+  if(!ids.length) return false;
+  if(ids.some(id => MEMBERS_ONLY_MARKER.test(String(id)))) return true;
+  const legacy = (MEMBERS_ONLY_LEGACY_VARIANT_IDS[skill] || {})[level] || [];
+  return legacy.indexOf(ids[0]) !== -1;
+}
+const MEMBERS_ONLY_VARIANT_INDEX = (function(){
+  const BANKS = {
+    gramatica:   () => (typeof GRAMMAR_BANK   === 'undefined' ? null : GRAMMAR_BANK),
+    vocabulario: () => (typeof VOCAB_BANK     === 'undefined' ? null : VOCAB_BANK),
+    listening:   () => (typeof LISTENING_BANK === 'undefined' ? null : LISTENING_BANK),
+    writing:     () => (typeof WRITING_BANK   === 'undefined' ? null : WRITING_BANK),
+    speaking:    () => (typeof SPEAKING_BANK  === 'undefined' ? null : SPEAKING_BANK)
+  };
+  function bankOf(skill){ try{ return BANKS[skill](); }catch(e){ return null; } }
+  function forSkill(skill){
+    const bank = bankOf(skill), out = {};
+    if(!bank) return out;
+    Object.keys(bank).forEach(level => {
+      const idx = [];
+      bank[level].forEach((variant, vi) => { if(isMembersOnlyVariant(skill, level, variant)) idx.push(vi); });
+      out[level] = idx;
+    });
+    return out;
+  }
+  const o = {};
+  Object.keys(BANKS).forEach(skill => { Object.defineProperty(o, skill, { enumerable: true, get(){ return forSkill(skill); } }); });
+  return o;
+})();
+/* ACCESS-END */
 function pickVariantIndex(skill, level, variantCount, excludeIndex){
   if(!variantCount || variantCount <= 1) return 0;
   const map = getLastVariantMap();

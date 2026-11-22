@@ -118,15 +118,18 @@ ok(!!m, 'index.html: existe el boton de la tarjeta');
 if(m){ const tm = /[?&]tema=([\w-]+)/.exec(m[1]); ok(!!tm && A.LEVELS.some(l => A.freeGrammarItemsOfTema(l, tm[1]).length > 0) && /Practicar este tema/.test(m[2]), 'index.html: el boton por defecto promete un tema y ese tema tiene practica gratis'); }
 
 // Practica gratis: reutiliza el mismo criterio de "gratis" (variantes no reservadas + muestra fija) y no abre nada de miembros
-['by-until', 'presente-simple', 'question-tags', 'your-vs-youre', 'cuantificadores'].forEach(id => A.LEVELS.forEach(l => {
+['by-until', 'presente-simple', 'your-vs-youre', 'cuantificadores'].forEach(id => A.LEVELS.forEach(l => {
   const items = A.freeGrammarItemsOfTema(l, id), w = 'gratis ' + id + '/' + l + ': ';
   const permitidos = new Set(); A.GRAMMAR_BANK[l].forEach((v, vi) => v.forEach(g => g.items.forEach(it => { if(blockedOf(l).indexOf(vi) === -1 || (A.FREE_SAMPLE_IDS[l] || []).indexOf(it.id) !== -1) permitidos.add(it.id); })));
   items.forEach(it => ok(permitidos.has(it.id), w + it.id + ' es gratis de verdad (no es de variante reservada a miembros)'));
   ok(items.length === 0 || /Practicas solo ejercicios/.test(A.freeTemaNoteHtml(id, l, l, items.length)), w + 'el aviso dice que solo son de ese tema');
   ok(items.length > 0 || /Todav[ií]a no hay ejercicios gratis/.test(A.freeTemaNoteHtml(id, l, l, 0)), w + 'sin ejercicios gratis lo dice y no los inventa');
 }));
-ok(A.freeLevelForTema('question-tags', 'facil') === 'medio', 'question-tags: pedido en Facil, el nivel gratis mas cercano es Medio');
-ok(/No hay ejercicios gratis de este tema en el nivel F/.test(A.freeTemaNoteHtml('question-tags', 'medio', 'facil', 5)), 'question-tags: avisa del cambio de nivel');
+// question-tags, verbo-have y verbos-irregulares solo tenian ejercicios gratis en el lote miembros100, que ahora es exclusivo de Miembros
+A.LEVELS.forEach(l => ['question-tags', 'verbo-have', 'verbos-irregulares'].forEach(id => ok(A.freeGrammarItemsOfTema(l, id).length === 0, id + '/' + l + ': ya no tiene ejercicios gratis (lote exclusivo de Miembros)')));
+ok(A.freeLevelForTema('question-tags', 'facil') === null, 'question-tags: sin ejercicios gratis en ningun nivel');
+ok(/Todav[ií]a no hay ejercicios gratis/.test(A.freeTemaNoteHtml('question-tags', 'facil', 'facil', 0)), 'question-tags: lo dice y no inventa ejercicios');
+ok(A.freeLevelForTema('by-until', 'facil') !== null, 'by-until: sigue con ejercicios gratis');
 ok(A.freeLevelForTema('your-vs-youre', 'facil') === null, 'your-vs-youre: no hay ejercicios gratis en ningun nivel');
 
 // Limite diario: la sesion de un tema pasa por el mismo recorte que la practica de siempre

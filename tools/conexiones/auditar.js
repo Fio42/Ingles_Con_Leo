@@ -27,7 +27,7 @@ vm.runInContext(read('temas.js') + '\n;this.__T = { TEMAS, TEMA_BY_ID, temaForTo
 const D = ctx.__D, T = ctx.__T;
 const appSrc = read('app.js');
 const literal = (src, name) => { const m = src.match(new RegExp('const ' + name + ' = (\\{[\\s\\S]*?\\n\\});')); if(!m) throw new Error('No encuentro ' + name); return vm.runInNewContext('(' + m[1] + ')'); };
-const MO = literal(appSrc, 'MEMBERS_ONLY_VARIANT_INDEX');
+const MO = require('../lib/acceso').membersOnlyIndex(root);
 const SAMPLE = literal(appSrc, 'FREE_SAMPLE_IDS');
 const LABELS = literal(read('tools/generar_mini_lecciones.js'), 'LABELS');
 const MINI = vm.runInNewContext(read('mini-lecciones.js') + ';MINI_LESSONS');

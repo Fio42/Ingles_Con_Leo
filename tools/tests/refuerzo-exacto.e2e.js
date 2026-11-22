@@ -46,8 +46,8 @@ const hrefs = html => (html.match(/href="[^"]*"[^>]*data-rf="(practice|lesson|co
   const h3 = w.renderFreeSessionSummary({ title: '¡Listo!', score: '1 / 3', topics: ['x'], results: wrong(idsOf(w, 'causativos', 2)) });
   ok(!/Para reforzar/.test(h3), where + 'causativos sin ficha ni practica gratis: sin refuerzo exacto no se ofrece nada');
   // 4) error repetido: el tema con mas errores va primero
-  const rep = w.renderFreeSessionSummary({ title: '¡Listo!', score: '0 / 3', topics: ['x'], results: wrong(idsOf(w, 'do-does', 2).concat(idsOf(w, 'verbo-have', 1))) });
-  ok(/tema=do-does/.test(rep) && !/tema=verbo-have/.test(rep), where + 'error repetido: do-does (2 errores) desplaza a verbo-have (1)');
+  const rep = w.renderFreeSessionSummary({ title: '¡Listo!', score: '0 / 3', topics: ['x'], results: wrong(idsOf(w, 'do-does', 2).concat(idsOf(w, 'in-on-at', 1))) });
+  ok(/tema=do-does/.test(rep) && !/tema=in-on-at/.test(rep), where + 'error repetido: do-does (2 errores) desplaza a in-on-at (1)');
   // 5) nada apunta a una pagina de miembros ni a la practica general
   [html, rep].forEach(h => hrefs(h).filter(x => x.kind === 'practice').forEach(x => ok(/^practica\.html\?skill=grammar&tema=/.test(x.href), where + 'enlace de practica no es general: ' + x.href)));
   ok(!/href="miembros\.html/.test(html), where + 'sin invitacion a pagar fuera del limite');
@@ -85,7 +85,7 @@ function abrir(tier, search){
 const IDS_VOCAB = "(function(t){ var o = {}; Object.keys(VOCAB_BANK).forEach(function(l){ VOCAB_BANK[l].forEach(function(v){ v.forEach(function(it){ if(vocabTemaIdForItem(it.id) === t) o[it.word] = 1; }); }); }); return Object.keys(o); })";
 ['guest', 'free'].forEach(tier => {
   const where = tier + ' (enlace por tema): ';
-  [['vocabulary', 'vocab-numeros', 'vocabTemaIdForItem'], ['listening', 'listening-numeros', 'listeningTemaIdForItem'], ['grammar', 'question-tags', null]].forEach(([skill, tema, fn]) => {
+  [['vocabulary', 'vocab-numeros', 'vocabTemaIdForItem'], ['listening', 'listening-numeros', 'listeningTemaIdForItem'], ['grammar', 'do-does', null]].forEach(([skill, tema, fn]) => {
     const w = abrir(tier, '?skill=' + skill + '&tema=' + tema);
     const body = w.document.getElementById('body').textContent + w.document.getElementById('head').textContent;
     const label = w.run("TEMA_BY_ID['" + tema + "'].label");

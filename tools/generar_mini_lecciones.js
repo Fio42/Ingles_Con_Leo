@@ -21,7 +21,7 @@ vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8') + '\n;this.
 // tools/tests/piloto-conexiones.test.js comprueba que esta copia y la de app.js digan lo mismo.
 const appSrc = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const literal = name => { const m = appSrc.match(new RegExp('const ' + name + ' = (\\{[\\s\\S]*?\\n\\});')); if(!m) throw new Error('No encuentro ' + name + ' en app.js'); return vm.runInNewContext('(' + m[1] + ')'); };
-const MO = literal('MEMBERS_ONLY_VARIANT_INDEX').gramatica, SAMPLE = literal('FREE_SAMPLE_IDS');
+const MO = require('./lib/acceso').membersOnlyIndex(root).gramatica, SAMPLE = literal('FREE_SAMPLE_IDS');
 const freeTemas = new Set();
 Object.keys(ctx.GB).forEach(l => ctx.GB[l].forEach((variant, vi) => variant.forEach(tg => { const id = ctx.temaOf(tg.topic); if(!id) return; const blocked = (MO[l] || []).indexOf(vi) !== -1; if(tg.items.some(it => !blocked || (SAMPLE[l] || []).indexOf(it.id) !== -1)) freeTemas.add(id); })));
 
