@@ -2391,13 +2391,13 @@ function shuffleOptions(options, correctIndex){
 }
 
 /* Pista corta ANTES de responder en ejercicios de escritura abierta.
-   Reutiliza item.hint; se omite si el enunciado ya trae esa misma estructura. */
+   Reutiliza item.hint, que dice que va en cada hueco de la plantilla (y suele traer un ejemplo).
+   Antes se omitia cuando el enunciado ya traia la misma estructura; asi el alumno solo veia
+   "___ is ___ than ___" sin saber que escribir. Ahora SIEMPRE se muestra: la pista es la
+   explicacion, no una repeticion de la plantilla (lo comprueba tools/tests/writing-consignas.test.js). */
 function writingPreHintHtml(item){
   var h = String((item && item.hint) || '').trim();
   if(!h) return '';
-  var norm = function(t){ return String(t).toLowerCase().replace(/[“”"'‘’.,;:!?_…]/g,'').replace(/\s+/g,' ').trim(); };
-  var quoted = h.match(/[“"]([^”"]+)[”"]/);
-  if(/^Estructura esperada/i.test(h) && quoted && norm(item.prompt).indexOf(norm(quoted[1])) !== -1) return '';
   h = h.replace(/^Estructura esperada:\s*/i,''); h = h.charAt(0).toUpperCase() + h.slice(1);
   return '<div class="writing-pre-hint"><b>Pista:</b> ' + h + '</div>';
 }
@@ -2924,6 +2924,12 @@ function evaluateWritingAnswer(text, item){
   let patternOk = false;
   try{ patternOk = new RegExp(item.checkPattern, 'i').test(clean); }catch(e){ patternOk = false; }
   if(!patternOk) return { isOk:false, hint:item.hint };
+  // Error que el patron no ve: respuestas que la consigna acepta en forma pero estan mal (concordancia, "more stronger").
+  if(item.rejectPattern){
+    let rejected = false;
+    try{ rejected = new RegExp(item.rejectPattern, 'i').test(clean); }catch(e){ rejected = false; }
+    if(rejected) return { isOk:false, hint:item.rejectHint || item.hint };
+  }
   const modalHint = findModalVerbFormError(clean);
   if(modalHint) return { isOk:false, hint:modalHint };
   return { isOk:true, hint:null };

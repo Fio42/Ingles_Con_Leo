@@ -17,7 +17,7 @@ vm.runInContext(read('data.js'), ctx);
 vm.runInContext(read('temas.js'), ctx);
 const NAMES = ['contentForTema', 'computePlanSelection', 'buildPlanPool', 'temaPlanHref', 'saveProfile', 'getUserLevel', 'getDiagItemIndex', 'diagTemaIdForFound',
   'temaHasItemsAt', 'familyHasItemsAt', 'nearestLevelWithTema', 'computeDiagnosis', 'computeSkillAccuracy', 'DIAG', 'pickTemaOnlyItems', 'planHonestNoteHtml', 'resolvePlanContentLevel', 'loadProgress', 'LEVELS', 'TEMAS', 'TEMA_BY_ID',
-  'freeGrammarItemsOfTema', 'freeLevelForTema', 'freeTemaNoteHtml', 'GRAMMAR_BANK', 'VOCAB_BANK', 'MEMBERS_ONLY_VARIANT_INDEX', 'FREE_SAMPLE_IDS', 'LEVEL_META'];
+  'freeGrammarItemsOfTema', 'freeLevelForTema', 'freeTemaNoteHtml', 'GRAMMAR_BANK', 'VOCAB_BANK', 'WRITING_BANK', 'writingPreHintHtml', 'evaluateWritingAnswer', 'MEMBERS_ONLY_VARIANT_INDEX', 'FREE_SAMPLE_IDS', 'LEVEL_META'];
 vm.runInContext(read('app.js') + '\n;this.__t = { ' + NAMES.join(', ') + ' };', ctx);
 function reset(){ Object.keys(store).forEach(k => delete store[k]); }
 module.exports = { A: ctx.__t, store, reset, root, read, run: code => vm.runInContext(code, ctx) };
