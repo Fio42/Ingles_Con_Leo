@@ -1584,6 +1584,7 @@ function wireSessionLengthSelector(container, skill, onApply){
         clearInflightSession(skill, level);
         render();
         onApply(newLen);
+        revealSessionArea();
       }
       if(!inProgress){ apply(); return; }
       showConfirmOverlay({
@@ -1907,6 +1908,31 @@ function renderLevelSelector(container, selected, onChange){
   });
 }
 
+/* Despues de que el alumno elige nivel o duracion, lleva la vista al primer ejercicio.
+   En el celular las tarjetas de nivel ocupan toda la pantalla y el ejercicio queda mas de 400 px
+   abajo: sin esto parece que no paso nada. Espera a que el ejercicio exista (hasta ~2 s), deja
+   sitio para la barra de arriba y respeta "reducir movimiento". Si el ejercicio ya se ve bien
+   (por ejemplo en una pantalla grande), no mueve nada. Solo se usa en cambios hechos por el
+   alumno, no al abrir la pagina. */
+function revealSessionArea(){
+  const area = document.getElementById('sessionArea');
+  if(!area) return;
+  let tries = 0;
+  function attempt(){
+    // listo = ya hay un ejercicio dibujado dentro (no solo el contenedor vacio)
+    const ready = area.children.length > 0 && area.getBoundingClientRect().height > 80;
+    if(!ready){ if(++tries < 40) setTimeout(attempt, 50); return; }
+    const bar = document.querySelector('nav, header');
+    const topGap = (bar ? bar.getBoundingClientRect().height : 0) + 12;
+    const top = area.getBoundingClientRect().top;
+    if(top >= topGap && top < window.innerHeight * 0.35) return;   // ya se ve bien
+    let calm = false;
+    try{ calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
+    window.scrollTo({ top: Math.max(0, window.scrollY + top - topGap), behavior: calm ? 'auto' : 'smooth' });
+  }
+  attempt();
+}
+
 /* Envuelve renderLevelSelector para las 7 páginas con sesión por nivel
    (Gramática, Vocabulario, Listening, Lectura, Writing, Speaking, Mixto):
    si hay ejercicios respondidos sin terminar en la dificultad actual,
@@ -1926,6 +1952,7 @@ function wireLevelSelector(container, skill, onApply){
         setUserLevel(newLevel);
         render();
         onApply(newLevel);
+        revealSessionArea();
       }
       if(!inProgress){ apply(); return; }
       render(); // revierte la tarjeta que renderLevelSelector ya marcó, por si se cancela

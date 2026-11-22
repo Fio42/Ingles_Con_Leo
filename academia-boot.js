@@ -16,5 +16,5 @@
   document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>');
   document.write('<script src="backend.js' + v + '"><\/script>');
   document.write('<script src="academia-motor.js' + v + '"><\/script>');
-  document.write('<script src="academia-nube.js' + v + '"><\/script>');
+  document.write('<script src="academia-nube.js?v=20261122a"><\/script>');
 })();

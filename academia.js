@@ -357,11 +357,15 @@
   function lessonById(id){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].id === id) return COURSE.lessons[i]; return null; }
   function lessonByN(n){ return COURSE.lessons[n - 1] || null; }
   function lessonOfTopic(t){ for(var i = 0; i < COURSE.lessons.length; i++) if(COURSE.lessons[i].topic === t) return COURSE.lessons[i]; return null; }
+  /* Solo cuenta como "a medias" una leccion en la que el alumno ya avanzo (paso 2 o posterior, ya paso por otro paso,
+     o ya esta en la practica). Abrir el primer paso y salir no guarda nada y no cambia "para empezar".
+     Los guardados viejos de solo el paso 1 se ignoran: no tienen avance que perder. */
+  function hasProgress(r){ return !!r && (r.stage === 'practice' || (r.idx | 0) > 0 || r.seen === true); }
   function pendingResume(){
     var s = loadState(), id = s.last;
-    if(id && s.resume[id] && lessonById(id) && !(s.lessons[id] && s.lessons[id].done)) return lessonById(id);
+    if(id && hasProgress(s.resume[id]) && lessonById(id) && !(s.lessons[id] && s.lessons[id].done)) return lessonById(id);
     var keys = Object.keys(s.resume);
-    for(var i = 0; i < keys.length; i++){ var l = lessonById(keys[i]); if(l && !(s.lessons[l.id] && s.lessons[l.id].done)) return l; }
+    for(var i = 0; i < keys.length; i++){ var l = lessonById(keys[i]); if(l && hasProgress(s.resume[l.id]) && !(s.lessons[l.id] && s.lessons[l.id].done)) return l; }
     return null;
   }
   function doneCount(){ var s = loadState(), n = 0; COURSE.lessons.forEach(function(l){ if(s.lessons[l.id] && s.lessons[l.id].done) n++; }); return n; }
@@ -1058,7 +1062,7 @@
     COURSE.lessons.forEach(function(l){
       var st = s.lessons[l.id] || {};
       var done = !!st.done, isNext = nl && nl.id === l.id;
-      var resume = !!s.resume[l.id];
+      var resume = hasProgress(s.resume[l.id]);
       var sub = done ? 'Completada' + (st.firstOk !== undefined ? ' · ' + st.firstOk + ' de ' + st.total + ' a la primera' : '') : (resume ? 'La dejaste a medias · sigue donde ibas' : l.minutes + ' min · ' + l.summary);
       var mark = el('span', { class: 'ac-ln' + (done ? ' is-done' : (isNext ? ' is-now' : '')), 'aria-hidden': 'true', text: done ? '✓' : String(l.n) });
       ol.appendChild(el('li', { class: 'ac-lesson' + (isNext ? ' is-next' : '') }, [
@@ -1098,13 +1102,13 @@
     var s = loadState();
     var S = lesson.screens.length, A = lesson.activities.length;
     var r = s.resume[lesson.id] || null;
-    run = { lesson: lesson, stage: r ? r.stage : 'learn', idx: r && r.stage === 'learn' ? Math.min(r.idx, S - 1) : 0, saved: r && r.stage === 'practice' ? r : null };
+    run = { lesson: lesson, stage: r ? r.stage : 'learn', idx: r && r.stage === 'learn' ? Math.min(r.idx | 0, S - 1) : 0, saved: r && r.stage === 'practice' ? r : null, t0: (r && r.t0) || Date.now() };
     if(!r) track('leccion_iniciada', { curso: courseId, leccion: lesson.n });
     drawLesson();
   }
   function saveResume(patch){
     var s = loadState(), prev = s.resume[run.lesson.id];
-    s.resume[run.lesson.id] = Object.assign({ lessonId: run.lesson.id, t0: (prev && prev.t0) || Date.now(), at: Date.now() }, patch);
+    s.resume[run.lesson.id] = Object.assign({ lessonId: run.lesson.id, t0: (prev && prev.t0) || run.t0 || Date.now(), at: Date.now() }, patch);
     s.last = run.lesson.id;
     saveState();
   }
@@ -1130,15 +1134,16 @@
         renderScreen(sc)
       ]);
       var nav = el('div', { class: 'ac-nav' }, [
-        el('button', { type: 'button', class: 'ac-btn ac-btn-ghost', disabled: run.idx === 0, text: '← Anterior', onclick: function(){ run.idx--; saveResume({ stage: 'learn', idx: run.idx }); drawLesson(); } }),
+        el('button', { type: 'button', class: 'ac-btn ac-btn-ghost', disabled: run.idx === 0, text: '← Anterior', onclick: function(){ run.idx--; saveResume({ stage: 'learn', idx: run.idx, seen: true }); drawLesson(); } }),
         el('button', { type: 'button', class: 'ac-btn ac-btn-primary', text: run.idx === S - 1 ? 'Practicar' : 'Siguiente →', onclick: function(){
-          if(run.idx === S - 1){ run.stage = 'practice'; saveResume({ stage: 'practice' }); } else { run.idx++; saveResume({ stage: 'learn', idx: run.idx }); }
+          if(run.idx === S - 1){ run.stage = 'practice'; saveResume({ stage: 'practice' }); } else { run.idx++; saveResume({ stage: 'learn', idx: run.idx, seen: true }); }
           drawLesson();
         } })
       ]);
       var wrap = el('div', null, [card, nav]);
       root.appendChild(lessonShell(l.title, run.idx, total, wrap));
-      saveResume({ stage: 'learn', idx: run.idx });
+      /* Solo se guarda si ya hay avance: abrir el primer paso y salir no deja la leccion "a medias". */
+      if(run.idx > 0 || hasProgress(loadState().resume[l.id])) saveResume({ stage: 'learn', idx: run.idx, seen: true });
       focusMain();
       return;
     }
@@ -1877,7 +1882,7 @@
     mode: function(){ return mode; }, boot: function(){ if(NUBE) bootCloud(); },
     heroSection: heroSection, badgeInfo: badgeInfo, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard,
     title: COURSE.title, cb: CB, doneCount: doneCount,
-    started: function(){ var st = loadState(); return Object.keys(st.resume || {}).length > 0 || (st.days || []).length > 0; }
+    started: function(){ var st = loadState(); return Object.keys(st.resume || {}).some(function(k){ return hasProgress(st.resume[k]); }) || (st.days || []).length > 0; }
   };
   return api;
   }

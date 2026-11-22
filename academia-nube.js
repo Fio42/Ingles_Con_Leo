@@ -19,6 +19,7 @@
 var AcademiaNube = (function(){
   'use strict';
 
+  var BADGE_CACHE = {};   // insignias ya consultadas: { 'cuenta|curso': { client, p } } (compartido por todos los cursos de la pagina)
   var CLEAN_KEYS = ['v', 'lessons', 'resume', 'last', 'missed', 'cleared', 'exam', 'goal', 'goalAt', 'days', 'completions', 'snooze', 'returnTo'];
 
   /* ---------------- Fusión de dos estados (puro) ---------------- */
@@ -327,13 +328,31 @@ var AcademiaNube = (function(){
     }
     function examStatus(){ return S.ready ? rpc('academia_exam_status', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
     function examStart(){ return S.ready ? rpc('academia_exam_start', { p_course: courseId }) : Promise.resolve({ ok: false, error: 'anon' }); }
-    function examSubmit(attemptId, answers){ return S.ready ? rpc('academia_exam_submit', { p_attempt: attemptId, p_answers: answers }) : Promise.resolve({ ok: false, error: 'anon' }); }
+    function examSubmit(attemptId, answers){
+      if(!S.ready) return Promise.resolve({ ok: false, error: 'anon' });
+      return rpc('academia_exam_submit', { p_attempt: attemptId, p_answers: answers }).then(function(r){ BADGE_CACHE = {}; return r; }, function(e){ BADGE_CACHE = {}; throw e; });
+    }
+    /* Insignia de este curso. La pantalla la pide muchas veces (cada redibujo de "Mi ruta" y cada curso al terminar de
+       conectar), asi que se pregunta UNA vez por cuenta y curso y las demas llamadas comparten la misma respuesta.
+       La respuesta nunca se mezcla entre cuentas: la clave incluye el cliente y el id de la cuenta activa, y la tabla
+       solo devuelve filas del usuario conectado (politica RLS "select own"). Un fallo no se guarda (se reintenta),
+       y al aprobar una evaluacion se olvida todo para que la insignia nueva se vea al momento. */
     async function badge(){
       if(!S.ready) return null;
-      try{
-        var r = await client().from('academia_badges').select('score_pct,awarded_at').eq('course_id', courseId).maybeSingle();
-        return r && !r.error ? r.data : null;
-      }catch(e){ return null; }
+      var c = client(), key = S.user + '|' + courseId;
+      var hit = BADGE_CACHE[key];
+      if(hit && hit.client === c) return hit.p;
+      var p = (async function(){
+        try{
+          var r = await c.from('academia_badges').select('score_pct,awarded_at').eq('course_id', courseId).maybeSingle();
+          if(r && !r.error) return { ok: true, v: r.data };
+        }catch(e){}
+        return { ok: false, v: null };
+      })();
+      var entry = { client: c, p: p.then(function(x){ return x.v; }) };
+      BADGE_CACHE[key] = entry;
+      p.then(function(x){ if(!x.ok && BADGE_CACHE[key] === entry) delete BADGE_CACHE[key]; });
+      return entry.p;
     }
 
     return { boot: boot, save: save, recordAnswer: recordAnswer, flushMistakes: flushMistakes, recordLesson: recordLesson, flushAll: flushAll, flushSessions: flushSessions, access: access, demoStart: demoStart, demoFinish: demoFinish,
