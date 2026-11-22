@@ -10,7 +10,9 @@
    3. En las cinco habilidades (gramatica, vocabulario, listening, writing, speaking) y los cuatro niveles:
       - un visitante nunca recibe un ejercicio de m100 ni m300 (sesion normal, reto diario, practica por tema) y SI recibe los gratis previstos;
       - un miembro puede recibir ejercicios de ambos lotes.
-   4. Nada se rompe en silencio: cada id de las variantes anteriores existe exactamente una vez. */
+   4. Nada se rompe en silencio: cada id de las variantes anteriores existe exactamente una vez.
+   5. La muestra gratis (FREE_SAMPLE_IDS) deja ver SOLO tres ejercicios de miembros100, uno por tema (verbo-have, verbos-irregulares, question-tags):
+      dar acceso a una muestra no desbloquea su variante, y el resto de miembros100 y todo miembros300 siguen exclusivos. */
 const assert = require('assert'), vm = require('vm'), path = require('path');
 const { loadAccess } = require('../lib/acceso');
 const { A, run, reset, root } = require('./lib/cargar-app');
@@ -23,6 +25,8 @@ const SKILLS = ['gramatica', 'vocabulario', 'listening', 'writing', 'speaking'];
 const LEVELS = ['principiante', 'facil', 'medio', 'avanzado'];
 const BANK_NAME = { gramatica: 'GRAMMAR_BANK', vocabulario: 'VOCAB_BANK', listening: 'LISTENING_BANK', writing: 'WRITING_BANK', speaking: 'SPEAKING_BANK' };
 const MEMBER_BATCH = /-(m100|m300)-/;
+// Unicas excepciones: la muestra gratis, por id (una por tema que solo tenia ejercicios en miembros100)
+const MUESTRAS = ['g-principiante-m100-1', 'g-facil-m100-1', 'g-medio-m100-1'];
 const ids = v => { const out = []; (v || []).forEach(x => { if(x && x.items) x.items.forEach(i => out.push(i.id)); else if(x) out.push(x.id); }); return out; };
 
 console.log('Acceso a los ejercicios');
@@ -165,10 +169,58 @@ test('visitante: la practica gratis por tema (gramatica, vocabulario, listening)
   LEVELS.forEach(l => temas.forEach(tid => {
     const t = run('TEMA_BY_ID[' + JSON.stringify(tid) + ']');
     const items = run('freeTemaItems(' + JSON.stringify(l) + ',' + JSON.stringify(tid) + ')');
-    items.forEach(it => assert.ok(!MEMBER_BATCH.test(String(it.id)), l + '/' + tid + ' (' + t.skill + '): ofrece ' + it.id));
+    items.forEach(it => assert.ok(!MEMBER_BATCH.test(String(it.id)) || MUESTRAS.indexOf(it.id) !== -1, l + '/' + tid + ' (' + t.skill + '): ofrece ' + it.id));
     total += items.length;
   }));
   assert.ok(total > 400, 'la practica gratis por tema quedo casi vacia: ' + total);
+});
+
+test('muestra gratis: FREE_SAMPLE_IDS permite exactamente tres ejercicios de lotes exclusivos, por id, y ninguno de m300', () => {
+  const todos = []; Object.keys(A.FREE_SAMPLE_IDS).forEach(l => A.FREE_SAMPLE_IDS[l].forEach(id => { if(MEMBER_BATCH.test(id)) todos.push(id); }));
+  assert.deepStrictEqual(todos.sort(), MUESTRAS.slice().sort());
+  const temaDe = { 'g-principiante-m100-1': 'verbo-have', 'g-facil-m100-1': 'verbos-irregulares', 'g-medio-m100-1': 'question-tags' };
+  const nivelDe = { 'g-principiante-m100-1': 'principiante', 'g-facil-m100-1': 'facil', 'g-medio-m100-1': 'medio' };
+  MUESTRAS.forEach(id => {
+    const l = nivelDe[id], t = temaDe[id];
+    assert.deepStrictEqual(Array.from(A.freeGrammarItemsOfTema(l, t), i => i.id), [id], t + ': debe ofrecer exactamente su muestra en ' + l);
+    assert.strictEqual(A.freeLevelForTema(t, 'facil') !== null, true, t + ': debe tener nivel gratis');
+  });
+});
+
+test('una muestra no desbloquea su variante: el resto de miembros100 y todo miembros300 siguen exclusivos', () => {
+  // lo unico de lotes exclusivos que un visitante puede alcanzar por CUALQUIER via (tema, muestra de sesion, variantes gratis) son las 3 muestras
+  const alcanzables = new Set();
+  const nota = id => { if(MEMBER_BATCH.test(String(id))) alcanzables.add(String(id)); };
+  LEVELS.forEach(l => {
+    run('TEMAS').forEach(t => { run('freeTemaItems(' + JSON.stringify(l) + ',' + JSON.stringify(t.id) + ')').forEach(it => nota(it.id)); });
+    run('freeSampleItems(' + JSON.stringify(l) + ')').forEach(it => nota(it.id));
+    SKILLS.forEach(s => bank(s, l).forEach((v, vi) => { if(A.MEMBERS_ONLY_VARIANT_INDEX[s][l].indexOf(vi) === -1) ids(v).forEach(nota); }));
+  });
+  assert.deepStrictEqual(Array.from(alcanzables).sort(), MUESTRAS.slice().sort(), 'un visitante alcanza ejercicios de lotes exclusivos que no son las 3 muestras');
+  // la variante de cada muestra sigue bloqueada y sus demas ejercicios no se ofrecen
+  MUESTRAS.forEach(id => {
+    const l = /principiante/.test(id) ? 'principiante' : /facil/.test(id) ? 'facil' : 'medio';
+    const vi = bank('gramatica', l).findIndex(v => ids(v).indexOf(id) !== -1);
+    assert.ok(A.MEMBERS_ONLY_VARIANT_INDEX.gramatica[l].indexOf(vi) !== -1, id + ': su variante debe seguir siendo exclusiva');
+    ids(bank('gramatica', l)[vi]).filter(x => x !== id).forEach(x => assert.ok(!alcanzables.has(x), x + ': no debe ser gratis'));
+  });
+  // y todo m300 y m100 distinto de las muestras sigue siendo exclusivo en las 5 habilidades
+  SKILLS.forEach(s => LEVELS.forEach(l => bank(s, l).forEach((v, vi) => {
+    ids(v).filter(x => MEMBER_BATCH.test(x) && MUESTRAS.indexOf(x) === -1).forEach(x => { assert.ok(A.MEMBERS_ONLY_VARIANT_INDEX[s][l].indexOf(vi) !== -1 && !alcanzables.has(x), x + ' debe seguir siendo exclusivo'); });
+  })));
+});
+
+test('sesiones gratis con muestra de Do/Does: no traen ningun ejercicio de lotes exclusivos (las 3 muestras son solo por tema)', () => {
+  LEVELS.forEach(l => {
+    reset();
+    const base = [];
+    A.GRAMMAR_BANK[l].forEach((v, vi) => { if(A.MEMBERS_ONLY_VARIANT_INDEX.gramatica[l].indexOf(vi) === -1) run('flattenVariant("gramatica", GRAMMAR_BANK.' + l + '[' + vi + '])').forEach(x => base.push(x)); });
+    const pool = base.slice(0, 8);
+    for(let i = 0; i < 200; i++){
+      const out = run('freeSampleApply(' + JSON.stringify(l) + ', ' + JSON.stringify(pool) + ')');
+      out.forEach(it => assert.ok(!MEMBER_BATCH.test(String(it.id)), l + ': la muestra de sesion trajo ' + it.id + ' (las 3 muestras de tema no entran a las sesiones normales)'));
+    }
+  });
 });
 
 console.log('\n  ' + passed + ' ok, ' + failed + ' con fallo');

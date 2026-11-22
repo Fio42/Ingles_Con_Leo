@@ -17,7 +17,7 @@ Ninguno: todos los temas con ejercicios tienen clase o ficha.
 
 ## 2. Falta practica gratis del tema (todo es solo de Miembros)
 
-Resumen de los 16 temas: 16 tienen practica EXCLUSIVA para Miembros (hay ejercicios y el Plan abre una practica enfocada en el tema, verificado) y 0 carecen de practica propia tambien para Miembros. Ninguno esta sin ejercicios: lo que falta es la version gratis.
+Resumen de los 14 temas: 14 tienen practica EXCLUSIVA para Miembros (hay ejercicios y el Plan abre una practica enfocada en el tema, verificado) y 0 carecen de practica propia tambien para Miembros. Ninguno esta sin ejercicios: lo que falta es la version gratis.
 
 A visitantes y cuentas gratis el resumen les ofrece la explicacion, pero no "Practicar este tema". Recurso a crear: una muestra fija de 6 ejercicios abiertos (como ya existe para Do/Does). Es una decision de monetizacion de Leo.
 
@@ -33,12 +33,10 @@ A visitantes y cuentas gratis el resumen les ofrece la explicacion, pero no "Pra
 | `contables-incontables` | 4 (facil) | Exclusiva: Plan enfocado en el tema | Ninguna | `How many water do you need?` (opcion equivocada) / `How much water do you need?` (correcta) | Muestra gratis de 6 ejercicios |
 | `modales-posibilidad` | 5 (medio) | Exclusiva: Plan enfocado en el tema | Ninguna | `How do you express that it might possibly rain?` (opcion equivocada) / `How do you express that it might possibly rain?` (correcta) | Muestra gratis de 6 ejercicios |
 | `pasado-regulares` | 5 (facil) | Exclusiva: Plan enfocado en el tema | Ninguna | `How do you say "trabajé" (yesterday) in English?` (opcion equivocada) / `How do you say "trabajé" (yesterday) in English?` (correcta) | Muestra gratis de 6 ejercicios |
-| `verbos-irregulares` | 6 (facil) | Exclusiva: Plan enfocado en el tema | Ninguna | `Yesterday I go to the park.` (opcion equivocada) / `Yesterday I went to the park.` (correcta) | Muestra gratis de 6 ejercicios |
 | `causativos` | 3 (medio) | Exclusiva: Plan enfocado en el tema | Ninguna | `I'm going to have my car repair tomorrow.` (opcion equivocada) / `I'm going to have my car repaired tomorrow.` (correcta) | Muestra gratis de 6 ejercicios |
 | `preposiciones-movimiento` | 4 (principiante) | Exclusiva: Plan enfocado en el tema | Ninguna | `I walk from school every morning.` (opcion equivocada) / `I walk to school every morning.` (correcta) | Muestra gratis de 6 ejercicios |
 | `pronombres` | 9 (principiante facil) | Exclusiva: Plan enfocado en el tema | Ninguna | `(Talking about a boy) She is my friend.` (opcion equivocada) / `(Talking about a boy) He is my friend.` (correcta) | Muestra gratis de 6 ejercicios |
 | `there-is-are` | 8 (principiante) | Exclusiva: Plan enfocado en el tema | Ninguna | `There are a book on the table.` (opcion equivocada) / `There is a book on the table.` (correcta) | Muestra gratis de 6 ejercicios |
-| `question-tags` | 6 (medio) | Exclusiva: Plan enfocado en el tema | Ninguna | `You like coffee, doesn't you?` (opcion equivocada) / `You like coffee, don't you?` (correcta) | Muestra gratis de 6 ejercicios |
 
 ## 3. Practica de Miembros sin familia (el Plan no puede enfocar el tema)
 

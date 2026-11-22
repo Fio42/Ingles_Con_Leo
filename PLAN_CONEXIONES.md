@@ -14,12 +14,12 @@ Lo mejor que ya existe y conviene reutilizar, no reescribir:
 - El registro `temas.js` con sus pruebas (`temas.test.js`, `conexion-recursos.test.js`).
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 16. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 14. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
-- Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 80; del mismo tema exacto (mismo nombre de la tarjeta): 61. Sin ningun ejercicio gratis del tema exacto: 34.
-- Que abre el boton de cada tarjeta del inicio: tema 73, clase 22 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
+- Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 82; del mismo tema exacto (mismo nombre de la tarjeta): 64. Sin ningun ejercicio gratis del tema exacto: 31.
+- Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
 - Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
-- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 32. Temas con ejercicios gratis en un solo nivel: 37.
+- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 34. Temas con ejercicios gratis en un solo nivel: 39.
 - Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 8. Temas con clase: 32. Con ficha: 43.
 <!-- /GENERADO:cifras -->
 
@@ -65,7 +65,7 @@ Lista actualizada automáticamente:
 - Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
 - Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (0): 
-- Solo con ejercicios de Miembros, nada gratis (16): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `verbos-irregulares`, `causativos`, `preposiciones-movimiento`, `pronombres`, `there-is-are`, `question-tags`
+- Solo con ejercicios de Miembros, nada gratis (14): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `pronombres`, `there-is-are`
 - Con curso en el codigo pero cerrado: ninguno
 <!-- /GENERADO:faltantes -->
 

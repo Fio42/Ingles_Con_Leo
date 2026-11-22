@@ -28,12 +28,12 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 <!-- GENERADO:resumen -->
 | Estado | Enlaces y destinos (INVENTARIO_CONEXIONES.csv) | Temas: practica de miembros | Temas: practica gratis |
 |---|---|---|---|
-| verificado | 170 | 78 | 62 |
+| verificado | 172 | 78 | 64 |
 | parcial | 3 | 0 | 0 |
-| enlace_incorrecto | 3 | 0 | 0 |
+| enlace_incorrecto | 1 | 0 | 0 |
 | recurso_sin_conectar | 0 | 0 | 0 |
 | por_construir | 0 | 1 | 1 |
-| solo_miembros | 35 | 0 | 16 |
+| solo_miembros | 35 | 0 | 14 |
 | general_intencional | 48 | 0 | 0 |
 
 79 temas en temas.js. 259 filas de enlaces: 239 agrupadas desde 460 paginas HTML y 20 destinos dinamicos o redirecciones curados.
@@ -42,12 +42,12 @@ Los bloques marcados como GENERADO se reescriben solos con `node tools/conexione
 Cifras clave:
 
 <!-- GENERADO:cifras -->
-- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 16. Sin ejercicios: 1.
+- Temas de temas.js: 79. Con ejercicios gratis: 0. Solo con ejercicios de Miembros: 14. Sin ejercicios: 1.
 - Temas cuya practica de miembros existe solo en algunos niveles (en los demas el Plan usa el nivel mas cercano y lo avisa, sin cambiar el nivel guardado): 74 de 79.
-- Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 80; del mismo tema exacto (mismo nombre de la tarjeta): 61. Sin ningun ejercicio gratis del tema exacto: 34.
-- Que abre el boton de cada tarjeta del inicio: tema 73, clase 22 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
+- Tarjetas del inicio (mini-lecciones.js): 95. Con ejercicios gratis del mismo tema (nivel tema): 82; del mismo tema exacto (mismo nombre de la tarjeta): 64. Sin ningun ejercicio gratis del tema exacto: 31.
+- Que abre el boton de cada tarjeta del inicio: tema 76, clase 19 (tema = practica gratis de ese tema; clase = su explicacion; general = practica de gramatica en general, y el texto del boton lo dice).
 - Enlaces HTML con destino o ancla inexistente: 0. Enlaces HTML que prometen un tema y abren la practica general: 0. Paginas publicas que enlazan a paginas de miembros sin explicarlo: 0.
-- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 32. Temas con ejercicios gratis en un solo nivel: 37.
+- Temas con 6 ejercicios gratis o menos (una sesion gratis normal es de 6 a 8): 34. Temas con ejercicios gratis en un solo nivel: 39.
 - Temas sin clase ni ficha del glosario (no hay explicacion que ofrecer): 8. Temas con clase: 32. Con ficha: 43.
 <!-- /GENERADO:cifras -->
 
@@ -167,7 +167,7 @@ flowchart LR
   n_tverbos_irregulares --> n_cverbos_irregulares["clase"]:::ok
   n_tverbos_irregulares --> n_qverbos_irregulares["quiz 10 preg."]:::ok
   n_tverbos_irregulares -.-> n_pverbos_irregulares["Miembros: verificado"]:::ok
-  n_tverbos_irregulares -.-> n_fverbos_irregulares["Gratis: solo_miembros"]:::miembros
+  n_tverbos_irregulares -.-> n_fverbos_irregulares["Gratis: verificado"]:::warn
   n_tvoz_pasiva["Voz pasiva"]:::tema
   n_tvoz_pasiva --> n_cvoz_pasiva["clase"]:::ok
   n_tvoz_pasiva --> n_qvoz_pasiva["quiz 10 preg."]:::ok
@@ -227,7 +227,7 @@ flowchart LR
   n_tquestion_tags --> n_cquestion_tags["clase"]:::ok
   n_tquestion_tags --> n_qquestion_tags["quiz 10 preg."]:::ok
   n_tquestion_tags -.-> n_pquestion_tags["Miembros: verificado"]:::ok
-  n_tquestion_tags -.-> n_fquestion_tags["Gratis: solo_miembros"]:::miembros
+  n_tquestion_tags -.-> n_fquestion_tags["Gratis: verificado"]:::warn
   classDef tema fill:#e8edff,stroke:#253ecc,color:#111
   classDef ok fill:#e6f6ea,stroke:#2e7d32,color:#111
   classDef warn fill:#fff4d6,stroke:#b26a00,color:#111
@@ -282,7 +282,7 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `modales-posibilidad` | gram | si | - | - | - | - | medio:5 | verificado | solo_miembros | - |
 | `modales-perfectos` | gram | - | si | - | - | avanzado:1 | medio:1 avanzado:5 | verificado | verificado | - |
 | `pasado-regulares` | gram | si | - | - | - | - | facil:5 | verificado | solo_miembros | - |
-| `verbos-irregulares` | gram | si | - | - | 10 | - | facil:6 | verificado | solo_miembros | - |
+| `verbos-irregulares` | gram | si | - | - | 10 | facil:1 | facil:5 | verificado | verificado | - |
 | `used-to` | gram | - | si | - | - | medio:5 | medio:1 | verificado | verificado | - |
 | `voz-pasiva` | gram | si | - | - | 10 | medio:5 avanzado:3 | medio:1 avanzado:7 | verificado | verificado | - |
 | `causativos` | gram | - | si | - | - | - | medio:3 | verificado | solo_miembros | - |
@@ -304,9 +304,9 @@ Matriz completa de los temas (generado; el detalle por nivel está en `INVENTARI
 | `there-is-are` | gram | si | - | there-is-are | 4 | - | principiante:8 | verificado | solo_miembros | - |
 | `phrasal-verbs` | gram | si | si | - | - | medio:5 | medio:1 | verificado | verificado | - |
 | `gerundios-infinitivos` | gram | si | - | - | 4 | medio:7 | - | verificado | verificado | - |
-| `verbo-have` | gram | si | - | - | 6 | principiante:3 facil:1 | principiante:6 | verificado | verificado | - |
+| `verbo-have` | gram | si | - | - | 6 | principiante:4 facil:1 | principiante:5 | verificado | verificado | - |
 | `colocaciones` | gram | - | si | - | - | avanzado:5 | facil:1 | verificado | verificado | - |
-| `question-tags` | gram | si | - | - | 10 | - | medio:6 | verificado | solo_miembros | - |
+| `question-tags` | gram | si | - | - | 10 | medio:1 | medio:5 | verificado | verificado | - |
 | `inversion-enfasis` | gram | - | si | - | - | avanzado:12 | avanzado:7 | verificado | verificado | - |
 | `subjuntivo-formal` | gram | - | si | - | - | avanzado:5 | - | verificado | verificado | - |
 | `hedging` | gram | - | si | - | - | avanzado:8 | avanzado:1 | verificado | verificado | - |
@@ -356,7 +356,7 @@ Contenidos que necesitamos construir (generado)
 - Sin clase ni ficha (8): `cuantificadores`, `vocab-confusas`, `vocab-trabajo`, `vocab-viajes`, `vocab-compras`, `vocab-vida-diaria`, `listening-conversaciones`, `listening-condicionales`
 - Sin ejercicios (1): `cuantificadores`
 - Gramatica con ejercicios pero sin familia en temas.js, asi que el Plan no puede enfocarlos (0): 
-- Solo con ejercicios de Miembros, nada gratis (16): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `verbos-irregulares`, `causativos`, `preposiciones-movimiento`, `pronombres`, `there-is-are`, `question-tags`
+- Solo con ejercicios de Miembros, nada gratis (14): `your-vs-youre`, `to-too-two`, `lose-vs-loose`, `say-vs-tell`, `actually-currently`, `pasado-continuo`, `fewer-vs-less`, `contables-incontables`, `modales-posibilidad`, `pasado-regulares`, `causativos`, `preposiciones-movimiento`, `pronombres`, `there-is-are`
 - Con curso en el codigo pero cerrado: ninguno
 <!-- /GENERADO:faltantes -->
 

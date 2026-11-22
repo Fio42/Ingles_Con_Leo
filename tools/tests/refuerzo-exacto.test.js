@@ -30,14 +30,14 @@ const practiceLinks = html => (html.match(/<a href="[^"]*" data-rf="practice">/g
 
 console.log('Error -> refuerzo (visitante y cuenta gratis)');
 test('tema con ejercicios gratis: "Practicar este tema" abre practica.html?skill=grammar&tema=<id>, no la practica general', () => {
-  ['do-does', 'to-be-presente', 'in-on-at'].forEach(id => {
+  ['do-does', 'to-be-presente', 'in-on-at', 'verbo-have'].forEach(id => {
     const h = free(id);
     assert(h.indexOf('href="practica.html?skill=grammar&tema=' + id + '" data-rf="practice">Practicar este tema<') !== -1, id + ': ' + h.slice(0, 200));
     assert(!/Practicar más/.test(h), id);
   });
 });
 test('tema con clase pero sin ejercicios gratis (todo de Miembros): ofrece la explicacion y NO una practica general', () => {
-  ['pasado-continuo', 'there-is-are', 'your-vs-youre', 'verbo-have', 'verbos-irregulares'].forEach(id => {
+  ['pasado-continuo', 'there-is-are', 'your-vs-youre'].forEach(id => {
     const h = free(id);
     assert(/data-rf="lesson"/.test(h), id + ' debe ofrecer la explicacion');
     assert.strictEqual(practiceLinks(h).length, 0, id + ' no debe ofrecer practica');
@@ -67,7 +67,7 @@ test('tema normal de miembro: conserva clase, practica del tema y curso', () => 
   assert(/data-rf="lesson"/.test(h) && practiceLinks(h).length === 1 && /curso\/do-does/.test(h));
 });
 test('error repetido: con 2+ errores de un tema, ese tema va primero y es el unico del resumen', () => {
-  const a = idsOf('do-does', 2), b = idsOf('in-on-at', 1);
+  const a = idsOf('do-does', 2), b = idsOf('verbo-have', 1);
   const rows = JSON.parse(JSON.stringify(T.sessionReinforceRows(wrong(a.concat(b)), { actions: [] }, new Set())));
   assert.strictEqual(rows.length, 1); assert.strictEqual(rows[0].temaId, 'do-does'); assert.strictEqual(rows[0].n, 2);
 });

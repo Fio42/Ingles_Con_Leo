@@ -4463,13 +4463,20 @@ function freeMemoryWeakSpots(){
 /* Muestra gratuita de un fundamento: 3 ejercicios fijos de Do/Does (de la variante reservada a Miembros), de los que cada sesión gratis de
    Gramática (invitado o cuenta) trae 2 en lugar de otros 2 de su cola: mismo largo y mismo conteo del límite diario. No abre la variante
    ni el curso; sirve para que quien falle Do/Does reciba la explicación, el refuerzo y el curso relacionado. */
+/* Muestra gratis, por id: SOLO estos ejercicios de variantes exclusivas de Miembros se pueden ver gratis; el resto de su variante sigue siendo de Miembros.
+   Los de Do/Does son la muestra del sistema que aparece en las sesiones gratis. Los tres de miembros100 (g-principiante-m100-1, g-facil-m100-1, g-medio-m100-1)
+   dejan un ejercicio gratis de verbo-have, verbos-irregulares y question-tags para que los enlaces que prometen practica gratis de esos temas abran un ejercicio real. */
 const FREE_SAMPLE_IDS = {
-  principiante: ['g-principiante5-dodoes-1', 'g-principiante5-dodoes-2', 'g-principiante5-dodoes-4'],
-  facil: ['g-facil7-dodoes-1', 'g-facil7-dodoes-2', 'g-facil7-dodoes-4']
+  principiante: ['g-principiante5-dodoes-1', 'g-principiante5-dodoes-2', 'g-principiante5-dodoes-4', 'g-principiante-m100-1'],
+  facil: ['g-facil7-dodoes-1', 'g-facil7-dodoes-2', 'g-facil7-dodoes-4', 'g-facil-m100-1'],
+  medio: ['g-medio-m100-1']
 };
 const FREE_SAMPLE_PER_SESSION = 2;
+/* Estos tres ejercicios solo se ofrecen cuando el visitante abre la practica de SU tema (enlace del correo, del articulo o de la tarjeta del inicio):
+   no entran en la rotacion de muestra de las sesiones gratis normales, que sigue siendo la de Do/Does. */
+const FREE_SAMPLE_TEMA_ONLY_IDS = ['g-principiante-m100-1', 'g-facil-m100-1', 'g-medio-m100-1'];
 function freeSampleItems(level){
-  const ids = FREE_SAMPLE_IDS[level] || [];
+  const ids = (FREE_SAMPLE_IDS[level] || []).filter(id => FREE_SAMPLE_TEMA_ONLY_IDS.indexOf(id) === -1);
   const out = [];
   (GRAMMAR_BANK[level] || []).forEach(variant => variant.forEach(tg => tg.items.forEach(it => { if(ids.indexOf(it.id) !== -1) out.push(Object.assign({ topic: tg.topic }, it)); })));
   return out;
