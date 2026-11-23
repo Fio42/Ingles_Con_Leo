@@ -4252,3 +4252,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Pruebas: tools/tests/video-tema.test.js (48): cada video apunta a tema, guia y ficha que existen; "Practicar gratis" solo con ejercicios gratis reales. Navegador (local, 375 y 320 px): tarjeta visible justo antes del primer ejercicio, sin desborde, reproductor carga al tocar, palabras-parecidas muestra 2 videos, vocabulario no muestra tarjeta, galeria con botones correctos.
 - Visitante sin sesion (Chrome limpio, produccion): plan-estudio y vocabulario con tema llevan al acceso de miembros. WH-Questions en Supabase: sigue sin poder verificarse desde aqui (solo GA4 y Search Console estan conectados).
 - ?v=20261123a para video-tema.js (practica.html y articulos.html).
+
+2026-11-23 (3) - Verificacion en produccion de la integracion video -> tema (commit ce0c977, publicado por Claude con autorizacion de Leo)
+- Como visitante (Chrome limpio): practica.html?skill=grammar&tema=then-vs-than, in-on-at, a-an y to-be-presente muestran 1 tarjeta de video y el ejercicio 1 debajo; palabras-parecidas muestra 2 videos. Galeria de articulos.html: 5 botones "Practicar gratis" y 9 "Ver la explicacion". Los 12 destinos (guias, fichas del glosario, practica) y las miniaturas responden 200.
+- Como miembro (sesion real): practica.html con tema lleva al Plan, como siempre; no ve la tarjeta.
+- Pendiente: probar en telefono real y en los navegadores internos de Instagram y TikTok; ver eventos video_tema_* en GA4 en 24-48 h (tarda en aparecer en los informes); activacion y retencion a 7 dias es el siguiente objetivo.
