@@ -355,7 +355,7 @@ await test('Cierre de sesión: el evento SIGNED_OUT recarga la página de la cue
 
 console.log('Cobertura del código');
 await test('Ningún dato personal se lee ni escribe fuera del espacio de la cuenta (solo las claves sin aislar a propósito)', () => {
-  const allowed = ['const lsGet', 'const lsSet', 'LEO_AI_BETA_KEY', 'LEO_AI_TEASER_DAY_KEY', 'localDailyCountKey()', "'leo_member_hint'", 'COMMENT_GUEST_NAME_KEY'];
+  const allowed = ['const lsGet', 'const lsSet', 'LEO_AI_BETA_KEY', 'LEO_AI_TEASER_DAY_KEY', 'localDailyCountKey()', "'leo_member_hint'", 'COMMENT_GUEST_NAME_KEY', 'PRACTICE_FIRST_DAY_KEY', 'PRACTICE_RETURN_DAY_KEY', 'GUEST_FIRST_SESSION_KEY'];
   const lines = SRC.app.split('\n').map((l, i) => [i + 1, l]).filter(([, l]) => /localStorage\.(getItem|setItem|removeItem)\(/.test(l) && !/^\s*(\/\/|\*|\/\*)/.test(l));
   const inModule = ([n]) => n < SRC.app.split('\n').findIndex(l => /^const LS_P =/.test(l)) + 1;
   const bad = lines.filter(x => !inModule(x)).filter(([, l]) => !allowed.some(a => l.indexOf(a) >= 0));

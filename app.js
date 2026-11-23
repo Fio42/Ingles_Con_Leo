@@ -4267,7 +4267,45 @@ function freeDailyLimitReached(){
   if(_leoAccessTier === 'free') return getFreeAcctExerciseCount() >= FREE_USER_DAILY_LIMIT;
   return getLocalDailyCount() >= GUEST_EXERCISE_LIMIT;
 }
+/* Activacion y retencion (solo medicion, sin datos personales: ni ids ni correos, solo fechas del propio navegador).
+   - Visitante sin cuenta: su primer ejercicio contado manda first_practice_started { tier:'guest' } (la cuenta gratis ya lo manda en
+     bumpFreeAcctExerciseCount con tier 'free'; se distinguen por el parametro tier, no se duplica el evento para la misma persona).
+   - Primera practica COMPLETADA del visitante: first_session_completed { tier:'guest' } una sola vez por navegador, cuando cierra su
+     primera sesion (la termina o el limite del dia la corta) y ya conto al menos un ejercicio; la cuenta gratis ya lo manda con tier 'free'.
+   - Volver a estudiar: practice_return_d1 (dia siguiente), d2_3, d4_7 o d8_plus segun los dias desde su primera practica en este navegador,
+     UNA sola vez por navegador (solo su PRIMER regreso). Asi los tramos no se solapan y d1 + d2_3 + d4_7 = personas que volvieron dentro
+     de 7 dias, sin contar a nadie dos veces. Se manda al CONTAR un ejercicio (responder y avanzar), nunca por abrir una pagina.
+   Mide ejercicios gratis (practica.html y sesiones de cuenta gratis); las lecciones de la Academia tienen sus propios eventos
+   academia_leccion_* y no se mezclan. */
+// Claves SIN aislar por cuenta a proposito (solo fechas, ningun dato personal): visitante y cuenta gratis del mismo navegador cuentan como la misma persona.
+const PRACTICE_FIRST_DAY_KEY = 'leo_first_practice_day';
+const PRACTICE_RETURN_DAY_KEY = 'leo_first_return_day';
+const GUEST_FIRST_SESSION_KEY = 'leo_guest_first_session_evt';
+function trackPracticeActivation(){
+  try{
+    const today = todayStr();
+    const first = localStorage.getItem(PRACTICE_FIRST_DAY_KEY);
+    if(!first){
+      localStorage.setItem(PRACTICE_FIRST_DAY_KEY, today);
+      if(_leoAccessTier !== 'free') trackLeoEvent('first_practice_started', { tier: 'guest' });
+      return;
+    }
+    if(first === today || localStorage.getItem(PRACTICE_RETURN_DAY_KEY)) return;   // mismo dia, o ya se mando su primer regreso
+    localStorage.setItem(PRACTICE_RETURN_DAY_KEY, today);
+    const d = Math.round((Date.parse(today) - Date.parse(first)) / 86400000);
+    if(!(d >= 1)) return;
+    trackLeoEvent(d === 1 ? 'practice_return_d1' : d <= 3 ? 'practice_return_d2_3' : d <= 7 ? 'practice_return_d4_7' : 'practice_return_d8_plus', { tier: _leoAccessTier === 'free' ? 'free' : 'guest' });
+  }catch(e){}
+}
+function trackGuestFirstSession(){
+  try{
+    if(!localStorage.getItem(PRACTICE_FIRST_DAY_KEY) || localStorage.getItem(GUEST_FIRST_SESSION_KEY)) return;   // sin ejercicio contado no hay sesion; una vez por navegador
+    localStorage.setItem(GUEST_FIRST_SESSION_KEY, '1');
+    trackLeoEvent('first_session_completed', { tier: 'guest' });
+  }catch(e){}
+}
 function bumpFreeDailyExerciseCount(){
+  trackPracticeActivation();
   if(_leoAccessTier === 'free') bumpFreeAcctExerciseCount();
   else bumpLocalDailyCount();
 }
@@ -4365,7 +4403,7 @@ function freeFirstSessionClosed(list){
 }
 function freeSessionEnd(skill){
   try{
-    if(!freeAcctId()) return;
+    if(!freeAcctId()){ if(_leoAccessTier !== 'free') trackGuestFirstSession(); return; }   // visitante: solo mide su primera sesion; la cuenta sube sus sesiones
     const list = readFreePending();
     if(closeFreeDrafts(list, skill || null, skill ? undefined : 'reto-diario')){
       writeFreePending(list);
@@ -4724,6 +4762,7 @@ function renderFreeDailyLimitReachedBlock(){
         <p class="upgrade-note">Tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis se renuevan mañana.</p>
       </div>`;
   }
+  trackGuestFirstSession();   // el limite de 3 cerro su primera sesion (si ya conto ejercicios): una vez por navegador
   trackLeoEvent('guest_exercise_limit_reached');
   trackLeoEvent('signup_prompt_shown');
   // Al crear la cuenta, miembros.html regresa a la persona a esta
@@ -10181,6 +10220,21 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   const onPickLevel = (lvl)=>{ currentLevel = lvl; askedLevel = lvl; renderCurrent(); focusTabs(); };
   renderLevelSelector(levelsEl, currentLevel, onPickLevel);
   renderTabs();
+  /* "Empezar ahora": la primera pregunta ya esta lista en el nivel actual, pero en el celular queda ~1.350 px debajo de las
+     tarjetas de nivel (casi dos pantallas) y quien no sabe su nivel se detiene a elegir. Este boton baja a esa pregunta; las
+     tarjetas siguen para cambiar de nivel. Solo cuando nadie pidio ya un tema o nivel (esos enlaces bajan solos) y queda ejercicio gratis hoy. */
+  try{
+    const sp = new URLSearchParams(window.location.search);
+    if(!sp.get('tema') && !LEVELS.includes(sp.get('level')) && !sp.get('cuenta') && levelsEl && levelsEl.parentNode && !freeDailyLimitReached() && !document.getElementById('quickStartBox')){
+      const qs = document.createElement('div');
+      qs.id = 'quickStartBox';
+      qs.style.cssText = 'margin:0 0 16px;';
+      qs.innerHTML = '<button type="button" class="btn btn-primary" data-quick-start style="width:100%;max-width:100%;white-space:normal;">Empezar ahora: mi primera pregunta</button>' +
+        '<p style="margin:8px 0 0;font-size:13px;color:var(--ink-faint);text-align:center;">Nivel ' + ((LEVEL_META[currentLevel] && LEVEL_META[currentLevel].label) || currentLevel) + '. Si no es el tuyo, cámbialo en las tarjetas de abajo.</p>';
+      levelsEl.parentNode.insertBefore(qs, levelsEl);
+      qs.querySelector('[data-quick-start]').addEventListener('click', ()=>{ trackLeoEvent('practice_quick_start_clicked', { level: currentLevel }); focusTabs(); });
+    }
+  }catch(e){}
   // Memoria de la cuenta gratis: tarjeta con lo que costó (no existe para invitados). Se repinta al llegar el progreso de la nube.
   let memCard = null;
   function renderMemoryCard(){
