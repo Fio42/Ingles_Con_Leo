@@ -361,7 +361,9 @@ test('todas las páginas cargan error-monitor.js UNA vez, en el <head> y como el
   for(const p of pages){
     const h = read(p);
     assert.strictEqual((h.match(/error-monitor\.js/g) || []).length, 1, p);
-    const scripts = [...h.matchAll(/<script\b[^>]*>/g)].filter(m => !/ld\+json/.test(m[0]));   // el JSON-LD no ejecuta nada
+    // El JSON-LD no ejecuta nada. academia-lanzamiento.js (interruptor de ~1 KB, sin red, con try/catch) se carga antes a proposito
+    // para fijar window.ACADEMIA_LIVE sin parpadeo: no cuenta como "primer script".
+    const scripts = [...h.matchAll(/<script\b[^>]*>/g)].filter(m => !/ld\+json/.test(m[0]) && !/academia-lanzamiento\.js/.test(m[0]));
     assert(scripts.length > 0, p);
     assert(/error-monitor\.js\?v=/.test(scripts[0][0]), p + ': el primer script ejecutable debe ser error-monitor.js, no ' + scripts[0][0].slice(0, 80));
     assert(scripts[0].index < h.indexOf('</head>'), p + ': debe estar dentro de <head>');
@@ -550,7 +552,7 @@ async function alertEnv(opts){
     rpc: async (name, args) => name === 'internal_secret_ok' ? { data: opts.secretOk !== false && args.p_secret === 'buena', error: null } : { data: opts.digest || null, error: null },
     from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: opts.row === undefined ? ROW : opts.row, error: null }) }) }) }),
   };
-  const m = loadTs('error-alert.ts', { supabase: sb, env: { RESEND_API_KEY: 're_x' }, fetch: async (url, init) => { mails.push({ url, body: JSON.parse(init.body) }); return { ok: true, status: 200, text: async () => '' }; } });
+  const m = loadTs('error-alert.ts', { supabase: sb, env: Object.assign({ RESEND_API_KEY: 're_x', ERROR_INSTANT_ALERTS: 'on' }, opts.env || {}), fetch: async (url, init) => { mails.push({ url, body: JSON.parse(init.body) }); return { ok: true, status: 200, text: async () => '' }; } });
   return { m, mails, call: (body, secret) => m.api.handle(new Request('https://x/f', { method: 'POST', headers: secret === undefined ? {} : { 'x-internal-secret': secret }, body: JSON.stringify(body) })) };
 }
 const ROW = { id: 7, kind: 'js_error', source: 'client', severity: 'error', section: 'speaking', message: 'boom <img src=x onerror=alert(1)>', error_name: 'TypeError', stack_top: 'f (app.js:1:1)', code: null,
@@ -569,6 +571,14 @@ test('ALERTA: con llave manda UN correo a inglesconleoreal@gmail.com, con el HTM
   assert(/^\[Leo ERROR\]\[speaking\] TypeError: boom/.test(mail.body.subject) && /\(nuevo\)$/.test(mail.body.subject), mail.body.subject);
   assert(!/<img src=x/.test(mail.body.html) && /&lt;img/.test(mail.body.html));
   assert(!/\n/.test(mail.body.subject));
+});
+test('ALERTA: por defecto (sin ERROR_INSTANT_ALERTS) solo avisa al momento si el error es critico; el resto va al resumen diario', async () => {
+  let e = await alertEnv({ env: { ERROR_INSTANT_ALERTS: '' } });
+  let r = await e.call({ event: 'alert', error_id: 7, reason: 'new' }, 'buena');
+  assert.strictEqual(r.status, 200); assert.strictEqual((await r.json()).reason, 'digest_only'); assert.strictEqual(e.mails.length, 0);
+  e = await alertEnv({ env: { ERROR_INSTANT_ALERTS: '' }, row: Object.assign({}, ROW, { severity: 'critical' }) });
+  r = await e.call({ event: 'alert', error_id: 7, reason: 'new' }, 'buena');
+  assert.strictEqual(r.status, 200); assert.strictEqual(e.mails.length, 1);
 });
 test('ALERTA: id inválido, error inexistente o evento raro no mandan nada', async () => {
   let e = await alertEnv(); assert.strictEqual((await e.call({ event: 'alert', error_id: 'x' }, 'buena')).status, 400);
@@ -590,7 +600,7 @@ test('FAIL-SAFE: Resend caído o base lanzando no tumba la función ni se regist
   try{ const r = await m.api.handle(new Request('https://x/f', { method: 'POST', headers: { 'x-internal-secret': 'buena' }, body: '{}' })); assert.strictEqual(r.status, 500); }
   finally { console.error = before; }
   const e = await alertEnv();
-  const m2 = loadTs('error-alert.ts', { supabase: { rpc: async (n) => ({ data: n === 'internal_secret_ok' ? true : null }), from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: ROW }) }) }) }) }, env: {}, fetch: async () => { throw new Error('red'); } });
+  const m2 = loadTs('error-alert.ts', { supabase: { rpc: async (n) => ({ data: n === 'internal_secret_ok' ? true : null }), from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: ROW }) }) }) }) }, env: { ERROR_INSTANT_ALERTS: 'on' }, fetch: async () => { throw new Error('red'); } });
   console.error = () => {};
   try{ const r = await m2.api.handle(new Request('https://x/f', { method: 'POST', headers: { 'x-internal-secret': 'buena' }, body: JSON.stringify({ event: 'alert', error_id: 7 }) })); assert.strictEqual(r.status, 200); assert.strictEqual((await r.json()).ok, false); }
   finally { console.error = before; }

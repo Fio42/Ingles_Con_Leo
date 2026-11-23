@@ -758,6 +758,18 @@ const LeoBackend = (function(){
   /* Verifica que haya una sesión iniciada Y que is_member sea
      true. Si no, redirige a miembros.html. Úsala desde las
      páginas de miembros vía guardMemberPage() (más abajo). */
+  /* A donde mandar a quien no puede entrar a una pagina de miembros. Si la pagina traia un tema (?tema=, ?foco=...),
+     viaja en ?volver= (validado por leoSafeVolver en app.js) para que, al iniciar sesion como miembro, regrese a ese tema.
+     Sin parametros queda 'miembros.html' a secas, como siempre. */
+  function memberGateUrl(){
+    try{
+      if(typeof leoVolverActual === 'function'){
+        const v = leoVolverActual();
+        if(v && v.indexOf('?') !== -1) return 'miembros.html?volver=' + encodeURIComponent(v);
+      }
+    }catch(e){}
+    return 'miembros.html';
+  }
   async function requireMemberAsync(){
     if(!isConfigured()){
       window.location.href = 'miembros.html';
@@ -777,7 +789,7 @@ const LeoBackend = (function(){
       syncProgressFromCloud();
       return true;
     }
-    window.location.href = 'miembros.html';
+    window.location.href = memberGateUrl();
     return false;
   }
 

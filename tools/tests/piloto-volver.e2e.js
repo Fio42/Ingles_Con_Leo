@@ -44,6 +44,17 @@ const load = (w, files) => files.forEach(f => w.run(read(f)));
    .forEach(k => ok(S(k) === '' || (S(k).indexOf('evil') === -1 && S(k).indexOf('<') === -1 && S(k).indexOf('%') === -1 && S(k).indexOf('/') === -1), 'rechazado o saneado: ' + JSON.stringify(k).slice(0, 50) + ' -> ' + JSON.stringify(S(k))));
   ['https://evil.com', '//evil.com', 'javascript:alert(1)', 'miembros.html', 'practica.html?tema=<script>'].forEach(k => ok(S(k) === '' || S(k) === 'practica.html', 'nunca devuelve un destino externo: ' + k));
   ok(S('otra.html?tema=x') === 'otra.html', 'fuera de practica.html los parametros se descartan');
+  // Paginas de Miembros con tema (el visitante que las abre sin sesion es mandado a miembros.html y el tema viaja en ?volver=)
+  const miem = { 'plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1': 'plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1',
+    'plan-estudio.html?empezar=1&tema=in-on-at&foco=preposiciones': 'plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1',
+    'plan-estudio.html?habilidad=writing&tema=a-an': 'plan-estudio.html?tema=a-an&habilidad=writing',
+    'plan-estudio.html?micro=some-any&evil=1&skill=grammar': 'plan-estudio.html?micro=some-any',
+    'plan-estudio.html?empezar=2&habilidad=hack': 'plan-estudio.html',
+    'vocabulario.html?tema=vocab-viajes&level=facil': 'vocabulario.html?tema=vocab-viajes',
+    'listening.html?tema=listening-numeros': 'listening.html?tema=listening-numeros',
+    'progreso.html?tema=x': 'progreso.html', 'writing.html?tema=x': 'writing.html' };
+  Object.keys(miem).forEach(k => ok(S(k) === miem[k], 'miembros valido ' + k + ' -> ' + miem[k] + ' (da ' + S(k) + ')'));
+  ['plan-estudio.html?tema=<script>', 'plan-estudio.html?foco=%3Cx%3E', 'plan-estudio.html?tema=https://evil.com', 'vocabulario.html?tema=a b'].forEach(k => ok(S(k) === '' || S(k).indexOf('?') === -1, 'miembros manipulado saneado: ' + k + ' -> ' + S(k)));
 }
 
 // ---- 2. Enlaces de registro/entrada que genera app.js ----
@@ -143,6 +154,20 @@ async function regreso({ url, profile, fromSignup, session, click }){
   ok(w.__nav === null, 'miembro sin parametros: entra a su panel como siempre');
   w = await regreso({ url: 'https://inglesconleo.com/miembros.html?modo=registro', profile: free, fromSignup: true });
   ok(w.__nav === null, 'registro sin parametros: sigue su flujo de siempre (sin redirigir)');
+  // Pagina de Miembros con tema (Plan enfocado): visitante sin sesion fue rebotado de plan-estudio.html a miembros.html?volver=...
+  const VP = 'plan-estudio.html%3Ffoco%3Dpreposiciones%26tema%3Din-on-at%26empezar%3D1', destP = 'plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1';
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?volver=' + VP, profile: member, fromSignup: false });
+  ok(w.__nav === destP, 'visitante rebotado del Plan -> entra como miembro -> vuelve al mismo tema: ' + w.__nav);
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?volver=' + VP, profile: free, fromSignup: false });
+  ok(w.__nav === null, 'cuenta gratis que entra con destino de Miembros: NO se le devuelve al Plan (volveria a rebotar), ve el aviso de siempre: ' + w.__nav);
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?modo=registro&volver=' + VP, profile: free, fromSignup: true });
+  ok(w.__nav === null, 'registro nuevo con destino de Miembros: sigue el flujo de siempre (sin viaje de ida y vuelta): ' + w.__nav);
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?volver=' + VP, click: true });
+  ok(w.__google.length === 1 && w.__google[0] === 'plan-estudio.html' && w.sessionStorage.getItem('leo_volver_full') === destP, 'Google con destino de Miembros: se pasa solo la pagina y el tema queda guardado: ' + JSON.stringify(w.__google));
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?oauth=google&volver=plan-estudio.html', profile: member, session: destP });
+  ok(w.__nav === destP, 'regreso de Google (miembro) -> su tema del Plan: ' + w.__nav);
+  w = await regreso({ url: 'https://inglesconleo.com/miembros.html?volver=plan-estudio.html', profile: member, fromSignup: false });
+  ok(w.__nav === null, 'Plan sin tema (enlace de siempre): el miembro entra a su panel como antes');
   // Manipulados
   for(const v of ['https%3A%2F%2Fevil.com', '%2F%2Fevil.com', 'javascript%3Aalert(1)', 'miembros.html', 'practica.html%3Ftema%3D%3Cscript%3E', 'practica.html%3Ftema%3Dok%26evil%3D1%26skill%3Dhack']){
     for(const [prof, signup] of [[free, true], [free, false], [member, false]]){
@@ -151,6 +176,28 @@ async function regreso({ url, profile, fromSignup, session, click }){
       ok(n === null || /^practica\.html(\?(tema=ok)(&cuenta=nueva)?|\?cuenta=nueva)?$/.test(n), 'manipulado ' + decodeURIComponent(v) + ' (' + (signup ? 'registro' : prof.is_member ? 'miembro' : 'entrar') + ') -> ' + n);
     }
   }
+  // El rebote real de backend.js (requireMemberAsync): conserva el tema; sin tema queda miembros.html a secas; el miembro no rebota.
+  async function rebote({ url, session, member }){
+    const w = page('<!doctype html><body></body>', url);
+    w.supabase = { createClient: () => ({ auth: { onAuthStateChange(){}, getSession: async () => ({ data: { session: session ? { user: { id: 'u1' } } : null } }) },
+      from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { id: 'u1', is_member: !!member }, error: null }) }) }) }) }) };
+    load(w, ['data.js', 'temas.js', 'app.js']);
+    w.__nav = null; w.run(read('backend.js').replace(/window\.location\.href\s*=\s*/g, 'window.__nav = '));
+    const r = await w.run('LeoBackend.requireMemberAsync()');
+    return { r, nav: w.__nav };
+  }
+  let b = await rebote({ url: 'https://inglesconleo.com/plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1', session: false });
+  ok(b.r === false && b.nav === 'miembros.html?volver=' + VP, 'visitante en el Plan con tema -> miembros.html con el tema en ?volver=: ' + b.nav);
+  b = await rebote({ url: 'https://inglesconleo.com/plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1', session: true, member: false });
+  ok(b.r === false && b.nav === 'miembros.html?volver=' + VP, 'cuenta gratis en el Plan con tema -> mismo aviso de Miembros (sigue sin acceso), con el tema: ' + b.nav);
+  b = await rebote({ url: 'https://inglesconleo.com/plan-estudio.html?foco=preposiciones&tema=in-on-at&empezar=1', session: true, member: true });
+  ok(b.r === true && b.nav === null, 'miembro en el Plan con tema -> entra, sin rebote: ' + JSON.stringify(b));
+  b = await rebote({ url: 'https://inglesconleo.com/progreso.html', session: false });
+  ok(b.nav === 'miembros.html', 'visitante en pagina de Miembros sin tema -> miembros.html a secas (igual que antes): ' + b.nav);
+  b = await rebote({ url: 'https://inglesconleo.com/vocabulario.html?tema=vocab-viajes&evil=1', session: false });
+  ok(b.nav === 'miembros.html?volver=vocabulario.html%3Ftema%3Dvocab-viajes', 'vocabulario con tema: se conserva solo el tema valido: ' + b.nav);
+  b = await rebote({ url: 'https://inglesconleo.com/plan-estudio.html?tema=%3Cscript%3E', session: false });
+  ok(b.nav === 'miembros.html', 'tema manipulado en el Plan: se descarta y queda miembros.html a secas: ' + b.nav);
   if(fails.length){ console.error('FALLA piloto-volver.e2e (' + fails.length + ' de ' + checks + '):\n  ' + fails.slice(0, 25).join('\n  ')); process.exit(1); }
   console.log('piloto-volver.e2e: ' + checks + ' comprobaciones (visitante, cuenta gratis, miembro, Google, enlaces antiguos y destinos manipulados), todas bien');
 })();

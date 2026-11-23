@@ -3369,21 +3369,34 @@ function leoAiAttachTrial(host, ctx){
    Devuelve '' si no es valido. Lo usan los enlaces de registro/entrada (aqui) y miembros.html al regresar. */
 const LEO_VOLVER_SKILLS = ['grammar', 'vocabulary', 'listening', 'speaking', 'writing', 'mix'];
 const LEO_VOLVER_LEVELS = ['principiante', 'facil', 'medio', 'avanzado'];
+// Paginas que pueden llevar parametros al volver (y en que orden). practica.html es publica; las otras son de Miembros: si alguien sin sesion
+// las abre con un tema (Plan enfocado, vocabulario o listening de un tema), el tema viaja en ?volver= para no perderse al iniciar sesion.
+const LEO_VOLVER_PARAMS = {
+  'practica.html': ['skill', 'tema', 'level'],
+  'plan-estudio.html': ['foco', 'tema', 'micro', 'habilidad', 'empezar'],
+  'vocabulario.html': ['tema'],
+  'listening.html': ['tema']
+};
+// Paginas que solo abren a miembros: si el destino es una de ellas, quien NO es miembro no debe ser devuelto ahi (lo rebotaria otra vez a miembros.html).
+const LEO_VOLVER_SOLO_MIEMBROS = ['plan-estudio.html', 'vocabulario.html', 'listening.html'];
 function leoSafeVolver(raw){
   if(typeof raw !== 'string' || raw.length > 200) return '';
   const m = /^([a-z0-9-]+\.html)(?:\?([A-Za-z0-9=&_-]*))?$/.exec(raw);
   if(!m || m[1] === 'miembros.html') return '';
-  if(m[1] !== 'practica.html' || !m[2]) return m[1];
+  const allowed = LEO_VOLVER_PARAMS[m[1]];
+  if(!allowed || !m[2]) return m[1];
   const keep = {};
   m[2].split('&').forEach(function(pair){
     const kv = pair.split('='); if(kv.length !== 2) return;
     const k = kv[0], v = kv[1];
-    if(Object.prototype.hasOwnProperty.call(keep, k)) return;
+    if(allowed.indexOf(k) === -1 || Object.prototype.hasOwnProperty.call(keep, k)) return;
     if(k === 'skill' && LEO_VOLVER_SKILLS.indexOf(v) !== -1) keep.skill = v;
     else if(k === 'level' && LEO_VOLVER_LEVELS.indexOf(v) !== -1) keep.level = v;
-    else if(k === 'tema' && /^[a-z0-9-]{1,60}$/.test(v)) keep.tema = v;
+    else if((k === 'tema' || k === 'foco' || k === 'micro') && /^[a-z0-9-]{1,60}$/.test(v)) keep[k] = v;
+    else if(k === 'habilidad' && v === 'writing') keep.habilidad = v;
+    else if(k === 'empezar' && v === '1') keep.empezar = v;
   });
-  const q = ['skill', 'tema', 'level'].filter(function(k){ return keep[k]; }).map(function(k){ return k + '=' + keep[k]; }).join('&');
+  const q = allowed.filter(function(k){ return keep[k]; }).map(function(k){ return k + '=' + keep[k]; }).join('&');
   return q ? m[1] + '?' + q : m[1];
 }
 // La pagina actual (con sus parametros permitidos) lista para ir dentro de ?volver=. Sin parametros validos: solo el nombre de la pagina, como siempre.

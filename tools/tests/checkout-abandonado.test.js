@@ -157,15 +157,17 @@ for(const [file, label] of [['create-checkout.ts', 'Mercado Pago'], ['stripe-che
 test('Recargar o navegar NO cuenta como intento: MP y PayPal solo por clic; Stripe se muestra solo pero SIN registrar (track:false)', () => {
   const html = read('miembros.html');
   const calls = [...html.matchAll(/LeoBackend\.(startCheckout|startStripeCheckout|startPaypalCheckout)\(/g)];
-  assert.strictEqual(calls.length, 3, 'una llamada por proveedor');
+  // MP y PayPal tienen un solo punto de entrada; Stripe tiene 2 (precarga del formulario y reintento al elegir plan), ambas con track:false (se comprueba abajo).
+  assert.strictEqual(calls.filter(c => c[1] === 'startCheckout').length, 1, 'MP: una llamada');
+  assert.strictEqual(calls.filter(c => c[1] === 'startPaypalCheckout').length, 1, 'PayPal: una llamada');
+  assert.strictEqual(calls.filter(c => c[1] === 'startStripeCheckout').length, 2, 'Stripe: precarga y reintento');
   for(const fn of ['goToCheckout', 'goToPaypalCheckout']){
     const uses = [...html.matchAll(new RegExp(fn + '\\(', 'g'))].map(m => html.slice(Math.max(0, m.index - 40), m.index));
     const external = uses.filter(u => !/async function\s+$/.test(u) && !/addEventListener\('click',\s*\(\)=>\{\s*$/.test(u));
     assert.strictEqual(external.length, 0, fn + ' solo se invoca dentro de un listener de clic');
   }
   // Stripe (desde 2026-10-26): el formulario aparece solo, asi que la carga automatica SIEMPRE debe ir con track:false.
-  const stripeCall = html.match(/LeoBackend\.startStripeCheckout\([^)]*\)/)[0];
-  assert(/track\s*:\s*false/.test(stripeCall), 'startStripeCheckout automatico debe usar { track:false }: ' + stripeCall);
+  for(const m of html.matchAll(/LeoBackend\.startStripeCheckout\([^)]*\)/g)) assert(/track\s*:\s*false/.test(m[0]), 'startStripeCheckout automatico debe usar { track:false }: ' + m[0]);
   // La INTENCION de compra se registra solo al hacer clic en "Activar membresia" (o al llegar con ese clic
   // desde otra pagina e iniciar sesion), nunca por mirar el formulario: sin logica de espera ni de toque.
   assert(!/watchStripeIntent|dwellTimer|addEventListener\('blur'/.test(html), 'sin registro por espera de 20 s ni por toque en el formulario');
