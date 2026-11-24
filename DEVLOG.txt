@@ -4277,3 +4277,8 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 2026-11-23 (6) - Verificacion en produccion de activacion y retencion (commit f5d2a8d, publicado con autorizacion de Leo)
 - Visitante movil limpio (Chrome sin perfil, 375x812, Analytics y Pixel bloqueados para no ensuciar los datos): el boton "Empezar ahora" se ve sin bajar (y=335), al tocarlo la pregunta 1 queda a la vista, sin desborde. Al terminar los 3 ejercicios: first_practice_started guest x1, first_session_completed guest x1, guest_exercise_limit_reached x1 y el muro de registro; contador 3. Al recargar: muro, sin boton, sin eventos repetidos.
 - Pendiente: telefono real e Instagram/TikTok; leer los eventos en GA4 en 24-48 h.
+
+2026-11-24 - Academia: el boton de un curso sin abrir decia "Continuar aprendiendo" (local, sin publicar)
+- Causa: academia.js heroSection (tarjeta del curso, igual para los 11 cursos) siempre decia "Continuar aprendiendo", incluso con 0 lecciones y nada a medias (caso de Leo: THERE IS / THERE ARE con 0 de 5 y la insignia ganada por la evaluacion). La barra inferior de la lista de lecciones decia "Continuar: <leccion>".
+- Ahora: sin lecciones terminadas y sin nada a medias -> "Empezar el curso" (y "Empezar: <leccion>" en la lista); con una leccion a medias o al menos una terminada -> "Continuar aprendiendo" / "Continuar: ..." / "Seguir: ..." como antes. Una leccion a medias sigue diciendo "la dejaste a medias".
+- Pruebas: academia-lecciones-a-medias.e2e 26 comprobaciones (nuevas: curso sin abrir, leccion a medias, leccion terminada); academia-e2e-nube acepta ambos textos. Resto de pruebas de Academia sin cambios (solo siguen rojas academia-articulos y academia-piloto por entorno). ?v=20261124a para academia.js.

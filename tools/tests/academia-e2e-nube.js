@@ -401,7 +401,7 @@ async function until(fn, ms, what){
     const p = C.page;
     await db.exec(`update public.profiles set is_member = true where id = '${F}'`);
     await p.goto(base + '/academia.html?nube=1#/'); await p.reload();
-    await until(async () => /Continuar aprendiendo/.test(await p.innerText('#acRoot')), 9000, 'vista de miembro');
+    await until(async () => /Continuar aprendiendo|Empezar el curso/.test(await p.innerText('#acRoot')), 9000, 'vista de miembro');
     await p.goto(base + '/academia.html?nube=1#/curso/to-be/leccion/1'); await p.reload(); await p.waitForSelector('.ac-card');
     assert(/lecci[oó]n 1/i.test(await p.innerText('#acRoot')));
     // vence otra vez: vuelve a la presentacion de inmediato

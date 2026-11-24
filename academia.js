@@ -927,7 +927,8 @@
       tail = el('p', { class: 'ac-hero-meta', text: 'Ahora puedes probar la evaluación de práctica.' });
       mid.appendChild(tail);
     }
-    cta = link(target ? CB + '/leccion/' + target.n : CB + '/evaluacion', target ? 'Continuar aprendiendo' : 'Ir a la evaluación', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
+    // Sin lecciones terminadas y sin nada a medias es la primera vez: "Empezar el curso". "Continuar" solo si ya hay avance o una leccion a medias.
+    cta = link(target ? CB + '/leccion/' + target.n : CB + '/evaluacion', target ? ((!resume && dc === 0) ? 'Empezar el curso' : 'Continuar aprendiendo') : 'Ir a la evaluación', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl');
     if(!target && NUBE && NUBE.ready){
       // Con cuenta conectada: no mostrar el texto de practica hasta saber si ya aprobo.
       tail.style.display = 'none'; cta.style.visibility = 'hidden';
@@ -1087,7 +1088,7 @@
 
     var target = pendingResume() || nl;
     root.appendChild(el('div', { class: 'ac-sticky' }, [
-      target ? link(CB + '/leccion/' + target.n, (pendingResume() ? 'Seguir: ' : 'Continuar: ') + target.title, 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl') : link(CB + '/evaluacion', 'Hacer la evaluación de práctica', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl')
+      target ? link(CB + '/leccion/' + target.n, (pendingResume() ? 'Seguir: ' : (doneCount() === 0 ? 'Empezar: ' : 'Continuar: ')) + target.title, 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl') : link(CB + '/evaluacion', 'Hacer la evaluación de práctica', 'ac-btn ac-btn-primary ac-btn-wide ac-btn-xl')
     ]));
     focusMain();
   }

@@ -49,6 +49,7 @@ const LESSON = (() => { const c = vm.runInNewContext(read('academia-data.js') + 
   {
     const w = boot(); await go(w, '#/');
     ok(/para empezar/.test(txt(w)) && !/a medias/.test(txt(w)), '1a: curso nuevo dice "para empezar"');
+    ok(/Empezar el curso/.test(txt(w)) && !/Continuar aprendiendo/.test(txt(w)), '1a2: curso sin abrir: el boton dice "Empezar el curso", no "Continuar aprendiendo"');
     await go(w, '#/curso/to-be/leccion/1');
     ok(/Lección 1 · 1 de/.test(txt(w)), '1b: la leccion abre en el paso 1: ' + txt(w).slice(0, 80));
     const st = state(w);
@@ -58,7 +59,13 @@ const LESSON = (() => { const c = vm.runInNewContext(read('academia-data.js') + 
     ok(/para empezar/.test(txt(w)) && !/a medias/.test(txt(w)), '1e: tras salir sigue en "para empezar": ' + (txt(w).match(/Lección \d de \d[^A-Z]{0,40}/) || [''])[0]);
     await go(w, '#/curso/to-be');
     ok(!/a medias/.test(txt(w)), '1f: la lista de lecciones tampoco dice "a medias"');
-    ok(/Continuar:/.test(txt(w)), '1g: el boton dice "Continuar", no "Seguir"');
+    ok(/Empezar:/.test(txt(w)) && !/Continuar:|Seguir:/.test(txt(w)), '1g: curso nuevo: el boton dice "Empezar", no "Continuar" ni "Seguir"');
+  }
+
+  // 1h. con una leccion terminada y ninguna a medias: "Continuar aprendiendo" (ya hay avance)
+  {
+    const w = boot({ v: 1, lessons: { [LESSON.id]: { done: true } }, resume: {}, last: null, missed: {}, cleared: {}, exam: { attempts: [], best: null, lastIds: [] }, goal: null, goalAt: 0, days: [], completions: [], snooze: null, returnTo: null }); await go(w, '#/');
+    ok(/Lecciones completadas: 1 de/.test(txt(w)) && /Continuar aprendiendo/.test(txt(w)) && !/Empezar el curso/.test(txt(w)), '1h: con una leccion terminada el boton dice "Continuar aprendiendo": ' + (txt(w).match(/Lecciones completadas[^A-Z]{0,30}/) || [''])[0]);
   }
 
   // 2. avanzar un paso: se guarda, y Seguir abre ese paso
@@ -71,6 +78,7 @@ const LESSON = (() => { const c = vm.runInNewContext(read('academia-data.js') + 
     ok(typeof r.t0 === 'number' && Date.now() - r.t0 < 60000, '2b: se conserva la hora de inicio');
     await go(w, '#/');
     ok(/la dejaste a medias/.test(txt(w)), '2c: Mi ruta dice "la dejaste a medias"');
+    ok(/Continuar aprendiendo/.test(txt(w)) && !/Empezar el curso/.test(txt(w)), '2c2: con una leccion a medias el boton dice "Continuar aprendiendo"');
     await go(w, '#/curso/to-be');
     ok(/La dejaste a medias/.test(txt(w)) && /Seguir:/.test(txt(w)), '2d: la lista dice "La dejaste a medias" y el boton "Seguir"');
     await click(w, /Seguir:/);
