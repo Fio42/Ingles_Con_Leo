@@ -6,7 +6,7 @@ Leyenda: **Corregido** = cambio hecho en el código local · **Probado** = compr
 
 ## Resumen
 - Los 13 hallazgos + el fix previo están corregidos y **publicados** (commit 2cfdb63).
-- Probado: pruebas automáticas (auditoria-plataforma 21 ok), miembro en producción y visitante con el mismo código en local. **Pendiente**: cuenta gratis y visitante interactivo en producción (ver abajo).
+- Probado: pruebas automáticas (auditoria-plataforma 21 ok), miembro en producción y visitante con el mismo código en local. **Pendiente**: solo cuenta gratis.
 
 ## Causas raíz y estado
 | # | Hallazgo | Causa raíz | Estado |
@@ -46,6 +46,6 @@ Se reutiliza lo existente: `hasProgress`/`pendingResume` (academia.js) para "a m
 - Aislamiento: `loadMistakeStatsMap` no guarda en cache datos que llegan cuando el espacio/cuenta ya cambió. Red lenta (>2 s): lo local se muestra con la nota "Actualizando con tus datos guardados" hasta que llegue el servidor o falle.
 - LeoBot: en celular el lanzador (56 px) solo toca el borde derecho (5-13 % del ancho) de algunos botones y tarjetas; durante la práctica va a la izquierda y no capta clics.
 - **Miembro (producción)**: progreso muestra 116 sin parpadeo; títulos, textos y enlaces nuevos OK; fortaleza queda "Aún sin definir" con los datos actuales (Gramática en refuerzo).
-- **Visitante**: verificado con el mismo código en local y por HTTP en producción; **pendiente** pasada interactiva en producción con navegador limpio.
+- **Visitante (producción, sin sesión)**: verificado: "3 preguntas" y "Pregunta 1 de 3", aprender (Gratis con tu cuenta, enlaces a cursos), títulos, redirecciones. Detalle menor: con el límite ya gastado el muro conserva el encabezado "8 preguntas cortas".
 - **Cuenta gratuita**: **pendiente** (no hay cuenta de prueba).
 - Residual: GitHub Pages cachea el HTML unos minutos.
