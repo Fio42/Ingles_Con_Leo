@@ -825,7 +825,7 @@
   }
 
   /* ---------------- Vistas ---------------- */
-  function setTitle(t){ document.title = t + ' - Academia - Inglés con Leo'; }
+  function setTitle(t){ document.title = (t === 'Academia' ? 'Academia' : t + ' - Academia') + ' - Inglés con Leo'; }
   function focusMain(){
     var h = root.querySelector('[data-focus]');
     if(h){ h.setAttribute('tabindex', '-1'); try{ h.focus({ preventScroll: true }); }catch(e){} }

@@ -27,6 +27,8 @@
   var KEY = 'leo_aprender_v1';
   var ALL_LESSONS = (typeof APRENDER_LESSONS !== 'undefined') ? APRENDER_LESSONS : [];
   var LESSONS = ALL_LESSONS.filter(function(l){ return !l.soon; });   // las que ya se pueden abrir
+  // Microlecciones aun sin audio que ya tienen curso completo en la Academia (para no dejar solo un "Próximamente").
+  var SOON_COURSE = { 'do-does': 'do-does', 'can-could-should': 'can', 'in-on-at': 'in-on-at', 'presente-simple-vs-continuo': 'presente-simple' };
   var SOON = ALL_LESSONS.filter(function(l){ return !!l.soon; });      // se muestran como 'Próximamente'
   var END_AUDIO = 'audio/aprender/fin.mp3';
   var END_SAY = '¡Muy bien! Ahora puedes practicar lo que aprendiste.';
@@ -561,12 +563,12 @@
       var label = !open ? 'Desbloquear' : (st.k === 'done' ? 'Repetir' : (st.k === 'cur' ? 'Continuar' : 'Ver lección'));
       h += '<li class="ap-card ap-card-' + (open ? st.k : 'locked') + '"><div class="ap-card-main"><p class="ap-card-t">' + esc(x.title) +
         (isReco ? ' <span class="ap-tag">Recomendada</span>' : '') + (x.free && accessInfo.tier !== 'member' ? ' <span class="ap-tag ap-tag-free">Gratis</span>' : '') + '</p>' +
-        '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">' + (open ? esc(st.t) : 'Solo para miembros') + ' · 3 min</p></div>' +
+        '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">' + (open ? esc(st.t) : (x.free ? 'Gratis con tu cuenta' : 'Solo para miembros')) + ' · 3 min</p></div>' +
         '<button type="button" class="btn ' + (open ? 'btn-ghost' : 'btn-ghost ap-locked-btn') + ' btn-sm" data-go="' + esc(x.id) + '" data-at="' + (open && st.k === 'cur' ? state.cur.i : 0) + '" data-src="lista">' + label + '</button></li>';
     });
     SOON.forEach(function(x){
       h += '<li class="ap-card ap-card-soon"><div class="ap-card-main"><p class="ap-card-t">' + esc(x.title) + ' <span class="ap-tag">Próximamente</span></p>' +
-        '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">En preparación · 3 min</p></div></li>';
+        '<p class="ap-card-s">' + esc(x.short) + '</p><p class="ap-card-st">En preparación · 3 min' + (SOON_COURSE[x.id] ? ' · <a href="academia.html#/curso/' + SOON_COURSE[x.id] + '">El curso completo ya está en la Academia</a>' : '') + '</p></div></li>';
     });
     return h + '</ul>';
   }

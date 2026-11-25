@@ -440,3 +440,11 @@ body.leobot-away{padding-bottom:84px;}
   .leobot-panel{bottom:calc(164px + env(safe-area-inset-bottom));}
   .leobot-greet{bottom:calc(188px + env(safe-area-inset-bottom));}
 }
+
+/* Auditoria 2026-11-24: en una sesion de practica el boton flotante "Siguiente" vive abajo a la derecha; el lanzador reducido
+   (leobot-away) se pasa a la izquierda para no quedar encima. En celular el lanzador normal se achica un poco para tapar menos
+   los botones principales de las tarjetas (sigue sobre la barra inferior y a la derecha). */
+body.leobot-away .leobot-fab{right:auto;left:14px;}
+@media (max-width:480px){
+  .leobot-fab{width:56px;height:56px;right:8px;}
+}

@@ -5,6 +5,8 @@
    (cada cuenta solo ve y escribe sus filas). No toca la red ni la base real.
    Un "navegador" = un almacén compartido (localStorage). Cada "pestaña" = un contexto nuevo que carga los scripts. */
 const fs = require('fs'), vm = require('vm'), path = require('path'), assert = require('assert');
+// El arbol de trabajo en Windows puede estar en CRLF y estas pruebas buscan saltos LF: se normaliza al leer texto.
+const _readFileSync = fs.readFileSync; fs.readFileSync = function(){ const r = _readFileSync.apply(fs, arguments); return typeof r === 'string' ? r.replace(/\r\n/g, '\n') : r; };
 const root = path.join(__dirname, '..', '..');
 const SRC = {
   data: fs.readFileSync(path.join(root, 'data.js'), 'utf8'),

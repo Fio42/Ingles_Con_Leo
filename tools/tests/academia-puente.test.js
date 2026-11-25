@@ -4,7 +4,7 @@
    Corre con:  node tools/tests/academia-puente.test.js   (desde la carpeta inglesconLeo) */
 const fs = require('fs'), vm = require('vm'), path = require('path'), assert = require('assert');
 const root = path.join(__dirname, '..', '..');
-const rd = f => fs.readFileSync(path.join(root, f), 'utf8');
+const rd = f => fs.readFileSync(path.join(root, f), 'utf8').replace(/\r\n/g, '\n');   // el arbol de trabajo en Windows puede estar en CRLF
 const ctx = {}; vm.createContext(ctx);
 vm.runInContext(rd('temas.js') + ';this.__T = { TEMA_BY_ID, ACADEMIA_COURSE_BY_TEMA };', ctx);
 const { TEMA_BY_ID, ACADEMIA_COURSE_BY_TEMA } = ctx.__T;

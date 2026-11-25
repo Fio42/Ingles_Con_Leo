@@ -14,6 +14,8 @@ function fakeEl(tag){
   return e;
 }
 
+// Misma fecha LOCAL que usa app.js (todayStr). Con toISOString() (UTC) la prueba fallaba cada noche, cuando la fecha UTC ya es la de mañana.
+function localDay(back){ const d = new Date(Date.now() - back * 86400000); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function load(opts){
   opts = opts || {};
   const store = opts.store || {};
@@ -50,7 +52,7 @@ function free(uid, opts){
   opts = opts || {};
   const c = load({ account:uid, store:opts.store }), T = c.__t;
   c.ACADEMIA_LIVE = opts.live !== false; c.__leoMemberVerified = false;
-  T.setProfile({ id:uid, free_first_exercise_at: opts.firstAt || new Date().toISOString(), free_daily_count: opts.count || 0, free_daily_date: new Date().toISOString().slice(0, 10) });
+  T.setProfile({ id:uid, free_first_exercise_at: opts.firstAt || new Date().toISOString(), free_daily_count: opts.count || 0, free_daily_date: localDay(0) });
   return c;
 }
 const ev = c => c.__events;
@@ -196,7 +198,7 @@ test('INVITADO aparte: lo del invitado se lleva a la cuenta (3 + 3 = 6) y el inv
   assert.strictEqual(g2.__t.freeDailyLimitReached(), true, 'el invitado sigue en su tope de 3');
   const g3 = load({ store: {} }); g3.__t.setTier('guest'); assert.strictEqual(g3.__t.freeDailyLimitReached(), false);
 });
-function bumpGuest(c, n){ const k = 'leoLocalDailyCount:' + new Date().toISOString().slice(0, 10); c.localStorage.setItem(k, String(n)); }
+function bumpGuest(c, n){ const k = 'leoLocalDailyCount:' + localDay(0); c.localStorage.setItem(k, String(n)); }
 test('DOS DISPOSITIVOS: el servidor suma sobre su conteo y esta página adopta el valor real (límite global de la cuenta)', async ()=>{
   // dispositivo B con perfil viejo (0) mientras el servidor ya tiene 4 (de A)
   const b = free('acctD', { count:0 });
@@ -222,7 +224,7 @@ test('ENCABEZADO: freeSessionCap publica el número real de ejercicios (6, 3, 1,
 });
 
 test('3 + 3: invitado con 3 que se registra le quedan 3; registro directo 6; el día siguiente 6; recargar no regala', ()=>{
-  const day = d => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const day = d => localDay(d);
   const store = {}; const g = load({ store }); g.__t.setTier('guest'); bumpGuest(g, 3);
   const a = free('p1', { store });
   assert.strictEqual(6 - a.__t.getFreeAcctExerciseCount(), 3, 'quedan 3');

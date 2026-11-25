@@ -28,9 +28,9 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
 <link rel="stylesheet" href="style.css?v=20261109c">
-<link rel="preload" as="style" href="chatbot.css?v=20261121a">
-<link rel="stylesheet" href="chatbot.css?v=20261121a" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="chatbot.css?v=20261121a"></noscript>
+<link rel="preload" as="style" href="chatbot.css?v=20261124b">
+<link rel="stylesheet" href="chatbot.css?v=20261124b" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="chatbot.css?v=20261124b"></noscript>
 <!-- Google tag (gtag.js) -->
 <script src="error-monitor.js?v=20261007e"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DRL810MYR"></script>
@@ -616,8 +616,8 @@
 <script src="data.js?v=20261122e"></script>
 <script src="temas.js?v=20261121d"></script>
 <script src="academia-cursos.js?v=20261115a"></script>
-<script src="inicio-alumno.js?v=20261108c"></script>
-<script src="app.js?v=20261123b"></script>
+<script src="inicio-alumno.js?v=20261124a"></script>
+<script src="app.js?v=20261124b"></script>
 <script src="backend.js?v=20261123a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -668,6 +668,7 @@
     hideLoading();
     gate.style.display = 'none';
     memberContent.style.display = 'none';
+    document.title = 'Tu cuenta - Inglés con Leo';
     if(memberPreview){
       memberPreview.style.display = 'block';
       if(typeof initMemberHeader === 'function') initMemberHeader();
@@ -898,6 +899,7 @@
     hideLoading();
     gate.style.display = 'none';
     memberContent.style.display = 'block';
+    document.title = 'Mi panel - Inglés con Leo';   // la pestaña ya no dice "Hazte miembro" a quien ya es miembro
     startDashboard();
     if(typeof initMemberHeader === 'function') initMemberHeader();
     maybeOnboard();

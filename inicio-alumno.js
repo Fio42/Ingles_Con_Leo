@@ -20,7 +20,8 @@
     var lessons = (state && state.lessons) || {}, done = 0;
     Object.keys(lessons).forEach(function(k){ if(lessons[k] && lessons[k].done) done++; });
     var days = (state && state.days) || [];
-    var started = done > 0 || Object.keys((state && state.resume) || {}).length > 0 || days.length > 0;
+    /* Un dia practicado solo por la evaluacion (0 lecciones, nada a medias) no cuenta como curso empezado: si no, decia "Continuar curso" sin haber empezado. */
+    var started = done > 0 || Object.keys((state && state.resume) || {}).length > 0;
     return { id: id, title: meta.title, total: total, done: Math.min(done, total || done), started: started,
              finished: total > 0 && done >= total, lastDay: days.length ? String(days[days.length - 1]) : '' };
   }

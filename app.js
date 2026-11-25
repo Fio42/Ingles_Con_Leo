@@ -4263,6 +4263,15 @@ function bumpFreeAcctExerciseCount(){
 /* ---- Punto único que usan las 5 sesiones gratis + runMixSessionCore.
    Nadie más en el sitio debe leer/escribir estos contadores a mano:
    siempre a través de estas tres funciones. */
+/* Contador "Pregunta X de N" de las sesiones gratis. El visitante puede contar solo GUEST_EXERCISE_LIMIT ejercicios al dia (el muro llega ahi),
+   asi que la sesion de 8 le decia "de 8" y cortaba en 3. Solo cambia el numero que se muestra; el banco de la sesion y el conteo no cambian.
+   Cuenta gratis: su sesion ya viene recortada a lo que le queda (freeSessionCap), igual que antes. */
+function freeShownTotal(idx, total){
+  try{
+    if(_leoAccessTier !== 'free') return Math.max(idx + 1, Math.min(total, idx + (GUEST_EXERCISE_LIMIT - getLocalDailyCount())));
+  }catch(e){}
+  return total;
+}
 function freeDailyLimitReached(){
   if(_leoAccessTier === 'free') return getFreeAcctExerciseCount() >= FREE_USER_DAILY_LIMIT;
   return getLocalDailyCount() >= GUEST_EXERCISE_LIMIT;
@@ -4389,7 +4398,15 @@ function freeSessionCap(pool){
     }
   }catch(e){}
   // El encabezado de la práctica muestra el número REAL de ejercicios de esta sesión.
-  try{ if(Array.isArray(out)){ window.__leoFreeSessionTotal = out.length; document.dispatchEvent(new CustomEvent('leo:free-session-total', { detail: out.length })); } }catch(e){}
+  // Visitante: la sesion trae su banco completo (el limite lo corta despues), pero el ENCABEZADO dice solo lo que de verdad puede hacer hoy
+  // (antes decia "8 preguntas" y el muro llegaba a las 3). El pool y el conteo no cambian.
+  try{
+    if(Array.isArray(out)){
+      let shown = out.length;
+      if(_leoAccessTier !== 'free' && _leoAccessTier !== 'member') shown = Math.min(shown, Math.max(0, GUEST_EXERCISE_LIMIT - getLocalDailyCount()));
+      window.__leoFreeSessionTotal = shown; document.dispatchEvent(new CustomEvent('leo:free-session-total', { detail: shown }));
+    }
+  }catch(e){}
   return out;
 }
 // ¿Se acaba de cerrar la PRIMERA sesión de esta cuenta? El marcador del servidor (free_first_exercise_at, se pone al primer ejercicio)
@@ -4801,7 +4818,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
     const entry = pool[idx];
     if(!isFree) saveInflightSession('mixto', level, { pool, idx, results, startedAt });
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Mixto · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, total);
+    wrap.innerHTML = sessionHeaderHtml('Mixto · ' + MIX_KIND_LABEL[entry.kind], level, idx+1, isFree ? freeShownTotal(idx, total) : total);
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -6162,13 +6179,15 @@ async function loadMistakeStatsMap(forceReload){
   if(forceReload) _mistakeStatsCache = undefined;
   if(_mistakeStatsCache !== undefined) return _mistakeStatsCache;
   if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()){ _mistakeStatsCache = null; return null; }
+  const scopeAtStart = LeoScope.scope();   // espacio (cuenta o invitado) que pidio los datos
   try{
     const rows = await LeoBackend.getMistakeStats();
+    if(LeoScope.scope() !== scopeAtStart) return null;   // la cuenta cambio mientras llegaba: no se guarda ni se muestra lo de otra cuenta
     if(rows === null){ _mistakeStatsCache = null; return null; } // fallo real: usar respaldo viejo
     const map = new Map();
     rows.forEach(r => map.set(r.item_id, r));
     _mistakeStatsCache = map;
-  }catch(e){ _mistakeStatsCache = null; }
+  }catch(e){ if(LeoScope.scope() === scopeAtStart) _mistakeStatsCache = null; }
   return _mistakeStatsCache;
 }
 
@@ -7483,7 +7502,8 @@ function computeDiagnosis(p, statsMap){
 
   // Fortaleza: la mejor habilidad con muestra suficiente (Wilson), y
   // solo si de verdad va bien (no se declara fortaleza un 60%).
-  const strengthPool = skills.filter(u => u.n >= 15 && u.acc >= 70);
+  // Una habilidad que hoy esta en "Necesita refuerzo" no puede ser a la vez la fortaleza (el % total no lo contradice con el de ahora).
+  const strengthPool = skills.filter(u => u.n >= 15 && u.acc >= 70 && u.state !== 'refuerzo');
   diag.strength = strengthPool.sort((a,b)=> b.wilsonLow - a.wilsonLow)[0] || null;
 
   // Punto débil: se prefiere una familia de gramática (es más concreto y
@@ -7540,7 +7560,7 @@ function computeDiagnosis(p, statsMap){
     diag.insights.push({ tone:'up', text: diag.recoveredWeek === 1 ? 'Recuperaste 1 error esta semana.' : `Recuperaste ${diag.recoveredWeek} errores esta semana.` });
   }
   if(diag.strength){
-    diag.insights.push({ tone:'good', text:`Tu mejor habilidad ahora es ${diag.strength.label}, con ${diag.strength.acc}% de aciertos.` });
+    diag.insights.push({ tone:'good', text:`Tu mejor habilidad es ${diag.strength.label}, con ${diag.strength.acc}% de aciertos en total.` });
   }
   if(diag.mastered.length){
     const names = diag.mastered.slice(0, 3).map(u=>u.label);
@@ -7847,10 +7867,36 @@ function diagNotReadyText(diag){
 // Dibuja algo que depende de mistake_stats (Supabase): primero con lo
 // que ya hay (sin esperar a la red) y, si llegan datos nuevos, se
 // vuelve a dibujar una vez. Si la red falla, se queda lo local.
-function diagRenderWithStats(paint){
-  paint();
-  if(_mistakeStatsCache instanceof Map) return;
-  loadMistakeStatsMap().then(map=>{ if(map instanceof Map) paint(); }).catch(()=>{});
+function diagRenderWithStats(paint, container){
+  // Con sesion y servidor, esperar (maximo 2 s) los errores del servidor antes del primer dibujo: dibujar primero con el historial de ESTE
+  // dispositivo mostraba una cifra (p. ej. 90) y un segundo despues otra (116, la del servidor y la de Mis errores).
+  const waitServer = _mistakeStatsCache === undefined && typeof LeoBackend !== 'undefined' && LeoBackend.isConfigured();
+  if(!waitServer){
+    paint();
+    if(_mistakeStatsCache instanceof Map) return;
+    loadMistakeStatsMap().then(map=>{ if(map instanceof Map) paint(); }).catch(()=>{});
+    return;
+  }
+  let painted = false;
+  const clearNote = () => { try{ const n = container && container.querySelector('.diag-provisional'); if(n) n.remove(); }catch(e){} };
+  const once = () => { if(!painted){ painted = true; paint(); } };
+  // Red lenta (>2 s): se muestra lo local pero NO como definitivo: lleva una nota hasta que llegue el servidor (o falle).
+  const t = setTimeout(() => {
+    once();
+    try{
+      if(container && !container.querySelector('.diag-provisional')){
+        const n = document.createElement('p');
+        n.className = 'diag-provisional'; n.setAttribute('role', 'status');
+        n.style.cssText = 'margin:0 0 8px;font-size:.82rem;color:var(--ink-faint,#6b7280);';
+        n.textContent = 'Actualizando con tus datos guardados. Estas cifras pueden cambiar en unos segundos.';
+        container.insertBefore(n, container.firstChild);
+      }
+    }catch(e){}
+  }, 2000);
+  loadMistakeStatsMap().then(map=>{
+    clearTimeout(t);
+    if(painted){ if(map instanceof Map) paint(); clearNote(); } else once();
+  }).catch(()=>{ clearTimeout(t); once(); clearNote(); });
 }
 
 /* Tarjeta compacta del panel de miembros (miembros.html). Reemplaza el
@@ -7911,7 +7957,7 @@ function renderProgressSummaryCard(container){
       ${body}
       <a href="progreso.html#diagnostico" class="progress-summary-cta">${diag.ready ? 'Ver mi análisis con IA →' : 'Ver progreso completo →'}</a>`;
   }
-  diagRenderWithStats(paint);
+  diagRenderWithStats(paint, container);
 }
 
 // El estado (chip) se decide con los aciertos recientes (u.current); si
@@ -7935,7 +7981,7 @@ function diagUnitRowHtml(u, skipTemaId){
   const ft = u.focusTema;
   if(ft && u.state && (u.state === 'refuerzo' || u.state === 'practica')){
     const c = contentForTema(ft.id);
-    if(c) temaLine = `<span class="diag-unit-tema">Dentro de ${u.label}, lo que más necesitas reforzar es <b>${c.label}</b>.</span>` +
+    if(c) temaLine = `<span class="diag-unit-tema">${String(c.label).trim().toLowerCase() === String(u.label).trim().toLowerCase() ? 'Lo que más necesitas reforzar es este mismo tema' : `Dentro de ${u.label}, lo que más necesitas reforzar es <b>${c.label}</b>`}.</span>` +
       (ft.id === skipTemaId ? '' : `<span class="mistake-pattern-links">${temaLinksHtml(c, 'Practicar')}</span>`);
   }
   const detail = u.trend
@@ -8116,7 +8162,7 @@ function renderDiagnosisSection(els){
     const aiCtx = progressAiCtx(diag, week);
     if(aiCtx) leoAiAttach(container.querySelector('[data-leo-ai-progress]'), aiCtx);
   }
-  diagRenderWithStats(paint);
+  diagRenderWithStats(paint, container);
 }
 
 // Compacto: ejercicios y % de aciertos de 7 días ya están en las tarjetas
@@ -8868,7 +8914,7 @@ function renderTodayHero(el){
     if((hero.state === 'today' || hero.state === 'refuerzo') && t.voice) leoVozActivate();
     syncContinueWithHero(hero);
   }
-  diagRenderWithStats(paint);
+  diagRenderWithStats(paint, el);
 }
 
 /* ============================================================
@@ -9649,7 +9695,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill, temaId, askedLe
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = temaNote + freeMemoryNoteHtml(mem, idx) + sessionHeaderHtml('Gramática', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(mem, idx) + sessionHeaderHtml('Gramática', level, idx+1, freeShownTotal(idx, total));
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9702,7 +9748,7 @@ function runFreeVocabSession({ container, level, onOtherSkill, temaId, askedLeve
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memV, idx) + sessionHeaderHtml('Vocabulario', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memV, idx) + sessionHeaderHtml('Vocabulario', level, idx+1, freeShownTotal(idx, total));
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9782,7 +9828,7 @@ function runFreeListeningSession({ container, level, onOtherSkill, temaId, asked
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memL, idx) + sessionHeaderHtml('Listening', level, idx+1, total);
+    wrap.innerHTML = temaNote + freeMemoryNoteHtml(memL, idx) + sessionHeaderHtml('Listening', level, idx+1, freeShownTotal(idx, total));
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9874,7 +9920,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, total);
+    wrap.innerHTML = sessionHeaderHtml('Writing', level, idx+1, freeShownTotal(idx, total));
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -9984,7 +10030,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
     }
     const item = pool[idx];
     const wrap = document.createElement('div');
-    wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, total);
+    wrap.innerHTML = sessionHeaderHtml('Speaking', level, idx+1, freeShownTotal(idx, total));
     const card = document.createElement('div');
     card.className = 'session-card';
     wrap.appendChild(card);
@@ -10296,11 +10342,11 @@ function initMemberPractice({ levelsEl, tabsEl, headEl, bodyEl }){
   const SKILL_ORDER = ['gramatica','vocabulario','listening','speaking','writing','mixto'];
   const SKILL_URL_TO_KEY = { grammar:'gramatica', vocabulary:'vocabulario', listening:'listening', speaking:'speaking', writing:'writing', mix:'mixto' };
   const SKILL_DESC = {
-    gramatica: '8 preguntas cortas con explicación y ejemplos.',
-    vocabulario: '8 palabras útiles en contexto, no solo la traducción.',
-    listening: '3 audios reales: escucha y responde.',
-    speaking: '3 frases: escucha, grábate y compara.',
-    writing: '4 frases guiadas con revisión honesta.',
+    gramatica: 'Preguntas cortas con explicación y ejemplos.',
+    vocabulario: 'Palabras útiles en contexto, no solo la traducción.',
+    listening: 'Audios reales: escucha y responde.',
+    speaking: 'Frases: escucha, grábate y compara.',
+    writing: 'Frases guiadas con revisión honesta.',
     mixto: 'Un poco de todo: gramática, vocabulario, listening, speaking y writing en una sola sesión.'
   };
   const RUNNERS = {
