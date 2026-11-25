@@ -10236,6 +10236,8 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   }
 
   function descFor(n){
+    // Limite del dia agotado: el encabezado ya no promete preguntas (solo texto; el limite y los eventos no cambian).
+    try{ if(n === 0 || freeDailyLimitReached()) return 'Ya completaste tus ejercicios gratis de hoy.'; }catch(e){}
     const f = SKILL_DESC_FN[currentSkill];
     return (typeof n === 'number' && n > 0 && f) ? f(n) : SKILL_DESC[currentSkill];
   }

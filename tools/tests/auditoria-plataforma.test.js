@@ -96,6 +96,23 @@ if(JSDOM){
     w.run("_leoAccessTier = 'free';"); assert.strictEqual(f(0, 8), 8);
     assert(/sessionHeaderHtml\('Gramática', level, idx\+1, freeShownTotal\(idx, total\)\)/.test(read('app.js')), 'la sesion gratis de gramatica usa el contador del visitante');
   });
+  t('visitante con el limite agotado: el encabezado ya no promete "8 preguntas" (solo texto; limite y eventos intactos)', () => {
+    const w = page(); const key = w.run('localDailyCountKey()'); w.run("_leoAccessTier = 'guest'; var __ev = []; window.gtag = function(){ __ev.push([].slice.call(arguments).slice(1)); };");
+    const mkEls = () => w.run("({ levelsEl: document.createElement('div'), tabsEl: document.createElement('div'), headEl: document.createElement('div'), bodyEl: document.createElement('div') })");
+    const head = () => w.run('window.__els.headEl.querySelector("p").textContent');
+    w.run('window.__els = null;');
+    w.localStorage.setItem(key, '3');
+    w.run("window.__els = { levelsEl: document.createElement('div'), tabsEl: document.createElement('div'), headEl: document.createElement('div'), bodyEl: document.createElement('div') }; document.body.appendChild(window.__els.levelsEl); initFreePractice(window.__els);");
+    assert.strictEqual(head(), 'Ya completaste tus ejercicios gratis de hoy.', 'con 3 usados dice que ya termino');
+    assert(!/preguntas/.test(head()));
+    assert.strictEqual(w.localStorage.getItem(key), '3', 'el contador del visitante no cambia');
+    const evs = JSON.parse(w.run('JSON.stringify(__ev)')).map(x => x[0]);
+    assert(!evs.some(n => /practice_return|first_practice|first_session/.test(n)), 'no se mandan eventos de practica por redibujar el encabezado: ' + evs.join(','));
+    // con ejercicios disponibles el encabezado sigue diciendo cuantas preguntas hay hoy
+    const w2 = page(); w2.run("_leoAccessTier = 'guest';");
+    w2.run("window.__els = { levelsEl: document.createElement('div'), tabsEl: document.createElement('div'), headEl: document.createElement('div'), bodyEl: document.createElement('div') }; document.body.appendChild(window.__els.levelsEl); initFreePractice(window.__els);");
+    assert(/preguntas cortas/.test(w2.run('window.__els.headEl.querySelector("p").textContent')), 'sin limite agotado el encabezado no cambia');
+  });
   t('cuenta gratis: el encabezado sigue siendo el tamano real de la sesion (sin tope de visitante)', () => {
     const w = page(); w.run("var __d = []; document.addEventListener('leo:free-session-total', e => __d.push(e.detail)); _leoAccessTier = 'free';");
     w.run('freeSessionCap(new Array(4).fill(0))'); assert.strictEqual(JSON.parse(w.run('JSON.stringify(__d)'))[0], 4);
