@@ -6,7 +6,7 @@ Leyenda: **Corregido** = cambio hecho en el código local · **Probado** = compr
 
 ## Resumen
 - Los 13 hallazgos + el fix previo están corregidos y **publicados** (commit 2cfdb63).
-- Probado: pruebas automáticas (auditoria-plataforma 21 ok), miembro en producción y visitante con el mismo código en local. **Pendiente**: solo cuenta gratis.
+- Probado: pruebas automáticas (auditoria-plataforma 21 ok), miembro en producción y visitante con el mismo código en local. **Pendiente**: nada de las 3 modalidades.
 
 ## Causas raíz y estado
 | # | Hallazgo | Causa raíz | Estado |
@@ -47,5 +47,5 @@ Se reutiliza lo existente: `hasProgress`/`pendingResume` (academia.js) para "a m
 - LeoBot: en celular el lanzador (56 px) solo toca el borde derecho (5-13 % del ancho) de algunos botones y tarjetas; durante la práctica va a la izquierda y no capta clics.
 - **Miembro (producción)**: progreso muestra 116 sin parpadeo; títulos, textos y enlaces nuevos OK; fortaleza queda "Aún sin definir" con los datos actuales (Gramática en refuerzo).
 - **Visitante (producción, sin sesión)**: verificado: "3 preguntas" y "Pregunta 1 de 3", aprender (Gratis con tu cuenta, enlaces a cursos), títulos, redirecciones. Detalle menor: con el límite ya gastado el muro conserva el encabezado "8 preguntas cortas".
-- **Cuenta gratuita**: **pendiente** (no hay cuenta de prueba).
+- **Cuenta gratuita (producción)**: verificada: práctica de 6 (cupo de la cuenta), título "Tu cuenta", páginas de miembros redirigen a miembros.html, aprender y Academia correctos.
 - Residual: GitHub Pages cachea el HTML unos minutos.
