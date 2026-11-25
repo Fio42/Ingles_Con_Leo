@@ -1,4 +1,4 @@
-# Mini auditoría de la plataforma (2026-11-24)
+# Mini auditoría de la plataforma (2026-11-24) — CERRADA
 
 Alcance: sitio en vivo (inglesconleo.com) como visitante y miembro (cuenta de Leo, sesión iniciada por Leo) + código local. Primera pasada solo lectura; segunda pasada: correcciones LOCALES, sin publicar ni push.
 
@@ -46,6 +46,12 @@ Se reutiliza lo existente: `hasProgress`/`pendingResume` (academia.js) para "a m
 - Aislamiento: `loadMistakeStatsMap` no guarda en cache datos que llegan cuando el espacio/cuenta ya cambió. Red lenta (>2 s): lo local se muestra con la nota "Actualizando con tus datos guardados" hasta que llegue el servidor o falle.
 - LeoBot: en celular el lanzador (56 px) solo toca el borde derecho (5-13 % del ancho) de algunos botones y tarjetas; durante la práctica va a la izquierda y no capta clics.
 - **Miembro (producción)**: progreso muestra 116 sin parpadeo; títulos, textos y enlaces nuevos OK; fortaleza queda "Aún sin definir" con los datos actuales (Gramática en refuerzo).
-- **Visitante (producción, sin sesión)**: verificado: "3 preguntas" y "Pregunta 1 de 3", aprender (Gratis con tu cuenta, enlaces a cursos), títulos, redirecciones. Detalle menor: con el límite ya gastado el muro conserva el encabezado "8 preguntas cortas".
+- **Visitante (producción, sin sesión)**: verificado: "3 preguntas" y "Pregunta 1 de 3", aprender (Gratis con tu cuenta, enlaces a cursos), títulos, redirecciones. El detalle del encabezado con el límite agotado también quedó corregido (commit 8e95e6b) y verificado.
 - **Cuenta gratuita (producción)**: verificada: práctica de 6 (cupo de la cuenta), título "Tu cuenta", páginas de miembros redirigen a miembros.html, aprender y Academia correctos.
 - Residual: GitHub Pages cachea el HTML unos minutos.
+
+## Cierre
+- Estado: **cerrada**. Los 13 hallazgos y el fix de Inicio están corregidos, publicados (2cfdb63, 8e95e6b) y verificados en producción como visitante, cuenta gratuita y miembro.
+- Último detalle: con el límite del día agotado el encabezado dice "Ya completaste tus ejercicios gratis de hoy." (solo texto; límites y eventos de Analytics intactos).
+- Residual aceptado: la cuenta gratis mostró "5 preguntas" una vez y "6" después (probable sincronización del contador; no investigado).
+- Sin probar (fuera de alcance): teléfono real, pagos, correos, Leo AI y audio.
