@@ -5,8 +5,8 @@ Alcance: sitio en vivo (inglesconleo.com) como visitante y miembro (cuenta de Le
 Leyenda: **Corregido** = cambio hecho en el código local · **Probado** = comprobado con prueba o en navegador · **Pendiente** = falta publicar/verificar.
 
 ## Resumen
-- Los 13 hallazgos + el fix previo tienen corrección local. Nada publicado.
-- Probado: pruebas automáticas (auditoria-plataforma 17 ok) y visitante en navegador local. **Pendiente**: verificar como cuenta gratis y miembro con los cambios ya publicados (en local no hay sesión).
+- Los 13 hallazgos + el fix previo están corregidos y **publicados** (commit 2cfdb63).
+- Probado: pruebas automáticas (auditoria-plataforma 21 ok), miembro en producción y visitante con el mismo código en local. **Pendiente**: cuenta gratis y visitante interactivo en producción (ver abajo).
 
 ## Causas raíz y estado
 | # | Hallazgo | Causa raíz | Estado |
@@ -40,3 +40,12 @@ Se reutiliza lo existente: `hasProgress`/`pendingResume` (academia.js) para "a m
 - Con red lenta (>2 s) el diagnóstico muestra lo local y se redibuja al llegar el servidor (comportamiento anterior, acotado).
 - El visitante sigue con banco de 8 y corte a las 3 (decisión previa para no perder el evento `guest_exercise_limit_reached`).
 - Cuenta gratis: no probada. Teléfono real, pagos, correos, Leo AI y audio: no cubiertos.
+
+## Revisión final y verificación en producción
+- Diff: 96 de 97 HTML cambian solo el número ?v=; el otro es miembros.html (título). Sin cambios en pagos, permisos, progreso real ni eventos GA4/Pixel.
+- Aislamiento: `loadMistakeStatsMap` no guarda en cache datos que llegan cuando el espacio/cuenta ya cambió. Red lenta (>2 s): lo local se muestra con la nota "Actualizando con tus datos guardados" hasta que llegue el servidor o falle.
+- LeoBot: en celular el lanzador (56 px) solo toca el borde derecho (5-13 % del ancho) de algunos botones y tarjetas; durante la práctica va a la izquierda y no capta clics.
+- **Miembro (producción)**: progreso muestra 116 sin parpadeo; títulos, textos y enlaces nuevos OK; fortaleza queda "Aún sin definir" con los datos actuales (Gramática en refuerzo).
+- **Visitante**: verificado con el mismo código en local y por HTTP en producción; **pendiente** pasada interactiva en producción con navegador limpio.
+- **Cuenta gratuita**: **pendiente** (no hay cuenta de prueba).
+- Residual: GitHub Pages cachea el HTML unos minutos.
