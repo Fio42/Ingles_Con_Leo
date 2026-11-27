@@ -815,6 +815,13 @@ function dedupeProgressSessions(p){
       if(!previous.cloudId && s.cloudId) unique.set(key, s);
     }
   });
+  /* Copias locales sin cloudId de una sesión que ya tiene su fila de la nube (mismo inicio, habilidad, duración y
+     número de resultados). Quedaron de antes de C23: la nube devuelve results con las claves en otro orden y la
+     identidad exacta no las unía. Solo se quita la copia LOCAL sin cloudId; nunca una fila de la nube. */
+  const cloudStart = new Set();
+  const sk = s => [s.skill || '', s.startedAt || '', s.durationMs || 0, (s.results || []).length].join('|');
+  unique.forEach(s => { if(s.cloudId) cloudStart.add(sk(s)); });
+  unique.forEach((s, key) => { if(!s.cloudId && s.startedAt && cloudStart.has(sk(s))){ unique.delete(key); changed = true; } });
   if(!changed) return false;
   p.sessions = Array.from(unique.values()).sort((a,b)=> (a.startedAt||0) - (b.startedAt||0));
   const lastReal = p.sessions.filter(x => x.skill !== 'check').pop();

@@ -114,7 +114,8 @@
     if(IDX) return IDX;
     IDX = [];
     try{ TEMAS.forEach(function(t){
-      var hay = norm([t.label, t.id.replace(/-/g, ' '), (t.topics || []).join(' '), (t.micros || []).map(function(m){ return m.label; }).join(' '), t.article || '', t.glossary || ''].join(' '));
+      var fam = ''; try{ fam = t.family && DIAG_FAMILY_BY_ID[t.family] ? DIAG_FAMILY_BY_ID[t.family].label : ''; }catch(e){}
+      var hay = norm([t.label, fam, t.id.replace(/-/g, ' '), (t.topics || []).join(' '), (t.micros || []).map(function(m){ return m.label; }).join(' '), t.article || '', t.glossary || ''].join(' '));
       IDX.push({ t: t, hay: hay, label: norm(t.label) });
     }); }catch(e){}
     return IDX;
