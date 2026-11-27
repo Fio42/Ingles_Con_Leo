@@ -4457,3 +4457,13 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Buscador: "preposiciones" encuentra movimiento, sutiles, In on at y By until.
 - Consola: sin errores de los archivos nuevos (solo avisos de vibración bloqueada por clics automáticos).
 - Bloques A y B cerrados. Siguiente: bloque C cuando Leo envíe las instrucciones.
+
+2026-11-27 · UX 2.0 Bloque C: identidad visual y microinteracciones (rama v2/ux-c, sin push)
+- Nuevos: v2/v4-icons.js (29 iconos propios en SVG, barra de navegación y la llama con 4 estados: activa, pendiente hoy, en cero, nuevo día) y v2/v4-ui.css (sistema visual compartido: iconos, llama, relieve y pulsación, foco, desactivado, esqueletos, microinteracciones, movimiento reducido).
+- Barra superior: la llama dice el estado; al terminar la primera práctica del día se enciende una vez (sonido de racha existente). Reglas de racha sin cambios.
+- Resultado: "¡Día N de racha!" (solo primera práctica del día) y "Meta de hoy cumplida" (una vez al día, misma llave que Inicio) dentro de la tarjeta.
+- Ejercicios: pregunta nueva entra en 0,28 s, barra de progreso continua, pop al acertar, combo con anillo, Leo AI con destello y puntos mientras responde.
+- Academia: etapas desplegables con puntos por curso, nodos conectados, "Tú" y anillo en el curso actual, insignia con cinta en aprobados.
+- Pantallas (Inicio, Practicar, Progreso, Perfil) con los iconos nuevos; esqueleto de carga en Practicar y Progreso.
+- Versiones ?v=20261130a. Galería local (tools/v2-preview/galeria-c.html, no se publica) y artefacto privado de la galería. Tests: 18 fallos de entorno (igual).
+- Sin cambios en pagos, autenticación, permisos, backend, base de datos, motor, contenido, límites, Método Leo, SEO, Analytics ni Pixel.
