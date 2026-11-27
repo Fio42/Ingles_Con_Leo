@@ -171,7 +171,8 @@
       '<h4 class="v2-perfil__h">Tu cuenta</h4><div class="more">' +
         (real('navEditNameBtn') ? act('name', A.ICO.level, 'Editar tu nombre', 'Cómo te llamamos en la academia') : '') +
         (nonMember ? row('practica.html?personalizar=1', A.ICO.target, 'Personalizar mi práctica', 'Tu nombre y tu nivel') : '') +
-        (real('navManageSubBtn') ? act('sub', A.ICO.days, 'Suscripción', 'Tu membresía y cómo cambiarla o cancelarla') : (nonMember ? row('miembros.html?pagar=1', A.STK.trophy, 'Hazte miembro', 'Cursos completos, repaso de errores y Leo AI') : '')) +
+        (nonMember ? row('miembros.html?pagar=1', A.STK.trophy, 'Hazte miembro', 'Cursos completos, repaso de errores y Leo AI') : '') +
+        (!nonMember && real('navManageSubBtn') ? act('sub', A.ICO.days, 'Suscripción', 'Tu membresía y cómo cambiarla o cancelarla') : '') +
         (hasMenu || outBtn ? '' : row('miembros.html', A.ICO.days, 'Cuenta y suscripción', 'En Inicio: nombre, suscripción y cerrar sesión')) +
       '</div>' +
       '<h4 class="v2-perfil__h">Preferencias</h4>' +
