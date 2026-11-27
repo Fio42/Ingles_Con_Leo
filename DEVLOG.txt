@@ -4449,3 +4449,30 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 2026-11-27 · Revisión de la limpieza de copias locales (antes de publicar)
 - Regla más estricta: solo se quita la copia LOCAL sin cloudId idéntica a una fila de la nube de la cuenta (habilidad, nivel, inicio al milisegundo, duración, temas y mismos resultados con los mismos valores, sin importar el orden de las claves). Nunca filas de la nube ni sesiones pendientes de subir.
 - Prueba en seco con la cuenta de pago de prueba: 102 -> 91 locales; las 11 quitadas tenían gemela exacta en la nube (3 de hoy, 8 del 9 y 26-nov); 91 = filas de la nube. Test con 5 casos.
+
+2026-11-27 · Cierre de UX 2.0 bloques A y B (publicar/ux-ab-2 en producción, v=20261129b)
+- Copias locales: 102 -> 91 al cargar, igual a las 91 filas de la nube; 0 sesiones sin cloudId; racha sin cambios (2). Sesión nueva de gramática: 92 local = 92 nube, sin duplicados.
+- Meta de hoy: 12 min (antes 13 por las copias), igual a la suma de las sesiones de la nube de hoy.
+- Tema oscuro: la palabra corregida de "Encuentra el error" se ve en verde claro sobre fondo verde oscuro (probado con un ejercicio real).
+- Buscador: "preposiciones" encuentra movimiento, sutiles, In on at y By until.
+- Consola: sin errores de los archivos nuevos (solo avisos de vibración bloqueada por clics automáticos).
+- Bloques A y B cerrados. Siguiente: bloque C cuando Leo envíe las instrucciones.
+
+2026-11-27 · UX 2.0 Bloque C: identidad visual y microinteracciones (rama v2/ux-c, sin push)
+- Nuevos: v2/v4-icons.js (29 iconos propios en SVG, barra de navegación y la llama con 4 estados: activa, pendiente hoy, en cero, nuevo día) y v2/v4-ui.css (sistema visual compartido: iconos, llama, relieve y pulsación, foco, desactivado, esqueletos, microinteracciones, movimiento reducido).
+- Barra superior: la llama dice el estado; al terminar la primera práctica del día se enciende una vez (sonido de racha existente). Reglas de racha sin cambios.
+- Resultado: "¡Día N de racha!" (solo primera práctica del día) y "Meta de hoy cumplida" (una vez al día, misma llave que Inicio) dentro de la tarjeta.
+- Ejercicios: pregunta nueva entra en 0,28 s, barra de progreso continua, pop al acertar, combo con anillo, Leo AI con destello y puntos mientras responde.
+- Academia: etapas desplegables con puntos por curso, nodos conectados, "Tú" y anillo en el curso actual, insignia con cinta en aprobados.
+- Pantallas (Inicio, Practicar, Progreso, Perfil) con los iconos nuevos; esqueleto de carga en Practicar y Progreso.
+- Versiones ?v=20261130a. Galería local (tools/v2-preview/galeria-c.html, no se publica) y artefacto privado de la galería. Tests: 18 fallos de entorno (igual).
+- Sin cambios en pagos, autenticación, permisos, backend, base de datos, motor, contenido, límites, Método Leo, SEO, Analytics ni Pixel.
+
+2026-11-27 · Bloque C, ajustes finales antes de publicar
+- Llama "pendiente hoy": colores cálidos algo atenuados y un reloj pequeño (no parece racha perdida).
+- Brillo del botón principal: más sutil y una sola vez por página (se marca como visto al terminar).
+- Ruta: insignias no ganadas en gris (sin candado; siguen "Disponible"); aprobadas a color con cinta.
+- Academia: muestra la llama con el resultado que ya calculó app.js en otra página (misma cuenta y mismo día, guardado en el navegador). Sin lógica duplicada ni consultas. Al terminar una lección allí se oculta hasta la siguiente página que la calcule.
+- Resultado: iconos de la familia propia en baldosas (aciertos, combo, minutos, meta, lo que sigue). Minutos con la misma medida que la meta: "<1 min" en lugar de "1 min" cuando aún no suma un minuto (la captura anterior era redondeo + sesión automática del simulador de pocos segundos, no un problema de datos).
+- Nuevo día: solo si la sesión es la única de hoy en el progreso (incluido lo sincronizado de otros dispositivos). Probado: con una sesión de hoy ya sincronizada no celebra.
+- Comprobado: sin retrasos (el feedback aparece en el mismo cuadro), sin saltos (CLS 0 en Practicar, Academia, Progreso e Inicio), movimiento reducido y silencio respetados. Tests: 18 fallos de entorno (igual).

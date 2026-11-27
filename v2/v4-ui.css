@@ -1,0 +1,177 @@
+/* =========================================================
+   Inglés con Leo 2.0 · Bloque C · Sistema visual compartido
+   Un solo lugar para: iconos (familia v2-i4), la llama de la racha, respuesta táctil de botones y tarjetas,
+   estados de carga y microinteracciones de práctica. Se carga en todas las páginas 2.0 (después de v2-lecciones).
+   Movimiento con función (confirmar, orientar, explicar, reconocer). Solo transform y opacity en lo que se repite.
+   Con "reducir movimiento" todo queda quieto y sigue siendo comprensible.
+   ========================================================= */
+
+/* ---------- 1. Familia de iconos ---------- */
+.v2-i4 .v2-i4f,.k-v2-i4 .v2-i4f{opacity:.24}
+.k-scope .v2-task__ic,.k-scope .v2-skill .v2-task__ic{box-shadow:inset 0 -3px 0 rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.07)}
+.k-scope .v2-task__ic .v2-i4,.k-scope .v2-task__ic svg.k-ico{width:26px;height:26px}
+.k-scope .v2-task__ic--plan{background:color-mix(in srgb,#4C8DFF 18%,transparent);color:#8FB7FF}
+.k-scope .v2-task__ic--xp{background:color-mix(in srgb,var(--v2-xp,#F5B623) 18%,transparent);color:var(--v2-xp-text,#FFD36B)}
+/* Barra de navegación: el icono activo se rellena con su color (mismo mecanismo de antes) y se le da un leve relieve */
+.k-scope .k-nav__item[aria-current="page"] .v2-i4nav{filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+
+/* Baldosa del icono: la misma en todas las páginas (también en la práctica gratis, que no carga v2-screens.css) */
+.k-scope .v2-task__ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--k-surface-2);color:var(--k-text)}
+.k-scope .v2-task__ic--brand{background:var(--k-brand-tint);color:var(--k-brand-text)}
+.k-scope .v2-task__ic--mend{background:var(--k-mend-tint);color:var(--k-mend-text)}
+.k-scope .v2-task__ic--streak{background:color-mix(in srgb,var(--v2-streak,#FF8A3D) 16%,transparent);color:var(--v2-streak-text,#FFB27A)}
+.k-scope .v2-task__ic--award{background:color-mix(in srgb,var(--v2-award,#B07CFF) 16%,transparent);color:var(--v2-award-text,#CDB0FF)}
+.k-scope .v2-task__ic--ok{background:color-mix(in srgb,var(--k-ok) 16%,transparent);color:var(--k-ok-text)}
+.k-scope .v2-ic-sm{width:34px;height:34px;border-radius:11px}
+.k-scope .v2-ic-sm .v2-i4,.k-scope .v2-ic-sm svg{width:22px!important;height:22px!important}
+.k-scope .v2-ic-md{width:40px;height:40px;border-radius:13px}
+.k-scope .v2-ic-md .v2-i4,.k-scope .v2-ic-md svg{width:26px!important;height:26px!important}
+.v2-results__chips .v2-task__ic{margin-bottom:4px}
+
+/* ---------- 2. La llama de la racha ---------- */
+.v2-flame{overflow:visible}
+.v2-flame .v2-fl-outer{fill:#FF7A1A;stroke:var(--k-illus-outline,#1B1206);stroke-width:2.6;stroke-linejoin:round}
+.v2-flame .v2-fl-mid{fill:#FFB020}
+.v2-flame .v2-fl-core{fill:#FFE59A}
+.v2-flame .v2-fl-shine{fill:none;stroke:#fff;stroke-opacity:.55;stroke-width:2.2;stroke-linecap:round}
+.v2-flame .v2-fl-glow{fill:#FF8A2A;opacity:0}
+.v2-flame .v2-fl-sparks{fill:#FFC24D;opacity:0}
+.v2-flame .v2-fl-body,.v2-flame .v2-fl-mid,.v2-flame .v2-fl-core{transform-box:fill-box;transform-origin:50% 100%}
+/* Activa: viva, con un parpadeo suave del corazón de la llama */
+.v2-fl--on .v2-fl-glow{opacity:.14;animation:v2-fl-glow 2.6s ease-in-out infinite}
+.v2-fl--on .v2-fl-mid{animation:v2-fl-flick 1.9s ease-in-out infinite}
+.v2-fl--on .v2-fl-core{animation:v2-fl-flick 1.3s ease-in-out infinite reverse}
+/* Pendiente hoy: la racha sigue viva; colores cálidos algo atenuados y un reloj pequeño (aún estás a tiempo) */
+.v2-fl--pending .v2-fl-outer{fill:#EE8F4E}
+.v2-fl--pending .v2-fl-mid{fill:#F6B868}
+.v2-fl--pending .v2-fl-core{fill:#FBDDA4}
+.v2-fl--pending .v2-fl-body{opacity:.88;animation:v2-fl-breathe 2.8s ease-in-out infinite}
+.v2-flame .v2-fl-clock{display:none}
+.v2-fl--pending .v2-fl-clock{display:inline}
+.v2-fl--pending .v2-fl-clock circle{fill:var(--k-surface,#141A29);stroke:#F6B868;stroke-width:2.2}
+.v2-fl--pending .v2-fl-clock path{fill:none;stroke:#F6B868;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* El estado lo dibuja la llama: sin el filtro gris general de antes */
+.v2-shell .k-stat--streak.k-is-off .v2-flame,.k-scope .k-streak-hero.k-is-pending .v2-flame,.k-scope .k-today__item.k-is-pending > .v2-flame{filter:none}
+.v2-fl--pending .v2-fl-body{animation:v2-fl-breathe 2.8s ease-in-out infinite}
+/* En cero: apagada y quieta */
+.v2-fl--off .v2-fl-outer{fill:var(--k-surface-3,#2A3249);stroke:var(--k-line-strong,#3A4462)}
+.v2-fl--off .v2-fl-mid{fill:var(--k-line-strong,#3A4462)}
+.v2-fl--off .v2-fl-core{fill:var(--k-text-3,#7E879E);opacity:.5}
+.v2-fl--off .v2-fl-shine{display:none}
+/* Nuevo día conseguido: se enciende una vez, con chispas */
+.v2-fl--new .v2-fl-body{animation:v2-fl-ignite .9s cubic-bezier(.2,1.4,.3,1) both}
+.v2-fl--new .v2-fl-glow{animation:v2-fl-burst 1.1s ease-out both}
+.v2-fl--new .v2-fl-sparks{animation:v2-fl-sparks 1.1s ease-out .15s both}
+.v2-fl--new .v2-fl-mid{animation:v2-fl-flick 1.9s ease-in-out .9s infinite}
+@keyframes v2-fl-flick{0%,100%{transform:scale(1,1)}35%{transform:scale(.95,1.06)}70%{transform:scale(1.04,.96)}}
+@keyframes v2-fl-glow{0%,100%{opacity:.12;transform:scale(.96)}50%{opacity:.26;transform:scale(1.05)}}
+@keyframes v2-fl-breathe{0%,100%{opacity:.82;transform:scale(.97)}50%{opacity:.95;transform:scale(1)}}
+@keyframes v2-fl-ignite{0%{transform:scale(.3);opacity:.2}55%{transform:scale(1.22);opacity:1}100%{transform:scale(1)}}
+@keyframes v2-fl-burst{0%{opacity:.6;transform:scale(.4)}60%{opacity:.35;transform:scale(1.5)}100%{opacity:.18;transform:scale(1)}}
+@keyframes v2-fl-sparks{0%{opacity:1;transform:translateY(6px) scale(.6)}100%{opacity:0;transform:translateY(-12px) scale(1.2)}}
+/* La ficha de racha de la barra superior */
+.k-scope .k-stat--streak .v2-flame{width:28px;height:28px}
+.k-scope .k-stat--streak.v2-stk-new{animation:v2-stk-pop .9s cubic-bezier(.2,1.4,.3,1)}
+.k-scope .k-stat--streak.v2-stk-pending #v2StreakN{color:var(--k-text-2)}
+@keyframes v2-stk-pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.v2-flame-xl{width:96px;height:96px}
+
+/* ---------- 3. Respuesta táctil y estados (componentes compartidos) ---------- */
+.k-scope .k-btn:focus-visible,.k-scope .v2-task:focus-visible,.k-scope .v2-skill:focus-visible,.k-scope summary:focus-visible,.k-scope .v2-crow__main:focus-visible{outline:3px solid var(--k-brand);outline-offset:2px}
+.k-scope .k-btn:disabled,.k-scope .k-btn[aria-disabled="true"]{opacity:.45;box-shadow:none;transform:none;cursor:not-allowed;filter:none}
+/* Tarjetas tocables con relieve: se hunden al pulsar (la respuesta llega antes de navegar) */
+.k-scope .v2-task,.k-scope .v2-skill,.k-scope .v2-goal{box-shadow:0 3px 0 var(--k-line);transition:transform .12s ease-out,box-shadow .12s ease-out,border-color .15s,background-color .15s}
+.k-scope .v2-task:active,.k-scope .v2-skill:active,.k-scope .v2-goal:active{transform:translateY(3px);box-shadow:0 0 0 var(--k-line)}
+.k-scope .v2-task:hover,.k-scope .v2-skill:hover,.k-scope .v2-goal:hover{border-color:var(--k-line-strong)}
+.k-scope .v2-expand > summary{transition:background-color .15s}
+.k-scope .v2-expand > summary:active{background:var(--k-surface-2)}
+.k-scope .v2-expand[open]{border-color:var(--k-line-strong)}
+/* Botón principal de la tarjeta destacada: brillo que cruza una vez al aparecer (orienta la mirada) */
+.k-scope .v2-next .k-btn{overflow:hidden}
+.k-scope .v2-next.v2-shine .k-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.32) 50%,transparent 65%);transform:translateX(-120%);animation:v2-shine-once 1s .6s ease-out both;pointer-events:none}
+@keyframes v2-shine-once{to{transform:translateX(120%)}}
+/* Botones del motor de práctica (fuera de k-scope): mismo relieve y estado deshabilitado */
+html.v2 .next-row .btn,html.v2 .session-card .btn{transition:transform .1s ease-out,box-shadow .1s ease-out,filter .15s}
+html.v2 .next-row .btn:active,html.v2 .session-card .btn:active{transform:translateY(3px)}
+html.v2 .session-card .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+html.v2 .option:focus-visible,html.v2 .word-chip:focus-visible,html.v2 .error-word:focus-visible{outline:3px solid var(--v2-brand);outline-offset:2px}
+
+/* ---------- 4. Estados de carga ---------- */
+.v2-skel-screen{display:grid;gap:14px;max-width:640px;margin:0 auto;padding:16px}
+.v2-skel{border-radius:16px;background:var(--v2-surface,#141A29);position:relative;overflow:hidden}
+.v2-skel::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.06) 50%,transparent 80%);transform:translateX(-100%);animation:v2-skel 1.3s ease-in-out infinite}
+.v2-skel--h1{height:34px;width:55%}.v2-skel--hero{height:190px;border-radius:24px}.v2-skel--row{height:68px}
+@keyframes v2-skel{to{transform:translateX(100%)}}
+
+/* ---------- 5. Microinteracciones de práctica ---------- */
+/* Transición entre preguntas: la nueva tarjeta entra desde abajo, rápido (no retrasa la respuesta) */
+html.v2 .session-card{animation:v2-q-in .28s cubic-bezier(.2,.8,.2,1) both}
+@keyframes v2-q-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* Progreso de la sesión: avanza desde donde estaba (lo marca v2-fx) y deja un destello en el borde */
+html.v2 .session-progress{position:relative}
+html.v2 .session-progress-fill{position:relative}
+html.v2 .session-progress-fill.v2-grow::after{content:"";position:absolute;right:0;top:0;bottom:0;width:18px;border-radius:999px;background:rgba(255,255,255,.55);filter:blur(3px);animation:v2-tip .7s ease-out both}
+@keyframes v2-tip{from{opacity:1}to{opacity:0}}
+/* Selección: la opción elegida se marca al instante, antes de la calificación */
+html.v2 .option.v2-picked,html.v2 .ac-opt.v2-picked{border-color:var(--v2-brand)}
+/* Acierto: el encabezado del feedback hace un pequeño "pop"; error: se sacude una vez (ya existía) */
+html.v2 .feedback.show.ok .fb-head svg,html.v2 .feedback.show.ok .fb-head .ok-ico{animation:v2-pop-in .45s cubic-bezier(.2,1.6,.3,1) both}
+@keyframes v2-pop-in{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}
+/* Combo: entra con un anillo que se expande (reconoce la racha de aciertos) */
+.v2-combo.k-scope{position:relative;animation:v2-combo-in .5s cubic-bezier(.2,1.5,.3,1) both}
+.v2-combo.k-scope::before{content:"";position:absolute;inset:-4px;border-radius:999px;border:2px solid var(--k-xp,#F5B623);opacity:0;animation:v2-ring 0.8s ease-out .1s both;pointer-events:none}
+@keyframes v2-combo-in{0%{transform:scale(.5) rotate(-6deg);opacity:0}60%{transform:scale(1.12) rotate(2deg);opacity:1}100%{transform:none}}
+@keyframes v2-ring{0%{opacity:.9;transform:scale(.9)}100%{opacity:0;transform:scale(1.35)}}
+/* Leo AI preparando su respuesta: puntos que laten (sin esperas artificiales: dura lo que tarda el servidor) */
+.leo-ai-loading{display:inline-flex;align-items:center;gap:8px}
+.leo-ai-loading::before{content:"";width:18px;height:18px;flex:none;background:currentColor;opacity:.85;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c.7 4.4 2.9 6.6 7.3 7.3-4.4.7-6.6 2.9-7.3 7.3-.7-4.4-2.9-6.6-7.3-7.3C9.1 8.6 11.3 6.4 12 2z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c.7 4.4 2.9 6.6 7.3 7.3-4.4.7-6.6 2.9-7.3 7.3-.7-4.4-2.9-6.6-7.3-7.3C9.1 8.6 11.3 6.4 12 2z'/%3E%3C/svg%3E") center/contain no-repeat;animation:v2-ai-spin 1.6s ease-in-out infinite}
+.leo-ai-loading::after{content:"";width:22px;height:6px;flex:none;background:radial-gradient(circle,currentColor 2.2px,transparent 2.6px) 0 50%/7.3px 6px repeat-x;opacity:.7;animation:v2-ai-dots 1s steps(4) infinite;clip-path:inset(0 100% 0 0)}
+@keyframes v2-ai-spin{0%,100%{transform:scale(.85) rotate(0)}50%{transform:scale(1.1) rotate(20deg)}}
+@keyframes v2-ai-dots{to{clip-path:inset(0 0 0 0)}}
+/* Resultado: logros del día (racha y meta) dentro de la tarjeta, sin ventanas encima */
+.k-scope .v2-wins{display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.k-scope .v2-wins li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--k-surface-2);font-weight:600;font-size:15px;line-height:1.35;animation:v2-rise-in .5s cubic-bezier(.2,.8,.2,1) both}
+.k-scope .v2-wins li:nth-child(2){animation-delay:.18s}
+.k-scope .v2-wins li b{font-weight:var(--k-fw-black)}
+.k-scope .v2-wins .v2-flame{width:40px;height:40px;flex:none}
+@keyframes v2-rise-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+/* Método Leo: recuperado / dominado se ilumina al aparecer */
+.k-scope .k-v2-mend-win,.v2-mend-win{animation:v2-mend-glow 1.2s ease-out both}
+@keyframes v2-mend-glow{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--k-mend,#22CFC1) 55%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+/* Insignia obtenida: aparece girando sobre un halo que se expande (reconoce el logro sin tapar el texto) */
+.v2-badge-reveal{position:relative;display:flex;justify-content:center;align-items:center;margin:4px auto 8px;min-height:140px}
+.v2-badge-reveal > svg{position:relative;z-index:1}
+.v2-badge-reveal::before{content:"";position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--k-xp,#F5B623) 45%,transparent) 0,transparent 68%);animation:v2-halo 1.4s ease-out both}
+@keyframes v2-halo{0%{transform:scale(.3);opacity:0}50%{opacity:1}100%{transform:scale(1);opacity:.55}}
+
+/* ---------- 6. Movimiento reducido: todo quieto, nada se pierde ---------- */
+@media (prefers-reduced-motion:reduce){
+  .v2-flame *,.k-scope .k-stat--streak,.k-scope .v2-next .k-btn::after,.v2-skel::after,html.v2 .session-card,html.v2 .session-progress-fill::after,
+  html.v2 .feedback .fb-head svg,.v2-combo.k-scope,.v2-combo.k-scope::before,.leo-ai-loading::before,.leo-ai-loading::after,.k-scope .v2-wins li,
+  .v2-mend-win,.v2-badge-reveal > svg,.v2-badge-reveal::before,.k-scope .v2-crow.k-is-now .v2-node::before{animation:none!important;transition:none!important}
+  .leo-ai-loading::after{clip-path:none}
+  .k-scope .v2-next.v2-shine .k-btn::after{display:none}
+}
+
+/* ---------- 7. Academia: camino de nodos dentro de cada etapa (bloque C) ---------- */
+.k-scope .v2-stage__dots{display:flex;gap:5px;margin-top:6px}
+.k-scope .v2-stage__dots .v2-dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+.k-scope .v2-stage__dots .v2-dot--won{background:#fff;box-shadow:none}
+.k-scope .v2-stage__dots .v2-dot--now{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35);animation:v2-dot-pulse 2s ease-in-out infinite}
+@keyframes v2-dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.35)}50%{box-shadow:0 0 0 5px rgba(255,255,255,.12)}}
+.k-scope .v2-path .v2-crow{position:relative;border-top:0}
+.k-scope .v2-path .v2-crow::before{content:"";position:absolute;left:35px;top:0;bottom:0;width:4px;margin-left:-2px;border-radius:2px;
+  background:repeating-linear-gradient(to bottom,var(--k-line-strong) 0 6px,transparent 6px 11px)}
+.k-scope .v2-path .v2-crow:first-child::before{top:50%}
+.k-scope .v2-path .v2-crow:last-child::before{bottom:50%}
+.k-scope .v2-path .v2-crow:only-child::before{display:none}
+.k-scope .v2-path .v2-crow.k-is-done::before,.k-scope .v2-path .v2-crow.is-won::before{background:var(--k-ok)}
+.k-scope .v2-path .v2-crow.k-is-now::before{background:linear-gradient(to bottom,var(--k-ok) 0 50%,var(--k-brand) 50%)}
+.k-scope .v2-path .v2-crow:first-child.k-is-now::before{background:var(--k-brand)}
+.k-scope .v2-node{position:relative;z-index:1;display:grid;place-items:center;width:44px;height:44px;flex:none}
+.k-scope .v2-node .v2-crow__em{border-radius:50%;background:var(--k-surface)}
+.k-scope .v2-crow.k-is-now .v2-node::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--k-brand);animation:v2-node-pulse 2.2s ease-in-out infinite}
+@keyframes v2-node-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.55}}
+.k-scope .v2-here{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 7px;border-radius:999px;background:var(--k-brand);color:#fff;font-size:11px;font-weight:900;line-height:16px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.k-scope .v2-path .v2-crow.is-won .v2-crow__main small{color:var(--k-ok-text)}
+@media (prefers-reduced-motion:reduce){ .k-scope .v2-stage__dots .v2-dot--now,.k-scope .v2-crow.k-is-now .v2-node::before{animation:none!important} }

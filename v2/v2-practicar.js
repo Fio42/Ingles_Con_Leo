@@ -15,6 +15,7 @@
   if(!window.ICL_V2 || !window.ICL_V2.enabled || !window.K || !window.V2D) return;
   if((location.pathname.split('/').pop() || '').toLowerCase() !== 'practica-miembros.html') return;
   var d = document, K = window.K, A = K.ART, SND = K.SND, esc = K.esc;
+  var I4 = A.I4 || {};   /* Bloque C: familia de iconos propia (v4-icons.js); si faltara, se usan los de antes */
   var screen = null;
   var SK = [
     { k: 'gramatica', n: 'Gramática', ic: 'grammar', c: 'brand' }, { k: 'vocabulario', n: 'Vocabulario', ic: 'vocab', c: 'ok' },
@@ -22,10 +23,10 @@
     { k: 'writing', n: 'Writing', ic: 'write', c: 'award' }, { k: 'lectura', n: 'Lectura', ic: 'read', c: 'brand' }
   ];
   var MORE = [
-    { h: 'juego.html', ic: A.STK.rush, c: 'streak', t: 'English Rush', s: 'Modo juego con dificultad progresiva' },
-    { h: 'clases.html', ic: A.ICO.lesson, c: 'brand', t: 'Clases interactivas', s: 'Situaciones reales: aeropuerto, restaurante, trabajo' },
-    { h: 'aprender.html', ic: A.STK.bulb, c: 'mend', t: 'Modo aprender', s: 'Microlecciones de 3 minutos para mirar y escuchar' },
-    { h: 'examenes.html', ic: A.STK.grad, c: 'award', t: 'Preparación de exámenes', s: 'TOEFL, IELTS, TOEIC y Cambridge' }
+    { h: 'juego.html', ic: I4.rush || A.STK.rush, c: 'streak', t: 'English Rush', s: 'Modo juego con dificultad progresiva' },
+    { h: 'clases.html', ic: I4.clases || A.ICO.lesson, c: 'brand', t: 'Clases interactivas', s: 'Situaciones reales: aeropuerto, restaurante, trabajo' },
+    { h: 'aprender.html', ic: I4.bulb || A.STK.bulb, c: 'mend', t: 'Modo aprender', s: 'Microlecciones de 3 minutos para mirar y escuchar' },
+    { h: 'examenes.html', ic: I4.exam || A.STK.grad, c: 'award', t: 'Preparación de exámenes', s: 'TOEFL, IELTS, TOEIC y Cambridge' }
   ];
   var withEngine = /[?&]skill=/.test(location.search) || location.hash === '#porHabilidad';
   function acc30(){
@@ -51,22 +52,22 @@
     var pi = planInfo();
     var html = '<div class="v2-screen v2-practicar v2-stack">' +
       '<header><h1 class="v2-h1">Practicar</h1><p class="v2-sub">Te recomendamos empezar por aquí.</p></header>' +
-      '<section class="v2-next" aria-labelledby="v2PlanT"><span class="v2-next__eyebrow">' + (pi.resume ? 'Sigue donde te quedaste' : 'Tu práctica de hoy') + '</span>' +
+      '<section class="v2-next' + (window.__v2Shone ? '' : ' v2-shine') + '" aria-labelledby="v2PlanT"><span class="v2-next__eyebrow">' + (pi.resume ? 'Sigue donde te quedaste' : 'Tu práctica de hoy') + '</span>' +
         '<h2 id="v2PlanT">' + (pi.resume ? 'Tu sesión recomendada' : 'Sesión recomendada') + '</h2>' +
         '<p>Con tu nivel, tus errores recientes y lo que te toca reforzar.</p>' +
         '<div class="v2-next__meta">' + (pi.dur ? '<span>' + esc(pi.dur) + '</span>' : '') + (pi.level ? '<span>' + esc(pi.level) + '</span>' : '') + '</div>' +
         '<a class="btn btn--lg btn--block" href="plan-estudio.html?empezar=1" data-v2-plan>' + (pi.resume ? 'Continuar' : 'Empezar') + '</a>' +
         '<a class="v2-next__alt" href="plan-estudio.html">Cambiar duración o dificultad</a></section>' +
       '<section class="v2-stack-sm" aria-label="También puedes"><h2 class="v2-eyebrow">También puedes</h2>' +
-        (quick.length ? task('errores.html?modo=rapido', A.STK.mend, 'mend', 'Repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave'), 'Método Leo · los que más te cuestan ahora') : '') +
+        (quick.length ? task('errores.html?modo=rapido', I4.mend || A.STK.mend, 'mend', 'Repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave'), 'Método Leo · los que más te cuestan ahora') : '') +
         '<div class="v2-reto-slot" id="reto"><div class="v2-slot-real" data-real="reto"></div></div>' +
-        '<details class="v2-expand" id="v2Elegir"><summary><span class="v2-task__ic">' + A.ICO.target + '</span><span>Elegir qué practicar<small>Habilidad, tema, English Rush, clases y exámenes</small></span>' + chev + '</summary>' +
+        '<details class="v2-expand" id="v2Elegir"><summary><span class="v2-task__ic v2-task__ic--brand">' + (I4.practicar || A.ICO.target) + '</span><span>Elegir qué practicar<small>Habilidad, tema, English Rush, clases y exámenes</small></span>' + chev + '</summary>' +
           '<div class="v2-expand__body">' +
             '<h3 class="v2-eyebrow">Por habilidad <small>aciertos · 30 días</small></h3>' +
             '<div class="v2-grid2 v2-grid3">' + SK.map(function(s){ var a = acc[s.k], pct = a && a.n ? Math.round(a.ok / a.n * 100) : null;
-              return '<a class="v2-skill" href="' + s.k + '.html"><span class="v2-task__ic v2-task__ic--' + s.c + '">' + A.ICO[s.ic] + '</span><span><b>' + s.n + '</b><small>' + (pct == null ? 'Sin datos aún' : pct + ' % de aciertos') + '</small></span></a>'; }).join('') +
+              return '<a class="v2-skill" href="' + s.k + '.html"><span class="v2-task__ic v2-task__ic--' + s.c + '">' + (I4[s.ic] || A.ICO[s.ic]) + '</span><span><b>' + s.n + '</b><small>' + (pct == null ? 'Sin datos aún' : pct + ' % de aciertos') + '</small></span></a>'; }).join('') +
             '</div>' +
-            task('mixto.html', A.STK.combo, 'brand', 'Mixto', 'Un poco de todo en una sesión') +
+            task('mixto.html', I4.mix || A.STK.combo, 'brand', 'Mixto', 'Un poco de todo en una sesión') +
             '<h3 class="v2-eyebrow">Buscar un tema</h3>' +
             '<div class="v2-topic"><label class="v2-sr" for="v2TopicQ">Buscar un tema</label><input id="v2TopicQ" class="v2-topic__q" type="search" autocomplete="off" placeholder="Ej.: pasado, much, present perfect"><div class="v2-topic__res" id="v2TopicRes" aria-live="polite"></div></div>' +
             '<h3 class="v2-eyebrow">Más formas de practicar</h3>' +
@@ -78,9 +79,14 @@
     var el = K.h(html); el.classList.add('k-scope');
     return el;
   }
+  /* Bloque C: mientras llegan los datos, un esqueleto con la forma de la pantalla (sin pantalla en blanco) */
+  function skeleton(){ var s = d.createElement('div'); s.className = 'v2-skel-screen'; s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = '<div class="v2-skel v2-skel--h1"></div><div class="v2-skel v2-skel--hero"></div><div class="v2-skel v2-skel--row"></div><div class="v2-skel v2-skel--row"></div>'; return s; }
   function mount(){
     var main = d.querySelector('main'); if(!main) return;
+    var sk = null; if(!screen){ sk = skeleton(); main.insertBefore(sk, main.firstChild); main.classList.add('v2-has-practice'); }
     V2D.mistakes().then(function(mis){
+      if(sk) sk.remove();
       var wasOpen = !!(screen && screen.querySelector('#v2Elegir[open]')), q = screen && screen.querySelector('#v2TopicQ') ? screen.querySelector('#v2TopicQ').value : '';
       var fresh = render(mis);
       var reto = d.getElementById('dailyChallengeCard'), slot = fresh.querySelector('[data-real="reto"]');

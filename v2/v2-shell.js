@@ -12,6 +12,7 @@
 (function(){
   if(!window.ICL_V2 || !window.ICL_V2.enabled || !window.K) return;
   var d = document, html = d.documentElement, K = window.K, A = K.ART, SND = K.SND;
+  var I4 = A.I4 || {};   /* Bloque C: familia de iconos propia (v4-icons.js); si faltara, se usan los de antes */
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   var APP = { 'miembros.html':'inicio', 'academia.html':'academia', 'practica-miembros.html':'practicar', 'plan-estudio.html':'practicar',
               'errores.html':'practicar', 'progreso.html':'progreso',
@@ -120,6 +121,15 @@
     window.dispatchEvent(new Event('v2:shell'));
   }
 
+  /* Cuenta de la sesión guardada (para no mezclar la racha de dos cuentas en el mismo navegador) */
+  function acctId(){
+    try{ for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(!/^sb-.*-auth-token$/.test(k)) continue;
+      var v = JSON.parse(localStorage.getItem(k)), u = v && (v.user || (v.currentSession && v.currentSession.user)); if(u && u.id) return u.id; } }catch(e){}
+    return '';
+  }
+  /* Academia: al terminar una lección la racha puede haber cambiado y esta página no la calcula: la ficha se oculta
+     hasta la próxima página que la calcule (mejor nada que un dato viejo) */
+  function staleStreak(){ if(typeof window.computeStreak === 'function') return; paintTop.stale = true; var st = d.getElementById('v2Streak'); if(st) st.hidden = true; }
   /* Inicial del alumno sin depender de app.js (la Academia no lo carga): nombre guardado de ESTA cuenta o, si no hay, el correo */
   function acctInitial(){
     var n = '';
@@ -136,11 +146,26 @@
   function paintTop(){
     var st = d.getElementById('v2Streak'); if(!st) return;
     var n = 0, today = false;
-    /* La racha la calcula app.js; en páginas sin app.js (Academia) la ficha no se muestra para no enseñar un 0 falso */
-    st.hidden = typeof window.computeStreak !== 'function';
-    try{ if(window.V2D){ var p = V2D.practice(); n = p.streak; today = p.practicedToday; } }catch(e){}
-    st.innerHTML = K.px(A.STK.flame + '<span id="v2StreakN">' + n + '</span>');
+    /* La racha la calcula app.js. Bloque C: cada página que la calcula deja el resultado (de esta cuenta y de hoy) en el
+       navegador; la Academia, que no carga app.js, muestra ese mismo resultado sin calcular nada ni consultar la red.
+       Si no hay un resultado de hoy de esta cuenta, la ficha no se muestra (nunca un 0 falso). */
+    var KEY = 'icl.racha.estado', uid = acctId(), ymd = (window.V2D && V2D.ymd) ? V2D.ymd(new Date()) : '';
+    if(typeof window.computeStreak === 'function'){
+      st.hidden = false;
+      try{ if(window.V2D){ var p = V2D.practice(); n = p.streak; today = p.practicedToday; } }catch(e){}
+      try{ if(uid && ymd) localStorage.setItem(KEY, JSON.stringify({ u: uid, d: ymd, n: n, t: today })); }catch(e){}
+    } else {
+      var c = null; try{ c = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
+      var hoy = (function(){ var x = new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); })();
+      if(c && uid && c.u === uid && c.d === hoy && !paintTop.stale){ n = c.n; today = !!c.t; st.hidden = false; }
+      else { st.hidden = true; }
+    }
+    /* Bloque C: la llama dice el estado de un vistazo (activa, pendiente hoy, en cero). Solo dibujo: la racha la
+       calcula app.js y sus reglas no cambian. */
+    var state = !n ? 'off' : today ? 'on' : 'pending';
+    st.innerHTML = K.px((A.flame ? A.flame(state) : A.STK.flame) + '<span id="v2StreakN">' + n + '</span>');
     st.classList.toggle('k-is-off', !today);
+    st.classList.toggle('v2-stk-pending', state === 'pending');
     st.setAttribute('aria-label', 'Racha: ' + n + (n === 1 ? ' día' : ' días') + (today ? '' : ', practica hoy para sumar'));
     var snd = d.getElementById('v2Sound');
     snd.innerHTML = K.px(SND.enabled ? A.UI.speaker : A.UI.soundOff);
@@ -169,11 +194,11 @@
       '<div class="v2-perfil__head"><span class="v2-perfil__av" aria-hidden="true">' + K.esc(ini) + '</span><div><h3>' + K.esc(name || 'Tu perfil') + '</h3>' + (mail ? '<p>' + K.esc(mail) + '</p>' : '') + '</div></div>' +
       (bell ? '<p class="v2-perfil__bell">' + U.info + '<span>' + K.esc(bell) + '</span></p>' : '') +
       '<h4 class="v2-perfil__h">Tu cuenta</h4><div class="more">' +
-        (real('navEditNameBtn') ? act('name', A.ICO.level, 'Editar tu nombre', 'Cómo te llamamos en la academia') : '') +
-        (nonMember ? row('practica.html?personalizar=1', A.ICO.target, 'Personalizar mi práctica', 'Tu nombre y tu nivel') : '') +
-        (nonMember ? row('miembros.html?pagar=1', A.STK.trophy, 'Hazte miembro', 'Cursos completos, repaso de errores y Leo AI') : '') +
-        (!nonMember && real('navManageSubBtn') ? act('sub', A.ICO.days, 'Suscripción', 'Tu membresía y cómo cambiarla o cancelarla') : '') +
-        (hasMenu || outBtn ? '' : row('miembros.html', A.ICO.days, 'Cuenta y suscripción', 'En Inicio: nombre, suscripción y cerrar sesión')) +
+        (real('navEditNameBtn') ? act('name', I4.perfil || A.ICO.level, 'Editar tu nombre', 'Cómo te llamamos en la academia') : '') +
+        (nonMember ? row('practica.html?personalizar=1', I4.goal || A.ICO.target, 'Personalizar mi práctica', 'Tu nombre y tu nivel') : '') +
+        (nonMember ? row('miembros.html?pagar=1', I4.trophy || A.STK.trophy, 'Hazte miembro', 'Cursos completos, repaso de errores y Leo AI') : '') +
+        (!nonMember && real('navManageSubBtn') ? act('sub', I4.badge || A.ICO.days, 'Suscripción', 'Tu membresía y cómo cambiarla o cancelarla') : '') +
+        (hasMenu || outBtn ? '' : row('miembros.html', I4.perfil || A.ICO.days, 'Cuenta y suscripción', 'En Inicio: nombre, suscripción y cerrar sesión')) +
       '</div>' +
       '<h4 class="v2-perfil__h">Preferencias</h4>' +
       '<div class="card list v2-settings">' +
@@ -185,12 +210,12 @@
       '</div>' +
       '<h4 class="v2-perfil__h">Ayuda</h4><div class="more">' + act('bot', U.chat, 'LeoBot', 'Preguntas sobre la academia, pagos o cómo usarla') + '</div>' +
       '<details class="v2-details v2-advanced"><summary>Más secciones</summary><div class="more">' +
-        (nonMember ? '' : row('plan-estudio.html', A.ICO.days, 'Plan de estudio', 'Lo que te toca hoy según tus errores') + row('errores.html', A.ICO.mend, 'Mis errores', 'Método Leo: recupera y domina')) +
-        row('juego.html', A.ICO.rush, 'English Rush', 'Preguntas rápidas, modo juego') +
-        row('clases.html', A.ICO.listen, 'Clases interactivas', 'Situaciones reales con audio') +
-        row('examenes.html', A.ICO.level, 'Exámenes', 'TOEFL, IELTS, TOEIC y Cambridge') +
-        row('aprender.html', A.ICO.lesson, 'Modo aprender', 'Microlecciones de 3 minutos para mirar y escuchar') +
-        row('articulos.html', A.ICO.read, 'Aprende inglés', 'Guías y artículos gratis') +
+        (nonMember ? '' : row('plan-estudio.html', I4.plan || A.ICO.days, 'Plan de estudio', 'Lo que te toca hoy según tus errores') + row('errores.html', I4.mend || A.ICO.mend, 'Mis errores', 'Método Leo: recupera y domina')) +
+        row('juego.html', I4.rush || A.ICO.rush, 'English Rush', 'Preguntas rápidas, modo juego') +
+        row('clases.html', I4.clases || A.ICO.listen, 'Clases interactivas', 'Situaciones reales con audio') +
+        row('examenes.html', I4.exam || A.ICO.level, 'Exámenes', 'TOEFL, IELTS, TOEIC y Cambridge') +
+        row('aprender.html', I4.bulb || A.ICO.lesson, 'Modo aprender', 'Microlecciones de 3 minutos para mirar y escuchar') +
+        row('articulos.html', I4.read || A.ICO.read, 'Aprende inglés', 'Guías y artículos gratis') +
       '</div></details>' +
       /* C22: la versión clásica es un mecanismo de recuperación, no una opción del día a día: queda en Ajustes avanzados */
       '<details class="v2-details v2-advanced"><summary>Ajustes avanzados</summary><div class="card list">' +
@@ -256,7 +281,14 @@
   }
   window.ICL_openLeoBot = openLeoBot;
 
-  window.V2SHELL = { paintTop: paintTop, current: current };
+  /* Nuevo día de racha conseguido (primera práctica de hoy): la llama de la barra se enciende una vez */
+  function igniteStreak(){
+    var st = d.getElementById('v2Streak'); if(!st || !A.flame) return;
+    paintTop();
+    var svg = st.querySelector('.v2-flame'); if(svg){ svg.setAttribute('class', svg.getAttribute('class').replace(/v2-fl--\w+/, 'v2-fl--new')); }
+    st.classList.remove('v2-stk-new'); void st.offsetWidth; st.classList.add('v2-stk-new');
+  }
+  window.V2SHELL = { paintTop: paintTop, current: current, igniteStreak: igniteStreak, staleStreak: staleStreak };
 
   /* Volver a 2.0 desde la clásica: ?v2=1 borra la preferencia */
   if(/[?&]v2=1\b/.test(location.search)){ try{ localStorage.removeItem('icl.ui'); }catch(_){} }

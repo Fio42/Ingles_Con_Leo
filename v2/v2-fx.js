@@ -12,6 +12,9 @@
 (function(){
   if(!window.ICL_V2 || !window.ICL_V2.enabled || !window.K) return;
   var d = document, html = d.documentElement, K = window.K, A = K.ART, SND = K.SND;
+  var I4 = A.I4 || {};
+  /* Bloque C: icono de la familia propia dentro de su baldosa teñida (mismo componente que el resto de pantallas) */
+  function tic(name, hue, fallback){ return I4[name] ? '<span class="v2-task__ic v2-task__ic--' + hue + ' v2-ic-sm">' + I4[name] + '</span>' : (fallback || ''); }
   var COMBO_AT = { 3: 'Combo ×3', 5: 'Combo ×5', 8: 'Combo ×8', 10: '¡Combo ×10!', 15: '¡Combo ×15!', 20: '¡Combo ×20!' };
   var run = null;                                   // racha de la sesión en curso (solo visual)
   function newRun(){ run = { ok: 0, bad: 0, first: 0, combo: 0, best: 0, t0: Date.now(), seen: new WeakSet(), mis0: null }; }
@@ -71,7 +74,11 @@
     var m = /(\d+)\s*(?:de|\/)\s*(\d+)/.exec(engineText);           // lo que el MOTOR dice (aciertos a la primera)
     if(m){ firstPct = Math.round(+m[1] / Math.max(1, +m[2]) * 100); }
     else if(total){ firstPct = Math.round(run.ok / total * 100); }
-    var mins = Math.max(1, Math.round((Date.now() - run.t0) / 60000));
+    /* Minutos con la MISMA medida que la meta de hoy (sesión guardada por el motor y su tope de tiempo): antes el
+       resultado redondeaba hacia arriba ("1 min") mientras la meta contaba 0 y decía que faltaban los 10. */
+    var msRun = Date.now() - run.t0;
+    try{ var lastS = (typeof loadProgress === 'function') ? loadProgress().sessions.slice(-1)[0] : null; if(lastS && typeof sessionMs === 'function' && Date.now() - (lastS.startedAt || 0) < 6 * 3600000) msRun = sessionMs(lastS); }catch(e){}
+    var minsTxt = Math.round(msRun / 60000) < 1 ? '<1 min' : Math.round(msRun / 60000) + ' min';
     var perfect = firstPct === 100;
     var title = kind === 'leccion' ? (perfect ? '¡Lección perfecta!' : '¡Lección completa!') : (perfect ? '¡Sesión perfecta!' : firstPct >= 90 ? '¡Excelente sesión!' : firstPct >= 70 ? '¡Muy bien!' : 'Sesión completada');
     /* Práctica pública (visitante o cuenta gratis): no hay historial de errores que prometer ni una medición de tiempo fiable */
@@ -81,9 +88,9 @@
       '<div class="v2-results__top"><div class="ring ring--ok v2-results__ring" role="img" aria-label="Aciertos: ' + (firstPct == null ? 'sin datos' : firstPct + '%') + '">' + K.ring((firstPct || 0) / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + (firstPct == null ? '–' : '<span data-n>' + 0 + '</span>%') + '</b></div></div>' +
       '<div><span class="t-eyebrow">' + (kind === 'leccion' ? 'Resultado de la lección' : 'Resultado de la sesión') + '</span><h2>' + title + '</h2><p>' + sub + '</p></div></div>' +
       '<div class="v2-results__chips">' +
-        (m ? '<span>' + A.ICO.target + '<b>' + m[1] + '/' + m[2] + '</b><small>a la primera</small></span>' : (total ? '<span>' + A.ICO.target + '<b>' + run.ok + '/' + total + '</b><small>aciertos</small></span>' : '')) +
-        '<span>' + A.STK.combo + '<b>' + run.best + '</b><small>mejor combo</small></span>' +
-        (freeCtx ? '<span>' + A.ICO.lesson + '<b>' + total + '</b><small>ejercicios</small></span>' : '<span>' + A.ICO.time + '<b>' + mins + ' min</b><small>de práctica</small></span>') +
+        (m ? '<span>' + tic('goal', 'ok', A.ICO.target) + '<b>' + m[1] + '/' + m[2] + '</b><small>a la primera</small></span>' : (total ? '<span>' + tic('goal', 'ok', A.ICO.target) + '<b>' + run.ok + '/' + total + '</b><small>aciertos</small></span>' : '')) +
+        '<span>' + tic('rush', 'streak', A.STK.combo) + '<b>' + run.best + '</b><small>mejor combo</small></span>' +
+        (freeCtx ? '<span>' + tic('mix', 'brand', A.ICO.lesson) + '<b>' + total + '</b><small>ejercicios</small></span>' : '<span>' + tic('time', 'brand', A.ICO.time) + '<b>' + minsTxt + '</b><small>de práctica</small></span>') +
       '</div>' +
       '<div class="v2-results__mend" hidden></div>' +
       '<div class="v2-results__why"></div>' +
@@ -93,7 +100,10 @@
     var n = box.querySelector('[data-n]'); if(n) K.countTo(n, 0, firstPct, 900);
     SND.play('complete');
     if(kind === 'leccion' || firstPct >= 90) setTimeout(function(){ K.confetti(kind === 'leccion' ? .7 : .5); }, 250);
-    whyReturn(box.querySelector('.v2-results__why'));
+    if(kind === 'leccion' && window.V2SHELL && V2SHELL.staleStreak) V2SHELL.staleStreak();
+    var won = dayWins(kind);
+    if(won.html) box.querySelector('.v2-results__chips').insertAdjacentHTML('afterend', K.px(won.html));
+    whyReturn(box.querySelector('.v2-results__why'), won);
     if(kind === 'sesion' && !host.classList.contains('free-wall')) simplify(host);   // en el muro, "Crear cuenta" y "Ya tengo cuenta" quedan a la vista
     mendDiff(box.querySelector('.v2-results__mend'));
     var finished = run; newRun(); run.mis0 = null; void finished;
@@ -112,18 +122,49 @@
     }
   }
   /* Una razón clara para volver: racha real, meta de hoy en minutos y lo que toca mañana */
-  function whyReturn(el){
+  /* Bloque C: lo que la práctica de hoy consiguió, reconocido dentro del resultado (sin ventanas encima).
+     - Nuevo día de racha: SOLO si esta fue la primera práctica de hoy (una sesión real de hoy en el historial).
+     - Meta de hoy cumplida: cuando los minutos reales de hoy llegan a la meta, una vez por día.
+     Mismas llaves que Inicio para no celebrar dos veces. No cambia la racha ni la meta: solo las lee. */
+  function dayWins(kind){
+    var out = { html: '', streak: false, goal: false };
+    try{
+      if(!window.V2D || typeof computeStreak !== 'function') return out;
+      var p = V2D.practice(), today = V2D.ymd(new Date()), rows = [];
+      var todayN = 0; try{ todayN = loadProgress().sessions.filter(function(x){ return x && x.skill !== 'check' && x.date === today; }).length; }catch(e){}
+      var seen = function(k){ try{ return localStorage.getItem(k) === today; }catch(e){ return true; } };
+      var mark = function(k){ try{ localStorage.setItem(k, today); }catch(e){} };
+      if(p.practicedToday && p.streak > 0 && !seen('icl.racha.celebrada')){
+        mark('icl.racha.celebrada');
+        if(todayN === 1){
+          out.streak = true;
+          rows.push('<li>' + (A.flame ? A.flame('new') : A.STK.flame) + '<span><b>' + (p.streak === 1 ? '¡Empieza tu racha!' : '¡Día ' + p.streak + ' de racha!') + '</b> Hoy ya cuenta. Vuelve mañana para el día ' + (p.streak + 1) + '.</span></li>');
+        }
+      }
+      if(p.todayMin >= p.goal && !seen('icl.celebrado.meta')){
+        mark('icl.celebrado.meta'); out.goal = true;
+        rows.push('<li>' + tic('goal', 'ok', A.ICO.target).replace('v2-ic-sm', 'v2-ic-md') + '<span><b>Meta de hoy cumplida.</b> ' + p.todayMin + ' de ' + p.goal + ' minutos. Lo que sumes es extra.</span></li>');
+      }
+      if(rows.length){
+        out.html = '<ul class="v2-wins" aria-label="Lo que conseguiste hoy">' + rows.join('') + '</ul>';
+        setTimeout(function(){ SND.play(out.streak ? 'streak' : 'challenge'); SND.haptic([16, 40, 24]); if(out.streak && window.V2SHELL && V2SHELL.igniteStreak) V2SHELL.igniteStreak(); }, 1150);
+      }
+    }catch(e){}
+    return out;
+  }
+  function whyReturn(el, won){
     var rows = [];
+    won = won || {};
     try{
       if(window.V2D && typeof computeStreak === 'function'){
         var p = V2D.practice();
-        if(p.practicedToday) rows.push('<li>' + A.STK.flame + '<span><b>' + p.streak + (p.streak === 1 ? ' día' : ' días') + ' de racha.</b> Hoy ya cuenta. Vuelve mañana para el día ' + (p.streak + 1) + '.</span></li>');
+        if(p.practicedToday && !won.streak) rows.push('<li>' + (A.flame ? A.flame('on') : A.STK.flame) + '<span><b>' + p.streak + (p.streak === 1 ? ' día' : ' días') + ' de racha.</b> Hoy ya cuenta. Vuelve mañana para el día ' + (p.streak + 1) + '.</span></li>');
         var left = Math.max(0, p.goal - p.todayMin);
-        rows.push('<li>' + A.ICO.time + '<span>' + (left ? '<b>Te faltan ' + left + ' min</b> para tu meta de hoy (' + p.goal + ' min).' : '<b>Meta de hoy cumplida:</b> ' + p.todayMin + ' de ' + p.goal + ' min.') + '</span></li>');
+        if(!won.goal) rows.push('<li>' + tic('time', 'ok', A.ICO.time) + '<span>' + (left ? '<b>Te faltan ' + left + ' min</b> para tu meta de hoy (' + p.goal + ' min).' : '<b>Meta de hoy cumplida:</b> ' + p.todayMin + ' de ' + p.goal + ' min.') + '</span></li>');
       }
     }catch(e){}
     var next = d.querySelector('.ac-card-end ~ .ac-nav a.ac-btn-primary, .ac-nav-col a.ac-btn-primary');
-    if(next && /Siguiente lección/.test(next.textContent)) rows.push('<li>' + A.ICO.lesson + '<span><b>Lo que sigue:</b> ' + K.esc(next.textContent.replace(/^Siguiente lección:\s*/, '')) + '.</span></li>');
+    if(next && /Siguiente lección/.test(next.textContent)) rows.push('<li>' + tic('academia', 'brand', A.ICO.lesson) + '<span><b>Lo que sigue:</b> ' + K.esc(next.textContent.replace(/^Siguiente lección:\s*/, '')) + '.</span></li>');
     if(rows.length) el.appendChild(K.h('<ul class="v2-why">' + rows.join('') + '</ul>'));
   }
   /* Celebración honesta del Método Leo: compara mistake_stats antes y después (la base aplica las reglas) */
@@ -168,8 +209,20 @@
   }
 
   /* ---------- Observador: solo lee clases que pone el motor ---------- */
+  /* Bloque C: la barra de progreso de la sesión avanza desde donde estaba (el motor la vuelve a dibujar en cada
+     pregunta, así que sin esto saltaba). Solo presentación. */
+  function growBar(fill){
+    var host = fill.closest('#skillBody, #sessionArea, #planArea, #dailyChallengeBody, #errorsArea, main') || d.body;
+    var target = fill.style.width, prev = host.__v2pct; host.__v2pct = target;
+    if(!prev || prev === target || (K.reduced && K.reduced())) return;
+    if(parseFloat(prev) > parseFloat(target)) return;        // sesión nueva: empieza de cero sin animar hacia atrás
+    fill.style.transition = 'none'; fill.style.width = prev; void fill.offsetWidth;
+    fill.style.transition = ''; fill.style.width = target; fill.classList.add('v2-grow');
+  }
   function scan(n){
     if(!n || n.nodeType !== 1) return;
+    var bars = n.matches && n.matches('.session-progress-fill') ? [n] : (n.querySelectorAll ? n.querySelectorAll('.session-progress-fill') : []);
+    Array.prototype.forEach.call(bars, growBar);
     var tops = n.matches && n.matches('.ac-top') ? [n] : (n.querySelectorAll ? n.querySelectorAll('.ac-top') : []);
     Array.prototype.forEach.call(tops, soundBtn);
     var fbs = n.matches && n.matches('.ac-fb') ? [n] : n.querySelectorAll ? n.querySelectorAll('.ac-fb') : [];
