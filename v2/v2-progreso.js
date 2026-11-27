@@ -63,7 +63,7 @@
     var dots = '<div class="v2-wdots" aria-label="Días practicados esta semana">' + names.map(function(n, i){ return '<span class="' + (p.weekDays[i] ? 'is-on' : '') + (i === p.todayIdx ? ' is-today' : '') + '"><i>' + (p.weekDays[i] ? A.UI.check : '') + '</i>' + n + '</span>'; }).join('') + '</div>';
     var row = function(ic, c, t, sub, href, cta){ return '<' + (href ? 'a href="' + href + '"' : 'div') + ' class="v2-task"><span class="v2-task__ic v2-task__ic--' + c + '">' + ic + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' + (href ? (cta ? '<span class="v2-task__cta">' + cta + '</span>' : A.UI.chevron) : '') + '</' + (href ? 'a' : 'div') + '>'; };
     var lessonsDone = (acad || []).reduce(function(t, c){ return t + (c.done || 0); }, 0);
-    var superaste = mis ? row(A.STK.mend, 'mend', mis.recovered.length + mis.mastered.length ? (mis.recovered.length + mis.mastered.length) + ' errores superados' : 'Todavía sin errores superados',
+    var superaste = mis ? row(A.STK.mend, 'mend', (function(n){ return n ? n + (n === 1 ? ' error superado' : ' errores superados') : 'Todavía sin errores superados'; })(mis.recovered.length + mis.mastered.length),
         (mis.recoveredWeek ? mis.recoveredWeek + ' esta semana · ' : '') + mis.mastered.length + ' dominados · ' + mis.active.length + ' en refuerzo', '#metodo') : '';
     var aprendiste = acad && acad.length ? row(A.STK.trophy, 'award', won.length + (won.length === 1 ? ' curso aprobado' : ' cursos aprobados'), lessonsDone + (lessonsDone === 1 ? ' lección completada' : ' lecciones completadas') + ' en la Academia', 'academia.html#/logros', 'Ver') : '';
     var mejora = row(A.ICO.target, 'ok', 'Aciertos: ' + (acc == null ? 'sin datos aún' : acc + ' %'),

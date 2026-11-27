@@ -180,3 +180,6 @@ html.icl-typing .session-card .next-row:not(:empty),html.icl-typing .session-car
 html.icl-ex #practicaMain .v2-snd-free{display:none}
 .session-summary,.free-wall{scroll-margin-top:104px}
 html.v2.v2-app .session-summary{scroll-margin-top:24px}
+/* Tema oscuro: en "Encuentra el error" la palabra corregida usaba color oscuro en línea que la regla general del tema
+   (style.css) volvía clara sobre su fondo claro: quedaba invisible. Aquí se le da fondo y texto verdes legibles. */
+html:not([data-theme="light"]) .error-correct-box span[style*="background:#E7F7EE"]{background:color-mix(in srgb,#2FD08A 24%,transparent)!important;color:#8BEABF!important}
