@@ -59,12 +59,12 @@
     var order = V2D.courseOrder();
     var methodHTML = '';
     if(mis){
-      var act = mis.active;
+      var act = mis.active, quick = V2D.quickReview ? V2D.quickReview(act) : act.slice(0, 10);
       methodHTML = '<section class="mcard" aria-labelledby="v2McT"><div class="mcard__head"><span class="method__eyebrow">' + A.STK.mend + 'Método Leo</span><a class="link" href="progreso.html#metodo">Tu historial</a></div>' +
-        '<div class="mcard__row"><div><h2 id="v2McT">' + act.length + ' ' + (act.length === 1 ? 'error' : 'errores') + ' en refuerzo</h2>' +
-        '<p><b>' + mis.recovered.length + '</b> recuperados · <b>' + mis.mastered.length + '</b> dominados · 2 aciertos seguidos recuperan, 4 dominan</p></div></div>' +
-        '<ul class="mlist">' + (act.slice(0, 3).map(function(e){ return '<li><span><b>' + esc(e.label || e.topic) + '</b><small>' + esc(e.topic) + '</small></span>' + K.steps(e.streak) + '</li>'; }).join('') || '<li class="is-empty">Sin errores pendientes. ¡Bien!</li>') + '</ul>' +
-        (act.length ? '<a class="btn btn--mend btn--block" href="errores.html">Reforzar ahora</a>' : '') + '</section>';
+        '<div class="mcard__row"><div><h2 id="v2McT">' + (quick.length ? 'Hoy: repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') : 'Sin errores pendientes') + '</h2>' +
+        '<p>' + act.length + ' en refuerzo · <b>' + mis.recovered.length + '</b> recuperados · <b>' + mis.mastered.length + '</b> dominados · 2 aciertos seguidos recuperan, 4 dominan</p></div></div>' +
+        '<ul class="mlist">' + (quick.slice(0, 3).map(function(e){ return '<li><span><b>' + esc(e.label || e.topic) + '</b><small>' + esc(e.topic) + '</small></span>' + K.steps(e.streak) + '</li>'; }).join('') || '<li class="is-empty">Sin errores pendientes. ¡Bien!</li>') + '</ul>' +
+        (quick.length ? '<a class="btn btn--mend btn--block" href="errores.html?modo=rapido">Repasar ' + quick.length + ' ahora</a>' : '') + '</section>';
     }
     var badgesHTML = order.length ? '<section class="v2-badges-row"><div class="block__head"><h2>Tus insignias</h2><a class="link" href="academia.html#/logros">Ver colección</a></div>' +
       '<div class="course-row">' + order.map(function(id, i){ var sg = K.STAGES.filter(function(s){ return i >= s.from && i < s.to; })[0] || K.STAGES[0];
@@ -74,13 +74,14 @@
       '<section class="hello"><div><h1>' + K.greeting() + (name ? ', ' + esc(name) : '') + '</h1>' +
         '<p class="hello__line">' + (metDone ? 'Hoy ya cumpliste tu meta. Lo que sumes es extra.' : (p.todayMin ? 'Te faltan <b>' + left + ' min</b> para tu meta de hoy.' : 'Tu meta de hoy: <b>' + p.goal + ' minutos</b> de práctica.')) + '</p></div></section>' +
       mission +
-      '<div class="v2-slot-real" data-real="nivel"></div>' +
       '<div class="today" role="group" aria-label="Tu día">' +
         '<button type="button" class="today__item" id="v2Goal"><span class="ring" style="--k-ring:40px">' + K.ring(p.todayMin / p.goal, 30, 9) + '<span class="ring__center">' + (metDone ? A.UI.check : '') + '</span></span><span class="today__num"><span id="v2GoalN">' + p.todayMin + '</span><small>/' + p.goal + ' min</small></span><span class="today__lbl">Meta de hoy</span></button>' +
         '<button type="button" class="today__item ' + (p.practicedToday ? '' : 'is-pending') + '" id="v2StreakT">' + A.STK.flame + '<span class="today__num">' + p.streak + '</span><span class="today__lbl">' + (p.streak === 1 ? 'Día' : 'Días') + ' de racha</span></button>' +
         '<a class="today__item" href="progreso.html">' + A.ICO.target + '<span class="today__num">' + (acc == null ? '–' : acc) + '<small>' + (acc == null ? '' : '%') + '</small></span><span class="today__lbl">Aciertos 7 días</span></a>' +
       '</div>' +
       '<a class="v2-reto ' + (retoHoy ? 'is-done' : '') + '" href="practica-miembros.html#reto">' + A.STK.calendar + '<span><span class="t-eyebrow">Reto diario</span><b>' + (retoHoy ? 'Reto de hoy completado' : 'El reto de hoy te espera') + '</b><small>' + (retoHoy ? 'Mañana hay otro. Puedes repetirlo cuando quieras.' : 'Preguntas variadas de tu nivel, unos 5 minutos.') + '</small></span>' + (retoHoy ? '<span class="v2-reto__ok">' + A.UI.check + '</span>' : A.UI.chevron) + '</a>' +
+      /* C12: la sugerencia de nivel es discreta: va después de tu día y del reto, en formato compacto */
+      '<div class="v2-slot-real v2-level-slot" data-real="nivel"></div>' +
       methodHTML + badgesHTML +
       '<div class="v2-slot-real" data-real="opinion"></div>' +
       '</div>';
@@ -138,7 +139,12 @@
     if(window.V2SHELL) V2SHELL.paintTop();
   }
   /* Arranca con el shell (que solo existe si el área de miembro ya está visible) */
-  function start(){ if(d.querySelector('.v2-shell')) refresh(); }
+  function start(){
+    var mc = d.getElementById('memberContent');
+    /* C8: con la vista previa de una cuenta gratis o vencida hay barra 2.0, pero NO Inicio de miembro */
+    if(!mc || mc.style.display === 'none' || getComputedStyle(mc).display === 'none') return;
+    if(d.querySelector('.v2-shell')) refresh();
+  }
   window.addEventListener('v2:shell', start);
   window.addEventListener('v2:goal', function(){ if(screen) refresh(); });
   window.addEventListener('leo-progress-synced', function(){ if(screen) refresh(); });

@@ -441,9 +441,13 @@ async function initMemberHeader(){
   try{ memberProfile = await LeoBackend.getMemberProfile(); }catch(e){}
   const email = memberProfile ? memberProfile.email : '';
   const displayName = (profile && profile.name) ? profile.name : (email ? email.split('@')[0] : 'Cuenta');
-  const initial = (displayName.trim().charAt(0) || 'L').toUpperCase();
+  /* Sin nombre ni correo del perfil, la inicial sale del correo de la sesión (nunca de la palabra "Cuenta") (C2) */
+  let initialSrc = (profile && profile.name) || email || '';
+  if(!initialSrc){ try{ const ses = await LeoBackend.getSession(); initialSrc = (ses && ses.user && ses.user.email) || ''; }catch(e){} }
+  const initial = (initialSrc.trim().charAt(0) || '·').toUpperCase();
 
-  block.querySelectorAll('.nav-avatar').forEach(el=> el.textContent = initial);
+  /* La barra 2.0 mueve el menú de cuenta fuera de #navUserBlock: se actualizan TODOS los avatares (C2) */
+  document.querySelectorAll('.nav-avatar').forEach(el=> el.textContent = initial);
   const nameEl = document.getElementById('navProfileName');
   if(nameEl) nameEl.textContent = displayName;
   const popNameEl = document.getElementById('navProfilePopName');
@@ -470,6 +474,11 @@ async function initMemberHeader(){
   }
   if(bellContent) bellContent.innerHTML = `<p class="nav-pop-msg">${msg}</p>`;
   if(bellDot) bellDot.style.display = showDot ? 'block' : 'none';
+
+  /* Los listeners se conectan UNA sola vez: la barra 2.0 vuelve a llamar a esta función para pintar la inicial (C2)
+     y, sin esta guarda, el menú de cuenta se abría y se cerraba en el mismo toque. */
+  if(block.dataset.iclWired === '1') return;
+  block.dataset.iclWired = '1';
 
   const searchInput = document.getElementById('navSearchInput');
   const searchResults = document.getElementById('navSearchResults');
@@ -1296,6 +1305,8 @@ function sessionDurationCap(ms, nResults){
   return v <= cap ? v : Math.max(1, n) * 60000;
 }
 function sessionMs(s){ return s ? sessionDurationCap(s.durationMs, (s.results || []).length) : 0; }
+/* true si el tiempo de esa sesión no es medible y se cuenta estimado (1 min por ejercicio) */
+function sessionTimeEstimated(s){ return !!s && sessionDurationCap(s.durationMs, (s.results || []).length) !== Math.max(0, +s.durationMs || 0); }
 function recordSession({ skill, level, topics, results, startedAt }){
   ensureDerived();   // pone al día las cachés con lo que haya llegado de la nube ANTES de sumar esta sesión
   const p = loadProgress();
@@ -4760,15 +4771,18 @@ async function hydrateAcademiaDemoOffer(){
   }catch(e){}
 }
 
-function renderFreeDailyLimitReachedBlock(){
+function renderFreeDailyLimitReachedBlock(sessionResults){
   if(_leoAccessTier === 'free'){
     freeSessionEnd();   // el límite cortó la sesión: se guarda lo respondido hasta aquí
     trackLeoEventOncePerDay('free_daily_limit_reached');
     setTimeout(hydrateAcademiaDemoOffer, 0);
+    const fg = Array.isArray(sessionResults) ? sessionResults.filter(r => r && typeof r.isCorrect === 'boolean') : [];
+    const fok = fg.filter(r => r.isCorrect).length;
     return `
-      <div class="session-summary upgrade-block">
+      <div class="session-summary upgrade-block free-wall">
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
-        <p class="summary-score">Vas muy bien. Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
+        ${fg.length ? `<p class="summary-score">En esta sesión: ${fok} de ${fg.length} correctas a la primera.</p>` : ''}
+        <p class="upgrade-lead">Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
         <ul class="upgrade-benefits">
           ${window.ACADEMIA_LIVE ? '<li><strong>Academia Inglés con Leo</strong>: todos los cursos publicados (TO BE, pronombres, artículos, presente simple, DO / DOES y más), con evaluaciones e insignias</li>' : ''}
           <li>Un sistema que recuerda tus errores y te dice qué practicar después</li>
@@ -4796,13 +4810,27 @@ function renderFreeDailyLimitReachedBlock(){
   // el hilo, en vez de dejarla en la pantalla de pago.
   var volverPage = encodeURIComponent(leoVolverActual());
   var volverEntrar = (volverPage.indexOf('%3F') !== -1) ? '?volver=' + volverPage : '';   // solo con tema/nivel: el acceso sin parametros queda como siempre
+  /* C5: primero el resultado de lo que practicó (honesto: con 0 aciertos no se felicita como si hubiera acertado),
+     después la invitación a la cuenta gratis. Mismos límites y mismos enlaces que antes. */
+  const g = Array.isArray(sessionResults) ? sessionResults.filter(r => r && typeof r.isCorrect === 'boolean') : [];
+  const ok = g.filter(r => r.isCorrect).length;
+  const title = !g.length ? 'Ya completaste tus ejercicios de prueba de hoy.'
+    : ok === g.length ? '¡Perfecto! Acertaste todo.'
+    : ok / g.length >= 0.6 ? '¡Muy bien! Vas por buen camino.'
+    : ok > 0 ? 'Buen intento. Ya sabes qué repasar.'
+    : 'Hoy fueron difíciles, y eso también enseña.';
+  const scoreLine = g.length ? `${ok} de ${g.length} correctas a la primera.` : '';
   return `
-    <div class="session-summary">
-      <h2>¡Buen trabajo! Ya completaste tus ejercicios de prueba.</h2>
-      <p class="summary-score">Crea tu cuenta gratis y sigue ahora mismo: tienes ${FREE_USER_DAILY_LIMIT - GUEST_EXERCISE_LIMIT} ejercicios más hoy (${FREE_USER_DAILY_LIMIT} al día en total), con tu racha y tu progreso guardados. No pide tarjeta.</p>
-      <div class="summary-actions">
-        <a href="miembros.html?modo=registro&volver=${volverPage}" class="btn btn-primary">Crear cuenta gratis</a>
-        <a href="miembros.html${volverEntrar}" class="btn btn-ghost">Ya tengo cuenta</a>
+    <div class="session-summary free-wall">
+      <h2>${title}</h2>
+      ${scoreLine ? `<p class="summary-score">${scoreLine}</p>` : ''}
+      <div class="free-wall-cta">
+        <h3>¿Seguimos?</h3>
+        <p>Con tu cuenta gratis tienes ${FREE_USER_DAILY_LIMIT - GUEST_EXERCISE_LIMIT} ejercicios más hoy (${FREE_USER_DAILY_LIMIT} al día en total), y tu racha y tu progreso quedan guardados. No pide tarjeta.</p>
+        <div class="summary-actions">
+          <a href="miembros.html?modo=registro&volver=${volverPage}" class="btn btn-primary">Crear cuenta gratis</a>
+          <a href="miembros.html${volverEntrar}" class="btn btn-ghost">Ya tengo cuenta</a>
+        </div>
       </div>
     </div>`;
 }
@@ -4821,7 +4849,7 @@ function runMixSessionCore({ container, level, onExit, onOtherSkill, isFree }){
 
   function renderItem(){
     if(isFree && freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const entry = pool[idx];
@@ -9699,7 +9727,7 @@ function runFreeGrammarSession({ container, level, onOtherSkill, temaId, askedLe
 
   function renderItem(){
     if(freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const item = pool[idx];
@@ -9752,7 +9780,7 @@ function runFreeVocabSession({ container, level, onOtherSkill, temaId, askedLeve
 
   function renderItem(){
     if(freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const item = pool[idx];
@@ -9832,7 +9860,7 @@ function runFreeListeningSession({ container, level, onOtherSkill, temaId, asked
 
   function renderItem(){
     if(freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const item = pool[idx];
@@ -9924,7 +9952,7 @@ function runFreeWritingSession({ container, level, onOtherSkill }){
 
   function renderItem(){
     if(freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const item = pool[idx];
@@ -10034,7 +10062,7 @@ function runFreeSpeakingSession({ container, level, onOtherSkill }){
 
   function renderItem(){
     if(freeDailyLimitReached()){
-      container.innerHTML = renderFreeDailyLimitReachedBlock();
+      container.innerHTML = renderFreeDailyLimitReachedBlock(results);
       return;
     }
     const item = pool[idx];

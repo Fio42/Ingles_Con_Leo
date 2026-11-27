@@ -34,13 +34,13 @@
     var all = sessions().filter(function(s){ return s && s.skill !== 'check'; });
     var now = new Date(), today = ymd(now), mon = monday(now);
     var week = [0, 0, 0, 0, 0, 0, 0], weekDays = [0, 0, 0, 0, 0, 0, 0], todayMin = 0;
-    var weekList = [], last7 = [], cut7 = new Date(now.getTime() - 7 * 86400000);
+    var weekList = [], last7 = [], cut7 = new Date(now.getTime() - 7 * 86400000), weekEstimated = 0;
     all.forEach(function(s){
       var d = s.date ? new Date(s.date + 'T12:00:00') : null; if(!d) return;
       var m = minutesOf(s);
       if(s.date === today) todayMin += m;
       var idx = Math.floor((d - mon) / 86400000);
-      if(idx >= 0 && idx < 7){ week[idx] += m; weekDays[idx] = 1; weekList.push(s); }
+      if(idx >= 0 && idx < 7){ week[idx] += m; weekDays[idx] = 1; weekList.push(s); if(typeof sessionTimeEstimated === 'function' && sessionTimeEstimated(s)) weekEstimated++; }
       if(d >= cut7) last7.push(s);
     });
     /* Aciertos por semana (6 semanas, la última es la actual) */
@@ -62,7 +62,7 @@
       week: week.map(function(m){ return Math.round(m); }), weekDays: weekDays, todayIdx: (now.getDay() + 6) % 7,
       weekMin: Math.round(week.reduce(function(a, b){ return a + b; }, 0)), weekDaysCount: weekDays.reduce(function(a, b){ return a + b; }, 0),
       acc7: graded(last7), accWeek: graded(weekList), weeks: weeks, streak: streak, streakDates: streakDates, bestStreak: Math.max(best, streak),
-      sessionsCount: all.length
+      sessionsCount: all.length, weekEstimated: weekEstimated
     };
   }
 
@@ -121,5 +121,13 @@
   /* Cursos en el orden real de la ruta (ACADEMIA_CURSOS, generado desde el motor) */
   function courseOrder(){ try{ return Object.keys(ACADEMIA_CURSOS.courses); }catch(e){ return []; } }
 
-  window.V2D = { practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
+  /* Los errores que trabaja el "Repaso rápido": mismos filtros y orden que buildMistakesPool(mode 'rapido') en app.js
+     (sin lectura ni artículos, por prioridad mistakeScore, hasta QUICK_REVIEW_SIZE). Solo lectura. */
+  function quickReview(active){
+    var size = 10; try{ size = MISTAKE_PRIORITY.QUICK_REVIEW_SIZE || 10; }catch(e){}
+    var sc = function(e){ try{ return mistakeScore({ fail_count: e.fails, last_seen_at: e.seen, correct_streak: e.streak }); }catch(err){ return e.fails; } };
+    return (active || []).filter(function(e){ return e.kind !== 'reading' && e.kind !== 'article'; })
+      .map(function(e){ return { e: e, s: sc(e) }; }).sort(function(a, b){ return b.s - a.s; }).slice(0, size).map(function(x){ return x.e; });
+  }
+  window.V2D = { quickReview: quickReview, practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
 })();

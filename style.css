@@ -2515,6 +2515,14 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
   main::after{content:"";display:block;height:64px}
 }
 
+/* ===== Miembros (miembros.html): barra inferior según quién mira (C6) ===== */
+html:not(.icl-visitante) .mobile-nav--publica{display:none!important}
+/* C9: portada y práctica gratis: LeoBot se abre desde la cabecera; el robot flotante no tapa contenido */
+html.leobot-docked .leobot-fab,html.leobot-docked .leobot-greet,html.leobot-docked .leobot-reopen{display:none!important}
+html.leobot-docked .nav-links{margin-right:12px}.leobot-dock-btn{margin-left:auto;margin-right:6px;flex:0 0 auto}.leobot-dock-btn + .tema-wrap{margin-left:0;padding-left:0}
+@media (min-width:481px){html.leobot-docked .leobot-panel{top:76px!important;bottom:auto!important;max-height:min(650px,calc(100vh - 96px))!important}}
+html.icl-visitante .mobile-nav--miembro{display:none!important}
+
 /* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */
 
 :root{
@@ -2653,9 +2661,7 @@ html:not([data-theme="light"]) .skill-card-link.featured-cambridge,
 html:not([data-theme="light"]) .skill-card-link.featured-clases,
 html:not([data-theme="light"]) .skill-card-link.featured-juego,
 html:not([data-theme="light"]) .stat-card,
-html:not([data-theme="light"]) .continue-note,
 html:not([data-theme="light"]) .rings-panel,
-html:not([data-theme="light"]) .continue-progress-bar,
 html:not([data-theme="light"]) .continue-progress-fill,
 html:not([data-theme="light"]) .activity-card,
 html:not([data-theme="light"]) .weekly-chart-card,
@@ -2693,12 +2699,9 @@ html:not([data-theme="light"]) .mistakes-card,
 html:not([data-theme="light"]) .progress-summary-card,
 html:not([data-theme="light"]) .daily-card,
 html:not([data-theme="light"]) .quick-actions-card,
-html:not([data-theme="light"]) .toefl-skill-pill,
 html:not([data-theme="light"]) .toefl-banner .btn-primary,
 html:not([data-theme="light"]) .toefl-soon-card,
-html:not([data-theme="light"]) #memberContent .dash-top-grid .continue-note,
 html:not([data-theme="light"]) .plan-feature-icon,
-html:not([data-theme="light"]) #memberContent .toefl-banner-icon,
 html:not([data-theme="light"]) #memberContent .performance-card,
 html:not([data-theme="light"]) #memberContent .activity-card-full,
 html:not([data-theme="light"]) .toefl-landing-card,
@@ -2720,11 +2723,7 @@ html:not([data-theme="light"]) .home-faq details,
 html:not([data-theme="light"]) .diag-card,
 html:not([data-theme="light"]) .leo-ai-btn,
 html:not([data-theme="light"]) .leo-ai-answer,
-html:not([data-theme="light"]) .ai-pitch::after,
-html:not([data-theme="light"]) .ai-pitch-badge,
 html:not([data-theme="light"]) .ai-pitch .btn,
-html:not([data-theme="light"]) .locked-card.is-ai .stat-card-icon,
-html:not([data-theme="light"]) .locked-card.is-ai .locked-badge,
 html:not([data-theme="light"]) .sess-next-link,
 html:not([data-theme="light"]) .fb-card,
 html:not([data-theme="light"]) .two-ways-card,
@@ -2739,6 +2738,14 @@ html:not([data-theme="light"]) .toeic-timer.prep,
 html:not([data-theme="light"]) .toeic-timer.speak,
 html:not([data-theme="light"]) .toeic-mini-fb.bad,
 html:not([data-theme="light"]) .free-limit-note{background-color:var(--v2-surface-2)!important;background-image:none!important}
+html:not([data-theme="light"]) .continue-note,
+html:not([data-theme="light"]) .continue-progress-bar,
+html:not([data-theme="light"]) .toefl-skill-pill,
+html:not([data-theme="light"]) #memberContent .dash-top-grid .continue-note,
+html:not([data-theme="light"]) #memberContent .toefl-banner-icon,
+html:not([data-theme="light"]) .ai-pitch-badge,
+html:not([data-theme="light"]) .locked-card.is-ai .stat-card-icon,
+html:not([data-theme="light"]) .locked-card.is-ai .locked-badge{background-color:color-mix(in srgb,var(--paper) 88%,transparent)!important}
 html:not([data-theme="light"]) .badge-free,
 html:not([data-theme="light"]) .feedback.ok,
 html:not([data-theme="light"]) .feedback.bad .fb-head,
@@ -2848,8 +2855,8 @@ html:not([data-theme="light"]) .libro-demo,
 html:not([data-theme="light"]) .libro-shots img,
 html:not([data-theme="light"]) .libro-faq details,
 html:not([data-theme="light"]) .libro-final .btn-primary,
-html:not([data-theme="light"]) .libro-other,
 html:not([data-theme="light"]) .libro-sticky{background-color:var(--v2-surface)!important;background-image:none!important}
+html:not([data-theme="light"]) .libro-other{background-color:color-mix(in srgb,var(--paper) 88%,transparent)!important}
 html:not([data-theme="light"]) .libro-demo .si{color:var(--ink)!important}
 html:not([data-theme="light"]) .libro-others,
 html:not([data-theme="light"]) .libro-other{border-color:var(--v2-line)!important}

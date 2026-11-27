@@ -1,0 +1,66 @@
+/* Inglés con Leo 2.0 · Piezas 2.0 en páginas públicas (Práctica gratis, English Rush)
+   Las fichas de resultados, combos y la hoja de sonido usan los tokens --k-* de v3-ui.css. Allí el modo
+   oscuro depende de html.v2, que las páginas públicas NO tienen (no se enciende el shell de miembros).
+   Este archivo repite esos tokens oscuros para html[data-theme="dark"] sin .v2. Copiado de v3-ui.css. */
+html[data-theme="dark"]:not(.v2) .k-scope{
+  color-scheme:dark;
+  --k-bg:#0F1320;
+  --k-bg-pattern:rgba(255,255,255,.045);
+  --k-surface:#171C2B;
+  --k-surface-2:#1F2537;
+  --k-surface-3:#283048;
+  --k-line:#2A3147;
+  --k-line-strong:#3A4361;
+  --k-ink:#06080F;
+  --k-text:#EEF0F7;
+  --k-text-2:#AAB1C4;
+  --k-text-3:#737B92;
+  --k-text-on-brand:#FFFFFF;
+  --k-focus:#8EA0FF;
+
+  --k-brand:#4D66FF;  --k-brand-lip:#2638B8; --k-brand-tint:#1D2550; --k-brand-text:#9AABFF;
+  --k-xp:#FFC94A;     --k-xp-lip:#C98A00;    --k-xp-tint:#3A2F12;   --k-xp-text:#FFD772;
+  --k-streak:#FF8A33; --k-streak-lip:#C45A08;--k-streak-tint:#3A2414;--k-streak-text:#FFAE70;
+  --k-ok:#25C27C;     --k-ok-lip:#118551;    --k-ok-tint:#10301F;   --k-ok-text:#5BE3A5;
+  --k-bad:#FF6655;    --k-bad-lip:#B23426;   --k-bad-tint:#3A1A17;  --k-bad-text:#FF9A8E;
+  --k-mend:#1FBFB2;   --k-mend-lip:#0A7F76;  --k-mend-tint:#0F2F2E; --k-mend-text:#59E0D5;
+  --k-award:#8E74FF;  --k-award-lip:#5638D6; --k-award-tint:#251E47;--k-award-text:#BFB0FF;
+  --k-info:#46B4F0;   --k-info-tint:#11283A;
+
+  --k-disabled-bg:#232A3D; --k-disabled-text:#5E6680; --k-disabled-lip:#1A2030;
+
+  --k-shadow-sticker:3px 4px 0 #05070D;
+  --k-shadow-soft:0 1px 0 rgba(0,0,0,.3),0 10px 28px -10px rgba(0,0,0,.6);
+  --k-shadow-pop:0 24px 60px -12px rgba(0,0,0,.7);
+  --k-scrim:rgba(3,5,10,.62);
+  --k-illus-outline:#0B0E17;
+}
+html[data-theme="dark"]:not(.v2) .k-scope{
+  --k-chart-a:#4D66FF; --k-chart-mend:#0F9E93; --k-chart-bad:#F25A4A; --k-chart-grid:#252C40; --k-chart-axis:#737B92;
+  --k-sticker-line:#3A4361; --k-hero-ink:#05070D;
+}
+html[data-theme="dark"]:not(.v2) .k-scope{
+  --k-bg:#0B0F1A; --k-surface:#141A29; --k-surface-2:#1A2134; --k-surface-3:#242D45;
+  --k-line:#222A3F; --k-line-strong:#323C58;
+  --k-card-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.8);
+  --k-hero-shadow:0 16px 40px -16px rgba(77,102,255,.55);
+  --k-glow-xp:0 0 24px rgba(255,201,74,.25);
+}
+
+/* Botón de sonido de la práctica gratis (mismo que en las lecciones de la Academia) */
+#practicaMain .skill-section{position:relative}
+.v2-snd-free{position:absolute;top:12px;right:12px;z-index:2;display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:var(--v2-text-3,#8A90A2);cursor:pointer}
+.v2-snd-free:hover{background:var(--v2-surface-2)}
+.v2-snd-free .k-ico{width:22px;height:22px}
+
+/* Resultado + invitación (muro del límite): primero lo que hiciste, después la cuenta. Texto legible, sin bloques azules. */
+#practicaMain .free-wall{text-align:left}
+#practicaMain .free-wall .summary-score{color:var(--v2-text-2)!important;font-weight:700}
+#practicaMain .free-wall-cta{margin-top:16px;padding:18px;border-radius:18px;background:var(--v2-surface-2);border:1px solid var(--v2-line)}
+#practicaMain .free-wall-cta h3{margin:0 0 6px;font-family:var(--v2-font-display);font-size:1.2rem;color:var(--v2-text)}
+#practicaMain .free-wall-cta p{margin:0 0 14px;color:var(--v2-text-2)!important;font-weight:600;line-height:1.5}
+#practicaMain .free-wall-cta .summary-actions{display:flex;flex-wrap:wrap;gap:10px}
+#practicaMain .free-wall-cta .summary-actions .btn{flex:1 1 180px;min-height:50px}
+#practicaMain .session-summary .v2-results ~ h2,#practicaMain .session-summary .v2-results ~ .summary-score{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* Las piezas .k-scope son tarjetas dentro de la página, no la app completa (mismo ajuste que v2-screens.css en miembros) */
+.k-scope.k-scope{min-height:0}

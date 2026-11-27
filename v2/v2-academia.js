@@ -43,42 +43,55 @@
     var routeTitle = ''; try{ routeTitle = ACADEMIA.route.title; }catch(e){}
     var cols = [1, 2, 3, 2];
     var html = '<div class="v2-screen is-wide v2-route">' +
-      '<header class="exp-head"><div class="ring ring--brand" role="img" aria-label="Avance de la ruta: ' + pct + '%">' + K.ring(pct / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + pct + '%</b></div></div>' +
-        '<div><span class="t-eyebrow">Ruta ' + esc(routeTitle || 'de la academia') + '</span><h1>Tu ruta</h1><p>' + coursesDone + ' de ' + list.length + ' cursos · entra a cualquiera cuando quieras</p></div></header>' +
-      '<nav class="stage-nav" aria-label="Etapas">' + K.STAGES.map(function(sg, i){ var dn = list.slice(sg.from, sg.to).every(function(v){ return v.done >= v.total; });
+      '<header class="exp-head"><div class="ring ring--brand" role="img" aria-label="Lecciones completadas de la ruta: ' + pct + '%">' + K.ring(pct / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + pct + '%</b></div></div>' +
+        '<div><span class="t-eyebrow">Ruta ' + esc(routeTitle || 'de la academia') + '</span><h1>Tu ruta</h1><p><span id="v2RtAprob">Cursos aprobados: …</span> · ' + doneL + ' de ' + totalL + ' lecciones (' + pct + '%)</p><p class="v2-route-note">Un curso queda aprobado al superar su evaluación y ganar su insignia. Entra a cualquiera cuando quieras.</p></div></header>' +
+      '<nav class="stage-nav" aria-label="Etapas">' + K.STAGES.map(function(sg, i){ var dn = false; /* se marca al llegar las insignias (C4) */
         return '<button type="button" data-goto="' + i + '" class="' + (i === curStage ? 'is-now' : '') + ' ' + (dn ? 'is-done' : '') + '" style="--k-st:' + sg.c + '"><i>' + (dn ? A.UI.check : i + 1) + '</i><span>' + sg.t + '</span></button>'; }).join('') + '</nav>' +
       (cur && cur.next ? '<a class="next-up" href="#/curso/' + cur.id + '/leccion/' + cur.next.n + '">' + K.emblem(cur.id, { shape: stageOf(curIdx).shape, size: 52 }) +
         '<span><small>' + (cur.next.resume ? 'La dejaste a medias' : (cur.done ? 'Continúa' : 'Empieza')) + ' · Lección ' + cur.next.n + ' de ' + cur.total + '</small><b>' + esc(cur.next.title) + '</b></span><span class="next-up__go">' + A.UI.play + '</span></a>' : '') +
       K.STAGES.map(function(sg, si){
         var items = list.slice(sg.from, sg.to); if(!items.length) return '';
-        var stDone = items.every(function(v){ return v.done >= v.total; }), stNow = si === curStage;
+        var stDone = false, stNow = si === curStage;   /* etapa aprobada = todas sus insignias; se marca al llegar (C4) */
         return '<section class="stage ' + (stDone ? 'is-done' : '') + ' ' + (stNow ? 'is-now' : '') + '" id="v2stage-' + si + '" style="--k-st:' + sg.c + '">' +
           '<div class="stage__banner">' + (A.landscape ? A.landscape(sg.c, stDone) : '') + '<span class="t-eyebrow">' + sg.n + '</span><h2>' + sg.t + '</h2><p class="stage__goal">Meta: ' + sg.goal + '</p>' +
-            '<span class="pill">' + (stDone ? A.UI.check + 'Conquistada' : items.filter(function(v){ return v.done >= v.total; }).length + ' de ' + items.length) + '</span></div>' +
+            '<span class="pill" data-stage-pill="' + si + '">' + items.length + ' cursos</span></div>' +
           '<div class="board" data-board><svg class="board__path" aria-hidden="true"></svg>' +
           items.map(function(v, j){
             var i = sg.from + j, done = v.done >= v.total, now = cur && v.id === cur.id;
-            return '<button type="button" class="cstop ' + (done ? 'is-done' : '') + ' ' + (now ? 'is-now' : '') + '" data-course="' + v.id + '" style="grid-column:' + cols[j % 4] + ';grid-row:' + (j + 1) + '" aria-label="' + esc(v.title) + ': ' + (done ? 'lecciones completadas' : v.done + ' de ' + v.total + ' lecciones') + '">' +
+            return '<button type="button" class="cstop ' + (done ? 'is-done' : '') + ' ' + (now ? 'is-now' : '') + '" data-course="' + v.id + '" style="grid-column:' + cols[j % 4] + ';grid-row:' + (j + 1) + '" aria-label="' + esc(v.title) + ': ' + (done ? 'lecciones completas' : v.done + ' de ' + v.total + ' lecciones') + '">' +
               '<span class="cstop__em">' + (now ? '<span class="here">Tú</span>' : '') + K.emblem(v.id, { shape: sg.shape, size: 72 }) + (done ? '<span class="cstop__check">' + A.UI.check + '</span>' : '') + '</span>' +
               '<span class="cstop__name">' + esc(v.name || v.title) + '</span>' +
-              '<span class="cstop__state">' + (done ? 'Completado' : v.done ? v.done + '/' + v.total + ' lecciones' : 'Disponible') + '</span></button>';
+              '<span class="cstop__state">' + (done ? 'Lecciones completas' : v.done ? v.done + '/' + v.total + ' lecciones' : 'Disponible') + '</span></button>';
           }).join('') +
           '<div class="stage__reward" style="grid-row:' + (items.length + 1) + '" data-stage-badges="' + si + '">' + A.STK.trophy + '<div>Insignias de la etapa<small>Aprueba la evaluación de cada curso para ganar su insignia</small></div></div>' +
           '</div></section>';
       }).join('') + '</div>';
     show(html, 'Mi ruta');
+    var mine = screen;   /* C3: si la vista se vuelve a pintar antes de que lleguen las insignias, este resultado se descarta */
     var draw = function(){ K.$$('[data-board]', screen).forEach(drawPath); };
     requestAnimationFrame(draw);
     if(window.ResizeObserver){ var ro = new ResizeObserver(draw); ro.observe(screen); }
     /* Insignias reales por etapa */
     Promise.all(apps().map(function(a){ return a.badge().then(function(b){ return { id: a.id, b: b }; }, function(){ return { id: a.id, b: null }; }); })).then(function(rs){
-      if(!screen) return;
+      if(!screen || screen !== mine) return;
       K.STAGES.forEach(function(sg, si){
         var box = screen.querySelector('[data-stage-badges="' + si + '"]'); if(!box) return;
         var ids = list.slice(sg.from, sg.to).map(function(v){ return v.id; }), won = rs.filter(function(r){ return r.b && ids.indexOf(r.id) >= 0; }).length;
         box.querySelector('div').innerHTML = (won ? won + ' de ' + ids.length + ' insignias de la etapa' : 'Insignias de la etapa') + '<small>' + (won === ids.length ? 'Etapa con todas sus insignias' : 'Aprueba la evaluación de cada curso para ganar su insignia') + '</small>';
       });
-      rs.forEach(function(r){ if(!r.b) return; var em = screen.querySelector('[data-course="' + r.id + '"] .k-cstop__em'); if(em && !em.querySelector('.v2-ribbon')) em.appendChild(K.h('<span class="v2-ribbon" title="Insignia conseguida">' + A.STK.trophy + '</span>')); });
+      /* C4: aprobado = evaluación superada con insignia. Las lecciones se cuentan aparte. */
+      var aprob = rs.filter(function(r){ return r.b; }).length, ra = screen.querySelector('#v2RtAprob');
+      if(ra) ra.textContent = aprob + ' de ' + list.length + (list.length === 1 ? ' curso aprobado' : ' cursos aprobados');
+      K.STAGES.forEach(function(sg, si){
+        var ids = list.slice(sg.from, sg.to).map(function(v){ return v.id; }); if(!ids.length) return;
+        var won = rs.filter(function(r){ return r.b && ids.indexOf(r.id) >= 0; }).length, pill = screen.querySelector('[data-stage-pill="' + si + '"]');
+        if(pill) pill.innerHTML = won === ids.length ? A.UI.check + 'Etapa aprobada' : won + ' de ' + ids.length + ' aprobados';
+        var sec = screen.querySelector('#v2stage-' + si); if(sec) sec.classList.toggle('k-is-done', won === ids.length);
+        var nb = screen.querySelector('[data-goto="' + si + '"]');
+        if(nb && won === ids.length){ nb.classList.add('k-is-done'); var ic = nb.querySelector('i'); if(ic) ic.innerHTML = A.UI.check; }
+      });
+      rs.forEach(function(r){ if(!r.b) return; var st = screen.querySelector('[data-course="' + r.id + '"] .k-cstop__state'); if(st) st.textContent = 'Aprobado';
+        var em = screen.querySelector('[data-course="' + r.id + '"] .k-cstop__em'); if(em && !em.querySelector('.v2-ribbon')) em.appendChild(K.h('<span class="v2-ribbon" title="Insignia conseguida">' + A.STK.trophy + '</span>')); });
     });
     screen.addEventListener('click', function(e){
       var g = e.target.closest('[data-goto]'); if(g){ SND.play('tap'); var t = d.getElementById('v2stage-' + g.getAttribute('data-goto')); if(t) t.scrollIntoView({ behavior: K.reduced() ? 'auto' : 'smooth', block: 'start' }); return; }
@@ -118,7 +131,7 @@
     var html = '<div class="v2-screen is-wide v2-logros">' +
       '<header class="page-head"><h1>Mis logros</h1><p>Cada insignia se gana al aprobar la evaluación de un curso. La corrige el servidor.</p></header>' +
       '<div class="pstats"><div><span>' + A.ICO.lesson + '</span><b id="v2LgLes">' + list.reduce(function(t, v){ return t + v.done; }, 0) + '</b><small>Lecciones completadas</small></div>' +
-        '<div><span>' + A.STK.trophy + '</span><b id="v2LgBad">–</b><small>Insignias</small></div>' +
+        '<div><span>' + A.STK.trophy + '</span><b id="v2LgBad">–</b><small>Cursos aprobados (insignias)</small></div>' +
         '<div><span>' + A.ICO.target + '</span><b>' + list.filter(function(v){ return v.done >= v.total; }).length + '</b><small>Cursos con lecciones completas</small></div></div>' +
       '<div class="v2-next-badge-slot"></div>' +
       '<div class="block__head"><h2>Colección</h2><span class="pill" id="v2LgPill">0 de ' + list.length + '</span></div>' +
@@ -129,9 +142,10 @@
       '<details class="v2-details"><summary>Detalle por curso y opciones</summary><div class="v2-classic-slot"></div></details>' +
       '</div>';
     show(html, 'Mis logros', true);
+    var mine = screen;   /* C3: la tarjeta "Tu próxima insignia" se repetía una vez por cada pintado anterior */
     var got = {};
     Promise.all(apps().map(function(a){ return a.badge().then(function(b){ return { id: a.id, b: b }; }, function(){ return { id: a.id, b: null }; }); })).then(function(rs){
-      if(!screen) return;
+      if(!screen || screen !== mine) return;
       var won = 0;
       rs.forEach(function(r){
         if(!r.b) return; won++; got[r.id] = r.b;
@@ -147,6 +161,7 @@
       var cand = list.filter(function(v){ return !got[v.id]; }).sort(function(a, b){ return b.done / b.total - a.done / a.total; })[0];
       var slot = screen.querySelector('.v2-next-badge-slot');
       if(cand && slot){
+        slot.innerHTML = '';
         var ready = cand.done >= cand.total, i = list.indexOf(cand);
         slot.appendChild(K.h('<a class="next-badge" href="#/curso/' + cand.id + (ready ? '/evaluacion' : '') + '">' + K.emblem(cand.id, { shape: stageOf(i).shape, locked: true, size: 64 }) + '<div><span class="t-eyebrow">Tu próxima insignia</span><h3>' + esc(cand.title) + '</h3><p>' + (ready ? 'Ya terminaste las lecciones: haz la evaluación y gánala.' : 'Llevas ' + cand.done + ' de ' + cand.total + ' lecciones. Al terminar, haz la evaluación.') + '</p><div class="bar bar--sm bar--mend"><div class="bar__fill" style="width:' + Math.round(cand.done / cand.total * 100) + '%"></div></div></div></a>'));
       }
@@ -188,6 +203,12 @@
     else if(parts[0] === 'logros') renderLogros();
     if(window.V2SHELL) V2SHELL.paintTop();
   }
-  window.addEventListener('icl:academia-ruta', function(e){ onRoute(e.detail && e.detail.parts); });
+  /* El motor avisa de la ruta varias veces seguidas mientras carga los cursos: se agrupan en un solo pintado (C3) */
+  var pendParts, pendT = null;
+  window.addEventListener('icl:academia-ruta', function(e){
+    pendParts = e.detail && e.detail.parts;
+    if(pendT) return;
+    pendT = setTimeout(function(){ pendT = null; onRoute(pendParts); }, 30);
+  });
   if(window.ICL_ACADEMIA) onRoute();
 })();

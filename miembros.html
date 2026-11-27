@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<script src="tema.js?v=20261127a"></script>
+<script>/* C6: sin sesión guardada, barra pública desde el primer pintado */(function(){try{for(var i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token$/.test(localStorage.key(i)))return;}}catch(e){}document.documentElement.classList.add('icl-visitante');})();</script>
+<script src="tema.js?v=20261128a"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -28,7 +29,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261127a">
+<link rel="stylesheet" href="style.css?v=20261128a">
 <link rel="preload" as="style" href="chatbot.css?v=20261124b">
 <link rel="stylesheet" href="chatbot.css?v=20261124b" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261124b"></noscript>
@@ -52,7 +53,7 @@
   gtag('config', 'G-0DRL810MYR');
 </script>
 <!-- Ingles con Leo 2.0 (solo carga para miembros). Rollback: ICL_V2_ENABLED=false en v2/v2-init.js -->
-<script src="v2/v2-init.js?v=20261127e"></script>
+<script src="v2/v2-init.js?v=20261128b"></script>
 <!-- /Ingles con Leo 2.0 -->
 </head>
 <body>
@@ -593,7 +594,7 @@
   </div>
 </footer>
 
-<nav class="mobile-nav" aria-label="Navegación principal">
+<nav class="mobile-nav mobile-nav--miembro" aria-label="Navegación principal">
   <button class="mnav-item active" onclick="location.href='miembros.html'" aria-current="page">
     <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     Inicio
@@ -615,14 +616,37 @@
     Aprende
   </button>
 </nav>
+<nav class="mobile-nav mobile-nav--publica" aria-label="Navegación principal">
+  <button class="mnav-item" onclick="location.href='index.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11l8-7 8 7v9a1 1 0 01-1 1h-4v-6H9v6H5a1 1 0 01-1-1v-9z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    Inicio
+  </button>
+  <button class="mnav-item" onclick="location.href='articulos.html'">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Aprende inglés
+  </button>
+  <button class="mnav-item" onclick="location.href='practica.html'">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+    Practicar
+  </button>
+  <button class="mnav-item active" onclick="location.href='miembros.html'" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="currentColor" stroke-width="2"/></svg>
+    Miembros
+  </button>
+</nav>
+<script>
+/* C6: el visitante (login, registro, membresía) ve la misma barra que el resto de páginas públicas; con sesión, la del alumno */
+(function(){var r=document.documentElement,g=document.getElementById('gate');function sync(){r.classList.toggle('icl-visitante',!!(g&&g.style.display!=='none'&&getComputedStyle(g).display!=='none'));}
+if(g){new MutationObserver(sync).observe(g,{attributes:true,attributeFilter:['style','class']});sync();}})();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261122e"></script>
 <script src="temas.js?v=20261121d"></script>
 <script src="academia-cursos.js?v=20261115a"></script>
 <script src="inicio-alumno.js?v=20261124a"></script>
-<script src="app.js?v=20261127a"></script>
-<script src="backend.js?v=20261123a"></script>
+<script src="app.js?v=20261128a"></script>
+<script src="backend.js?v=20261128a"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
    Pixel en index.html): no compite con el primer render. Se descarga
@@ -636,13 +660,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261121b';
+    s.src = 'chatbot.js?v=20261128a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261121b&r=1';
+        r.src = 'chatbot.js?v=20261128a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };
@@ -668,8 +692,23 @@
   // "Área de miembros" con candados: para cuentas con is_member=false
   // que NO acaban de crear su cuenta (o que ya vieron la bienvenida y
   // eligieron "Ahora no"). No bloquea nada, solo invita a pagar.
-  function showMemberPreview(){
+  function showMemberPreview(profile){
     hideLoading();
+    /* C8: una cuenta que fue miembro (tiene member_since) y hoy no lo es tiene la membresía inactiva: se le habla
+       como a quien vuelve, no como a una cuenta nueva. Solo cambia el texto; acceso y pago son los mismos. */
+    try{
+      if(profile && !profile.is_member && profile.member_since && memberPreview){
+        const h2 = memberPreview.querySelector('.member-preview-head h2'), p = memberPreview.querySelector('.member-preview-head p');
+        const bh = memberPreview.querySelector('.upgrade-banner h3'), bp = memberPreview.querySelector('.upgrade-banner > p');
+        const ab = document.getElementById('previewActivateBtn');
+        if(h2) h2.textContent = 'Tu membresía no está activa';
+        if(p) p.textContent = 'Tu progreso, tus errores guardados y tus insignias siguen aquí, esperándote.';
+        if(bh) bh.textContent = 'Reactívala cuando quieras.';
+        if(bp) bp.textContent = 'Por $2 USD al mes (o $20 USD al año) vuelves a la Academia completa, la práctica sin límite y Leo AI. Mientras tanto, puedes practicar gratis cada día.';
+        if(ab) ab.textContent = 'Reactivar membresía';
+        memberPreview.classList.add('is-lapsed');
+      }
+    }catch(e){}
     gate.style.display = 'none';
     memberContent.style.display = 'none';
     document.title = 'Tu cuenta - Inglés con Leo';
@@ -961,7 +1000,7 @@
     } else if(wantsPay()){
       goToPaymentAuto();
     } else {
-      showMemberPreview();
+      showMemberPreview(profile);
     }
   }
   // ?pagar=1 en el enlace = la persona tocó un botón para hacerse miembro: se salta bienvenida y vista previa.
@@ -1562,7 +1601,7 @@
         } else if(wantsPay()){
           goToPaymentAuto({ fromLoad:true });
         } else {
-          showMemberPreview();
+          showMemberPreview(profile);
         }
       } else {
         showGate();

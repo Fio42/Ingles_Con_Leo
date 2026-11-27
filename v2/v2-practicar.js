@@ -26,13 +26,18 @@
   }
   function render(mis){
     var acc = acc30(), act = mis ? mis.active : [];
+    var quick = V2D.quickReview ? V2D.quickReview(act) : act.slice(0, 10);
+    if(!quick.length) act = [];
     var html = '<div class="v2-screen v2-practicar">' +
       '<header class="page-head"><h1>Practicar</h1><p>Elige qué entrenar. Te recomendamos empezar por tus refuerzos.</p></header>' +
-      (act.length ? '<section class="rec"><div class="leo rec__leo"><img src="v2/leo/leo-thinking-bust.png" alt="Profe Leo" draggable="false"></div>' +
+      /* C10/C11: un objetivo pequeño y verdadero. "Repaso rápido" (errores.html?modo=rapido) trabaja exactamente tus
+         errores más prioritarios (hasta 10, mismo orden que usa el motor); el total sigue en Progreso. */
+      (act.length ? '<section class="rec"><div class="leo rec__leo"><img src="v2/leo/leo-thinking-bust.png" alt="" draggable="false"></div>' +
         '<span class="method__eyebrow">' + A.STK.mend + 'Recomendado por Leo</span>' +
-        '<h2>Refuerza ' + act.length + ' ' + (act.length === 1 ? 'error' : 'errores') + '</h2>' +
-        '<ul class="rec__list">' + act.slice(0, 3).map(function(e){ return '<li><b>' + esc(e.label || e.topic) + '</b>' + K.steps(e.streak) + '</li>'; }).join('') + '</ul>' +
-        '<div class="rec__foot"><a class="btn btn--mend" href="errores.html?modo=rapido">Reforzar ahora</a><a class="link" href="errores.html">Ver todos</a></div></section>' : '') +
+        '<h2>Hoy: repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') + '</h2>' +
+        '<p class="v2-rec-sub">Los que más te cuestan ahora. ' + (act.length > quick.length ? act.length + ' en refuerzo en total, en <a href="progreso.html#metodo">tu historial</a>.' : 'Son todos los que tienes en refuerzo.') + '</p>' +
+        '<ul class="rec__list">' + quick.slice(0, 3).map(function(e){ return '<li><b>' + esc(e.label || e.topic) + '</b>' + K.steps(e.streak) + '</li>'; }).join('') + '</ul>' +
+        '<div class="rec__foot"><a class="btn btn--mend" href="errores.html?modo=rapido">Repasar ' + quick.length + ' ahora</a><a class="btn btn--sm btn--secondary" href="errores.html">Ver todos</a></div></section>' : '') +
       '<section class="v2-reto-box" id="reto"><div class="v2-slot-real" data-real="reto"></div></section>' +
       '<a class="v2-plan" href="plan-estudio.html">' + A.ICO.days + '<span><span class="t-eyebrow">Plan de estudio</span><b>Tu práctica recomendada de hoy</b><small>Según tu nivel, tu progreso y tus errores. De 5 a 25 minutos.</small></span>' + A.UI.chevron + '</a>' +
       '<div class="block__head"><h2>Por habilidad</h2><span class="t-muted small">Aciertos · 30 días</span></div>' +

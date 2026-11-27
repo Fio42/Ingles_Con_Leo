@@ -126,7 +126,7 @@
     'speaking.html': { explain:'Estás en Speaking: escuchas la pronunciación correcta, te grabas diciendo lo mismo y comparas ambos audios tú mismo.', cta:null },
     'lectura.html': { explain:'Estás en Lectura: lees un texto corto y respondes preguntas sobre lo que entendiste. Si eres miembro, Leo AI te puede explicar por qué una respuesta es la correcta.', cta:null },
     'mixto.html': { explain:'Mixto combina varias habilidades en una sola sesión, para practicar de forma más parecida a usar inglés de verdad.', cta:null },
-    'errores.html': { explain:'Este es tu Repaso personal: los ejercicios que más se te han dificultado, agrupados por tipo de error. "Repaso rápido" te da una sesión corta con los más importantes, y "Analizar mis errores con Leo AI" te explica qué patrón se repite y qué hacer.', cta:null },
+    'errores.html': { explain:'Esta es la página Mis errores: arriba ves tus patrones de error y debajo una sesión de repaso con los ejercicios que más te han costado, lista para empezar. "Analizar mis errores con Leo AI" te explica qué patrón se repite y qué hacer.', cta:null },
     'juego.html': { explain:'English Rush es un juego rápido para practicar inglés jugando, sin necesidad de cuenta.', cta:null },
     'clases.html': { explain:'Las clases interactivas son lecciones guiadas paso a paso sobre situaciones reales (entrevistas, viajes, trabajo, etc.), no solo ejercicios sueltos.', cta:null },
     'clases-particulares.html': { explain:'Aquí puedes pedir una clase particular online con Leo (individual, 50 minutos). Se consulta la disponibilidad por WhatsApp o correo.', cta:null },
@@ -686,7 +686,7 @@
     },
 
     mistakesInfo: {
-      text:'Tu Repaso personal junta los ejercicios que fallaste y los ordena por prioridad. Cuando aciertas uno varias veces pasa a "recuperado" y luego a "dominado". "Repaso rápido" te da una sesión corta con los más importantes, y Leo AI puede analizar qué patrón se repite en tus errores.',
+      text:'Mis errores junta los ejercicios que fallaste y los ordena por prioridad. Con 2 aciertos seguidos un error pasa a "recuperado" y con 4 a "dominado"; si vuelves a fallarlo, empieza de nuevo. En esa página tienes una sesión de repaso lista para empezar, y Leo AI puede analizar qué patrón se repite en tus errores.',
       options:[
         { label:'Hacer un repaso rápido →', href:'errores.html?modo=rapido' },
         { label:'Ver mis errores →', href:'errores.html' }

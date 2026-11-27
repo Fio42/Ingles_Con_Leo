@@ -76,3 +76,34 @@ html.v2 .leo-ai-tip,html.v2 .leo-ai-example,html.v2 .leo-ai-fixed{border-radius:
 
 /* Durante una sesión de ejercicios el lanzador de LeoBot no tapa botones (Leo AI sigue dentro de cada ejercicio) */
 html.v2.v2-app body.leobot-away .leobot-fab{display:none!important}
+
+/* Avatar de cuenta en páginas sin menú propio (Academia) */
+html.v2 .v2-shell .v2-acct{display:inline-flex;align-items:center;text-decoration:none;border-radius:50%}
+
+/* =========================================================
+   ESCALA ÚNICA 2.0 (C20). Una sola fuente para anchos, títulos y texto secundario en TODAS las pantallas del
+   alumno (Inicio, Academia, Practicar, Progreso, Mis errores, habilidades, clases, exámenes, Rush...).
+   Sustituye a los anchos sueltos de antes (584, 620, 636, 720, 736, 756, 820, 936, 1000 px según la página).
+     móvil  < 768:   todo el ancho, margen 16
+     tablet 768-1099: columna de 640, margen 24
+     escritorio ≥1100: columna de 760, margen 32 (centrada en el espacio a la derecha del riel)
+     pantallas ≥1600: columna de 840
+   ========================================================= */
+html.v2.v2-app{--v2-col:100%;--v2-pad:16px;--v2-h1:28px}
+@media (min-width:768px){ html.v2.v2-app{--v2-col:640px;--v2-pad:24px;--v2-h1:32px} }
+@media (min-width:1100px){ html.v2.v2-app{--v2-col:760px;--v2-pad:32px} }
+@media (min-width:1600px){ html.v2.v2-app{--v2-col:840px} }
+html.v2.v2-app .v2-screen,
+html.v2.v2-app .v2-screen.k-is-wide,
+html.v2.v2-app main > .page-hero > .wrap,
+html.v2.v2-app main > section > .wrap,
+html.v2.v2-app main.v2-has-practice > section > .wrap,
+html.v2.v2-app .ac-wrap{box-sizing:border-box;max-width:calc(var(--v2-col) + 2 * var(--v2-pad))!important;margin-left:auto!important;margin-right:auto!important;padding-left:var(--v2-pad)!important;padding-right:var(--v2-pad)!important}
+html.v2.v2-app .ac-tabs{max-width:var(--v2-col)!important;width:calc(100% - 2 * var(--v2-pad))!important}
+/* Títulos de página: mismo tamaño en todas */
+html.v2.v2-app .v2-screen h1,html.v2.v2-app .page-hero h1,html.v2.v2-app .ac-wrap h1{font-size:var(--v2-h1)!important;line-height:1.12}
+/* Texto secundario: mínimo 13 px (las etiquetas en MAYÚSCULAS de 12 px y la barra inferior móvil se quedan como están) */
+html.v2.v2-app .k-scope small,html.v2.v2-app .k-scope .k-small,html.v2.v2-app .k-skt__note,html.v2.v2-app .k-skt__na,
+html.v2.v2-app .k-cstop__state,html.v2.v2-app .k-badge__name,html.v2.v2-app .k-today__lbl,html.v2.v2-app .k-measure__k,
+html.v2.v2-app .stat-card-delta,html.v2.v2-app .practice-instruction,html.v2.v2-app .level-range,
+html.v2.v2-app .weekly-bar-label,html.v2.v2-app .weekly-bar-count,html.v2.v2-app .diag-hl-label{font-size:13px!important}
