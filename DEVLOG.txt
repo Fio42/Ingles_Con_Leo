@@ -4333,3 +4333,12 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Pruebas: auditoria-plataforma 22 ok (la nueva falla sin el arreglo y comprueba texto, contador intacto, sin eventos y encabezado normal con cupo). Suite: solo rojas academia-articulos y academia-piloto (entorno); auditar.js OK.
 - Produccion: visitante sin sesion, 3 ejercicios reales (contador 3) y recarga: encabezado Ya completaste tus ejercicios gratis de hoy., muro con Crear cuenta gratis, sin boton Empezar ahora, contador sigue en 3. Cuenta gratis con cupo: sigue 6 preguntas cortas. Se borro el contador de visitante de prueba de ESTE navegador.
 - AUDITORIA CERRADA: los 13 hallazgos + el fix de Inicio estan corregidos, publicados y verificados como visitante, cuenta gratis y miembro en produccion. Residual aceptado: la cuenta gratis mostro 5 preguntas una vez (version anterior) y 6 despues; parece sincronizacion del contador, no se investigo. Fuera de alcance, sin probar: telefono real, pagos, correos, Leo AI y audio.
+
+
+2026-11-26 - Lanzamiento de Ingles con Leo 2.0
+
+- Nueva interfaz (solo presentacion) en miembros (area de miembro), academia, practica-miembros, progreso, plan-estudio y errores: shell de app, Inicio, ruta de la Academia, Mis logros, Centro de Progreso, Practicar, y lecciones con sonidos, combos, Profe Leo en el error, resultados y celebraciones. Modo oscuro por defecto (Claro/Oscuro/Auto en Mas).
+- Archivos nuevos en v2/. academia.js: 11 lineas de solo lectura. HTML: solo las lineas que cargan v2. miembros.html (indexada) solo carga v2/v2-init.js; el resto se descarga unicamente para miembros. Visitantes, SEO, login y pagos sin cambios.
+- Sin cambios en motores de ejercicios, respuestas, audios, registro de errores, limites, guardado, pagos, webhooks, membresias, auth, RLS ni Edge Functions.
+- Rollback: ICL_V2_ENABLED=false en v2/v2-init.js (todo vuelve a la version clasica) o revertir este commit. Por dispositivo: Mas > Usar clasica, o ?v2=0.
+- El registro detallado del desarrollo esta en la rama v2/fundamentos.

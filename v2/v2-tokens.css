@@ -1,0 +1,89 @@
+/* =========================================================
+   Inglés con Leo 2.0 · Design tokens
+   Todo vive bajo html.v2: si 2.0 está apagado, este archivo no cambia nada.
+   Estrategia: el sitio ya usa variables (--paper, --ink, --blue...). Aquí se
+   les da el valor 2.0 (claro "Cuaderno" y oscuro "Pizarra nocturna") y se
+   añaden tokens --v2-* para los componentes nuevos.
+   ========================================================= */
+
+/* Fuentes locales (SIL Open Font License). Sin Google Fonts en la app. */
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/nunito-latin-600-normal.woff2) format('woff2');}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/nunito-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/nunito-latin-800-normal.woff2) format('woff2');}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:900;font-display:swap;src:url(fonts/nunito-latin-900-normal.woff2) format('woff2');}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/baloo-2-latin-600-normal.woff2) format('woff2');}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/baloo-2-latin-700-normal.woff2) format('woff2');}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:800;font-display:swap;src:url(fonts/baloo-2-latin-800-normal.woff2) format('woff2');}
+
+/* ---------- Claro: Cuaderno ---------- */
+html.v2{
+  /* Variables existentes del sitio, con valores 2.0 */
+  --paper:#F7F3EC; --paper-dim:#F3EEE4;
+  --ink:#1B2030; --ink-soft:#555C6E; --ink-faint:#626B7C;
+  --blue:#2D4BF0; --blue-deep:#1F37C9; --blue-tint:#E8ECFF;
+  --amber:#F5A524; --amber-tint:#FFF3D1;
+  --coral:#EE4B3A; --coral-tint:#FDE7E3;
+  --green:#14B26A; --green-tint:#E1F7EC;
+  --violet:#7656F5; --violet-deep:#5A3BD4; --violet-tint:#EEE9FF;
+  --teal:#0EA396; --teal-deep:#0A7C72; --teal-tint:#DCF4F1;
+  --gold:#B8860B; --gold-deep:#8A650A; --gold-tint:#FBF1DA;
+  --line:#E7DECB;
+  --radius-lg:24px; --radius-md:16px; --radius-sm:12px;
+  --shadow:0 1px 2px rgba(27,32,48,.05),0 6px 20px -10px rgba(27,32,48,.16);
+
+  /* Tokens 2.0 */
+  --v2-bg:var(--paper); --v2-surface:#FFFFFF; --v2-surface-2:#F3EEE4; --v2-surface-3:#E9E2D4;
+  --v2-text:var(--ink); --v2-text-2:var(--ink-soft); --v2-text-3:#7A8090;
+  --v2-line:#ECE5D8; --v2-line-strong:#DCD2C0;
+  --v2-brand:var(--blue); --v2-brand-lip:#172B9E; --v2-brand-tint:var(--blue-tint); --v2-brand-text:#1F37C9;
+  --v2-xp:#FFC23A; --v2-xp-lip:#E29A00; --v2-xp-tint:#FFF3D1; --v2-xp-text:#8A5A00;
+  --v2-streak:#FF7A1A; --v2-streak-tint:#FFE9D8; --v2-streak-text:#B04A00;
+  --v2-ok:#14B26A; --v2-ok-lip:#0C8A50; --v2-ok-tint:#E1F7EC; --v2-ok-text:#0A7444;
+  --v2-bad:#EE4B3A; --v2-bad-lip:#BF3324; --v2-bad-tint:#FDE7E3; --v2-bad-text:#AE2C1E;
+  --v2-mend:#0EA396; --v2-mend-lip:#0A7C72; --v2-mend-tint:#DCF4F1; --v2-mend-text:#07695F;
+  --v2-award:#7656F5; --v2-award-tint:#EEE9FF; --v2-award-text:#4C2FC0;
+  --v2-ink-outline:#1B2030;
+  --v2-card-shadow:0 1px 2px rgba(27,32,48,.05),0 6px 20px -10px rgba(27,32,48,.16);
+  --v2-pop-shadow:0 18px 50px -12px rgba(27,32,48,.35);
+  --v2-font-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --v2-font-display:'Baloo 2 V2','Baloo 2','Baloo Fallback',system-ui,sans-serif;
+  --v2-lip:4px;
+  --v2-top-h:56px; --v2-nav-h:68px; --v2-rail-w:232px;
+  --v2-safe-b:env(safe-area-inset-bottom,0px);
+  --v2-ease:cubic-bezier(.2,.8,.2,1); --v2-spring:cubic-bezier(.34,1.56,.64,1);
+  color-scheme:light;
+}
+
+/* ---------- Oscuro: Pizarra nocturna (valores propios, no inversión) ---------- */
+html.v2[data-theme="dark"]{
+  --paper:#0B0F1A; --paper-dim:#141A29;
+  --ink:#EEF0F7; --ink-soft:#AAB1C4; --ink-faint:#9199AE;
+  --blue:#5B74FF; --blue-deep:#4D66FF; --blue-tint:#1D2550;
+  --amber:#FFC94A; --amber-tint:#3A2F12;
+  --coral:#FF6655; --coral-tint:#3A1A17;
+  --green:#25C27C; --green-tint:#10301F;
+  --violet:#8E74FF; --violet-deep:#BFB0FF; --violet-tint:#251E47;
+  --teal:#1FBFB2; --teal-deep:#59E0D5; --teal-tint:#0F2F2E;
+  --gold:#FFD772; --gold-deep:#FFD772; --gold-tint:#3A2F12;
+  --line:#222A3F;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.8);
+
+  --v2-surface:#141A29; --v2-surface-2:#1A2134; --v2-surface-3:#242D45;
+  --v2-text-3:#737B92;
+  --v2-line:#222A3F; --v2-line-strong:#323C58;
+  --v2-brand-lip:#2638B8; --v2-brand-text:#9AABFF;
+  --v2-xp:#FFC94A; --v2-xp-lip:#C98A00; --v2-xp-tint:#3A2F12; --v2-xp-text:#FFD772;
+  --v2-streak:#FF8A33; --v2-streak-tint:#3A2414; --v2-streak-text:#FFAE70;
+  --v2-ok:#25C27C; --v2-ok-lip:#118551; --v2-ok-tint:#10301F; --v2-ok-text:#5BE3A5;
+  --v2-bad:#FF6655; --v2-bad-lip:#B23426; --v2-bad-tint:#3A1A17; --v2-bad-text:#FF9A8E;
+  --v2-mend:#1FBFB2; --v2-mend-lip:#0A7F76; --v2-mend-tint:#0F2F2E; --v2-mend-text:#59E0D5;
+  --v2-award:#8E74FF; --v2-award-tint:#251E47; --v2-award-text:#BFB0FF;
+  --v2-ink-outline:#06080F;
+  --v2-card-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.8);
+  --v2-pop-shadow:0 24px 60px -12px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+
+@media (prefers-reduced-motion:reduce){
+  html.v2 *,html.v2 *::before,html.v2 *::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important}
+}

@@ -1,0 +1,80 @@
+/* =========================================================
+   Inglés con Leo 2.0 · Fundamentos (bloque 1)
+   Tipografía, botones táctiles, cabecera compacta, navegación de app
+   (barra inferior en móvil, riel lateral en escritorio) y ajustes del
+   modo oscuro que el generador automático no cubre.
+   Todo bajo html.v2. Sin cambios de HTML de los motores.
+   ========================================================= */
+
+/* ---------- Tipografía ---------- */
+html.v2 body{font-family:var(--v2-font-body);background:var(--v2-bg);color:var(--v2-text);font-weight:600}
+html.v2 h1,html.v2 h2,html.v2 h3,html.v2 .display{font-family:var(--v2-font-display);letter-spacing:-.015em}
+html.v2 b,html.v2 strong{font-weight:800}
+html.v2 :focus-visible{outline:3px solid var(--v2-brand);outline-offset:3px}
+
+/* ---------- Botones táctiles (labio inferior que se hunde) ---------- */
+html.v2 .btn,html.v2 .ac-btn{border-radius:14px;font-weight:800;letter-spacing:0;transition:transform .08s var(--v2-ease),box-shadow .08s var(--v2-ease),background-color .2s,filter .15s}
+html.v2 .btn-primary,html.v2 .ac-btn-primary{background:var(--v2-brand);color:#fff;box-shadow:0 var(--v2-lip) 0 var(--v2-brand-lip);margin-bottom:var(--v2-lip)}
+html.v2 .btn-primary:hover,html.v2 .ac-btn-primary:hover{background:var(--v2-brand);filter:brightness(1.07)}
+html.v2 .btn-primary:active,html.v2 .ac-btn-primary:active{transform:translateY(var(--v2-lip));box-shadow:0 0 0 var(--v2-brand-lip)}
+html.v2 .btn-ghost,html.v2 .ac-btn-ghost,html.v2 .ac-btn-outline{background:var(--v2-surface);color:var(--v2-text);border:2px solid var(--v2-line-strong);box-shadow:0 3px 0 var(--v2-line-strong);margin-bottom:3px}
+html.v2 .btn-ghost:active,html.v2 .ac-btn-ghost:active,html.v2 .ac-btn-outline:active{transform:translateY(3px);box-shadow:none}
+html.v2 .ac-btn-primary:disabled{background:var(--v2-surface-3);color:var(--v2-text-3);box-shadow:0 var(--v2-lip) 0 var(--v2-line-strong)}
+
+/* ---------- Páginas de la app: el shell v3 reemplaza cabecera, pie y menú móvil ---------- */
+html.v2.v2-app body>header,html.v2.v2-app body>footer,html.v2.v2-app .mobile-nav{display:none!important}
+html.v2.v2-app body{padding-bottom:calc(68px + var(--v2-safe-b) + 16px)}
+html.v2.v2-app body>main{max-width:none}
+.v2-shell .k-topbar{position:sticky;top:0}
+.v2-shell .v2-slot{display:inline-flex;align-items:center}
+/* Menú real de la cuenta dentro de la barra: solo el avatar en móvil */
+.v2-shell .nav-profile-btn{background:transparent;border:0;padding:4px;border-radius:999px;color:var(--k-text)}
+.v2-shell .nav-profile-btn .nav-avatar{width:38px;height:38px;font-size:15px}
+.v2-shell .nav-profile-name,.v2-shell .nav-chevron{display:none}
+.v2-shell .nav-pop{z-index:120}
+.v2-shell .nav-profile-pop{left:0;right:auto}
+.v2-shell .nav-bell-pop{right:0;left:auto}
+.v2-shell .nav-icon-btn{color:var(--k-text-2)}
+@media (min-width:768px){
+  html.v2.v2-app body{padding-bottom:0;padding-left:92px}
+  .v2-shell .k-topbar{padding-left:16px;padding-right:16px}
+}
+@media (min-width:1024px){
+  html.v2.v2-app body{padding-left:var(--k-rail-w,248px)}
+  .v2-shell{--k-rail-w:248px}
+  .v2-shell .nav-profile-name{display:inline}
+}
+@media (min-width:1280px){ html.v2.v2-app body{padding-left:252px} }
+
+/* Contenedor de las pantallas v3 dentro de las páginas reales */
+.v2-screen{max-width:640px;margin:0 auto;padding:8px 16px 32px}
+.v2-screen.k-is-wide{max-width:820px}
+@media (min-width:768px){ .v2-screen{padding:16px 28px 48px} }
+.v2-more .k-more{margin-bottom:16px}
+.v2-more .v2-settings{margin-top:8px}
+.v2-legal{margin-top:14px;font-size:13px;color:var(--k-text-3)}
+.v2-legal a{color:var(--k-text-3)}
+/* Método Leo con las reglas reales: 4 puntos, los 2 primeros recuperan y los 2 siguientes dominan */
+.k-scope .v2-steps4{gap:4px}
+.k-scope .v2-steps4 i.v2-gate{margin-right:6px}
+
+/* ---------- Academia: sus pestañas pasan a ser un control arriba ---------- */
+html.v2 .ac-tabs{position:sticky;top:64px;bottom:auto;z-index:30;margin:0 auto;max-width:720px;gap:4px;padding:4px;background:var(--v2-surface-2)!important;border:0;border-radius:14px;width:calc(100% - 32px)}
+html.v2 .ac-tabs a{min-height:42px;flex-direction:row;gap:6px;border-radius:10px;font-weight:800;font-size:13px}
+html.v2 .ac-tabs a svg{width:18px;height:18px}
+html.v2 .ac-tabs a[aria-current="page"],html.v2 .ac-tabs a.is-on,html.v2 .ac-tabs a.active{background:var(--v2-surface);color:var(--v2-text);box-shadow:var(--v2-card-shadow)}
+html.v2 .ac-wrap{padding-bottom:24px}
+
+/* ---------- LeoBot: por encima de la barra inferior ---------- */
+@media (max-width:767px){
+  html.v2.v2-app .leobot-fab,html.v2.v2-app .leobot-reopen{bottom:calc(68px + var(--v2-safe-b) + 12px)!important}
+  html.v2.v2-app .leobot-greet{bottom:calc(68px + var(--v2-safe-b) + 124px)!important}
+}
+
+/* ---------- Ajustes de oscuro que no son fondos blancos ---------- */
+html.v2[data-theme="dark"] img.logo-mark{filter:none}
+html.v2[data-theme="dark"] input,html.v2[data-theme="dark"] select,html.v2[data-theme="dark"] textarea{background:var(--v2-surface-2);color:var(--v2-text);border-color:var(--v2-line-strong)}
+html.v2[data-theme="dark"] ::placeholder{color:var(--v2-text-3)}
+
+/* El contenido que recibe foco por programa (titulares con tabindex=-1) no muestra marco */
+html.v2 [tabindex="-1"]:focus{outline:none}

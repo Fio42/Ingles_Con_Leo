@@ -1883,6 +1883,14 @@
     mode: function(){ return mode; }, boot: function(){ if(NUBE) bootCloud(); },
     heroSection: heroSection, badgeInfo: badgeInfo, reviewSection: reviewSection, practiceCard: practiceCard, logrosBlock: logrosBlock, presentCard: presentCard,
     title: COURSE.title, cb: CB, doneCount: doneCount,
+    /* Solo LECTURA para la interfaz 2.0 (v2/v2-academia.js): no cambia estado, progreso ni reglas. */
+    view: function(){
+      var s = loadState(), nl = nextLesson(), r = pendingResume();
+      return { id: courseId, title: COURSE.title, name: NAME, mode: mode, total: COURSE.lessons.length, done: doneCount(), examBest: s.exam.best, passPct: CFG.passPct,
+        next: (r || nl) ? { n: (r || nl).n, title: (r || nl).title, minutes: (r || nl).minutes, resume: !!r } : null,
+        lessons: COURSE.lessons.map(function(l){ var st = s.lessons[l.id] || {}; return { n: l.n, title: l.title, minutes: l.minutes, summary: l.summary, done: !!st.done, firstOk: st.firstOk, total: st.total, resume: hasProgress(s.resume[l.id]), next: !!(nl && nl.id === l.id) }; }) };
+    },
+    badge: function(){ return (NUBE && NUBE.ready) ? NUBE.badge() : Promise.resolve(null); },
     started: function(){ var st = loadState(); return Object.keys(st.resume || {}).some(function(k){ return hasProgress(st.resume[k]); }) || (st.days || []).length > 0; }
   };
   return api;
@@ -1899,12 +1907,15 @@
       // Un curso que todavia no se lanzo (o que el servidor tiene apagado) no existe para el alumno: vuelve al inicio.
       if(!app.primary && !app.visible()){ location.hash = '#/'; return; }
       app.dispatch(parts);
+      /* Aviso para la interfaz 2.0 (solo presentación) */
+      try{ window.dispatchEvent(new CustomEvent('icl:academia-ruta', { detail: { parts: parts } })); }catch(_){}
     }catch(e){
       root.textContent = '';
       root.appendChild(el('section', { class: 'ac-card' }, [el('h1', { class: 'ac-h1', text: 'Algo salió mal' }), el('p', { class: 'ac-text', text: 'Recarga la página. Si sigue igual, vuelve a Mi ruta.' }), el('a', { href: '#/', class: 'ac-btn ac-btn-primary', text: 'Mi ruta' })]));
       if(window.console) console.error(e);
     }
   };
+  window.ICL_ACADEMIA = { apps: SHELL.apps, order: Object.keys(SHELL.apps) };   // lectura para la interfaz 2.0
   window.addEventListener('hashchange', SHELL.route);
   SHELL.route();
   Object.keys(SHELL.apps).forEach(function(k){ SHELL.apps[k].boot(); });
