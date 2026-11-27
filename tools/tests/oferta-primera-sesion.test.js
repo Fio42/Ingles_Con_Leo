@@ -141,7 +141,7 @@ test('las 6 sesiones gratis (gramática, vocabulario, listening, writing, speaki
     const a = src.indexOf('function ' + f), b = src.indexOf('\nfunction ', a + 10); assert(a > 0 && /freeSessionCap\(/.test(src.slice(a, b)), f);
   });
   const a = src.indexOf('function runMixSessionCore'), b = src.indexOf('\nfunction ', a + 10); assert(/isFree \? freeSessionCap\(pickMixItems/.test(src.slice(a, b)));
-  assert(/if\(freeDailyLimitReached\(\)\)\{\s*container\.innerHTML = renderFreeDailyLimitReachedBlock\(\);/.test(src), 'el muro con 0 disponibles sigue ahí');
+  assert(/if\(freeDailyLimitReached\(\)\)\{\s*container\.innerHTML = renderFreeDailyLimitReachedBlock\((?:results)?\);/.test(src), 'el muro con 0 disponibles sigue ahí');
 });
 test('resumen al usar el último ejercicio, primera sesión: reconoce la práctica, UNA sola oferta, sin muro ni pitch duplicado', ()=>{
   const c = mk('s1', { count:6 }); c.localStorage.setItem('leo_first_session_evt@@u:s1', '1');

@@ -443,7 +443,7 @@ async function initMemberHeader(){
   const displayName = (profile && profile.name) ? profile.name : (email ? email.split('@')[0] : 'Cuenta');
   /* Sin nombre ni correo del perfil, la inicial sale del correo de la sesión (nunca de la palabra "Cuenta") (C2) */
   let initialSrc = (profile && profile.name) || email || '';
-  if(!initialSrc){ try{ for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(!/^sb-.*-auth-token$/.test(k)) continue; const v = JSON.parse(localStorage.getItem(k)); const u = v && (v.user || (v.currentSession && v.currentSession.user)); initialSrc = (u && u.email) || ''; break; } }catch(e){} }
+  if(!initialSrc){ try{ const ses = await LeoBackend.getSession(); initialSrc = (ses && ses.user && ses.user.email) || ''; }catch(e){} }
   const initial = (initialSrc.trim().charAt(0) || '·').toUpperCase();
 
   /* La barra 2.0 mueve el menú de cuenta fuera de #navUserBlock: se actualizan TODOS los avatares (C2) */

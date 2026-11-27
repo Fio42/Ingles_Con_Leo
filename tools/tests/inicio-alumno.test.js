@@ -94,7 +94,7 @@ const PRIV = ['miembros', 'plan-estudio', 'errores', 'aprender', 'clases', 'prac
 test('Las 7 páginas del alumno comparten header, barra móvil y pie con los mismos destinos', () => {
   const sig = h => ({
     nav: [...h.match(/<nav class="nav-links">[\s\S]*?<\/nav>/)[0].matchAll(/href="([^"]+)"[^>]*>([^<]+)</g)].map(m => m[1] + '|' + m[2]).join(','),
-    mob: [...h.match(/<nav class="mobile-nav"[\s\S]*?<\/nav>/)[0].matchAll(/href='([^']+)'[^>]*>[\s\S]*?<\/svg>\s*([^<\s][^<]*)/g)].map(m => m[1] + '|' + m[2].trim()).join(','),
+    mob: [...h.match(/<nav class="mobile-nav(?: mobile-nav--miembro)?"[\s\S]*?<\/nav>/)[0].matchAll(/href='([^']+)'[^>]*>[\s\S]*?<\/svg>\s*([^<\s][^<]*)/g)].map(m => m[1] + '|' + m[2].trim()).join(','),
     foot: [...h.match(/<div class="foot-links">[\s\S]*?<\/div>/)[0].matchAll(/href="([^"]+)"[^>]*>([^<]+)</g)].map(m => m[1] + '|' + m[2]).join(',')
   });
   const s0 = sig(read('miembros.html'));
