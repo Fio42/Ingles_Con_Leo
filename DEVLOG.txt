@@ -4517,3 +4517,32 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Error 400 de la consola, origen identificado en los registros de Supabase: un único POST /auth/v1/token?grant_type=refresh_token a las 15:40:48 desde el navegador de la app de Claude. Fue la renovación de sesión rechazada que cerró la sesión del navegador de pruebas. No viene de la Fase 0 (que no toca autenticación). En 24 horas hubo 6 respuestas 400 en total, 5 de ellas renovaciones de sesión. No reapareció al recorrer con sesión miembros, portada, Academia, Progreso, artículos, test de nivel y práctica gratis.
 - Pruebas pendientes en vivo (probadas solo en el simulador con el mismo código): (1) "Empezar ahora" de la práctica gratis como visitante: el navegador de pruebas ya había usado sus 3 ejercicios del día y no se reinició el contador para no falsear Analytics; se puede probar en una ventana privada del teléfono. (2) Invitación de la cuenta gratis con sus datos y Leo AI: requiere completar los 6 ejercicios del día con la cuenta gratis de prueba. (3) Registro de una cuenta nueva de punta a punta: no se crean cuentas con correos inventados; se puede comprobar con un correo real de Leo cuando él quiera.
 - Fase 0 cerrada. Siguiente: renovar el video demostrativo de la portada con la voz original de Leo.
+
+2026-11-27 · Video demostrativo de la portada renovado (rama v2/video, fff7f7b, sin push)
+- Video nuevo de 34,7 s grabado con la academia 2.0 real en el simulador local (sin datos de alumnos), con la misma voz de Leo y la misma música (mezcla idéntica a la publicada). 1920x1080, 3,1 MB. Miniatura nueva (34 KB) y subtítulos en español (.vtt) que se agregan como pista.
+- index.html: VideoObject, miniatura, contentUrl y subtítulos actualizados. El evento video_promo_play sigue igual (comprobado). Los archivos del video anterior se conservan para poder volver atrás.
+- Al publicar: cambiar uploadDate por la fecha y hora reales de la publicación.
+- Entregables en "Claude outputs/video-2026-11-27" (guion sincronizado, revisión de afirmaciones, comparación antes/después, cómo reemplazarlo).
+
+2026-11-27 · Riso: identidad visual y primeras animaciones (rama v2/riso, 93b9447, sin push)
+- Componente reutilizable riso/riso.js + riso/riso.css con 4 estados: neutro, bienvenida (saluda), celebración (pulgar y guiño), pensando (burbuja con puntos). Animación por capas (WebP + CSS + un filtro SVG solo en la zona de las llamas), ~160 KB en total. Fondo transparente, sin texto, respeta movimiento reducido y se pausa fuera de pantalla. Modo claro y oscuro.
+- Se evaluaron sprites, WebP animado, Lottie y Rive (tabla en tools/riso/LEEME.md). Capas fue lo más liviano y fiel con las imágenes disponibles. Para mejores animaciones hace falta el personaje separado en capas por la ilustradora (qué pedir: tools/riso/LEEME.md).
+- Demostración local: tools/riso-demo/index.html (noindex). Nada de Riso aparece aún en el sitio.
+
+2026-11-27 · Riso, tutor de inglés con inteligencia artificial: prototipo local (rama v2/tutor, a60b0b6, sin push)
+- Motor por capas en riso/tutor/riso-tutor.js: (1) filtro: datos personales, abuso, intentos de cambiar reglas, temas sensibles, cuenta y pagos a Soporte; (2) herramientas exactas: números, años, horas, fechas, 72 verbos irregulares, conjugación, 353 términos del glosario; (3) 30 preguntas frecuentes escritas a mano; (4) búsqueda de la guía del sitio más cercana; (5) modelo generativo, aquí SIEMPRE simulado.
+- Base de conocimiento generada solo con contenido público (riso/tutor/conocimiento.js, 38 KB comprimido). Sin contenido de cursos de miembros. pgvector no hace falta por ahora.
+- Controles: 400 caracteres, frecuencia, cuota diaria (miembro 30, gratis 3, visitante 0 preguntas abiertas; capas 1 a 4 sin límite), historial de 6 turnos, deduplicación, caché solo de respuestas exactas o revisadas. Nunca se comparten respuestas generadas para otro alumno.
+- Prototipo navegable: tools/tutor-demo/index.html (pregunta libre y sobre el ejercicio, claro/oscuro, móvil, errores con reintento, accesible).
+- Pruebas: tools/tests/riso-tutor.test.js 64 de 64.
+- Costos con precios verificados hoy (tools/tutor/costos.js y DISENO.md): por capas entre US$0,002 y US$0,006 por miembro al mes; 55 % más barato que todo con IA.
+- Migración propuesta SIN ejecutar: tools/tutor/propuesta-migracion-riso-chat.sql (interruptor apagado, cuota del chat separada de las explicaciones, reversión incluida).
+- No se llamó a ninguna IA de pago ni se tocó producción.
+
+2026-11-27 · Diseños P4 a P7 (rama v2/tutor, 092545c, sin push)
+- Bienvenida 2.0: prototipo tools/v2-plan/onboarding-demo.html (primera pregunta, objetivo, nivel en 3 preguntas, minutos al día, plan de hoy; todo se puede saltar).
+- XP y niveles sin tope: tools/v2-plan/xp.js con simulación de un año y anti-trampa; pruebas tools/tests/xp-modelo.test.js 7 de 7. Rangos pendientes de aprobación.
+- Retos diarios y semanales (solo XP, cuentas gratis incluidas) y plan de medición sin datos personales: tools/v2-plan/P4-P7.md.
+
+2026-11-27 · Google Search Console, libro PDF (rama v2/merchant desde origin/main, 72e5aea, sin push)
+- Aviso no crítico en el resultado de producto: faltaban shippingDetails y hasMerchantReturnPolicy. Se agregaron los datos de envío de un producto digital (envío gratis, entrega inmediata, 20 países). La política de devoluciones queda pendiente de la decisión de Leo (los términos solo hablan de reembolsos de la membresía).
