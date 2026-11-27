@@ -68,7 +68,7 @@
 .hm-hero-glow{position:absolute;inset:8% 6% 0;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--v2-brand) 30%,transparent),transparent);filter:blur(10px)}
 .hm-hero-leo{position:relative;width:min(300px,62%);height:auto;z-index:1;filter:drop-shadow(0 20px 30px rgba(0,0,0,.35))}
 .hm-demo,.hm-refuerzo{position:absolute;z-index:2;background:var(--v2-surface);border:1px solid var(--v2-line-strong);border-radius:18px;box-shadow:0 18px 40px -18px rgba(0,0,0,.55)}
-.hm-demo{left:0;top:6%;width:min(250px,52%);padding:14px;animation:hm-float 6s ease-in-out infinite}
+.hm-demo{left:0;top:42%;width:min(250px,48%);padding:14px;animation:hm-float 6s ease-in-out infinite}
 .hm-demo-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.72rem;font-weight:800;color:var(--v2-brand-text)}
 .hm-demo-bar{flex:1;max-width:70px;height:6px;border-radius:9px;background:var(--v2-surface-3)}
 .hm-demo-bar i{display:block;width:66%;height:100%;border-radius:9px;background:var(--v2-ok)}
@@ -78,7 +78,7 @@
 .hm-demo-opts .is-ok{background:var(--v2-ok-tint);border-color:var(--v2-ok);color:var(--v2-ok-text);box-shadow:0 3px 0 var(--v2-ok-lip)}
 .hm-demo-fb{margin-top:10px;font-size:.8rem;color:var(--v2-text-2)}
 .hm-demo-fb b{color:var(--v2-ok-text)}
-.hm-refuerzo{right:0;bottom:4%;width:min(270px,58%);padding:16px;animation:hm-float 6s ease-in-out -3s infinite}
+.hm-refuerzo{right:0;bottom:2%;width:min(270px,50%);padding:16px;animation:hm-float 6s ease-in-out -3s infinite}
 .hm-refuerzo-tag{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--v2-xp-text)}
 .hm-refuerzo .hero-v2-card-en{margin-top:6px;font-size:.92rem;color:var(--v2-text-2)}
 .hm-refuerzo .hero-v2-card-en strong{display:block;font-size:1.2rem;color:var(--v2-text)}

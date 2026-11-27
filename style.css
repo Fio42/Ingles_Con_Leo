@@ -2504,6 +2504,15 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 }
 @media(min-width:1000px){.skill-section .option-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* ===== LeoBot en celular: sin burbuja de saludo encima del contenido, lanzador mas chico
+   y espacio libre al final para que nunca tape lo ultimo de la pagina ===== */
+@media(max-width:767px){
+  .leobot-greet{display:none!important}
+  .leobot-fab{width:48px!important;height:48px!important}
+  body.leobot-away .leobot-fab{width:42px!important;height:42px!important;opacity:.85}
+  main::after{content:"";display:block;height:64px}
+}
+
 /* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */
 
 :root{
@@ -2519,6 +2528,8 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
   --v2-award:#7656F5; --v2-award-tint:#EEE9FF; --v2-award-text:#4C2FC0;
   --v2-card-shadow:0 1px 2px rgba(27,32,48,.05),0 6px 20px -10px rgba(27,32,48,.16);
   --v2-lip:4px; --v2-ease:cubic-bezier(.2,.8,.2,1);
+  --v2-font-display:'Baloo 2 V2','Baloo 2','Baloo Fallback',system-ui,sans-serif;
+  --v2-font-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 html:not([data-theme="light"]){
   --paper:#0B0F1A; --paper-dim:#141A29;
@@ -2558,6 +2569,52 @@ html:not([data-theme="light"]) input:not([type=checkbox]):not([type=radio]):not(
 html:not([data-theme="light"]) [style*="background:#fff"],html:not([data-theme="light"]) [style*="background: #fff"],html:not([data-theme="light"]) [style*="background:white"],html:not([data-theme="light"]) [style*="background-color:#fff"]{background-color:var(--v2-surface)!important}
 html:not([data-theme="light"]) [style*="color:#1"],html:not([data-theme="light"]) [style*="color: #1"],html:not([data-theme="light"]) [style*="color:#2"],html:not([data-theme="light"]) [style*="color:#3"]{color:var(--ink)!important}
 
+/* Tipografia 2.0 (la misma de la academia, servida desde v2/fonts). Solo se descarga donde se usa. */
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(v2/fonts/nunito-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/nunito-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/nunito-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:900;font-display:swap;src:url(v2/fonts/nunito-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/baloo-2-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/baloo-2-latin-800-normal.woff2) format('woff2')}
+
+/* ---- Practicar gratis 2.0 (copiado de v2/v2-lecciones.css) ---- */
+@keyframes v2-in{from{transform:translateY(10px)}to{transform:none}}
+@keyframes v2-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+@keyframes v2-shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes v2-rise{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes v2-glow{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--v2-ok) 40%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@keyframes v2-shine{from{transform:translateX(-100%)}to{transform:translateX(220%)}}
+#practicaMain .option{position:relative;min-height:56px;border-radius:14px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);font-weight:800;font-size:1.05rem;box-shadow:0 3px 0 var(--v2-line-strong);margin-bottom:3px;transition:transform .08s,box-shadow .08s,border-color .15s,background-color .15s;-webkit-tap-highlight-color:transparent}
+#practicaMain .option:not(:disabled):hover{border-color:var(--v2-brand);background:color-mix(in srgb,var(--v2-brand) 6%,var(--v2-surface))}
+#practicaMain .option:not(:disabled):active{transform:translateY(3px);box-shadow:0 0 0 var(--v2-line-strong)}
+#practicaMain .option.correct{border-color:var(--v2-ok);background:color-mix(in srgb,var(--v2-ok) 13%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-ok);animation:v2-pop .35s ease-out}
+#practicaMain .option.incorrect{border-color:var(--v2-bad);background:color-mix(in srgb,var(--v2-bad) 10%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-bad);animation:v2-shake .4s ease-out}
+#practicaMain .option .dot{border-color:var(--v2-line-strong)}
+#practicaMain .practice-prompt{font-family:var(--v2-font-display);font-weight:700}
+#practicaMain .next-row .btn-primary{min-height:54px;font-size:1.08rem}
+#practicaMain .feedback.show{animation:v2-rise .3s cubic-bezier(.2,.8,.2,1) both;border-radius:18px;padding:14px 16px}
+#practicaMain .feedback.ok{background:color-mix(in srgb,var(--v2-ok) 12%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-ok) 40%,transparent);color:var(--v2-text)}
+#practicaMain .feedback.bad{background:color-mix(in srgb,var(--v2-bad) 8%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-bad) 30%,transparent);color:var(--v2-text)}
+#practicaMain .feedback .fb-head{font-family:var(--v2-font-display);font-weight:800;font-size:1.2rem}
+#practicaMain .feedback.ok .fb-head{color:var(--v2-ok-text,#0A7444)}
+#practicaMain .feedback.bad .fb-head{color:var(--v2-bad-text,#AE2C1E)}
+@media (prefers-reduced-motion:reduce){#practicaMain .feedback.show,#practicaMain .option{animation:none!important;transition:none!important}}
+#practicaMain .session-card{background:var(--v2-surface);border-radius:22px;animation:v2-in .28s cubic-bezier(.2,.8,.2,1) both}
+#practicaMain .session-progress{height:12px;border-radius:999px;background:var(--v2-surface-3);overflow:hidden}
+#practicaMain .session-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--v2-brand),var(--v2-ok));transition:width .55s cubic-bezier(.2,.8,.2,1)}
+#practicaMain .word-chip,#practicaMain .error-word{border-radius:12px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;min-height:44px;padding:8px 14px;margin-bottom:3px;transition:transform .08s,box-shadow .08s}
+#practicaMain .word-chip:not(:disabled):active,#practicaMain .error-word:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+#practicaMain .blank-slot{border-radius:10px}
+#practicaMain,.hm{font-family:var(--v2-font-body)}
+#practicaMain h1,#practicaMain h2,#practicaMain h3,.hm h1,.hm h2,.hm h3{font-family:var(--v2-font-display);font-weight:800}
+#practicaMain .level-card{border:2px solid var(--v2-line-strong);box-shadow:0 4px 0 var(--v2-line-strong)}
+#practicaMain .level-card[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 4px 0 var(--tone)}
+#practicaMain .level-card:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-tab-btn{border-radius:14px;border:2px solid var(--v2-line-strong);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;margin-bottom:3px}
+#practicaMain .skill-tab-btn.active,#practicaMain .skill-tab-btn[aria-selected="true"]{border-color:var(--v2-brand);box-shadow:0 3px 0 var(--v2-brand)}
+#practicaMain .btn-primary{border-radius:16px;box-shadow:0 4px 0 var(--v2-brand-lip);font-weight:800}
+#practicaMain .btn-primary:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-section{border-radius:22px}
 /* ---- style.css ---- */
 html:not([data-theme="light"]) .nav-pop,
 html:not([data-theme="light"]) .nav-links.mnav-open,

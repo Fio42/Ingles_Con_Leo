@@ -38,6 +38,8 @@ TOKENS = """
   --v2-award:#7656F5; --v2-award-tint:#EEE9FF; --v2-award-text:#4C2FC0;
   --v2-card-shadow:0 1px 2px rgba(27,32,48,.05),0 6px 20px -10px rgba(27,32,48,.16);
   --v2-lip:4px; --v2-ease:cubic-bezier(.2,.8,.2,1);
+  --v2-font-display:'Baloo 2 V2','Baloo 2','Baloo Fallback',system-ui,sans-serif;
+  --v2-font-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 %(P)s{
   --paper:#0B0F1A; --paper-dim:#141A29;
@@ -179,8 +181,52 @@ AJUSTES = '''/* ---- ajustes puntuales de contraste (revisados a mano) ---- */
 @media(min-width:900px) and (max-width:1099px){.nav-links{gap:12px!important;font-size:.86rem!important}}
 ''' % {'P': 'html:not([data-theme="light"])'}
 
+FUENTES = """/* Tipografia 2.0 (la misma de la academia, servida desde v2/fonts). Solo se descarga donde se usa. */
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(v2/fonts/nunito-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/nunito-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/nunito-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:900;font-display:swap;src:url(v2/fonts/nunito-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/baloo-2-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/baloo-2-latin-800-normal.woff2) format('woff2')}
+"""
+
+def practica_v2():
+    """Ejercicios de Practicar gratis con la misma presentacion que los de miembros:
+    se copian de v2/v2-lecciones.css las reglas del motor de ejercicios (.option, .feedback, fichas...)
+    cambiando 'html.v2 ' por '#practicaMain '. Asi ambas quedan siempre iguales."""
+    css = re.sub(r'/\*.*?\*/', '', open(os.path.join(RAIZ, 'v2', 'v2-lecciones.css'), encoding='utf-8').read(), flags=re.S)
+    bloques, prof, ini = [], 0, 0
+    for j, ch in enumerate(css):
+        if ch == '{': prof += 1
+        elif ch == '}':
+            prof -= 1
+            if prof == 0: bloques.append(css[ini:j + 1].strip()); ini = j + 1
+    motor = r'\.(option|feedback|word-chip|error-word|session-progress|session-card|practice-prompt|next-row|blank-slot)\b'
+    def filtra(sel): return [x.strip() for x in sel.split(',') if x.strip().startswith('html.v2 ') and re.search(motor, x)]
+    out = []
+    for b in bloques:
+        cab = b.split('{', 1)[0]
+        if cab.startswith('@keyframes'): out.append(b); continue
+        if cab.startswith('@media'):
+            dentro = [(','.join(filtra(sel)), cuerpo) for sel, cuerpo in re.findall(r'([^{}]+)\{([^{}]*)\}', b[b.index('{') + 1:-1]) if filtra(sel)]
+            if dentro: out.append(cab + '{' + ''.join(x + '{' + c + '}' for x, c in dentro) + '}')
+            continue
+        f = filtra(cab)
+        if f: out.append(','.join(f) + '{' + b.split('{', 1)[1])
+    extra = """#practicaMain,.hm{font-family:var(--v2-font-body)}
+#practicaMain h1,#practicaMain h2,#practicaMain h3,.hm h1,.hm h2,.hm h3{font-family:var(--v2-font-display);font-weight:800}
+#practicaMain .level-card{border:2px solid var(--v2-line-strong);box-shadow:0 4px 0 var(--v2-line-strong)}
+#practicaMain .level-card[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 4px 0 var(--tone)}
+#practicaMain .level-card:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-tab-btn{border-radius:14px;border:2px solid var(--v2-line-strong);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;margin-bottom:3px}
+#practicaMain .skill-tab-btn.active,#practicaMain .skill-tab-btn[aria-selected="true"]{border-color:var(--v2-brand);box-shadow:0 3px 0 var(--v2-brand)}
+#practicaMain .btn-primary{border-radius:16px;box-shadow:0 4px 0 var(--v2-brand-lip);font-weight:800}
+#practicaMain .btn-primary:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-section{border-radius:22px}"""
+    return '/* ---- Practicar gratis 2.0 (copiado de v2/v2-lecciones.css) ---- */\n' + '\n'.join(out).replace('html.v2 ', '#practicaMain ') + '\n' + extra
+
 def main():
-    total, partes = 0, [INI, TOKENS]
+    total, partes = 0, [INI, TOKENS, FUENTES, practica_v2()]
     fuentes = [(f, open(os.path.join(RAIZ, f), encoding='utf-8').read()) for f in CSS if os.path.isfile(os.path.join(RAIZ, f))]
     for h in sorted(glob.glob(os.path.join(RAIZ, '*.html'))):
         s = open(h, encoding='utf-8', errors='replace').read()
