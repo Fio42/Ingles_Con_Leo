@@ -4387,3 +4387,51 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 2026-11-27 - Validacion en produccion tras publicar 77e13be + arreglo de English Rush
 - Produccion (cuenta de pruebas de Leo y visitante, navegador de Claude): practica gratis 3 ejercicios con sonidos, explicacion, resultado antes del muro y limite; muro sin tarjeta en cero; portada movil, tema publico, barra publica de miembros.html; como miembro: Inicio, Academia (8 de 11 aprobados, etapas, Mis logros con una sola proxima insignia), Practicar (10 errores clave = Repaso rapido), Progreso, tema en cada pagina, inicial L, Mas > Pagina principal y logo; gramatica con combo x3 (mejor combo 4); sesion nueva subida y sincronizada dos veces sin duplicar (98 local / 87 nube; los 11 duplicados viejos siguen sin tocar).
 - English Rush: causa = juego.html no carga data.js; al terminar la partida de un miembro, recordSession -> checkIndex/updateMistakeStatsFromResults llamaban a getMistakesItemIndex (usa LEVELS) y lanzaban "LEVELS is not defined": la partida no se guardaba y no salia la pantalla final. Arreglo en app.js (solo guardas: sin bancos no hay indice ni errores que registrar). Prueba nueva tools/tests/rush-guardado.test.js (falla con el app.js anterior). app.js?v=20261128b en paginas no articulo.
+
+2026-11-27 - Cierre de la consolidacion funcional 2.0 (validacion final en produccion)
+- English Rush en produccion (miembro): pantalla final visible y partida guardada una sola vez (local 99->100, nube 88->89, misma hora; dos sincronizaciones sin cambios).
+- Cuenta gratis de prueba: acceso con barra 2.0 sin Progreso, progreso.html redirige a miembros.html como antes, 6 ejercicios diarios (3 de visitante + 3 de cuenta), muro al recargar, sesion de hoy guardada una vez (2 duplicados viejos del 8 y 9 de noviembre sin tocar).
+- Registro de cuenta nueva: vuelve a la practica con "Listo, tu cuenta gratis esta creada", 3 ejercicios con Combo x3 y "Sesion perfecta", acceso posterior correcto.
+- Cuenta de prueba con correo inventado (luisa22@gmail.com, id b38714eb-3314-493e-83df-1125449b51f4, creada 2026-11-27 15:35:29 UTC) eliminada con autorizacion de Leo: 1 sesion de practica, perfil y usuario de auth. Sin errores, insignias ni otros datos. El correo de bienvenida ya se habia enviado a las 15:35:30 UTC (no se puede cancelar); no habia correos en cola: los envios salen de tareas programadas que leen profiles, y la cuenta ya no existe. Sin cambios en el sistema de correos, auth, pagos ni permisos.
+- Pendiente fuera de esta fase: Speaking con microfono, notificaciones, telefono fisico y cuenta vencida real (no cambiaron). Siguiente fase: auditoria cognitiva y de simplificacion UX/UI (incluye onboarding 2.0).
+- CONSOLIDACION FUNCIONAL DE INGLES CON LEO 2.0 CERRADA.
+
+2026-11-27 - Auditoria cognitiva y propuesta UX/UI 2.0 (etapas A y B; sin cambios en la academia ni push)
+- Entregables fuera de lo publicado: Claude outputs/ux-2026-11-27/ (INFORME-UX-2026-11-27.md, capturas-reales/, capturas-prototipo/, prototipo/index.html navegable y prototipo/assets/galeria.html de microanimaciones). Prototipo con datos ficticios, independiente de la academia.
+- Diagnostico (simulador con el codigo publicado, 6 tipos de cuenta, 390/768/1280): tras responder, el boton Siguiente queda fuera de pantalla (gramatica y 834 px con la barra inferior en 776; practica gratis 1121 px); Practicar repite la eleccion de habilidad (tarjetas + pestanas) y arranca un ejercicio al final; reto y Metodo Leo duplicados en Inicio y Practicar; pestana Practicar dentro de Academia; cabecera con 5-6 iconos sin texto; sin buscador de temas en 2.0; onboarding en ventana encima de la practica; 4-5 llamadas comerciales al final de la practica gratis; quien vuelve tras semanas ve "0 dias de racha" sin bienvenida; Progreso 4,1 pantallas sin accion en la primera; Mis logros con 42 textos < 13 px; lenguaje tecnico ("la corrige el servidor", "Bienvenido(a)").
+- Propuesta: barra Inicio, Practicar, Academia, Progreso, Perfil (Perfil reemplaza Mas); Inicio = siguiente paso + "Hoy tambien"; Practicar = practica de hoy (Plan) + errores clave + reto + "Elegir que practicar" (habilidades, buscar tema con temas.js, mas formas); ejercicio en modo concentracion con barra de accion fija y explicacion plegable; una sola invitacion tras el resultado gratis; onboarding 2.0 de 3 pasos despues de la primera actividad; Academia con etapas plegables; Progreso en 4 respuestas; familia de iconos unica y nueva llama.
+- Plan por bloques (1.1 barra de accion fija, 1.2 momento del onboarding, 2.1 Practicar con 3 decisiones como prioridad). Pendiente de aprobacion de Leo; nada implementado en la academia real.
+
+2026-11-27 · UX 2.0 Bloque A (rama v2/ux-a, sin push)
+- Ejercicios (app.js, todos los formatos): modo concentración al tocar el primer ejercicio (sin barra inferior en el teléfono), botón "Salir" en la cabecera de la sesión, fila Siguiente/Volver a intentar fija al pie mientras el feedback no cabe (no fija al escribir ni en horizontal), desplazamiento automático para ver el feedback entero.
+- Feedback: siempre visibles acierto/error, respuesta correcta (nuevo en huecos), regla breve, Leo AI y enlace a la clase. Plegables solo "Ver más ejemplos" y "Ver la transcripción".
+- practica.html: la bienvenida ya no se abre encima de la práctica. Tarjeta saltable ("Personalizar" / "Ahora no"), nunca durante un ejercicio.
+- Práctica gratis: una sola invitación principal en el resultado; las repetidas se ocultan mientras se practica y en el resultado (siguen en el HTML, SEO intacto).
+- Plan de estudio: "Empezar mi sesión" arriba, visible sin desplazarse.
+- Lenguaje: «Te doy la bienvenida a Inglés con Leo», «¿Confirmamos?», insignias sin "la corrige el servidor".
+- Versiones ?v=20261129a (sin tocar artículos ni glosario). Prueba panel-accion-principal actualizada al nuevo onboarding. Tests: 18 fallos de entorno, igual que antes.
+- Sin cambios en pagos, permisos, límites, contenido, respuestas, combos, rachas ni Analytics.
+
+2026-11-27 · UX 2.0 Bloque B (rama v2/ux-a, sin push)
+- Cierre bloque A: "Ahora no" recordado por cuenta (leo_onb_later_<id>, sin BD) y practica.html?personalizar=1; sonido en la cabecera de la sesión; el resultado gratis ya no queda bajo la cabecera; Academia (lecciones y evaluación) recorrida en el simulador.
+- Practicar (v2-practicar.js): una recomendación (Plan, empieza con ?empezar=1), errores clave y Reto real como alternativas, "Elegir qué practicar" desplegable (habilidades, Mixto, buscador de temas con temas.js + contentForTema, más formas). Sin avatar. Motor por habilidad solo con ?skill=.
+- Inicio (v2-home.js): siguiente paso + "Hoy también" con check por sesión real de hoy + meta de hoy; racha en la barra (abre su hoja en Inicio). Mensaje de regreso (3+ días) y de miembro nuevo. Cuenta gratis/vencida: práctica gratis principal, "También gratis", una invitación (botón real de pago) y lo bloqueado plegado.
+- Plan (v2-fx.js): duración y dificultad agrupadas en un desplegable con lo elegido a la vista.
+- Academia (v2-academia.js): ruta compacta (avance, siguiente lección, etapas en lista desplegable). Mis logros: una línea de avance.
+- Progreso (v2-progreso.js): cuatro respuestas + siguiente paso; Método Leo, gráficas y cursos desplegables; #diagnostico abre las estadísticas clásicas.
+- Perfil sustituye a Más (v2-shell.js): cuenta con los botones reales, avisos, preferencias, LeoBot, más secciones, versión clásica, enlaces legales.
+- CSS: componentes v2-* en v2-screens.css. Eventos GA nuevos: practicar_plan_empezar, practicar_elegir_abierto, practicar_buscar_tema.
+- Tests: 18 fallos de entorno (igual). Sin cambios en pagos, permisos, límites, backend, contenido, SEO.
+
+2026-11-27 · Publicación de UX 2.0 bloques A y B (rama publicar/ux-ab, un solo commit sobre origin/main)
+- Comprobaciones finales en el simulador local (datos de prueba, sin tocar producción):
+  · Progreso: sesiones de Gramática, Vocabulario y Plan se guardan una sola vez en el navegador y en la nube (progress_sessions + apply_mistake_results).
+  · Límite gratis: 6 ejercicios y luego el muro de siempre. Visitante: muro de registro tras su muestra, una sola invitación.
+  · Permisos: visitante y cuenta gratis siguen sin entrar a páginas de miembros (van a miembros.html); lección de Academia no servida a no miembros.
+  · Pagos: "Activar membresía" desde Inicio gratis abre el paso de pago real (mismo goToPayment). Cerrar sesión desde Perfil funciona.
+  · SEO: 462 páginas comparadas con producción (title, description, canonical, robots, og, JSON-LD, encabezados, texto visible y enlaces): sin diferencias. En HTML públicos solo cambia ?v=.
+  · Móvil: 320, 360, 390, 430, tablet, escritorio y horizontal; tema oscuro y claro. Consola sin errores nuevos. Tests: 18 fallos de entorno, igual que antes.
+  · Rollback probado: versión clásica (icl.ui=classic) carga todas las páginas sin errores.
+- Archivos publicados: 48 (HTML con versión nueva, practica.html, app.js, academia.js, v2/*). Sin tools/, capturas ni simulador.
+- Último ajuste: Perfil muestra "Hazte miembro" a cuentas sin membresía (antes "Suscripción").
+- Rollback: git revert del commit de publicación, o ICL_V2_ENABLED = false en v2/v2-init.js (deja solo la versión clásica).

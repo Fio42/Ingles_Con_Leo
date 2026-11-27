@@ -134,3 +134,49 @@ html.v2 .ac-top .v2-snd-btn .k-ico{width:22px;height:22px}
 /* Botones bajo la respuesta: en una sola linea, sin partir "Volver a intentar" en dos (QA 26 nov) */
 html.v2 .next-row{display:flex;flex-wrap:wrap;gap:10px}
 html.v2 .next-row .btn{white-space:nowrap;flex:1 1 auto;min-height:50px;padding-left:16px;padding-right:16px}
+
+/* =========================================================
+   Bloque A (UX) · Ejercicios de práctica (app.js) en miembros y en la práctica gratis
+   html.icl-ex = hay una práctica en curso (lo pone v2-fx.js al interactuar; se quita en el resultado).
+   ========================================================= */
+/* Modo concentración en el teléfono: sin barra inferior ni robot flotante mientras se responde.
+   En tablet y escritorio el riel lateral se queda (quitarlo movería todo el contenido de golpe). */
+@media (max-width:767px){
+  html.icl-ex .v2-shell .k-nav,html.icl-ex body > .mobile-nav{display:none!important}
+  html.v2.v2-app.icl-ex body{padding-bottom:0!important}
+}
+html.icl-ex .leobot-fab,html.icl-ex .leobot-reopen,html.icl-ex .leobot-greet{display:none!important}
+/* Salida clara, arriba a la izquierda de la sesión */
+.v2-ex-exit{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px 0 8px;margin:-6px 8px -6px -8px;border:0;border-radius:12px;background:transparent;color:var(--v2-text-2,#AAB1C4);font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.v2-ex-exit:hover{background:var(--v2-surface-2,#1A2134);color:var(--v2-text,#EEF0F7)}
+.session-head{align-items:center}
+/* Continuar / Siguiente / Volver a intentar siempre al alcance del pulgar: la fila queda fija al pie de la
+   pantalla mientras el feedback es más largo que la pantalla. Está en el flujo normal: al llegar al final
+   no tapa nada y todo el contenido sigue siendo alcanzable. */
+html.icl-ex .session-card .next-row:not(:empty){position:sticky;bottom:0;z-index:6;margin-top:14px;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));background:var(--v2-surface,#141A29);box-shadow:0 -14px 14px -6px var(--v2-surface,#141A29)}
+html.icl-ex .session-card #reviewBtn{position:sticky;bottom:12px;z-index:6}
+/* Escribiendo: nada fijo (el teclado del teléfono nunca queda con un botón encima del campo) */
+html.icl-typing .session-card .next-row:not(:empty),html.icl-typing .session-card #reviewBtn{position:static;box-shadow:none}
+/* Feedback compacto: respuesta correcta destacada; los ejemplos y la transcripción se despliegan */
+.feedback .fb-answer{margin:6px 0 2px;font-weight:700}
+.feedback .fb-answer strong{font-weight:900}
+.v2-fb-more{margin-top:10px;border-radius:12px;background:color-mix(in srgb,var(--v2-surface-2,#1A2134) 80%,transparent)}
+.v2-fb-more > summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;cursor:pointer;font-weight:800;color:var(--v2-brand-text,#9AABFF)}
+.v2-fb-more > summary::-webkit-details-marker{display:none}
+.v2-fb-more > summary::after{content:"";width:8px;height:8px;margin-left:2px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.v2-fb-more[open] > summary::after{transform:rotate(-135deg) translateY(-2px)}
+.v2-fb-more > .examples-block{margin:0;padding:4px 12px 12px;background:none;border:0}
+.v2-fb-more[open] > .examples-block{animation:v2-in .25s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion:reduce){ .v2-fb-more > summary::after{transition:none} }
+/* Horizontal en teléfono (poca altura): la fila vuelve a su sitio para no ocupar un quinto de la pantalla */
+@media (max-height:500px){
+  html.icl-ex .session-card .next-row:not(:empty),html.icl-ex .session-card #reviewBtn{position:static;box-shadow:none}
+}
+/* Sonido dentro de la cabecera de la sesión: siempre a mano mientras se practica */
+.v2-ex-exit{order:-2}
+.session-head .v2-ex-snd{order:9;margin-left:auto;display:inline-grid;place-items:center;width:44px;height:44px;margin-top:-6px;margin-bottom:-6px;border:0;border-radius:12px;background:transparent;color:var(--v2-text-3,#8A93AB);cursor:pointer;flex:none}
+.session-head .v2-ex-snd:hover{background:var(--v2-surface-2,#1A2134);color:var(--v2-text,#EEF0F7)}
+.session-head .v2-ex-snd .k-ico{width:22px;height:22px}
+html.icl-ex #practicaMain .v2-snd-free{display:none}
+.session-summary,.free-wall{scroll-margin-top:104px}
+html.v2.v2-app .session-summary{scroll-margin-top:24px}

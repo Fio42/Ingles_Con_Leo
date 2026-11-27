@@ -26,4 +26,16 @@
   if(d.readyState === 'loading') d.addEventListener('DOMContentLoaded', function(){ setTimeout(mountSound, 0); });
   else setTimeout(mountSound, 0);
   window.addEventListener('load', mountSound);
+  /* Bloque A (UX): al terminar (resultado, muro de registro o límite del día) se marca html.icl-fin para que
+     solo quede a la vista la invitación del resultado. No cambia límites ni enlaces. */
+  function fin(){
+    var body = d.getElementById('skillBody');
+    var on = !!(body && body.querySelector('.session-summary, .free-wall, .upgrade-block'));
+    d.documentElement.classList.toggle('icl-fin', on);
+  }
+  function watchFin(){
+    var body = d.getElementById('skillBody'); if(!body) return;
+    new MutationObserver(fin).observe(body, { childList: true, subtree: true }); fin();
+  }
+  if(d.readyState === 'loading') d.addEventListener('DOMContentLoaded', watchFin); else watchFin();
 })();

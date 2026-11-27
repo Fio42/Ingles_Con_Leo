@@ -1602,7 +1602,7 @@
     ]));
     var badgeCard = el('section', { class: 'ac-card', id: 'acBadge' + (PRIMARY ? '' : '-' + courseId) }, [
       el('h2', { class: 'ac-h2 ac-h2-in', text: 'Insignia del curso ' + NAME }),
-      el('p', { class: 'ac-text', id: 'acBadgeT' + (PRIMARY ? '' : '-' + courseId), text: NUBE && NUBE.ready ? 'Se entrega al superar la evaluación del curso. La corrige el servidor, así que no se puede copiar ni cambiar.' : 'Se entrega al aprobar la evaluación oficial del curso, que se corrige en el servidor. En el piloto la evaluación es de práctica, así que todavía no se entrega ninguna insignia.' }),
+      el('p', { class: 'ac-text', id: 'acBadgeT' + (PRIMARY ? '' : '-' + courseId), text: NUBE && NUBE.ready ? 'Se entrega al superar la evaluación del curso. Demuestra lo que aprendiste.' : 'Se entrega al aprobar la evaluación oficial del curso, que se corrige en el servidor. En el piloto la evaluación es de práctica, así que todavía no se entrega ninguna insignia.' }),
       many ? null : el('p', { class: 'ac-text', text: 'Cuando haya más cursos aparecerán aquí sus insignias. Las insignias no equivalen a un nivel oficial.' })
     ]);
     out.push(badgeCard);
@@ -1679,7 +1679,7 @@
       ])]));
     });
     course.appendChild(ul);
-    course.appendChild(el('p', { class: 'ac-hero-meta', text: PRIMARY ? 'Al final, una evaluación corregida por el servidor y tu primera insignia de Inglés con Leo.' : 'Al final, una evaluación corregida por el servidor y una insignia de Inglés con Leo.' }));
+    course.appendChild(el('p', { class: 'ac-hero-meta', text: PRIMARY ? 'Al final, una evaluación y tu primera insignia de Inglés con Leo.' : 'Al final, una evaluación y una insignia de Inglés con Leo.' }));
     root.appendChild(course);
 
     var box = el('section', { class: 'ac-card', 'aria-label': 'Cómo empezar' });

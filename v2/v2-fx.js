@@ -188,10 +188,12 @@
         var t = r.target;
         if(t.classList.contains('feedback') && t.classList.contains('show') && (t.classList.contains('ok') || t.classList.contains('bad')) && !t.dataset.v2Graded){
           t.dataset.v2Graded = '1'; graded(t, t.classList.contains('ok'));
+          exAnswered(t);
         }
         return;
       }
       Array.prototype.forEach.call(r.addedNodes, scan);
+      exCheckSoon();
       /* Un nuevo #fb vacío = nueva pregunta: se puede calificar otra vez */
       Array.prototype.forEach.call(r.addedNodes, function(n){ if(n.nodeType === 1){ var f = n.id === 'fb' ? n : n.querySelector && n.querySelector('#fb'); if(f) delete f.dataset.v2Graded; } });
     });
@@ -213,4 +215,112 @@
   d.addEventListener('click', function(e){ if(e.target.closest('.retry-btn')) run.retryNext = true; }, true);
   /* Toques con sensación de app: sonido suave al elegir una opción (no afecta la respuesta) */
   d.addEventListener('click', function(e){ if(e.target.closest('.ac-opt:not(:disabled), .option:not(:disabled), .ac-tok, .ac-mbtn')) SND.play('select'); }, true);
+
+  /* =========================================================
+     Bloque A (UX): modo concentración, salida clara, botón siempre a mano y feedback compacto.
+     Solo presentación sobre el motor real (app.js): no cambia respuestas, guardado, límites ni eventos.
+     ========================================================= */
+  var page = (location.pathname.split('/').pop() || '').toLowerCase();
+  var FREE = page === 'practica.html';
+  /* Una práctica está "en curso" desde que la persona interactúa con un ejercicio hasta que ve el resultado */
+  function exOn(){ return html.classList.contains('icl-ex'); }
+  function exEnter(){ if(exOn()) return; html.classList.add('icl-ex'); exDecorate(); }
+  function exLeave(){ html.classList.remove('icl-ex', 'icl-typing'); }
+  var exT = 0;
+  function exCheckSoon(){ if(exT) return; exT = setTimeout(function(){ exT = 0; exCheck(); }, 60); }
+  function exCheck(){
+    if(!exOn()) return;
+    var card = d.querySelector('.session-card');
+    var sum = d.querySelector('.session-summary');
+    if(!card || sum){
+      exLeave();
+      /* Resultado: se muestra desde su inicio, debajo de la cabecera fija (scroll-margin-top en el CSS) */
+      if(sum && sum.getBoundingClientRect().top < 60) sum.scrollIntoView({ block: 'start', behavior: K.reduced && K.reduced() ? 'auto' : 'smooth' });
+    } else exDecorate();
+  }
+  function exTarget(){
+    if(FREE) return 'practica.html';
+    if(/^(gramatica|vocabulario|listening|speaking|writing|lectura|mixto|errores|plan-estudio|practica-miembros)\.html$/.test(page)) return 'practica-miembros.html';
+    return 'miembros.html';
+  }
+  /* Botón "Salir" en la cabecera de la sesión (se vuelve a poner en cada pregunta porque el motor la redibuja) */
+  function exDecorate(){
+    Array.prototype.forEach.call(d.querySelectorAll('.session-head'), function(h){
+      if(h.querySelector('.v2-ex-exit')) return;
+      var b = d.createElement('button'); b.type = 'button'; b.className = 'v2-ex-exit';
+      b.setAttribute('aria-label', FREE ? 'Salir de la práctica' : 'Salir de la práctica. Tu avance queda guardado');
+      b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Salir</span>';
+      b.addEventListener('click', function(){ exLeave(); location.href = exTarget(); });
+      h.insertBefore(b, h.firstChild);
+      /* Sonido a mano durante toda la práctica (la barra superior queda arriba al desplazarse) */
+      var sn = d.createElement('button'); sn.type = 'button'; sn.className = 'v2-ex-snd';
+      var paint = function(){ sn.innerHTML = K.px(SND.enabled ? A.UI.speaker : A.UI.soundOff); sn.setAttribute('aria-label', SND.enabled ? 'Sonidos activados. Ajustar' : 'Sonidos en silencio. Ajustar'); };
+      paint(); window.addEventListener('v2:sound', paint);
+      sn.addEventListener('click', function(){ K.soundSheet(); });
+      h.appendChild(sn);
+    });
+  }
+  /* Interactuar con el ejercicio = empieza la concentración (nunca al cargar la página: el centro de Practicar
+     sigue siendo navegable aunque el motor muestre una sesión al final) */
+  d.addEventListener('click', function(e){
+    if(e.target.closest('.session-card .option, .session-card .word-chip, .session-card .error-word, .session-card .next-btn, .session-card .retry-btn, .session-card #reviewBtn, .session-card .listen-btn, .session-card .audio-btn, .session-card button')) exEnter();
+  }, true);
+  /* Escribiendo (Writing): la barra deja de estar fija para que nunca tape el campo ni quede encima del teclado */
+  d.addEventListener('focusin', function(e){ if(e.target.matches && e.target.matches('.session-card textarea, .session-card input[type="text"]')){ exEnter(); html.classList.add('icl-typing'); } });
+  d.addEventListener('focusout', function(e){ if(e.target.matches && e.target.matches('.session-card textarea, .session-card input[type="text"]')) setTimeout(function(){ html.classList.remove('icl-typing'); }, 150); });
+
+  /* Feedback esencial siempre visible (acierto o error, respuesta correcta y regla breve).
+     Los ejemplos extra y la transcripción se despliegan; Leo AI y el enlace a la clase siguen a la vista. */
+  function exAnswered(fb){
+    if(!fb || fb.id !== 'fb' || !fb.closest('.session-card')) return;
+    exEnter();
+    setTimeout(function(){
+      if(!fb.dataset.v2Compact){
+        fb.dataset.v2Compact = '1';
+        Array.prototype.forEach.call(fb.querySelectorAll('.examples-block'), function(ex){
+          if(ex.parentNode !== fb) return;
+          var lab = ex.querySelector('.examples-label'), t = lab ? lab.textContent.trim() : '';
+          var label = /otros ejemplos/i.test(t) ? 'Ver más ejemplos' : /transcripci/i.test(t) ? 'Ver la transcripción' : null;
+          if(!label) return;                       /* p. ej. el ejemplo correcto de Writing: es parte de la respuesta */
+          var det = d.createElement('details'); det.className = 'v2-fb-more';
+          var sm = d.createElement('summary'); sm.textContent = label;
+          det.appendChild(sm); fb.insertBefore(det, ex); det.appendChild(ex);
+          det.addEventListener('toggle', function(){ if(det.open) SND.play('open'); });
+        });
+      }
+      /* Lleva el feedback a la vista sin que la persona tenga que buscarlo; el botón queda fijo abajo */
+      var nr = fb.closest('.session-card').querySelector('.next-row'), bar = nr && nr.offsetHeight && getComputedStyle(nr).position === 'sticky' ? nr.offsetHeight + 8 : 16;
+      var r = fb.getBoundingClientRect(), room = innerHeight - bar;
+      if(r.bottom > room){
+        var by = Math.min(r.top - 72, r.bottom - room);
+        if(by > 8) window.scrollBy({ top: by, behavior: K.reduced && K.reduced() ? 'auto' : 'smooth' });
+      }
+    }, 30);
+  }
+
+  /* =========================================================
+     Bloque B (UX) · Plan de estudio: "Empezar" arriba (bloque A) y la configuración secundaria
+     (duración y dificultad) agrupada en un desplegable con lo elegido a la vista. Solo mueve los
+     controles reales que dibuja app.js (mismos botones, mismos eventos, mismo guardado).
+     ========================================================= */
+  function planGroup(){
+    var area = d.getElementById('planArea'); if(!area) return;
+    var shell = area.querySelector(':scope > .session-shell'); if(!shell || shell.querySelector('.v2-plan-cfg')) return;
+    var len = shell.querySelector('#planLengthSelector'); if(!len) return;
+    var lab = len.previousElementSibling, diffRow = shell.querySelector('.plan-difficulty-row'), diff = shell.querySelector('#planDifficultySelector');
+    var on = len.querySelector('[aria-pressed="true"]');
+    var lname = on ? on.querySelector('.length-name').textContent.trim() + ' · ' + on.querySelector('.length-sub').textContent.split('·')[0].trim() : '';
+    var dname = diffRow ? (diffRow.querySelector('.plan-difficulty-current') || {}).textContent || '' : '';
+    dname = dname.split('·')[0].trim();
+    var det = d.createElement('details'); det.className = 'v2-plan-cfg'; if(planGroup.open) det.open = true;
+    det.innerHTML = '<summary><span><b>Duración y dificultad</b><small>' + K.esc(lname + (dname ? ' · ' + dname : '')) + '</small></span><span class="v2-plan-cfg__ch">Cambiar</span></summary><div class="v2-plan-cfg__body"></div>';
+    var body = det.querySelector('.v2-plan-cfg__body');
+    shell.insertBefore(det, len.previousElementSibling && lab && lab.classList.contains('examples-label') ? lab : len);
+    [lab && lab.classList.contains('examples-label') ? lab : null, len, diffRow, diff].forEach(function(x){ if(x) body.appendChild(x); });
+    det.addEventListener('toggle', function(){ planGroup.open = det.open; if(det.open) SND.play('open'); });
+  }
+  if(page === 'plan-estudio.html'){
+    var pa = d.getElementById('planArea');
+    if(pa){ new MutationObserver(planGroup).observe(pa, { childList: true }); planGroup(); }
+  }
 })();

@@ -64,3 +64,19 @@ html[data-theme="dark"]:not(.v2) .k-scope{
 #practicaMain .session-summary .v2-results ~ h2,#practicaMain .session-summary .v2-results ~ .summary-score{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /* Las piezas .k-scope son tarjetas dentro de la página, no la app completa (mismo ajuste que v2-screens.css en miembros) */
 .k-scope.k-scope{min-height:0}
+
+/* =========================================================
+   Bloque A (UX) · Práctica gratis
+   ========================================================= */
+/* Bienvenida ofrecida (no impuesta) a una cuenta recién creada */
+.onb-offer{margin:0 0 14px;padding:14px 16px;border-radius:16px;background:var(--v2-surface,#141A29);border:2px solid var(--v2-line-strong,#323C58)}
+.onb-offer p{margin:0 0 10px;padding-right:36px;font-size:15px;line-height:1.45}
+.onb-offer-actions{display:flex;gap:10px;flex-wrap:wrap}
+.onb-offer-actions .btn{min-height:44px}
+html.icl-ex .onb-offer{display:none}
+/* Una sola invitación principal: mientras se practica y al ver el resultado (que ya trae su invitación),
+   se ocultan las invitaciones repetidas de la página. Siguen en el HTML (SEO intacto) y vuelven al empezar de nuevo. */
+html.icl-ex #practicaAcademia,html.icl-ex #practicaModoAprender,html.icl-ex #freeAccountHint,
+html.icl-fin #practicaAcademia,html.icl-fin #practicaModoAprender,html.icl-fin #freeAccountHint{display:none!important}
+/* "Esto es una muestra del sistema" queda como información, no como segunda llamada principal */
+#practicaMain .practice-members-cta .btn-primary{background:transparent!important;color:var(--v2-brand-text,#9AABFF)!important;border:2px solid var(--v2-line-strong,#323C58)!important;box-shadow:none!important}
