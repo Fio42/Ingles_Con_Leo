@@ -172,3 +172,11 @@ html.icl-typing .session-card .next-row:not(:empty),html.icl-typing .session-car
 @media (max-height:500px){
   html.icl-ex .session-card .next-row:not(:empty),html.icl-ex .session-card #reviewBtn{position:static;box-shadow:none}
 }
+/* Sonido dentro de la cabecera de la sesión: siempre a mano mientras se practica */
+.v2-ex-exit{order:-2}
+.session-head .v2-ex-snd{order:9;margin-left:auto;display:inline-grid;place-items:center;width:44px;height:44px;margin-top:-6px;margin-bottom:-6px;border:0;border-radius:12px;background:transparent;color:var(--v2-text-3,#8A93AB);cursor:pointer;flex:none}
+.session-head .v2-ex-snd:hover{background:var(--v2-surface-2,#1A2134);color:var(--v2-text,#EEF0F7)}
+.session-head .v2-ex-snd .k-ico{width:22px;height:22px}
+html.icl-ex #practicaMain .v2-snd-free{display:none}
+.session-summary,.free-wall{scroll-margin-top:104px}
+html.v2.v2-app .session-summary{scroll-margin-top:24px}

@@ -485,13 +485,18 @@ setTimeout(window.leoShowLate,6000);
       (function offerOnboarding(){
         try{
           if(getProfile() || PROFILE_SYNC_UNCERTAIN) return;
-          if(sessionStorage.getItem('leo_onb_later')) return;
+          /* "Ahora no" se recuerda por cuenta en este navegador (sin tocar la base de datos). Desde Perfil se puede
+             personalizar después: practica.html?personalizar=1 abre el mismo formulario. */
+          var laterKey = 'leo_onb_later_' + String(loggedInProfile.id || 'cuenta');
+          var askNow = /[?&]personalizar=1\b/.test(location.search);
+          if(askNow){ initOnboarding(function(){ if(freePractice && freePractice.syncLevel) freePractice.syncLevel(); }); return; }
+          try{ if(localStorage.getItem(laterKey)) return; }catch(e){}
           var host = document.getElementById('skillHead'); if(!host || document.getElementById('onbOffer')) return;
           var box = document.createElement('div'); box.id = 'onbOffer'; box.className = 'onb-offer'; box.setAttribute('role', 'region'); box.setAttribute('aria-label', 'Personaliza tu práctica');
           box.innerHTML = '<p><strong>Te doy la bienvenida a Inglés con Leo.</strong> ¿Personalizamos tu práctica? Tu nombre y tu nivel, en 20 segundos.</p>' +
             '<div class="onb-offer-actions"><button type="button" class="btn btn-primary btn-sm" id="onbOfferGo">Personalizar</button><button type="button" class="btn btn-ghost btn-sm" id="onbOfferLater">Ahora no</button></div>';
           host.parentNode.insertBefore(box, host);
-          document.getElementById('onbOfferLater').addEventListener('click', function(){ try{ sessionStorage.setItem('leo_onb_later', '1'); }catch(e){} box.remove(); });
+          document.getElementById('onbOfferLater').addEventListener('click', function(){ try{ localStorage.setItem(laterKey, String(Date.now())); }catch(e){} box.remove(); });
           document.getElementById('onbOfferGo').addEventListener('click', function(){
             if(document.documentElement.classList.contains('icl-ex')) return;   // nunca durante un ejercicio
             box.remove();

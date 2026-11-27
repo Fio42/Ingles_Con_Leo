@@ -231,7 +231,12 @@
   function exCheck(){
     if(!exOn()) return;
     var card = d.querySelector('.session-card');
-    if(!card || d.querySelector('.session-summary')) exLeave(); else exDecorate();
+    var sum = d.querySelector('.session-summary');
+    if(!card || sum){
+      exLeave();
+      /* Resultado: se muestra desde su inicio, debajo de la cabecera fija (scroll-margin-top en el CSS) */
+      if(sum && sum.getBoundingClientRect().top < 60) sum.scrollIntoView({ block: 'start', behavior: K.reduced && K.reduced() ? 'auto' : 'smooth' });
+    } else exDecorate();
   }
   function exTarget(){
     if(FREE) return 'practica.html';
@@ -247,6 +252,12 @@
       b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Salir</span>';
       b.addEventListener('click', function(){ exLeave(); location.href = exTarget(); });
       h.insertBefore(b, h.firstChild);
+      /* Sonido a mano durante toda la práctica (la barra superior queda arriba al desplazarse) */
+      var sn = d.createElement('button'); sn.type = 'button'; sn.className = 'v2-ex-snd';
+      var paint = function(){ sn.innerHTML = K.px(SND.enabled ? A.UI.speaker : A.UI.soundOff); sn.setAttribute('aria-label', SND.enabled ? 'Sonidos activados. Ajustar' : 'Sonidos en silencio. Ajustar'); };
+      paint(); window.addEventListener('v2:sound', paint);
+      sn.addEventListener('click', function(){ K.soundSheet(); });
+      h.appendChild(sn);
     });
   }
   /* Interactuar con el ejercicio = empieza la concentración (nunca al cargar la página: el centro de Practicar
