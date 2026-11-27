@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<script src="tema.js?v=20261129b"></script>
+<script src="tema.js?v=20261130a"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -19,16 +19,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261129b">
+<link rel="stylesheet" href="style.css?v=20261130a">
 <!-- Ingles con Leo 2.0 (paginas privadas). Rollback: ICL_V2_ENABLED=false en v2/v2-init.js -->
-<script src="v2/v2-init.js?v=20261129b"></script>
-<link rel="stylesheet" href="v2/v2-tokens.css?v=20261129b">
-<link rel="stylesheet" href="v2/v2-base.css?v=20261129b">
-<link rel="stylesheet" href="v2/v2-dark-auto.css?v=20261129b">
-<link rel="stylesheet" href="v2/v3-ui.css?v=20261129b">
-<link rel="stylesheet" href="v2/v2-screens.css?v=20261129b">
-<link rel="stylesheet" href="v2/v2-lecciones.css?v=20261129b">
-<link rel="stylesheet" href="v2/v2-paginas.css?v=20261129b">
+<script src="v2/v2-init.js?v=20261130a"></script>
+<link rel="stylesheet" href="v2/v2-tokens.css?v=20261130a">
+<link rel="stylesheet" href="v2/v2-base.css?v=20261130a">
+<link rel="stylesheet" href="v2/v2-dark-auto.css?v=20261130a">
+<link rel="stylesheet" href="v2/v3-ui.css?v=20261130a">
+<link rel="stylesheet" href="v2/v2-screens.css?v=20261130a">
+<link rel="stylesheet" href="v2/v2-lecciones.css?v=20261130a">
+<link rel="stylesheet" href="v2/v4-ui.css?v=20261130a">
+<link rel="stylesheet" href="v2/v2-paginas.css?v=20261130a">
 <link rel="preload" as="style" href="chatbot.css?v=20261124b">
 <link rel="stylesheet" href="chatbot.css?v=20261124b" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261124b"></noscript>
@@ -178,8 +179,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261122e"></script>
-<script src="app.js?v=20261129b"></script>
-<script src="backend.js?v=20261129b"></script>
+<script src="app.js?v=20261130a"></script>
+<script src="backend.js?v=20261130a"></script>
 <script src="clases.js?v=20261108c"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -194,13 +195,13 @@
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261129b';
+    s.src = 'chatbot.js?v=20261130a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261129b&r=1';
+        r.src = 'chatbot.js?v=20261130a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };
@@ -222,11 +223,12 @@
   });
 </script>
 
-<script src="v2/v3-art.js?v=20261129b" defer></script>
-<script src="v2/v3-sound.js?v=20261129b" defer></script>
-<script src="v2/v2-kit.js?v=20261129b" defer></script>
-<script src="v2/v2-data.js?v=20261129b" defer></script>
-<script src="v2/v2-shell.js?v=20261129b" defer></script>
-<script src="v2/v2-fx.js?v=20261129b" defer></script>
+<script src="v2/v3-art.js?v=20261130a" defer></script>
+<script src="v2/v4-icons.js?v=20261130a" defer></script>
+<script src="v2/v3-sound.js?v=20261130a" defer></script>
+<script src="v2/v2-kit.js?v=20261130a" defer></script>
+<script src="v2/v2-data.js?v=20261130a" defer></script>
+<script src="v2/v2-shell.js?v=20261130a" defer></script>
+<script src="v2/v2-fx.js?v=20261130a" defer></script>
 </body>
 </html>

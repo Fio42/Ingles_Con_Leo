@@ -11,6 +11,7 @@
   if(!window.ICL_V2 || !window.ICL_V2.enabled || !window.K || !window.V2D) return;
   if((location.pathname.split('/').pop() || '').toLowerCase() !== 'progreso.html') return;
   var d = document, K = window.K, A = K.ART, SND = K.SND, esc = K.esc;
+  var I4 = A.I4 || {};   /* Bloque C: familia de iconos propia (v4-icons.js); si faltara, se usan los de antes */
   var screen = null, details = null;
   var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var LEVEL = { principiante: 'Principiante', facil: 'Fácil', medio: 'Intermedio', avanzado: 'Avanzado' };
@@ -63,10 +64,10 @@
     var dots = '<div class="v2-wdots" aria-label="Días practicados esta semana">' + names.map(function(n, i){ return '<span class="' + (p.weekDays[i] ? 'is-on' : '') + (i === p.todayIdx ? ' is-today' : '') + '"><i>' + (p.weekDays[i] ? A.UI.check : '') + '</i>' + n + '</span>'; }).join('') + '</div>';
     var row = function(ic, c, t, sub, href, cta){ return '<' + (href ? 'a href="' + href + '"' : 'div') + ' class="v2-task"><span class="v2-task__ic v2-task__ic--' + c + '">' + ic + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' + (href ? (cta ? '<span class="v2-task__cta">' + cta + '</span>' : A.UI.chevron) : '') + '</' + (href ? 'a' : 'div') + '>'; };
     var lessonsDone = (acad || []).reduce(function(t, c){ return t + (c.done || 0); }, 0);
-    var superaste = mis ? row(A.STK.mend, 'mend', (function(n){ return n ? n + (n === 1 ? ' error superado' : ' errores superados') : 'Todavía sin errores superados'; })(mis.recovered.length + mis.mastered.length),
+    var superaste = mis ? row(I4.mend || A.STK.mend, 'mend', (function(n){ return n ? n + (n === 1 ? ' error superado' : ' errores superados') : 'Todavía sin errores superados'; })(mis.recovered.length + mis.mastered.length),
         (mis.recoveredWeek ? mis.recoveredWeek + ' esta semana · ' : '') + mis.mastered.length + ' dominados · ' + mis.active.length + ' en refuerzo', '#metodo') : '';
-    var aprendiste = acad && acad.length ? row(A.STK.trophy, 'award', won.length + (won.length === 1 ? ' curso aprobado' : ' cursos aprobados'), lessonsDone + (lessonsDone === 1 ? ' lección completada' : ' lecciones completadas') + ' en la Academia', 'academia.html#/logros', 'Ver') : '';
-    var mejora = row(A.ICO.target, 'ok', 'Aciertos: ' + (acc == null ? 'sin datos aún' : acc + ' %'),
+    var aprendiste = acad && acad.length ? row(I4.trophy || A.STK.trophy, 'award', won.length + (won.length === 1 ? ' curso aprobado' : ' cursos aprobados'), lessonsDone + (lessonsDone === 1 ? ' lección completada' : ' lecciones completadas') + ' en la Academia', 'academia.html#/logros', 'Ver') : '';
+    var mejora = row(I4.progreso || A.ICO.target, 'ok', 'Aciertos: ' + (acc == null ? 'sin datos aún' : acc + ' %'),
       (cur != null && prev != null ? (cur > prev ? '+' + (cur - prev) + ' puntos frente a la semana pasada' : cur === prev ? 'Igual que la semana pasada' : 'La semana pasada acertaste ' + prev + ' %') : 'Últimos 7 días') + (lvl ? ' · nivel ' + esc(lvl) : ''));
     var quickN = mis ? (V2D.quickReview ? V2D.quickReview(mis.active) : mis.active.slice(0, 10)).length : 0;
     var nextStep = quickN ? '<a class="btn btn--lg btn--block btn--mend v2-prog-next" href="errores.html?modo=rapido">Siguiente paso: repasa ' + (quickN === 1 ? 'tu error clave' : quickN + ' errores clave') + '</a>'
@@ -75,21 +76,21 @@
     var html = '<div class="v2-screen is-wide v2-progreso v2-stack">' +
       '<header><h1 class="v2-h1">Tu progreso</h1><p class="v2-sub">' + weekLabel() + '</p></header>' +
       '<section class="v2-week" aria-labelledby="v2WkT"><div class="v2-week__top"><div><b id="v2WkT">' + (p.weekDaysCount ? 'Practicaste ' + p.weekDaysCount + (p.weekDaysCount === 1 ? ' día' : ' días') + ' esta semana' : 'Esta semana todavía no practicas') + '</b>' +
-        '<small>' + (p.weekDaysCount ? p.weekMin + ' minutos' + dd : 'Una sesión corta ya cuenta.') + '</small></div><span class="v2-week__streak" aria-label="Racha: ' + p.streak + ' días">' + A.STK.flame + p.streak + '</span></div>' + dots + '</section>' +
+        '<small>' + (p.weekDaysCount ? p.weekMin + ' minutos' + dd : 'Una sesión corta ya cuenta.') + '</small></div><span class="v2-week__streak" aria-label="Racha: ' + p.streak + ' días">' + (A.flame ? A.flame(!p.streak ? 'off' : p.practicedToday ? 'on' : 'pending') : A.STK.flame) + p.streak + '</span></div>' + dots + '</section>' +
       (superaste ? '<section class="v2-stack-sm"><h2 class="v2-eyebrow">Lo que superaste</h2>' + superaste + '</section>' : '') +
       (aprendiste ? '<section class="v2-stack-sm"><h2 class="v2-eyebrow">Lo que aprendiste</h2>' + aprendiste + '</section>' : '') +
       '<section class="v2-stack-sm"><h2 class="v2-eyebrow">Está mejorando</h2>' + mejora + '</section>' +
       nextStep +
       '<section class="v2-stack-sm"><h2 class="v2-eyebrow">En detalle</h2>' +
-      (mis ? exp('metodo', A.STK.mend, 'mend', 'Método Leo', mis.active.length + ' en refuerzo · ' + mis.recovered.length + ' recuperados · ' + mis.mastered.length + ' dominados',
+      (mis ? exp('metodo', I4.mend || A.STK.mend, 'mend', 'Método Leo', mis.active.length + ' en refuerzo · ' + mis.recovered.length + ' recuperados · ' + mis.mastered.length + ' dominados',
         '<p class="panel__sub">Un error se recupera con 2 aciertos seguidos y se domina con 4. Si vuelves a fallar, empieza de nuevo.</p>' + mendChart +
         (mis.active.length ? '<h3 class="v2-sub">En refuerzo</h3><ul class="mlist mlist--panel">' + mis.active.slice(0, 6).map(listRow).join('') + '</ul>' : '') +
         (mis.recovered.length ? '<h3 class="v2-sub">Camino a dominarlos</h3><ul class="mlist mlist--panel">' + mis.recovered.slice(0, 4).map(listRow).join('') + '</ul>' : '') +
         (mis.active.length ? '<a class="btn btn--mend btn--block" href="errores.html">Ver todos mis errores</a>' : '<p class="panel__sub">Sin errores pendientes. Cuando falles algo, aparecerá aquí para reforzarlo.</p>')) : '') +
-      exp('', A.ICO.target, 'ok', 'Aciertos y actividad', 'Gráficas por semana y por día',
+      exp('', I4.goal || A.ICO.target, 'ok', 'Aciertos y actividad', 'Gráficas por semana y por día',
         '<h3 class="v2-sub">Evolución de tus aciertos' + (cur != null && prev != null ? ' <b class="t-num delta">' + (cur - prev >= 0 ? '+' : '') + (cur - prev) + ' pts</b>' : '') + '</h3><p class="panel__sub">Porcentaje de respuestas correctas, por semana.</p>' + accChart +
         '<h3 class="v2-sub">Actividad: ' + p.weekMin + ' min</h3><p class="panel__sub">Minutos de práctica por día esta semana. Tu meta: ' + p.goal + ' min al día. Racha: ' + p.streak + ' (mejor: ' + p.bestStreak + ').</p>' + K.barChart(p.week, ['L', 'M', 'X', 'J', 'V', 'S', 'D'], p.todayIdx, 'min')) +
-      (acad && acad.length ? exp('', A.ICO.lesson, 'brand', 'Cursos de la Academia', won.length + ' de ' + acad.length + ' aprobados · ' + lessonsDone + ' lecciones',
+      (acad && acad.length ? exp('', I4.academia || A.ICO.lesson, 'brand', 'Cursos de la Academia', won.length + ' de ' + acad.length + ' aprobados · ' + lessonsDone + ' lecciones',
         '<p class="panel__sub">Un curso queda aprobado al superar su evaluación y ganar su insignia. La barra muestra sus lecciones.</p>' +
         '<div class="v2-course-list">' + V2D.courseOrder().map(function(id, i){ var c = acad.filter(function(x){ return x.id === id; })[0]; if(!c) return ''; var sg = K.STAGES.filter(function(s){ return i >= s.from && i < s.to; })[0] || K.STAGES[0], ok = won.indexOf(id) >= 0;
           return '<a class="v2-course" href="academia.html#/curso/' + id + '">' + K.emblem(id, { shape: sg.shape, locked: !ok && !c.done, size: 44, ribbon: ok }) + '<span><b>' + esc(c.title) + '</b><small>' + (ok ? 'Insignia conseguida' : c.finished ? 'Lecciones completas · falta la evaluación' : c.done ? c.done + ' de ' + c.total + ' lecciones' : 'Sin empezar') + '</small><span class="bar bar--sm bar--brand"><span class="bar__fill" style="width:' + Math.round(c.done / c.total * 100) + '%"></span></span></span></a>'; }).join('') + '</div>') : '') +
@@ -100,10 +101,15 @@
     return el;
   }
 
+  /* Bloque C: mientras llegan los datos, un esqueleto con la forma de la pantalla (sin pantalla en blanco) */
+  function skeleton(){ var s = d.createElement('div'); s.className = 'v2-skel-screen'; s.setAttribute('aria-hidden', 'true');
+    s.innerHTML = '<div class="v2-skel v2-skel--h1"></div><div class="v2-skel v2-skel--hero"></div><div class="v2-skel v2-skel--row"></div><div class="v2-skel v2-skel--row"></div>'; return s; }
   function mount(){
     var main = d.querySelector('main'); if(!main) return;
     var p = V2D.practice();
+    var sk = null; if(!screen){ sk = skeleton(); main.insertBefore(sk, main.firstChild); }
     Promise.all([V2D.mistakes(), V2D.academy(), V2D.badges()]).then(function(r){
+      if(sk) sk.remove();
       var fresh = render(p, r[0], r[1], r[2]);
       if(screen) screen.replaceWith(fresh); else main.insertBefore(fresh, main.firstChild);
       screen = fresh;

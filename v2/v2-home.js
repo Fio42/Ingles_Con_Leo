@@ -10,6 +10,7 @@
 (function(){
   if(!window.ICL_V2 || !window.ICL_V2.enabled || !window.K || !window.V2D) return;
   var d = document, K = window.K, A = K.ART, SND = K.SND, esc = K.esc;
+  var I4 = A.I4 || {};   /* Bloque C: familia de iconos propia (v4-icons.js); si faltara, se usan los de antes */
   if((location.pathname.split('/').pop() || '').toLowerCase() !== 'miembros.html') return;
   var screen = null, celebrated = false;
   var COURSES = function(){ try{ return ACADEMIA_CURSOS.courses; }catch(e){ return {}; } };
@@ -73,12 +74,12 @@
     }
     /* Hoy también: el reto y el repaso de errores. Check = hay una sesión real de hoy */
     var retoHoy = didToday('reto-diario'), errHoy = didToday('errores');
-    var tasks = [task('practica-miembros.html#reto', A.STK.calendar, 'streak', 'Reto diario', retoHoy ? 'Hecho hoy. Mañana hay otro.' : '5 preguntas variadas de tu nivel', retoHoy)];
+    var tasks = [task('practica-miembros.html#reto', I4.reto || A.STK.calendar, 'streak', 'Reto diario', retoHoy ? 'Hecho hoy. Mañana hay otro.' : '5 preguntas variadas de tu nivel', retoHoy)];
     if(mis){
       var act = mis.active, quick = V2D.quickReview ? V2D.quickReview(act) : act.slice(0, 10);
-      if(quick.length || errHoy) tasks.push(task('errores.html?modo=rapido', A.STK.mend, 'mend', quick.length ? 'Repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') : 'Errores clave', errHoy ? 'Repasados hoy · Método Leo' : 'Método Leo · unos 3 min', errHoy));
+      if(quick.length || errHoy) tasks.push(task('errores.html?modo=rapido', I4.mend || A.STK.mend, 'mend', quick.length ? 'Repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') : 'Errores clave', errHoy ? 'Repasados hoy · Método Leo' : 'Método Leo · unos 3 min', errHoy));
     }
-    if(fresh) tasks.push(task('test-de-nivel-de-ingles.html', A.ICO.level, 'brand', '¿No sabes tu nivel?', 'Test de nivel de unos 5 minutos', false));
+    if(fresh) tasks.push(task('test-de-nivel-de-ingles.html', I4.level || A.ICO.level, 'brand', '¿No sabes tu nivel?', 'Test de nivel de unos 5 minutos', false));
     var doneN = tasks.filter(function(t){ return t.indexOf('is-done') >= 0; }).length;
     var pct = Math.min(100, Math.round(p.todayMin / p.goal * 100));
     var html = '<div class="v2-screen v2-home v2-stack">' +
@@ -133,7 +134,7 @@
   }
   function streakSheet(p){
     var m = K.sheet({ label: 'Racha', cls: 'modal--streak', html:
-      '<div class="modal__art streak-hero' + (p.practicedToday ? '' : ' is-pending') + '">' + A.STK.flame + '</div>' +
+      '<div class="modal__art streak-hero' + (p.practicedToday ? '' : ' is-pending') + '">' + (A.flame ? A.flame(!p.streak ? 'off' : p.practicedToday ? 'on' : 'pending').replace('class="ico ', 'class="ico v2-flame-xl ') : A.STK.flame) + '</div>' +
       '<h3>' + p.streak + ' ' + (p.streak === 1 ? 'día' : 'días') + ' de racha</h3>' +
       '<p>' + (p.practicedToday ? 'Racha protegida por hoy. Vuelve mañana para sumar otro día.' : 'Cualquier práctica de hoy suma un día. Si un día no puedes, tu racha aguanta un día de descanso.') + '</p>' +
       '<div class="streak-week">' + weekHTML(p) + '</div>' +
@@ -158,9 +159,9 @@
     var lapsed = pv.classList.contains('is-lapsed'), name = V2D.name();
     var vis = function(id){ var e = d.getElementById(id); return !!(e && getComputedStyle(e).display !== 'none'); };
     var also = [];
-    if(vis('previewAcademia')) also.push(task('academia.html', A.STK.book, 'award', 'Prueba el curso TO BE', 'Una explicación y 3 ejercicios', false));
-    if(vis('previewModoAprender')) also.push(task('aprender.html', A.STK.bulb, 'mend', 'Tu primera microlección', '3 minutos, solo mirando y escuchando', false));
-    also.push(task('juego.html', A.STK.rush, 'streak', 'English Rush', 'Preguntas rápidas, modo juego', false));
+    if(vis('previewAcademia')) also.push(task('academia.html', I4.academia || A.STK.book, 'award', 'Prueba el curso TO BE', 'Una explicación y 3 ejercicios', false));
+    if(vis('previewModoAprender')) also.push(task('aprender.html', I4.bulb || A.STK.bulb, 'mend', 'Tu primera microlección', '3 minutos, solo mirando y escuchando', false));
+    also.push(task('juego.html', I4.rush || A.STK.rush, 'streak', 'English Rush', 'Preguntas rápidas, modo juego', false));
     var act = d.getElementById('previewActivateBtn');
     var html = '<div class="v2-screen v2-home v2-stack v2-preview-home">' +
       '<header><h1 class="v2-h1">Hola' + (name ? ', ' + esc(name) : '') + '</h1><p class="v2-sub">' + (lapsed ? 'Tu membresía no está activa. Tu progreso y tus insignias siguen aquí.' : 'Tu cuenta gratis está lista.') + '</p></header>' +
@@ -168,9 +169,9 @@
         '<h2 id="v2PvT">' + (typeof FREE_USER_DAILY_LIMIT === 'number' ? FREE_USER_DAILY_LIMIT : 6) + ' ejercicios gratis al día</h2><p>Con la explicación del Profe Leo. Tu racha y tu progreso quedan guardados.</p><div class="v2-next__meta"></div>' +
         '<a class="btn btn--lg btn--block" href="practica.html" data-v2-free>Practicar ahora</a></section>' +
       '<section class="v2-stack-sm"><h2 class="v2-eyebrow">También gratis</h2>' + also.join('') + '</section>' +
-      (act ? '<section class="v2-invite"><span class="v2-task__ic v2-task__ic--brand">' + A.STK.trophy + '</span><div><b>' + (lapsed ? 'Vuelve donde lo dejaste' : 'Practica sin límite') + '</b><p>' + (lapsed ? 'Reactiva por $2 USD al mes y retoma la Academia, la práctica sin límite y Leo AI.' : 'Cursos completos, repaso de errores y Leo AI por $2 USD al mes.') + '</p>' +
+      (act ? '<section class="v2-invite"><span class="v2-task__ic v2-task__ic--brand">' + (I4.trophy || A.STK.trophy) + '</span><div><b>' + (lapsed ? 'Vuelve donde lo dejaste' : 'Practica sin límite') + '</b><p>' + (lapsed ? 'Reactiva por $2 USD al mes y retoma la Academia, la práctica sin límite y Leo AI.' : 'Cursos completos, repaso de errores y Leo AI por $2 USD al mes.') + '</p>' +
         '<button type="button" class="btn btn--sm btn--secondary" data-v2-activate>' + esc(act.textContent.trim() || 'Activar membresía') + '</button></div></section>' : '') +
-      '<details class="v2-expand" id="v2PvIncl"><summary><span class="v2-task__ic">' + A.ICO.lesson + '</span><span>Qué incluye la membresía<small>Todo lo que se abre al activarla</small></span>' + A.UI.chevron + '</summary><div class="v2-expand__body v2-pv-slot"></div></details>' +
+      '<details class="v2-expand" id="v2PvIncl"><summary><span class="v2-task__ic">' + (I4.academia || A.ICO.lesson) + '</span><span>Qué incluye la membresía<small>Todo lo que se abre al activarla</small></span>' + A.UI.chevron + '</summary><div class="v2-expand__body v2-pv-slot"></div></details>' +
       '</div>';
     var el = K.h(html); el.classList.add('k-scope');
     var wrap = pv.querySelector('.member-preview-wrap') || pv;

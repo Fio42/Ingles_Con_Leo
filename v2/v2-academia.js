@@ -61,11 +61,14 @@
         var items = list.slice(sg.from, sg.to); if(!items.length) return '';
         var open = si === curStage;
         return '<details class="v2-stage" id="v2stage-' + si + '" style="--k-st:' + sg.c + '"' + (open ? ' open' : '') + '>' +
-          '<summary><span><small>' + sg.n + '</small><b>' + sg.t + '</b></span><span class="v2-stage__pill" data-stage-pill="' + si + '">' + items.length + ' cursos</span>' + A.UI.chevron + '</summary>' +
-          '<div class="v2-stage__list">' + items.map(function(v){
+          '<summary><span><small>' + sg.n + '</small><b>' + sg.t + '</b>' +
+            /* Bloque C: el camino de la etapa se ve aunque esté plegada: un punto por curso (aprobado, aquí, pendiente) */
+            '<span class="v2-stage__dots" aria-hidden="true">' + items.map(function(v){ return '<i class="v2-dot' + (cur && v.id === cur.id ? ' v2-dot--now' : '') + '" data-dot="' + v.id + '"></i>'; }).join('') + '</span>' +
+            '</span><span class="v2-stage__pill" data-stage-pill="' + si + '">' + items.length + ' cursos</span>' + A.UI.chevron + '</summary>' +
+          '<div class="v2-stage__list v2-path">' + items.map(function(v){
             var now = cur && v.id === cur.id;
             return '<div class="v2-crow' + (now ? ' is-now' : '') + (v.done >= v.total ? ' is-done' : '') + '" data-crow="' + v.id + '">' +
-              '<button type="button" class="v2-crow__main" data-course="' + v.id + '"><span class="v2-crow__em">' + K.emblem(v.id, { shape: sg.shape, size: 44 }) + '</span>' +
+              '<button type="button" class="v2-crow__main" data-course="' + v.id + '"><span class="v2-node"><span class="v2-crow__em">' + K.emblem(v.id, { shape: sg.shape, size: 44 }) + '</span>' + (now ? '<span class="v2-here">Tú</span>' : '') + '</span>' +
               '<span><b>' + esc(v.name || v.title) + '</b><small data-cstate>' + stateText(v, now) + '</small></span>' + (now ? '' : A.UI.chevron) + '</button>' +
               (now && v.next ? '<a class="btn btn--sm" href="#/curso/' + v.id + '/leccion/' + v.next.n + '">Seguir</a>' : '') + '</div>';
           }).join('') + '</div></details>';
@@ -84,7 +87,11 @@
         if(pill) pill.innerHTML = won === ids.length ? A.UI.check + 'Etapa aprobada' : won + ' de ' + ids.length + ' aprobados';
       });
       rs.forEach(function(r){ if(!r.b) return; var row = screen.querySelector('[data-crow="' + r.id + '"]'); if(!row) return;
-        row.classList.add('is-won'); var st = row.querySelector('[data-cstate]'); if(st) st.textContent = 'Aprobado · insignia ganada'; });
+        row.classList.add('is-won'); var st = row.querySelector('[data-cstate]'); if(st) st.textContent = 'Aprobado · insignia ganada';
+        /* Aprobado: su emblema pasa a insignia (con cinta) y su punto de la etapa se llena */
+        var i = list.map(function(v){ return v.id; }).indexOf(r.id), em = row.querySelector('.v2-crow__em');
+        if(em) em.innerHTML = K.px(K.emblem(r.id, { shape: stageOf(i).shape, size: 44, ribbon: true }));
+        var dot = screen.querySelector('[data-dot="' + r.id + '"]'); if(dot) dot.classList.add('v2-dot--won'); });
     });
     screen.addEventListener('click', function(e){
       var c = e.target.closest('[data-course]'); if(c){ SND.play('open'); courseSheet(c.getAttribute('data-course')); return; }
