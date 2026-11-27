@@ -4495,3 +4495,10 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Navegación (revisión pedida por Leo): se conserva el menú superior en lo público y el lateral en el área del alumno (sitio de contenido vs aplicación). Tres ajustes con motivo: (1) miembros.html sin sesión mostraba en escritorio y en el menú del móvil los enlaces del alumno (Mi progreso, etc.); ahora ve los mismos que la portada. (2) Con sesión guardada, en páginas públicas "Entrar a miembros" pasa a "Mi cuenta" y, en la barra del móvil, "Miembros" con candado pasa a "Mi cuenta" (mismo destino). (3) El logo del área del alumno lleva a su Inicio (antes sacaba a la portada pública); la portada sigue en Perfil.
 - Tests: nuevo tools/tests/fase0-recorrido.test.js (7 ok); inicio-alumno.test.js acepta el menú del alumno con su clase nueva. Suite: los mismos 18 fallos de entorno de siempre.
 - Sin cambios en base de datos, pagos, permisos, autenticación, límites, motor educativo, Método Leo, SEO (títulos, descripciones, canonical), Analytics ni Pixel.
+
+2026-11-27 · Fase 0, ajustes aprobados por Leo antes de publicar
+- Invitación de la cuenta gratis: Leo AI entra en los beneficios principales ("te explica por qué una respuesta está bien o mal cuando necesitas ayuda"), junto a Método Leo, práctica sin límite y Academia. Mismo precio, botón y evento.
+- Registro en el móvil más compacto (sin el distintivo "Miembros", título y márgenes menores, mismos campos): el botón "Crear cuenta" pasa de quedar tapado por la barra inferior (borde en 829 px, barra en 762 px) a verse sin bajar en 390x844 (608 px) y 360x740 (636 px). En pantallas de 667 px de alto todavía hay que bajar un poco.
+- "¿Cómo nos conociste?" ya era opcional en el código (signUp solo guarda heard_from si se elige una opción). Ahora lo dice: "(opcional)". La medición no cambia: quien elige sigue guardando su respuesta en la cuenta.
+- Test de nivel con la tipografía de la academia (Nunito + Baloo local), igual que la portada, la práctica gratis y miembros.
+- Tests: fase0-recorrido 9 de 9. Sin cambios en base de datos, pagos, autenticación, límites, SEO, Analytics ni Pixel.

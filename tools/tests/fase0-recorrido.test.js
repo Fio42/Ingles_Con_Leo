@@ -54,7 +54,20 @@ test('miembros.html sin sesión: mismos enlaces que la portada; con sesión, los
 test('Invitación de la cuenta gratis: datos reales, 3 beneficios y el resto plegado; mismo botón y mismo evento', () => {
   const a = read('app.js');
   assert(/function freeWallFacts\(\)/.test(a) && /En tu cuenta ya tienes/.test(a) && /Ver todo lo que incluye/.test(a));
+  const top = a.slice(a.indexOf('const top3 = ['), a.indexOf('const rest = ['));
+  assert(/Leo AI<\/strong>/.test(top) && /Método Leo/.test(top), 'Leo AI entre los beneficios principales');
   assert(/miembros\.html\?pagar=1" class="btn btn-primary" onclick="trackLeoEvent\('membership_cta_clicked'\)">Seguir practicando sin límite/.test(a));
+});
+test('Registro compacto: "¿Cómo nos conociste?" es opcional y se sigue enviando cuando se elige', () => {
+  const h = read('miembros.html'), be = read('backend.js');
+  assert(/¿Cómo nos conociste\? \(opcional\)/.test(h));
+  assert(/signUp\(email, password, heardFromInput \? heardFromInput\.value : ''\)/.test(h));
+  assert(/if\(heardFrom && \/\^\[a-z\]\{2,20\}\$\/\.test\(heardFrom\)\) creds\.options = \{ data: \{ heard_from: heardFrom \} \}/.test(be));
+  assert(/@media \(max-width:600px\)\{\s*#gate\.gate-shell/.test(read('style.css')));
+});
+test('Test de nivel con la tipografía de la academia', () => {
+  assert(/<main class="icl-tipo-v2">/.test(read('test-de-nivel-de-ingles.html')));
+  assert(/main\.icl-tipo-v2\{font-family:var\(--v2-font-body\)\}/.test(read('style.css')));
 });
 test('Sin rayas largas en los textos nuevos', () => {
   const a = read('app.js'), d = read('v2/v2-data.js');

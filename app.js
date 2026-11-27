@@ -4836,8 +4836,8 @@ function renderFreeDailyLimitReachedBlock(sessionResults){
     setTimeout(hydrateAcademiaDemoOffer, 0);
     const fg = Array.isArray(sessionResults) ? sessionResults.filter(r => r && typeof r.isCorrect === 'boolean') : [];
     const fok = fg.filter(r => r.isCorrect).length;
-    /* Fase 0: invitación con lo que la persona YA tiene en su cuenta (datos reales de su progreso) y solo 3 beneficios que le
-       sirven ahora; el resto de beneficios sigue disponible en "Ver todo lo que incluye". Mismo precio, mismo botón, mismos eventos. */
+    /* Fase 0: invitación con lo que la persona YA tiene en su cuenta (datos reales de su progreso) y los beneficios principales
+       (Método Leo, Leo AI, sin límite y Academia); el resto de beneficios sigue disponible en "Ver todo lo que incluye". Mismo precio, mismo botón, mismos eventos. */
     const me = freeWallFacts();
     const mine = [];
     if(me.streak >= 2) mine.push(me.streak + ' días de racha');
@@ -4846,11 +4846,11 @@ function renderFreeDailyLimitReachedBlock(sessionResults){
     const mineLine = mine.length ? '<p class="upgrade-mine">En tu cuenta ya tienes ' + (mine.length > 1 ? mine.slice(0, -1).join(', ') + ' y ' + mine[mine.length - 1] : mine[0]) + '. Todo queda guardado.</p>' : '';
     const top3 = [
       me.errors > 0 ? '<strong>Método Leo</strong>: repasa ' + (me.errors === 1 ? 'tu error guardado' : 'tus ' + me.errors + ' errores guardados') + ' hasta que los domines' : '<strong>Método Leo</strong>: recuerda tus errores y te dice qué practicar después',
+      '<strong>Leo AI</strong>: te explica por qué una respuesta está bien o mal cuando necesitas ayuda',
       'Práctica sin límite, también hoy',
-      window.ACADEMIA_LIVE ? '<strong>Academia Inglés con Leo</strong>: cursos cortos con evaluación e insignia' : '<strong>Leo AI</strong> cuando necesitas una explicación extra'
-    ];
+      window.ACADEMIA_LIVE ? '<strong>Academia Inglés con Leo</strong>: cursos cortos con evaluación e insignia' : ''
+    ].filter(Boolean);
     const rest = [
-      window.ACADEMIA_LIVE ? '<li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>' : '',
       '<li>Gramática, vocabulario, listening, speaking y writing</li>',
       '<li>Reto diario de 5 ejercicios para cuidar tu racha</li>',
       '<li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>',
