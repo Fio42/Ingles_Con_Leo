@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Experiencia y niveles · prototipo local</title>
+<link rel="stylesheet" href="../../riso/riso.css">
+<style>
+:root{--f:#FBF8F2;--p:#fff;--t1:#1B2333;--t2:#5B6472;--l:#E7E2D6;--a:#3554F0;--at:#EEF1FE;--fuego1:#FF8A00;--fuego2:#E8402B;--ft:#FFF1E6;--v:#1FA463}
+@media (prefers-color-scheme:dark){:root{--f:#0B0F1A;--p:#141A29;--t1:#EEF0F7;--t2:#AAB1C4;--l:#262E42;--a:#7C8FFF;--at:#1D2550;--ft:#3A2412}}
+*{box-sizing:border-box}body{margin:0;background:var(--f);color:var(--t1);font:16px/1.5 'Nunito',system-ui,sans-serif}
+.nota{font-size:13px;color:var(--t2);text-align:center;padding:8px}
+main{max-width:460px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:16px}
+.card{background:var(--p);border:1px solid var(--l);border-radius:20px;padding:16px}
+h2{font-weight:800;font-size:13px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);margin:0 0 10px}
+.nivel{display:flex;gap:14px;align-items:center}
+.insignia{width:64px;height:64px;flex:none;border-radius:20px;display:grid;place-items:center;background:linear-gradient(160deg,var(--fuego1),var(--fuego2));color:#fff;font:800 22px/1 'Baloo 2',system-ui,sans-serif;box-shadow:0 6px 16px rgba(232,64,43,.25)}
+.rango{font:800 20px/1.1 'Baloo 2',system-ui,sans-serif;margin:0}
+.sub{color:var(--t2);font-size:14px;margin:2px 0 0}
+.barra{height:12px;border-radius:6px;background:var(--l);overflow:hidden;margin-top:12px}
+.barra i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--fuego1),var(--fuego2));transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.cifras{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-top:6px}
+.ingles{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--l);font-size:14px}
+.chip{border:1px solid var(--l);border-radius:999px;padding:3px 10px;font-weight:700;font-size:13px}
+.res li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--l);list-style:none}
+.res ul{margin:0;padding:0}.res li b{color:var(--fuego2)}
+.total{display:flex;justify-content:space-between;font:800 18px/1 'Baloo 2',system-ui,sans-serif;margin-top:10px}
+.sube{display:none;align-items:center;gap:12px;background:var(--ft);border-radius:16px;padding:12px;margin-top:12px}
+.sube.on{display:flex}.sube .av{width:64px;flex:none}
+.escalera{display:grid;gap:8px}
+.peld{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid var(--l)}
+.peld .d{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;background:var(--l)}
+.peld.hecho .d,.peld.actual .d{background:linear-gradient(160deg,var(--fuego1),var(--fuego2))}
+.peld.actual{border-color:var(--fuego2);background:var(--ft)}
+.peld small{margin-left:auto;color:var(--t2)}
+button.cta{border:0;border-radius:999px;background:var(--a);color:#fff;font-weight:800;padding:12px 18px;min-height:48px;cursor:pointer;width:100%}
+@media (prefers-reduced-motion:reduce){.barra i{transition:none}}
+</style>
+</head>
+<body>
+<div class="nota">Prototipo local de experiencia y niveles. Datos de ejemplo; no guarda nada.</div>
+<main>
+  <section class="card" aria-labelledby="t1">
+    <h2 id="t1">Tu experiencia</h2>
+    <div class="nivel">
+      <div class="insignia" id="num" aria-hidden="true">7</div>
+      <div><p class="rango" id="rango">Chispa · nivel 7</p><p class="sub">Sube con cada práctica. No tiene tope.</p></div>
+    </div>
+    <div class="barra" role="progressbar" aria-label="Experiencia hasta el siguiente nivel" aria-valuemin="0" id="barra"><i id="fill"></i></div>
+    <div class="cifras"><span id="enNivel"></span><span id="falta"></span></div>
+    <div class="ingles"><span>Tu nivel de inglés <small>(lo mide el test de nivel, no la experiencia)</small></span><span class="chip">Fácil</span></div>
+  </section>
+
+  <section class="card res" aria-labelledby="t2">
+    <h2 id="t2">Sesión terminada</h2>
+    <ul>
+      <li>8 aciertos <b>+80</b></li>
+      <li>2 errores recuperados de días anteriores <b>+30</b></li>
+      <li>Sesión terminada <b>+20</b></li>
+      <li>Reto diario cumplido <b>+50</b></li>
+    </ul>
+    <div class="total"><span>Experiencia ganada</span><span id="ganada">+180</span></div>
+    <div class="sube" id="sube" role="status"><div class="av" id="av"></div><div><b>¡Subiste al nivel <span id="nuevo"></span>!</b><br><small>Sigues en el rango <span id="rangoNuevo"></span>.</small></div></div>
+    <p style="margin:12px 0 0"><button class="cta" id="sumar" type="button">Ver cómo sube la barra</button></p>
+  </section>
+
+  <section class="card" aria-labelledby="t3">
+    <h2 id="t3">Rangos de experiencia</h2>
+    <div class="escalera" id="escalera"></div>
+    <p class="sub" style="margin-top:10px">Los rangos son de constancia, no de dominio del idioma. Nombres provisionales.</p>
+  </section>
+</main>
+<script src="../../riso/riso.js"></script>
+<script>
+(function(){
+  var RANGOS = [[1,'Chispa'],[10,'Brasa'],[20,'Llama'],[35,'Fuego'],[55,'Hoguera'],[80,'Fuego eterno']];
+  function costo(n){ return 100 + 40 * (n - 1); }
+  function acum(n){ return (n - 1) * 100 + 20 * (n - 1) * (n - 2); }
+  function nivelDe(xp){ var n = 1; while (acum(n + 1) <= xp) n++; return n; }
+  function rango(n){ var r = RANGOS[0][1]; RANGOS.forEach(function(x){ if (n >= x[0]) r = x[1]; }); return r; }
+  var xp = acum(7) + 300;
+  function pintar(){
+    var n = nivelDe(xp), en = xp - acum(n), c = costo(n);
+    document.getElementById('num').textContent = n;
+    document.getElementById('rango').textContent = rango(n) + ' · nivel ' + n;
+    document.getElementById('fill').style.width = Math.round(en / c * 100) + '%';
+    var b = document.getElementById('barra'); b.setAttribute('aria-valuemax', c); b.setAttribute('aria-valuenow', en);
+    document.getElementById('enNivel').textContent = en + ' de ' + c + ' XP';
+    document.getElementById('falta').textContent = 'Faltan ' + (c - en) + ' para el nivel ' + (n + 1);
+    var esc = document.getElementById('escalera'); esc.innerHTML = '';
+    RANGOS.forEach(function(r, i){
+      var sig = RANGOS[i + 1], cls = n >= (sig ? sig[0] : 1e9) ? 'hecho' : n >= r[0] ? 'actual' : '';
+      var d = document.createElement('div'); d.className = 'peld ' + cls;
+      d.innerHTML = '<span class="d">' + r[0] + '</span><b></b><small></small>';
+      d.querySelector('b').textContent = r[1]; d.querySelector('small').textContent = 'desde el nivel ' + r[0];
+      esc.appendChild(d);
+    });
+    return n;
+  }
+  var antes = pintar(), riso = null;
+  document.getElementById('sumar').onclick = function(){
+    this.disabled = true; xp += 180; var n = pintar();
+    if (n > antes){
+      document.getElementById('nuevo').textContent = n; document.getElementById('rangoNuevo').textContent = rango(n);
+      document.getElementById('sube').classList.add('on');
+      if (!riso) riso = Riso.montar(document.getElementById('av'), { estado: 'celebracion', alto: 72, etiqueta: '' });
+    }
+  };
+})();
+</script>
+</body>
+</html>

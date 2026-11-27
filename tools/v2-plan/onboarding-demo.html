@@ -31,7 +31,7 @@ h1{font:700 24px/1.2 'Baloo 2',system-ui,sans-serif;margin:0}
 </style>
 </head>
 <body>
-<div class="nota">Prototipo local de la bienvenida 2.0. No guarda nada.</div>
+<div class="nota">Prototipo local de la bienvenida 2.0 (versión 2). No guarda nada.</div>
 <main class="caja" id="app" aria-live="polite"></main>
 <script src="../../riso/riso.js"></script>
 <script>
@@ -53,7 +53,7 @@ h1{font:700 24px/1.2 'Baloo 2',system-ui,sans-serif;margin:0}
   function pie(saltar){ var p = el('<div class="pie"><button type="button" class="saltar">Saltar</button><span></span></div>'); p.firstChild.onclick = saltar; return p; }
   var PASOS = [
     function(){ // 1 primera pregunta
-      app.innerHTML = cab('Tu primera pregunta', 'Sin registrarte. Toca la respuesta correcta.');
+      app.innerHTML = cab('Tu primera pregunta', 'Sin registrarte. Es el primer ejercicio de tu práctica gratis: cuenta una sola vez.');
       montar('bienvenida');
       app.appendChild(el('<p class="frase">___ she work on Saturdays?</p>'));
       app.appendChild(opciones(['Is','Does','Do'], function(i, b, c){
@@ -72,10 +72,10 @@ h1{font:700 24px/1.2 'Baloo 2',system-ui,sans-serif;margin:0}
     },
     function(){ // 3 nivel en 3 preguntas
       var q = NIVEL[nq];
-      app.innerHTML = cab('Tu nivel en 3 preguntas', 'Pregunta ' + (nq + 1) + ' de 3. Si no sabes, elige la que te suene.');
+      app.innerHTML = cab('¿Por dónde empezamos?', 'Opcional. Pregunta ' + (nq + 1) + ' de 3: así elegimos la dificultad de tu práctica. No es un examen.');
       montar('pensando');
       app.appendChild(el('<p class="frase"></p>')).textContent = q.f;
-      app.appendChild(opciones(q.o, function(i){ if (i === q.c) aciertos++; nq++; if (nq < 3) PASOS[2](); else { datos.nivel = ['Inicial (A1)','Básico (A2)','Intermedio (B1)','Intermedio alto (B2)'][aciertos]; siguiente(); } }));
+      app.appendChild(opciones(q.o, function(i){ if (i === q.c) aciertos++; nq++; if (nq < 3) PASOS[2](); else { datos.nivel = ['Principiante','Fácil','Medio','Medio'][aciertos]; siguiente(); } }));
       var p = pie(siguiente); var t = el('<a href="../../test-de-nivel-de-ingles.html" style="color:var(--a);font-weight:700">Hacer el test completo</a>'); p.replaceChild(t, p.lastChild); app.appendChild(p);
     },
     function(){ // 4 minutos
@@ -88,9 +88,9 @@ h1{font:700 24px/1.2 'Baloo 2',system-ui,sans-serif;margin:0}
       app.innerHTML = '<div class="cab"><div class="av" id="av"></div><div><h1 tabindex="-1">Tu plan de hoy</h1><p class="sub">Listo. Empezamos por lo que más te sirve.</p></div></div>';
       montar('celebracion');
       app.appendChild(el('<div class="plan"><ul>' +
-        '<li>Meta: <b>' + (datos.meta || 'Inglés general') + '</b></li>' +
-        '<li>Nivel estimado: <b>' + (datos.nivel || 'por definir') + '</b></li>' +
-        '<li>Práctica diaria: <b>' + (datos.min || '10 minutos') + '</b></li>' +
+        '<li>Te mostraremos primero: <b>' + ({ 'Para mi trabajo':'inglés para el trabajo y reuniones', 'Para una entrevista':'preguntas de entrevista', 'Para viajar':'aeropuerto, hotel y restaurante', 'Para un examen':'preparación TOEFL, IELTS y TOEIC', 'Para conversar':'conversación del día a día' }[datos.meta] || 'lo esencial para empezar') + '</b></li>' +
+        '<li>Dificultad para empezar: <b>' + (datos.nivel || 'Fácil') + '</b> <small>(la cambias cuando quieras; tu nivel real lo mide el test de nivel)</small></li>' +
+        '<li>Meta diaria: <b>' + (datos.min || '10 minutos') + '</b></li>' +
         '<li>Reto de hoy: terminar 1 sesión (+50 XP)</li></ul></div>'));
       var p = el('<div class="pie"><span></span><button type="button" class="cta">Empezar mi práctica</button></div>'); app.appendChild(p);
     }
