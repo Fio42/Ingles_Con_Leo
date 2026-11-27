@@ -117,3 +117,8 @@ main.v2-has-practice #porHabilidad{display:none}
 html.v2 .ac-tabs{max-width:764px}
 html.v2 .ac-wrap{max-width:796px;margin-left:auto;margin-right:auto}
 @media (max-width:767px){ html.v2 .ac-wrap{padding-left:16px;padding-right:16px} }
+
+/* C4 · Academia: el anillo mide lecciones; los cursos aprobados (con insignia) se cuentan aparte */
+.k-scope .k-exp-head .k-ring__center{display:flex;flex-direction:column;justify-content:center;align-items:center;line-height:1.05}
+.k-scope .v2-ring-cap{font-size:9px;font-weight:700;color:var(--k-text-2);letter-spacing:.02em}
+.k-scope .k-exp-head .v2-route-note{font-weight:600;color:var(--k-text-3,var(--k-text-2));margin-top:2px}
