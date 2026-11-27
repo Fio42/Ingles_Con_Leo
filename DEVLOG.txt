@@ -4435,3 +4435,13 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Archivos publicados: 48 (HTML con versión nueva, practica.html, app.js, academia.js, v2/*). Sin tools/, capturas ni simulador.
 - Último ajuste: Perfil muestra "Hazte miembro" a cuentas sin membresía (antes "Suscripción").
 - Rollback: git revert del commit de publicación, o ICL_V2_ENABLED = false en v2/v2-init.js (deja solo la versión clásica).
+
+2026-11-27 · Validación en producción de UX 2.0 bloques A y B (cuenta de pago de prueba de Leo, móvil, tablet y escritorio)
+- Funciona en producción: Inicio (siguiente paso, Hoy también con check real, meta), Practicar (Empezar abre el Plan y arranca; Elegir; buscador), Plan, Academia (ruta compacta, etapa actual abierta), Progreso, Perfil (cuenta, preferencias, LeoBot, cerrar sesión), navegación, modo concentración (sin barra inferior), Salir (vuelve a Practicar con "Sigue donde te quedaste"), botón de sonido en la sesión, barra fija sin tapar la explicación, explicación compacta, sonidos (correct/wrong/combo/complete) y combos ×3 y ×5 en una sesión real de Vocabulario.
+- Guardado: cada sesión real creó UNA fila en progress_sessions (952 gramática retomada, 953 vocabulario) y se vinculó a su copia local al sincronizar. Sin duplicados nuevos.
+- Encontrado (no venía de A/B), con corrección preparada:
+  1. Tema oscuro: en "Encuentra el error" la palabra corregida era invisible (texto claro sobre su fondo claro). Causa: la regla general de style.css que aclara colores oscuros en línea. Arreglo solo CSS en v2-lecciones.css.
+  2. Copias locales duplicadas de antes de C23 (3 sesiones de errores de esta mañana aparecían dos veces en el navegador: inflaban la meta de hoy). La nube estaba bien (91 filas). dedupeProgressSessions ahora quita solo la copia LOCAL sin cloudId que tiene gemela exacta en la nube (habilidad, inicio, duración y número de resultados). Prueba en seco con los datos reales: 102 -> 91 locales = 91 en la nube. Test nuevo: tools/tests/dedupe-copias-locales.test.js.
+  3. Progreso decía "1 errores superados": ahora singular.
+  4. Buscador: también busca por la familia del tema ("preposiciones" encuentra In, on y at y By y until).
+- Versiones ?v=20261129b. Tests: 18 fallos de entorno (igual). Rama de publicación: publicar/ux-ab-2.
