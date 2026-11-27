@@ -95,6 +95,7 @@
     /\b(noticias de|que paso hoy en|clima (de|en|hoy|para)|va a llover|precio del dolar|bitcoin|criptomoneda|acciones de)\b/,
     /\b(por quien votar|que opinas del presidente|elecciones de|partido politico)\b/,
     /\b(me duele|sintomas de|que medicamento|dosis de|diagnostico|abogado|demanda legal|debo invertir|invertir en)\b/,
+    /\b(ensayo|haz mi tarea|hazme la tarea|hazme el trabajo|\d[\d.,]* palabras sobre|historia de roma|historia universal)\b/,
     /\b(fotosintesis|ecuacion|derivada|integral de|tabla periodica|resuelve (este|esta|el|la)|calcula (el|la)|capital de|programar en|codigo en (python|java))\b/
   ];
   function capaFiltro(q, n, it) {
@@ -487,8 +488,13 @@
         estado.dedupe[claveD] = r;
         registrar(q, r);
         return r;
-      }).catch(function () {
+      }).catch(function (err) {
         estado.reservadas--; estado.enCurso = false; estado.metricas.errores++;
+        var motivo = err && err.message;
+        var FINAL = { daily_limit: 'Llegaste a tu límite de preguntas abiertas de hoy. Mañana se renueva. Las preguntas de números, verbos y glosario siguen disponibles.',
+          busy: 'Riso está descansando un rato. Vuelve a intentarlo más tarde; mientras, las guías del sitio tienen la respuesta a casi todo.',
+          not_allowed: 'Riso todavía no está disponible para tu cuenta.', disabled: 'Riso todavía no está disponible.', unverified: 'Confirma tu correo para poder preguntarle a Riso.' };
+        if (FINAL[motivo]) return resp(0, FINAL[motivo], { tipo: 'limite_servidor', motivo: motivo });
         return resp(0, 'No pude responder ahora. Toca «Reintentar» en unos segundos.', { tipo: 'error', reintentar: true });
       });
     }
@@ -501,7 +507,7 @@
     };
   }
 
-  var api = { crear: crear, CONFIG: CONFIG, _int: { norm: norm, intencion: intencion, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
+  var api = { crear: crear, CONFIG: CONFIG, _int: { norm: norm, intencion: intencion, capaFiltro: capaFiltro, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
   root.RisoTutor = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

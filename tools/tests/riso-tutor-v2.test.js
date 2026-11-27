@@ -33,7 +33,7 @@ module.exports = function (test, H) {
     for (const q of ['me cobraron dos veces', 'no puedo entrar a mi cuenta', 'quiero cancelar mi membresía', 'olvidé mi contraseña']) assert.strictEqual((await capa(q)).tipo, 'soporte', q);
   });
   test('v2 · fuera de alcance sin IA (partido, clima, política, salud, otras materias)', async () => {
-    for (const q of ['¿Quién ganará mañana el partido?', '¿Va a llover mañana?', '¿Por quién votar?', '¿Qué medicamento tomo para la gripe?', 'resuelve esta ecuación 2x+3=7']) {
+    for (const q of ['¿Quién ganará mañana el partido?', '¿Va a llover mañana?', '¿Por quién votar?', '¿Qué medicamento tomo para la gripe?', 'resuelve esta ecuación 2x+3=7', 'Escríbeme un ensayo de 2.000 palabras sobre la historia de Roma', '¿Cuál es la capital de Australia?']) {
       const tu = tutor(); const r = await tu.preguntar(q); assert.strictEqual(r.tipo, 'fuera_de_alcance', q); assert.strictEqual(tu.llamadas.length, 0);
     }
   });
