@@ -29,15 +29,20 @@
     if(run.seen.has(node)) return; run.seen.add(node);
     snapshotMistakes();
     var card = node;          // el efecto se aplica solo a la retroalimentación (nunca a la página entera)
+    /* C15: el combo cuenta SOLO aciertos seguidos al primer intento (igual en práctica y en lecciones).
+       Un reintento ("Volver a intentar") o la revancha de la Academia no suman ni rompen el combo:
+       tienen su propio reconocimiento ("Revancha superada"). */
+    var retry = !!(card && card.closest && (card.querySelector('.ac-retry-tag') || (card.closest('.ac-card') && card.closest('.ac-card').querySelector('.ac-retry-tag')))) || run.retryNext;
+    run.retryNext = false;
     if(ok){
-      run.ok++; run.combo++; if(run.combo > run.best) run.best = run.combo;
-      SND.play(COMBO_AT[run.combo] ? 'combo' : 'correct'); SND.haptic(12);
+      run.ok++;
+      if(!retry){ run.combo++; if(run.combo > run.best) run.best = run.combo; }
+      SND.play(!retry && COMBO_AT[run.combo] ? 'combo' : 'correct'); SND.haptic(12);
       pulse(card, 'v2-fx-ok');
-      var retry = card && card.querySelector('.ac-retry-tag');
       if(retry) chip(node, A.STK.mend, 'Revancha superada');
-      if(COMBO_AT[run.combo]) combo(node, COMBO_AT[run.combo]);
+      else if(COMBO_AT[run.combo]) combo(node, COMBO_AT[run.combo]);
     } else {
-      run.bad++; run.combo = 0;
+      run.bad++; if(!retry) run.combo = 0;
       SND.play('wrong'); SND.haptic([8, 40, 8]);
       pulse(card, 'v2-fx-bad');
       leo(node);
@@ -69,14 +74,16 @@
     var mins = Math.max(1, Math.round((Date.now() - run.t0) / 60000));
     var perfect = firstPct === 100;
     var title = kind === 'leccion' ? (perfect ? '¡Lección perfecta!' : '¡Lección completa!') : (perfect ? '¡Sesión perfecta!' : firstPct >= 90 ? '¡Excelente sesión!' : firstPct >= 70 ? '¡Muy bien!' : 'Sesión completada');
-    var sub = firstPct == null ? '' : perfect ? 'Todo a la primera. Así se construye el dominio.' : firstPct >= 90 ? 'Casi todo a la primera. Se nota la práctica.' : firstPct >= 70 ? 'Vas firme. Lo que fallaste ya está en tu repaso.' : 'Cada error quedó guardado para reforzarlo. Así se aprende.';
+    /* Práctica pública (visitante o cuenta gratis): no hay historial de errores que prometer ni una medición de tiempo fiable */
+    var freeCtx = !!window.ICL_V2_PUBLIC || !!(host.closest && host.closest('#practicaMain'));
+    var sub = firstPct == null ? '' : freeCtx ? (perfect ? 'Todo a la primera. ¡Así se hace!' : firstPct >= 70 ? 'Vas firme. Repasa la explicación de lo que fallaste.' : 'Cada error es una pista: revisa su explicación y vuelve a intentarlo.') : perfect ? 'Todo a la primera. Así se construye el dominio.' : firstPct >= 90 ? 'Casi todo a la primera. Se nota la práctica.' : firstPct >= 70 ? 'Vas firme. Lo que fallaste ya está en tu repaso.' : 'Cada error quedó guardado para reforzarlo. Así se aprende.';
     var box = K.h('<div class="v2-results">' +
       '<div class="v2-results__top"><div class="ring ring--ok v2-results__ring" role="img" aria-label="Aciertos: ' + (firstPct == null ? 'sin datos' : firstPct + '%') + '">' + K.ring((firstPct || 0) / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + (firstPct == null ? '–' : '<span data-n>' + 0 + '</span>%') + '</b></div></div>' +
       '<div><span class="t-eyebrow">' + (kind === 'leccion' ? 'Resultado de la lección' : 'Resultado de la sesión') + '</span><h2>' + title + '</h2><p>' + sub + '</p></div></div>' +
       '<div class="v2-results__chips">' +
         (m ? '<span>' + A.ICO.target + '<b>' + m[1] + '/' + m[2] + '</b><small>a la primera</small></span>' : (total ? '<span>' + A.ICO.target + '<b>' + run.ok + '/' + total + '</b><small>aciertos</small></span>' : '')) +
         '<span>' + A.STK.combo + '<b>' + run.best + '</b><small>mejor combo</small></span>' +
-        '<span>' + A.ICO.time + '<b>' + mins + ' min</b><small>de práctica</small></span>' +
+        (freeCtx ? '<span>' + A.ICO.lesson + '<b>' + total + '</b><small>ejercicios</small></span>' : '<span>' + A.ICO.time + '<b>' + mins + ' min</b><small>de práctica</small></span>') +
       '</div>' +
       '<div class="v2-results__mend" hidden></div>' +
       '<div class="v2-results__why"></div>' +
@@ -87,7 +94,7 @@
     SND.play('complete');
     if(kind === 'leccion' || firstPct >= 90) setTimeout(function(){ K.confetti(kind === 'leccion' ? .7 : .5); }, 250);
     whyReturn(box.querySelector('.v2-results__why'));
-    if(kind === 'sesion') simplify(host);
+    if(kind === 'sesion' && !host.classList.contains('free-wall')) simplify(host);   // en el muro, "Crear cuenta" y "Ya tengo cuenta" quedan a la vista
     mendDiff(box.querySelector('.v2-results__mend'));
     var finished = run; newRun(); run.mis0 = null; void finished;
   }
@@ -201,6 +208,8 @@
   if(d.getElementById('acRoot')) focusMode();
   /* Práctica (app.js): al empezar otra sesión con "Hacer otra sesión" se reinicia el combo */
   d.addEventListener('click', function(e){ if(e.target.closest('#againBtn, #dailyAgainBtn, .skill-tab-btn, .daily-btn')) newRun(); }, true);
+  /* "Volver a intentar": la próxima respuesta es un reintento (no cuenta para el combo) */
+  d.addEventListener('click', function(e){ if(e.target.closest('.retry-btn')) run.retryNext = true; }, true);
   /* Toques con sensación de app: sonido suave al elegir una opción (no afecta la respuesta) */
   d.addEventListener('click', function(e){ if(e.target.closest('.ac-opt:not(:disabled), .option:not(:disabled), .ac-tok, .ac-mbtn')) SND.play('select'); }, true);
 })();
