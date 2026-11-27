@@ -33,7 +33,11 @@ test('Sesión recomendada: errores pendientes con su tema y la habilidad más fl
   const res = n => Array.from({ length: 10 }, (_, i) => ({ isCorrect: i < n }));
   const V = loadV2D([{ skill: 'listening', date: '2026-11-25', results: res(5) }, { skill: 'gramatica', date: '2026-11-25', results: res(9) }], HOY);
   const mis = { active: [{ topic: 'There / Their', fails: 2, kind: 'gramatica' }, { topic: 'There / Their', fails: 1, kind: 'gramatica' }, { topic: 'To be', fails: 1, kind: 'gramatica' }] };
-  assert.strictEqual(V.whyPlan(mis, 'Fácil A1-A2'), 'Por qué: tienes 3 errores pendientes de «There / Their» y Listening va en 50 % de aciertos este mes.');
+  assert.strictEqual(V.whyPlan(mis, 'Fácil A1-A2'), 'Por qué: tienes 3 errores pendientes, sobre todo de «There / Their», y Listening va en 50 % de aciertos este mes.');
+  // Con más de 10 errores se dice el total real (no el tope del repaso rápido) y el tema que más se repite entre todos
+  const many = { active: Array.from({ length: 184 }, (_, i) => ({ topic: i < 30 ? 'Who vs Whom' : 'Tema ' + (i % 40), fails: 1, kind: 'gramatica' })) };
+  assert.strictEqual(loadV2D([], HOY).whyPlan(many, 'x'), 'Por qué: tienes 184 errores pendientes, sobre todo de «Who vs Whom».');
+  assert.strictEqual(loadV2D([], HOY).whyPlan({ active: [{ topic: 'To be', fails: 1, kind: 'gramatica' }] }, 'x'), 'Por qué: tienes 1 error pendiente de «To be».');
   assert.strictEqual(loadV2D([], HOY).whyPlan({ active: [] }, 'Fácil A1-A2'), 'Por qué: es tu punto de partida en Fácil A1-A2; cada sesión se ajusta a tus errores.');
 });
 test('Registro: ?modo=registro abre el formulario de cuenta nueva con título propio y la entrada a la vista', () => {

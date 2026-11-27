@@ -152,8 +152,9 @@
     return top;
   }
   function whyPlan(mis, level){
-    var quick = mis ? quickReview(mis.active) : [], weak = weakestSkill(), parts = [];
-    if(quick.length){ var t = topTopic(quick); parts.push('tienes ' + (quick.length === 1 ? '1 error pendiente' : quick.length + ' errores pendientes') + (t ? ' de «' + t + '»' : '')); }
+    /* Total real de errores pendientes (mismos filtros que el repaso, sin el tope de 10) y el tema que más se repite entre todos */
+    var pend = mis ? (mis.active || []).filter(function(e){ return e.kind !== 'reading' && e.kind !== 'article'; }) : [], weak = weakestSkill(), parts = [];
+    if(pend.length){ var t = topTopic(pend); parts.push(pend.length === 1 ? 'tienes 1 error pendiente' + (t ? ' de «' + t + '»' : '') : 'tienes ' + pend.length + ' errores pendientes' + (t ? ', sobre todo de «' + t + '»' + (weak ? ',' : '') : '')); }
     if(weak) parts.push(weak.name + ' va en ' + weak.pct + ' % de aciertos este mes');
     if(!parts.length) return level ? 'Por qué: es tu punto de partida en ' + level + '; cada sesión se ajusta a tus errores.' : 'Por qué: cada sesión se ajusta a tu nivel y a tus errores.';
     return 'Por qué: ' + parts.join(' y ') + '.';
