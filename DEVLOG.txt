@@ -4449,3 +4449,11 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 2026-11-27 · Revisión de la limpieza de copias locales (antes de publicar)
 - Regla más estricta: solo se quita la copia LOCAL sin cloudId idéntica a una fila de la nube de la cuenta (habilidad, nivel, inicio al milisegundo, duración, temas y mismos resultados con los mismos valores, sin importar el orden de las claves). Nunca filas de la nube ni sesiones pendientes de subir.
 - Prueba en seco con la cuenta de pago de prueba: 102 -> 91 locales; las 11 quitadas tenían gemela exacta en la nube (3 de hoy, 8 del 9 y 26-nov); 91 = filas de la nube. Test con 5 casos.
+
+2026-11-27 · Cierre de UX 2.0 bloques A y B (publicar/ux-ab-2 en producción, v=20261129b)
+- Copias locales: 102 -> 91 al cargar, igual a las 91 filas de la nube; 0 sesiones sin cloudId; racha sin cambios (2). Sesión nueva de gramática: 92 local = 92 nube, sin duplicados.
+- Meta de hoy: 12 min (antes 13 por las copias), igual a la suma de las sesiones de la nube de hoy.
+- Tema oscuro: la palabra corregida de "Encuentra el error" se ve en verde claro sobre fondo verde oscuro (probado con un ejercicio real).
+- Buscador: "preposiciones" encuentra movimiento, sutiles, In on at y By until.
+- Consola: sin errores de los archivos nuevos (solo avisos de vibración bloqueada por clics automáticos).
+- Bloques A y B cerrados. Siguiente: bloque C cuando Leo envíe las instrucciones.
