@@ -4352,3 +4352,9 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Verificado: contraste automatico en 124 paginas (0 problemas), capturas en 390-1920 px en oscuro y claro, SEO de 462 paginas comparado antes/despues (solo cambia la portada; ningun enlace perdido; sitemap y robots intactos), suite de pruebas sin fallos nuevos (18 rojas tambien en la base, por entorno).
 - Sin cambios en pagos, webhooks, precios, membresias, auth, RLS, Edge Functions, base de datos, contenido educativo ni limites.
 - Rollback: revertir los commits de esta rama (git revert) o volver a la etiqueta pre-unificacion.
+- Segunda pasada (misma noche, revisando la cuenta real de miembro de Leo en produccion, solo lectura):
+  - Miembros: las 13 paginas privadas que seguian clasicas (gramatica, vocabulario, listening, speaking, writing, mixto, lectura, clases, examenes, toefl, ielts, toeic, cambridge) ahora usan la barra de la app 2.0 (inferior en celular, lateral en escritorio). Nueva v2/v2-paginas.css: cabeceras, tarjetas, niveles, duracion, pestañas, botones de accion y Leo AI con estilo 2.0 en esas paginas y en plan de estudio y mis errores. Solo presentacion; con ICL_V2_ENABLED=false todo vuelve a la version clasica. Versiones v2 a 20261127c.
+  - Practicar 2.0: la lista "Refuerza N errores" se salia de su tarjeta en celular (corregido).
+  - Practicar gratis: sus ejercicios usan las mismas reglas visuales que los de miembros (generadas desde v2/v2-lecciones.css). Tipografia de la academia (Nunito + Baloo 2, servidas desde v2/fonts) en la portada y en Practicar gratis; los articulos no cambian.
+  - Portada: la tarjeta del ejercicio ya no tapa la cara de Leo. Video: el poster y el mp4 responden 200 en produccion y el video se reproduce (con su evento video_promo_play).
+  - LeoBot en celular: sin la burbuja "¿Necesitas ayuda?" encima del contenido, lanzador mas chico y espacio libre al final de cada pagina.
