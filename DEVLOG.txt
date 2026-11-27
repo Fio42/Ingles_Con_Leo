@@ -4422,3 +4422,16 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Perfil sustituye a Más (v2-shell.js): cuenta con los botones reales, avisos, preferencias, LeoBot, más secciones, versión clásica, enlaces legales.
 - CSS: componentes v2-* en v2-screens.css. Eventos GA nuevos: practicar_plan_empezar, practicar_elegir_abierto, practicar_buscar_tema.
 - Tests: 18 fallos de entorno (igual). Sin cambios en pagos, permisos, límites, backend, contenido, SEO.
+
+2026-11-27 · Publicación de UX 2.0 bloques A y B (rama publicar/ux-ab, un solo commit sobre origin/main)
+- Comprobaciones finales en el simulador local (datos de prueba, sin tocar producción):
+  · Progreso: sesiones de Gramática, Vocabulario y Plan se guardan una sola vez en el navegador y en la nube (progress_sessions + apply_mistake_results).
+  · Límite gratis: 6 ejercicios y luego el muro de siempre. Visitante: muro de registro tras su muestra, una sola invitación.
+  · Permisos: visitante y cuenta gratis siguen sin entrar a páginas de miembros (van a miembros.html); lección de Academia no servida a no miembros.
+  · Pagos: "Activar membresía" desde Inicio gratis abre el paso de pago real (mismo goToPayment). Cerrar sesión desde Perfil funciona.
+  · SEO: 462 páginas comparadas con producción (title, description, canonical, robots, og, JSON-LD, encabezados, texto visible y enlaces): sin diferencias. En HTML públicos solo cambia ?v=.
+  · Móvil: 320, 360, 390, 430, tablet, escritorio y horizontal; tema oscuro y claro. Consola sin errores nuevos. Tests: 18 fallos de entorno, igual que antes.
+  · Rollback probado: versión clásica (icl.ui=classic) carga todas las páginas sin errores.
+- Archivos publicados: 48 (HTML con versión nueva, practica.html, app.js, academia.js, v2/*). Sin tools/, capturas ni simulador.
+- Último ajuste: Perfil muestra "Hazte miembro" a cuentas sin membresía (antes "Suscripción").
+- Rollback: git revert del commit de publicación, o ICL_V2_ENABLED = false en v2/v2-init.js (deja solo la versión clásica).
