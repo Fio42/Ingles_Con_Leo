@@ -4445,3 +4445,7 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
   3. Progreso decía "1 errores superados": ahora singular.
   4. Buscador: también busca por la familia del tema ("preposiciones" encuentra In, on y at y By y until).
 - Versiones ?v=20261129b. Tests: 18 fallos de entorno (igual). Rama de publicación: publicar/ux-ab-2.
+
+2026-11-27 · Revisión de la limpieza de copias locales (antes de publicar)
+- Regla más estricta: solo se quita la copia LOCAL sin cloudId idéntica a una fila de la nube de la cuenta (habilidad, nivel, inicio al milisegundo, duración, temas y mismos resultados con los mismos valores, sin importar el orden de las claves). Nunca filas de la nube ni sesiones pendientes de subir.
+- Prueba en seco con la cuenta de pago de prueba: 102 -> 91 locales; las 11 quitadas tenían gemela exacta en la nube (3 de hoy, 8 del 9 y 26-nov); 91 = filas de la nube. Test con 5 casos.
