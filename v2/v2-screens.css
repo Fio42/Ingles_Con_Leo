@@ -122,3 +122,31 @@ html.v2 .ac-wrap{max-width:796px;margin-left:auto;margin-right:auto}
 .k-scope .k-exp-head .k-ring__center{display:flex;flex-direction:column;justify-content:center;align-items:center;line-height:1.05}
 .k-scope .v2-ring-cap{font-size:9px;font-weight:700;color:var(--k-text-2);letter-spacing:.02em}
 .k-scope .k-exp-head .v2-route-note{font-weight:600;color:var(--k-text-3,var(--k-text-2));margin-top:2px}
+
+/* C10 · Tarjeta "Recomendado por Leo" (componente .rec): la lista usa todo el ancho y Leo queda pequeño en la esquina */
+.k-scope .k-rec .k-rec__leo{width:92px;right:-6px;top:-4px;bottom:auto}
+.k-scope .k-rec h2{max-width:calc(100% - 84px)}
+.k-scope .k-rec .k-rec__list,.v2-practicar .k-rec__list{max-width:none}
+.k-scope .k-rec .v2-rec-sub{margin:0;color:var(--k-text-2);font-size:14px;font-weight:600;max-width:calc(100% - 84px)}
+.k-scope .k-rec .v2-rec-sub a{color:inherit;text-decoration:underline}
+
+/* C12 · Sugerencia de nivel en Inicio: tarjeta compacta (la lógica y los botones siguen siendo los reales de app.js) */
+.k-scope .v2-level-slot .level-suggest{margin:0 0 var(--k-sp-4)}
+.k-scope .v2-level-slot .level-suggest-card{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 14px;border-radius:var(--k-r-lg);background:var(--k-surface);border:1px solid var(--k-line);box-shadow:none;font-size:14px;color:var(--k-text-2)}
+.k-scope .v2-level-slot .level-suggest-text{flex:1 1 220px;min-width:0}
+.k-scope .v2-level-slot .level-suggest-text strong{color:var(--k-text)}
+.k-scope .v2-level-slot .level-suggest-actions{display:flex;gap:8px;flex-wrap:wrap}
+.k-scope .v2-level-slot .level-suggest-actions .btn{min-height:36px;padding:6px 12px;font-size:13px}
+
+/* C21 · Nivel y duración plegados encima del ejercicio (páginas de habilidad) */
+html.v2 .v2-setup{margin:0 0 14px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface)}
+html.v2 .v2-setup>summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;cursor:pointer;list-style:none;font-size:15px;color:var(--v2-text)}
+html.v2 .v2-setup>summary::-webkit-details-marker{display:none}
+html.v2 .v2-setup .v2-setup__k{color:var(--v2-text-2);font-weight:700}
+html.v2 .v2-setup>summary b{flex:1 1 auto;min-width:0}
+html.v2 .v2-setup .v2-setup__go{font-weight:800;color:var(--v2-brand-text)}
+html.v2 .v2-setup[open] .v2-setup__go{visibility:hidden}
+html.v2 .v2-setup__body{padding:0 12px 14px}
+html.v2 .v2-after-session{margin-top:18px}
+.k-scope .v2-level-slot .level-suggest{padding:0;border:0;background:none;box-shadow:none}
+.k-scope .v2-level-slot .level-suggest-actions .btn{width:auto;flex:0 0 auto;display:inline-flex}

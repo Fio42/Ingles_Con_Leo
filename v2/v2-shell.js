@@ -34,6 +34,14 @@
     { k:'practicar', t:'Practicar', h:'practica-miembros.html' }, { k:'progreso', t:'Progreso', h:'progreso.html' }, { k:'mas', t:'Más' }
   ]; }
 
+  function navHTML(){
+    return items().map(function(it){
+          var ico = it.k === 'mas' ? MAS : (A.NAV_ICO || {})[it.k] || '';
+          var inner = '<span class="nav__ico">' + ico + '<span class="nav__badge" hidden></span></span><span class="nav__label">' + it.t + '</span>';
+          return it.h ? '<a class="nav__item" data-nav="' + it.k + '" href="' + it.h + '"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</a>'
+                      : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</button>';
+        }).join('');
+  }
   function build(){
     if(d.querySelector('.v2-shell')) return;
     html.classList.add('v2-app');
@@ -44,12 +52,7 @@
         '<button type="button" class="icon-btn" id="v2Theme"></button>' +
         '<span class="v2-slot" data-slot="avisos"></span></header>' +
       '<nav class="nav" aria-label="Principal"><a class="nav__brand" href="index.html" aria-label="Inglés con Leo: página principal"><span class="avatar avatar--leo"><img src="logo.png" alt=""></span><span class="wordmark">Inglés con <b>Leo</b></span></a>' +
-        items().map(function(it){
-          var ico = it.k === 'mas' ? MAS : (A.NAV_ICO || {})[it.k] || '';
-          var inner = '<span class="nav__ico">' + ico + '<span class="nav__badge" hidden></span></span><span class="nav__label">' + it.t + '</span>';
-          return it.h ? '<a class="nav__item" data-nav="' + it.k + '" href="' + it.h + '"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</a>'
-                      : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</button>';
-        }).join('') + '</nav></div>');
+        navHTML() + '</nav></div>');
     shell.classList.add('k-scope');
     /* Progreso es exclusivo de miembros: sin membresía activa, la racha lleva a practicar (C8) */
     if(nonMember){ var stk = shell.querySelector('#v2Streak'); if(stk) stk.setAttribute('href', 'practica.html'); }
@@ -73,8 +76,19 @@
     }
     if(typeof window.initMemberHeader === 'function'){ try{ window.initMemberHeader(); }catch(e){} }
 
-    shell.querySelector('[data-nav="mas"]').addEventListener('click', openMore);
-    shell.querySelector('.k-nav').addEventListener('click', function(e){ if(e.target.closest('.k-nav__item')) SND.play('tap'); });
+    shell.querySelector('.k-nav').addEventListener('click', function(e){
+      if(e.target.closest('[data-nav="mas"]')){ openMore(); return; }
+      if(e.target.closest('.k-nav__item')) SND.play('tap'); });
+    /* La pista de membresía puede llegar después (primer ingreso en este navegador, o membresía que vence):
+       la barra se ajusta sola cuando backend.js confirma la cuenta (C8). En la vista previa de miembros.html manda la página. */
+    addEventListener('leo-member-hint', function(){
+      if(html.classList.contains('v2-preview')) return;
+      var nm = (function(){ try{ return !localStorage.getItem('leo_member_hint'); }catch(e){ return nonMember; } })();
+      if(nm === nonMember) return; nonMember = nm;
+      var nav = shell.querySelector('.k-nav'); [].slice.call(nav.querySelectorAll('.k-nav__item')).forEach(function(x){ x.remove(); });
+      nav.insertAdjacentHTML('beforeend', K.px(navHTML()));
+      var stk = d.getElementById('v2Streak'); if(stk) stk.setAttribute('href', nonMember ? 'practica.html' : 'progreso.html');
+    });
     d.getElementById('v2Sound').addEventListener('click', function(){ SND.play('tap'); K.soundSheet(); });
     window.addEventListener('v2:sound', paintTop);
     d.getElementById('v2Theme').addEventListener('click', function(){ SND.play('tap'); setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
@@ -87,6 +101,7 @@
     paintTop();
     addEventListener('leo-progress-synced', paintTop);
     setTimeout(paintTop, 1500); setTimeout(paintTop, 5000);
+    compactSetup();
     window.dispatchEvent(new Event('v2:shell'));
   }
 
@@ -156,6 +171,32 @@
       if(e.target.closest('[data-sndsheet]')){ m.close(true); setTimeout(K.soundSheet, 260); return; }
       if(e.target.closest('[data-classic]')){ try{ localStorage.setItem('icl.ui', 'classic'); }catch(_){} location.reload(); }
     });
+  }
+
+  /* C21: en las páginas de cada habilidad el ejercicio va primero. Nivel y duración (los selectores reales, que la
+     sesión sigue usando igual) quedan en un resumen plegable: "Fácil A1–A2 · Media (~9 ejercicios) · Cambiar". */
+  function compactSetup(){
+    /* Mis errores: el ejercicio primero; los patrones (con sus botones reales) quedan justo debajo */
+    var pat = d.getElementById('mistakePatterns'), sa = d.getElementById('sessionArea');
+    if(pat && sa && pat.nextElementSibling === sa){ sa.parentNode.insertBefore(pat, sa.nextSibling); pat.classList.add('v2-after-session'); }
+    var lv = d.getElementById('levelSelector'), ln = d.getElementById('lengthSelector'), area = d.getElementById('sessionArea');
+    if(!lv || !area || lv.closest('.v2-setup')) return;
+    var det = d.createElement('details'); det.className = 'v2-setup';
+    var sum = d.createElement('summary'); det.appendChild(sum);
+    var box = d.createElement('div'); box.className = 'v2-setup__body'; det.appendChild(box);
+    lv.parentNode.insertBefore(det, lv); box.appendChild(lv); if(ln) box.appendChild(ln);
+    var txt = function(sel, a, b){ var x = sel && sel.querySelector('[aria-pressed="true"]'); if(!x) return ''; var n = x.querySelector(a), r = x.querySelector(b);
+      return (n ? n.textContent.trim() : '') + (r && r.textContent.trim() ? ' ' + r.textContent.trim().replace(/^~/, '(~') + (/^~/.test(r.textContent.trim()) ? ')' : '') : ''); };
+    var paint = function(){
+      var a = txt(lv, '.level-name', '.level-range'), b = txt(ln, '.length-name', '.length-sub');
+      sum.innerHTML = '<span class="v2-setup__k">' + (a || b ? 'Nivel' : 'Elige nivel y duración') + '</span><b>' + K.esc([a, b].filter(Boolean).join(' · ')) + '</b><span class="v2-setup__go">Cambiar</span>';
+    };
+    paint();
+    /* Si tras cargar la página no hay nivel elegido, se muestra abierto para elegirlo */
+    setTimeout(function(){ if(!lv.querySelector('[aria-pressed="true"]')) det.open = true; }, 1500);
+    var mo = new MutationObserver(paint); mo.observe(box, { subtree: true, childList: true, attributes: true, attributeFilter: ['aria-pressed'] });
+    /* Al elegir otro nivel o duración la sesión se reinicia: se pliega para volver al ejercicio */
+    box.addEventListener('click', function(e){ if(e.target.closest('[data-level],[data-length]')) setTimeout(function(){ det.open = false; }, 120); });
   }
 
   window.V2SHELL = { paintTop: paintTop, current: current };

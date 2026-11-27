@@ -232,6 +232,8 @@ const LeoBackend = (function(){
       if(isMember) localStorage.setItem('leo_member_hint', JSON.stringify({ m:1, t:Date.now() }));
       else localStorage.removeItem('leo_member_hint');
     }catch(e){}
+    /* Solo aviso de presentación para la barra 2.0 (C8); no decide permisos */
+    try{ window.dispatchEvent(new Event('leo-member-hint')); }catch(e){}
   }
   async function getMemberProfile(){
     const sb = getClient();

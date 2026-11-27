@@ -121,5 +121,13 @@
   /* Cursos en el orden real de la ruta (ACADEMIA_CURSOS, generado desde el motor) */
   function courseOrder(){ try{ return Object.keys(ACADEMIA_CURSOS.courses); }catch(e){ return []; } }
 
-  window.V2D = { practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
+  /* Los errores que trabaja el "Repaso rápido": mismos filtros y orden que buildMistakesPool(mode 'rapido') en app.js
+     (sin lectura ni artículos, por prioridad mistakeScore, hasta QUICK_REVIEW_SIZE). Solo lectura. */
+  function quickReview(active){
+    var size = 10; try{ size = MISTAKE_PRIORITY.QUICK_REVIEW_SIZE || 10; }catch(e){}
+    var sc = function(e){ try{ return mistakeScore({ fail_count: e.fails, last_seen_at: e.seen, correct_streak: e.streak }); }catch(err){ return e.fails; } };
+    return (active || []).filter(function(e){ return e.kind !== 'reading' && e.kind !== 'article'; })
+      .map(function(e){ return { e: e, s: sc(e) }; }).sort(function(a, b){ return b.s - a.s; }).slice(0, size).map(function(x){ return x.e; });
+  }
+  window.V2D = { quickReview: quickReview, practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
 })();
