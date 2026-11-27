@@ -4467,3 +4467,12 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Pantallas (Inicio, Practicar, Progreso, Perfil) con los iconos nuevos; esqueleto de carga en Practicar y Progreso.
 - Versiones ?v=20261130a. Galería local (tools/v2-preview/galeria-c.html, no se publica) y artefacto privado de la galería. Tests: 18 fallos de entorno (igual).
 - Sin cambios en pagos, autenticación, permisos, backend, base de datos, motor, contenido, límites, Método Leo, SEO, Analytics ni Pixel.
+
+2026-11-27 · Bloque C, ajustes finales antes de publicar
+- Llama "pendiente hoy": colores cálidos algo atenuados y un reloj pequeño (no parece racha perdida).
+- Brillo del botón principal: más sutil y una sola vez por página (se marca como visto al terminar).
+- Ruta: insignias no ganadas en gris (sin candado; siguen "Disponible"); aprobadas a color con cinta.
+- Academia: muestra la llama con el resultado que ya calculó app.js en otra página (misma cuenta y mismo día, guardado en el navegador). Sin lógica duplicada ni consultas. Al terminar una lección allí se oculta hasta la siguiente página que la calcule.
+- Resultado: iconos de la familia propia en baldosas (aciertos, combo, minutos, meta, lo que sigue). Minutos con la misma medida que la meta: "<1 min" en lugar de "1 min" cuando aún no suma un minuto (la captura anterior era redondeo + sesión automática del simulador de pocos segundos, no un problema de datos).
+- Nuevo día: solo si la sesión es la única de hoy en el progreso (incluido lo sincronizado de otros dispositivos). Probado: con una sesión de hoy ya sincronizada no celebra.
+- Comprobado: sin retrasos (el feedback aparece en el mismo cuadro), sin saltos (CLS 0 en Practicar, Academia, Progreso e Inicio), movimiento reducido y silencio respetados. Tests: 18 fallos de entorno (igual).
