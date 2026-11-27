@@ -34,13 +34,13 @@
     var all = sessions().filter(function(s){ return s && s.skill !== 'check'; });
     var now = new Date(), today = ymd(now), mon = monday(now);
     var week = [0, 0, 0, 0, 0, 0, 0], weekDays = [0, 0, 0, 0, 0, 0, 0], todayMin = 0;
-    var weekList = [], last7 = [], cut7 = new Date(now.getTime() - 7 * 86400000);
+    var weekList = [], last7 = [], cut7 = new Date(now.getTime() - 7 * 86400000), weekEstimated = 0;
     all.forEach(function(s){
       var d = s.date ? new Date(s.date + 'T12:00:00') : null; if(!d) return;
       var m = minutesOf(s);
       if(s.date === today) todayMin += m;
       var idx = Math.floor((d - mon) / 86400000);
-      if(idx >= 0 && idx < 7){ week[idx] += m; weekDays[idx] = 1; weekList.push(s); }
+      if(idx >= 0 && idx < 7){ week[idx] += m; weekDays[idx] = 1; weekList.push(s); if(typeof sessionTimeEstimated === 'function' && sessionTimeEstimated(s)) weekEstimated++; }
       if(d >= cut7) last7.push(s);
     });
     /* Aciertos por semana (6 semanas, la última es la actual) */
@@ -62,7 +62,7 @@
       week: week.map(function(m){ return Math.round(m); }), weekDays: weekDays, todayIdx: (now.getDay() + 6) % 7,
       weekMin: Math.round(week.reduce(function(a, b){ return a + b; }, 0)), weekDaysCount: weekDays.reduce(function(a, b){ return a + b; }, 0),
       acc7: graded(last7), accWeek: graded(weekList), weeks: weeks, streak: streak, streakDates: streakDates, bestStreak: Math.max(best, streak),
-      sessionsCount: all.length
+      sessionsCount: all.length, weekEstimated: weekEstimated
     };
   }
 

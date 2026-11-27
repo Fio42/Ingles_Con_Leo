@@ -76,3 +76,6 @@ html.v2 .leo-ai-tip,html.v2 .leo-ai-example,html.v2 .leo-ai-fixed{border-radius:
 
 /* Durante una sesión de ejercicios el lanzador de LeoBot no tapa botones (Leo AI sigue dentro de cada ejercicio) */
 html.v2.v2-app body.leobot-away .leobot-fab{display:none!important}
+
+/* Avatar de cuenta en páginas sin menú propio (Academia) */
+html.v2 .v2-shell .v2-acct{display:inline-flex;align-items:center;text-decoration:none;border-radius:50%}

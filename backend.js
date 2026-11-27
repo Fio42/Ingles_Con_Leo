@@ -405,6 +405,13 @@ const LeoBackend = (function(){
       const local = loadProgress();
       const seenCloudIds = new Set(local.sessions.map(s => s.cloudId).filter(Boolean));
       const localByIdentity = new Map(local.sessions.map(s => [progressSessionIdentity(s), s]));
+      /* C23: Supabase guarda results como jsonb y devuelve las claves de cada resultado en otro orden, así que la
+         identidad exacta (JSON de results) no coincide con la copia local. Si la página se cerraba antes de recibir
+         el id de la subida, al sincronizar se añadía la misma sesión otra vez (visto el 27-nov: 5 sesiones locales
+         contra 3 en la nube). Se vincula también por habilidad + inicio + duración + número de resultados, que
+         identifican la misma sesión. No se borra ni se cambia ningún registro existente. */
+      const startKey = s => [s.skill || '', s.startedAt || '', s.durationMs || 0, (s.results || []).length].join('|');
+      const localByStart = new Map(local.sessions.filter(s => !s.cloudId).map(s => [startKey(s), s]));
       let changed = false;
       data.forEach(row => {
         if(seenCloudIds.has(row.id)) return;
@@ -422,7 +429,7 @@ const LeoBackend = (function(){
           results: row.results || []
         };
         if(row.tier) cloudSession.tier = row.tier;   // 'free' = práctica gratis de la cuenta antes de ser miembro
-        const sameLocalSession = localByIdentity.get(progressSessionIdentity(cloudSession));
+        const sameLocalSession = localByIdentity.get(progressSessionIdentity(cloudSession)) || localByStart.get(startKey(cloudSession));
         if(sameLocalSession){
           /* recordSession() guarda primero en el navegador. Cuando llegue
              su copia de Supabase, la vinculamos en vez de agregar otra. */

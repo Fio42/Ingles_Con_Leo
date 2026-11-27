@@ -51,6 +51,18 @@
     if(prof) shell.querySelector('[data-slot="cuenta"]').appendChild(prof);
     if(bell) shell.querySelector('[data-slot="avisos"]').appendChild(bell);
     var block = d.getElementById('navUserBlock'); if(block && prof) block.setAttribute('data-v2-moved', '1');
+    /* Avatar consistente en toda el área del alumno (C2): la inicial se pinta al instante con el nombre guardado
+       y luego la confirma initMemberHeader (app.js). Páginas sin menú de cuenta propio (Academia) reciben uno
+       que lleva al Inicio, donde está el menú completo (nombre, suscripción, cerrar sesión). */
+    var ini = acctInitial();
+    if(!prof){
+      var acct = d.createElement('a'); acct.className = 'nav-profile-btn v2-acct'; acct.href = 'miembros.html'; acct.setAttribute('aria-label', 'Tu cuenta');
+      var av = d.createElement('span'); av.className = 'nav-avatar'; av.id = 'navAvatar'; av.textContent = ini || '·'; acct.appendChild(av);
+      shell.querySelector('[data-slot="cuenta"]').appendChild(acct);
+    } else if(ini){
+      [].forEach.call(d.querySelectorAll('.nav-avatar'), function(a){ if(a.textContent.trim() === '?') a.textContent = ini; });
+    }
+    if(typeof window.initMemberHeader === 'function'){ try{ window.initMemberHeader(); }catch(e){} }
 
     shell.querySelector('[data-nav="mas"]').addEventListener('click', openMore);
     shell.querySelector('.k-nav').addEventListener('click', function(e){ if(e.target.closest('.k-nav__item')) SND.play('tap'); });
@@ -69,6 +81,18 @@
     window.dispatchEvent(new Event('v2:shell'));
   }
 
+  /* Inicial del alumno sin depender de app.js (la Academia no lo carga): nombre guardado de ESTA cuenta o, si no hay, el correo */
+  function acctInitial(){
+    var n = '';
+    try{ n = (window.V2D && V2D.name()) || ''; }catch(e){}
+    if(!n){ try{
+      for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(!/^sb-.*-auth-token$/.test(k)) continue;
+        var v = JSON.parse(localStorage.getItem(k)), u = v && (v.user || (v.currentSession && v.currentSession.user));
+        if(u && u.id){ var p = JSON.parse(localStorage.getItem('leo_profile@@u:' + u.id) || 'null'); n = (p && p.name) || (u.email ? u.email.split('@')[0] : ''); }
+        break; }
+    }catch(e){} }
+    return (String(n).trim().charAt(0) || '').toUpperCase();
+  }
   function setTheme(t){ window.ICL_V2.setTheme(t); paintTop(); window.dispatchEvent(new Event('v2:theme')); }
   function paintTop(){
     var st = d.getElementById('v2Streak'); if(!st) return;

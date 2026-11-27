@@ -137,8 +137,10 @@ def analizar(css, de_pagina=False):
         ds = dict(decls(body))
         bgv = ' '.join(v for k, v in ds.items() if k in ('background', 'background-color', 'background-image'))
         bgc = colors(bgv) if bgv else []
-        light_bg = bool(bgc) and all(l > .80 for l, a in bgc if a >= .5) and any(l > .80 for l, a in bgc)
-        transl = bool(bgc) and all(l > .80 and a < .5 for l, a in bgc)
+        # Fondo claro de verdad: al menos un color claro y casi opaco (un brillo blanco translúcido no cuenta, C7)
+        light_bg = bool(bgc) and all(l > .80 for l, a in bgc if a >= .5) and any(l > .80 and a >= .5 for l, a in bgc)
+        # Un degradado de blanco translúcido es un brillo decorativo (p. ej. .ai-pitch::after): no se convierte en un disco oscuro (C7)
+        transl = bool(bgc) and all(l > .80 and a < .5 for l, a in bgc) and 'gradient' not in bgv
         dark_bg = any(l < .35 and a >= .5 for l, a in bgc)
         if light_bg:
             pure = all(l > .97 for l, a in bgc)

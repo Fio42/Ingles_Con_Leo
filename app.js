@@ -441,9 +441,13 @@ async function initMemberHeader(){
   try{ memberProfile = await LeoBackend.getMemberProfile(); }catch(e){}
   const email = memberProfile ? memberProfile.email : '';
   const displayName = (profile && profile.name) ? profile.name : (email ? email.split('@')[0] : 'Cuenta');
-  const initial = (displayName.trim().charAt(0) || 'L').toUpperCase();
+  /* Sin nombre ni correo del perfil, la inicial sale del correo de la sesión (nunca de la palabra "Cuenta") (C2) */
+  let initialSrc = (profile && profile.name) || email || '';
+  if(!initialSrc){ try{ for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if(!/^sb-.*-auth-token$/.test(k)) continue; const v = JSON.parse(localStorage.getItem(k)); const u = v && (v.user || (v.currentSession && v.currentSession.user)); initialSrc = (u && u.email) || ''; break; } }catch(e){} }
+  const initial = (initialSrc.trim().charAt(0) || '·').toUpperCase();
 
-  block.querySelectorAll('.nav-avatar').forEach(el=> el.textContent = initial);
+  /* La barra 2.0 mueve el menú de cuenta fuera de #navUserBlock: se actualizan TODOS los avatares (C2) */
+  document.querySelectorAll('.nav-avatar').forEach(el=> el.textContent = initial);
   const nameEl = document.getElementById('navProfileName');
   if(nameEl) nameEl.textContent = displayName;
   const popNameEl = document.getElementById('navProfilePopName');
@@ -1296,6 +1300,8 @@ function sessionDurationCap(ms, nResults){
   return v <= cap ? v : Math.max(1, n) * 60000;
 }
 function sessionMs(s){ return s ? sessionDurationCap(s.durationMs, (s.results || []).length) : 0; }
+/* true si el tiempo de esa sesión no es medible y se cuenta estimado (1 min por ejercicio) */
+function sessionTimeEstimated(s){ return !!s && sessionDurationCap(s.durationMs, (s.results || []).length) !== Math.max(0, +s.durationMs || 0); }
 function recordSession({ skill, level, topics, results, startedAt }){
   ensureDerived();   // pone al día las cachés con lo que haya llegado de la nube ANTES de sumar esta sesión
   const p = loadProgress();

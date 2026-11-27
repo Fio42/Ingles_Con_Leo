@@ -50,6 +50,14 @@
     if(mq && mq.addEventListener) mq.addEventListener('change', function(){ if(pref === 'auto') apply(); });
   };
   window.ICL_V2.active = function(){ return active; };
+  /* Tema elegido por el alumno (barra superior y Más). Se define ANTES del return de las páginas privadas:
+     antes estaba al final y en esas páginas nunca existía, así que el botón no hacía nada (C1). */
+  window.ICL_V2.setTheme = function(t){
+    pref = t; try{ localStorage.setItem('icl.theme', t); }catch(e){}
+    if(window.ICL_TEMA && window.ICL_TEMA.get && window.ICL_TEMA.get() !== t){ try{ window.ICL_TEMA.set(t); }catch(e){} }
+    if(active) apply();
+  };
+  window.ICL_V2.theme = function(){ return pref; };
   if(!deferred){
     /* Páginas privadas con sesión: la cabecera y la barra clásicas no se pintan nunca (antes se veían un instante
        hasta que llegaba la barra de la app). Visitantes de la Academia: sin cambios. */
@@ -100,9 +108,4 @@
     check();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
-  window.ICL_V2.setTheme = function(t){
-    pref = t; try{ localStorage.setItem('icl.theme', t); }catch(e){}
-    if(active) apply();
-  };
-  window.ICL_V2.theme = function(){ return pref; };
 })();

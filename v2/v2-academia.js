@@ -67,12 +67,13 @@
           '</div></section>';
       }).join('') + '</div>';
     show(html, 'Mi ruta');
+    var mine = screen;   /* C3: si la vista se vuelve a pintar antes de que lleguen las insignias, este resultado se descarta */
     var draw = function(){ K.$$('[data-board]', screen).forEach(drawPath); };
     requestAnimationFrame(draw);
     if(window.ResizeObserver){ var ro = new ResizeObserver(draw); ro.observe(screen); }
     /* Insignias reales por etapa */
     Promise.all(apps().map(function(a){ return a.badge().then(function(b){ return { id: a.id, b: b }; }, function(){ return { id: a.id, b: null }; }); })).then(function(rs){
-      if(!screen) return;
+      if(!screen || screen !== mine) return;
       K.STAGES.forEach(function(sg, si){
         var box = screen.querySelector('[data-stage-badges="' + si + '"]'); if(!box) return;
         var ids = list.slice(sg.from, sg.to).map(function(v){ return v.id; }), won = rs.filter(function(r){ return r.b && ids.indexOf(r.id) >= 0; }).length;
@@ -129,9 +130,10 @@
       '<details class="v2-details"><summary>Detalle por curso y opciones</summary><div class="v2-classic-slot"></div></details>' +
       '</div>';
     show(html, 'Mis logros', true);
+    var mine = screen;   /* C3: la tarjeta "Tu próxima insignia" se repetía una vez por cada pintado anterior */
     var got = {};
     Promise.all(apps().map(function(a){ return a.badge().then(function(b){ return { id: a.id, b: b }; }, function(){ return { id: a.id, b: null }; }); })).then(function(rs){
-      if(!screen) return;
+      if(!screen || screen !== mine) return;
       var won = 0;
       rs.forEach(function(r){
         if(!r.b) return; won++; got[r.id] = r.b;
@@ -147,6 +149,7 @@
       var cand = list.filter(function(v){ return !got[v.id]; }).sort(function(a, b){ return b.done / b.total - a.done / a.total; })[0];
       var slot = screen.querySelector('.v2-next-badge-slot');
       if(cand && slot){
+        slot.innerHTML = '';
         var ready = cand.done >= cand.total, i = list.indexOf(cand);
         slot.appendChild(K.h('<a class="next-badge" href="#/curso/' + cand.id + (ready ? '/evaluacion' : '') + '">' + K.emblem(cand.id, { shape: stageOf(i).shape, locked: true, size: 64 }) + '<div><span class="t-eyebrow">Tu próxima insignia</span><h3>' + esc(cand.title) + '</h3><p>' + (ready ? 'Ya terminaste las lecciones: haz la evaluación y gánala.' : 'Llevas ' + cand.done + ' de ' + cand.total + ' lecciones. Al terminar, haz la evaluación.') + '</p><div class="bar bar--sm bar--mend"><div class="bar__fill" style="width:' + Math.round(cand.done / cand.total * 100) + '%"></div></div></div></a>'));
       }
@@ -188,6 +191,12 @@
     else if(parts[0] === 'logros') renderLogros();
     if(window.V2SHELL) V2SHELL.paintTop();
   }
-  window.addEventListener('icl:academia-ruta', function(e){ onRoute(e.detail && e.detail.parts); });
+  /* El motor avisa de la ruta varias veces seguidas mientras carga los cursos: se agrupan en un solo pintado (C3) */
+  var pendParts, pendT = null;
+  window.addEventListener('icl:academia-ruta', function(e){
+    pendParts = e.detail && e.detail.parts;
+    if(pendT) return;
+    pendT = setTimeout(function(){ pendT = null; onRoute(pendParts); }, 30);
+  });
   if(window.ICL_ACADEMIA) onRoute();
 })();
