@@ -297,4 +297,30 @@
       }
     }, 30);
   }
+
+  /* =========================================================
+     Bloque B (UX) · Plan de estudio: "Empezar" arriba (bloque A) y la configuración secundaria
+     (duración y dificultad) agrupada en un desplegable con lo elegido a la vista. Solo mueve los
+     controles reales que dibuja app.js (mismos botones, mismos eventos, mismo guardado).
+     ========================================================= */
+  function planGroup(){
+    var area = d.getElementById('planArea'); if(!area) return;
+    var shell = area.querySelector(':scope > .session-shell'); if(!shell || shell.querySelector('.v2-plan-cfg')) return;
+    var len = shell.querySelector('#planLengthSelector'); if(!len) return;
+    var lab = len.previousElementSibling, diffRow = shell.querySelector('.plan-difficulty-row'), diff = shell.querySelector('#planDifficultySelector');
+    var on = len.querySelector('[aria-pressed="true"]');
+    var lname = on ? on.querySelector('.length-name').textContent.trim() + ' · ' + on.querySelector('.length-sub').textContent.split('·')[0].trim() : '';
+    var dname = diffRow ? (diffRow.querySelector('.plan-difficulty-current') || {}).textContent || '' : '';
+    dname = dname.split('·')[0].trim();
+    var det = d.createElement('details'); det.className = 'v2-plan-cfg'; if(planGroup.open) det.open = true;
+    det.innerHTML = '<summary><span><b>Duración y dificultad</b><small>' + K.esc(lname + (dname ? ' · ' + dname : '')) + '</small></span><span class="v2-plan-cfg__ch">Cambiar</span></summary><div class="v2-plan-cfg__body"></div>';
+    var body = det.querySelector('.v2-plan-cfg__body');
+    shell.insertBefore(det, len.previousElementSibling && lab && lab.classList.contains('examples-label') ? lab : len);
+    [lab && lab.classList.contains('examples-label') ? lab : null, len, diffRow, diff].forEach(function(x){ if(x) body.appendChild(x); });
+    det.addEventListener('toggle', function(){ planGroup.open = det.open; if(det.open) SND.play('open'); });
+  }
+  if(page === 'plan-estudio.html'){
+    var pa = d.getElementById('planArea');
+    if(pa){ new MutationObserver(planGroup).observe(pa, { childList: true }); planGroup(); }
+  }
 })();

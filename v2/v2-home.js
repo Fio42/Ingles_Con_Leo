@@ -29,60 +29,67 @@
     return { c: courses[courses.length - 1], n: 0, state: 'done' };
   }
 
+  /* Bloque B (UX): Inicio = una acción principal evidente + "Hoy también" (con check solo si hay práctica real
+     de hoy) + meta diaria. La racha está en la barra superior; aciertos y estadísticas en Progreso; las insignias
+     en Mis logros. Ningún dato se inventa: todo sale de las sesiones, el Método Leo y la Academia reales. */
+  function lastPracticeDays(){
+    try{ var best = ''; loadProgress().sessions.forEach(function(s){ if(s && s.skill !== 'check' && s.date && s.date > best) best = s.date; });
+      if(!best) return null; return Math.round((new Date(V2D.ymd(new Date()) + 'T12:00:00') - new Date(best + 'T12:00:00')) / 86400000); }catch(e){ return null; }
+  }
+  function didToday(skill){ try{ var t = V2D.ymd(new Date()); return loadProgress().sessions.some(function(s){ return s.skill === skill && s.date === t; }); }catch(e){ return false; } }
+  function task(href, ic, c, t, sub, done, extra){
+    return '<a class="v2-task' + (done ? ' is-done' : '') + '" href="' + href + '"' + (extra || '') + '><span class="v2-task__ic v2-task__ic--' + c + '">' + ic + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' +
+      (done ? '<span class="v2-task__check" aria-label="Hecho hoy">' + A.UI.check + '</span>' : A.UI.chevron) + '</a>';
+  }
   function render(data){
-    var p = data.p, acad = data.acad, mis = data.mis, bad = data.bad;
+    var p = data.p, acad = data.acad, mis = data.mis;
     var name = V2D.name();
     var left = Math.max(0, p.goal - p.todayMin), metDone = p.todayMin >= p.goal;
     var nx = nextFrom(acad);
-    var retoHoy = (function(){ try{ return loadProgress().sessions.some(function(s){ return s.skill === 'reto-diario' && s.date === V2D.ymd(new Date()); }); }catch(e){ return false; } })();
+    var away = lastPracticeDays(), back = away != null && away >= 3 && !p.practicedToday;
+    var fresh = !p.any && (!nx || nx.state === 'start');
+    var line = back ? 'Qué bueno verte de nuevo. Todo lo que aprendiste sigue aquí.'
+      : fresh ? 'Tu membresía está activa. Elige por dónde empezar.'
+      : metDone ? 'Hoy ya cumpliste tu meta. Lo que sumes es extra.'
+      : (p.todayMin ? 'Te faltan <b>' + left + ' min</b> para tu meta de hoy.' : 'Tu meta de hoy: <b>' + p.goal + ' minutos</b> de práctica.');
     var mission;
     if(nx && nx.state !== 'done'){
       var href = 'academia.html#/curso/' + nx.c.id + '/leccion/' + nx.n;
-      mission = '<section class="mission" id="v2Mission" aria-labelledby="v2MissionT">' +
-        '<div class="mission__copy"><span class="mission__eyebrow">' + (nx.state === 'start' ? 'Empieza aquí' : 'Tu siguiente lección') + '</span>' +
+      mission = '<section class="v2-next" id="v2Mission" aria-labelledby="v2MissionT"><span class="v2-next__em" aria-hidden="true">' + K.emblem(nx.c.id, { shape: 'hex', size: 64 }) + '</span>' +
+        '<span class="v2-next__eyebrow">' + (nx.state === 'start' ? (fresh ? 'Una buena forma de empezar' : 'Empieza aquí') : (back ? 'Retoma donde lo dejaste' : 'Tu siguiente paso')) + '</span>' +
         '<h2 id="v2MissionT">' + esc(nx.c.title) + '</h2>' +
-        '<p class="mission__course">Lección ' + nx.n + ' de ' + nx.c.total + ' · ' + nx.c.done + ' completadas</p>' +
-        '<div class="mission__chips"><span>' + A.UI.clockLine + 'Unos 6 min</span><span>' + A.STK.flame + 'Suma a tu racha</span></div></div>' +
-        '<div class="mission__node" aria-hidden="true">' + K.ring(nx.c.total ? nx.c.done / nx.c.total : 0, 31, 6, 'mission__ring') + '<span class="mission__em">' + K.emblem(nx.c.id, { shape: 'hex', size: 84 }) + '</span></div>' +
-        '<a class="btn btn--lg btn--block mission__cta" href="' + href + '">' + (nx.state === 'start' ? 'Empezar lección' : 'Continuar lección') + '</a></section>';
+        '<p>Lección ' + nx.n + ' de ' + nx.c.total + ' · Unos 6 min</p>' +
+        '<div class="v2-next__meta"><span>' + (nx.c.done ? nx.c.done + ' de ' + nx.c.total + ' completadas' : 'Curso de la Academia') + '</span></div>' +
+        '<a class="btn btn--lg btn--block" href="' + href + '">' + (nx.state === 'start' ? 'Empezar lección' : 'Continuar lección') + '</a>' +
+        (fresh ? '<a class="v2-next__alt" href="academia.html">Ver todos los cursos</a>' : '') + '</section>';
     } else if(nx && nx.state === 'done'){
-      mission = '<section class="mission is-done" aria-labelledby="v2MissionT"><div class="mission__copy"><span class="mission__eyebrow">' + A.UI.check + 'Lecciones completadas</span>' +
-        '<h2 id="v2MissionT">Terminaste todas las lecciones abiertas</h2><p class="mission__course">Haz la evaluación de cada curso y gana su insignia.</p></div>' +
-        '<a class="btn btn--lg btn--block mission__cta" href="academia.html">Ir a la Academia</a></section>';
+      mission = '<section class="v2-next v2-next--done" aria-labelledby="v2MissionT"><span class="v2-next__eyebrow">Lecciones completadas</span>' +
+        '<h2 id="v2MissionT">Terminaste todas las lecciones abiertas</h2><p>Haz la evaluación de cada curso y gana su insignia.</p><div class="v2-next__meta"></div>' +
+        '<a class="btn btn--lg btn--block" href="academia.html">Ir a la Academia</a></section>';
     } else {
-      mission = '<section class="mission" aria-labelledby="v2MissionT"><div class="mission__copy"><span class="mission__eyebrow">Academia</span>' +
-        '<h2 id="v2MissionT">Aprende inglés paso a paso</h2><p class="mission__course">Cursos cortos, lección por lección.</p></div>' +
-        '<a class="btn btn--lg btn--block mission__cta" href="academia.html">Ir a la Academia</a></section>';
+      mission = '<section class="v2-next" aria-labelledby="v2MissionT"><span class="v2-next__eyebrow">Tu práctica de hoy</span>' +
+        '<h2 id="v2MissionT">Sesión recomendada</h2><p>Con tu nivel y tus errores recientes.</p><div class="v2-next__meta"></div>' +
+        '<a class="btn btn--lg btn--block" href="plan-estudio.html?empezar=1">Empezar</a></section>';
     }
-    var acc = p.acc7.pct;
-    var won = (bad || []).map(function(b){ return b.course_id; });
-    var order = V2D.courseOrder();
-    var methodHTML = '';
+    /* Hoy también: el reto y el repaso de errores. Check = hay una sesión real de hoy */
+    var retoHoy = didToday('reto-diario'), errHoy = didToday('errores');
+    var tasks = [task('practica-miembros.html#reto', A.STK.calendar, 'streak', 'Reto diario', retoHoy ? 'Hecho hoy. Mañana hay otro.' : '5 preguntas variadas de tu nivel', retoHoy)];
     if(mis){
       var act = mis.active, quick = V2D.quickReview ? V2D.quickReview(act) : act.slice(0, 10);
-      methodHTML = '<section class="mcard" aria-labelledby="v2McT"><div class="mcard__head"><span class="method__eyebrow">' + A.STK.mend + 'Método Leo</span><a class="link" href="progreso.html#metodo">Tu historial</a></div>' +
-        '<div class="mcard__row"><div><h2 id="v2McT">' + (quick.length ? 'Hoy: repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') : 'Sin errores pendientes') + '</h2>' +
-        '<p>' + act.length + ' en refuerzo · <b>' + mis.recovered.length + '</b> recuperados · <b>' + mis.mastered.length + '</b> dominados · 2 aciertos seguidos recuperan, 4 dominan</p></div></div>' +
-        '<ul class="mlist">' + (quick.slice(0, 3).map(function(e){ return '<li><span><b>' + esc(e.label || e.topic) + '</b><small>' + esc(e.topic) + '</small></span>' + K.steps(e.streak) + '</li>'; }).join('') || '<li class="is-empty">Sin errores pendientes. ¡Bien!</li>') + '</ul>' +
-        (quick.length ? '<a class="btn btn--mend btn--block" href="errores.html?modo=rapido">Repasar ' + quick.length + ' ahora</a>' : '') + '</section>';
+      if(quick.length || errHoy) tasks.push(task('errores.html?modo=rapido', A.STK.mend, 'mend', quick.length ? 'Repasa ' + (quick.length === 1 ? 'tu error clave' : 'tus ' + quick.length + ' errores clave') : 'Errores clave', errHoy ? 'Repasados hoy · Método Leo' : 'Método Leo · unos 3 min', errHoy));
     }
-    var badgesHTML = order.length ? '<section class="v2-badges-row"><div class="block__head"><h2>Tus insignias</h2><a class="link" href="academia.html#/logros">Ver colección</a></div>' +
-      '<div class="course-row">' + order.map(function(id, i){ var sg = K.STAGES.filter(function(s){ return i >= s.from && i < s.to; })[0] || K.STAGES[0];
-        var ok = won.indexOf(id) >= 0; return '<a href="academia.html#/logros" aria-label="' + esc((COURSES()[id] || {}).title || id) + (ok ? ', insignia conseguida' : ', pendiente') + '">' + K.emblem(id, { shape: sg.shape, locked: !ok, size: 44 }) + '</a>'; }).join('') + '</div></section>' : '';
-
-    var html = '<div class="v2-screen v2-home">' +
-      '<section class="hello"><div><h1>' + K.greeting() + (name ? ', ' + esc(name) : '') + '</h1>' +
-        '<p class="hello__line">' + (metDone ? 'Hoy ya cumpliste tu meta. Lo que sumes es extra.' : (p.todayMin ? 'Te faltan <b>' + left + ' min</b> para tu meta de hoy.' : 'Tu meta de hoy: <b>' + p.goal + ' minutos</b> de práctica.')) + '</p></div></section>' +
+    if(fresh) tasks.push(task('test-de-nivel-de-ingles.html', A.ICO.level, 'brand', '¿No sabes tu nivel?', 'Test de nivel de unos 5 minutos', false));
+    var doneN = tasks.filter(function(t){ return t.indexOf('is-done') >= 0; }).length;
+    var pct = Math.min(100, Math.round(p.todayMin / p.goal * 100));
+    var html = '<div class="v2-screen v2-home v2-stack">' +
+      '<header><h1 class="v2-h1">' + (back ? 'Hola de nuevo' : K.greeting()) + (name ? ', ' + esc(name) : '') + '</h1><p class="v2-sub">' + line + '</p></header>' +
       mission +
-      '<div class="today" role="group" aria-label="Tu día">' +
-        '<button type="button" class="today__item" id="v2Goal"><span class="ring" style="--k-ring:40px">' + K.ring(p.todayMin / p.goal, 30, 9) + '<span class="ring__center">' + (metDone ? A.UI.check : '') + '</span></span><span class="today__num"><span id="v2GoalN">' + p.todayMin + '</span><small>/' + p.goal + ' min</small></span><span class="today__lbl">Meta de hoy</span></button>' +
-        '<button type="button" class="today__item ' + (p.practicedToday ? '' : 'is-pending') + '" id="v2StreakT">' + A.STK.flame + '<span class="today__num">' + p.streak + '</span><span class="today__lbl">' + (p.streak === 1 ? 'Día' : 'Días') + ' de racha</span></button>' +
-        '<a class="today__item" href="progreso.html">' + A.ICO.target + '<span class="today__num">' + (acc == null ? '–' : acc) + '<small>' + (acc == null ? '' : '%') + '</small></span><span class="today__lbl">Aciertos 7 días</span></a>' +
-      '</div>' +
-      '<a class="v2-reto ' + (retoHoy ? 'is-done' : '') + '" href="practica-miembros.html#reto">' + A.STK.calendar + '<span><span class="t-eyebrow">Reto diario</span><b>' + (retoHoy ? 'Reto de hoy completado' : 'El reto de hoy te espera') + '</b><small>' + (retoHoy ? 'Mañana hay otro. Puedes repetirlo cuando quieras.' : 'Preguntas variadas de tu nivel, unos 5 minutos.') + '</small></span>' + (retoHoy ? '<span class="v2-reto__ok">' + A.UI.check + '</span>' : A.UI.chevron) + '</a>' +
-      /* C12: la sugerencia de nivel es discreta: va después de tu día y del reto, en formato compacto */
+      '<section class="v2-stack-sm" aria-labelledby="v2HoyT"><h2 class="v2-eyebrow" id="v2HoyT">Hoy también <small>' + doneN + ' de ' + tasks.length + ' hecho' + (doneN === 1 ? '' : 's') + '</small></h2>' + tasks.join('') +
+        '<button type="button" class="v2-goal" id="v2Goal" aria-label="Meta de hoy: ' + p.todayMin + ' de ' + p.goal + ' minutos. Cambiar meta"><span class="v2-task__ic v2-task__ic--ok">' + A.ICO.time + '</span>' +
+          '<span class="v2-goal__body"><span class="v2-goal__top"><span>Meta de hoy</span><small><b>' + p.todayMin + '</b> de ' + p.goal + ' min</small></span><span class="v2-bar"><i style="--v:' + pct + '%"></i></span></span></button>' +
+      '</section>' +
+      /* La sugerencia de nivel (tarjeta real) y la encuesta real se conservan, discretas, al final */
       '<div class="v2-slot-real v2-level-slot" data-real="nivel"></div>' +
-      methodHTML + badgesHTML +
       '<div class="v2-slot-real" data-real="opinion"></div>' +
       '</div>';
     /* En miembros.html el sitio fija "#memberContent section{padding}": se usan div con rol de región */
@@ -104,8 +111,10 @@
   function wire(data){
     var p = data.p;
     var g = d.getElementById('v2Goal'); if(g) g.addEventListener('click', function(){ SND.play('open'); goalSheet(p); });
-    var s = d.getElementById('v2StreakT'); if(s) s.addEventListener('click', function(){ SND.play('open'); streakSheet(p); });
-    var cta = screen.querySelector('.k-mission__cta'); if(cta) cta.addEventListener('click', function(){ SND.play('check'); });
+    /* La racha vive en la barra superior: en Inicio, tocarla abre su detalle (antes estaba en la fila de estadísticas) */
+    var tb = d.getElementById('v2Streak');
+    if(tb && !tb.dataset.v2Sheet){ tb.dataset.v2Sheet = '1'; tb.addEventListener('click', function(e){ if(!screen || !d.body.contains(screen)) return; e.preventDefault(); SND.play('open'); streakSheet(V2D.practice()); }); }
+    var cta = screen.querySelector('.v2-next .k-btn'); if(cta) cta.addEventListener('click', function(){ SND.play('check'); });
     /* Celebración honesta: solo cuando la meta de hoy ya está cumplida con práctica real, una vez por día */
     if(!celebrated && p.todayMin >= p.goal){
       celebrated = true;
@@ -119,7 +128,7 @@
       '<div class="modal__art">' + K.ring(p.todayMin / p.goal, 30, 9, 'v2-goal-ring') + '</div><h3>' + p.todayMin + ' de ' + p.goal + ' minutos hoy</h3>' +
       '<p>Cuentan los minutos reales de tus lecciones y prácticas. Elige una meta que puedas cumplir todos los días.</p>' +
       '<div class="seg v2-goal-seg" role="group" aria-label="Meta diaria">' + [5, 10, 15, 20].map(function(g){ return '<button type="button" data-goal="' + g + '" aria-pressed="' + (p.goal === g) + '">' + g + ' min</button>'; }).join('') + '</div>' +
-      '<a class="btn btn--block" href="' + (screen && screen.querySelector('.k-mission__cta') ? screen.querySelector('.k-mission__cta').getAttribute('href') : 'practica-miembros.html') + '">Practicar ahora</a>' });
+      '<a class="btn btn--block" href="' + (screen && screen.querySelector('.v2-next .k-btn') ? screen.querySelector('.v2-next .k-btn').getAttribute('href') : 'practica-miembros.html') + '">Practicar ahora</a>' });
     m.box.addEventListener('click', function(e){ var b = e.target.closest('[data-goal]'); if(!b) return; SND.play('select'); V2D.setGoal(+b.getAttribute('data-goal')); m.close(true); refresh(); });
   }
   function streakSheet(p){
@@ -129,7 +138,8 @@
       '<p>' + (p.practicedToday ? 'Racha protegida por hoy. Vuelve mañana para sumar otro día.' : 'Cualquier práctica de hoy suma un día. Si un día no puedes, tu racha aguanta un día de descanso.') + '</p>' +
       '<div class="streak-week">' + weekHTML(p) + '</div>' +
       '<div class="streak-stats"><div><b>' + p.streak + '</b><span>Actual</span></div><div><b>' + p.bestStreak + '</b><span>Mejor racha</span></div><div><b>' + p.weekDaysCount + '/7</b><span>Esta semana</span></div></div>' +
-      (p.practicedToday ? '<button type="button" class="btn btn--block" data-close>Genial</button>' : '<a class="btn btn--block" href="practica-miembros.html">Practicar ahora</a>') });
+      (p.practicedToday ? '<button type="button" class="btn btn--block" data-close>Genial</button>' : '<a class="btn btn--block" href="practica-miembros.html">Practicar ahora</a>') +
+      '<a class="btn btn--block btn--ghost" href="progreso.html">Ver mi progreso</a>' });
     var c = m.box.querySelector('[data-close]'); if(c) c.addEventListener('click', function(){ m.close(true); });
   }
 
@@ -139,7 +149,45 @@
     if(window.V2SHELL) V2SHELL.paintTop();
   }
   /* Arranca con el shell (que solo existe si el área de miembro ya está visible) */
+  /* Bloque B (UX): cuenta gratis o vencida (vista previa de miembros.html). Misma lógica de permisos de siempre:
+     una práctica principal gratis, lo que también es gratis y UNA invitación (que usa el botón real de pago).
+     Lo que incluye la membresía queda plegado. Nada de pagos, límites ni permisos cambia. */
+  var pvScreen = null;
+  function renderPreview(){
+    var pv = d.getElementById('memberPreview'); if(!pv || pvScreen) return;
+    var lapsed = pv.classList.contains('is-lapsed'), name = V2D.name();
+    var vis = function(id){ var e = d.getElementById(id); return !!(e && getComputedStyle(e).display !== 'none'); };
+    var also = [];
+    if(vis('previewAcademia')) also.push(task('academia.html', A.STK.book, 'award', 'Prueba el curso TO BE', 'Una explicación y 3 ejercicios', false));
+    if(vis('previewModoAprender')) also.push(task('aprender.html', A.STK.bulb, 'mend', 'Tu primera microlección', '3 minutos, solo mirando y escuchando', false));
+    also.push(task('juego.html', A.STK.rush, 'streak', 'English Rush', 'Preguntas rápidas, modo juego', false));
+    var act = d.getElementById('previewActivateBtn');
+    var html = '<div class="v2-screen v2-home v2-stack v2-preview-home">' +
+      '<header><h1 class="v2-h1">Hola' + (name ? ', ' + esc(name) : '') + '</h1><p class="v2-sub">' + (lapsed ? 'Tu membresía no está activa. Tu progreso y tus insignias siguen aquí.' : 'Tu cuenta gratis está lista.') + '</p></header>' +
+      '<section class="v2-next" aria-labelledby="v2PvT"><span class="v2-next__eyebrow">' + (lapsed ? 'Mientras tanto, gratis' : 'Tu práctica de hoy') + '</span>' +
+        '<h2 id="v2PvT">' + (typeof FREE_USER_DAILY_LIMIT === 'number' ? FREE_USER_DAILY_LIMIT : 6) + ' ejercicios gratis al día</h2><p>Con la explicación del Profe Leo. Tu racha y tu progreso quedan guardados.</p><div class="v2-next__meta"></div>' +
+        '<a class="btn btn--lg btn--block" href="practica.html" data-v2-free>Practicar ahora</a></section>' +
+      '<section class="v2-stack-sm"><h2 class="v2-eyebrow">También gratis</h2>' + also.join('') + '</section>' +
+      (act ? '<section class="v2-invite"><span class="v2-task__ic v2-task__ic--brand">' + A.STK.trophy + '</span><div><b>' + (lapsed ? 'Vuelve donde lo dejaste' : 'Practica sin límite') + '</b><p>' + (lapsed ? 'Reactiva por $2 USD al mes y retoma la Academia, la práctica sin límite y Leo AI.' : 'Cursos completos, repaso de errores y Leo AI por $2 USD al mes.') + '</p>' +
+        '<button type="button" class="btn btn--sm btn--secondary" data-v2-activate>' + esc(act.textContent.trim() || 'Activar membresía') + '</button></div></section>' : '') +
+      '<details class="v2-expand" id="v2PvIncl"><summary><span class="v2-task__ic">' + A.ICO.lesson + '</span><span>Qué incluye la membresía<small>Todo lo que se abre al activarla</small></span>' + A.UI.chevron + '</summary><div class="v2-expand__body v2-pv-slot"></div></details>' +
+      '</div>';
+    var el = K.h(html); el.classList.add('k-scope');
+    var wrap = pv.querySelector('.member-preview-wrap') || pv;
+    wrap.insertBefore(el, wrap.firstChild);
+    var grid = pv.querySelector('.locked-grid'), slot = el.querySelector('.v2-pv-slot');
+    if(grid && slot) slot.appendChild(grid);
+    pv.classList.add('v2-pv-on');
+    pvScreen = el;
+    el.addEventListener('click', function(e){
+      if(e.target.closest('[data-v2-activate]')){ SND.play('tap'); if(act) act.click(); return; }
+      if(e.target.closest('[data-v2-free]')){ SND.play('check'); try{ if(typeof trackLeoEvent === 'function') trackLeoEvent('preview_free_practice_clicked'); }catch(_){} }
+    });
+    d.title = 'Inicio - Inglés con Leo';
+  }
   function start(){
+    var pvEl = d.getElementById('memberPreview');
+    if(d.documentElement.classList.contains('v2-preview') && pvEl && getComputedStyle(pvEl).display !== 'none'){ renderPreview(); return; }
     var mc = d.getElementById('memberContent');
     /* C8: con la vista previa de una cuenta gratis o vencida hay barra 2.0, pero NO Inicio de miembro */
     if(!mc || mc.style.display === 'none' || getComputedStyle(mc).display === 'none') return;

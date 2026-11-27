@@ -16,8 +16,8 @@
   var APP = { 'miembros.html':'inicio', 'academia.html':'academia', 'practica-miembros.html':'practicar', 'plan-estudio.html':'practicar',
               'errores.html':'practicar', 'progreso.html':'progreso',
               'gramatica.html':'practicar', 'vocabulario.html':'practicar', 'listening.html':'practicar', 'speaking.html':'practicar', 'writing.html':'practicar',
-              'mixto.html':'practicar', 'lectura.html':'practicar', 'clases.html':'mas', 'examenes.html':'mas', 'toefl.html':'mas', 'ielts.html':'mas',
-              'toeic.html':'mas', 'cambridge.html':'mas', 'aprender.html':'mas', 'juego.html':'mas' };
+              'mixto.html':'practicar', 'lectura.html':'practicar', 'clases.html':'practicar', 'examenes.html':'practicar', 'toefl.html':'practicar', 'ielts.html':'practicar',
+              'toeic.html':'practicar', 'cambridge.html':'practicar', 'aprender.html':'practicar', 'juego.html':'practicar' };
   var current = APP[page];
   if(!current) return;
 
@@ -28,15 +28,15 @@
   var nonMember = (function(){ try{ return !localStorage.getItem('leo_member_hint'); }catch(e){ return false; } })();
   function items(){ return nonMember ? [
     { k:'inicio', t:'Inicio', h:'miembros.html' }, { k:'academia', t:'Academia', h:'academia.html' },
-    { k:'practicar', t:'Practicar', h:'practica.html' }, { k:'mas', t:'Más' }
+    { k:'practicar', t:'Practicar', h:'practica.html' }, { k:'perfil', t:'Perfil' }
   ] : [
     { k:'inicio', t:'Inicio', h:'miembros.html' }, { k:'academia', t:'Academia', h:'academia.html' },
-    { k:'practicar', t:'Practicar', h:'practica-miembros.html' }, { k:'progreso', t:'Progreso', h:'progreso.html' }, { k:'mas', t:'Más' }
+    { k:'practicar', t:'Practicar', h:'practica-miembros.html' }, { k:'progreso', t:'Progreso', h:'progreso.html' }, { k:'perfil', t:'Perfil' }
   ]; }
 
   function navHTML(){
     return items().map(function(it){
-          var ico = it.k === 'mas' ? MAS : (A.NAV_ICO || {})[it.k] || '';
+          var ico = it.k === 'perfil' ? '<span class="v2-nav-av" aria-hidden="true">' + K.esc(acctInitial() || '·') + '</span>' : (A.NAV_ICO || {})[it.k] || '';
           var inner = '<span class="nav__ico">' + ico + '<span class="nav__badge" hidden></span></span><span class="nav__label">' + it.t + '</span>';
           return it.h ? '<a class="nav__item" data-nav="' + it.k + '" href="' + it.h + '"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</a>'
                       : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</button>';
@@ -78,7 +78,7 @@
     if(typeof window.initMemberHeader === 'function'){ try{ window.initMemberHeader(); }catch(e){} }
 
     shell.querySelector('.k-nav').addEventListener('click', function(e){
-      if(e.target.closest('[data-nav="mas"]')){ openMore(); return; }
+      if(e.target.closest('[data-nav="perfil"]')){ openMore(); return; }
       if(e.target.closest('.k-nav__item')) SND.play('tap'); });
     /* La pista de membresía puede llegar después (primer ingreso en este navegador, o membresía que vence):
        la barra se ajusta sola cuando backend.js confirma la cuenta (C8). En la vista previa de miembros.html manda la página. */
@@ -151,32 +151,51 @@
     th.setAttribute('aria-label', dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
   }
 
+  /* Bloque B (UX): Perfil sustituye a "Más". Reúne cuenta (nombre, suscripción, cerrar sesión: los botones REALES
+     del menú de cuenta, que siguen haciendo lo mismo), preferencias (tema, sonidos, meta), ayuda (LeoBot), avisos,
+     el resto de secciones y la versión clásica. Nada se pierde: solo cambia de lugar. */
   function openMore(){
     SND.play('open');
     var pref = window.ICL_V2.theme(), goal = window.V2D ? V2D.goal() : 10, U = A.UI;
     var row = function(href, ico, t, sub){ return '<a class="more__row" href="' + href + '"><span class="more__ic">' + ico + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' + U.chevron + '</a>'; };
-    var m = K.sheet({ label: 'Más', cls: 'modal--sheet v2-more', html:
-      '<h3>Más</h3>' +
-      '<div class="more">' +
-        row('plan-estudio.html', A.ICO.days, 'Plan de estudio', 'Lo que te toca hoy según tus errores') +
-        row('errores.html', A.ICO.mend, 'Mis errores', 'Método Leo: recupera y domina') +
+    var act = function(key, ico, t, sub, cls){ return '<button type="button" class="more__row ' + (cls || '') + '" data-act="' + key + '"><span class="more__ic">' + ico + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' + U.chevron + '</button>'; };
+    var real = function(id){ var b = d.getElementById(id); return b && b.style.display !== 'none' ? b : null; };
+    var txt = function(id){ var e = d.getElementById(id); return e ? e.textContent.trim() : ''; };
+    var name = txt('navProfilePopName'), mail = txt('navProfilePopEmail'), ini = acctInitial() || '·';
+    if(!name || name === 'Cuenta'){ try{ name = (window.V2D && V2D.name()) || ''; }catch(e){} }
+    var bell = txt('navBellContent');
+    var outBtn = real('navLogoutBtn') || d.getElementById('previewLogoutBtn'), hasMenu = !!real('navLogoutBtn');
+    var m = K.sheet({ label: 'Perfil', cls: 'modal--sheet v2-more v2-perfil', html:
+      '<div class="v2-perfil__head"><span class="v2-perfil__av" aria-hidden="true">' + K.esc(ini) + '</span><div><h3>' + K.esc(name || 'Tu perfil') + '</h3>' + (mail ? '<p>' + K.esc(mail) + '</p>' : '') + '</div></div>' +
+      (bell ? '<p class="v2-perfil__bell">' + U.info + '<span>' + K.esc(bell) + '</span></p>' : '') +
+      '<h4 class="v2-perfil__h">Tu cuenta</h4><div class="more">' +
+        (real('navEditNameBtn') ? act('name', A.ICO.level, 'Editar tu nombre', 'Cómo te llamamos en la academia') : '') +
+        (nonMember ? row('practica.html?personalizar=1', A.ICO.target, 'Personalizar mi práctica', 'Tu nombre y tu nivel') : '') +
+        (real('navManageSubBtn') ? act('sub', A.ICO.days, 'Suscripción', 'Tu membresía y cómo cambiarla o cancelarla') : (nonMember ? row('miembros.html?pagar=1', A.STK.trophy, 'Hazte miembro', 'Cursos completos, repaso de errores y Leo AI') : '')) +
+        (hasMenu || outBtn ? '' : row('miembros.html', A.ICO.days, 'Cuenta y suscripción', 'En Inicio: nombre, suscripción y cerrar sesión')) +
+      '</div>' +
+      '<h4 class="v2-perfil__h">Preferencias</h4>' +
+      '<div class="card list v2-settings">' +
+        '<div class="row">' + U.sun + '<span class="row__label">Tema</span><div class="seg" role="group" aria-label="Tema">' +
+          ['light', 'dark', 'auto'].map(function(t){ return '<button type="button" data-t="' + t + '" aria-pressed="' + (pref === t) + '">' + U[t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'auto'] + ({ light:'Claro', dark:'Oscuro', auto:'Auto' })[t] + '</button>'; }).join('') + '</div></div>' +
+        '<div class="row">' + U.speaker + '<span class="row__label">Sonidos<small>Efectos al responder y celebrar, y su volumen</small></span><button type="button" class="btn btn--sm btn--secondary" data-sndsheet>Ajustar</button></div>' +
+        (nonMember ? '' : '<div class="row">' + U.clockLine + '<span class="row__label">Meta diaria<small>Minutos de práctica al día</small></span><div class="seg" role="group" aria-label="Meta diaria">' +
+          [5, 10, 15, 20].map(function(g){ return '<button type="button" data-goal="' + g + '" aria-pressed="' + (goal === g) + '">' + g + '</button>'; }).join('') + '</div></div>') +
+      '</div>' +
+      '<h4 class="v2-perfil__h">Ayuda</h4><div class="more">' + act('bot', U.chat, 'LeoBot', 'Preguntas sobre la academia, pagos o cómo usarla') + '</div>' +
+      '<details class="v2-details v2-advanced"><summary>Más secciones</summary><div class="more">' +
+        (nonMember ? '' : row('plan-estudio.html', A.ICO.days, 'Plan de estudio', 'Lo que te toca hoy según tus errores') + row('errores.html', A.ICO.mend, 'Mis errores', 'Método Leo: recupera y domina')) +
         row('juego.html', A.ICO.rush, 'English Rush', 'Preguntas rápidas, modo juego') +
         row('clases.html', A.ICO.listen, 'Clases interactivas', 'Situaciones reales con audio') +
         row('examenes.html', A.ICO.level, 'Exámenes', 'TOEFL, IELTS, TOEIC y Cambridge') +
         row('aprender.html', A.ICO.lesson, 'Modo aprender', 'Microlecciones de 3 minutos para mirar y escuchar') +
         row('articulos.html', A.ICO.read, 'Aprende inglés', 'Guías y artículos gratis') +
-      '</div>' +
-      '<div class="card list v2-settings">' +
-        '<div class="row">' + U.sun + '<span class="row__label">Tema</span><div class="seg" role="group" aria-label="Tema">' +
-          ['light', 'dark', 'auto'].map(function(t){ return '<button type="button" data-t="' + t + '" aria-pressed="' + (pref === t) + '">' + U[t === 'light' ? 'sun' : t === 'dark' ? 'moon' : 'auto'] + ({ light:'Claro', dark:'Oscuro', auto:'Auto' })[t] + '</button>'; }).join('') + '</div></div>' +
-        '<div class="row">' + U.speaker + '<span class="row__label">Sonidos<small>Efectos al responder y celebrar, y su volumen</small></span><button type="button" class="btn btn--sm btn--secondary" data-sndsheet>Ajustar</button></div>' +
-        '<div class="row">' + U.clockLine + '<span class="row__label">Meta diaria<small>Minutos de práctica al día</small></span><div class="seg" role="group" aria-label="Meta diaria">' +
-          [5, 10, 15, 20].map(function(g){ return '<button type="button" data-goal="' + g + '" aria-pressed="' + (goal === g) + '">' + g + '</button>'; }).join('') + '</div></div>' +
-      '</div>' +
+      '</div></details>' +
       /* C22: la versión clásica es un mecanismo de recuperación, no una opción del día a día: queda en Ajustes avanzados */
       '<details class="v2-details v2-advanced"><summary>Ajustes avanzados</summary><div class="card list">' +
         '<div class="row">' + U.refresh + '<span class="row__label">Versión clásica<small>Solo si algo no se ve bien: vuelve al diseño anterior en este dispositivo. Al final de cada página tendrás un enlace para regresar</small></span><button type="button" class="btn btn--sm btn--secondary" data-classic>Usar clásica</button></div>' +
       '</div></details>' +
+      (outBtn ? '<button type="button" class="btn btn--block btn--secondary v2-perfil__out" data-act="out">Cerrar sesión</button>' : '') +
       '<p class="v2-legal"><a href="index.html">Página principal</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a> · <a href="index.html#contacto">Contacto</a></p>' });
     m.box.addEventListener('click', function(e){
       var t = e.target.closest('[data-t]');
@@ -184,7 +203,17 @@
       var g = e.target.closest('[data-goal]');
       if(g){ SND.play('select'); V2D.setGoal(+g.getAttribute('data-goal')); K.$$('[data-goal]', m.box).forEach(function(b){ b.setAttribute('aria-pressed', String(b === g)); }); window.dispatchEvent(new Event('v2:goal')); return; }
       if(e.target.closest('[data-sndsheet]')){ m.close(true); setTimeout(K.soundSheet, 260); return; }
-      if(e.target.closest('[data-classic]')){ try{ localStorage.setItem('icl.ui', 'classic'); }catch(_){} location.reload(); }
+      if(e.target.closest('[data-classic]')){ try{ localStorage.setItem('icl.ui', 'classic'); }catch(_){} location.reload(); return; }
+      var a = e.target.closest('[data-act]'); if(!a) return;
+      var k = a.getAttribute('data-act');
+      m.close(true);
+      /* Los botones reales del menú de cuenta hacen el trabajo (mismo código de siempre) */
+      setTimeout(function(){
+        if(k === 'name'){ var b1 = real('navEditNameBtn'); if(b1) b1.click(); }
+        else if(k === 'sub'){ var b2 = real('navManageSubBtn'); if(b2) b2.click(); }
+        else if(k === 'out'){ if(outBtn) outBtn.click(); }
+        else if(k === 'bot') openLeoBot();
+      }, 260);
     });
   }
 
