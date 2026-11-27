@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="oscuro">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Riso · demostración local</title>
+<link rel="stylesheet" href="../../riso/riso.css">
+<style>
+@font-face{font-family:'Baloo 2';font-weight:800;src:url(../../v2/fonts/baloo-2-latin-800-normal.woff2)}
+@font-face{font-family:'Nunito';font-weight:700;src:url(../../v2/fonts/nunito-latin-700-normal.woff2)}
+@font-face{font-family:'Nunito';font-weight:800;src:url(../../v2/fonts/nunito-latin-800-normal.woff2)}
+:root{--bg:#0B0F1A;--s1:#141A29;--s2:#1A2134;--line:#222A3F;--t1:#EEF0F7;--t2:#AAB1C4;--brand:#5B74FF;--brand-t:#9AABFF}
+html[data-tema="claro"]{--bg:#FBF8F2;--s1:#fff;--s2:#F3EEE4;--line:#ECE5D8;--t1:#1B2333;--t2:#5B6472;--brand:#3554F0;--brand-t:#1F37C9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t1);font:700 16px/1.45 Nunito,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 18px 60px}
+h1{font:800 32px/1.1 'Baloo 2',sans-serif;margin:0 0 6px}h2{font:800 22px 'Baloo 2',sans-serif;margin:34px 0 12px}
+p.n{color:var(--t2);margin:0 0 16px;max-width:760px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+button.b{border:1.5px solid var(--line);background:var(--s1);color:var(--t1);font:800 14px Nunito;padding:9px 14px;border-radius:999px;cursor:pointer}
+button.b[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.card b{font:800 18px 'Baloo 2'}.card small{color:var(--t2);text-align:center}
+.escena{display:flex;align-items:flex-end;justify-content:center;min-height:260px;padding-right:40px}
+.tamanos{display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap}
+.chat{background:var(--s1);border:1px solid var(--line);border-radius:22px;max-width:420px;overflow:hidden}
+.chat header{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.chat header .t b{display:block;font:800 18px 'Baloo 2'}.chat header .t span{color:var(--t2);font-size:13px}
+.msg{margin:12px 14px;padding:10px 12px;border-radius:16px 16px 16px 4px;background:var(--s2);font-size:15px}
+.logro{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(91,116,255,.18),transparent);border:1px solid var(--line);border-radius:20px;padding:14px;max-width:460px}
+.logro b{font:800 19px 'Baloo 2';display:block}
+</style></head>
+<body><div class="wrap">
+<h1>Riso · 4 estados</h1>
+<p class="n">Demostración local, sin publicar. El personaje sale tal cual de las ilustraciones aprobadas (sin redibujarlo): se separaron capas para llamas, cuerpo, mano y párpados. Las llamas ondulan con un filtro que solo toca la zona de llamas; el resto son animaciones CSS ligeras. Con «reducir movimiento» queda quieto.</p>
+<div class="bar"><button class="b" id="tOsc" aria-pressed="true">Oscuro</button><button class="b" id="tCla" aria-pressed="false">Claro</button><button class="b" id="tQui" aria-pressed="false">Simular «reducir movimiento»</button></div>
+
+<h2>Estados</h2>
+<div class="grid">
+  <div class="card"><div class="escena" id="e1"></div><b>Neutro</b><small>Ambos ojos abiertos, respira, parpadea y las llamas se mueven suavemente.</small></div>
+  <div class="card"><div class="escena" id="e2"></div><b>Bienvenida</b><small>Entra con un paso corto y saluda; vuelve a saludar de vez en cuando.</small><button class="b" data-re="e2">Repetir entrada</button></div>
+  <div class="card"><div class="escena" id="e3"></div><b>Celebración</b><small>Guiño y pulgar arriba cuando el alumno consigue un logro.</small><button class="b" data-re="e3">Repetir</button></div>
+  <div class="card"><div class="escena" id="e4"></div><b>Pensando</b><small>Concentrado mientras prepara una respuesta; la burbuja indica que está pensando.</small></div>
+</div>
+
+<h2>Cambiar de estado (transición)</h2>
+<div class="card" style="align-items:flex-start"><div class="bar" id="cambios"><button class="b" data-e="neutro" aria-pressed="true">Neutro</button><button class="b" data-e="bienvenida">Bienvenida</button><button class="b" data-e="celebracion">Celebración</button><button class="b" data-e="pensando">Pensando</button></div><div class="escena" id="e5" style="align-self:center"></div></div>
+
+<h2>Tamaños</h2>
+<div class="card"><div class="tamanos" id="tam"></div></div>
+
+<h2>Así podría verse dentro de la academia (ejemplos, no implementado)</h2>
+<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr))">
+  <div class="chat"><header><span id="c1"></span><span class="t"><b>Pregúntale a Riso</b><span>Tu tutor de inglés con inteligencia artificial</span></span></header><div class="msg">¿Cuándo se usa <b>did</b>?</div><div class="msg" style="display:flex;align-items:center;gap:8px"><span id="c2"></span><span style="color:var(--t2)">Preparando tu respuesta…</span></div></div>
+  <div class="logro"><span id="c3"></span><span><b>¡Curso aprobado!</b><span style="color:var(--t2)">Do y does · 92 % en la evaluación</span></span></div>
+</div>
+</div>
+<script src="../../riso/riso.js"></script>
+<script>
+var R={};
+R.e1=Riso.montar(document.getElementById('e1'),{estado:'neutro',alto:200});
+R.e2=Riso.montar(document.getElementById('e2'),{estado:'bienvenida',alto:200});
+R.e3=Riso.montar(document.getElementById('e3'),{estado:'celebracion',alto:200});
+R.e4=Riso.montar(document.getElementById('e4'),{estado:'pensando',alto:200});
+R.e5=Riso.montar(document.getElementById('e5'),{estado:'neutro',alto:220});
+[48,72,120,180].forEach(function(h){ var s=document.createElement('div'); s.style.textAlign='center'; document.getElementById('tam').appendChild(s); Riso.montar(s,{estado:'neutro',alto:h}); var c=document.createElement('div'); c.textContent=h+' px'; c.style.color='var(--t2)'; c.style.fontSize='13px'; s.appendChild(c); });
+Riso.montar(document.getElementById('c1'),{estado:'neutro',alto:54});
+Riso.montar(document.getElementById('c2'),{estado:'pensando',alto:40});
+Riso.montar(document.getElementById('c3'),{estado:'celebracion',alto:80});
+document.querySelectorAll('[data-re]').forEach(function(b){ b.onclick=function(){ var k=b.dataset.re; R[k].estado(k==='e2'?'bienvenida':'celebracion'); }; });
+document.getElementById('cambios').onclick=function(ev){ var b=ev.target.closest('[data-e]'); if(!b) return; this.querySelectorAll('[data-e]').forEach(function(x){ x.setAttribute('aria-pressed', x===b); }); R.e5.estado(b.dataset.e); };
+function tema(t){ document.documentElement.dataset.tema=t; tOsc.setAttribute('aria-pressed',t==='oscuro'); tCla.setAttribute('aria-pressed',t==='claro'); }
+tOsc.onclick=function(){tema('oscuro')}; tCla.onclick=function(){tema('claro')};
+tQui.onclick=function(){ var on=tQui.getAttribute('aria-pressed')!=='true'; tQui.setAttribute('aria-pressed',on); document.querySelectorAll('.riso').forEach(function(r){ r.classList.toggle('is-quieto',on); }); document.documentElement.classList.toggle('demo-quieto',on); };
+</script>
+<style>.demo-quieto .riso,.demo-quieto .riso *{animation:none!important}.demo-quieto .riso__llamas{filter:none!important}.demo-quieto .riso__parpados{opacity:0!important}</style>
+</body></html>
