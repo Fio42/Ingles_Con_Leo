@@ -30,7 +30,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
 <link rel="stylesheet" href="style.css?v=20261127a">
-<link rel="stylesheet" href="inicio.css?v=20261127a">
+<link rel="stylesheet" href="inicio.css?v=20261127b">
 <link rel="preload" as="style" href="chatbot.css?v=20261124b">
 <link rel="stylesheet" href="chatbot.css?v=20261124b" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261124b"></noscript>
@@ -156,18 +156,20 @@
       </div>
       <div class="hm-hero-media">
         <div class="hm-hero-glow" aria-hidden="true"></div>
-        <img src="leo-pointing.png" alt="Leo, de Inglés con Leo, señalando la mini lección" class="hm-hero-leo" width="322" height="456" loading="eager">
+        <div class="hm-leo-wrap">
+          <img src="leo-pointing.png" alt="Leo, de Inglés con Leo, señalando la mini lección" class="hm-hero-leo" width="322" height="456" loading="eager">
+          <div class="hero-v2-card hm-refuerzo">
+            <span class="hm-refuerzo-tag">Después de practicar…</span>
+            <div class="hero-v2-card-en">Siguiente refuerzo:<br><strong>in / on / at</strong></div>
+            <div class="hero-v2-card-es"><strong class="leo-tip-label">Consejo del Profe Leo:</strong> usamos in para estar dentro de algo.</div>
+            <a href="practica.html?skill=grammar&tema=in-on-at" class="hero-v2-card-link">Practicar este tema <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
         <div class="hm-demo" aria-hidden="true">
           <div class="hm-demo-top"><span>Gramática · Fácil</span><span class="hm-demo-bar"><i></i></span></div>
           <div class="hm-demo-q">I'm free ___ Monday.</div>
           <div class="hm-demo-opts"><span>in</span><span>at</span><span class="is-ok">on</span></div>
           <div class="hm-demo-fb"><b>¡Correcto!</b> Con días usamos “on”.</div>
-        </div>
-        <div class="hero-v2-card hm-refuerzo">
-          <span class="hm-refuerzo-tag">Después de practicar…</span>
-          <div class="hero-v2-card-en">Siguiente refuerzo:<br><strong>in / on / at</strong></div>
-          <div class="hero-v2-card-es"><strong class="leo-tip-label">Consejo del Profe Leo:</strong> usamos in para estar dentro de algo.</div>
-          <a href="practica.html?skill=grammar&tema=in-on-at" class="hero-v2-card-link">Practicar este tema <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
@@ -634,7 +636,7 @@
     Miembros
   </button>
 </nav>
-<script defer src="app.js?v=20261124c"></script>
+<script defer src="app.js?v=20261127a"></script>
 <script defer src="mini-lecciones.js?v=20261122c"></script>
 <!-- LeoBot necesita LeoBackend para reportar bugs/soporte y saber si
      hay sesion iniciada. defer: no bloquea el primer render (esta

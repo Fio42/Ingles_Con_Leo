@@ -202,7 +202,10 @@ def practica_v2():
             prof -= 1
             if prof == 0: bloques.append(css[ini:j + 1].strip()); ini = j + 1
     motor = r'\.(option|feedback|word-chip|error-word|session-progress|session-card|practice-prompt|next-row|blank-slot)\b'
-    def filtra(sel): return [x.strip() for x in sel.split(',') if x.strip().startswith('html.v2 ') and re.search(motor, x)]
+    def filtra(sel):
+        # Mismas reglas en Practicar gratis (#practicaMain) y en English Rush (.rush-shell)
+        base = [x.strip() for x in sel.split(',') if x.strip().startswith('html.v2 ') and re.search(motor, x)]
+        return [x.replace('html.v2 ', '#practicaMain ') for x in base] + [x.replace('html.v2 ', '.rush-shell ') for x in base]
     out = []
     for b in bloques:
         cab = b.split('{', 1)[0]
@@ -222,8 +225,9 @@ def practica_v2():
 #practicaMain .skill-tab-btn.active,#practicaMain .skill-tab-btn[aria-selected="true"]{border-color:var(--v2-brand);box-shadow:0 3px 0 var(--v2-brand)}
 #practicaMain .btn-primary{border-radius:16px;box-shadow:0 4px 0 var(--v2-brand-lip);font-weight:800}
 #practicaMain .btn-primary:active{transform:translateY(4px);box-shadow:none}
-#practicaMain .skill-section{border-radius:22px}"""
-    return '/* ---- Practicar gratis 2.0 (copiado de v2/v2-lecciones.css) ---- */\n' + '\n'.join(out).replace('html.v2 ', '#practicaMain ') + '\n' + extra
+#practicaMain .skill-section{border-radius:22px}
+.rush-shell .rush-option:focus-visible{outline:3px solid var(--v2-brand);outline-offset:2px}"""
+    return '/* ---- Practicar gratis y English Rush 2.0 (copiado de v2/v2-lecciones.css) ---- */\n' + '\n'.join(out) + '\n' + extra
 
 def main():
     total, partes = 0, [INI, TOKENS, FUENTES, practica_v2()]

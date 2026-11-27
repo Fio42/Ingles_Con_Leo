@@ -131,3 +131,6 @@ html.v2 .ac-top .v2-snd-btn .k-ico{width:22px;height:22px}
 .v2-sound-sheet .v2-vol{flex:1;accent-color:var(--k-brand);min-width:0;height:28px}
 .v2-sound-sheet .v2-vol:disabled{opacity:.4}
 .v2-sound-sheet .k-card{margin:12px 0 16px}
+/* Botones bajo la respuesta: en una sola linea, sin partir "Volver a intentar" en dos (QA 26 nov) */
+html.v2 .next-row{display:flex;flex-wrap:wrap;gap:10px}
+html.v2 .next-row .btn{white-space:nowrap;flex:1 1 auto;min-height:50px;padding-left:16px;padding-right:16px}

@@ -2509,7 +2509,9 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 @media(max-width:767px){
   .leobot-greet{display:none!important}
   .leobot-fab{width:48px!important;height:48px!important}
-  body.leobot-away .leobot-fab{width:42px!important;height:42px!important;opacity:.85}
+  /* Durante una sesion de ejercicios (leobot-away) el lanzador no se muestra: tapaba botones como Reproducir.
+     Leo AI sigue dentro de cada ejercicio y LeoBot vuelve al terminar la sesion. */
+  body.leobot-away .leobot-fab{display:none!important}
   main::after{content:"";display:block;height:64px}
 }
 
@@ -2577,34 +2579,36 @@ html:not([data-theme="light"]) [style*="color:#1"],html:not([data-theme="light"]
 @font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/baloo-2-latin-700-normal.woff2) format('woff2')}
 @font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/baloo-2-latin-800-normal.woff2) format('woff2')}
 
-/* ---- Practicar gratis 2.0 (copiado de v2/v2-lecciones.css) ---- */
+/* ---- Practicar gratis y English Rush 2.0 (copiado de v2/v2-lecciones.css) ---- */
 @keyframes v2-in{from{transform:translateY(10px)}to{transform:none}}
 @keyframes v2-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
 @keyframes v2-shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
 @keyframes v2-rise{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 @keyframes v2-glow{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--v2-ok) 40%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
 @keyframes v2-shine{from{transform:translateX(-100%)}to{transform:translateX(220%)}}
-#practicaMain .option{position:relative;min-height:56px;border-radius:14px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);font-weight:800;font-size:1.05rem;box-shadow:0 3px 0 var(--v2-line-strong);margin-bottom:3px;transition:transform .08s,box-shadow .08s,border-color .15s,background-color .15s;-webkit-tap-highlight-color:transparent}
-#practicaMain .option:not(:disabled):hover{border-color:var(--v2-brand);background:color-mix(in srgb,var(--v2-brand) 6%,var(--v2-surface))}
-#practicaMain .option:not(:disabled):active{transform:translateY(3px);box-shadow:0 0 0 var(--v2-line-strong)}
-#practicaMain .option.correct{border-color:var(--v2-ok);background:color-mix(in srgb,var(--v2-ok) 13%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-ok);animation:v2-pop .35s ease-out}
-#practicaMain .option.incorrect{border-color:var(--v2-bad);background:color-mix(in srgb,var(--v2-bad) 10%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-bad);animation:v2-shake .4s ease-out}
-#practicaMain .option .dot{border-color:var(--v2-line-strong)}
-#practicaMain .practice-prompt{font-family:var(--v2-font-display);font-weight:700}
-#practicaMain .next-row .btn-primary{min-height:54px;font-size:1.08rem}
-#practicaMain .feedback.show{animation:v2-rise .3s cubic-bezier(.2,.8,.2,1) both;border-radius:18px;padding:14px 16px}
-#practicaMain .feedback.ok{background:color-mix(in srgb,var(--v2-ok) 12%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-ok) 40%,transparent);color:var(--v2-text)}
-#practicaMain .feedback.bad{background:color-mix(in srgb,var(--v2-bad) 8%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-bad) 30%,transparent);color:var(--v2-text)}
-#practicaMain .feedback .fb-head{font-family:var(--v2-font-display);font-weight:800;font-size:1.2rem}
-#practicaMain .feedback.ok .fb-head{color:var(--v2-ok-text,#0A7444)}
-#practicaMain .feedback.bad .fb-head{color:var(--v2-bad-text,#AE2C1E)}
-@media (prefers-reduced-motion:reduce){#practicaMain .feedback.show,#practicaMain .option{animation:none!important;transition:none!important}}
-#practicaMain .session-card{background:var(--v2-surface);border-radius:22px;animation:v2-in .28s cubic-bezier(.2,.8,.2,1) both}
-#practicaMain .session-progress{height:12px;border-radius:999px;background:var(--v2-surface-3);overflow:hidden}
-#practicaMain .session-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--v2-brand),var(--v2-ok));transition:width .55s cubic-bezier(.2,.8,.2,1)}
-#practicaMain .word-chip,#practicaMain .error-word{border-radius:12px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;min-height:44px;padding:8px 14px;margin-bottom:3px;transition:transform .08s,box-shadow .08s}
-#practicaMain .word-chip:not(:disabled):active,#practicaMain .error-word:not(:disabled):active{transform:translateY(3px);box-shadow:none}
-#practicaMain .blank-slot{border-radius:10px}
+#practicaMain .option,.rush-shell .option{position:relative;min-height:56px;border-radius:14px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);font-weight:800;font-size:1.05rem;box-shadow:0 3px 0 var(--v2-line-strong);margin-bottom:3px;transition:transform .08s,box-shadow .08s,border-color .15s,background-color .15s;-webkit-tap-highlight-color:transparent}
+#practicaMain .option:not(:disabled):hover,.rush-shell .option:not(:disabled):hover{border-color:var(--v2-brand);background:color-mix(in srgb,var(--v2-brand) 6%,var(--v2-surface))}
+#practicaMain .option:not(:disabled):active,.rush-shell .option:not(:disabled):active{transform:translateY(3px);box-shadow:0 0 0 var(--v2-line-strong)}
+#practicaMain .option.correct,.rush-shell .option.correct{border-color:var(--v2-ok);background:color-mix(in srgb,var(--v2-ok) 13%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-ok);animation:v2-pop .35s ease-out}
+#practicaMain .option.incorrect,.rush-shell .option.incorrect{border-color:var(--v2-bad);background:color-mix(in srgb,var(--v2-bad) 10%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-bad);animation:v2-shake .4s ease-out}
+#practicaMain .option .dot,.rush-shell .option .dot{border-color:var(--v2-line-strong)}
+#practicaMain .practice-prompt,.rush-shell .practice-prompt{font-family:var(--v2-font-display);font-weight:700}
+#practicaMain .next-row .btn-primary,.rush-shell .next-row .btn-primary{min-height:54px;font-size:1.08rem}
+#practicaMain .feedback.show,.rush-shell .feedback.show{animation:v2-rise .3s cubic-bezier(.2,.8,.2,1) both;border-radius:18px;padding:14px 16px}
+#practicaMain .feedback.ok,.rush-shell .feedback.ok{background:color-mix(in srgb,var(--v2-ok) 12%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-ok) 40%,transparent);color:var(--v2-text)}
+#practicaMain .feedback.bad,.rush-shell .feedback.bad{background:color-mix(in srgb,var(--v2-bad) 8%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-bad) 30%,transparent);color:var(--v2-text)}
+#practicaMain .feedback .fb-head,.rush-shell .feedback .fb-head{font-family:var(--v2-font-display);font-weight:800;font-size:1.2rem}
+#practicaMain .feedback.ok .fb-head,.rush-shell .feedback.ok .fb-head{color:var(--v2-ok-text,#0A7444)}
+#practicaMain .feedback.bad .fb-head,.rush-shell .feedback.bad .fb-head{color:var(--v2-bad-text,#AE2C1E)}
+@media (prefers-reduced-motion:reduce){#practicaMain .feedback.show,#practicaMain .option,.rush-shell .feedback.show,.rush-shell .option{animation:none!important;transition:none!important}}
+#practicaMain .session-card,.rush-shell .session-card{background:var(--v2-surface);border-radius:22px;animation:v2-in .28s cubic-bezier(.2,.8,.2,1) both}
+#practicaMain .session-progress,.rush-shell .session-progress{height:12px;border-radius:999px;background:var(--v2-surface-3);overflow:hidden}
+#practicaMain .session-progress-fill,.rush-shell .session-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--v2-brand),var(--v2-ok));transition:width .55s cubic-bezier(.2,.8,.2,1)}
+#practicaMain .word-chip,#practicaMain .error-word,.rush-shell .word-chip,.rush-shell .error-word{border-radius:12px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;min-height:44px;padding:8px 14px;margin-bottom:3px;transition:transform .08s,box-shadow .08s}
+#practicaMain .word-chip:not(:disabled):active,#practicaMain .error-word:not(:disabled):active,.rush-shell .word-chip:not(:disabled):active,.rush-shell .error-word:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+#practicaMain .blank-slot,.rush-shell .blank-slot{border-radius:10px}
+#practicaMain .next-row,.rush-shell .next-row{display:flex;flex-wrap:wrap;gap:10px}
+#practicaMain .next-row .btn,.rush-shell .next-row .btn{white-space:nowrap;flex:1 1 auto;min-height:50px;padding-left:16px;padding-right:16px}
 #practicaMain,.hm{font-family:var(--v2-font-body)}
 #practicaMain h1,#practicaMain h2,#practicaMain h3,.hm h1,.hm h2,.hm h3{font-family:var(--v2-font-display);font-weight:800}
 #practicaMain .level-card{border:2px solid var(--v2-line-strong);box-shadow:0 4px 0 var(--v2-line-strong)}
@@ -2615,6 +2619,7 @@ html:not([data-theme="light"]) [style*="color:#1"],html:not([data-theme="light"]
 #practicaMain .btn-primary{border-radius:16px;box-shadow:0 4px 0 var(--v2-brand-lip);font-weight:800}
 #practicaMain .btn-primary:active{transform:translateY(4px);box-shadow:none}
 #practicaMain .skill-section{border-radius:22px}
+.rush-shell .rush-option:focus-visible{outline:3px solid var(--v2-brand);outline-offset:2px}
 /* ---- style.css ---- */
 html:not([data-theme="light"]) .nav-pop,
 html:not([data-theme="light"]) .nav-links.mnav-open,

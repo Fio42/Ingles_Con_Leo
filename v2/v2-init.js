@@ -50,17 +50,34 @@
     if(mq && mq.addEventListener) mq.addEventListener('change', function(){ if(pref === 'auto') apply(); });
   };
   window.ICL_V2.active = function(){ return active; };
-  if(!deferred){ window.ICL_V2.activate(); return; }
+  if(!deferred){
+    /* Páginas privadas con sesión: la cabecera y la barra clásicas no se pintan nunca (antes se veían un instante
+       hasta que llegaba la barra de la app). Visitantes de la Academia: sin cambios. */
+    try{ for(var j = 0; j < localStorage.length; j++){ if(/^sb-.*-auth-token$/.test(localStorage.key(j))){ root.classList.add('v2-app'); break; } } }catch(e){}
+    window.ICL_V2.activate(); return;
+  }
 
   /* miembros.html con sesión guardada y tema oscuro: fondo oscuro mientras la página decide (sin destello).
      Si resulta que no es miembro (login, área gratis), se quita y la página clásica queda igual. */
   var hasSession = false;
   try{ for(var i = 0; i < localStorage.length; i++){ if(/^sb-.*-auth-token$/.test(localStorage.key(i))){ hasSession = true; break; } } }catch(e){}
   if(hasSession && resolved() === 'dark') preDark(true);
+  /* Sin destello del panel clásico: con sesión guardada, el área de miembro, la cabecera y la barra clásicas
+     quedan ocultas hasta que el Inicio 2.0 está pintado (o la página muestra login / vista previa). Red de seguridad: 6 s. */
+  var cloak = null;
+  function uncloak(){ if(cloak){ cloak.remove(); cloak = null; } }
+  if(hasSession){
+    cloak = document.createElement('style');
+    cloak.textContent = '#memberContent:not(.v2-has-home),body>header,body>footer,body>.mobile-nav{visibility:hidden!important}';
+    document.head.appendChild(cloak);
+    setTimeout(uncloak, 6000);
+    var waitHome = function(){ var mc = document.getElementById('memberContent'); if(mc && mc.classList.contains('v2-has-home')){ uncloak(); return; } if(cloak) setTimeout(waitHome, 60); };
+    waitHome();
+  }
 
   /* miembros.html: nada de 2.0 se descarga para visitantes ni buscadores. Solo cuando la página
      muestra el área de miembro se cargan los estilos y scripts (en orden) y se enciende. */
-  var V = '20261127c';
+  var V = '20261127d';
   var CSS = ['v2-tokens.css', 'v2-base.css', 'v2-dark-auto.css', 'v3-ui.css', 'v2-screens.css', 'v2-lecciones.css', 'v2-paginas.css'];
   var JS = ['v3-art.js', 'v3-sound.js', 'v2-kit.js', 'v2-data.js', 'v2-shell.js', 'v2-home.js'];
   var loading = false;
@@ -76,7 +93,7 @@
     var shown = function(id){ var e = document.getElementById(id); return !!(e && e.style.display !== 'none' && getComputedStyle(e).display !== 'none'); };
     var check = function(){
       if(shown('memberContent')){ obs.disconnect(); loadAll(); return; }
-      if(shown('gate') || shown('memberPreview')) preDark(false);
+      if(shown('gate') || shown('memberPreview')){ preDark(false); uncloak(); }
     };
     var obs = new MutationObserver(check);
     obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style'] });

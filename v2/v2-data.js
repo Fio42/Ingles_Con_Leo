@@ -24,7 +24,7 @@
   function sessions(){
     try{ return (typeof loadProgress === 'function' ? loadProgress().sessions : []) || []; }catch(e){ return []; }
   }
-  function minutesOf(s){ return Math.max(0, (+s.durationMs || 0) / 60000); }
+  function minutesOf(s){ return (typeof sessionMs === 'function' ? sessionMs(s) : Math.max(0, +s.durationMs || 0)) / 60000; }
   function graded(list){ var n = 0, ok = 0; list.forEach(function(s){ (s.results || []).forEach(function(r){ if(r && (r.isCorrect === true || r.isCorrect === false)){ n++; if(r.isCorrect) ok++; } }); }); return { n: n, ok: ok, pct: n ? Math.round(ok / n * 100) : null }; }
 
   /* Lunes de la semana de d */

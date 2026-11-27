@@ -1287,6 +1287,15 @@ function microDiagActions(level, only){
 }
 
 /* Llamado por cada motor de sesión al terminar una sesión. */
+/* Duracion creible de una sesion. Si una sesion a medias se retoma dias despues, "ahora - inicio" daria
+   dias enteros (se vio "Meta de hoy cumplida: 12062 de 10 min"). Una sesion normal dura menos de 3 min por
+   ejercicio (minimo 5 min) y se cuenta tal cual. Si supera ese limite, el tiempo real no se conoce: se cuenta
+   1 min por ejercicio (ritmo habitual), sin inventar mas. Solo afecta minutos y metas; aciertos, errores y progreso no cambian. */
+function sessionDurationCap(ms, nResults){
+  const v = Math.max(0, +ms || 0), n = nResults || 0, cap = Math.max(5, n * 3) * 60000;
+  return v <= cap ? v : Math.max(1, n) * 60000;
+}
+function sessionMs(s){ return s ? sessionDurationCap(s.durationMs, (s.results || []).length) : 0; }
 function recordSession({ skill, level, topics, results, startedAt }){
   ensureDerived();   // pone al día las cachés con lo que haya llegado de la nube ANTES de sumar esta sesión
   const p = loadProgress();
@@ -1298,7 +1307,7 @@ function recordSession({ skill, level, topics, results, startedAt }){
     topics: topics || [],
     date: localDateStr(new Date(now)),
     startedAt: startedAt || now,
-    durationMs: Math.max(0, now - (startedAt || now)),
+    durationMs: sessionDurationCap(now - (startedAt || now), (results || []).length),
     results: instrumentResults(results, seenBefore)
   };
   markChecksConsumed(session.results);
@@ -1367,7 +1376,7 @@ function computeWeeklyStats(){
   const correct = graded.filter(r=>r.isCorrect).length;
   const accuracy = graded.length ? Math.round(correct / graded.length * 100) : null;
   const days = new Set(week.map(s=>s.date)).size;
-  const minutes = Math.round(week.reduce((n,s)=> n + (s.durationMs||0), 0) / 60000);
+  const minutes = Math.round(week.reduce((n,s)=> n + sessionMs(s), 0) / 60000);
   return { exercises, accuracy, days, minutes, hasData: week.length >= MIN_SESSIONS_FOR_STATS };
 }
 
@@ -9185,7 +9194,7 @@ function computeWeeklyStatsWithDelta(){
     list.forEach(s => { if(s.skill === 'check') return; (s.results||[]).forEach(r=>{ if(r.isCorrect === true || r.isCorrect === false) graded.push(r); }); });
     const correct = graded.filter(r=>r.isCorrect).length;
     const accuracy = graded.length ? Math.round(correct / graded.length * 100) : null;
-    const minutes = Math.round(list.reduce((n,s)=> n + (s.durationMs||0), 0) / 60000);
+    const minutes = Math.round(list.reduce((n,s)=> n + sessionMs(s), 0) / 60000);
     return { exercises, accuracy, minutes };
   }
 

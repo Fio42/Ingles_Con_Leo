@@ -36,7 +36,7 @@
 .hm-ic-coral{background:var(--v2-bad-tint);color:var(--v2-bad-text)}
 
 /* Secciones */
-.hm-sec{padding:clamp(48px,7vw,88px) 0}
+.hm-sec{padding:clamp(40px,5.5vw,72px) 0}
 .hm-sec-alt{background:var(--v2-surface);border-top:1px solid var(--v2-line);border-bottom:1px solid var(--v2-line)}
 .hm-sec-alt .hm-step,.hm-sec-alt .hm-way,.hm-sec-alt .hm-plan,.hm-sec-alt .hm-ai,.hm-sec-alt .hm-contact-card,.hm-sec-alt details{background:var(--v2-surface-2)}
 .hm-head{max-width:640px;margin-bottom:clamp(22px,3vw,34px)}
@@ -47,7 +47,7 @@
 .hm-head-row>div{max-width:640px}
 
 /* HERO */
-.hm-hero{position:relative;padding:clamp(28px,5vw,64px) 0 clamp(28px,4vw,48px);background:radial-gradient(900px 420px at 85% 10%,color-mix(in srgb,var(--v2-brand) 16%,transparent),transparent 70%)}
+.hm-hero{position:relative;padding:clamp(24px,4vw,56px) 0 clamp(24px,3vw,40px);background:radial-gradient(900px 420px at 85% 10%,color-mix(in srgb,var(--v2-brand) 16%,transparent),transparent 70%)}
 .hm-hero-grid{display:grid;gap:32px;align-items:center}
 @media(min-width:960px){.hm-hero-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:48px}}
 .hm-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:var(--v2-text-2);background:var(--v2-surface);border:1px solid var(--v2-line);padding:5px 12px 5px 5px;border-radius:999px}
@@ -66,9 +66,10 @@
 
 .hm-hero-media{position:relative;min-height:440px;display:flex;justify-content:center;align-items:flex-end}
 .hm-hero-glow{position:absolute;inset:8% 6% 0;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--v2-brand) 30%,transparent),transparent);filter:blur(10px)}
-.hm-hero-leo{position:relative;width:min(300px,62%);height:auto;z-index:1;filter:drop-shadow(0 20px 30px rgba(0,0,0,.35))}
+.hm-leo-wrap{position:relative;width:min(300px,62%);z-index:1}
+.hm-hero-leo{position:relative;display:block;width:100%;height:auto;filter:drop-shadow(0 20px 30px rgba(0,0,0,.35))}
 .hm-demo,.hm-refuerzo{position:absolute;z-index:2;background:var(--v2-surface);border:1px solid var(--v2-line-strong);border-radius:18px;box-shadow:0 18px 40px -18px rgba(0,0,0,.55)}
-.hm-demo{left:0;top:42%;width:min(250px,48%);padding:14px;animation:hm-float 6s ease-in-out infinite}
+.hm-demo{left:0;bottom:4%;width:min(250px,48%);padding:14px;animation:hm-float 6s ease-in-out infinite}
 .hm-demo-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.72rem;font-weight:800;color:var(--v2-brand-text)}
 .hm-demo-bar{flex:1;max-width:70px;height:6px;border-radius:9px;background:var(--v2-surface-3)}
 .hm-demo-bar i{display:block;width:66%;height:100%;border-radius:9px;background:var(--v2-ok)}
@@ -78,7 +79,7 @@
 .hm-demo-opts .is-ok{background:var(--v2-ok-tint);border-color:var(--v2-ok);color:var(--v2-ok-text);box-shadow:0 3px 0 var(--v2-ok-lip)}
 .hm-demo-fb{margin-top:10px;font-size:.8rem;color:var(--v2-text-2)}
 .hm-demo-fb b{color:var(--v2-ok-text)}
-.hm-refuerzo{right:0;bottom:2%;width:min(270px,50%);padding:16px;animation:hm-float 6s ease-in-out -3s infinite}
+.hm-refuerzo{left:60%;bottom:57%;width:220px;padding:16px;animation:hm-float 6s ease-in-out -3s infinite}
 .hm-refuerzo-tag{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--v2-xp-text)}
 .hm-refuerzo .hero-v2-card-en{margin-top:6px;font-size:.92rem;color:var(--v2-text-2)}
 .hm-refuerzo .hero-v2-card-en strong{display:block;font-size:1.2rem;color:var(--v2-text)}
@@ -90,6 +91,7 @@
 @media(max-width:520px){
   .hm-hero-media{min-height:0;display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
   .hm-hero-glow,.hm-hero-leo,.hm-demo{display:none}
+  .hm-leo-wrap{width:auto}
   .hm-refuerzo{position:static;width:auto;animation:none}
   .hm-hero-points{grid-template-columns:1fr}
   .hm-actions .hm-btn{width:100%}
@@ -253,3 +255,4 @@
 @media(prefers-reduced-motion:reduce){.hm-js .hm-rv{opacity:1;transform:none;transition:none}.hm-demo,.hm-refuerzo{animation:none}.hm-step,.hm-way,.hm-skill,.hm-level,.hm-guide{transition:none}}
 .hm-way .hm-tag{align-self:flex-start}
 @media(max-width:599px){.hm-mini{display:none}.hm-step{padding:18px}.hm-sec{padding:44px 0}.hm-facts li{padding:12px 14px}}
+@media(min-width:960px) and (max-width:1199px){.hm-refuerzo{left:57%;width:178px;padding:12px}.hm-refuerzo .hero-v2-card-en strong{font-size:1.05rem}}
