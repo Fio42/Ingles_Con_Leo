@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Riso · animación actual vs mejorada</title>
+<link rel="stylesheet" href="../../riso/riso.css">
+<style>
+:root{--f:#FBF8F2;--p:#fff;--t1:#1B2333;--t2:#5B6472;--l:#E7E2D6;--a:#3554F0}
+[data-tema="oscuro"]{--f:#0B0F1A;--p:#141A29;--t1:#EEF0F7;--t2:#AAB1C4;--l:#262E42;--a:#7C8FFF}
+*{box-sizing:border-box}body{margin:0;background:var(--f);color:var(--t1);font:15px/1.5 'Nunito',system-ui,sans-serif}
+header{padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--l)}
+header h1{font:800 18px/1.2 'Baloo 2',system-ui,sans-serif;margin:0 auto 0 0}
+button{font:inherit;border:1px solid var(--l);background:var(--p);color:inherit;border-radius:999px;padding:6px 14px;cursor:pointer;min-height:36px}
+button[aria-pressed="true"]{border-color:var(--a);outline:2px solid var(--a)}
+.tabla{display:grid;grid-template-columns:110px repeat(2,1fr);gap:10px;padding:16px;max-width:900px;margin:0 auto}
+.cab{font-weight:800;color:var(--t2);text-align:center;align-self:end}
+.fila{display:contents}.nom{align-self:center;font-weight:800}
+.celda{background:var(--p);border:1px solid var(--l);border-radius:18px;min-height:200px;display:grid;place-items:center;padding:10px}
+.fps{font:12px ui-monospace,monospace;color:var(--t2);text-align:center;padding-bottom:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Riso · actual (izquierda) vs mejorada (derecha)</h1>
+  <button id="tema" type="button">Modo oscuro</button>
+  <button id="rep" type="button">Repetir entradas</button>
+</header>
+<div class="tabla" id="tabla"><div></div><div class="cab">Actual (CSS + filtro SVG)</div><div class="cab">Mejorada (WebGL)</div></div>
+<div class="fps" id="fps"></div>
+<script src="../../riso/riso.js"></script>
+<script src="../../riso/riso-gl.js"></script>
+<script>
+(function(){
+  var EST = [['neutro','Neutro'],['bienvenida','Bienvenida'],['celebracion','Celebración'],['pensando','Pensando']], R = [];
+  var t = document.getElementById('tabla');
+  EST.forEach(function(e){
+    var n = document.createElement('div'); n.className = 'nom'; n.textContent = e[1]; t.appendChild(n);
+    var a = document.createElement('div'), b = document.createElement('div'); a.className = b.className = 'celda'; t.appendChild(a); t.appendChild(b);
+    R.push([e[0], Riso.montar(a, { estado: e[0], alto: 180 }), RisoGL.montar(b, { estado: e[0], alto: 180 })]);
+  });
+  document.getElementById('rep').onclick = function(){ R.forEach(function(r){ r[1].estado(r[0]); r[2].estado(r[0]); }); };
+  document.getElementById('tema').onclick = function(){ var o = document.documentElement.dataset.tema === 'oscuro'; document.documentElement.dataset.tema = o ? '' : 'oscuro'; this.textContent = o ? 'Modo oscuro' : 'Modo claro'; };
+  var n = 0, t0 = performance.now(); (function f(now){ n++; if (now - t0 > 2000){ document.getElementById('fps').textContent = 'Cuadros por segundo de la página: ' + Math.round(n * 1000 / (now - t0)) + ' (la versión mejorada dibuja a 30 como máximo)'; n = 0; t0 = now; } requestAnimationFrame(f); })(t0);
+})();
+</script>
+</body>
+</html>

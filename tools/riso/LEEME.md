@@ -38,3 +38,9 @@ Estado: demostración local (`tools/riso-demo/index.html`), sin publicar y sin u
 
 - El parpadeo y los cortes de los brazos se generaron a partir de la ilustración plana: a 2x de zoom se nota alguna imperfección mínima en el borde del ojo durante el parpadeo (dura 0,12 s).
 - Las poses de saludo, guiño y pensando tienen menos resolución que la neutra; se ven nítidas hasta unos 200 px de alto.
+
+## Versión mejorada con WebGL (27 nov 2026, prototipo)
+
+`riso/riso-gl.js` (sin librerías, gratis) usa las mismas capas de `riso/img` y las deforma por zonas en la tarjeta gráfica, en una sola pasada por cuadro: llamas que suben y se mecen más en las puntas, respiración del pecho con los pies fijos, párpado que baja y sube, mano que saluda desde la muñeca con anticipación y rebote, cabeza que se inclina desde el cuello al pensar y celebración que se agacha, se estira desde los pies y rebota, con chispas. Dibuja a 30 cuadros por segundo como máximo, se pausa fuera de pantalla y con la pestaña oculta, respeta «reducir movimiento» y, si el teléfono no tiene WebGL, usa `riso.js`. Comparación lado a lado: `tools/riso-demo/comparar.html`.
+
+Límites: sigue sin poder mover la boca ni mirar a otro lado (eso necesita dibujo nuevo). Se evaluaron Blender, Synfig, Lottie y Rive: todos exigen separar el personaje en partes o vectorizarlo, con riesgo de cambiar su identidad; con las imágenes actuales, la deformación por zonas en WebGL da el mejor resultado con el menor peso.
