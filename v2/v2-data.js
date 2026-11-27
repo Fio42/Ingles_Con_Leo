@@ -129,5 +129,50 @@
     return (active || []).filter(function(e){ return e.kind !== 'reading' && e.kind !== 'article'; })
       .map(function(e){ return { e: e, s: sc(e) }; }).sort(function(a, b){ return b.s - a.s; }).slice(0, size).map(function(x){ return x.e; });
   }
-  window.V2D = { quickReview: quickReview, practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
+  /* Fase 0 · "Por qué": una línea que explica la recomendación con datos REALES del alumno (sin prometer el contenido exacto
+     de la sesión, que lo arma el Plan). Devuelve texto plano; quien la pinta la escapa. */
+  var SKN = { gramatica: 'Gramática', vocabulario: 'Vocabulario', listening: 'Listening', speaking: 'Speaking', writing: 'Writing', lectura: 'Lectura' };
+  function daysSince(day){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(day || ''))) return null;
+    return Math.max(0, Math.round((new Date(ymd(new Date()) + 'T12:00:00') - new Date(day + 'T12:00:00')) / 86400000));
+  }
+  function weakestSkill(){
+    var by = {}, cut = Date.now() - 30 * 86400000;
+    sessions().forEach(function(s){ if(!s || !s.date || !SKN[s.skill] || new Date(s.date + 'T12:00:00').getTime() < cut) return;
+      var o = by[s.skill] || (by[s.skill] = { n: 0, ok: 0 });
+      (s.results || []).forEach(function(r){ if(r && (r.isCorrect === true || r.isCorrect === false)){ o.n++; if(r.isCorrect) o.ok++; } }); });
+    var best = null;
+    Object.keys(by).forEach(function(k){ var o = by[k]; if(o.n < 8) return; var pct = Math.round(o.ok / o.n * 100);
+      if(pct < 70 && (!best || pct < best.pct)) best = { skill: k, name: SKN[k], pct: pct }; });
+    return best;
+  }
+  function topTopic(list){
+    var c = {}, top = null;
+    (list || []).forEach(function(e){ var t = e && e.topic; if(!t || t === 'Práctica') return; c[t] = (c[t] || 0) + 1; if(!top || c[t] > c[top]) top = t; });
+    return top;
+  }
+  function whyPlan(mis, level){
+    var quick = mis ? quickReview(mis.active) : [], weak = weakestSkill(), parts = [];
+    if(quick.length){ var t = topTopic(quick); parts.push('tienes ' + (quick.length === 1 ? '1 error pendiente' : quick.length + ' errores pendientes') + (t ? ' de «' + t + '»' : '')); }
+    if(weak) parts.push(weak.name + ' va en ' + weak.pct + ' % de aciertos este mes');
+    if(!parts.length) return level ? 'Por qué: es tu punto de partida en ' + level + '; cada sesión se ajusta a tus errores.' : 'Por qué: cada sesión se ajusta a tu nivel y a tus errores.';
+    return 'Por qué: ' + parts.join(' y ') + '.';
+  }
+  /* courses: lista de InicioAlumno; nx: { c, state } elegido por el Inicio */
+  function whyCourse(nx, courses){
+    if(!nx || !nx.c) return '';
+    if(nx.state === 'continue'){
+      var d = daysSince(nx.c.lastDay);
+      var when = d === null ? '' : d === 0 ? ': lo practicaste hoy' : d === 1 ? ': lo practicaste ayer' : ': lo dejaste hace ' + d + ' días';
+      return 'Por qué: es el curso que llevas a medias' + when + '.';
+    }
+    if(nx.state === 'start'){
+      var list = courses || [], i = list.indexOf(nx.c), prev = null;
+      for(var j = i - 1; j >= 0; j--){ if(list[j] && list[j].finished){ prev = list[j]; break; } }
+      if(prev) return 'Por qué: sigue en la ruta después de «' + prev.title + '», que ya completaste.';
+      return i === 0 ? 'Por qué: es el primer curso de la ruta de la Academia.' : 'Por qué: es el siguiente curso de la ruta de la Academia.';
+    }
+    return '';
+  }
+  window.V2D = { whyPlan: whyPlan, whyCourse: whyCourse, quickReview: quickReview, practice: practice, mistakes: mistakes, academy: academy, badges: badges, name: name, goal: goal, setGoal: setGoal, courseOrder: courseOrder, itemLabel: itemLabel, ymd: ymd };
 })();

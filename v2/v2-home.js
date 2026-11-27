@@ -42,6 +42,9 @@
     return '<a class="v2-task' + (done ? ' is-done' : '') + '" href="' + href + '"' + (extra || '') + '><span class="v2-task__ic v2-task__ic--' + c + '">' + ic + '</span><span><b>' + t + '</b><small>' + sub + '</small></span>' +
       (done ? '<span class="v2-task__check" aria-label="Hecho hoy">' + A.UI.check + '</span>' : A.UI.chevron) + '</a>';
   }
+  /* Fase 0: una línea con el porqué de la recomendación (datos reales; ver V2D.whyCourse / V2D.whyPlan) */
+  function whyLine(t){ return t ? '<p class="v2-next__why">' + esc(t) + '</p>' : ''; }
+  function levelLabel(){ try{ var m = LEVEL_META[getUserLevel()]; return m ? m.label + ' ' + m.range : ''; }catch(e){ return ''; } }
   function render(data){
     var p = data.p, acad = data.acad, mis = data.mis;
     var name = V2D.name();
@@ -60,6 +63,7 @@
         '<span class="v2-next__eyebrow">' + (nx.state === 'start' ? (fresh ? 'Una buena forma de empezar' : 'Empieza aquí') : (back ? 'Retoma donde lo dejaste' : 'Tu siguiente paso')) + '</span>' +
         '<h2 id="v2MissionT">' + esc(nx.c.title) + '</h2>' +
         '<p>Lección ' + nx.n + ' de ' + nx.c.total + ' · Unos 6 min</p>' +
+        (V2D.whyCourse ? whyLine(V2D.whyCourse(nx, acad)) : '') +
         '<div class="v2-next__meta"><span>' + (nx.c.done ? nx.c.done + ' de ' + nx.c.total + ' completadas' : 'Curso de la Academia') + '</span></div>' +
         '<a class="btn btn--lg btn--block" href="' + href + '">' + (nx.state === 'start' ? 'Empezar lección' : 'Continuar lección') + '</a>' +
         (fresh ? '<a class="v2-next__alt" href="academia.html">Ver todos los cursos</a>' : '') + '</section>';
@@ -69,7 +73,7 @@
         '<a class="btn btn--lg btn--block" href="academia.html">Ir a la Academia</a></section>';
     } else {
       mission = '<section class="v2-next" aria-labelledby="v2MissionT"><span class="v2-next__eyebrow">Tu práctica de hoy</span>' +
-        '<h2 id="v2MissionT">Sesión recomendada</h2><p>Con tu nivel y tus errores recientes.</p><div class="v2-next__meta"></div>' +
+        '<h2 id="v2MissionT">Sesión recomendada</h2>' + (V2D.whyPlan ? whyLine(V2D.whyPlan(mis, levelLabel())) : '<p>Con tu nivel y tus errores recientes.</p>') + '<div class="v2-next__meta"></div>' +
         '<a class="btn btn--lg btn--block" href="plan-estudio.html?empezar=1">Empezar</a></section>';
     }
     /* Hoy también: el reto y el repaso de errores. Check = hay una sesión real de hoy */

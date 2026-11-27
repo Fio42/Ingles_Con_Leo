@@ -93,7 +93,7 @@ test('Cuenta sin filas de progreso: todos "Sin empezar"; la tarjeta no ofrece "C
 const PRIV = ['miembros', 'plan-estudio', 'errores', 'aprender', 'clases', 'practica-miembros', 'progreso'];
 test('Las 7 páginas del alumno comparten header, barra móvil y pie con los mismos destinos', () => {
   const sig = h => ({
-    nav: [...h.match(/<nav class="nav-links">[\s\S]*?<\/nav>/)[0].matchAll(/href="([^"]+)"[^>]*>([^<]+)</g)].map(m => m[1] + '|' + m[2]).join(','),
+    nav: [...h.match(/<nav class="nav-links(?: nav-links--miembro)?">[\s\S]*?<\/nav>/)[0].matchAll(/href="([^"]+)"[^>]*>([^<]+)</g)].map(m => m[1] + '|' + m[2]).join(','),
     mob: [...h.match(/<nav class="mobile-nav(?: mobile-nav--miembro)?"[\s\S]*?<\/nav>/)[0].matchAll(/href='([^']+)'[^>]*>[\s\S]*?<\/svg>\s*([^<\s][^<]*)/g)].map(m => m[1] + '|' + m[2].trim()).join(','),
     foot: [...h.match(/<div class="foot-links">[\s\S]*?<\/div>/)[0].matchAll(/href="([^"]+)"[^>]*>([^<]+)</g)].map(m => m[1] + '|' + m[2]).join(',')
   });
@@ -104,7 +104,7 @@ test('Las 7 páginas del alumno comparten header, barra móvil y pie con los mis
 });
 test('Cada página marca su sección actual; ninguna pierde su enlace de cuenta', () => {
   const cur = { miembros: 'Inicio', progreso: 'Mi progreso', 'practica-miembros': 'Practicar', 'plan-estudio': 'Practicar', errores: 'Practicar', aprender: 'Practicar', clases: 'Practicar' };
-  PRIV.forEach(n => { const h = read(n + '.html'); const m = h.match(/<nav class="nav-links">[\s\S]*?<\/nav>/)[0].match(/class="current">([^<]+)</); assert(m && m[1] === cur[n], n); assert(/navManageSubBtn/.test(h) && /Cerrar sesión/.test(h), n + ' cuenta'); });
+  PRIV.forEach(n => { const h = read(n + '.html'); const m = h.match(/<nav class="nav-links(?: nav-links--miembro)?">[\s\S]*?<\/nav>/)[0].match(/class="current">([^<]+)</); assert(m && m[1] === cur[n], n); assert(/navManageSubBtn/.test(h) && /Cerrar sesión/.test(h), n + ' cuenta'); });
 });
 test('El panel conserva todas las herramientas (ninguna se pierde): destinos alcanzables desde Inicio + Practicar', () => {
   const all = read('miembros.html') + read('practica-miembros.html');

@@ -53,7 +53,7 @@
         '<button type="button" class="icon-btn" id="v2Sound"></button>' +
         '<button type="button" class="icon-btn" id="v2Theme"></button>' +
         '<span class="v2-slot" data-slot="avisos"></span></header>' +
-      '<nav class="nav" aria-label="Principal"><a class="nav__brand" href="index.html" aria-label="Inglés con Leo: página principal"><span class="avatar avatar--leo"><img src="logo.png" alt=""></span><span class="wordmark">Inglés con <b>Leo</b></span></a>' +
+      '<nav class="nav" aria-label="Principal"><a class="nav__brand" href="miembros.html" aria-label="Inglés con Leo: ir a tu Inicio"><span class="avatar avatar--leo"><img src="logo.png" alt=""></span><span class="wordmark">Inglés con <b>Leo</b></span></a>' +
         navHTML() + '</nav></div>');
     shell.classList.add('k-scope');
     /* Progreso es exclusivo de miembros: sin membresía activa, la racha lleva a practicar (C8) */

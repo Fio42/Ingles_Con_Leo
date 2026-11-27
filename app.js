@@ -375,7 +375,10 @@ function closeAllNavPops(){
    enlaces ya están visibles). */
 function initMobileNavToggle(){
   const burger = document.querySelector('.nav-burger');
-  const links = document.querySelector('.nav-links');
+  // miembros.html tiene dos juegos de enlaces (visitante y alumno); el menú abre el que corresponde. El resto de páginas tiene uno.
+  const de = document.documentElement, visitante = !!(de && de.classList && de.classList.contains('icl-visitante'));
+  const links = (visitante && document.querySelector('.nav-links--publica'))
+    || document.querySelector('.nav-links:not(.nav-links--publica)') || document.querySelector('.nav-links');
   if(!burger || !links) return;
 
   function closeMenu(){
@@ -680,11 +683,35 @@ function requireMember(){
    "Entrar a miembros" cuando ya está adentro. */
 function personalizeNav(){
   const cta = document.querySelector('.nav-cta');
-  if(cta && isMemberUnlocked()){
-    cta.textContent = 'Mi panel';
+  if(cta && (isMemberUnlocked() || leoHasSavedSession())){
+    cta.textContent = 'Mi cuenta';
     cta.href = 'miembros.html';
   }
 }
+/* Fase 0 · navegación pública con sesión: quien ya inició sesión (cuenta gratis o miembro) y abre una página pública
+   (portada, artículos, práctica gratis) ve "Mi cuenta" en vez de "Entrar a miembros" (escritorio) o "Miembros" con candado
+   (barra inferior del móvil). Mismo destino (miembros.html); solo cambia la etiqueta para que se entienda que ya está dentro.
+   Los buscadores y los visitantes ven la página igual que siempre. */
+function leoHasSavedSession(){
+  try{ for(let i = 0; i < localStorage.length; i++){ if(/^sb-.*-auth-token$/.test(localStorage.key(i) || '')) return true; } }catch(e){}
+  return false;
+}
+function leoSessionAwarePublicNav(){
+  try{
+    const page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    if(page === 'miembros.html' || !(leoHasSavedSession() || isMemberUnlocked())) return;
+    personalizeNav();
+    document.querySelectorAll('.mobile-nav:not(.mobile-nav--miembro) .mnav-item').forEach(btn => {
+      if(btn.getAttribute('onclick') !== "location.href='miembros.html'" || btn.dataset.leoMine) return;
+      btn.dataset.leoMine = '1';
+      const svg = btn.querySelector('svg');
+      if(svg) svg.innerHTML = '<circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+      Array.from(btn.childNodes).forEach(n => { if(n.nodeType === 3 && n.textContent.trim()) n.textContent = ' Mi cuenta '; });
+      btn.setAttribute('aria-label', 'Mi cuenta');
+    });
+  }catch(e){}
+}
+try{ if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', leoSessionAwarePublicNav); else leoSessionAwarePublicNav(); }catch(e){}
 
 /* Animación sutil al hacer scroll: las secciones marcadas con
    .reveal (o .reveal-stagger, para que sus hijos aparezcan uno a uno)
@@ -4789,6 +4816,19 @@ async function hydrateAcademiaDemoOffer(){
   }catch(e){}
 }
 
+/* Fase 0: datos reales de la cuenta gratis para su invitación (solo lectura; si algo falla, se omite). */
+function freeWallFacts(){
+  const out = { streak: 0, answered: 0, errors: 0, topic: '' };
+  try{ out.streak = computeStreak() || 0; }catch(e){}
+  try{ loadProgress().sessions.forEach(s => (s.results || []).forEach(r => { if(r && typeof r.isCorrect === 'boolean') out.answered++; })); }catch(e){}
+  try{
+    const spots = freeMemoryWeakSpots() || [];
+    spots.forEach(g => { out.errors += (g.ids || []).length; });
+    const top = spots.slice().sort((a, b) => (b.ids || []).length - (a.ids || []).length)[0];
+    if(top && TEMA_BY_ID[top.temaId]) out.topic = TEMA_BY_ID[top.temaId].label;
+  }catch(e){}
+  return out;
+}
 function renderFreeDailyLimitReachedBlock(sessionResults){
   if(_leoAccessTier === 'free'){
     freeSessionEnd();   // el límite cortó la sesión: se guarda lo respondido hasta aquí
@@ -4796,21 +4836,37 @@ function renderFreeDailyLimitReachedBlock(sessionResults){
     setTimeout(hydrateAcademiaDemoOffer, 0);
     const fg = Array.isArray(sessionResults) ? sessionResults.filter(r => r && typeof r.isCorrect === 'boolean') : [];
     const fok = fg.filter(r => r.isCorrect).length;
+    /* Fase 0: invitación con lo que la persona YA tiene en su cuenta (datos reales de su progreso) y solo 3 beneficios que le
+       sirven ahora; el resto de beneficios sigue disponible en "Ver todo lo que incluye". Mismo precio, mismo botón, mismos eventos. */
+    const me = freeWallFacts();
+    const mine = [];
+    if(me.streak >= 2) mine.push(me.streak + ' días de racha');
+    if(me.answered > 0) mine.push(me.answered + (me.answered === 1 ? ' ejercicio respondido' : ' ejercicios respondidos'));
+    if(me.errors > 0) mine.push(me.errors + (me.errors === 1 ? ' error guardado' : ' errores guardados') + (me.topic ? ' (sobre todo de «' + commentEscapeHtml(me.topic) + '»)' : ''));
+    const mineLine = mine.length ? '<p class="upgrade-mine">En tu cuenta ya tienes ' + (mine.length > 1 ? mine.slice(0, -1).join(', ') + ' y ' + mine[mine.length - 1] : mine[0]) + '. Todo queda guardado.</p>' : '';
+    const top3 = [
+      me.errors > 0 ? '<strong>Método Leo</strong>: repasa ' + (me.errors === 1 ? 'tu error guardado' : 'tus ' + me.errors + ' errores guardados') + ' hasta que los domines' : '<strong>Método Leo</strong>: recuerda tus errores y te dice qué practicar después',
+      'Práctica sin límite, también hoy',
+      window.ACADEMIA_LIVE ? '<strong>Academia Inglés con Leo</strong>: cursos cortos con evaluación e insignia' : '<strong>Leo AI</strong> cuando necesitas una explicación extra'
+    ];
+    const rest = [
+      window.ACADEMIA_LIVE ? '<li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>' : '',
+      '<li>Gramática, vocabulario, listening, speaking y writing</li>',
+      '<li>Reto diario de 5 ejercicios para cuidar tu racha</li>',
+      '<li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>',
+      '<li>Clases interactivas del método del Profe Leo</li>',
+      '<li>Tu progreso y tu racha en cualquier dispositivo</li>'
+    ].join('');
     return `
       <div class="session-summary upgrade-block free-wall">
         <h2>¡Completaste tus ${FREE_USER_DAILY_LIMIT} ejercicios gratis de hoy!</h2>
         ${fg.length ? `<p class="summary-score">En esta sesión: ${fok} de ${fg.length} correctas a la primera.</p>` : ''}
-        <p class="upgrade-lead">Si quieres seguir ahora mismo, como miembro practicas sin límite:</p>
+        ${mineLine}
+        <p class="upgrade-lead">Si quieres seguir hoy, con la membresía tienes:</p>
         <ul class="upgrade-benefits">
-          ${window.ACADEMIA_LIVE ? '<li><strong>Academia Inglés con Leo</strong>: todos los cursos publicados (TO BE, pronombres, artículos, presente simple, DO / DOES y más), con evaluaciones e insignias</li>' : ''}
-          <li>Un sistema que recuerda tus errores y te dice qué practicar después</li>
-          <li><strong>Leo AI</strong> cuando necesitas una explicación extra</li>
-          <li>Práctica ilimitada de gramática, vocabulario, listening, speaking y writing</li>
-          <li>Reto diario de 5 ejercicios para cuidar tu racha</li>
-          <li>Preparación para TOEIC, TOEFL, IELTS y Cambridge</li>
-          <li>Clases interactivas del método del Profe Leo y repaso automático de tus errores</li>
-          <li>Tu progreso y tu racha guardados en cualquier dispositivo</li>
+          ${top3.map(t => '<li>' + t + '</li>').join('')}
         </ul>
+        <details class="upgrade-more"><summary>Ver todo lo que incluye</summary><ul class="upgrade-benefits">${rest}</ul></details>
         <p class="upgrade-price"><strong>$2 USD al mes</strong>. Cancela cuando quieras.</p>
         <div class="summary-actions">
           <a href="miembros.html?pagar=1" class="btn btn-primary" onclick="trackLeoEvent('membership_cta_clicked')">Seguir practicando sin límite</a>
@@ -10269,6 +10325,24 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
   function focusTabs(){
     if(tabsEl && tabsEl.scrollIntoView) tabsEl.scrollIntoView({ behavior:'smooth', block:'start' });
   }
+  /* Fase 0: "Empezar ahora" lleva a la PREGUNTA (no a las pestañas, que quedaban medio tapadas por la barra fija) y la deja
+     arriba, justo debajo del encabezado, con sus opciones a la vista. El foco del teclado pasa al enunciado. Si no hay
+     pregunta pintada (caso raro), se comporta como antes. */
+  function focusFirstQuestion(){
+    try{
+      const card = bodyEl && bodyEl.querySelector('.session-card');
+      if(!card){ focusTabs(); return; }
+      const head = document.querySelector('header');
+      const pos = head ? getComputedStyle(head).position : '';
+      const hh = (pos === 'sticky' || pos === 'fixed') ? head.getBoundingClientRect().height : 0;
+      const box = (headEl && headEl.parentNode && headEl.parentNode.contains(card)) ? headEl.parentNode : card;
+      const y = box.getBoundingClientRect().top + window.scrollY - hh - 12;
+      const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: Math.max(0, y), behavior: still ? 'auto' : 'smooth' });
+      const q = card.querySelector('.practice-prompt, h3, h4, p');
+      if(q){ if(!q.hasAttribute('tabindex')) q.setAttribute('tabindex', '-1'); q.focus({ preventScroll: true }); }
+    }catch(e){ focusTabs(); }
+  }
 
   // "Probar otra habilidad" (botón del resumen de una sesión gratis):
   // antes solo hacía scroll hacia las pestañas de arriba y dejaba que
@@ -10335,7 +10409,7 @@ function initFreePractice({ levelsEl, tabsEl, headEl, bodyEl }){
       qs.innerHTML = '<button type="button" class="btn btn-primary" data-quick-start style="width:100%;max-width:100%;white-space:normal;">Empezar ahora: mi primera pregunta</button>' +
         '<p style="margin:8px 0 0;font-size:13px;color:var(--ink-faint);text-align:center;">Nivel ' + ((LEVEL_META[currentLevel] && LEVEL_META[currentLevel].label) || currentLevel) + '. Si no es el tuyo, cámbialo en las tarjetas de abajo.</p>';
       levelsEl.parentNode.insertBefore(qs, levelsEl);
-      qs.querySelector('[data-quick-start]').addEventListener('click', ()=>{ trackLeoEvent('practice_quick_start_clicked', { level: currentLevel }); focusTabs(); });
+      qs.querySelector('[data-quick-start]').addEventListener('click', ()=>{ trackLeoEvent('practice_quick_start_clicked', { level: currentLevel }); focusFirstQuestion(); });
     }
   }catch(e){}
   // Memoria de la cuenta gratis: tarjeta con lo que costó (no existe para invitados). Se repinta al llegar el progreso de la nube.

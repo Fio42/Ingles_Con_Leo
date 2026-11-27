@@ -329,3 +329,5 @@ main.v2-has-practice.v2-no-engine .home-hint{display:none!important}
   .k-scope .v2-next .k-btn--block{max-width:380px}
   .k-scope .v2-next__alt{text-align:left;display:inline-block}
 }
+/* Fase 0: el porqué de la recomendación, una línea discreta bajo el título de la tarjeta principal */
+.k-scope .v2-next p.v2-next__why{margin:8px 0 0;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font-size:13.5px;line-height:1.4;font-weight:var(--k-fw-bold);max-width:100%}
