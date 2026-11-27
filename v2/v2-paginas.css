@@ -107,3 +107,9 @@ html.v2.v2-app .k-scope small,html.v2.v2-app .k-scope .k-small,html.v2.v2-app .k
 html.v2.v2-app .k-cstop__state,html.v2.v2-app .k-badge__name,html.v2.v2-app .k-today__lbl,html.v2.v2-app .k-measure__k,
 html.v2.v2-app .stat-card-delta,html.v2.v2-app .practice-instruction,html.v2.v2-app .level-range,
 html.v2.v2-app .weekly-bar-label,html.v2.v2-app .weekly-bar-count,html.v2.v2-app .diag-hl-label{font-size:13px!important}
+
+/* Bloque A (UX) · Plan de estudio: "Empezar mi sesión" arriba, a la vista sin desplazarse.
+   La duración recomendada ya viene marcada; ajustarla y ver el detalle de la sesión sigue debajo. Solo orden visual. */
+html.v2 #planArea > .session-shell:has(#planStartBtn){display:flex;flex-direction:column}
+html.v2 #planArea > .session-shell > .plan-intro-hint{order:-3}
+html.v2 #planArea > .session-shell > #planStartBtn{order:-2;margin:4px 0 22px;min-height:56px;font-size:1.08rem}

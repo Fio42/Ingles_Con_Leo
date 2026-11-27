@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<script src="tema.js?v=20261128a"></script>
+<script src="tema.js?v=20261129a"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -28,10 +28,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <script src="academia-lanzamiento.js?v=20261026b"></script>
-<link rel="stylesheet" href="style.css?v=20261128a">
-<link rel="stylesheet" href="v2/v3-ui.css?v=20261128a">
-<link rel="stylesheet" href="v2/v2-lecciones.css?v=20261128a">
-<link rel="stylesheet" href="v2/v2-gratis.css?v=20261128b">
+<link rel="stylesheet" href="style.css?v=20261129a">
+<link rel="stylesheet" href="v2/v3-ui.css?v=20261129a">
+<link rel="stylesheet" href="v2/v2-lecciones.css?v=20261129a">
+<link rel="stylesheet" href="v2/v2-gratis.css?v=20261129a">
 <link rel="preload" as="style" href="chatbot.css?v=20261124b">
 <link rel="stylesheet" href="chatbot.css?v=20261124b" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="chatbot.css?v=20261124b"></noscript>
@@ -330,16 +330,16 @@ setTimeout(window.leoShowLate,6000);
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="data.js?v=20261122e"></script>
 <script src="temas.js?v=20261121d"></script>
-<script src="app.js?v=20261128b"></script>
+<script src="app.js?v=20261129a"></script>
 <!-- 2.0 en la práctica gratis: mismas piezas de presentación que miembros (sonidos, combos, Profe Leo, resultados). Sin cambios de límites. -->
-<script src="v2/v3-art.js?v=20261128a" defer></script>
-<script src="v2/v3-sound.js?v=20261128a" defer></script>
-<script src="v2/v2-gratis.js?v=20261128b" defer></script>
-<script src="v2/v2-kit.js?v=20261128a" defer></script>
-<script src="v2/v2-fx.js?v=20261128c" defer></script>
+<script src="v2/v3-art.js?v=20261129a" defer></script>
+<script src="v2/v3-sound.js?v=20261129a" defer></script>
+<script src="v2/v2-gratis.js?v=20261129a" defer></script>
+<script src="v2/v2-kit.js?v=20261129a" defer></script>
+<script src="v2/v2-fx.js?v=20261129a" defer></script>
 <script src="video-tema.js?v=20261123a" defer></script>
 <script src="leo-voz.js?v=20261003d" defer></script>
-<script src="backend.js?v=20261128a"></script>
+<script src="backend.js?v=20261129a"></script>
 <script src="toefl-data.js?v=20261121d"></script>
 <script>
 /* Carga diferida de LeoBot (mismo patron que Google Analytics/Meta
@@ -354,13 +354,13 @@ setTimeout(window.leoShowLate,6000);
     removeEventListener('pointerdown', loadChatbot, true);
     removeEventListener('keydown', loadChatbot, true);
     var s = document.createElement('script');
-    s.src = 'chatbot.js?v=20261128a';
+    s.src = 'chatbot.js?v=20261129a';
     s.setAttribute('data-retry', '1');
     s.onerror = function(){
       /* Red inestable (navegadores de TikTok/Instagram): un reintento. */
       setTimeout(function(){
         var r = document.createElement('script');
-        r.src = 'chatbot.js?v=20261128a&r=1';
+        r.src = 'chatbot.js?v=20261129a&r=1';
         document.body.appendChild(r);
       }, 2500);
     };
@@ -480,7 +480,25 @@ setTimeout(window.leoShowLate,6000);
     // tiene cuenta (gratis) iniciada, por ejemplo al volver aqui recien
     // creada la cuenta (?cuenta=nueva).
     if(loggedInProfile){
-      initOnboarding(function(){ if(freePractice && freePractice.syncLevel) freePractice.syncLevel(); });
+      /* Bloque A (UX): la bienvenida (nombre y nivel) ya no se abre encima de la práctica. Se ofrece en una
+         tarjeta pequeña y saltable; solo se abre si la persona la pide y nunca durante un ejercicio. */
+      (function offerOnboarding(){
+        try{
+          if(getProfile() || PROFILE_SYNC_UNCERTAIN) return;
+          if(sessionStorage.getItem('leo_onb_later')) return;
+          var host = document.getElementById('skillHead'); if(!host || document.getElementById('onbOffer')) return;
+          var box = document.createElement('div'); box.id = 'onbOffer'; box.className = 'onb-offer'; box.setAttribute('role', 'region'); box.setAttribute('aria-label', 'Personaliza tu práctica');
+          box.innerHTML = '<p><strong>Te doy la bienvenida a Inglés con Leo.</strong> ¿Personalizamos tu práctica? Tu nombre y tu nivel, en 20 segundos.</p>' +
+            '<div class="onb-offer-actions"><button type="button" class="btn btn-primary btn-sm" id="onbOfferGo">Personalizar</button><button type="button" class="btn btn-ghost btn-sm" id="onbOfferLater">Ahora no</button></div>';
+          host.parentNode.insertBefore(box, host);
+          document.getElementById('onbOfferLater').addEventListener('click', function(){ try{ sessionStorage.setItem('leo_onb_later', '1'); }catch(e){} box.remove(); });
+          document.getElementById('onbOfferGo').addEventListener('click', function(){
+            if(document.documentElement.classList.contains('icl-ex')) return;   // nunca durante un ejercicio
+            box.remove();
+            initOnboarding(function(){ if(freePractice && freePractice.syncLevel) freePractice.syncLevel(); });
+          });
+        }catch(e){}
+      })();
       // Cuenta recién creada que ya tenía nivel (no vio el onboarding): también baja directo al ejercicio.
       if(justCreatedAccount && getProfile() && freePractice && freePractice.focusPractice) setTimeout(freePractice.focusPractice, 400);
     }

@@ -129,7 +129,7 @@
   function renderLogros(){
     var list = apps().map(function(a){ return a.view(); });
     var html = '<div class="v2-screen is-wide v2-logros">' +
-      '<header class="page-head"><h1>Mis logros</h1><p>Cada insignia se gana al aprobar la evaluación de un curso. La corrige el servidor.</p></header>' +
+      '<header class="page-head"><h1>Mis logros</h1><p>Cada insignia demuestra que aprobaste un curso: se gana al superar su evaluación.</p></header>' +
       '<div class="pstats"><div><span>' + A.ICO.lesson + '</span><b id="v2LgLes">' + list.reduce(function(t, v){ return t + v.done; }, 0) + '</b><small>Lecciones completadas</small></div>' +
         '<div><span>' + A.STK.trophy + '</span><b id="v2LgBad">–</b><small>Cursos aprobados (insignias)</small></div>' +
         '<div><span>' + A.ICO.target + '</span><b>' + list.filter(function(v){ return v.done >= v.total; }).length + '</b><small>Cursos con lecciones completas</small></div></div>' +

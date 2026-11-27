@@ -601,7 +601,7 @@ function initOnboarding(onSaved){
   overlay.className = 'onb-overlay';
   overlay.innerHTML = `
     <div class="onb-card">
-      <h2>¡Bienvenido(a) a Inglés con Leo!</h2>
+      <h2>Te doy la bienvenida a Inglés con Leo</h2>
       <p>Cuéntanos un poco de ti para personalizar tu práctica.</p>
       <div class="onb-field">
         <label for="onbName">¿Cómo te llamas?</label>
@@ -1679,7 +1679,7 @@ function showConfirmOverlay({ title, message, confirmLabel, cancelLabel, onConfi
   overlay.className = 'onb-overlay';
   overlay.innerHTML = `
     <div class="onb-card">
-      <h2>${title || '¿Estás seguro?'}</h2>
+      <h2>${title || '¿Confirmamos?'}</h2>
       <p>${message || ''}</p>
       <button type="button" class="btn btn-primary btn-block" id="confirmOverlayYes" style="margin-bottom:10px;">${confirmLabel || 'Sí, continuar'}</button>
       <button type="button" class="btn btn-ghost btn-block" id="confirmOverlayNo">${cancelLabel || 'Cancelar'}</button>
@@ -2230,14 +2230,17 @@ function renderExamplesBlock(examples){
     ${examples.map(ex=>`<div class="example-pair"><div class="example-en">${ex.en}</div><div class="example-es">${ex.es}</div></div>`).join('')}
   </div>`;
 }
-function renderFeedback(container, isCorrect, explainText, examples){
+function renderFeedback(container, isCorrect, explainText, examples, correctText){
   const fb = container.querySelector('#fb');
   if(!fb) return;
   fb.classList.add('show');
   fb.classList.toggle('ok', isCorrect);
   fb.classList.toggle('bad', !isCorrect);
+  /* correctText: solo en formatos donde la pantalla no marca la respuesta correcta (completar la frase).
+     El feedback esencial (acierto o error, respuesta correcta y regla) siempre queda a la vista. */
   fb.innerHTML = `
     <div class="fb-head">${isCorrect ? OK_ICON : BAD_ICON}<span>${isCorrect ? 'Correcto' : 'Casi.'}</span></div>
+    ${!isCorrect && correctText ? `<p class="fb-answer">La respuesta correcta es <strong>${correctText}</strong>.</p>` : ''}
     <p class="fb-explain">${explainText}</p>
     ${renderExamplesBlock(examples)}`;
 }
@@ -2559,7 +2562,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
         const isCorrect = word === item.correct;
         slot.style.borderColor = isCorrect ? '#1FA463' : '#EF5A45';
         slot.style.background = isCorrect ? '#E7F7EE' : '#FDEBE8';
-        renderFeedback(container, isCorrect, item.explain, item.examples);
+        renderFeedback(container, isCorrect, item.explain, item.examples, item.correct);
         addErrorLessonLink(container, item, isCorrect);
         leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:word }, aiOpts));
         noteGrammarAnswer(container, item, isCorrect, word);
@@ -5467,7 +5470,7 @@ function renderPlanIntro(container, opts){
     const diffMeta = PLAN_DIFFICULTIES[currentDiff];
     container.innerHTML = `
       <div class="session-shell">
-        <p class="plan-intro-hint">Elige cuánto tiempo quieres practicar. Nosotros elegimos qué te conviene trabajar hoy.</p>
+        <p class="plan-intro-hint">Tu sesión de hoy ya está lista: la armamos con tu nivel y tus errores. Si quieres, ajusta la duración.</p>
         <div class="examples-label">Duración</div>
         <div class="lengths" id="planLengthSelector" style="margin-bottom:24px;"></div>
         <div class="plan-difficulty-row">

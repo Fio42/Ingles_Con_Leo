@@ -158,7 +158,9 @@ test('Practica gratis: una cuenta con nivel elegido arranca en ese nivel; los in
   assert(/let currentLevel = 'facil';\n\s*try\{ if\(_leoAccessTier === 'free' && getProfile\(\)\) currentLevel = getUserLevel\(\); \}catch\(e\)\{\}/.test(fp));
   assert(/return \{\s*syncLevel\(\)/.test(fp));
   assert(/const freePractice = initFreePractice\(/.test(prac) && /initOnboarding\(function\(\)\{ if\(freePractice && freePractice\.syncLevel\) freePractice\.syncLevel\(\); \}\)/.test(prac));
-  assert(/if\(loggedInProfile\)\{\s*initOnboarding/.test(prac), 'el onboarding sigue siendo solo para cuentas');
+  assert(/if\(loggedInProfile\)\{[\s\S]{0,400}?\(function offerOnboarding\(\)/.test(prac), 'el onboarding sigue siendo solo para cuentas');
+  // Bloque A (UX): ya no se abre encima de la práctica; se ofrece en una tarjeta saltable y nunca durante un ejercicio
+  assert(/id="onbOfferLater"/.test(prac) && /classList\.contains\('icl-ex'\)\) return;/.test(prac), 'la bienvenida es saltable y no interrumpe');
 });
 test('Los scripts en linea de practica.html y miembros.html siguen siendo JavaScript valido', () => {
   for(const h of [prac, html]){
