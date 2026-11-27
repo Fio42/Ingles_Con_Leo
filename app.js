@@ -475,6 +475,11 @@ async function initMemberHeader(){
   if(bellContent) bellContent.innerHTML = `<p class="nav-pop-msg">${msg}</p>`;
   if(bellDot) bellDot.style.display = showDot ? 'block' : 'none';
 
+  /* Los listeners se conectan UNA sola vez: la barra 2.0 vuelve a llamar a esta función para pintar la inicial (C2)
+     y, sin esta guarda, el menú de cuenta se abría y se cerraba en el mismo toque. */
+  if(block.dataset.iclWired === '1') return;
+  block.dataset.iclWired = '1';
+
   const searchInput = document.getElementById('navSearchInput');
   const searchResults = document.getElementById('navSearchResults');
   function renderSearchResults(query){

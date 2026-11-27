@@ -2517,6 +2517,10 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 
 /* ===== Miembros (miembros.html): barra inferior según quién mira (C6) ===== */
 html:not(.icl-visitante) .mobile-nav--publica{display:none!important}
+/* C9: portada y práctica gratis: LeoBot se abre desde la cabecera; el robot flotante no tapa contenido */
+html.leobot-docked .leobot-fab,html.leobot-docked .leobot-greet,html.leobot-docked .leobot-reopen{display:none!important}
+html.leobot-docked .nav-links{margin-right:12px}.leobot-dock-btn{margin-left:auto;margin-right:6px;flex:0 0 auto}.leobot-dock-btn + .tema-wrap{margin-left:0;padding-left:0}
+@media (min-width:481px){html.leobot-docked .leobot-panel{top:76px!important;bottom:auto!important;max-height:min(650px,calc(100vh - 96px))!important}}
 html.icl-visitante .mobile-nav--miembro{display:none!important}
 
 /* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */

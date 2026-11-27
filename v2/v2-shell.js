@@ -48,6 +48,7 @@
     var shell = K.h('<div class="v2-shell">' +
       '<header class="topbar" id="v2Top"><span class="v2-slot" data-slot="cuenta"></span><span class="topbar__spacer"></span>' +
         '<a class="stat stat--streak is-off" id="v2Streak" href="progreso.html" aria-label="Racha"></a>' +
+        '<button type="button" class="icon-btn" id="v2Help" aria-label="Ayuda: abrir LeoBot" title="Ayuda"></button>' +
         '<button type="button" class="icon-btn" id="v2Sound"></button>' +
         '<button type="button" class="icon-btn" id="v2Theme"></button>' +
         '<span class="v2-slot" data-slot="avisos"></span></header>' +
@@ -89,7 +90,21 @@
       nav.insertAdjacentHTML('beforeend', K.px(navHTML()));
       var stk = d.getElementById('v2Streak'); if(stk) stk.setAttribute('href', nonMember ? 'practica.html' : 'progreso.html');
     });
+    /* Sin pista guardada (navegador nuevo, o páginas como la Academia que no consultan el perfil): se confirma una vez */
+    if(nonMember && !html.classList.contains('v2-preview')){
+      var tries = 0;
+      (function ask(){
+        if(typeof LeoBackend !== 'undefined' && LeoBackend.getMemberProfile){
+          try{ Promise.resolve(LeoBackend.getMemberProfile()).then(function(pr){ if(!pr && ++tries < 6) setTimeout(ask, 1200); }, function(){}); }catch(e){}
+          return;
+        }
+        if(++tries < 30) setTimeout(ask, 300);
+      })();
+    }
     d.getElementById('v2Sound').addEventListener('click', function(){ SND.play('tap'); K.soundSheet(); });
+    /* C9: LeoBot vive en la barra superior (zona segura): el robot flotante ya no tapa contenido en ningún tamaño */
+    var hb = d.getElementById('v2Help'); hb.innerHTML = K.px(A.UI.chat); html.classList.add('v2-help-docked');
+    hb.addEventListener('click', function(){ SND.play('tap'); openLeoBot(); });
     window.addEventListener('v2:sound', paintTop);
     d.getElementById('v2Theme').addEventListener('click', function(){ SND.play('tap'); setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
     addEventListener('scroll', function(){ d.getElementById('v2Top').classList.toggle('k-is-scrolled', scrollY > 4); }, { passive: true });
@@ -198,6 +213,18 @@
     /* Al elegir otro nivel o duración la sesión se reinicia: se pliega para volver al ejercicio */
     box.addEventListener('click', function(e){ if(e.target.closest('[data-level],[data-length]')) setTimeout(function(){ det.open = false; }, 120); });
   }
+
+  /* Abre el asistente real (chatbot.js). Si aún no cargó (carga diferida), el primer toque lo descarga y se espera */
+  function openLeoBot(){
+    var tries = 0;
+    (function go(){
+      var fab = d.getElementById('leobotFab'), pill = d.getElementById('leobotReopen');
+      if(fab){ fab.click(); return; }
+      if(pill){ pill.click(); return; }
+      if(++tries < 40) setTimeout(go, 100);
+    })();
+  }
+  window.ICL_openLeoBot = openLeoBot;
 
   window.V2SHELL = { paintTop: paintTop, current: current };
 

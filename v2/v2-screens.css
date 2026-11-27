@@ -119,8 +119,6 @@ html.v2 .ac-wrap{max-width:796px;margin-left:auto;margin-right:auto}
 @media (max-width:767px){ html.v2 .ac-wrap{padding-left:16px;padding-right:16px} }
 
 /* C4 · Academia: el anillo mide lecciones; los cursos aprobados (con insignia) se cuentan aparte */
-.k-scope .k-exp-head .k-ring__center{display:flex;flex-direction:column;justify-content:center;align-items:center;line-height:1.05}
-.k-scope .v2-ring-cap{font-size:9px;font-weight:700;color:var(--k-text-2);letter-spacing:.02em}
 .k-scope .k-exp-head .v2-route-note{font-weight:600;color:var(--k-text-3,var(--k-text-2));margin-top:2px}
 
 /* C10 · Tarjeta "Recomendado por Leo" (componente .rec): la lista usa todo el ancho y Leo queda pequeño en la esquina */
@@ -150,3 +148,15 @@ html.v2 .v2-setup__body{padding:0 12px 14px}
 html.v2 .v2-after-session{margin-top:18px}
 .k-scope .v2-level-slot .level-suggest{padding:0;border:0;background:none;box-shadow:none}
 .k-scope .v2-level-slot .level-suggest-actions .btn{width:auto;flex:0 0 auto;display:inline-flex}
+
+/* C20 · Gráficas (componente): el SVG escala con el ancho; sin tope, en escritorio sus textos llegaban a ~25 px.
+   Con este tope los rótulos quedan entre 11 y 15 px en cualquier pantalla. */
+.k-scope .k-chart svg{max-width:440px;margin-left:auto;margin-right:auto}
+
+/* C20 · Etapas de la Academia: en columnas anchas el paisaje se recortaba por arriba y la bandera tocaba el borde.
+   Con esta altura mínima la bandera queda entera en cualquier ancho de la escala única. */
+@media (min-width:768px){ .k-scope .k-stage__banner{min-height:150px} }
+
+/* C20 · Pestañas de la Academia: la barra superior se va con el scroll, así que las pestañas se fijan arriba del todo
+   con un borde del color del fondo; antes quedaba un hueco de 64 px por donde se veía el contenido pasar por encima. */
+html.v2 .ac-tabs{top:8px!important;box-shadow:0 -8px 0 0 var(--v2-bg),0 6px 14px -8px rgba(0,0,0,.35)}

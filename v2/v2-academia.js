@@ -43,8 +43,8 @@
     var routeTitle = ''; try{ routeTitle = ACADEMIA.route.title; }catch(e){}
     var cols = [1, 2, 3, 2];
     var html = '<div class="v2-screen is-wide v2-route">' +
-      '<header class="exp-head"><div class="ring ring--brand" role="img" aria-label="Avance de la ruta: ' + pct + '%">' + K.ring(pct / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + pct + '%</b><small class="v2-ring-cap">lecciones</small></div></div>' +
-        '<div><span class="t-eyebrow">Ruta ' + esc(routeTitle || 'de la academia') + '</span><h1>Tu ruta</h1><p><span id="v2RtAprob">Cursos aprobados: …</span> · ' + doneL + ' de ' + totalL + ' lecciones</p><p class="v2-route-note">Un curso queda aprobado al superar su evaluación y ganar su insignia. Entra a cualquiera cuando quieras.</p></div></header>' +
+      '<header class="exp-head"><div class="ring ring--brand" role="img" aria-label="Lecciones completadas de la ruta: ' + pct + '%">' + K.ring(pct / 100, 30, 8) + '<div class="ring__center"><b class="ring__n">' + pct + '%</b></div></div>' +
+        '<div><span class="t-eyebrow">Ruta ' + esc(routeTitle || 'de la academia') + '</span><h1>Tu ruta</h1><p><span id="v2RtAprob">Cursos aprobados: …</span> · ' + doneL + ' de ' + totalL + ' lecciones (' + pct + '%)</p><p class="v2-route-note">Un curso queda aprobado al superar su evaluación y ganar su insignia. Entra a cualquiera cuando quieras.</p></div></header>' +
       '<nav class="stage-nav" aria-label="Etapas">' + K.STAGES.map(function(sg, i){ var dn = false; /* se marca al llegar las insignias (C4) */
         return '<button type="button" data-goto="' + i + '" class="' + (i === curStage ? 'is-now' : '') + ' ' + (dn ? 'is-done' : '') + '" style="--k-st:' + sg.c + '"><i>' + (dn ? A.UI.check : i + 1) + '</i><span>' + sg.t + '</span></button>'; }).join('') + '</nav>' +
       (cur && cur.next ? '<a class="next-up" href="#/curso/' + cur.id + '/leccion/' + cur.next.n + '">' + K.emblem(cur.id, { shape: stageOf(curIdx).shape, size: 52 }) +
