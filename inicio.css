@@ -256,3 +256,13 @@
 .hm-way .hm-tag{align-self:flex-start}
 @media(max-width:599px){.hm-mini{display:none}.hm-step{padding:18px}.hm-sec{padding:44px 0}.hm-facts li{padding:12px 14px}}
 @media(min-width:960px) and (max-width:1199px){.hm-refuerzo{left:57%;width:178px;padding:12px}.hm-refuerzo .hero-v2-card-en strong{font-size:1.05rem}}
+
+/* C18 · Portada móvil: Leo vuelve, pequeño y al lado de la tarjeta "Después de practicar" (debajo de los botones, no los empuja) */
+@media(max-width:520px){
+  .hm-leo-wrap{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:end;gap:10px}
+  .hm-hero-leo{display:block;width:84px;height:auto;filter:drop-shadow(0 10px 16px rgba(0,0,0,.3))}
+}
+/* Preguntas frecuentes progresivas: se ven las primeras y el resto con un botón (todo sigue en la página) */
+.hm-faq.is-collapsed .hm-faq-more{display:none}
+.hm-faq-toggle{margin-top:14px;background:none;border:1px solid var(--v2-line);color:var(--v2-text);border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;cursor:pointer}
+.hm-faq-toggle:hover{border-color:var(--v2-line-strong)}

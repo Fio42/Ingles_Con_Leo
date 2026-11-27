@@ -684,7 +684,18 @@
    Los scripts defer corren en orden, antes de DOMContentLoaded, asi que estas
    tres funciones se llaman justo cuando ya existen. */
 (function(){
-  function initHome(){ personalizeNav(); renderDailyMiniLesson(); initScrollReveal(); initHomeReveal(); }
+  function initHome(){ personalizeNav(); renderDailyMiniLesson(); initScrollReveal(); initHomeReveal(); initFaq(); }
+  /* Preguntas frecuentes progresivas: 5 a la vista y el resto con "Ver más preguntas". El texto no cambia y sigue en la página. */
+  function initFaq(){
+    var box=document.querySelector('.hm-faq'); if(!box) return;
+    var all=[].slice.call(box.querySelectorAll('details')).filter(function(d){ return getComputedStyle(d).display!=='none'; });
+    if(all.length<=6) return;
+    all.slice(5).forEach(function(d){ d.classList.add('hm-faq-more'); });
+    box.classList.add('is-collapsed');
+    var b=document.createElement('button'); b.type='button'; b.className='hm-faq-toggle'; b.textContent='Ver más preguntas ('+(all.length-5)+')';
+    b.addEventListener('click', function(){ box.classList.remove('is-collapsed'); b.remove(); });
+    box.appendChild(b);
+  }
   /* Entrada discreta de la portada 2.0: solo se oculta lo que el observador va a mostrar. */
   function initHomeReveal(){
     var els=document.querySelectorAll('.hm-rv'); if(!els.length||!('IntersectionObserver' in window)) return;
