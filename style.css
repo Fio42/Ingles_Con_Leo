@@ -2515,6 +2515,10 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
   main::after{content:"";display:block;height:64px}
 }
 
+/* ===== Miembros (miembros.html): barra inferior según quién mira (C6) ===== */
+html:not(.icl-visitante) .mobile-nav--publica{display:none!important}
+html.icl-visitante .mobile-nav--miembro{display:none!important}
+
 /* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */
 
 :root{

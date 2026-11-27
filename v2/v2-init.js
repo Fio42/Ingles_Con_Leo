@@ -17,6 +17,17 @@
   var on = ICL_V2_ENABLED && ui !== 'classic';
   if(force) on = force[1] === '1';
   window.ICL_V2 = { enabled: on, switchEnabled: ICL_V2_ENABLED };
+  /* C22: quien eligió la versión clásica (Ajustes avanzados) tiene siempre un enlace discreto para volver a 2.0 */
+  if(ICL_V2_ENABLED && ui === 'classic' && !force){
+    var back = function(){
+      var ses = false; try{ for(var b = 0; b < localStorage.length; b++){ if(/^sb-.*-auth-token$/.test(localStorage.key(b))){ ses = true; break; } } }catch(e){}
+      if(!ses || !document.body) return;
+      var a = document.createElement('a'); a.href = location.pathname + '?v2=1'; a.textContent = 'Volver al diseño nuevo';
+      a.style.cssText = 'display:block;text-align:center;font:600 14px/1.4 system-ui,sans-serif;padding:14px 16px 90px;color:#5B6CFF;';
+      document.body.appendChild(a);
+    };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', back); else back();
+  }
   if(!on) return;
   /* miembros.html es pública e indexada: allí 2.0 se enciende SOLO cuando la página ya
      mostró el área de miembro (v2-home.js llama a ICL_V2.activate()). Visitantes, Google,
@@ -58,6 +69,11 @@
     if(active) apply();
   };
   window.ICL_V2.theme = function(){ return pref; };
+  /* English Rush y Modo aprender son páginas públicas e indexadas (C13): para visitantes y buscadores no se descarga
+     nada de 2.0. Con sesión guardada se cargan los estilos y scripts al vuelo (como en miembros.html) y aparece la
+     barra del alumno; el juego y las microlecciones no cambian. */
+  var lazyPublic = page === 'juego.html' || page === 'aprender.html';
+  if(lazyPublic) deferred = true;
   if(!deferred){
     /* Páginas privadas con sesión: la cabecera y la barra clásicas no se pintan nunca (antes se veían un instante
        hasta que llegaba la barra de la app). Visitantes de la Academia: sin cambios. */
@@ -76,10 +92,10 @@
   function uncloak(){ if(cloak){ cloak.remove(); cloak = null; } }
   if(hasSession){
     cloak = document.createElement('style');
-    cloak.textContent = '#memberContent:not(.v2-has-home),body>header,body>footer,body>.mobile-nav{visibility:hidden!important}';
+    cloak.textContent = '#memberContent:not(.v2-has-home),html:not(.v2-preview) #memberPreview,body>header,body>footer,body>.mobile-nav{visibility:hidden!important}';
     document.head.appendChild(cloak);
     setTimeout(uncloak, 6000);
-    var waitHome = function(){ var mc = document.getElementById('memberContent'); if(mc && mc.classList.contains('v2-has-home')){ uncloak(); return; } if(cloak) setTimeout(waitHome, 60); };
+    var waitHome = function(){ var mc = document.getElementById('memberContent'); if((mc && mc.classList.contains('v2-has-home')) || ((lazyPublic || root.classList.contains('v2-preview')) && document.querySelector('.v2-shell'))){ uncloak(); return; } if(cloak) setTimeout(waitHome, 60); };
     waitHome();
   }
 
@@ -101,11 +117,19 @@
     var shown = function(id){ var e = document.getElementById(id); return !!(e && e.style.display !== 'none' && getComputedStyle(e).display !== 'none'); };
     var check = function(){
       if(shown('memberContent')){ obs.disconnect(); loadAll(); return; }
-      if(shown('gate') || shown('memberPreview')){ preDark(false); uncloak(); }
+      if(shown('memberPreview')){ obs.disconnect(); loadAll(); return; }   /* C8: cuenta gratis o vencida: también en 2.0 */
+      if(shown('gate')){ preDark(false); uncloak(); }
     };
     var obs = new MutationObserver(check);
     obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style'] });
     check();
+  }
+  if(lazyPublic){
+    if(!hasSession) return;
+    JS = ['v3-art.js', 'v3-sound.js', 'v2-kit.js', 'v2-data.js', 'v2-shell.js'];
+    root.classList.add('v2-app');
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadAll); else loadAll();
+    return;
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 })();

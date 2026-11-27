@@ -17,15 +17,22 @@
               'errores.html':'practicar', 'progreso.html':'progreso',
               'gramatica.html':'practicar', 'vocabulario.html':'practicar', 'listening.html':'practicar', 'speaking.html':'practicar', 'writing.html':'practicar',
               'mixto.html':'practicar', 'lectura.html':'practicar', 'clases.html':'mas', 'examenes.html':'mas', 'toefl.html':'mas', 'ielts.html':'mas',
-              'toeic.html':'mas', 'cambridge.html':'mas' };
+              'toeic.html':'mas', 'cambridge.html':'mas', 'aprender.html':'mas', 'juego.html':'mas' };
   var current = APP[page];
   if(!current) return;
 
   var MAS = '<svg class="ico nav-ico" viewBox="0 0 32 32" aria-hidden="true"><g class="nav-ico__body" stroke-width="2.4" stroke-linejoin="round"><rect x="4.5" y="4.5" width="9.5" height="9.5" rx="3"/><rect x="18" y="4.5" width="9.5" height="9.5" rx="3"/><rect x="4.5" y="18" width="9.5" height="9.5" rx="3"/><rect x="18" y="18" width="9.5" height="9.5" rx="3"/></g><g class="nav-ico__detail"></g></svg>';
-  var ITEMS = [
+  /* C8: la barra se adapta a los accesos de la cuenta. Sin membresía activa (cuenta gratis o vencida) Practicar lleva
+     a la práctica gratis y Progreso (exclusivo de miembros) no aparece. Solo cambia la navegación: los permisos los sigue
+     decidiendo la página real (guardMember) y el servidor. La pista leo_member_hint la escribe backend.js al verificar. */
+  var nonMember = (function(){ try{ return !localStorage.getItem('leo_member_hint'); }catch(e){ return false; } })();
+  function items(){ return nonMember ? [
+    { k:'inicio', t:'Inicio', h:'miembros.html' }, { k:'academia', t:'Academia', h:'academia.html' },
+    { k:'practicar', t:'Practicar', h:'practica.html' }, { k:'mas', t:'Más' }
+  ] : [
     { k:'inicio', t:'Inicio', h:'miembros.html' }, { k:'academia', t:'Academia', h:'academia.html' },
     { k:'practicar', t:'Practicar', h:'practica-miembros.html' }, { k:'progreso', t:'Progreso', h:'progreso.html' }, { k:'mas', t:'Más' }
-  ];
+  ]; }
 
   function build(){
     if(d.querySelector('.v2-shell')) return;
@@ -36,14 +43,16 @@
         '<button type="button" class="icon-btn" id="v2Sound"></button>' +
         '<button type="button" class="icon-btn" id="v2Theme"></button>' +
         '<span class="v2-slot" data-slot="avisos"></span></header>' +
-      '<nav class="nav" aria-label="Principal"><a class="nav__brand" href="miembros.html" aria-label="Inglés con Leo"><span class="avatar avatar--leo"><img src="logo.png" alt=""></span><span class="wordmark">Inglés con <b>Leo</b></span></a>' +
-        ITEMS.map(function(it){
+      '<nav class="nav" aria-label="Principal"><a class="nav__brand" href="index.html" aria-label="Inglés con Leo: página principal"><span class="avatar avatar--leo"><img src="logo.png" alt=""></span><span class="wordmark">Inglés con <b>Leo</b></span></a>' +
+        items().map(function(it){
           var ico = it.k === 'mas' ? MAS : (A.NAV_ICO || {})[it.k] || '';
           var inner = '<span class="nav__ico">' + ico + '<span class="nav__badge" hidden></span></span><span class="nav__label">' + it.t + '</span>';
           return it.h ? '<a class="nav__item" data-nav="' + it.k + '" href="' + it.h + '"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</a>'
                       : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</button>';
         }).join('') + '</nav></div>');
     shell.classList.add('k-scope');
+    /* Progreso es exclusivo de miembros: sin membresía activa, la racha lleva a practicar (C8) */
+    if(nonMember){ var stk = shell.querySelector('#v2Streak'); if(stk) stk.setAttribute('href', 'practica.html'); }
     d.body.insertBefore(shell, d.body.firstChild);
 
     /* Cuenta y avisos: se MUEVEN los controles reales (conservan sus funciones: nombre, suscripción, cerrar sesión) */
@@ -124,6 +133,7 @@
         row('juego.html', A.ICO.rush, 'English Rush', 'Preguntas rápidas, modo juego') +
         row('clases.html', A.ICO.listen, 'Clases interactivas', 'Situaciones reales con audio') +
         row('examenes.html', A.ICO.level, 'Exámenes', 'TOEFL, IELTS, TOEIC y Cambridge') +
+        row('aprender.html', A.ICO.lesson, 'Modo aprender', 'Microlecciones de 3 minutos para mirar y escuchar') +
         row('articulos.html', A.ICO.read, 'Aprende inglés', 'Guías y artículos gratis') +
       '</div>' +
       '<div class="card list v2-settings">' +
@@ -132,8 +142,11 @@
         '<div class="row">' + U.speaker + '<span class="row__label">Sonidos<small>Efectos al responder y celebrar, y su volumen</small></span><button type="button" class="btn btn--sm btn--secondary" data-sndsheet>Ajustar</button></div>' +
         '<div class="row">' + U.clockLine + '<span class="row__label">Meta diaria<small>Minutos de práctica al día</small></span><div class="seg" role="group" aria-label="Meta diaria">' +
           [5, 10, 15, 20].map(function(g){ return '<button type="button" data-goal="' + g + '" aria-pressed="' + (goal === g) + '">' + g + '</button>'; }).join('') + '</div></div>' +
-        '<div class="row">' + U.refresh + '<span class="row__label">Versión clásica<small>Vuelve al diseño anterior en este dispositivo</small></span><button type="button" class="btn btn--sm btn--secondary" data-classic>Usar clásica</button></div>' +
       '</div>' +
+      /* C22: la versión clásica es un mecanismo de recuperación, no una opción del día a día: queda en Ajustes avanzados */
+      '<details class="v2-details v2-advanced"><summary>Ajustes avanzados</summary><div class="card list">' +
+        '<div class="row">' + U.refresh + '<span class="row__label">Versión clásica<small>Solo si algo no se ve bien: vuelve al diseño anterior en este dispositivo. Al final de cada página tendrás un enlace para regresar</small></span><button type="button" class="btn btn--sm btn--secondary" data-classic>Usar clásica</button></div>' +
+      '</div></details>' +
       '<p class="v2-legal"><a href="index.html">Página principal</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a> · <a href="index.html#contacto">Contacto</a></p>' });
     m.box.addEventListener('click', function(e){
       var t = e.target.closest('[data-t]');
@@ -152,14 +165,20 @@
 
   if(page === 'miembros.html'){
     /* Solo con el área de miembro visible (la decide la página real tras verificar la cuenta) */
-    var mc = d.getElementById('memberContent');
+    var mc = d.getElementById('memberContent'), pv = d.getElementById('memberPreview');
     if(!mc) return;
-    var go = function(){ if(mc.style.display !== 'none' && getComputedStyle(mc).display !== 'none'){ obs.disconnect(); window.ICL_V2.activate(); build(); } };
+    var vis = function(e){ return !!(e && e.style.display !== 'none' && getComputedStyle(e).display !== 'none'); };
+    var go = function(){
+      if(vis(mc)){ obs.disconnect(); window.ICL_V2.activate(); build(); return; }
+      /* C8: cuenta gratis o vencida con sesión: misma barra 2.0 (sin Progreso, con la práctica gratis) */
+      if(vis(pv)){ obs.disconnect(); nonMember = true; window.ICL_V2.activate(); html.classList.add('v2-preview'); build(); }
+    };
     var obs = new MutationObserver(go);
     obs.observe(mc, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+    if(pv) obs.observe(pv, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
     go();
-  } else if(page === 'academia.html' && !hasSession()){
-    /* Visitantes en la Academia: ven su presentación y su cabecera de siempre, sin la barra de la app */
+  } else if((page === 'academia.html' || page === 'juego.html' || page === 'aprender.html') && !hasSession()){
+    /* Visitantes en la Academia, English Rush o Modo aprender: su página pública de siempre, sin la barra de la app */
   } else {
     build();
   }

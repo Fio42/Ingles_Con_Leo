@@ -138,7 +138,12 @@
     if(window.V2SHELL) V2SHELL.paintTop();
   }
   /* Arranca con el shell (que solo existe si el área de miembro ya está visible) */
-  function start(){ if(d.querySelector('.v2-shell')) refresh(); }
+  function start(){
+    var mc = d.getElementById('memberContent');
+    /* C8: con la vista previa de una cuenta gratis o vencida hay barra 2.0, pero NO Inicio de miembro */
+    if(!mc || mc.style.display === 'none' || getComputedStyle(mc).display === 'none') return;
+    if(d.querySelector('.v2-shell')) refresh();
+  }
   window.addEventListener('v2:shell', start);
   window.addEventListener('v2:goal', function(){ if(screen) refresh(); });
   window.addEventListener('leo-progress-synced', function(){ if(screen) refresh(); });
