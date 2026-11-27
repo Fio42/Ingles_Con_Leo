@@ -1,0 +1,64 @@
+/* Inglés con Leo 2.0 · Piel 2.0 para las páginas privadas que conservan su HTML clásico
+   (habilidades, lectura, mixto, exámenes, clases, plan de estudio, mis errores).
+   Solo presentación: misma estructura, mismos botones y mismos motores. Se aplica únicamente
+   con 2.0 encendido (html.v2.v2-app); con ICL_V2_ENABLED=false todo vuelve a la versión clásica. */
+
+/* Cabecera de página: misma jerarquía que Inicio / Practicar 2.0 (la barra de la app ya da la navegación) */
+html.v2.v2-app .page-hero{padding:clamp(18px,3vw,32px) 0 6px!important;background:none!important}
+html.v2.v2-app .page-hero .badge-members,html.v2.v2-app .back-to-panel-link,html.v2.v2-app .home-hint{display:none!important}
+html.v2.v2-app .page-hero h1{font-family:var(--v2-font-display);font-weight:800;font-size:clamp(1.75rem,4vw,2.3rem);line-height:1.1;letter-spacing:-.01em;color:var(--v2-text);margin-top:0!important}
+html.v2.v2-app .page-hero .lead,html.v2.v2-app .page-hero p{color:var(--v2-text-2)!important;font-weight:700;font-size:1rem;line-height:1.5;margin-top:8px;max-width:620px}
+html.v2.v2-app main{font-family:var(--v2-font-body)}
+html.v2.v2-app main h2,html.v2.v2-app main h3{font-family:var(--v2-font-display);color:var(--v2-text)}
+
+/* Tarjetas: superficie 2.0 con borde y relieve inferior */
+html.v2.v2-app .diag-card,html.v2.v2-app .toefl-landing-card,html.v2.v2-app .clase-card,html.v2.v2-app .session-shell,html.v2.v2-app .home-more a{
+  background:var(--v2-surface)!important;border:2px solid var(--v2-line)!important;border-radius:20px!important;box-shadow:0 4px 0 var(--v2-line)!important}
+html.v2.v2-app .clase-card:hover,html.v2.v2-app .home-more a:hover{border-color:var(--v2-brand)!important;transform:translateY(-2px)}
+
+/* Selector de nivel (botones reales): mismas tarjetas que Practicar 2.0 */
+html.v2.v2-app .levels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:900px){html.v2.v2-app .levels{grid-template-columns:repeat(4,minmax(0,1fr))}}
+html.v2.v2-app .level-card{background:var(--v2-surface)!important;border:2px solid var(--v2-line-strong)!important;border-radius:18px;padding:14px 16px;gap:8px;box-shadow:0 4px 0 var(--v2-line-strong)}
+html.v2.v2-app .level-card:active{transform:translateY(4px);box-shadow:none}
+html.v2.v2-app .level-card[aria-pressed="true"]{border-color:var(--tone)!important;box-shadow:0 4px 0 var(--tone)!important;background:color-mix(in srgb,var(--tone) 10%,var(--v2-surface))!important}
+html.v2.v2-app .level-name{font-family:var(--v2-font-display);font-weight:800;font-size:1.15rem;color:var(--v2-text)}
+html.v2.v2-app .level-desc{font-size:.84rem;line-height:1.4;color:var(--v2-text-2)}
+@media(max-width:599px){html.v2.v2-app .level-desc{display:none}}
+
+/* Duración y pestañas: botones con relieve */
+html.v2.v2-app .length-card,html.v2.v2-app .tab-btn,html.v2.v2-app .skill-tab-btn{background:var(--v2-surface)!important;border:2px solid var(--v2-line-strong)!important;border-radius:14px!important;box-shadow:0 3px 0 var(--v2-line-strong);color:var(--v2-text)!important;font-weight:800;min-height:44px;margin-bottom:3px}
+html.v2.v2-app .length-card[aria-pressed="true"],html.v2.v2-app .tab-btn.active,html.v2.v2-app .skill-tab-btn.active,html.v2.v2-app .skill-tab-btn[aria-selected="true"]{border-color:var(--v2-brand)!important;background:color-mix(in srgb,var(--v2-brand) 14%,var(--v2-surface))!important;box-shadow:0 3px 0 var(--v2-brand)}
+html.v2.v2-app .length-card[aria-pressed="true"] .length-name,html.v2.v2-app .length-card[aria-pressed="true"] .length-sub{color:var(--v2-brand-text)!important}
+html.v2.v2-app .length-card:active,html.v2.v2-app .tab-btn:active{transform:translateY(3px);box-shadow:none}
+
+/* Botones de texto que son acciones: píldoras 2.0 */
+html.v2.v2-app .mistake-pattern-links a{display:inline-flex;align-items:center;min-height:36px;padding:0 14px;margin:6px 6px 0 0;border-radius:12px;font-weight:800;font-size:.88rem;text-decoration:none;color:var(--v2-brand-text);background:color-mix(in srgb,var(--v2-brand) 12%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-brand) 35%,transparent)}
+html.v2.v2-app .mistake-pattern-links a:first-child{background:var(--v2-brand);color:#fff;border-color:var(--v2-brand);box-shadow:0 3px 0 var(--v2-brand-lip)}
+
+/* Leo AI: botón con identidad propia (violeta 2.0) */
+html.v2.v2-app .leo-ai-btn{background:var(--v2-award-tint)!important;color:var(--v2-award-text)!important;border:2px solid color-mix(in srgb,var(--v2-award) 45%,transparent)!important;border-radius:14px!important;min-height:44px;padding:0 16px!important;font-weight:800!important;box-shadow:0 3px 0 color-mix(in srgb,var(--v2-award) 45%,transparent)}
+html.v2.v2-app .leo-ai-btn:active{transform:translateY(3px);box-shadow:none}
+
+/* Exámenes: lista como tarjetas tocables */
+html.v2.v2-app .home-more{list-style:none;padding:0;display:grid;gap:12px}
+@media(min-width:760px){html.v2.v2-app .home-more{grid-template-columns:repeat(2,minmax(0,1fr))}}
+html.v2.v2-app .home-more a{display:flex;flex-direction:column;gap:4px;padding:18px 20px;text-decoration:none;transition:transform .15s,border-color .15s}
+html.v2.v2-app .home-more strong{font-family:var(--v2-font-display);font-size:1.2rem;color:var(--v2-text)}
+html.v2.v2-app .home-more span{color:var(--v2-text-2);font-size:.92rem;line-height:1.45}
+
+/* Clases: búsqueda y progreso */
+html.v2.v2-app .clases-search input,html.v2.v2-app main input[type="search"]{background:var(--v2-surface)!important;border:2px solid var(--v2-line-strong)!important;border-radius:14px!important;color:var(--v2-text)!important}
+html.v2.v2-app .clase-card-title{font-family:var(--v2-font-display);font-weight:800;color:var(--v2-text)}
+html.v2.v2-app .clase-card-progress-track{background:var(--v2-surface-3)!important;border-radius:9px}
+html.v2.v2-app .clase-card-progress-fill{background:var(--v2-ok)!important;border-radius:9px}
+html.v2.v2-app .clase-card-cta{color:var(--v2-brand-text)!important;font-weight:800}
+
+/* Practicar 2.0: la lista "Refuerza N errores" no debe salirse de su tarjeta (el texto largo se recorta con ...) */
+html.v2 .v2-practicar .k-rec__list{grid-template-columns:minmax(0,1fr)}
+html.v2 .v2-practicar .k-rec__list li{min-width:0}
+
+/* Respuesta de Leo AI: tarjeta 2.0 con acento violeta (mismo contenido y mismos botones) */
+html.v2 .leo-ai-answer{background:color-mix(in srgb,var(--v2-award) 8%,var(--v2-surface))!important;border:2px solid color-mix(in srgb,var(--v2-award) 35%,transparent)!important;border-left-width:2px!important;border-radius:16px!important;padding:14px 16px!important;color:var(--v2-text)!important}
+html.v2 .leo-ai-head{font-family:var(--v2-font-display);font-weight:800;color:var(--v2-award-text)}
+html.v2 .leo-ai-tip,html.v2 .leo-ai-example,html.v2 .leo-ai-fixed{border-radius:12px}
