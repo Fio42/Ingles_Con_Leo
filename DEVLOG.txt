@@ -4476,3 +4476,10 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Resultado: iconos de la familia propia en baldosas (aciertos, combo, minutos, meta, lo que sigue). Minutos con la misma medida que la meta: "<1 min" en lugar de "1 min" cuando aún no suma un minuto (la captura anterior era redondeo + sesión automática del simulador de pocos segundos, no un problema de datos).
 - Nuevo día: solo si la sesión es la única de hoy en el progreso (incluido lo sincronizado de otros dispositivos). Probado: con una sesión de hoy ya sincronizada no celebra.
 - Comprobado: sin retrasos (el feedback aparece en el mismo cuadro), sin saltos (CLS 0 en Practicar, Academia, Progreso e Inicio), movimiento reducido y silencio respetados. Tests: 18 fallos de entorno (igual).
+
+2026-11-27 · Cierre del Bloque C en producción (publicar/ux-c, v=20261130a)
+- Validado con la cuenta de pago de prueba (móvil): iconos nuevos en Inicio y barra; llama activa (practicó hoy) también en Academia con el resultado guardado; brillo del botón principal una vez; sesión real de Vocabulario con combos x3 y x5, sonidos (select, correct, combo, complete), animaciones (pregunta, pop, combo, anillo, progreso), resultado con iconos nuevos y "<1 min" coherente con la meta (17 de 10 min, ya celebrada hoy: no se repitió).
+- Guardado: 1 fila nueva en progress_sessions (955), 92->93 local = 93 nube, sin duplicados.
+- Academia: 11 nodos, 8 insignias a color con cinta, 3 en gris sin candado, "Tú" en el curso actual. Mis logros: 8 de 11; al abrir una insignia suena achievement.
+- Consola: sin errores de los archivos nuevos. Nota: una página con el HTML anterior en caché del navegador (hasta ~10 min tras publicar) sigue funcionando con los iconos de antes, sin errores.
+- Bloque C cerrado. No se inicia ninguna fase nueva.
