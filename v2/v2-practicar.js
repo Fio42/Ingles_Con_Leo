@@ -39,7 +39,7 @@
     var o = { level: '', dur: '', resume: false };
     try{ var lv = getUserLevel(), m = LEVEL_META[lv]; o.level = m.label + ' ' + m.range;
       var L = PLAN_LENGTHS[getPlanLength()]; o.dur = (L.sub || '').split('·')[0].trim();
-      var sv = loadInflightSession('plan', lv); o.resume = !!(sv && Array.isArray(sv.pool) && typeof sv.idx === 'number' && sv.idx < sv.pool.length); }catch(e){}
+      var sv = loadInflightSession('plan', lv); o.resume = !!(sv && Array.isArray(sv.pool) && typeof sv.idx === 'number' && sv.idx < sv.pool.length); if(o.resume) o.left = sv.pool.length - sv.idx; }catch(e){}
     return o;
   }
   var chev = A.UI.chevron;
@@ -54,7 +54,7 @@
       '<header><h1 class="v2-h1">Practicar</h1><p class="v2-sub">Te recomendamos empezar por aquí.</p></header>' +
       '<section class="v2-next' + (window.__v2Shone ? '' : ' v2-shine') + '" aria-labelledby="v2PlanT"><span class="v2-next__eyebrow">' + (pi.resume ? 'Sigue donde te quedaste' : 'Tu práctica de hoy') + '</span>' +
         '<h2 id="v2PlanT">' + (pi.resume ? 'Tu sesión recomendada' : 'Sesión recomendada') + '</h2>' +
-        '<p>Con tu nivel, tus errores recientes y lo que te toca reforzar.</p>' +
+        (V2D.whyPlan ? '<p class="v2-next__why">' + esc(pi.resume && pi.left ? 'Por qué: te ' + (pi.left === 1 ? 'queda 1 ejercicio' : 'quedan ' + pi.left + ' ejercicios') + ' de la sesión que empezaste.' : V2D.whyPlan(mis, pi.level)) + '</p>' : '<p>Con tu nivel, tus errores recientes y lo que te toca reforzar.</p>') +
         '<div class="v2-next__meta">' + (pi.dur ? '<span>' + esc(pi.dur) + '</span>' : '') + (pi.level ? '<span>' + esc(pi.level) + '</span>' : '') + '</div>' +
         '<a class="btn btn--lg btn--block" href="plan-estudio.html?empezar=1" data-v2-plan>' + (pi.resume ? 'Continuar' : 'Empezar') + '</a>' +
         '<a class="v2-next__alt" href="plan-estudio.html">Cambiar duración o dificultad</a></section>' +

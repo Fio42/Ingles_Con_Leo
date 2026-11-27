@@ -2056,6 +2056,10 @@ footer{border-top:1px solid var(--line);padding:32px 0 40px;}
 .upgrade-benefits{text-align:left;max-width:420px;margin:0 auto 14px;padding-left:22px;color:var(--ink-soft);line-height:1.6;}
 .upgrade-benefits li{margin-bottom:4px;}
 .upgrade-price{color:var(--ink-soft);margin:0 0 16px;}
+.upgrade-mine{max-width:420px;margin:0 auto 14px;padding:12px 14px;border-radius:14px;background:var(--blue-tint);color:var(--ink);font-weight:700;line-height:1.45;text-align:left;}
+.upgrade-more{max-width:420px;margin:-6px auto 14px;text-align:left;color:var(--ink-soft);}
+.upgrade-more summary{cursor:pointer;font-weight:700;color:var(--blue);padding:4px 0;}
+.upgrade-more .upgrade-benefits{margin:8px 0 0;}
 .upgrade-note{color:var(--ink-faint);font-size:0.85rem;margin-top:12px;}
 .academia-demo-offer{margin:18px auto 0;max-width:420px;padding:16px 18px;border:1px solid var(--line,#e3dccd);border-radius:14px;background:var(--bg-soft,rgba(0,0,0,.03));text-align:center;}
 .academia-demo-offer[hidden]{display:none;}
@@ -2522,6 +2526,7 @@ html.leobot-docked .leobot-fab,html.leobot-docked .leobot-greet,html.leobot-dock
 html.leobot-docked .nav-links{margin-right:12px}.leobot-dock-btn{margin-left:auto;margin-right:6px;flex:0 0 auto}.leobot-dock-btn + .tema-wrap{margin-left:0;padding-left:0}
 @media (min-width:481px){html.leobot-docked .leobot-panel{top:76px!important;bottom:auto!important;max-height:min(650px,calc(100vh - 96px))!important}}
 html.icl-visitante .mobile-nav--miembro{display:none!important}
+html:not(.icl-visitante) .nav-links--publica,html.icl-visitante .nav-links--miembro{display:none!important}
 
 /* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */
 
@@ -2619,6 +2624,33 @@ html:not([data-theme="light"]) [style*="color:#1"],html:not([data-theme="light"]
 #practicaMain .next-row .btn,.rush-shell .next-row .btn{white-space:nowrap;flex:1 1 auto;min-height:50px;padding-left:16px;padding-right:16px}
 #practicaMain,.hm{font-family:var(--v2-font-body)}
 #practicaMain h1,#practicaMain h2,#practicaMain h3,.hm h1,.hm h2,.hm h3{font-family:var(--v2-font-display);font-weight:800}
+/* Fase 0: miembros.html sin sesión (entrar, registro, membresía) y el test de nivel (main.icl-tipo-v2) usan la misma tipografía que la portada y la práctica gratis
+   (Nunito + Baloo 2 local). Antes tenía la del sitio anterior (Inter + Baloo de Google, que sin red se veía como Arial). */
+html.icl-visitante main,#gate,main.icl-tipo-v2{font-family:var(--v2-font-body)}
+html.icl-visitante main h1,html.icl-visitante main h2,html.icl-visitante main h3,#gate h1,#gate h2,#gate h3,main.icl-tipo-v2 h1,main.icl-tipo-v2 h2,main.icl-tipo-v2 h3{font-family:var(--v2-font-display);font-weight:800}
+html.icl-visitante main input,html.icl-visitante main select,html.icl-visitante main button,#gate input,#gate select,#gate button,main.icl-tipo-v2 input,main.icl-tipo-v2 select,main.icl-tipo-v2 button{font-family:inherit}
+/* El título ya dice qué es la tarjeta: el sobre decorativo se quita para que el formulario quede más arriba en el móvil */
+#gate .gate-card .gate-icon{display:none}
+.gate-auth-head{text-align:center;margin:0 0 16px}
+.gate-auth-title{font-family:var(--v2-font-display);font-weight:800;font-size:1.5rem;line-height:1.15;margin:0 0 6px;color:var(--ink)}
+.gate-auth-sub{margin:0 0 6px;font-size:.94rem;line-height:1.4;color:var(--ink-soft);font-weight:700}
+.gate-auth-switch{margin:0;font-size:.94rem;color:var(--ink-soft);font-weight:600}
+.gate-auth-switch a{color:var(--blue);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+/* Ajuste Fase 0: en el móvil el formulario es más compacto para que "Crear cuenta" quede a la vista sin bajar (mismos campos) */
+@media (max-width:600px){
+  #gate.gate-shell{margin:16px auto 40px}
+  #gate .badge-members{display:none}
+  #gate h1{font-size:1.5rem;line-height:1.15;margin-top:4px!important}
+  #gate .gate-card{padding:18px 16px}
+  #gate .gate-auth-head{margin-bottom:12px}
+  #gate .gate-auth-title{font-size:1.3rem;margin-bottom:2px}
+  #gate .gate-auth-sub{margin-bottom:2px;font-size:.88rem}
+  #gate .gate-auth-switch{font-size:.88rem}
+  #gate .gate-input{padding:11px 14px;margin-bottom:8px}
+  #gate .password-field-wrap .gate-input,#gate #heardFromWrap .gate-input{margin-bottom:0}
+  #gate #googleLoginWrap .gate-hint{margin:8px 0!important}
+  #gate .password-field-wrap,#gate #heardFromWrap,#gate #authBtn{margin-top:8px!important}
+}
 #practicaMain .level-card{border:2px solid var(--v2-line-strong);box-shadow:0 4px 0 var(--v2-line-strong)}
 #practicaMain .level-card[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 4px 0 var(--tone)}
 #practicaMain .level-card:active{transform:translateY(4px);box-shadow:none}
