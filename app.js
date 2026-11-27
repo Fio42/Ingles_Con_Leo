@@ -988,7 +988,12 @@ let _checkIndex = null;
 function checkIndex(){
   if(_checkIndex) return _checkIndex;
   const byId = new Map(), byMicro = new Map();
-  const practice = (typeof getMistakesItemIndex === 'function') ? getMistakesItemIndex() : new Map();
+  /* Páginas sin los bancos de práctica (English Rush: juego.html no carga data.js) no tienen índice: sin él no hay
+     comprobaciones que servir. Antes esto lanzaba "LEVELS is not defined" y cortaba el fin de la partida. No se guarda
+     en caché para no fijar un índice vacío en páginas que sí lo tienen. */
+  let practice;
+  try{ practice = (typeof getMistakesItemIndex === 'function') ? getMistakesItemIndex() : new Map(); }
+  catch(e){ return { byId: new Map(), byMicro: new Map() }; }
   (typeof GRAMMAR_CHECK_BANK !== 'undefined' ? GRAMMAR_CHECK_BANK : []).forEach(it=>{
     if(!it || !it.id || !it.micro || practice.has(it.id)) return;   // si un id ya es práctica, JAMÁS se sirve como comprobación
     byId.set(it.id, it);
@@ -6270,7 +6275,7 @@ async function backfillMistakeStatsIfNeeded(){
 function updateMistakeStatsFromResults(results){
   if(!results || !results.length) return;
   if(typeof LeoBackend === 'undefined' || !LeoBackend.isConfigured()) return;
-  const index = getMistakesItemIndex();
+  try{ getMistakesItemIndex(); }catch(e){ return; }   // sin bancos de práctica (English Rush): nada que registrar como error
   const items = [];
   results.forEach(r=>{
     if(r.isCorrect !== true && r.isCorrect !== false) return; // sin calificar (ej. speaking): se ignora
