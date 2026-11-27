@@ -38,8 +38,12 @@ const guias = fs.readdirSync(root).filter(f => /^articulo-.*\.html$/.test(f)).ma
 });
 
 const faq = require('./faq.js');
-const out = { version: new Date().toISOString().slice(0, 10), verbos, glosario, guias, faq };
+const extra = require('./verbos-extra.js');
+// Verbos: los del artículo + los extra verificados a mano (sin duplicar). Quinto campo: nota opcional.
+extra.irregulares.forEach(v => { if (!verbos.some(x => x[0] === v[0])) verbos.push(v.slice()); });
+const regulares = [...new Set(extra.regulares)].filter(v => !verbos.some(x => x[0] === v));
+const out = { version: new Date().toISOString().slice(0, 10), verbos, regulares, doblanSiempre: extra.doblanSiempre, doblanSoloUK: extra.doblanSoloUK, glosario: glosario.map(g => Object.assign(g, { p: (terminos.find(t => t.slug === g.s) || {}).pron || null })), guias, faq };
 const js = '/* Generado por tools/tutor/generar_conocimiento.js. No editar a mano. Contenido público del sitio. */\n' +
   '(function(r){ r.RISO_CONOCIMIENTO = ' + JSON.stringify(out) + '; if(typeof module!=="undefined") module.exports = r.RISO_CONOCIMIENTO; })(typeof window!=="undefined"?window:globalThis);\n';
 fs.writeFileSync(path.join(root, 'riso/tutor/conocimiento.js'), js);
-console.log('verbos', verbos.length, 'glosario', glosario.length, 'guias', guias.length, 'faq', faq.length, 'bytes', js.length);
+console.log('verbos', verbos.length, 'regulares', regulares.length, 'glosario', glosario.length, 'guias', guias.length, 'faq', faq.length, 'bytes', js.length);

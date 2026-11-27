@@ -59,7 +59,7 @@ button,textarea,select{font:inherit;color:inherit}
 .m-ri .ej .en{font-weight:800} .m-ri .ej .es{color:var(--t2);font-size:14px}
 .m-ri .ref{display:inline-block;margin-top:8px;font-weight:700;color:var(--azul);text-decoration:none}
 .m-ri .ref:hover{text-decoration:underline}
-.m-ri .aviso{margin-top:6px;font-size:12px;color:var(--t2)}
+.m-ri .aviso{margin-top:6px;font-size:11px;color:var(--t2);opacity:.85}
 .m-ri .capa{display:none;margin-top:6px;font-size:11px;color:var(--t2);font-family:ui-monospace,monospace}
 .ver-capas .m-ri .capa{display:block}
 .m-error{background:var(--riso-t);border-color:transparent}
@@ -77,12 +77,12 @@ button,textarea,select{font:inherit;color:inherit}
 .enviar:disabled{opacity:.45;cursor:default}
 .t-pie{display:flex;justify-content:space-between;padding:0 16px 8px;font-size:12px;color:var(--t2)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.metricas{font:12px/1.4 ui-monospace,monospace;overflow-wrap:anywhere;color:var(--t2);margin-top:12px;white-space:pre-wrap}
+.metricas[hidden],.demo-barra[hidden]{display:none}.metricas{font:12px/1.4 ui-monospace,monospace;overflow-wrap:anywhere;color:var(--t2);margin-top:12px;white-space:pre-wrap}
 @media (max-width:899px){ .tutor{height:calc(100dvh - 32px)} }
 </style>
 </head>
 <body>
-<div class="demo-barra" role="region" aria-label="Controles del prototipo">
+<div class="demo-barra" id="barraRevision" role="region" aria-label="Controles del prototipo" hidden>
   <b>Prototipo local.</b> Todo es simulado: no hay IA real ni datos de alumnos.
   <label>Cuenta <select id="plan"><option value="miembro">Miembro</option><option value="gratis">Gratis</option><option value="visitante">Visitante</option></select></label>
   <label><input type="checkbox" id="fallo"> Simular fallo del modelo</label>
@@ -97,7 +97,7 @@ button,textarea,select{font:inherit;color:inherit}
     <div class="ej-ops"><span class="ej-op mal">Is</span><span class="ej-op bien">Does</span><span class="ej-op">Do</span></div>
     <div class="ej-feedback">Elegiste <b>Is</b>. La respuesta correcta es <b>Does</b>.</div>
     <button type="button" class="btn-riso" id="abrirCtx"><span class="cara" id="caraBtn" aria-hidden="true"></span>Pregúntale a Riso sobre este ejercicio</button>
-    <div class="metricas" id="met" aria-live="off"></div>
+    <div class="metricas" id="met" aria-live="off" hidden></div>
   </section>
 
   <section class="tutor" id="tutor" aria-labelledby="t-titulo">
@@ -131,14 +131,16 @@ button,textarea,select{font:inherit;color:inherit}
   var $ = function(id){ return document.getElementById(id); };
   var avatar = Riso.montar($('avatar'), { estado:'bienvenida', alto:64, etiqueta:'' });
   Riso.montar($('caraBtn'), { estado:'neutro', alto:30, etiqueta:'' });
-  var CTX = { tema:'do-does', enunciado:'___ she work on Saturdays?', respuestaAlumno:'Is', respuestaCorrecta:'Does' };
+  var REVISION = /[?&]revision=1\b/.test(location.search);
+  if (REVISION){ $('barraRevision').hidden = false; $('met').hidden = false; }
+  var CTX = { itemId:'g-facil7-dodoes-2', fuente:'practica', tema:'do-does', enunciado:'___ she work on Saturdays?', respuestaAlumno:'Is', respuestaCorrecta:'Does' };
   var modo = 'abierto', tutor, ultima = null;
 
   // Modelo SIMULADO (capa 5). En producción: Edge Function leo-ai, modo "chat".
   var CANNED = [
     [/jefe.*tarde|tarde.*trabajo/, { texto:'Puedes escribir: «I\'m sorry, I\'m running late. I\'ll be there in 15 minutes.» Es educado y claro. «Running late» significa que vas con retraso.', ej:[['I\'m running late, sorry.','Voy tarde, perdón.']] }],
     [/cuenta.*restaurante|restaurante.*cuenta/, { texto:'Lo más natural es «Could we have the check, please?» En Reino Unido dicen «the bill». Con «Could» suena amable.', ej:[['Could we have the check, please?','¿Nos trae la cuenta, por favor?']] }],
-    [/\bis\b/, { texto:'Porque «work» es un verbo de acción. «Is» solo funciona cuando no hay otro verbo (Is she tired?). Con un verbo como work, la pregunta en presente simple usa «Does» y el verbo queda sin -s.', ej:[['Does she work on Saturdays?','¿Ella trabaja los sábados?'],['Is she at work?','¿Ella está en el trabajo?']] }]
+    [/\bis\b/, { texto:'Porque «work» es un verbo de acción. «Is» se usa cuando no hay otro verbo (Is she tired?) o con -ing (Is she working?). Con un verbo como work, la pregunta en presente simple usa «Does» y el verbo queda en su forma base.', ej:[['Does she work on Saturdays?','¿Ella trabaja los sábados?'],['Is she working today?','¿Ella está trabajando hoy?']] }]
   ];
   function generar(p){
     return new Promise(function(ok, err){
@@ -166,9 +168,9 @@ button,textarea,select{font:inherit;color:inherit}
     (r.ej || []).slice(0,2).forEach(function(e){ var b = el('div','ej'); b.appendChild(el('div','en',e[0])); b.appendChild(el('div','es',e[1])); d.appendChild(b); });
     if (r.ref){ var a = el('a','ref', r.refTitulo ? 'Lee la guía: ' + r.refTitulo.split('(')[0].trim() : 'Lee la guía completa'); a.href = '../../' + r.ref; d.appendChild(a); }
     if (r.enlace){ var s = el('a','ref','Ir a Soporte'); s.href = '../../' + r.enlace; d.appendChild(s); }
-    if (r.aviso) d.appendChild(el('div','aviso', r.aviso));
+    if (r.aviso) d.appendChild(el('div','aviso', '✦ ' + r.aviso));
     if (r.reintentar){ var b = el('button','reint','Reintentar'); b.type='button'; b.onclick=function(){ d.remove(); enviar(ultima, true); }; d.appendChild(b); }
-    d.appendChild(el('div','capa','capa ' + r.capa + (r.tipo ? ' · ' + r.tipo : '') + (r.desdeCache ? ' · caché' : '')));
+    if (REVISION) d.appendChild(el('div','capa','capa ' + r.capa + (r.tipo ? ' · ' + r.tipo : '') + (r.desdeCache ? ' · caché' : '')));
     $('msgs').appendChild(d); bajar();
   }
   function pintarCuota(){
@@ -198,7 +200,7 @@ button,textarea,select{font:inherit;color:inherit}
   document.querySelectorAll('.t-modo').forEach(function(b){ b.onclick = function(){ ponerModo(b.dataset.modo); }; });
   $('abrirCtx').onclick = function(){ ponerModo('ejercicio'); $('tutor').scrollIntoView({ block:'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); $('q').focus({ preventScroll:true }); };
   $('plan').onchange = nuevo;
-  $('capas').onchange = function(){ document.body.classList.toggle('ver-capas', this.checked); };
+  if ($('capas')) $('capas').onchange = function(){ document.body.classList.toggle('ver-capas', this.checked); };
   $('tema').onclick = function(){ var o = document.documentElement.dataset.tema === 'oscuro'; document.documentElement.dataset.tema = o ? 'claro' : 'oscuro'; this.textContent = o ? 'Modo oscuro' : 'Modo claro'; };
   if (matchMedia('(prefers-color-scheme: dark)').matches){ document.documentElement.dataset.tema='oscuro'; $('tema').textContent='Modo claro'; }
   nuevo();

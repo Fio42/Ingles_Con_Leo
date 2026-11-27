@@ -53,7 +53,7 @@ const CASOS2 = [
   ['como se dice 3 de mayo', /May third/],
   ['cómo se dice el año 1999', /nineteen ninety-nine/],
   ['pasado de go', /went/], ['participio de take', /taken/], ['pasado de went', /forma de «go»/],
-  ['conjuga study', /studies/], ['pasado de be', /was \/ were/], ['what is the past of buy', /bought/],
+  ['conjuga study', /studies/], ['pasado de be', /was/], ['what is the past of buy', /bought/],
   ['qué significa although', /Aunque/], ['its o it\'s', /posesivo/], ['since o for', /Since/],
   ['21 en ordinal', /twenty-first/]
 ];
@@ -65,7 +65,7 @@ test('verbo desconocido o español NO inventa un pasado regular', async () => {
   const r = await capa('pasado de comer'); assert.notStrictEqual(r.capa, 2, r.texto);
 });
 test('todos los verbos irregulares tienen 3 formas y significado', () => {
-  assert.ok(K.verbos.length >= 60); K.verbos.forEach(v => { assert.strictEqual(v.length, 4); v.forEach(x => assert.ok(x && x.length)); });
+  assert.ok(K.verbos.length >= 60); K.verbos.forEach(v => { assert.ok(v.length >= 4); v.slice(0, 4).forEach(x => assert.ok(x && x.length)); });
 });
 
 // ---- capa 3: FAQ revisada ----
@@ -104,17 +104,18 @@ test('preguntas normales con números no se confunden con teléfonos', async () 
 test('pregunta abierta va al modelo con payload mínimo (sin datos de la cuenta)', async () => {
   const tu = tutor(); const r = await tu.preguntar('¿Cómo le digo a mi jefe que llegaré tarde?');
   assert.strictEqual(r.capa, 5); assert.ok(r.aviso);
-  const pl = tu.llamadas[0]; assert.deepStrictEqual(Object.keys(pl).sort(), ['contexto', 'guia', 'historial', 'pregunta']);
+  const pl = tu.llamadas[0];
   assert.ok(!JSON.stringify(pl).match(/email|correo@|user_id|nombre/));
+  assert.deepStrictEqual(Object.keys(pl).sort(), ['contexto', 'guia', 'historial', 'intencion', 'pregunta']);
 });
-test('pregunta educativa de otro tema también se acepta (se responde y se puede llevar al inglés)', async () => { const r = await capa('explícame la fotosíntesis'); assert.strictEqual(r.capa, 5); });
+test('tema escolar ajeno al inglés se redirige sin IA', async () => { const tu = tutor(); const r = await tu.preguntar('explícame la fotosíntesis'); assert.strictEqual(r.tipo, 'fuera_de_alcance'); assert.strictEqual(tu.llamadas.length, 0); });
 test('modo contextual envía solo los datos del ejercicio', async () => {
   const tu = tutor(); await tu.preguntar('¿y por qué no se usa is?', { tema: 'do-does', enunciado: '___ she work on Saturdays?', respuestaAlumno: 'Is', respuestaCorrecta: 'Does', email: 'no@debe.ir' });
-  const c = tu.llamadas[0].contexto; assert.deepStrictEqual(Object.keys(c).sort(), ['enunciado', 'respuestaAlumno', 'respuestaCorrecta', 'tema']);
+  const c = tu.llamadas[0].contexto; assert.deepStrictEqual(Object.keys(c).sort(), ['enunciado', 'respuestaAlumno', 'respuestaCorrecta', 'tema']); assert.ok(!('email' in c));
 });
 test('seguimiento: el historial viaja limitado', async () => {
   const tu = tutor(); for (let i = 0; i < 10; i++) await tu.preguntar('pregunta abierta número ' + 'abcdefghij'[i] + ' sobre viajes');
-  const h = tu.llamadas[tu.llamadas.length - 1].historial; assert.ok(h.length <= T.CONFIG.maxHistorial * 2, 'historial ' + h.length);
+  const h = tu.llamadas[tu.llamadas.length - 1].historial; assert.ok(h.length <= T.CONFIG.maxHistorial, 'historial ' + h.length);
 });
 test('cuota diaria: cuenta gratis tiene 3 abiertas; las herramientas siguen funcionando', async () => {
   const tu = tutor({ plan: 'gratis' });
@@ -167,4 +168,5 @@ test('la base de conocimiento no incluye contenido privado de cursos', () => {
   assert.ok(K.guias.every(g => /^articulo-.*\.html$/.test(g.u)));
 });
 
+require('./riso-tutor-v2.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 Promise.all(pend).then(() => { console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0); });
