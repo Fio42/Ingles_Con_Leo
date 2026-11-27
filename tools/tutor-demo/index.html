@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="robots" content="noindex, nofollow">
+<title>Pregúntale a Riso · prototipo local</title>
+<link rel="stylesheet" href="../../riso/riso.css">
+<style>
+:root{
+  --fondo:#FBF8F2; --panel:#FFFFFF; --t1:#1B2333; --t2:#5B6472; --linea:#E7E2D6; --azul:#3554F0; --azul-t:#EEF1FE;
+  --riso:#C8372D; --riso-t:#FDEBE8; --verde:#1FA463; --verde-t:#E7F7EE; --ambar-t:#FFF4E0; --sombra:0 1px 2px rgba(27,35,51,.05),0 8px 24px rgba(27,35,51,.07);
+  --display:'Baloo 2','Arial Rounded MT Bold',system-ui,sans-serif; --cuerpo:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+[data-tema="oscuro"]{ --fondo:#0B0F1A; --panel:#141A29; --t1:#EEF0F7; --t2:#AAB1C4; --linea:#262E42; --azul:#7C8FFF; --azul-t:#1D2550;
+  --riso:#FF7A6B; --riso-t:#3A1A17; --verde:#25C27C; --verde-t:#10301F; --ambar-t:#3A2F12; --sombra:none; }
+*{box-sizing:border-box}
+[data-tema="oscuro"] .btn-riso,[data-tema="oscuro"] .m-al,[data-tema="oscuro"] .enviar{color:#0B0F1A}
+html,body{margin:0;height:100%}
+body{background:var(--fondo);color:var(--t1);font:16px/1.5 var(--cuerpo);-webkit-text-size-adjust:100%}
+button,textarea,select{font:inherit;color:inherit}
+.demo-barra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--linea);font-size:13px;color:var(--t2)}
+.demo-barra b{color:var(--t1)}
+.demo-barra select,.demo-barra button{border:1px solid var(--linea);background:var(--panel);border-radius:10px;padding:4px 10px;min-height:32px}
+.demo-barra label{display:flex;gap:6px;align-items:center}
+.app{max-width:1080px;margin:0 auto;padding:16px;display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){ .app{grid-template-columns:minmax(0,1fr) 400px;align-items:start} }
+
+/* ejercicio de ejemplo (modo contextual) */
+.ejercicio{background:var(--panel);border:1px solid var(--linea);border-radius:20px;padding:20px;box-shadow:var(--sombra)}
+.ejercicio h2{font:700 15px/1.2 var(--cuerpo);color:var(--t2);margin:0 0 12px;text-transform:uppercase;letter-spacing:.04em}
+.ej-frase{font:600 22px/1.35 var(--display);margin:0 0 14px}
+.ej-ops{display:flex;gap:8px;flex-wrap:wrap}
+.ej-op{border:2px solid var(--linea);border-radius:14px;padding:8px 16px;background:var(--panel);font-weight:700}
+.ej-op.mal{border-color:var(--riso);background:var(--riso-t)} .ej-op.bien{border-color:var(--verde);background:var(--verde-t)}
+.ej-feedback{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--riso-t);font-size:15px}
+.btn-riso{display:inline-flex;align-items:center;gap:8px;margin-top:12px;border:0;border-radius:999px;padding:10px 16px 10px 10px;background:var(--azul);color:#fff;font-weight:800;cursor:pointer;min-height:44px}
+.btn-riso .cara{width:28px;height:28px;border-radius:50%;background:#fff;overflow:hidden;display:grid;place-items:end center}
+.btn-riso:focus-visible,.chip:focus-visible,.enviar:focus-visible,.reint:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+
+/* panel del tutor: vive en su columna, nunca flota sobre el ejercicio */
+.tutor{background:var(--panel);border:1px solid var(--linea);border-radius:24px;box-shadow:var(--sombra);display:flex;flex-direction:column;height:min(720px,calc(100dvh - 120px));min-height:460px;overflow:hidden}
+@media (min-width:900px){ .tutor{position:sticky;top:16px} }
+.t-cab{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--linea)}
+.t-cab .avatar{width:56px;flex:none}
+.t-cab h1{font:700 20px/1.1 var(--display);margin:0}
+.t-cab p{margin:2px 0 0;font-size:13px;color:var(--t2)}
+.t-modos{display:flex;gap:6px;padding:10px 16px 0}
+.t-modo{border:1px solid var(--linea);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;min-height:32px}
+.t-modo[aria-pressed="true"]{background:var(--azul-t);border-color:var(--azul);color:var(--t1)}
+.t-ctx{margin:10px 16px 0;padding:8px 12px;border-radius:12px;background:var(--ambar-t);font-size:13px;display:none}
+.t-ctx.on{display:block}
+.t-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;overscroll-behavior:contain}
+@media (prefers-reduced-motion:reduce){ .t-msgs{scroll-behavior:auto} }
+.m{max-width:88%;padding:10px 14px;border-radius:18px;font-size:15px;overflow-wrap:anywhere}
+.m-al{align-self:flex-end;background:var(--azul);color:#fff;border-bottom-right-radius:6px}
+.m-ri{align-self:flex-start;background:var(--fondo);border:1px solid var(--linea);border-bottom-left-radius:6px}
+.m-ri .ej{margin-top:8px;padding:8px 10px;border-left:3px solid var(--azul);background:var(--panel);border-radius:8px}
+.m-ri .ej .en{font-weight:800} .m-ri .ej .es{color:var(--t2);font-size:14px}
+.m-ri .ref{display:inline-block;margin-top:8px;font-weight:700;color:var(--azul);text-decoration:none}
+.m-ri .ref:hover{text-decoration:underline}
+.m-ri .aviso{margin-top:6px;font-size:12px;color:var(--t2)}
+.m-ri .capa{display:none;margin-top:6px;font-size:11px;color:var(--t2);font-family:ui-monospace,monospace}
+.ver-capas .m-ri .capa{display:block}
+.m-error{background:var(--riso-t);border-color:transparent}
+.reint{margin-top:8px;border:1px solid var(--riso);background:transparent;border-radius:999px;padding:4px 12px;font-weight:700;cursor:pointer;min-height:36px}
+.pensando{align-self:flex-start;display:flex;gap:8px;align-items:center;color:var(--t2);font-size:14px}
+.pensando .avatar{width:40px}
+.t-sug{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}
+.t-sug::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--linea);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer;white-space:nowrap;min-height:36px}
+.chip:hover{border-color:var(--azul)}
+.t-form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--linea)}
+.t-form textarea{flex:1;resize:none;border:1px solid var(--linea);border-radius:16px;padding:10px 12px;background:var(--fondo);font-size:16px;max-height:120px;min-height:44px;line-height:1.4}
+.t-form textarea:focus{outline:2px solid var(--azul);border-color:transparent}
+.enviar{border:0;border-radius:50%;width:44px;height:44px;background:var(--azul);color:#fff;cursor:pointer;flex:none;display:grid;place-items:center}
+.enviar:disabled{opacity:.45;cursor:default}
+.t-pie{display:flex;justify-content:space-between;padding:0 16px 8px;font-size:12px;color:var(--t2)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.metricas{font:12px/1.4 ui-monospace,monospace;overflow-wrap:anywhere;color:var(--t2);margin-top:12px;white-space:pre-wrap}
+@media (max-width:899px){ .tutor{height:calc(100dvh - 32px)} }
+</style>
+</head>
+<body>
+<div class="demo-barra" role="region" aria-label="Controles del prototipo">
+  <b>Prototipo local.</b> Todo es simulado: no hay IA real ni datos de alumnos.
+  <label>Cuenta <select id="plan"><option value="miembro">Miembro</option><option value="gratis">Gratis</option><option value="visitante">Visitante</option></select></label>
+  <label><input type="checkbox" id="fallo"> Simular fallo del modelo</label>
+  <label><input type="checkbox" id="capas"> Ver capa</label>
+  <button id="tema" type="button">Modo oscuro</button>
+</div>
+
+<main class="app">
+  <section class="ejercicio" aria-labelledby="ej-t">
+    <h2 id="ej-t">Ejercicio · Do y does</h2>
+    <p class="ej-frase">___ she work on Saturdays?</p>
+    <div class="ej-ops"><span class="ej-op mal">Is</span><span class="ej-op bien">Does</span><span class="ej-op">Do</span></div>
+    <div class="ej-feedback">Elegiste <b>Is</b>. La respuesta correcta es <b>Does</b>.</div>
+    <button type="button" class="btn-riso" id="abrirCtx"><span class="cara" id="caraBtn" aria-hidden="true"></span>Pregúntale a Riso sobre este ejercicio</button>
+    <div class="metricas" id="met" aria-live="off"></div>
+  </section>
+
+  <section class="tutor" id="tutor" aria-labelledby="t-titulo">
+    <header class="t-cab">
+      <div class="avatar" id="avatar" aria-hidden="true"></div>
+      <div><h1 id="t-titulo">Pregúntale a Riso</h1><p>Tu tutor de inglés con inteligencia artificial</p></div>
+    </header>
+    <div class="t-modos" role="group" aria-label="Modo">
+      <button type="button" class="t-modo" data-modo="abierto" aria-pressed="true">Pregunta libre</button>
+      <button type="button" class="t-modo" data-modo="ejercicio" aria-pressed="false">Sobre el ejercicio</button>
+    </div>
+    <div class="t-ctx" id="ctx">Hablando del ejercicio: <b>___ she work on Saturdays?</b></div>
+    <div class="t-msgs" id="msgs" role="log" aria-live="polite" aria-relevant="additions" tabindex="0" aria-label="Conversación con Riso"></div>
+    <div class="t-sug" id="sug" aria-label="Sugerencias"></div>
+    <form class="t-form" id="form" autocomplete="off">
+      <label for="q" class="sr">Escribe tu pregunta para Riso</label>
+      <textarea id="q" rows="1" maxlength="400" placeholder="Escribe tu duda de inglés" enterkeyhint="send"></textarea>
+      <button class="enviar" id="enviar" type="submit" aria-label="Enviar pregunta" disabled>
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h11M10 5l5 5-5 5" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </form>
+    <div class="t-pie"><span id="cuota"></span><span id="cont">0/400</span></div>
+  </section>
+</main>
+
+<script src="../../riso/riso.js"></script>
+<script src="../../riso/tutor/conocimiento.js"></script>
+<script src="../../riso/tutor/riso-tutor.js"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var avatar = Riso.montar($('avatar'), { estado:'bienvenida', alto:64, etiqueta:'' });
+  Riso.montar($('caraBtn'), { estado:'neutro', alto:30, etiqueta:'' });
+  var CTX = { tema:'do-does', enunciado:'___ she work on Saturdays?', respuestaAlumno:'Is', respuestaCorrecta:'Does' };
+  var modo = 'abierto', tutor, ultima = null;
+
+  // Modelo SIMULADO (capa 5). En producción: Edge Function leo-ai, modo "chat".
+  var CANNED = [
+    [/jefe.*tarde|tarde.*trabajo/, { texto:'Puedes escribir: «I\'m sorry, I\'m running late. I\'ll be there in 15 minutes.» Es educado y claro. «Running late» significa que vas con retraso.', ej:[['I\'m running late, sorry.','Voy tarde, perdón.']] }],
+    [/cuenta.*restaurante|restaurante.*cuenta/, { texto:'Lo más natural es «Could we have the check, please?» En Reino Unido dicen «the bill». Con «Could» suena amable.', ej:[['Could we have the check, please?','¿Nos trae la cuenta, por favor?']] }],
+    [/\bis\b/, { texto:'Porque «work» es un verbo de acción. «Is» solo funciona cuando no hay otro verbo (Is she tired?). Con un verbo como work, la pregunta en presente simple usa «Does» y el verbo queda sin -s.', ej:[['Does she work on Saturdays?','¿Ella trabaja los sábados?'],['Is she at work?','¿Ella está en el trabajo?']] }]
+  ];
+  function generar(p){
+    return new Promise(function(ok, err){
+      setTimeout(function(){
+        if ($('fallo').checked) return err(new Error('503'));
+        var q = (p.pregunta + ' ' + (p.contexto ? 'ctx' : '')).toLowerCase();
+        for (var i = 0; i < CANNED.length; i++) if (CANNED[i][0].test(q) && (CANNED[i][0].source !== '\\bis\\b' || p.contexto)) return ok(CANNED[i][1]);
+        ok({ texto:'(Simulación) Aquí respondería el modelo en 2 a 4 frases, en español, con un ejemplo en inglés.' + (p.guia ? ' Además te sugiere una guía relacionada.' : '') });
+      }, 1100);
+    });
+  }
+  function nuevo(){ tutor = RisoTutor.crear({ plan:$('plan').value, generar:generar }); $('msgs').innerHTML=''; saludo(); pintarCuota(); }
+  function saludo(){ agregarRiso({ capa:1, texto: modo === 'ejercicio' ? 'Vi tu respuesta. ¿Qué parte no te quedó clara?' : '¡Hola! Soy Riso. Pregúntame cualquier duda de inglés: una palabra, una regla o cómo decir algo.' }); sugerencias(); }
+  function sugerencias(){
+    var s = modo === 'ejercicio' ? ['¿Por qué no se usa Is?','Dame otro ejemplo','¿Cuándo uso do?'] : ['¿Cuándo uso do y does?','Pasado de go','¿Cómo se dice 7:45?','¿Cómo le digo a mi jefe que llegaré tarde?','¿Qué significa although?'];
+    var c = $('sug'); c.innerHTML = '';
+    s.forEach(function(t){ var b = document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=t; b.onclick=function(){ enviar(t); }; c.appendChild(b); });
+  }
+  function el(tag, cls, txt){ var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function bajar(){ var m = $('msgs'); m.scrollTop = m.scrollHeight; }
+  function agregarAlumno(t){ $('msgs').appendChild(el('div','m m-al',t)); bajar(); }
+  function agregarRiso(r){
+    var d = el('div','m m-ri' + (r.tipo === 'error' ? ' m-error' : ''));
+    d.appendChild(el('div', null, r.texto));
+    (r.ej || []).slice(0,2).forEach(function(e){ var b = el('div','ej'); b.appendChild(el('div','en',e[0])); b.appendChild(el('div','es',e[1])); d.appendChild(b); });
+    if (r.ref){ var a = el('a','ref', r.refTitulo ? 'Lee la guía: ' + r.refTitulo.split('(')[0].trim() : 'Lee la guía completa'); a.href = '../../' + r.ref; d.appendChild(a); }
+    if (r.enlace){ var s = el('a','ref','Ir a Soporte'); s.href = '../../' + r.enlace; d.appendChild(s); }
+    if (r.aviso) d.appendChild(el('div','aviso', r.aviso));
+    if (r.reintentar){ var b = el('button','reint','Reintentar'); b.type='button'; b.onclick=function(){ d.remove(); enviar(ultima, true); }; d.appendChild(b); }
+    d.appendChild(el('div','capa','capa ' + r.capa + (r.tipo ? ' · ' + r.tipo : '') + (r.desdeCache ? ' · caché' : '')));
+    $('msgs').appendChild(d); bajar();
+  }
+  function pintarCuota(){
+    var m = tutor.metricas(), plan = $('plan').value, tot = RisoTutor.CONFIG.cuotaDiaria[plan];
+    $('cuota').textContent = plan === 'visitante' ? 'Sin cuenta: solo respuestas rápidas' : 'Preguntas abiertas hoy: ' + m.usadasHoy + ' de ' + tot;
+    $('met').textContent = 'Métricas locales (sin texto de las preguntas): ' + JSON.stringify(m);
+  }
+  var ocupado = false;
+  function enviar(t, reintento){
+    t = String(t || '').trim(); if (!t || ocupado) return;
+    ultima = t; ocupado = true; $('enviar').disabled = true;
+    if (!reintento) agregarAlumno(t);
+    $('q').value=''; ajustar();
+    var p = el('div','pensando'); var av = el('div','avatar'); p.appendChild(av); p.appendChild(el('span',null,'Riso está pensando…'));
+    var timer = setTimeout(function(){ Riso.montar(av,{ estado:'pensando', alto:44, etiqueta:'' }); $('msgs').appendChild(p); bajar(); avatar.estado('pensando'); }, 250);
+    tutor.preguntar(t, modo === 'ejercicio' ? CTX : null).then(function(r){
+      clearTimeout(timer); p.remove(); avatar.estado(r.capa >= 2 && r.capa <= 5 ? 'neutro' : (r.tipo === 'gracias' ? 'celebracion' : 'neutro'));
+      agregarRiso(r); ocupado = false; ajustar(); pintarCuota();
+    });
+  }
+  function ajustar(){ var q = $('q'); q.style.height='auto'; q.style.height=Math.min(q.scrollHeight,120)+'px'; $('cont').textContent = q.value.length + '/400'; $('enviar').disabled = ocupado || !q.value.trim(); }
+  $('q').addEventListener('input', ajustar);
+  $('q').addEventListener('keydown', function(e){ if (e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); enviar($('q').value); } });
+  $('q').addEventListener('focus', function(){ setTimeout(bajar, 300); }); // teclado del celular
+  $('form').addEventListener('submit', function(e){ e.preventDefault(); enviar($('q').value); });
+  function ponerModo(m){ modo = m; document.querySelectorAll('.t-modo').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.modo === m); }); $('ctx').classList.toggle('on', m === 'ejercicio'); saludo(); }
+  document.querySelectorAll('.t-modo').forEach(function(b){ b.onclick = function(){ ponerModo(b.dataset.modo); }; });
+  $('abrirCtx').onclick = function(){ ponerModo('ejercicio'); $('tutor').scrollIntoView({ block:'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); $('q').focus({ preventScroll:true }); };
+  $('plan').onchange = nuevo;
+  $('capas').onchange = function(){ document.body.classList.toggle('ver-capas', this.checked); };
+  $('tema').onclick = function(){ var o = document.documentElement.dataset.tema === 'oscuro'; document.documentElement.dataset.tema = o ? 'claro' : 'oscuro'; this.textContent = o ? 'Modo oscuro' : 'Modo claro'; };
+  if (matchMedia('(prefers-color-scheme: dark)').matches){ document.documentElement.dataset.tema='oscuro'; $('tema').textContent='Modo claro'; }
+  nuevo();
+})();
+</script>
+</body>
+</html>
