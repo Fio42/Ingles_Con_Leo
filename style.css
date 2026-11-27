@@ -2484,3 +2484,387 @@ body:has([data-first-offer-card]:not([style*="display: none"])) .practice-member
 @media (max-width:599px){ .home-video-btn{height:40px;padding:0 18px 0 13px;font-size:.9rem;bottom:15%;} .home-video-btn svg{width:18px;height:18px;} }
 @media (min-width:700px){ .home-video .section-head{max-width:760px;margin-left:auto;margin-right:auto;text-align:center;} .home-video-box{margin-left:auto;margin-right:auto;} }
 @media (min-width:900px){ .home-video{padding-top:56px;} }
+
+/* ===== Practicar gratis 2.0: selector de nivel compacto (solo tamaño y disposicion; la logica no cambia) ===== */
+@media(max-width:759px){
+  .levels{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .level-card{padding:14px 14px 14px;gap:8px;border-radius:18px}
+  .level-card .tone-bar{width:32px;height:5px}
+  .level-name{font-size:1.1rem}
+  .level-range{font-size:.8rem}
+  .level-desc{font-size:.82rem;line-height:1.4}
+  .level-icon{width:34px;height:34px}
+  .level-check{top:10px;right:10px;width:22px;height:22px}
+}
+@media(min-width:1000px){.levels{grid-template-columns:repeat(4,minmax(0,1fr))}.level-card{padding:20px 18px}}
+@media(min-width:760px){
+  #quickStartBox{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px}
+  #quickStartBox [data-quick-start]{width:auto!important;padding-left:34px;padding-right:34px}
+  #quickStartBox p{margin:0!important;text-align:left!important}
+}
+@media(min-width:1000px){.skill-section .option-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== LeoBot en celular: sin burbuja de saludo encima del contenido, lanzador mas chico
+   y espacio libre al final para que nunca tape lo ultimo de la pagina ===== */
+@media(max-width:767px){
+  .leobot-greet{display:none!important}
+  .leobot-fab{width:48px!important;height:48px!important}
+  body.leobot-away .leobot-fab{width:42px!important;height:42px!important;opacity:.85}
+  main::after{content:"";display:block;height:64px}
+}
+
+/* ===== TEMA 2.0 (generado por tools/tema/generar_tema_oscuro.py, no editar a mano) ===== */
+
+:root{
+  --v2-bg:var(--paper); --v2-surface:#FFFFFF; --v2-surface-2:#F3EEE4; --v2-surface-3:#E9E2D4;
+  --v2-text:var(--ink); --v2-text-2:var(--ink-soft); --v2-text-3:#7A8090;
+  --v2-line:#ECE5D8; --v2-line-strong:#DCD2C0;
+  --v2-brand:var(--blue); --v2-brand-lip:#172B9E; --v2-brand-tint:var(--blue-tint); --v2-brand-text:#1F37C9;
+  --v2-xp:#FFC23A; --v2-xp-lip:#E29A00; --v2-xp-tint:#FFF3D1; --v2-xp-text:#8A5A00;
+  --v2-streak:#FF7A1A; --v2-streak-tint:#FFE9D8; --v2-streak-text:#B04A00;
+  --v2-ok:#14B26A; --v2-ok-lip:#0C8A50; --v2-ok-tint:#E1F7EC; --v2-ok-text:#0A7444;
+  --v2-bad:#EE4B3A; --v2-bad-lip:#BF3324; --v2-bad-tint:#FDE7E3; --v2-bad-text:#AE2C1E;
+  --v2-mend:#0EA396; --v2-mend-lip:#0A7C72; --v2-mend-tint:#DCF4F1; --v2-mend-text:#07695F;
+  --v2-award:#7656F5; --v2-award-tint:#EEE9FF; --v2-award-text:#4C2FC0;
+  --v2-card-shadow:0 1px 2px rgba(27,32,48,.05),0 6px 20px -10px rgba(27,32,48,.16);
+  --v2-lip:4px; --v2-ease:cubic-bezier(.2,.8,.2,1);
+  --v2-font-display:'Baloo 2 V2','Baloo 2','Baloo Fallback',system-ui,sans-serif;
+  --v2-font-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+html:not([data-theme="light"]){
+  --paper:#0B0F1A; --paper-dim:#141A29;
+  --ink:#EEF0F7; --ink-soft:#AAB1C4; --ink-faint:#9199AE;
+  --blue:#5B74FF; --blue-deep:#4D66FF; --blue-tint:#1D2550;
+  --amber:#FFC94A; --amber-tint:#3A2F12;
+  --coral:#FF6655; --coral-tint:#3A1A17;
+  --green:#25C27C; --green-tint:#10301F;
+  --violet:#8E74FF; --violet-deep:#BFB0FF; --violet-tint:#251E47;
+  --teal:#1FBFB2; --teal-deep:#59E0D5; --teal-tint:#0F2F2E;
+  --gold:#FFD772; --gold-deep:#FFD772; --gold-tint:#3A2F12;
+  --line:#222A3F;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.8);
+  --v2-surface:#141A29; --v2-surface-2:#1A2134; --v2-surface-3:#242D45;
+  --v2-text-3:#737B92; --v2-line:#222A3F; --v2-line-strong:#323C58;
+  --v2-brand-lip:#2638B8; --v2-brand-text:#9AABFF;
+  --v2-xp:#FFC94A; --v2-xp-lip:#C98A00; --v2-xp-tint:#3A2F12; --v2-xp-text:#FFD772;
+  --v2-streak:#FF8A33; --v2-streak-tint:#3A2414; --v2-streak-text:#FFAE70;
+  --v2-ok:#25C27C; --v2-ok-lip:#118551; --v2-ok-tint:#10301F; --v2-ok-text:#5BE3A5;
+  --v2-bad:#FF6655; --v2-bad-lip:#B23426; --v2-bad-tint:#3A1A17; --v2-bad-text:#FF9A8E;
+  --v2-mend:#1FBFB2; --v2-mend-lip:#0A7F76; --v2-mend-tint:#0F2F2E; --v2-mend-text:#59E0D5;
+  --v2-award:#8E74FF; --v2-award-tint:#251E47; --v2-award-text:#BFB0FF;
+  --v2-card-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -14px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+/* Selector de tema en la cabecera pública (tema.js) */
+.tema-wrap{position:relative;display:flex;align-items:center;margin-left:auto;margin-right:8px}
+.tema-btn{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);cursor:pointer;padding:0}
+.tema-btn:hover{color:var(--ink);border-color:var(--ink-faint)}
+.tema-pop{position:absolute;right:0;top:48px;z-index:80;min-width:160px;padding:6px;border-radius:14px;background:var(--v2-surface);border:1px solid var(--v2-line-strong);box-shadow:0 18px 40px -12px rgba(0,0,0,.45)}
+.tema-pop button{display:block;width:100%;text-align:left;padding:10px 12px;border:0;background:none;border-radius:10px;font:inherit;font-weight:700;color:var(--ink);cursor:pointer}
+.tema-pop button:hover{background:var(--v2-surface-2)}
+.tema-pop button[aria-checked="true"]{background:var(--blue-tint);color:var(--blue)}
+html:not([data-theme="light"]) img.logo-mark{filter:none}
+html:not([data-theme="light"]) ::placeholder{color:#737B92}
+html:not([data-theme="light"]) input:not([type=checkbox]):not([type=radio]):not([type=range]),html:not([data-theme="light"]) select,html:not([data-theme="light"]) textarea{background-color:var(--v2-surface-2);color:var(--ink);border-color:var(--v2-line-strong)}
+html:not([data-theme="light"]) [style*="background:#fff"],html:not([data-theme="light"]) [style*="background: #fff"],html:not([data-theme="light"]) [style*="background:white"],html:not([data-theme="light"]) [style*="background-color:#fff"]{background-color:var(--v2-surface)!important}
+html:not([data-theme="light"]) [style*="color:#1"],html:not([data-theme="light"]) [style*="color: #1"],html:not([data-theme="light"]) [style*="color:#2"],html:not([data-theme="light"]) [style*="color:#3"]{color:var(--ink)!important}
+
+/* Tipografia 2.0 (la misma de la academia, servida desde v2/fonts). Solo se descarga donde se usa. */
+@font-face{font-family:'Nunito';font-style:normal;font-weight:600;font-display:swap;src:url(v2/fonts/nunito-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/nunito-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/nunito-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Nunito';font-style:normal;font-weight:900;font-display:swap;src:url(v2/fonts/nunito-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:700;font-display:swap;src:url(v2/fonts/baloo-2-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Baloo 2 V2';font-style:normal;font-weight:800;font-display:swap;src:url(v2/fonts/baloo-2-latin-800-normal.woff2) format('woff2')}
+
+/* ---- Practicar gratis 2.0 (copiado de v2/v2-lecciones.css) ---- */
+@keyframes v2-in{from{transform:translateY(10px)}to{transform:none}}
+@keyframes v2-pop{0%{transform:scale(1)}40%{transform:scale(1.035)}100%{transform:scale(1)}}
+@keyframes v2-shake{0%,100%{transform:none}20%{transform:translateX(-5px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes v2-rise{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes v2-glow{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--v2-ok) 40%,transparent)}100%{box-shadow:0 0 0 8px transparent}}
+@keyframes v2-shine{from{transform:translateX(-100%)}to{transform:translateX(220%)}}
+#practicaMain .option{position:relative;min-height:56px;border-radius:14px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);font-weight:800;font-size:1.05rem;box-shadow:0 3px 0 var(--v2-line-strong);margin-bottom:3px;transition:transform .08s,box-shadow .08s,border-color .15s,background-color .15s;-webkit-tap-highlight-color:transparent}
+#practicaMain .option:not(:disabled):hover{border-color:var(--v2-brand);background:color-mix(in srgb,var(--v2-brand) 6%,var(--v2-surface))}
+#practicaMain .option:not(:disabled):active{transform:translateY(3px);box-shadow:0 0 0 var(--v2-line-strong)}
+#practicaMain .option.correct{border-color:var(--v2-ok);background:color-mix(in srgb,var(--v2-ok) 13%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-ok);animation:v2-pop .35s ease-out}
+#practicaMain .option.incorrect{border-color:var(--v2-bad);background:color-mix(in srgb,var(--v2-bad) 10%,var(--v2-surface));box-shadow:0 3px 0 var(--v2-bad);animation:v2-shake .4s ease-out}
+#practicaMain .option .dot{border-color:var(--v2-line-strong)}
+#practicaMain .practice-prompt{font-family:var(--v2-font-display);font-weight:700}
+#practicaMain .next-row .btn-primary{min-height:54px;font-size:1.08rem}
+#practicaMain .feedback.show{animation:v2-rise .3s cubic-bezier(.2,.8,.2,1) both;border-radius:18px;padding:14px 16px}
+#practicaMain .feedback.ok{background:color-mix(in srgb,var(--v2-ok) 12%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-ok) 40%,transparent);color:var(--v2-text)}
+#practicaMain .feedback.bad{background:color-mix(in srgb,var(--v2-bad) 8%,var(--v2-surface));border:2px solid color-mix(in srgb,var(--v2-bad) 30%,transparent);color:var(--v2-text)}
+#practicaMain .feedback .fb-head{font-family:var(--v2-font-display);font-weight:800;font-size:1.2rem}
+#practicaMain .feedback.ok .fb-head{color:var(--v2-ok-text,#0A7444)}
+#practicaMain .feedback.bad .fb-head{color:var(--v2-bad-text,#AE2C1E)}
+@media (prefers-reduced-motion:reduce){#practicaMain .feedback.show,#practicaMain .option{animation:none!important;transition:none!important}}
+#practicaMain .session-card{background:var(--v2-surface);border-radius:22px;animation:v2-in .28s cubic-bezier(.2,.8,.2,1) both}
+#practicaMain .session-progress{height:12px;border-radius:999px;background:var(--v2-surface-3);overflow:hidden}
+#practicaMain .session-progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--v2-brand),var(--v2-ok));transition:width .55s cubic-bezier(.2,.8,.2,1)}
+#practicaMain .word-chip,#practicaMain .error-word{border-radius:12px;border:2px solid var(--v2-line-strong);background:var(--v2-surface);color:var(--v2-text);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;min-height:44px;padding:8px 14px;margin-bottom:3px;transition:transform .08s,box-shadow .08s}
+#practicaMain .word-chip:not(:disabled):active,#practicaMain .error-word:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+#practicaMain .blank-slot{border-radius:10px}
+#practicaMain,.hm{font-family:var(--v2-font-body)}
+#practicaMain h1,#practicaMain h2,#practicaMain h3,.hm h1,.hm h2,.hm h3{font-family:var(--v2-font-display);font-weight:800}
+#practicaMain .level-card{border:2px solid var(--v2-line-strong);box-shadow:0 4px 0 var(--v2-line-strong)}
+#practicaMain .level-card[aria-pressed="true"]{border-color:var(--tone);box-shadow:0 4px 0 var(--tone)}
+#practicaMain .level-card:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-tab-btn{border-radius:14px;border:2px solid var(--v2-line-strong);box-shadow:0 3px 0 var(--v2-line-strong);font-weight:800;margin-bottom:3px}
+#practicaMain .skill-tab-btn.active,#practicaMain .skill-tab-btn[aria-selected="true"]{border-color:var(--v2-brand);box-shadow:0 3px 0 var(--v2-brand)}
+#practicaMain .btn-primary{border-radius:16px;box-shadow:0 4px 0 var(--v2-brand-lip);font-weight:800}
+#practicaMain .btn-primary:active{transform:translateY(4px);box-shadow:none}
+#practicaMain .skill-section{border-radius:22px}
+/* ---- style.css ---- */
+html:not([data-theme="light"]) .nav-pop,
+html:not([data-theme="light"]) .nav-links.mnav-open,
+html:not([data-theme="light"]) .level-card,
+html:not([data-theme="light"]) .length-card,
+html:not([data-theme="light"]) .practice-shell,
+html:not([data-theme="light"]) .option,
+html:not([data-theme="light"]) .error-sentence,
+html:not([data-theme="light"]) .blank-slot,
+html:not([data-theme="light"]) .skill-chip,
+html:not([data-theme="light"]) .progress-panel,
+html:not([data-theme="light"]) .article-card,
+html:not([data-theme="light"]) .article-featured,
+html:not([data-theme="light"]) .article-filter,
+html:not([data-theme="light"]) .practice-members-benefit,
+html:not([data-theme="light"]) .phrase-item,
+html:not([data-theme="light"]) .gate-card,
+html:not([data-theme="light"]) .mobile-nav,
+html:not([data-theme="light"]) .onb-card,
+html:not([data-theme="light"]) .skill-section,
+html:not([data-theme="light"]) .skill-tab-btn,
+html:not([data-theme="light"]) .examples-block,
+html:not([data-theme="light"]) .feedback.ok .examples-block,
+html:not([data-theme="light"]) .feedback.bad .examples-block,
+html:not([data-theme="light"]) .session-shell,
+html:not([data-theme="light"]) .continue-card .btn-primary,
+html:not([data-theme="light"]) .skill-card-link,
+html:not([data-theme="light"]) .skill-card-link.featured-toefl,
+html:not([data-theme="light"]) .skill-card-link.featured-ielts,
+html:not([data-theme="light"]) .skill-card-link.featured-cambridge,
+html:not([data-theme="light"]) .skill-card-link.featured-clases,
+html:not([data-theme="light"]) .skill-card-link.featured-juego,
+html:not([data-theme="light"]) .stat-card,
+html:not([data-theme="light"]) .continue-note,
+html:not([data-theme="light"]) .rings-panel,
+html:not([data-theme="light"]) .continue-progress-bar,
+html:not([data-theme="light"]) .continue-progress-fill,
+html:not([data-theme="light"]) .activity-card,
+html:not([data-theme="light"]) .weekly-chart-card,
+html:not([data-theme="light"]) .streak-card,
+html:not([data-theme="light"]) .recent-row,
+html:not([data-theme="light"]) .skills-panel,
+html:not([data-theme="light"]) .tip-card,
+html:not([data-theme="light"]) .video-filter,
+html:not([data-theme="light"]) .video-featured,
+html:not([data-theme="light"]) .video-card-v2,
+html:not([data-theme="light"]) .video-carousel-arrow,
+html:not([data-theme="light"]) .social-row a,
+html:not([data-theme="light"]) .comment-form textarea,
+html:not([data-theme="light"]) .comment-reply-form textarea,
+html:not([data-theme="light"]) .hero-v2-card,
+html:not([data-theme="light"]) .how-v2-card,
+html:not([data-theme="light"]) .demo-pill,
+html:not([data-theme="light"]) .home-skill-card,
+html:not([data-theme="light"]) .home-social-btn,
+html:not([data-theme="light"]) .form-field input,
+html:not([data-theme="light"]) .form-field select,
+html:not([data-theme="light"]) .form-field textarea,
+html:not([data-theme="light"]) .pricing-card,
+html:not([data-theme="light"]) .home-level-card,
+html:not([data-theme="light"]) .leo-voz-avatar,
+html:not([data-theme="light"]) .clases-search-box input,
+html:not([data-theme="light"]) .clases-carousel-arrow,
+html:not([data-theme="light"]) .clase-card,
+html:not([data-theme="light"]) .clase-shell,
+html:not([data-theme="light"]) .clase-phrase-listen-btn,
+html:not([data-theme="light"]) .clase-option-btn,
+html:not([data-theme="light"]) .clase-chip,
+html:not([data-theme="light"]) .clases-banner .btn-primary,
+html:not([data-theme="light"]) .mistakes-card,
+html:not([data-theme="light"]) .progress-summary-card,
+html:not([data-theme="light"]) .daily-card,
+html:not([data-theme="light"]) .quick-actions-card,
+html:not([data-theme="light"]) .toefl-skill-pill,
+html:not([data-theme="light"]) .toefl-banner .btn-primary,
+html:not([data-theme="light"]) .toefl-soon-card,
+html:not([data-theme="light"]) #memberContent .dash-top-grid .continue-note,
+html:not([data-theme="light"]) .plan-feature-icon,
+html:not([data-theme="light"]) #memberContent .toefl-banner-icon,
+html:not([data-theme="light"]) #memberContent .performance-card,
+html:not([data-theme="light"]) #memberContent .activity-card-full,
+html:not([data-theme="light"]) .toefl-landing-card,
+html:not([data-theme="light"]) .welcome-benefit-icon,
+html:not([data-theme="light"]) .upgrade-banner,
+html:not([data-theme="light"]) .locked-card,
+html:not([data-theme="light"]) .rush-card,
+html:not([data-theme="light"]) .rush-sound-toggle,
+html:not([data-theme="light"]) .survey-card,
+html:not([data-theme="light"]) .skill-card-link.featured-toeic,
+html:not([data-theme="light"]) .toeic-mini,
+html:not([data-theme="light"]) .toeic-mini-result,
+html:not([data-theme="light"]) .toeic-includes,
+html:not([data-theme="light"]) .mail-example,
+html:not([data-theme="light"]) .plan-option,
+html:not([data-theme="light"]) .home-testimonial,
+html:not([data-theme="light"]) .home-plan,
+html:not([data-theme="light"]) .home-faq details,
+html:not([data-theme="light"]) .diag-card,
+html:not([data-theme="light"]) .leo-ai-btn,
+html:not([data-theme="light"]) .leo-ai-answer,
+html:not([data-theme="light"]) .ai-pitch::after,
+html:not([data-theme="light"]) .ai-pitch-badge,
+html:not([data-theme="light"]) .ai-pitch .btn,
+html:not([data-theme="light"]) .locked-card.is-ai .stat-card-icon,
+html:not([data-theme="light"]) .locked-card.is-ai .locked-badge,
+html:not([data-theme="light"]) .sess-next-link,
+html:not([data-theme="light"]) .fb-card,
+html:not([data-theme="light"]) .two-ways-card,
+html:not([data-theme="light"]) .home-card,
+html:not([data-theme="light"]) .home-more a,
+html:not([data-theme="light"]) .sess-reinforce li{background-color:var(--v2-surface)!important;background-image:none!important}
+html:not([data-theme="light"]) header,
+html:not([data-theme="light"]) .continue-card .btn-primary:hover,
+html:not([data-theme="light"]) .clases-banner .btn-primary:hover,
+html:not([data-theme="light"]) .toefl-banner .btn-primary:hover,
+html:not([data-theme="light"]) .toeic-timer.prep,
+html:not([data-theme="light"]) .toeic-timer.speak,
+html:not([data-theme="light"]) .toeic-mini-fb.bad,
+html:not([data-theme="light"]) .free-limit-note{background-color:var(--v2-surface-2)!important;background-image:none!important}
+html:not([data-theme="light"]) .badge-free,
+html:not([data-theme="light"]) .feedback.ok,
+html:not([data-theme="light"]) .feedback.bad .fb-head,
+html:not([data-theme="light"]) .error-word.is-answer,
+html:not([data-theme="light"]) .error-word.is-wrong-pick,
+html:not([data-theme="light"]) .article-wrong,
+html:not([data-theme="light"]) .article-right,
+html:not([data-theme="light"]) .demo-progress-badge,
+html:not([data-theme="light"]) .form-status.ok,
+html:not([data-theme="light"]) .form-status.error,
+html:not([data-theme="light"]) .diag-insight.tone-up .diag-insight-icon,
+html:not([data-theme="light"]) .diag-insight.tone-good .diag-insight-icon,
+html:not([data-theme="light"]) .diag-insight.tone-down .diag-insight-icon,
+html:not([data-theme="light"]) .diag-hl-weak .diag-hl-label,
+html:not([data-theme="light"]) .diag-arrow.up,
+html:not([data-theme="light"]) .diag-arrow.down,
+html:not([data-theme="light"]) .diag-chip.state-dominado,
+html:not([data-theme="light"]) .diag-chip.state-bien,
+html:not([data-theme="light"]) .diag-chip.state-refuerzo,
+html:not([data-theme="light"]) .leo-ai-fixed,
+html:not([data-theme="light"]) .two-ways-tag,
+html:not([data-theme="light"]) .ap-callout a{color:var(--ink)!important}
+html:not([data-theme="light"]) .nav-bell-dot,
+html:not([data-theme="light"]) .practice-members-cta,
+html:not([data-theme="light"]) .practice-members-benefit,
+html:not([data-theme="light"]) .pricing-card,
+html:not([data-theme="light"]) .summary-unlock,
+html:not([data-theme="light"]) .home-trust-photo,
+html:not([data-theme="light"]) .leo-voz-avatar,
+html:not([data-theme="light"]) .upgrade-banner,
+html:not([data-theme="light"]) .ai-pitch-badge,
+html:not([data-theme="light"]) .ai-pitch .btn,
+html:not([data-theme="light"]) .first-offer,
+html:not([data-theme="light"]) .home-plans-by img{border-color:var(--v2-line)!important}
+/* ---- glosario/glosario.css ---- */
+html:not([data-theme="light"]) .gl-search input,
+html:not([data-theme="light"]) .gl-chips a,
+html:not([data-theme="light"]) .gl-row,
+html:not([data-theme="light"]) .gl-fullclass{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- aprender.css ---- */
+html:not([data-theme="light"]) .ap-hero,
+html:not([data-theme="light"]) .ap-card,
+html:not([data-theme="light"]) .ap-static a,
+html:not([data-theme="light"]) .ap-screen,
+html:not([data-theme="light"]) .ap-item{background-color:var(--v2-surface)!important;background-image:none!important}
+html:not([data-theme="light"]) .ap-wrong,
+html:not([data-theme="light"]) .ap-right,
+html:not([data-theme="light"]) .ap-tag-free{color:var(--ink)!important}
+html:not([data-theme="light"]) .ap-continue,
+html:not([data-theme="light"]) .ap-upsell{border-color:var(--v2-line)!important}
+/* ---- chatbot.css ---- */
+html:not([data-theme="light"]) .leobot-reopen,
+html:not([data-theme="light"]) .leobot-greet,
+html:not([data-theme="light"]) .leobot-greet::after,
+html:not([data-theme="light"]) .leobot-panel,
+html:not([data-theme="light"]) .leobot-body,
+html:not([data-theme="light"]) .leobot-options,
+html:not([data-theme="light"]) .leobot-opt-btn,
+html:not([data-theme="light"]) .leobot-select,
+html:not([data-theme="light"]) .leobot-footer{background-color:var(--v2-surface)!important;background-image:none!important}
+html:not([data-theme="light"]) .leobot-greet-close:hover,
+html:not([data-theme="light"]) .leobot-header,
+html:not([data-theme="light"]) .leobot-msg.bot .leobot-bubble,
+html:not([data-theme="light"]) .leobot-typing-dots,
+html:not([data-theme="light"]) .leobot-opt-btn:hover,
+html:not([data-theme="light"]) .leobot-hide-link:hover{background-color:var(--v2-surface-2)!important;background-image:none!important}
+html:not([data-theme="light"]) .leobot-form-error{color:var(--ink)!important}
+html:not([data-theme="light"]) .leobot-fab-dot{border-color:var(--v2-line)!important}
+/* ---- academia-de-ingles.html ---- */
+html:not([data-theme="light"]) .cp-card,
+html:not([data-theme="light"]) .cp-faq details,
+html:not([data-theme="light"]) .ac-less li,
+html:not([data-theme="light"]) .cp-hero-actions .btn-ghost{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-abecedario-ingles.html ---- */
+html:not([data-theme="light"]) .abc-card,
+html:not([data-theme="light"]) .abc-listen,
+html:not([data-theme="light"]) .abc-mini{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-contracciones-ingles.html ---- */
+html:not([data-theme="light"]) .say-chip,
+html:not([data-theme="light"]) .verb-list li{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-dias-meses-fechas-ingles.html ---- */
+html:not([data-theme="light"]) .say-chip,
+html:not([data-theme="light"]) .verb-list li{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-question-tags-ingles.html ---- */
+html:not([data-theme="light"]) .say-chip,
+html:not([data-theme="light"]) .verb-list li{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-verbos-irregulares.html ---- */
+html:not([data-theme="light"]) .say-chip,
+html:not([data-theme="light"]) .verb-list li{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulo-voz-pasiva-ingles.html ---- */
+html:not([data-theme="light"]) .say-chip,
+html:not([data-theme="light"]) .verb-list li{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- articulos.html ---- */
+html:not([data-theme="light"]) .article-search input,
+html:not([data-theme="light"]) .glossary-promo{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- baja.html ---- */
+html:not([data-theme="light"]) .baja-card{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- clases-particulares.html ---- */
+html:not([data-theme="light"]) .cp-card,
+html:not([data-theme="light"]) .cp-faq details,
+html:not([data-theme="light"]) .cp-pack{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- libro-100-errores-comunes-ingles.html ---- */
+html:not([data-theme="light"]) .libro-cover,
+html:not([data-theme="light"]) .libro-chips li,
+html:not([data-theme="light"]) .libro-card,
+html:not([data-theme="light"]) .libro-demo,
+html:not([data-theme="light"]) .libro-shots img,
+html:not([data-theme="light"]) .libro-faq details,
+html:not([data-theme="light"]) .libro-final .btn-primary,
+html:not([data-theme="light"]) .libro-other,
+html:not([data-theme="light"]) .libro-sticky{background-color:var(--v2-surface)!important;background-image:none!important}
+html:not([data-theme="light"]) .libro-demo .si{color:var(--ink)!important}
+html:not([data-theme="light"]) .libro-others,
+html:not([data-theme="light"]) .libro-other{border-color:var(--v2-line)!important}
+/* ---- libro-gracias.html ---- */
+html:not([data-theme="light"]) .gracias-box{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- test-de-nivel-de-ingles.html ---- */
+html:not([data-theme="light"]) .lt-card{background-color:var(--v2-surface)!important;background-image:none!important}
+/* ---- ajustes puntuales de contraste (revisados a mano) ---- */
+html:not([data-theme="light"]) .libro-demo .no{color:var(--v2-bad-text)!important}
+html:not([data-theme="light"]) .libro-demo .si{color:var(--v2-ok-text)!important}
+html:not([data-theme="light"]) .libro-final{background:#2A3DB8!important}
+html:not([data-theme="light"]) .libro-final small{color:#DDE3FF!important}
+html:not([data-theme="light"]) .cp-btn-wa{background:#138A50!important}
+/* cabecera: con el selector de tema hay un boton mas; se compacta un poco para que el logo no toque el menu */
+.nav .logo{margin-right:18px}
+.wrap.nav{padding-left:20px;padding-right:20px}
+@media(min-width:1100px) and (max-width:1279px){html.ac-live .nav-links{gap:11px;font-size:.86rem}.nav .logo{margin-right:10px}}
+@media(min-width:1280px) and (max-width:1399px){html.ac-live .nav-links{gap:14px;font-size:.9rem}}
+@media(min-width:1400px) and (max-width:1599px){html.ac-live .nav-links{gap:20px}}
+.tema-wrap{padding-left:12px}
+@media(min-width:900px) and (max-width:1099px){.nav-links{gap:12px!important;font-size:.86rem!important}}
+
+/* ===== FIN TEMA 2.0 ===== */

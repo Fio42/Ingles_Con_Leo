@@ -60,8 +60,8 @@
 
   /* miembros.html: nada de 2.0 se descarga para visitantes ni buscadores. Solo cuando la página
      muestra el área de miembro se cargan los estilos y scripts (en orden) y se enciende. */
-  var V = '20261127b';
-  var CSS = ['v2-tokens.css', 'v2-base.css', 'v2-dark-auto.css', 'v3-ui.css', 'v2-screens.css', 'v2-lecciones.css'];
+  var V = '20261127c';
+  var CSS = ['v2-tokens.css', 'v2-base.css', 'v2-dark-auto.css', 'v3-ui.css', 'v2-screens.css', 'v2-lecciones.css', 'v2-paginas.css'];
   var JS = ['v3-art.js', 'v3-sound.js', 'v2-kit.js', 'v2-data.js', 'v2-shell.js', 'v2-home.js'];
   var loading = false;
   function loadAll(){

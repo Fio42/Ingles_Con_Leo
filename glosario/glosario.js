@@ -117,3 +117,7 @@
   }catch(e){}
   apply();
 })();
+
+/* Tema 2.0: el oscuro ya lo pone style.css sin JavaScript; aquí se aplica la preferencia
+   guardada (Claro/Auto) y aparece el selector de tema en la cabecera. */
+(function(){ if(window.ICL_TEMA) return; var s = document.createElement('script'); s.src = '/tema.js?v=20261127a'; document.head.appendChild(s); })();

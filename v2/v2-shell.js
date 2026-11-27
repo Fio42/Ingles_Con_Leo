@@ -14,7 +14,10 @@
   var d = document, html = d.documentElement, K = window.K, A = K.ART, SND = K.SND;
   var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   var APP = { 'miembros.html':'inicio', 'academia.html':'academia', 'practica-miembros.html':'practicar', 'plan-estudio.html':'practicar',
-              'errores.html':'practicar', 'progreso.html':'progreso' };
+              'errores.html':'practicar', 'progreso.html':'progreso',
+              'gramatica.html':'practicar', 'vocabulario.html':'practicar', 'listening.html':'practicar', 'speaking.html':'practicar', 'writing.html':'practicar',
+              'mixto.html':'practicar', 'lectura.html':'practicar', 'clases.html':'mas', 'examenes.html':'mas', 'toefl.html':'mas', 'ielts.html':'mas',
+              'toeic.html':'mas', 'cambridge.html':'mas' };
   var current = APP[page];
   if(!current) return;
 
@@ -38,7 +41,7 @@
           var ico = it.k === 'mas' ? MAS : (A.NAV_ICO || {})[it.k] || '';
           var inner = '<span class="nav__ico">' + ico + '<span class="nav__badge" hidden></span></span><span class="nav__label">' + it.t + '</span>';
           return it.h ? '<a class="nav__item" data-nav="' + it.k + '" href="' + it.h + '"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</a>'
-                      : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog">' + inner + '</button>';
+                      : '<button type="button" class="nav__item" data-nav="' + it.k + '" aria-haspopup="dialog"' + (it.k === current ? ' aria-current="page"' : '') + '>' + inner + '</button>';
         }).join('') + '</nav></div>');
     shell.classList.add('k-scope');
     d.body.insertBefore(shell, d.body.firstChild);

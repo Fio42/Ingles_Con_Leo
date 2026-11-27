@@ -4342,3 +4342,19 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Sin cambios en motores de ejercicios, respuestas, audios, registro de errores, limites, guardado, pagos, webhooks, membresias, auth, RLS ni Edge Functions.
 - Rollback: ICL_V2_ENABLED=false en v2/v2-init.js (todo vuelve a la version clasica) o revertir este commit. Por dispositivo: Mas > Usar clasica, o ?v2=0.
 - El registro detallado del desarrollo esta en la rama v2/fundamentos.
+
+2026-11-26 - 2.0 en todo el sitio publico: tema oscuro global, portada nueva y Practicar compacto (rama v2/unificacion)
+
+- Tema: oscuro por defecto en las 104 paginas publicas y las 355 del glosario, con selector Claro/Oscuro/Automatico en la cabecera (misma preferencia icl.theme que el area de miembros). El oscuro es CSS puro (html:not([data-theme="light"]) al final de style.css): funciona sin JS, sin destello y no oculta nada a Google. tema.js solo aplica la preferencia y monta el selector. Glosario: lo carga glosario.js, sin tocar sus 355 HTML (quien eligio Claro puede ver un instante oscuro ahi).
+- El bloque de style.css lo genera tools/tema/generar_tema_oscuro.py (no editar a mano): convierte fondos claros, textos oscuros y bordes claros a tokens 2.0, mas ajustes puntuales de contraste (libro, clases particulares) y la cabecera compactada para que entre el selector.
+- Portada (index.html + inicio.css): rediseno 2.0 con el mismo contenido real (H1, video, como funciona, academia, habilidades y niveles, Profe Leo, testimonios, precio $2/$20, Leo AI, FAQ, guias, libro, redes, contacto). Sin estadisticas ni testimonios inventados. Mismos enlaces, metadatos, JSON-LD, canonical, GA4, Pixel y eventos (video_promo_play, book_promo_click). La animacion de entrada solo existe con JS.
+- Practicar gratis: niveles en 2 columnas en movil y 4 en escritorio, boton Empezar ahora de ancho normal y opciones en 2 columnas en escritorio. Solo CSS: reglas, limites y contador sin cambios.
+- Verificado: contraste automatico en 124 paginas (0 problemas), capturas en 390-1920 px en oscuro y claro, SEO de 462 paginas comparado antes/despues (solo cambia la portada; ningun enlace perdido; sitemap y robots intactos), suite de pruebas sin fallos nuevos (18 rojas tambien en la base, por entorno).
+- Sin cambios en pagos, webhooks, precios, membresias, auth, RLS, Edge Functions, base de datos, contenido educativo ni limites.
+- Rollback: revertir los commits de esta rama (git revert) o volver a la etiqueta pre-unificacion.
+- Segunda pasada (misma noche, revisando la cuenta real de miembro de Leo en produccion, solo lectura):
+  - Miembros: las 13 paginas privadas que seguian clasicas (gramatica, vocabulario, listening, speaking, writing, mixto, lectura, clases, examenes, toefl, ielts, toeic, cambridge) ahora usan la barra de la app 2.0 (inferior en celular, lateral en escritorio). Nueva v2/v2-paginas.css: cabeceras, tarjetas, niveles, duracion, pestañas, botones de accion y Leo AI con estilo 2.0 en esas paginas y en plan de estudio y mis errores. Solo presentacion; con ICL_V2_ENABLED=false todo vuelve a la version clasica. Versiones v2 a 20261127c.
+  - Practicar 2.0: la lista "Refuerza N errores" se salia de su tarjeta en celular (corregido).
+  - Practicar gratis: sus ejercicios usan las mismas reglas visuales que los de miembros (generadas desde v2/v2-lecciones.css). Tipografia de la academia (Nunito + Baloo 2, servidas desde v2/fonts) en la portada y en Practicar gratis; los articulos no cambian.
+  - Portada: la tarjeta del ejercicio ya no tapa la cara de Leo. Video: el poster y el mp4 responden 200 en produccion y el video se reproduce (con su evento video_promo_play).
+  - LeoBot en celular: sin la burbuja "¿Necesitas ayuda?" encima del contenido, lanzador mas chico y espacio libre al final de cada pagina.
