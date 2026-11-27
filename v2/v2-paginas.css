@@ -63,14 +63,15 @@ html.v2 .leo-ai-answer{background:color-mix(in srgb,var(--v2-award) 8%,var(--v2-
 html.v2 .leo-ai-head{font-family:var(--v2-font-display);font-weight:800;color:var(--v2-award-text)}
 html.v2 .leo-ai-tip,html.v2 .leo-ai-example,html.v2 .leo-ai-fixed{border-radius:12px}
 
-/* Escritorio: la columna de 640 px dejaba mucho vacío a ambos lados y se percibía corrida a la derecha
-   del riel lateral. Se ensancha de forma moderada y se acerca al riel. */
+/* Escritorio: columna más ancha que los 640 px del móvil y centrada en el espacio que queda a la derecha
+   del riel lateral (ni pegada al riel ni corrida a la derecha). */
 @media (min-width:1100px){
-  html.v2 .v2-screen,html.v2 main.v2-has-practice > section > .wrap{max-width:820px;margin-left:clamp(24px,4vw,72px);margin-right:auto}
-  html.v2.v2-app main > .page-hero > .wrap,html.v2.v2-app main > section > .wrap{max-width:1040px;margin-left:clamp(24px,4vw,72px);margin-right:auto}
+  html.v2 .v2-screen,html.v2 main.v2-has-practice > section > .wrap{max-width:820px;margin-left:auto;margin-right:auto;padding-left:32px;padding-right:32px}
+  html.v2.v2-app main > .page-hero > .wrap,html.v2.v2-app main > section > .wrap{max-width:1000px;margin-left:auto;margin-right:auto;padding-left:32px;padding-right:32px}
 }
 @media (min-width:1600px){
-  html.v2 .v2-screen,html.v2 main.v2-has-practice > section > .wrap{max-width:900px}
+  html.v2 .v2-screen,html.v2 main.v2-has-practice > section > .wrap{max-width:960px}
+  html.v2.v2-app main > .page-hero > .wrap,html.v2.v2-app main > section > .wrap{max-width:1120px}
 }
 
 /* Durante una sesión de ejercicios el lanzador de LeoBot no tapa botones (Leo AI sigue dentro de cada ejercicio) */
