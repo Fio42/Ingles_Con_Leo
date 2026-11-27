@@ -121,6 +121,15 @@
     window.dispatchEvent(new Event('v2:shell'));
   }
 
+  /* Cuenta de la sesión guardada (para no mezclar la racha de dos cuentas en el mismo navegador) */
+  function acctId(){
+    try{ for(var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i); if(!/^sb-.*-auth-token$/.test(k)) continue;
+      var v = JSON.parse(localStorage.getItem(k)), u = v && (v.user || (v.currentSession && v.currentSession.user)); if(u && u.id) return u.id; } }catch(e){}
+    return '';
+  }
+  /* Academia: al terminar una lección la racha puede haber cambiado y esta página no la calcula: la ficha se oculta
+     hasta la próxima página que la calcule (mejor nada que un dato viejo) */
+  function staleStreak(){ if(typeof window.computeStreak === 'function') return; paintTop.stale = true; var st = d.getElementById('v2Streak'); if(st) st.hidden = true; }
   /* Inicial del alumno sin depender de app.js (la Academia no lo carga): nombre guardado de ESTA cuenta o, si no hay, el correo */
   function acctInitial(){
     var n = '';
@@ -137,9 +146,20 @@
   function paintTop(){
     var st = d.getElementById('v2Streak'); if(!st) return;
     var n = 0, today = false;
-    /* La racha la calcula app.js; en páginas sin app.js (Academia) la ficha no se muestra para no enseñar un 0 falso */
-    st.hidden = typeof window.computeStreak !== 'function';
-    try{ if(window.V2D){ var p = V2D.practice(); n = p.streak; today = p.practicedToday; } }catch(e){}
+    /* La racha la calcula app.js. Bloque C: cada página que la calcula deja el resultado (de esta cuenta y de hoy) en el
+       navegador; la Academia, que no carga app.js, muestra ese mismo resultado sin calcular nada ni consultar la red.
+       Si no hay un resultado de hoy de esta cuenta, la ficha no se muestra (nunca un 0 falso). */
+    var KEY = 'icl.racha.estado', uid = acctId(), ymd = (window.V2D && V2D.ymd) ? V2D.ymd(new Date()) : '';
+    if(typeof window.computeStreak === 'function'){
+      st.hidden = false;
+      try{ if(window.V2D){ var p = V2D.practice(); n = p.streak; today = p.practicedToday; } }catch(e){}
+      try{ if(uid && ymd) localStorage.setItem(KEY, JSON.stringify({ u: uid, d: ymd, n: n, t: today })); }catch(e){}
+    } else {
+      var c = null; try{ c = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
+      var hoy = (function(){ var x = new Date(); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); })();
+      if(c && uid && c.u === uid && c.d === hoy && !paintTop.stale){ n = c.n; today = !!c.t; st.hidden = false; }
+      else { st.hidden = true; }
+    }
     /* Bloque C: la llama dice el estado de un vistazo (activa, pendiente hoy, en cero). Solo dibujo: la racha la
        calcula app.js y sus reglas no cambian. */
     var state = !n ? 'off' : today ? 'on' : 'pending';
@@ -268,7 +288,7 @@
     var svg = st.querySelector('.v2-flame'); if(svg){ svg.setAttribute('class', svg.getAttribute('class').replace(/v2-fl--\w+/, 'v2-fl--new')); }
     st.classList.remove('v2-stk-new'); void st.offsetWidth; st.classList.add('v2-stk-new');
   }
-  window.V2SHELL = { paintTop: paintTop, current: current, igniteStreak: igniteStreak };
+  window.V2SHELL = { paintTop: paintTop, current: current, igniteStreak: igniteStreak, staleStreak: staleStreak };
 
   /* Volver a 2.0 desde la clásica: ?v2=1 borra la preferencia */
   if(/[?&]v2=1\b/.test(location.search)){ try{ localStorage.removeItem('icl.ui'); }catch(_){} }

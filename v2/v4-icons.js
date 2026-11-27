@@ -74,9 +74,14 @@
         '<path class="v2-fl-core" d="M24 28.5c1.7 1.8 3.4 3.2 3.3 5.9a3.3 3.3 0 0 1-6.6 0c0-2.3 1.7-3.8 3.3-5.9z"/>' +
         '<path class="v2-fl-shine" d="M19.2 26.5c-.9 1.8-1.1 3.6-.6 5.3"/>' +
       '</g>' +
+      /* Pendiente hoy: un reloj pequeño dice "aún estás a tiempo" (la racha no se perdió) */
+      '<g class="v2-fl-clock"><circle cx="34.5" cy="34.5" r="6.2"/><path d="M34.5 31.6v3.1l2.1 1.4"/></g>' +
       '<g class="v2-fl-sparks"><circle cx="15" cy="20" r="1.6"/><circle cx="33" cy="17" r="1.3"/><circle cx="29" cy="9" r="1.1"/><circle cx="18" cy="11" r="1"/></g>' +
       '</svg>';
   }
+  /* El brillo del botón principal cruza UNA vez por página: se da por visto cuando termina (si la pantalla se
+     redibuja antes de terminar, vuelve a intentarlo; después ya no) */
+  document.addEventListener('animationend', function(e){ if(e.animationName === 'v2-shine-once') window.__v2Shone = 1; }, true);
   A.I4 = I4;
   A.flame = flame;
   /* Los dibujos existentes de la llama pasan a la nueva (misma llamada, nuevo arte) */

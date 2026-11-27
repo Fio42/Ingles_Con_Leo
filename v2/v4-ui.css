@@ -15,6 +15,19 @@
 /* Barra de navegación: el icono activo se rellena con su color (mismo mecanismo de antes) y se le da un leve relieve */
 .k-scope .k-nav__item[aria-current="page"] .v2-i4nav{filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
 
+/* Baldosa del icono: la misma en todas las páginas (también en la práctica gratis, que no carga v2-screens.css) */
+.k-scope .v2-task__ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--k-surface-2);color:var(--k-text)}
+.k-scope .v2-task__ic--brand{background:var(--k-brand-tint);color:var(--k-brand-text)}
+.k-scope .v2-task__ic--mend{background:var(--k-mend-tint);color:var(--k-mend-text)}
+.k-scope .v2-task__ic--streak{background:color-mix(in srgb,var(--v2-streak,#FF8A3D) 16%,transparent);color:var(--v2-streak-text,#FFB27A)}
+.k-scope .v2-task__ic--award{background:color-mix(in srgb,var(--v2-award,#B07CFF) 16%,transparent);color:var(--v2-award-text,#CDB0FF)}
+.k-scope .v2-task__ic--ok{background:color-mix(in srgb,var(--k-ok) 16%,transparent);color:var(--k-ok-text)}
+.k-scope .v2-ic-sm{width:34px;height:34px;border-radius:11px}
+.k-scope .v2-ic-sm .v2-i4,.k-scope .v2-ic-sm svg{width:22px!important;height:22px!important}
+.k-scope .v2-ic-md{width:40px;height:40px;border-radius:13px}
+.k-scope .v2-ic-md .v2-i4,.k-scope .v2-ic-md svg{width:26px!important;height:26px!important}
+.v2-results__chips .v2-task__ic{margin-bottom:4px}
+
 /* ---------- 2. La llama de la racha ---------- */
 .v2-flame{overflow:visible}
 .v2-flame .v2-fl-outer{fill:#FF7A1A;stroke:var(--k-illus-outline,#1B1206);stroke-width:2.6;stroke-linejoin:round}
@@ -28,10 +41,15 @@
 .v2-fl--on .v2-fl-glow{opacity:.14;animation:v2-fl-glow 2.6s ease-in-out infinite}
 .v2-fl--on .v2-fl-mid{animation:v2-fl-flick 1.9s ease-in-out infinite}
 .v2-fl--on .v2-fl-core{animation:v2-fl-flick 1.3s ease-in-out infinite reverse}
-/* Pendiente hoy: la racha sigue, pero falta practicar: color apagado que respira para invitar */
-.v2-fl--pending .v2-fl-outer{fill:#D99A6C}
-.v2-fl--pending .v2-fl-mid{fill:#F2BF7E}
-.v2-fl--pending .v2-fl-core{fill:#FBE3B8}
+/* Pendiente hoy: la racha sigue viva; colores cálidos algo atenuados y un reloj pequeño (aún estás a tiempo) */
+.v2-fl--pending .v2-fl-outer{fill:#EE8F4E}
+.v2-fl--pending .v2-fl-mid{fill:#F6B868}
+.v2-fl--pending .v2-fl-core{fill:#FBDDA4}
+.v2-fl--pending .v2-fl-body{opacity:.88;animation:v2-fl-breathe 2.8s ease-in-out infinite}
+.v2-flame .v2-fl-clock{display:none}
+.v2-fl--pending .v2-fl-clock{display:inline}
+.v2-fl--pending .v2-fl-clock circle{fill:var(--k-surface,#141A29);stroke:#F6B868;stroke-width:2.2}
+.v2-fl--pending .v2-fl-clock path{fill:none;stroke:#F6B868;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 /* El estado lo dibuja la llama: sin el filtro gris general de antes */
 .v2-shell .k-stat--streak.k-is-off .v2-flame,.k-scope .k-streak-hero.k-is-pending .v2-flame,.k-scope .k-today__item.k-is-pending > .v2-flame{filter:none}
 .v2-fl--pending .v2-fl-body{animation:v2-fl-breathe 2.8s ease-in-out infinite}
@@ -47,7 +65,7 @@
 .v2-fl--new .v2-fl-mid{animation:v2-fl-flick 1.9s ease-in-out .9s infinite}
 @keyframes v2-fl-flick{0%,100%{transform:scale(1,1)}35%{transform:scale(.95,1.06)}70%{transform:scale(1.04,.96)}}
 @keyframes v2-fl-glow{0%,100%{opacity:.12;transform:scale(.96)}50%{opacity:.26;transform:scale(1.05)}}
-@keyframes v2-fl-breathe{0%,100%{opacity:.72;transform:scale(.97)}50%{opacity:1;transform:scale(1)}}
+@keyframes v2-fl-breathe{0%,100%{opacity:.82;transform:scale(.97)}50%{opacity:.95;transform:scale(1)}}
 @keyframes v2-fl-ignite{0%{transform:scale(.3);opacity:.2}55%{transform:scale(1.22);opacity:1}100%{transform:scale(1)}}
 @keyframes v2-fl-burst{0%{opacity:.6;transform:scale(.4)}60%{opacity:.35;transform:scale(1.5)}100%{opacity:.18;transform:scale(1)}}
 @keyframes v2-fl-sparks{0%{opacity:1;transform:translateY(6px) scale(.6)}100%{opacity:0;transform:translateY(-12px) scale(1.2)}}
@@ -70,7 +88,7 @@
 .k-scope .v2-expand[open]{border-color:var(--k-line-strong)}
 /* Botón principal de la tarjeta destacada: brillo que cruza una vez al aparecer (orienta la mirada) */
 .k-scope .v2-next .k-btn{overflow:hidden}
-.k-scope .v2-next .k-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:v2-shine-once 1.1s .5s ease-out both;pointer-events:none}
+.k-scope .v2-next.v2-shine .k-btn::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.32) 50%,transparent 65%);transform:translateX(-120%);animation:v2-shine-once 1s .6s ease-out both;pointer-events:none}
 @keyframes v2-shine-once{to{transform:translateX(120%)}}
 /* Botones del motor de práctica (fuera de k-scope): mismo relieve y estado deshabilitado */
 html.v2 .next-row .btn,html.v2 .session-card .btn{transition:transform .1s ease-out,box-shadow .1s ease-out,filter .15s}
@@ -116,8 +134,6 @@ html.v2 .feedback.show.ok .fb-head svg,html.v2 .feedback.show.ok .fb-head .ok-ic
 .k-scope .v2-wins li:nth-child(2){animation-delay:.18s}
 .k-scope .v2-wins li b{font-weight:var(--k-fw-black)}
 .k-scope .v2-wins .v2-flame{width:40px;height:40px;flex:none}
-.k-scope .v2-wins .v2-win-goal{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--k-ok) 18%,transparent);color:var(--k-ok-text)}
-.k-scope .v2-wins .v2-win-goal svg{width:26px;height:26px}
 @keyframes v2-rise-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 /* Método Leo: recuperado / dominado se ilumina al aparecer */
 .k-scope .k-v2-mend-win,.v2-mend-win{animation:v2-mend-glow 1.2s ease-out both}
@@ -134,7 +150,7 @@ html.v2 .feedback.show.ok .fb-head svg,html.v2 .feedback.show.ok .fb-head .ok-ic
   html.v2 .feedback .fb-head svg,.v2-combo.k-scope,.v2-combo.k-scope::before,.leo-ai-loading::before,.leo-ai-loading::after,.k-scope .v2-wins li,
   .v2-mend-win,.v2-badge-reveal > svg,.v2-badge-reveal::before,.k-scope .v2-crow.k-is-now .v2-node::before{animation:none!important;transition:none!important}
   .leo-ai-loading::after{clip-path:none}
-  .k-scope .v2-next .k-btn::after{display:none}
+  .k-scope .v2-next.v2-shine .k-btn::after{display:none}
 }
 
 /* ---------- 7. Academia: camino de nodos dentro de cada etapa (bloque C) ---------- */

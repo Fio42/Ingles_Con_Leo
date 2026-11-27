@@ -52,7 +52,7 @@
     var pi = planInfo();
     var html = '<div class="v2-screen v2-practicar v2-stack">' +
       '<header><h1 class="v2-h1">Practicar</h1><p class="v2-sub">Te recomendamos empezar por aquí.</p></header>' +
-      '<section class="v2-next" aria-labelledby="v2PlanT"><span class="v2-next__eyebrow">' + (pi.resume ? 'Sigue donde te quedaste' : 'Tu práctica de hoy') + '</span>' +
+      '<section class="v2-next' + (window.__v2Shone ? '' : ' v2-shine') + '" aria-labelledby="v2PlanT"><span class="v2-next__eyebrow">' + (pi.resume ? 'Sigue donde te quedaste' : 'Tu práctica de hoy') + '</span>' +
         '<h2 id="v2PlanT">' + (pi.resume ? 'Tu sesión recomendada' : 'Sesión recomendada') + '</h2>' +
         '<p>Con tu nivel, tus errores recientes y lo que te toca reforzar.</p>' +
         '<div class="v2-next__meta">' + (pi.dur ? '<span>' + esc(pi.dur) + '</span>' : '') + (pi.level ? '<span>' + esc(pi.level) + '</span>' : '') + '</div>' +

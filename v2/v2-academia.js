@@ -53,7 +53,7 @@
       '<header><h1 class="v2-h1">Academia</h1><p class="v2-sub">Cursos cortos con evaluación e insignia.</p></header>' +
       '<section class="v2-route-sum" aria-label="Tu avance"><b id="v2RtAprob">Cursos aprobados: …</b><span class="v2-bar"><i id="v2RtBar" style="--v:0%"></i></span>' +
         '<small>' + doneL + ' de ' + totalL + ' lecciones completadas · un curso se aprueba al superar su evaluación</small></section>' +
-      (cur && cur.next ? '<section class="v2-next" aria-labelledby="v2RtNext"><span class="v2-next__em" aria-hidden="true">' + K.emblem(cur.id, { shape: stageOf(curIdx).shape, size: 64 }) + '</span>' +
+      (cur && cur.next ? '<section class="v2-next' + (window.__v2Shone ? '' : ' v2-shine') + '" aria-labelledby="v2RtNext"><span class="v2-next__em" aria-hidden="true">' + K.emblem(cur.id, { shape: stageOf(curIdx).shape, size: 64 }) + '</span>' +
         '<span class="v2-next__eyebrow">' + (cur.next.resume ? 'La dejaste a medias' : (cur.done ? 'Tu siguiente lección' : 'Empieza aquí')) + '</span>' +
         '<h2 id="v2RtNext">' + esc(cur.next.title) + '</h2><p>' + esc(cur.title) + ' · Lección ' + cur.next.n + ' de ' + cur.total + '</p><div class="v2-next__meta"></div>' +
         '<a class="btn btn--lg btn--block" href="#/curso/' + cur.id + '/leccion/' + cur.next.n + '" data-v2-next>' + (cur.next.resume ? 'Seguir la lección' : (cur.done ? 'Continuar' : 'Empezar')) + '</a></section>' : '') +
@@ -68,7 +68,7 @@
           '<div class="v2-stage__list v2-path">' + items.map(function(v){
             var now = cur && v.id === cur.id;
             return '<div class="v2-crow' + (now ? ' is-now' : '') + (v.done >= v.total ? ' is-done' : '') + '" data-crow="' + v.id + '">' +
-              '<button type="button" class="v2-crow__main" data-course="' + v.id + '"><span class="v2-node"><span class="v2-crow__em">' + K.emblem(v.id, { shape: sg.shape, size: 44 }) + '</span>' + (now ? '<span class="v2-here">Tú</span>' : '') + '</span>' +
+              '<button type="button" class="v2-crow__main" data-course="' + v.id + '"><span class="v2-node"><span class="v2-crow__em">' + K.emblem(v.id, { shape: sg.shape, size: 44, locked: true }) + '</span>' + (now ? '<span class="v2-here">Tú</span>' : '') + '</span>' +
               '<span><b>' + esc(v.name || v.title) + '</b><small data-cstate>' + stateText(v, now) + '</small></span>' + (now ? '' : A.UI.chevron) + '</button>' +
               (now && v.next ? '<a class="btn btn--sm" href="#/curso/' + v.id + '/leccion/' + v.next.n + '">Seguir</a>' : '') + '</div>';
           }).join('') + '</div></details>';
@@ -88,7 +88,8 @@
       });
       rs.forEach(function(r){ if(!r.b) return; var row = screen.querySelector('[data-crow="' + r.id + '"]'); if(!row) return;
         row.classList.add('is-won'); var st = row.querySelector('[data-cstate]'); if(st) st.textContent = 'Aprobado · insignia ganada';
-        /* Aprobado: su emblema pasa a insignia (con cinta) y su punto de la etapa se llena */
+        /* Aprobado: su emblema gris pasa a insignia a color con cinta y su punto de la etapa se llena.
+           Los demás quedan en gris (insignia aún no ganada), con su estado "Disponible": no se ven bloqueados. */
         var i = list.map(function(v){ return v.id; }).indexOf(r.id), em = row.querySelector('.v2-crow__em');
         if(em) em.innerHTML = K.px(K.emblem(r.id, { shape: stageOf(i).shape, size: 44, ribbon: true }));
         var dot = screen.querySelector('[data-dot="' + r.id + '"]'); if(dot) dot.classList.add('v2-dot--won'); });

@@ -56,7 +56,7 @@
     var mission;
     if(nx && nx.state !== 'done'){
       var href = 'academia.html#/curso/' + nx.c.id + '/leccion/' + nx.n;
-      mission = '<section class="v2-next" id="v2Mission" aria-labelledby="v2MissionT"><span class="v2-next__em" aria-hidden="true">' + K.emblem(nx.c.id, { shape: 'hex', size: 64 }) + '</span>' +
+      mission = '<section class="v2-next' + (window.__v2Shone ? '' : ' v2-shine') + '" id="v2Mission" aria-labelledby="v2MissionT"><span class="v2-next__em" aria-hidden="true">' + K.emblem(nx.c.id, { shape: 'hex', size: 64 }) + '</span>' +
         '<span class="v2-next__eyebrow">' + (nx.state === 'start' ? (fresh ? 'Una buena forma de empezar' : 'Empieza aquí') : (back ? 'Retoma donde lo dejaste' : 'Tu siguiente paso')) + '</span>' +
         '<h2 id="v2MissionT">' + esc(nx.c.title) + '</h2>' +
         '<p>Lección ' + nx.n + ' de ' + nx.c.total + ' · Unos 6 min</p>' +
