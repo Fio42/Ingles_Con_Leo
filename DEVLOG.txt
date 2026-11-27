@@ -4366,3 +4366,4 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
   - Portada: la tarjeta "Despues de practicar..." va sobre la palma de Leo (dentro del mismo contenedor que la imagen) y no tapa su cara en ningun ancho; menos espacio vertical entre secciones.
   - Practica: "Volver a intentar" y "Siguiente" en una sola linea; LeoBot no aparece durante una sesion de ejercicios (tapaba "Reproducir"); English Rush con las mismas opciones 2.0.
   - Sin cambios en pagos, webhooks, membresias, auth, permisos, contenido educativo, articulos, glosario ni su SEO.
+- Ajuste final de escritorio (miembros): la columna principal ya no queda pegada al riel lateral; se centra en el espacio a su derecha con margenes iguales a ambos lados (820 px desde 1100 px de ancho y 960 px desde 1600; paginas clasicas 1000 / 1120 px). Movil y tablet sin cambios. Solo v2/v2-paginas.css y numeros de version.
