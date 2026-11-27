@@ -179,7 +179,8 @@
     var won = n.matches && n.matches('.ac-badge-won') ? n : (n.querySelector && n.querySelector('.ac-badge-won'));
     if(won) badgeWon(won);
     var sum = n.matches && n.matches('.session-summary') ? n : (n.querySelector && n.querySelector('.session-summary'));
-    if(sum) results(sum, 'sesion');
+    /* Muro de límite sin ejercicios respondidos en esta sesión (se abre al intentar otra): sin tarjeta de resultados en cero */
+    if(sum && !(sum.classList.contains('free-wall') && !sum.querySelector('.summary-score'))) results(sum, 'sesion');
   }
   var mo = new MutationObserver(function(list){
     list.forEach(function(r){
