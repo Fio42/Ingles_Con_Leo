@@ -4411,3 +4411,14 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Lenguaje: «Te doy la bienvenida a Inglés con Leo», «¿Confirmamos?», insignias sin "la corrige el servidor".
 - Versiones ?v=20261129a (sin tocar artículos ni glosario). Prueba panel-accion-principal actualizada al nuevo onboarding. Tests: 18 fallos de entorno, igual que antes.
 - Sin cambios en pagos, permisos, límites, contenido, respuestas, combos, rachas ni Analytics.
+
+2026-11-27 · UX 2.0 Bloque B (rama v2/ux-a, sin push)
+- Cierre bloque A: "Ahora no" recordado por cuenta (leo_onb_later_<id>, sin BD) y practica.html?personalizar=1; sonido en la cabecera de la sesión; el resultado gratis ya no queda bajo la cabecera; Academia (lecciones y evaluación) recorrida en el simulador.
+- Practicar (v2-practicar.js): una recomendación (Plan, empieza con ?empezar=1), errores clave y Reto real como alternativas, "Elegir qué practicar" desplegable (habilidades, Mixto, buscador de temas con temas.js + contentForTema, más formas). Sin avatar. Motor por habilidad solo con ?skill=.
+- Inicio (v2-home.js): siguiente paso + "Hoy también" con check por sesión real de hoy + meta de hoy; racha en la barra (abre su hoja en Inicio). Mensaje de regreso (3+ días) y de miembro nuevo. Cuenta gratis/vencida: práctica gratis principal, "También gratis", una invitación (botón real de pago) y lo bloqueado plegado.
+- Plan (v2-fx.js): duración y dificultad agrupadas en un desplegable con lo elegido a la vista.
+- Academia (v2-academia.js): ruta compacta (avance, siguiente lección, etapas en lista desplegable). Mis logros: una línea de avance.
+- Progreso (v2-progreso.js): cuatro respuestas + siguiente paso; Método Leo, gráficas y cursos desplegables; #diagnostico abre las estadísticas clásicas.
+- Perfil sustituye a Más (v2-shell.js): cuenta con los botones reales, avisos, preferencias, LeoBot, más secciones, versión clásica, enlaces legales.
+- CSS: componentes v2-* en v2-screens.css. Eventos GA nuevos: practicar_plan_empezar, practicar_elegir_abierto, practicar_buscar_tema.
+- Tests: 18 fallos de entorno (igual). Sin cambios en pagos, permisos, límites, backend, contenido, SEO.
