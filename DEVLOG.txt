@@ -4636,3 +4636,9 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Migración PENDIENTE: supabase/pendientes/20261128b_riso_metricas.sql (+ _revertir.sql). Probada solo en PostgreSQL local con roles de Supabase. No aplicada en producción.
 - riso.html (página temporal del piloto): enlace discreto «No me ayudó» bajo respuestas de código, biblioteca, FAQ e IA. Leo AI, backend.js, pagos, límites y secretos sin cambios.
 - Pruebas: motor 170, servidor 32, métricas PG 10, chat SQL 16, chat PG 16, Leo AI 62 + 62 con Riso + 4 calidad + 14 + 13, trial SQL 17, deno check sin errores.
+
+2026-11-27 · Riso paso A del piloto 2 (rama v2/tutor, sin push, sin despliegue)
+- Migración de métricas aplicada en producción una sola vez: versión 20261128030634, nombre riso_metricas. La huella del SQL guardado por Supabase es idéntica a la del archivo (sha256 a5f5ee9e...365d).
+- Archivo movido a supabase/migrations/20261128030634_riso_metricas.sql (mismo contenido). La reversión sigue en supabase/pendientes/20261128b_riso_metricas_revertir.sql.
+- Comprobado en producción: 1 registro, 7 funciones, tabla vacía con RLS; visitantes y alumnos no la leen; solo el servidor anota IA y lee el resumen; pagos apagados, solo piloto, 1 cuenta; otra cuenta recibe enabled:false.
+- riso.html: versión ?v=20261128b para conocimiento.js y riso-tutor.js. Respaldo exacto de leo-ai v32 en _respaldos_privados (ignorado por git).

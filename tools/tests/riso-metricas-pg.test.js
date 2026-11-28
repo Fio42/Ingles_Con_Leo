@@ -1,4 +1,4 @@
-/* Riso · fase 1: migración PENDIENTE de métricas (supabase/pendientes/20261128b_riso_metricas.sql) contra un PostgreSQL REAL
+/* Riso · fase 1: migración PENDIENTE de métricas (supabase/migrations/20261128030634_riso_metricas.sql) contra un PostgreSQL REAL
    con los roles de Supabase (anon, authenticated, service_role) y sesiones simuladas (auth.uid()).
    Entorno aislado: crea una base temporal y nunca toca producción.
    Uso: RISO_PG="postgres://postgres@127.0.0.1:5499/postgres" NODE_PATH=/tmp/pgl/node_modules node tools/tests/riso-metricas-pg.test.js */
@@ -46,7 +46,7 @@ const PILOTO = U(1), FUERA = U(2);
     await c.query(`insert into public.leo_ai_config (id, enabled, public) values (true, true, true) on conflict (id) do update set enabled = true, public = true`);
     await c.query(read('supabase/pendientes/20261128_riso_chat_piloto.sql'));
     await c.query(`update public.leo_ai_config set chat_enabled = true; insert into public.riso_pilot_testers (user_id) values ('${PILOTO}')`);
-    await c.query(read('supabase/pendientes/20261128b_riso_metricas.sql'));
+    await c.query(read('supabase/migrations/20261128030634_riso_metricas.sql'));
 
     const como = async (rol, uid, sql, params) => {
       await c.query('begin'); try {
@@ -131,7 +131,7 @@ const PILOTO = U(1), FUERA = U(2);
       assert.strictEqual((await c.query("select count(*)::int n from information_schema.tables where table_name = 'riso_metricas_diarias'")).rows[0].n, 0);
       assert.strictEqual((await c.query("select count(*)::int n from pg_proc where proname like 'riso_metric%' or proname = 'riso_valorar'")).rows[0].n, 0);
       assert.strictEqual((await c.query('select public.riso_chat_status($1) s', [PILOTO])).rows[0].s.enabled, true);
-      await c.query(read('supabase/pendientes/20261128b_riso_metricas.sql')); // se puede volver a aplicar
+      await c.query(read('supabase/migrations/20261128030634_riso_metricas.sql')); // se puede volver a aplicar
     });
   } finally {
     await c.end(); await admin.query('drop database ' + nombre); await admin.end();
