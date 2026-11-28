@@ -45,13 +45,24 @@ export function validarEntrada(body) {
     .filter(m => m && (m.rol === 'alumno' || m.rol === 'riso') && typeof m.texto === 'string')
     .map(m => ({ rol: m.rol, texto: R._int.limpiarPII(m.texto.slice(0, CHAT.maxTextoHistorial)) }))
     .filter(m => !R._int.tienePII(m.texto))
+  // Un mensaje del alumno que el filtro bloquearía (manipulación, insulto, tema sensible) no viaja como historial,
+  // y tampoco la respuesta que le siguió: el historial no puede usarse para colar lo que la pregunta no deja pasar.
+  const limpio = []
+  for (let i = 0; i < historial.length; i++) {
+    const m = historial[i]
+    if (m.rol === 'alumno') {
+      const n = R._int.norm(m.texto), f = R._int.capaFiltro(m.texto, n, R._int.intencion(n, false))
+      if (f && (f.bloqueado || f.privado)) { if (historial[i + 1] && historial[i + 1].rol === 'riso') i++; continue }
+    }
+    limpio.push(m)
+  }
   let contexto = null
   if (body.contexto && typeof body.contexto === 'object') {
     const c = body.contexto
     if (typeof c.itemId !== 'string' || !/^[a-z0-9-]{3,60}$/.test(c.itemId) || typeof c.respuestaAlumno !== 'string') return { error: 'bad_context' }
     contexto = { itemId: c.itemId, respuestaAlumno: c.respuestaAlumno.slice(0, 120) }
   }
-  return { pregunta, historial, contexto, requestId: body.request_id }
+  return { pregunta, historial: limpio, contexto, requestId: body.request_id }
 }
 
 // 2) Contexto del ejercicio: el enunciado y la respuesta correcta salen del índice del servidor, nunca del navegador.
@@ -126,6 +137,13 @@ export async function llamarCloudflare(mensajes, { fetchImpl, env }) {
 const MOTIVOS = { disabled: 'disabled', not_allowed: 'not_allowed', unverified: 'unverified', user_limit: 'daily_limit', global_limit: 'busy',
   pilot_total: 'busy', riso_budget: 'busy', shared_ceiling: 'busy', too_long: 'too_long', bad_request: 'bad_input' }
 
+// Estado de Riso para esta cuenta (sin IA, sin gastar nada).
+export async function estadoChat(userId, deps) {
+  const { data, error } = await deps.rpc('riso_chat_status', { p_user: userId })
+  if (error || !data || typeof data !== 'object') return { ok: true, riso: { enabled: false } }
+  return { ok: true, riso: data }
+}
+
 /* Orquestación. deps: { rpc(nombre, args) → { data, error }, llamarModelo(mensajes) → resultado de llamarCloudflare,
    indice, ahora() → ms, log(objeto sin textos) }. Devuelve el cuerpo JSON para el navegador. */
 export async function procesarChat(userId, body, deps) {
@@ -137,6 +155,11 @@ export async function procesarChat(userId, body, deps) {
   if (fijo) { log({ ev: 'riso_chat', capa: 1, tipo: fijo.tipo }); return { ok: true, answer: { texto: fijo.texto, ejemplo_en: '', ejemplo_es: '' }, fixed: true } }
   const rc = resolverContexto(e.contexto, deps.indice)
   if (!rc.ok) return { ok: false, reason: rc.error }
+  if (e.contexto) {
+    // Solo ejercicios que ESTA cuenta respondió (con esa misma respuesta) en las últimas 2 horas.
+    const { data: valido, error: errV } = await deps.rpc('riso_intento_valido', { p_user: userId, p_item: e.contexto.itemId, p_respuesta: e.contexto.respuestaAlumno })
+    if (errV || valido !== true) { log({ ev: 'riso_chat', fallo: 'contexto_sin_intento' }); return { ok: false, reason: 'bad_context' } }
+  }
   const mensajes = construirMensajes(R._int.limpiarPII(e.pregunta), e.historial, rc.ctx)
   const est = estimarNeuronas(mensajes)
 

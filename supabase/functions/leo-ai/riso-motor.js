@@ -109,7 +109,7 @@
     if (GRACIAS.test(n)) return resp(1, '¡Con gusto! Sigue practicando, vas muy bien.', { tipo: 'gracias' });
     var esLengua = it.tipo === 'traduccion' || it.tipo === 'significado' || it.tipo === 'pronunciacion' || it.tipo === 'conjugacion' || it.tipo === 'correccion';
     if (!esLengua && FUERA.some(function (re) { return re.test(n); })) return resp(1, 'Solo puedo ayudarte con inglés. Si quieres, te ayudo a decir eso en inglés: escríbeme «¿Cómo se dice… en inglés?» con la palabra o la frase que necesites.', { tipo: 'fuera_de_alcance' });
-    if (!esLengua && SOPORTE.test(n)) return resp(1, 'Eso lo resuelve el equipo de Soporte, no yo. Escríbenos desde la página de contacto y te ayudamos con tu cuenta o tu pago.', { tipo: 'soporte', enlace: 'contacto.html' });
+    if (!esLengua && SOPORTE.test(n)) return resp(1, 'Eso lo resuelve el equipo de Soporte, no yo. Escríbenos desde la página de contacto y te ayudamos con tu cuenta o tu pago.', { tipo: 'soporte', enlace: 'index.html#contacto' });
     if (!esLengua && PROFE.test(n)) return resp(1, 'Soy ' + CONFIG.nombre + ', ' + CONFIG.presentacion.charAt(0).toLowerCase() + CONFIG.presentacion.slice(1) + '. No soy Profe Leo: él crea las lecciones y yo te ayudo con tus dudas mientras practicas. Puedo equivocarme, así que revisa lo importante con las guías.', { tipo: 'identidad' });
     return null;
   }

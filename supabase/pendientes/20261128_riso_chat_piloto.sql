@@ -2,8 +2,9 @@
 -- Riso · chat del tutor: piloto restringido. PENDIENTE, NO EJECUTADA.
 -- Vive fuera de supabase/migrations a propósito. Para aplicarla (solo con autorización de Leo):
 --   copiarla a supabase/migrations/<fecha>_riso_chat_piloto.sql y ejecutarla.
--- Probada localmente contra un Postgres embebido (PGlite) con el esquema real de leo_ai_*:
---   node tools/tests/riso-chat-sql.test.js
+-- Probada localmente contra PGlite (node tools/tests/riso-chat-sql.test.js) y contra un PostgreSQL 16 real con
+-- conexiones independientes simultáneas (node tools/tests/riso-chat-pg.test.js).
+-- Después de esta migración va 20261128b_riso_items.sql (lista de ejercicios de práctica, generada).
 --
 -- Qué hace (sin cambiar NINGÚN límite actual de Leo AI):
 --   1. Interruptores nuevos, todos apagados o restrictivos por defecto:
@@ -183,7 +184,20 @@ declare
   v_req public.riso_chat_requests%rowtype;
 begin
   select * into v_req from public.riso_chat_requests where user_id = p_user and request_id = p_request for update;
-  if not found or v_req.status <> 'processing' then return jsonb_build_object('status', 'not_found'); end if;
+  if not found then return jsonb_build_object('status', 'not_found'); end if;
+  if v_req.status <> 'processing' then
+    -- Respuesta tardía (la reserva ya se liberó a los 60 s): las neuronas se gastaron igual, se registran;
+    -- la pregunta no cuenta para la cuota y la respuesta no se guarda.
+    if coalesce(p_neurons, 0) > 0 or coalesce(p_input, 0) > 0 then
+      insert into public.ai_usage_daily (day, provider, requests, input_tokens, output_tokens, neurons)
+        values (v_req.day, 'cloudflare:riso', 1, greatest(p_input, 0), greatest(p_output, 0), greatest(p_neurons, 0))
+        on conflict (day, provider) do update set requests = public.ai_usage_daily.requests + 1,
+          input_tokens = public.ai_usage_daily.input_tokens + excluded.input_tokens,
+          output_tokens = public.ai_usage_daily.output_tokens + excluded.output_tokens,
+          neurons = public.ai_usage_daily.neurons + excluded.neurons;
+    end if;
+    return jsonb_build_object('status', 'late');
+  end if;
   if coalesce(p_neurons, 0) > 0 or coalesce(p_input, 0) > 0 then
     insert into public.ai_usage_daily (day, provider, requests, input_tokens, output_tokens, neurons)
       values (v_req.day, 'cloudflare:riso', 1, greatest(p_input, 0), greatest(p_output, 0), greatest(p_neurons, 0))
@@ -200,6 +214,92 @@ begin
     update public.riso_chat_requests set status = 'failed', updated_at = now() where user_id = p_user and request_id = p_request;
   end if;
   return jsonb_build_object('status', 'ok');
+end;
+$$;
+
+-- ------------------------------------------------------------
+-- Modo «sobre el ejercicio»: solo ejercicios que la cuenta respondió de verdad.
+-- La página registra cada respuesta del alumno en riso_intentos (solo cuentas del piloto) con riso_registrar_intento,
+-- que acepta únicamente ejercicios de práctica publicados (riso_items, sin evaluaciones) y una respuesta que sea una de
+-- sus opciones. El servidor solo acepta contexto si existe ese intento de la MISMA cuenta, con la MISMA respuesta,
+-- en las últimas 2 horas. Un identificador válido sin intento propio se rechaza.
+-- ------------------------------------------------------------
+create table if not exists public.riso_items (
+  id text primary key,
+  opciones text[] not null
+);
+create table if not exists public.riso_intentos (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  item_id text not null references public.riso_items(id) on delete cascade,
+  respuesta text not null,
+  created_at timestamptz not null default now(),
+  primary key (user_id, item_id, respuesta)
+);
+alter table public.riso_items enable row level security;
+alter table public.riso_intentos enable row level security;
+revoke all on public.riso_items, public.riso_intentos from anon, authenticated;
+
+create or replace function public.riso_registrar_intento(p_item text, p_respuesta text)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_ops text[];
+  v_hoy int;
+begin
+  if v_user is null then return 'no_session'; end if;
+  if not exists (select 1 from public.leo_ai_config c where c.id and c.chat_enabled) then return 'disabled'; end if;
+  if (select chat_pilot_only from public.leo_ai_config where id) and not exists (select 1 from public.riso_pilot_testers t where t.user_id = v_user) then return 'not_allowed'; end if;
+  select opciones into v_ops from public.riso_items where id = p_item;
+  if not found then return 'bad_item'; end if;
+  if p_respuesta is null or not exists (select 1 from unnest(v_ops) o where lower(o) = lower(trim(p_respuesta))) then return 'bad_answer'; end if;
+  select count(*) into v_hoy from public.riso_intentos where user_id = v_user and created_at > now() - interval '1 day';
+  if v_hoy >= 500 then return 'limit'; end if;
+  delete from public.riso_intentos where user_id = v_user and created_at < now() - interval '1 day';
+  insert into public.riso_intentos (user_id, item_id, respuesta) values (v_user, p_item, lower(trim(p_respuesta)))
+    on conflict (user_id, item_id, respuesta) do update set created_at = now();
+  return 'ok';
+end;
+$$;
+
+create or replace function public.riso_intento_valido(p_user uuid, p_item text, p_respuesta text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.riso_intentos
+    where user_id = p_user and item_id = p_item and respuesta = lower(trim(p_respuesta)) and created_at > now() - interval '2 hours');
+$$;
+
+-- Estado para la página (sin gastar nada): si la cuenta puede usar Riso y cuánto le queda hoy.
+create or replace function public.riso_chat_status(p_user uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  cfg public.leo_ai_config%rowtype;
+  v_member boolean; v_usadas int; v_total int;
+begin
+  select * into cfg from public.leo_ai_config where id;
+  if not found or not cfg.enabled or not cfg.chat_enabled then return jsonb_build_object('enabled', false); end if;
+  select coalesce(is_member, false) into v_member from public.profiles where id = p_user;
+  if not found then return jsonb_build_object('enabled', false); end if;
+  if cfg.chat_pilot_only and not exists (select 1 from public.riso_pilot_testers t where t.user_id = p_user) then
+    return jsonb_build_object('enabled', false);
+  end if;
+  select coalesce(count, 0) into v_usadas from public.riso_chat_usage where user_id = p_user and day = (now() at time zone 'utc')::date;
+  select coalesce(sum(count), 0) into v_total from public.riso_chat_usage;
+  return jsonb_build_object('enabled', true, 'pilot', cfg.chat_pilot_only, 'member', v_member,
+    'usadas', coalesce(v_usadas, 0), 'cupo', case when v_member then cfg.chat_member_daily else cfg.chat_free_daily end,
+    'piloto_usado', v_total, 'piloto_total', cfg.chat_pilot_total);
 end;
 $$;
 
@@ -252,6 +352,12 @@ revoke all on function public.riso_chat_reserve(uuid, text, numeric) from public
 revoke all on function public.riso_chat_finish(uuid, text, boolean, int, int, numeric, jsonb) from public, anon, authenticated;
 revoke all on function public.ai_budget_alert_check() from public, anon, authenticated;
 grant execute on function public.ai_neurons_today(date) to service_role;
+revoke all on function public.riso_registrar_intento(text, text) from public, anon;
+grant execute on function public.riso_registrar_intento(text, text) to authenticated;
+revoke all on function public.riso_intento_valido(uuid, text, text) from public, anon, authenticated;
+revoke all on function public.riso_chat_status(uuid) from public, anon, authenticated;
+grant execute on function public.riso_chat_status(uuid) to service_role;
+grant execute on function public.riso_intento_valido(uuid, text, text) to service_role;
 grant execute on function public.riso_chat_reserve(uuid, text, numeric) to service_role;
 grant execute on function public.riso_chat_finish(uuid, text, boolean, int, int, numeric, jsonb) to service_role;
 
@@ -266,10 +372,14 @@ grant execute on function public.riso_chat_finish(uuid, text, boolean, int, int,
 -- drop function if exists public.riso_chat_finish(uuid, text, boolean, int, int, numeric, jsonb);
 -- drop function if exists public.riso_chat_reserve(uuid, text, numeric);
 -- drop function if exists public.ai_neurons_today(date);
+-- drop function if exists public.riso_registrar_intento(text, text);
+-- drop function if exists public.riso_chat_status(uuid);
+-- drop function if exists public.riso_intento_valido(uuid, text, text);
+-- drop table if exists public.riso_intentos, public.riso_items;
 -- drop table if exists public.ai_budget_alerts, public.riso_chat_requests, public.riso_chat_usage, public.riso_pilot_testers;
 -- alter table public.leo_ai_config drop column if exists chat_enabled, drop column if exists chat_pilot_only,
 --   drop column if exists chat_member_daily, drop column if exists chat_free_daily, drop column if exists chat_global_daily,
 --   drop column if exists chat_pilot_total, drop column if exists riso_neuron_budget, drop column if exists free_neurons_daily,
 --   drop column if exists riso_ceiling_pct, drop column if exists allow_paid, drop column if exists paid_daily_neurons,
 --   drop column if exists alert_pcts;
--- delete from public.ai_usage_daily where provider in ('riso_reserved', 'cloudflare:riso');
+-- delete from public.ai_usage_daily where provider = 'riso_reserved';  -- las neuronas reales de Riso se conservan como historial
