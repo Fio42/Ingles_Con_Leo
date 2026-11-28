@@ -303,4 +303,24 @@ await test('«How do you say "3"?» con «Seven»: el modelo recibe exactamente 
   const d2 = deps(); const r2 = await procesarChat('u1', B({ pregunta: '¿Por qué?', contexto: { itemId: 'g-principiante-num-1', respuestaAlumno: 'Ocho' } }), d2)
   assert.strictEqual(r2.reason, 'bad_context'); assert.strictEqual(d2.llamadas.modelo.length, 0)
 })
+await test('insistencia («¿Por qué?» otra vez porque la anterior no sirvió): otra instrucción, y su respaldo no dice que ya se explicó', async () => {
+  const d = deps(); await procesarChat('u1', Object.assign(ctxB('¿Por qué? Explícamelo de otra forma.'), { insistencia: true }), d)
+  const u = d.llamadas.modelo[0][1].content
+  assert.ok(/vuelve a preguntar por qué: la respuesta anterior no le sirvió/.test(u) && /ejemplo nuevo/.test(u), u)
+  assert.ok(!/NO la repitas ni la parafrasees/.test(u))
+  const rep = { ok: true, raw: JSON.stringify({ texto: ejemplo[1].x, ejemplo_en: '', ejemplo_es: '' }), usage: { input: 900, output: 60 } }
+  const d2 = deps(); d2.llamarModelo = async (m) => { d2.llamadas.modelo.push(m); return rep }
+  const r2 = await procesarChat('u1', Object.assign(ctxB('¿Por qué? Explícamelo de otra forma.'), { insistencia: true }), d2)
+  assert.ok(r2.answer.breve === true && /^No tengo una forma nueva de explicarlo/.test(r2.answer.texto) && !/ya lo cubre|arriba/.test(r2.answer.texto), r2.answer.texto)
+  const d3 = deps(); d3.llamarModelo = async (m) => { d3.llamadas.modelo.push(m); return rep }
+  const r3 = await procesarChat('u1', ctxB('¿Por qué?'), d3); assert.strictEqual(r3.answer.breve, true)
+  const d4 = deps(); const r4 = await procesarChat('u1', ctxB('¿Por qué?'), d4); assert.ok(r4.ok && r4.answer.breve === undefined)
+  const d5 = deps(); await procesarChat('u1', Object.assign(ctxB('¿Por qué?'), { insistencia: 'sí' }), d5)
+  assert.ok(!/vuelve a preguntar/.test(d5.llamadas.modelo[0][1].content), 'solo true cuenta')
+})
+await test('repetición de una explicación CORTA (copia completa) también se detecta; una respuesta distinta no', async () => {
+  assert.ok(repiteExplicacion('“Three” es el número 3.', '“Three” es el número 3.'))
+  assert.ok(repiteExplicacion('Claro: “Three” es el número 3. ¡Ánimo!', '“Three” es el número 3.'))
+  assert.ok(!repiteExplicacion('Seven es el 7; para el 3 se dice three, como en three cats.', '“Three” es el número 3.'))
+})
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

@@ -120,8 +120,12 @@
   function generar(p) {
     // Solo si el motor mandó la pregunta CON el ejercicio (p.contexto); las que se entienden solas van sin él.
     var c = p.contexto && P ? P.ejercicio : null, conCtx = c && c.respuestaServidor ? { itemId: c.itemId, respuestaAlumno: c.respuestaServidor } : null;
+    var insistir = !!(P && P.insistir);
+    if (P) P.ultimoBreve = false;
     function pedir(pregunta, contexto) {
-      return LeoBackend.askLeoAI({ mode: 'chat', pregunta: pregunta, historial: p.historial, contexto: contexto });
+      var b = { mode: 'chat', pregunta: pregunta, historial: p.historial, contexto: contexto };
+      if (insistir) b.insistencia = true;
+      return LeoBackend.askLeoAI(b);
     }
     var primero = conCtx ? pedir(p.pregunta, conCtx) : pedir(((c ? prefijo(c) : '') + p.pregunta).slice(0, 400), null);
     return primero.then(function (r) {
@@ -130,6 +134,7 @@
     }).then(function (r) {
       if (!r || !r.ok || !r.answer || typeof r.answer.texto !== 'string') throw new Error((r && r.reason) || 'error');
       var a = r.answer;
+      if (P) P.ultimoBreve = a.breve === true;
       return { texto: a.texto, ej: a.ejemplo_en ? [[a.ejemplo_en, a.ejemplo_es || '']] : [], metrica: a.metrica || null };
     });
   }
@@ -174,7 +179,7 @@
     if (r.aviso) m.appendChild(el('div', 'rsa-aviso', r.aviso));
     if (r.pasos) {
       // Los pasos siguientes de siempre (leoAiNextSteps en app.js): mismos textos y destinos; Riso solo los presenta.
-      m.appendChild(el('div', 'rsa-pasos__intro', r.pasos.intro));
+      if (r.pasos.intro) m.appendChild(el('div', 'rsa-pasos__intro', r.pasos.intro));
       r.pasos.links.forEach(function (l) { var a = el('a', 'rsa-ref rsa-paso', l.text); a.href = l.href; if (l.key) a.setAttribute('data-ai-next', l.key); m.appendChild(a); });
       if (r.pasos.note) m.appendChild(el('div', 'rsa-aviso', r.pasos.note));
       m.addEventListener('click', function (ev) { var a = ev.target && ev.target.closest && ev.target.closest('[data-ai-next]'); if (a) { try { trackLeoEvent('leo_ai_next_clicked', { tipo: a.getAttribute('data-ai-next') }); } catch (e) {} } });
@@ -182,7 +187,7 @@
     var mt = r.metrica;
     if (mt && /^(codigo|biblioteca|faq|cache|ia)$/.test(mt.c)) {
       var v = el('button', 'rsa-voto', 'No me ayudó'); v.type = 'button';
-      v.onclick = function () { v.disabled = true; v.textContent = 'Gracias, lo revisaremos.'; try { LeoBackend.getClient().rpc('riso_valorar', { p_capa: mt.c, p_intencion: mt.i, p_tema: mt.t }).then(function () {}, function () {}); } catch (e) {} };
+      v.onclick = function () { v.disabled = true; v.textContent = 'Gracias, lo revisaremos.'; if (r.kq && P.porqueDado) P.porqueDado[r.kq] = 'no_ayudo'; try { LeoBackend.getClient().rpc('riso_valorar', { p_capa: mt.c, p_intencion: mt.i, p_tema: mt.t }).then(function () {}, function () {}); } catch (e) {} };
       m.appendChild(v);
     }
     if (r.reintentar) { var b2 = el('button', 'rsa-voto', 'Reintentar'); b2.type = 'button'; b2.onclick = function () { m.remove(); enviar(P.ultimo, true); }; m.appendChild(b2); }
@@ -216,6 +221,13 @@
       if (!a || typeof a.explanation !== 'string') { delete P.explicados[clave]; return { capa: 0, tipo: 'error', reintentar: true, texto: 'No pude responder ahora. Toca «Reintentar» en unos segundos. La explicación del ejercicio sigue siendo válida.' }; }
       return { capa: 5, tipo: 'explicacion', texto: a.explanation, ej: a.example_en ? [[a.example_en, a.example_es || '']] : [], aviso: 'Generada con IA. Puede tener errores.', metrica: { c: 'ia', i: 'ejercicio', t: 'explicar' } };
     });
+  }
+  // La clase del tema del ejercicio: el MISMO enlace «Ver la clase» que muestra la corrección (sin IA, sin otro motor).
+  function pasosClase() {
+    try {
+      var a = ULTIMO && ULTIMO.host && ULTIMO.ejercicio === P.ejercicio ? ULTIMO.host.querySelector('a[href*="via=rec"], a[href*="articulo-"], a[href*="/glosario/"]') : null;
+      return a ? { intro: '', links: [{ href: a.getAttribute('href'), text: a.textContent.replace(/\s*↗\s*$/, '').trim() }], note: '' } : null;
+    } catch (e) { return null; }
   }
   function pasosSiguientes() {
     var c = P.ejercicio, k = c && (c.itemId + '|' + c.respuestaAlumno);
@@ -268,23 +280,32 @@
     if (!reintento) msgAlumno(t);
     P.q.value = ''; ajustar();
     var pensando = el('div', 'rsa-pensando', 'Riso está pensando…'), timer = setTimeout(function () { P.msgs.appendChild(pensando); bajar(); }, 250);
-    // «¿Por qué?» otra vez sobre el mismo ejercicio: ya está respondido arriba. Breve y honesto, sin IA y sin repetirlo.
+    // «¿Por qué?» otra vez sobre el mismo ejercicio. Estado de la explicación anterior:
+    //   'util'     Riso ya dio una explicación real y el alumno no dijo «No me ayudó»: se lo recuerda, sin IA.
+    //   'breve'    solo hubo la respuesta corta de respaldo, o 'no_ayudo': el alumno marcó «No me ayudó».
+    //              En esos dos casos Riso vuelve a explicar, de otra forma (insistencia).
+    //   'agotado'  ni insistiendo hubo una explicación nueva: Riso lo dice con honestidad y ofrece la clase, sin IA.
     var kq = P.ejercicio && PORQUE.test(t) ? P.ejercicio.itemId + '|' + P.ejercicio.respuestaAlumno : null;
-    if (kq && P.porqueDado && P.porqueDado[kq]) {
-      clearTimeout(timer); msgRiso({ capa: 1, texto: 'Te lo expliqué justo arriba. Si quieres, te doy otro ejemplo, te lo explico más fácil o vemos la pronunciación.' });
+    var antes = kq && P.porqueDado ? P.porqueDado[kq] : null;
+    P.insistir = antes === 'breve' || antes === 'no_ayudo';
+    if (antes === 'util' || antes === 'agotado') {
+      clearTimeout(timer);
+      msgRiso({ capa: 1, texto: antes === 'util' ? 'Te lo expliqué justo arriba. Si quieres, te doy otro ejemplo, te lo explico más fácil o vemos la pronunciación.'
+        : 'No tengo otra forma de explicarlo sin repetir la corrección. Te puede ayudar la clase del tema, o te doy otro ejemplo.', pasos: antes === 'agotado' ? pasosClase() : null });
       P.ocupado = false; ajustar(); return Promise.resolve();
     }
-    var conc = concretar(t);
-    var porque = explicarPorQue(t);
+    // Al insistir, la pregunta que viaja dice que la anterior no sirvió (y no puede tomarse por la misma pregunta repetida).
+    var conc = P.insistir ? { texto: '¿Por qué? Explícamelo de otra forma.', sinContexto: false } : concretar(t);
+    var porque = P.insistir ? null : explicarPorQue(t);
     var tarea = porque || P.tutor.preguntar(conc.texto, conc.sinContexto || !P.ejercicio ? null : { itemId: P.ejercicio.itemId, fuente: 'academia', tema: P.ejercicio.tema, enunciado: P.ejercicio.enunciado, respuestaAlumno: P.ejercicio.respuestaAlumno, respuestaCorrecta: P.ejercicio.respuestaCorrecta });
     return Promise.resolve(tarea).then(function (r) {
       clearTimeout(timer); pensando.remove();
       if (porque && r.capa === 5 && P.tutor.anotar) P.tutor.anotar(t, r.texto + (r.ej && r.ej[0] ? ' Ejemplo mostrado: ' + r.ej[0][0] : ''));
-      if (kq && r.capa === 5) { P.porqueDado = P.porqueDado || {}; P.porqueDado[kq] = 1; }
+      if (kq && r.capa === 5) { P.porqueDado = P.porqueDado || {}; P.porqueDado[kq] = (!porque && P.ultimoBreve) ? (P.insistir ? 'agotado' : 'breve') : 'util'; r = Object.assign({}, r, { kq: kq }); }
       if (P.ejercicio && PORQUE.test(t) && r.capa === 5) { var ps = pasosSiguientes(); if (ps) r = Object.assign({}, r, { pasos: ps }); }
       msgRiso(r);
     }).catch(function () { clearTimeout(timer); pensando.remove(); msgRiso({ capa: 0, tipo: 'error', reintentar: true, texto: 'No pude responder ahora. Toca «Reintentar» en unos segundos.' }); })
-      .then(function () { P.ocupado = false; ajustar(); });
+      .then(function () { P.ocupado = false; P.insistir = false; ajustar(); });
   }
 
   // Un motor por conversación: el historial que viaja al modelo y las respuestas ya dadas pertenecen a UN ejercicio (o a la

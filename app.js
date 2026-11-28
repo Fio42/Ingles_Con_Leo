@@ -1304,10 +1304,35 @@ function microPracticeHref(m, start){
   const tema = (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[m.tema]) || {};
   return planFocusHref(tema.family, !!start, m.tema) + '&micro=' + encodeURIComponent(m.id);
 }
-// Para frases armadas con el nombre de un tema: algunos microtemas traen una pista en el nombre («A lot of: sirve para
-// los dos»); dentro de una frase solo va el nombre («A lot of»). Los números pequeños van en palabras (ejercicio y error son
-// masculinos: «un error», «dos ejercicios»).
-function temaEnFrase(label){ const t = String(label || ''); const i = t.indexOf(': '); return i > 0 ? t.slice(0, i) : t; }
+// Nombre limpio de un tema para frases y botones. Algunos temas traen una descripción en el nombre («A lot of: sirve para
+// los dos»); en una frase o un botón va solo el nombre. No basta con cortar en los dos puntos: en «Presente simple: don't
+// y doesn't» lo importante va después. Un tema que no está aquí se muestra con su nombre completo (como siempre).
+// Los números pequeños van en palabras (ejercicio y error son masculinos: «un error», «dos ejercicios»).
+const TEMA_NOMBRE_CORTO = {
+  'Condicional 1: algo probable': 'Condicional 1',
+  'Condicional 2: algo imaginario': 'Condicional 2',
+  'Condicional 3: el pasado que ya no se puede cambiar': 'Condicional 3',
+  'Matices: formal, natural y -ed vs -ing': 'Formal, natural y -ed vs -ing',
+  'Pasado continuo: was o were + verbo con -ing': 'Pasado continuo',
+  'Much y many: contable o incontable': 'Much y many',
+  'A lot of: sirve para los dos': 'A lot of',
+  'Some y any: frases afirmativas y negativas': 'Some y any en afirmativas y negativas',
+  'Some y any: preguntas y ofrecimientos': 'Some y any en preguntas y ofrecimientos',
+  'A o an: depende del sonido, no de la letra': 'A o an',
+  'Will: decisiones en el momento': 'Will para decisiones en el momento',
+  'Going to: planes ya decididos': 'Going to para planes decididos',
+  'Going to: lo que se ve venir': 'Going to para lo que se ve venir',
+  'Presente perfecto: experiencias sin fecha (ever, never, yet, already)': 'Presente perfecto para experiencias',
+  'Pasado simple: cuando dices cuándo pasó (yesterday, last year, ago)': 'Pasado simple con fecha',
+  'Since o for: punto en el tiempo o duración': 'Since o for',
+  'Presente simple: la -s de he / she / it': 'La -s de he, she, it',
+  "Presente simple: don't y doesn't": "Don't y doesn't",
+  'Adverbios de frecuencia: significado y lugar': 'Adverbios de frecuencia',
+  'Pronombres objeto: me, him, her, us, them': 'Pronombres objeto',
+  'To be: am, is o are según quién': 'Am, is o are',
+  "Can y can't: el verbo que sigue queda igual": "Can y can't"
+};
+function temaEnFrase(label){ const t = String(label || ''); return TEMA_NOMBRE_CORTO[t] || t; }
 function cuentaEs(n, uno, varios){ const w = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'][n]; return (w || String(n)) + ' ' + (n === 1 ? uno : varios); }
 // Acción lista para "Hoy te conviene" y el fin de sesión; nombra el concepto exacto, no la familia.
 function microAction(m, s, state){
@@ -1315,13 +1340,13 @@ function microAction(m, s, state){
   const lesson = microLessonHref(m) || microQuickHref(m);
   const base = { micro: m.id, tema: m.tema, microState: state, evidence: nWrong, article: lesson, articleLabel: lesson ? microExplainLabel(m) : undefined };
   if(state === 'listo-comprobar'){
-    return Object.assign(base, { title: `Comprobar: ${m.label}`, reason: `Ya practicaste esto. Son ${MICRO_FLOW.CHECK_SIZE} ejercicios nuevos para ver si ya lo dominas.`,
+    return Object.assign(base, { title: `Comprobar: ${temaEnFrase(m.label)}`, reason: `Ya practicaste esto. Son ${MICRO_FLOW.CHECK_SIZE} ejercicios nuevos para ver si ya lo dominas.`,
       href: 'plan-estudio.html?comprobar=' + encodeURIComponent(m.id), cta: 'Comprobar', voice: 'casi-dominas' });
   }
   const checked = microCheckedSinceWeak(s);
   const more = checkAvailable(m.id) ? ' Cuando aciertes la mayoría seguidos sin errores, te ofreceremos otra comprobación.' : '';
   const waiting = (s && s.pr >= MICRO_FLOW.CHECK_AFTER_PRACTICE && !checked) ? ' Todavía no aciertas lo suficiente para comprobar: repasa la clase y sigue practicando.' : '';
-  return Object.assign(base, { title: `Reforzar ${m.label}`,
+  return Object.assign(base, { title: `Reforzar ${temaEnFrase(m.label)}`,
     reason: checked ? `En la comprobación acertaste ${s.lc.ok} de ${s.lc.n}. Repasa la explicación y sigue practicando este punto.` + more
       : (nWrong >= 3 ? `Fallaste ${nWrong} ejercicios distintos de este punto.` : 'Fallaste ejercicios distintos de este punto en días diferentes.') + waiting,
     href: microPracticeHref(m, false), cta: 'Reforzar ahora', voice: 'sigue-tema' });
@@ -2510,9 +2535,9 @@ function errorResourceForItem(item){
     const m = found.item && found.item.micro ? MICRO_BY_ID[found.item.micro] : null;
     if(m){
       const lesson = microLessonHref(m);
-      if(lesson) return { href: lesson, label: 'Ver la clase', title: tema.label };
+      if(lesson) return { href: lesson, label: 'Ver la clase', title: temaEnFrase(tema.label) };
       const quick = microQuickHref(m);
-      if(quick) return { href: quick, label: 'Ver explicación rápida', title: tema.label };
+      if(quick) return { href: quick, label: 'Ver explicación rápida', title: temaEnFrase(tema.label) };
     }
     // etiquetas que mezclan reglas o que la clase del tema no explica: sin microtema propio, mejor ningún enlace
     if(tema.noClassTopics && tema.noClassTopics.indexOf(found.topic) !== -1) return null;
@@ -3525,8 +3550,8 @@ function leoAiFocusLink(payload, a){
     const c = offered ? contentForTema(id) : null;
     if(!c) return null;
     if((payload.shown || []).indexOf(c.label) !== -1) return null;
-    if(a.focus_action === 'lesson' && c.article) return { href: c.article, text: `${c.articleLabel}: ${c.label}` };
-    return { href: c.practiceHref, text: `Practicar ${c.label}` };
+    if(a.focus_action === 'lesson' && c.article) return { href: c.article, text: `${c.articleLabel}: ${temaEnFrase(c.label)}` };
+    return { href: c.practiceHref, text: `Practicar ${temaEnFrase(c.label)}` };
   }catch(e){ return null; }
 }
 
@@ -3551,7 +3576,7 @@ function leoAiRepeatPractice(ctx){
     if(!(total >= LEO_AI_REPEAT_MIN || (failedBefore && total >= 2))) return null;
     const c = contentForTema(temaId);
     if(!c || !/^plan-estudio\.html/.test(c.practiceHref)) return null;
-    return { href: c.practiceHref, text: 'Varios errores en ' + c.label + ': practícalo en tu Plan' };
+    return { href: c.practiceHref, text: 'Varios errores en ' + temaEnFrase(c.label) + ': practícalo en tu Plan' };
   }catch(e){ return null; }
 }
 
@@ -3600,10 +3625,10 @@ function leoAiNextSteps(ctx){
     const row = sessionReinforceRows([{ itemId: ctx.item.id, isCorrect: false }], { actions: [] }, null)[0];
     const label = (TEMA_BY_ID[mem.temaId] && TEMA_BY_ID[mem.temaId].label) || '';
     const links = [];
-    if(row && row.lesson) links.push({ key: 'lesson', href: row.lesson.href, text: row.lesson.label + ': ' + row.label });
+    if(row && row.lesson) links.push({ key: 'lesson', href: row.lesson.href, text: row.lesson.label + ': ' + temaEnFrase(row.label) });
     let note = '';
     if(mem.member){
-      if(row && /^plan-estudio\.html/.test(row.practiceHref)) links.push({ key: 'practice', href: row.practiceHref, text: 'Practicar ejercicios distintos de ' + row.label });
+      if(row && /^plan-estudio\.html/.test(row.practiceHref)) links.push({ key: 'practice', href: row.practiceHref, text: 'Practicar ejercicios distintos de ' + temaEnFrase(row.label) });
     } else {
       const lvl = (typeof getUserLevel === 'function') ? getUserLevel() : 'facil';
       if(freeMemoryHasNew({ kind: mem.kind, temaId: mem.temaId, ids: mem.ids }, lvl)) note = 'En tu próxima sesión de práctica incluiremos ejercicios distintos de este tema.';
@@ -5789,8 +5814,8 @@ function renderMicroCheckSummary(m, res){
   if(res.outcome === 'recuperado'){
     links.push({ title:'Volver a mi plan', href:'plan-estudio.html', main:true });
   } else {
-    if(lesson) links.push({ title:`${microExplainLabel(m)}: ${m.label}`, href:lesson, main: res.outcome === 'sigue-debil' });
-    links.push({ title:`Seguir practicando ${m.label}`, href:microPracticeHref(m, true), main: res.outcome === 'mejorando' || !lesson });
+    if(lesson) links.push({ title:`${microExplainLabel(m)}: ${temaEnFrase(m.label)}`, href:lesson, main: res.outcome === 'sigue-debil' });
+    links.push({ title:`Seguir practicando ${temaEnFrase(m.label)}`, href:microPracticeHref(m, true), main: res.outcome === 'mejorando' || !lesson });
   }
   return `
     <div class="session-summary">
@@ -5805,8 +5830,8 @@ function renderMicroCheckSummary(m, res){
 function renderMicroCheckUnavailable(container, m, reason){
   const lesson = m ? (microLessonHref(m) || microQuickHref(m)) : null;
   const links = [];
-  if(m && lesson) links.push({ title:`${microExplainLabel(m)}: ${m.label}`, href:lesson });
-  links.push({ title: m ? `Seguir practicando ${m.label}` : 'Ir a mi plan', href: m && microIsActive(m.id) ? microPracticeHref(m, true) : 'plan-estudio.html', main:true });
+  if(m && lesson) links.push({ title:`${microExplainLabel(m)}: ${temaEnFrase(m.label)}`, href:lesson });
+  links.push({ title: m ? `Seguir practicando ${temaEnFrase(m.label)}` : 'Ir a mi plan', href: m && microIsActive(m.id) ? microPracticeHref(m, true) : 'plan-estudio.html', main:true });
   container.innerHTML = `
     <div class="session-shell">
       <div class="session-summary">
@@ -6246,7 +6271,7 @@ function contentForTema(id, onlySkill){
   const fam = t.family && typeof DIAG_FAMILY_BY_ID !== 'undefined' ? DIAG_FAMILY_BY_ID[t.family] : null;
   const practiceLabel = practiceKind === 'familia' ? `Practicar ${fam ? fam.label : 'gramática'} (sin ejercicios solo de este tema)`
     : practiceKind === 'general' ? (asWriting ? 'Practicar Writing en general' : skillKey ? `Practicar ${(SKILL_LABELS[skillKey] || skillKey)} en general` : 'Practicar gramática en general')
-    : `Practicar ${t.label}`;
+    : `Practicar ${temaEnFrase(t.label)}`;
   // ?tema=&via=rec: la clase o el glosario saben que el sistema lo recomendó (y para qué tema).
   const via = '?tema=' + encodeURIComponent(t.id) + '&via=rec';
   const lesson = t.article ? { href: t.article + via, title: ARTICLE_TITLE_BY_HREF[t.article] || t.label } : null;
@@ -7749,7 +7774,7 @@ function computeDiagnosis(p, statsMap){
         if(gs && !gs.dominated && (gs.current < DIAG.WEAK_BELOW || gs.activeMistakes >= 1)) cross = ' También lo fallas en Gramática.';
       }
       push({
-        title: wr ? `Reforzar ${tc.label} en Writing` : `Reforzar ${tc.label}`,
+        title: wr ? `Reforzar ${temaEnFrase(tc.label)} en Writing` : `Reforzar ${temaEnFrase(tc.label)}`,
         reason: (ft.activeMistakes
           ? `Vas en ${ft.current}% y tienes ${ft.activeMistakes} ${ft.activeMistakes === 1 ? 'error pendiente' : 'errores pendientes'} en este tema.`
           : `Es el tema donde más fallas dentro de ${diag.weak.label}: ${ft.current}% de aciertos.`) + cross,
@@ -8557,21 +8582,21 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(microActs.length){
     const ma = microActs[0];
     push(ma.title, ma.href, true);
-    if(ma.article) push(`${ma.articleLabel}: ${MICRO_BY_ID[ma.micro].label}`, ma.article);
+    if(ma.article) push(`${ma.articleLabel}: ${temaEnFrase(MICRO_BY_ID[ma.micro].label)}`, ma.article);
   }
   if(microTemaCovered && ((ins.tema && ins.tema.id === microTemaCovered) || ins.struggleTema === microTemaCovered)){
     // el tema ya está cubierto por la recomendación del microtema: no se repite en genérico
   } else if(ins.tema && ins.tema.needsMore){
     // Sigue débil: continuar con el tema y, si existe, su clase o explicación rápida.
-    push(`Seguir practicando ${ins.tema.label}`, ins.tema.content.practiceHref, true);
-    if(ins.tema.content.article) push(`${ins.tema.content.articleLabel}: ${ins.tema.label}`, ins.tema.content.article);
+    push(`Seguir practicando ${temaEnFrase(ins.tema.label)}`, ins.tema.content.practiceHref, true);
+    if(ins.tema.content.article) push(`${ins.tema.content.articleLabel}: ${temaEnFrase(ins.tema.label)}`, ins.tema.content.article);
   } else if(ins.struggle){
     const [type, id] = ins.struggle.key.split(':');
     const tc = ins.struggleTema ? contentForTema(ins.struggleTema, ins.struggle.key === 'skill:writing' ? 'writing' : undefined) : null;
     const c = tc || contentForUnit(type, id);
     if(c){
       push(c.practiceLabel, c.practiceHref, true);
-      if(tc){ if(tc.article) push(`${tc.articleLabel}: ${tc.label}`, tc.article); }
+      if(tc){ if(tc.article) push(`${tc.articleLabel}: ${temaEnFrase(tc.label)}`, tc.article); }
       else if(c.article) push(`Leer la explicación de ${c.articleTitle}`, c.article);
     }
   }

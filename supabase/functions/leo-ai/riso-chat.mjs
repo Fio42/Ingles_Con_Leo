@@ -73,7 +73,8 @@ export function validarEntrada(body) {
     if (typeof c.itemId !== 'string' || !/^[a-z0-9-]{3,60}$/.test(c.itemId) || typeof c.respuestaAlumno !== 'string') return { error: 'bad_context' }
     contexto = { itemId: c.itemId, respuestaAlumno: c.respuestaAlumno.slice(0, 120) }
   }
-  return { pregunta, historial: limpio, contexto, requestId: body.request_id }
+  // insistencia: el alumno vuelve a pedir «¿Por qué?» porque la explicación anterior no le sirvió (la marca la página).
+  return { pregunta, historial: limpio, contexto, requestId: body.request_id, insistencia: body.insistencia === true }
 }
 
 // 2) Contexto del ejercicio: el enunciado y la respuesta correcta salen del índice del servidor, nunca del navegador.
@@ -106,23 +107,28 @@ export function filtroServidor(pregunta, hayHistorial) {
 
 // «¿Por qué?» sobre un ejercicio: la explicación original sigue siendo la fuente de verdad; Riso la complementa.
 export const PORQUE = /^\s*¿?\s*(y\s+)?por\s*qu[eé](?![a-záéíóúñ]).{0,40}$/i
-export function INSTRUCCION_PORQUE(ctx) {
+export function INSTRUCCION_PORQUE(ctx, insistencia) {
+  if (insistencia) return 'El alumno vuelve a preguntar por qué: la respuesta anterior no le sirvió. Explica la razón de otra forma, en 2 o 3 frases: ' +
+    'con palabras más simples, comparando «' + ctx.respuestaCorrecta + '» con ' + (ctx.acerto ? 'otra opción posible' : '«' + ctx.respuestaAlumno + '»') +
+    ' y con un ejemplo nuevo. Puedes usar la regla, pero sin copiar la redacción de la explicación de la corrección. No inventes reglas.'
   return 'El alumno pregunta por qué. Ya leyó la explicación de la corrección: NO la repitas ni la parafrasees. Aporta lo que le falta, en 2 o 3 frases: ' +
     'la pista concreta de ESTA frase que decide la respuesta' + (ctx.acerto ? ' y por qué funciona aquí' : ', por qué «' + ctx.respuestaAlumno + '» no funciona aquí y, solo si es cierto, en qué otra frase sí funcionaría') +
     '. Si das ejemplo, que sea nuevo. Si de verdad no hay nada nuevo que añadir, dilo en una frase breve: mejor corto y honesto que repetir.'
 }
 // Si aun después del segundo intento la respuesta repite la explicación ya vista: una respuesta breve y honesta con los
 // datos del ejercicio (no se inventa nada y no se repite la explicación).
-export function porqueBreve(ctx) {
+export function porqueBreve(ctx, insistencia) {
+  if (insistencia) return { texto: 'No tengo una forma nueva de explicarlo sin repetir la corrección. Lo esencial: la respuesta correcta es «' + ctx.respuestaCorrecta + '»' +
+    (ctx.acerto ? '' : ', no «' + ctx.respuestaAlumno + '»') + '. Si quieres, te doy otro ejemplo o vemos la clase del tema.', ejemplo_en: '', ejemplo_es: '' }
   return { texto: 'La explicación de la corrección ya lo cubre: la respuesta correcta es «' + ctx.respuestaCorrecta + '»' + (ctx.acerto ? '' : ', no «' + ctx.respuestaAlumno + '»') +
     '. Si quieres, te doy otro ejemplo o te lo explico más fácil.', ejemplo_en: '', ejemplo_es: '' }
 }
-export function construirMensajes(pregunta, historial, ctx) {
+export function construirMensajes(pregunta, historial, ctx, insistencia) {
   const partes = []
   if (ctx && ctx.tipo === 'error') partes.push(`Ejercicio (${ctx.tema}). Consigna: encontrar la palabra incorrecta en «${ctx.enunciado}». El alumno tocó «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La palabra incorrecta es «${ctx.respuestaCorrecta}» y la frase correcta es «${ctx.fraseCorrecta}».`)
   else if (ctx) partes.push(`Ejercicio (${ctx.tema}): «${ctx.enunciado}». El alumno respondió «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La respuesta correcta es «${ctx.respuestaCorrecta}».`)
   if (ctx && ctx.explicacion) partes.push(`Explicación que el alumno ya vio en la corrección (no la repitas): «${String(ctx.explicacion).slice(0, 300)}».`)
-  if (ctx && PORQUE.test(pregunta)) partes.push(INSTRUCCION_PORQUE(ctx))
+  if (ctx && PORQUE.test(pregunta)) partes.push(INSTRUCCION_PORQUE(ctx, insistencia))
   if (historial.length) partes.push('Conversación reciente:\n' + historial.map(m => (m.rol === 'alumno' ? 'Alumno: ' : 'Riso: ') + m.texto).join('\n'))
   partes.push('Pregunta del alumno: ' + pregunta)
   return [{ role: 'system', content: RISO_REGLAS }, { role: 'user', content: partes.join('\n\n') }]
@@ -169,6 +175,9 @@ export function quitarTrucosForma(texto) {
 const palabrasContenido = (t) => new Set(norm0(t).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(w => w.length >= 4))
 export function repiteExplicacion(texto, base) {
   if (!texto || !base) return false
+  // Explicación corta («“Three” es el número 3.»): copiarla entera también es repetir.
+  const plano = (t) => norm0(t).replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim()
+  const pb = plano(base); if (pb.length >= 12 && plano(texto).includes(pb)) return true
   const A = palabrasContenido(texto), B = palabrasContenido(base)
   if (A.size >= 6 && B.size) { let hit = 0; A.forEach(w => { if (B.has(w)) hit++ }); if (hit / A.size >= 0.7) return true }
   const ta = norm0(texto).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean), tb = ' ' + norm0(base).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean).join(' ') + ' '
@@ -304,7 +313,7 @@ export async function procesarChat(userId, body, deps) {
       }
     } catch (err) { /* sin caché (migración no aplicada o apagada): sigue igual */ }
   }
-  const mensajes = construirMensajes(R._int.limpiarPII(e.pregunta), e.historial, rc.ctx)
+  const mensajes = construirMensajes(R._int.limpiarPII(e.pregunta), e.historial, rc.ctx, e.insistencia)
   const est = estimarNeuronas(mensajes)
 
   const { data: res, error } = await deps.rpc('riso_chat_reserve', { p_user: userId, p_request: e.requestId, p_est_neurons: est })
@@ -327,7 +336,7 @@ export async function procesarChat(userId, body, deps) {
       if (r2 && r2.usage) usage = { input: usage.input + (r2.usage.input || 0), output: usage.output + (r2.usage.output || 0) }
       if (r2 && r2.ok && validarSalida(r2.raw)) r = Object.assign({}, r2, { usage })
       const s2 = r2 && r2.ok ? validarSalida(r2.raw) : null
-      if (!s2 || repiteExplicacion(s2.texto, rc.ctx.explicacion)) r = { ok: true, raw: JSON.stringify(porqueBreve(rc.ctx)), usage, breve: true }
+      if (!s2 || repiteExplicacion(s2.texto, rc.ctx.explicacion)) r = { ok: true, raw: JSON.stringify(porqueBreve(rc.ctx, e.insistencia)), usage, breve: true }
     }
   }
   // Si se cortó por tiempo o por red, Cloudflare pudo haber procesado igual: se registra la estimación completa
@@ -347,7 +356,8 @@ export async function procesarChat(userId, body, deps) {
   if (clave) {
     try { await deps.rpc('riso_cache_guardar', { p_clave: clave, p_intencion: cacheable.intencion, p_pregunta: R._int.limpiarPII(cacheable.norm).slice(0, 200), p_texto: salida.texto, p_ejemplo_en: salida.ejemplo_en, p_ejemplo_es: salida.ejemplo_es }) } catch (err) { /* sin caché: no pasa nada */ }
   }
-  return { ok: true, answer: Object.assign({}, salida, { metrica }), metrica }
+  // breve: la respuesta corta de respaldo (no es una explicación nueva); la página la usa para no decir «te lo expliqué arriba».
+  return { ok: true, answer: Object.assign({}, salida, { metrica }, r && r.breve ? { breve: true } : {}), metrica }
 }
 
 // Tema de la métrica: el tema del ejercicio convertido a identificador corto, o 'libre'. Nunca texto del alumno.

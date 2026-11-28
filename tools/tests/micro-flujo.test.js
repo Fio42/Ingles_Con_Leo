@@ -29,7 +29,7 @@ function makeCtx(withTemas){
 ;this.__t = { recordSession, loadProgress, computeDiagnosis, microDiagActions, microFlowState, microIsActive, computePlanSelection, buildPlanPool,
   microCheckStart, microCheckFinish, pickCheckItems, checkAvailable, computeMistakeIds, computeWeeklyStats, computeSessionInsight, setUserLevel,
   takePagePlanParams, takePageOrigin, noteGrammarAnswer, MICRO_BY_ID, MICROS, MICRO_STATS_KEY, CHECK_SEEN_KEY, PROGRESS_KEY, GRAMMAR_BANK, GRAMMAR_CHECK_BANK, SESSION_LENGTHS,
-  getMistakesItemIndex, loadInflightSession, saveInflightSession, microWeakness, MICRO_FLOW, localDateStr, PLAN_LENGTHS,
+  getMistakesItemIndex, temaEnFrase, TEMA_NOMBRE_CORTO, contentForTema, TEMAS_ALL: (typeof TEMAS !== 'undefined' ? TEMAS : null), loadInflightSession, saveInflightSession, microWeakness, MICRO_FLOW, localDateStr, PLAN_LENGTHS,
   resetIndex(){ _mistakesItemIndexCache = undefined; _checkIndex = null; _microLevelIndex = null; } };`, ctx);
   ctx.__t.ctx = ctx;
   return ctx.__t;
@@ -87,7 +87,7 @@ test('falla 3 ejercicios distintos de going-to-evidencia: se detecta y la recome
   assert.ok(ev().wk, 'debió quedar la alerta');
   const a = todayAction();
   assert.strictEqual(a.micro, 'going-to-evidencia');
-  assert.strictEqual(a.title, 'Reforzar Going to: lo que se ve venir');
+  assert.strictEqual(a.title, 'Reforzar Going to para lo que se ve venir');
   assert.ok(!/^Reforzar (Futuro|Will y going to)/.test(a.title));
   assert.ok(/[?&]micro=going-to-evidencia/.test(a.href) && /tema=will-going-to/.test(a.href));
   assert.strictEqual(a.article, 'articulo-will-vs-going-to.html?tema=will-going-to&via=rec#going-to-evidencia');   // la sección EXACTA
@@ -161,7 +161,7 @@ test('se ofrece solo cuando el refuerzo es bueno (>=5 respuestas, >=4 distintos,
   day(3); practiceAfter(1, true);
   const a = microActions()[0];
   assert.strictEqual(a.microState, 'listo-comprobar');
-  assert.strictEqual(a.title, 'Comprobar: Going to: lo que se ve venir');
+  assert.strictEqual(a.title, 'Comprobar: Going to para lo que se ve venir');
   assert.strictEqual(a.href, 'plan-estudio.html?comprobar=going-to-evidencia');
   assert.strictEqual(a.cta, 'Comprobar');
   assert.strictEqual(todayAction().micro, 'going-to-evidencia');
@@ -179,9 +179,9 @@ test('después de la sesión, el fin de sesión lo ofrece primero y con el nombr
   play(pairs);
   const ins = T.computeSessionInsight(pairs.map(([itemId, isCorrect]) => ({ itemId, isCorrect })), CLOCK, 'plan', {});
   assert.ok(ins, 'sin insight');
-  assert.strictEqual(ins.actions[0].title, 'Comprobar: Going to: lo que se ve venir');
+  assert.strictEqual(ins.actions[0].title, 'Comprobar: Going to para lo que se ve venir');
   assert.ok(ins.actions[0].main);
-  assert.ok(/^Ya practicaste Going to\. Puedes comprobar si ya lo dominas\.$/.test(ins.lines[0].text), ins.lines[0].text);
+  assert.ok(/^Ya practicaste Going to para lo que se ve venir\. Puedes comprobar si ya lo dominas\.$/.test(ins.lines[0].text), ins.lines[0].text);
   assert.ok(!ins.actions.some(a => /Will y going to|Futuro/.test(a.title)), 'quedó una acción genérica de Futuro: ' + ins.actions.map(a => a.title).join(' | '));
 });
 test('si no quedan 3 comprobaciones inéditas no se ofrece: queda el refuerzo', () => {
@@ -260,7 +260,7 @@ test('2/3: mejora parcial. Se cierra la alerta pero NO se marca recuperado ni do
   assert.ok(ev().wk);
   const a = microActions()[0];
   assert.strictEqual(a.microState, 'debil-comprobado');
-  assert.strictEqual(a.title, 'Reforzar Going to: lo que se ve venir');
+  assert.strictEqual(a.title, 'Reforzar Going to para lo que se ve venir');
   assert.ok(new RegExp('acertaste ' + k + ' de 3').test(a.reason));
   assert.ok(/otra comprobación/i.test(a.reason), 'avisa de que habrá otra comprobación');
   assert.ok(a.article.indexOf('#going-to-evidencia') !== -1);
@@ -416,6 +416,23 @@ test('active:false o active:true: solo cambia lo que ve el alumno con señales d
   const on = JSON.stringify(plain(T.computeDiagnosis().actions));
   assert.notStrictEqual(on, off);
   assert.ok(/going-to-evidencia/.test(on) && !/going-to-evidencia/.test(off));
+});
+
+test('botones de recomendación: nombre limpio del tema, sin la descripción interna, y mismos destinos', ()=>{
+  const labels = [];
+  JSON.stringify([T.MICROS, T.TEMAS_ALL], (k, x) => { if(k === 'label' && typeof x === 'string') labels.push(x); return x; });
+  const conDesc = [...new Set(labels)].filter(l => l.includes(': '));
+  assert.ok(conDesc.length >= 20);
+  conDesc.forEach(l => { assert.ok(T.TEMA_NOMBRE_CORTO[l], 'falta nombre corto: ' + l); assert.ok(!T.temaEnFrase(l).includes(': '), l); });
+  assert.strictEqual(T.temaEnFrase('A lot of: sirve para los dos'), 'A lot of');
+  assert.strictEqual(T.temaEnFrase("Presente simple: don't y doesn't"), "Don't y doesn't");
+  assert.strictEqual(T.temaEnFrase('Some, any, much y many'), 'Some, any, much y many');   // sin descripción: igual que siempre
+  // Cada microtema activo: los títulos de sus acciones no llevan la descripción; el destino no cambia
+  T.MICROS.filter(m => m.label.includes(': ')).forEach(m => {
+    const desc = m.label.slice(m.label.indexOf(': '));
+    const c = T.contentForTema(m.tema);
+    if(c && c.practiceLabel) assert.ok(!c.practiceLabel.includes(desc), c.practiceLabel);
+  });
 });
 
 console.log('\n' + passed + ' pruebas correctas');

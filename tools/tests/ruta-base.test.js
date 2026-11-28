@@ -34,7 +34,7 @@ function makeCtx(){
   vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'temas.js'), 'utf8'), ctx);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
-;this.__t = { resolveMemberPool, memberBankItems, SESSION_LENGTHS, SESSION_LENGTH_KEY, PROGRESS_KEY, MEMBERS_ONLY_VARIANT_INDEX, diagFamilyForTopic,
+;this.__t = { temaEnFrase, resolveMemberPool, memberBankItems, SESSION_LENGTHS, SESSION_LENGTH_KEY, PROGRESS_KEY, MEMBERS_ONLY_VARIANT_INDEX, diagFamilyForTopic,
   computePlanSelection, buildPlanPool, getMistakesItemIndex, recordSession, loadProgress, microCheckStart, microFlowState, microStatsAll, microIsActive,
   microDiagActions, microHasItemsAt, microLessonHref, microQuickHref, microExplainLabel,
   MICRO_STATS_KEY, CHECK_SEEN_KEY, G:GRAMMAR_BANK, CHECK:GRAMMAR_CHECK_BANK, TEMA_BY_ID, MICRO_BY_ID, microResources };`, ctx);
@@ -331,7 +331,8 @@ IDS.forEach(m => {
     assert.strictEqual(flow(m), 'debil');
     const act = T.microDiagActions(level).find(a => a.micro === m);
     assert.ok(act, 'debe recomendar el microtema');
-    assert.ok(act.title.indexOf(real.microById[m].label) !== -1, 'nombra el concepto: ' + act.title);
+    // el botón nombra el concepto con su nombre limpio (sin la descripción interna del tema)
+    assert.ok(act.title.indexOf(T.temaEnFrase(real.microById[m].label)) !== -1 && act.title.indexOf(': ' + real.microById[m].label.split(': ')[1]) === -1, 'nombra el concepto: ' + act.title);
     assert.ok(act.href.indexOf('micro=' + encodeURIComponent(m)) !== -1, 'la práctica enfocada lleva el microtema: ' + act.href);
     const want = MICROS[m];
     assert.ok(act.article && act.article.indexOf(want.lesson[0]) === 0 && act.article.slice(-('#' + want.lesson[1]).length) === '#' + want.lesson[1], act.article);

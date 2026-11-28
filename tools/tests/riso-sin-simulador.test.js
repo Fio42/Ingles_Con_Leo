@@ -10,7 +10,7 @@ function test(n, fn) { try { fn(); p++; console.log('  ok   ' + n); } catch (e) 
 let archivos;
 try { archivos = execSync('git ls-files', { cwd: ROOT }).toString().split('\n').filter(Boolean); }
 catch (e) { archivos = []; }
-const sitio = archivos.filter(a => /\.(html|js|mjs|json|css)$/.test(a) && !/^tools\//.test(a));
+const sitio = archivos.filter(a => /\.(html|js|mjs|ts|json|css)$/.test(a) && !/^tools\//.test(a));
 test('el simulador no está en el repositorio', () => {
   assert.ok(!archivos.some(a => /simulado\.py$/.test(a) || /^tools\/v2-preview\//.test(a)), 'tools/v2-preview no debe versionarse');
 });
@@ -27,5 +27,16 @@ test('Riso en la academia habla con la función real (leo-ai) y no tiene respues
   const r = fs.readFileSync(path.join(ROOT, 'riso/riso-academia.js'), 'utf8');
   assert.ok(/SUPABASE_URL \+ '\/functions\/v1\/leo-ai'/.test(r) && /LeoBackend\.askLeoAI/.test(r));
   assert.ok(!/simulad|de prueba de riso/i.test(r));
+});
+test('el eco del simulador solo existe en tools/v2-preview: el servidor real no puede producirlo', () => {
+  for (const f of ['supabase/functions/leo-ai/riso-chat.mjs', 'supabase/functions/leo-ai/index.ts', 'supabase/functions/leo-ai/riso-motor.js']) {
+    const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert.ok(!/Eco del simulador|riso-chat-sim|SIM_ECO|v2-preview/.test(t), f);
+  }
+  // En producción el modelo es siempre Cloudflare (llamarCloudflare): index.ts no tiene otro camino para el modo chat.
+  const ix = fs.readFileSync(path.join(ROOT, 'supabase/functions/leo-ai/index.ts'), 'utf8');
+  assert.ok(/llamarModelo: \(mensajes: unknown, o\?: \{ temperatura\?: number \}\) => risoLlamarCloudflare\(/.test(ix));
+  assert.strictEqual((ix.match(/llamarModelo:/g) || []).length, 1);
+  assert.ok(!archivos.some(a => /riso-chat-sim\.mjs$/.test(a)), 'riso-chat-sim.mjs no debe versionarse');
 });
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0);
