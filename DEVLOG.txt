@@ -4585,3 +4585,13 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - leo-ai desplegada como versión 32 (verify_jwt false como antes; la sesión se verifica dentro con getClaims). Respaldo exacto de la versión 31 en supabase/respaldos/leo-ai-v31 (sha256 9d2cc03c...). Para volver atrás: desplegar ese index.ts solo.
 - Verificación del despliegue: riso-chat.mjs y riso-motor.js idénticos byte a byte; index.ts igual salvo 4 expresiones regulares que quedaron con los caracteres reales (´ “ ” « ») en vez de sus códigos \u, mismo comportamiento: las 62 pruebas de Leo AI pasan contra la copia desplegada. Llamada real sin sesión y con un token falso: 401 no_session en los dos casos.
 - Rama publicar/riso-piloto rehecha desde origin/main con riso.html, riso/, la función, el espejo supabase_functions/leo-ai.ts, la migración con su versión real y la reversión. Falta: que Leo publique, el correo de su cuenta de prueba, y encender el chat solo para esa cuenta.
+
+
+2026-11-27 - Piloto de Riso encendido solo para la cuenta de pruebas y batería de 60 preguntas
+
+- Leo publicó la página del piloto. Leo AI comprobado en producción con la cuenta de pruebas (explain, writing, trial_status) antes de encender Riso.
+- riso_pilot_testers: solo la cuenta de pruebas de Leo. chat_enabled=true. Revisado el estado de todos los perfiles: 1 habilitado. Sin sesión o con token falso: 401. Límites sin cambios (60/día la cuenta, 100 total, 1.500 neuronas, techo 60 %, pago apagado).
+- Batería: 60 de 60. 17 sin IA (28 %), 43 con Gemma 4. Revisión educativa: 50 bien, 9 a medias, 1 mal. Seguridad 10 de 10. Latencia con IA: mediana 3,0 s, máximo 15,4 s. Consumo: 285,04 neuronas (6,63 por respuesta; 453 tokens de entrada y 92 de salida en promedio). Sin alertas.
+- Problemas: (1) 113 de 505 ejercicios del índice son de corrección y guardan la frase corregida como respuesta, así que la página del piloto marca mal cualquier opción; (2) la ficha FAQ de there is se activa con la palabra suelta hay y respondió a make vs do; (3) la FAQ responde a medias preguntas compuestas; (4) texto de pronunciación que no cuadra con fichas en símbolos fonéticos; (5) algunos ejemplos poco naturales y una regla demasiado absoluta de la IA. Nada corregido todavía.
+- Capacidad que le queda a Leo: 17 respuestas con IA hoy (día UTC) y 57 en total del piloto.
+- Decisión de Leo: riso.html es solo el entorno temporal del piloto. La versión final de Riso va integrada en la academia (Inicio y correcciones de ejercicios, conversación abierta y seguimiento), reemplaza poco a poco la identidad de Leo AI conservando todas sus funciones, sin asistentes duplicados ni una segunda plataforma. Se diseña al terminar el piloto.
