@@ -4576,3 +4576,12 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Página del piloto riso.html (sin enlaces, noindex): solo se abre para cuentas del piloto; chat con Riso, ejercicio para el modo contextual, aviso de IA, Riso en WebGL con respaldo y reposo a los 15 s sin uso. Probada con el simulador en móvil y escritorio.
 - Animación WebGL con CPU 6 veces más lenta: cuadros estables (render por software); falta medir en un teléfono modesto real.
 - Propuesta de renovaciones: tools/negocio/RENOVACIONES.md (sin tocar webhooks).
+
+
+2026-11-27 - Piloto privado de Riso: activación (chat todavía apagado)
+
+- Migración riso_chat_piloto aplicada en Supabase (versión 20261128002854). Chat apagado (chat_enabled=false), solo piloto, 100 respuestas en total, 1.500 neuronas al día para Riso, techo compartido del 60 % de las 10.000 gratis, pago apagado (allow_paid=false, paid_daily_neurons=0). Cupo de miembro del piloto subido a 60 respuestas generativas al día (solo afecta a cuentas de riso_pilot_testers, hoy ninguna).
+- Permisos revisados en la base: reserva, cierre, estado e intento válido solo los ejecuta el servidor (service_role); riso_registrar_intento solo cuentas con sesión; las 5 tablas nuevas con RLS y sin acceso para anon ni authenticated. Prueba en la base real con el chat apagado: estado = enabled false, reserva = disabled.
+- leo-ai desplegada como versión 32 (verify_jwt false como antes; la sesión se verifica dentro con getClaims). Respaldo exacto de la versión 31 en supabase/respaldos/leo-ai-v31 (sha256 9d2cc03c...). Para volver atrás: desplegar ese index.ts solo.
+- Verificación del despliegue: riso-chat.mjs y riso-motor.js idénticos byte a byte; index.ts igual salvo 4 expresiones regulares que quedaron con los caracteres reales (´ “ ” « ») en vez de sus códigos \u, mismo comportamiento: las 62 pruebas de Leo AI pasan contra la copia desplegada. Llamada real sin sesión y con un token falso: 401 no_session en los dos casos.
+- Rama publicar/riso-piloto rehecha desde origin/main con riso.html, riso/, la función, el espejo supabase_functions/leo-ai.ts, la migración con su versión real y la reversión. Falta: que Leo publique, el correo de su cuenta de prueba, y encender el chat solo para esa cuenta.
