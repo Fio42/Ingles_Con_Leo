@@ -217,6 +217,9 @@ export async function estadoChat(userId, deps) {
 // significado, pronunciación o explicación. Se guarda la pregunta NORMALIZADA (sin datos personales) y la respuesta ya
 // validada, para reutilizarla con otro alumno que pregunte lo mismo. No es la biblioteca oficial: Leo revisa, aprueba o
 // retira (riso_cache_revisar / riso_cache_aprobar / riso_cache_retirar); un «No me ayudó» la retira sola.
+// DESACTIVADA en este lanzamiento: con CACHE_ACTIVA = false no se hace NINGUNA llamada a la base por la caché (ni buscar
+// ni guardar). Para encenderla hacen falta, a la vez: aplicar 20261128d_riso_cache.sql, cambiar esta constante y desplegar.
+export const CACHE_ACTIVA = false
 const CACHE_INTENCIONES = { traduccion: 1, significado: 1, pronunciacion: 1, explicacion: 1 }
 export function preguntaCacheable(pregunta, historial, contexto) {
   if (contexto || (historial && historial.length)) return null
@@ -252,7 +255,7 @@ export async function procesarChat(userId, body, deps) {
     const { data: valido, error: errV } = await deps.rpc('riso_intento_valido', { p_user: userId, p_item: e.contexto.itemId, p_respuesta: e.contexto.respuestaAlumno })
     if (errV || valido !== true) { log({ ev: 'riso_chat', fallo: 'contexto_sin_intento' }); return { ok: false, reason: 'bad_context' } }
   }
-  const cacheable = preguntaCacheable(e.pregunta, e.historial, e.contexto)
+  const cacheable = (deps.cacheActiva === true || CACHE_ACTIVA) ? preguntaCacheable(e.pregunta, e.historial, e.contexto) : null
   const clave = cacheable ? await claveCache(cacheable.intencion, cacheable.norm) : null
   if (clave) {
     try {

@@ -127,7 +127,7 @@ const PILOTO = U(1), FUERA = U(2);
       await assert.rejects(como('authenticated', PILOTO, 'select public.riso_metricas_resumen() r'));
     });
     await test('corrección pendiente de search_path: fija la ruta y las métricas siguen sumando igual', async () => {
-      await c.query(read('supabase/pendientes/20261128c_riso_metricas_search_path.sql'));
+      await c.query(read('supabase/migrations/20261128145228_riso_metricas_search_path.sql'));
       const cfg = (await c.query("select proname, proconfig from pg_proc where proname in ('riso_metricas_norm_intencion','riso_metricas_norm_tema') order by proname")).rows;
       assert.ok(cfg.length === 2 && cfg.every(r => (r.proconfig || []).includes('search_path=""')), JSON.stringify(cfg));
       const antes = (await c.query("select coalesce(sum(n),0)::int n from public.riso_metricas_diarias")).rows[0].n;
@@ -136,7 +136,7 @@ const PILOTO = U(1), FUERA = U(2);
       assert.ok((await filas()).some(x => x.intencion === 'otra' && x.tema === 'otro'));
       await c.query(read('supabase/pendientes/20261128c_riso_metricas_search_path_revertir.sql'));
       assert.ok((await c.query("select proconfig from pg_proc where proname = 'riso_metricas_norm_tema'")).rows[0].proconfig === null);
-      await c.query(read('supabase/pendientes/20261128c_riso_metricas_search_path.sql'));
+      await c.query(read('supabase/migrations/20261128145228_riso_metricas_search_path.sql'));
     });
     await test('reversión: deja la base sin rastro de las métricas y el chat del piloto intacto', async () => {
       await c.query(read('supabase/pendientes/20261128b_riso_metricas_revertir.sql'));

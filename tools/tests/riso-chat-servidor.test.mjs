@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat, CACHE_ACTIVA } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -14,7 +14,7 @@ function deps(o = {}) {
     llamadas,
     rpc: async (fn, args) => { llamadas.rpc.push([fn, args]); if (fn === 'riso_chat_status') return { data: { enabled: o.autorizado !== false }, error: null }; if (fn === 'riso_intento_valido') return { data: o.intento !== false, error: null }; if (fn === 'riso_chat_reserve') return { data: typeof reserva === 'object' ? reserva : { status: reserva }, error: null }; if (fn === 'riso_cache_buscar') return o.cache ? { data: o.cache, error: null } : { data: null, error: o.cacheError || null }; return { data: { status: 'ok' }, error: null } },
     llamarModelo: async (m) => { llamadas.modelo.push(m); return o.modelo || { ok: true, raw: JSON.stringify({ texto: 'Se dice «Could we have the check, please?».', ejemplo_en: 'Could we have the check, please?', ejemplo_es: '¿Nos trae la cuenta, por favor?' }), usage: { input: 980, output: 70 } } },
-    obtenerIndice: async () => o.sinIndice ? null : indice, ahora: () => 1000, log: (x) => llamadas.log.push(x)
+    obtenerIndice: async () => o.sinIndice ? null : indice, ahora: () => 1000, log: (x) => llamadas.log.push(x), cacheActiva: o.cacheActiva === true
   }
 }
 const B = (o = {}) => Object.assign({ mode: 'chat', pregunta: '¿Cómo pido la cuenta en un restaurante?', request_id: 'req-00000001', historial: [] }, o)
@@ -212,25 +212,25 @@ await test('caché: solo preguntas sueltas de inglés, sin ejercicio, sin conver
   assert.strictEqual(a, b); assert.ok(/^[0-9a-f]{16}$/.test(a))
 })
 await test('caché: un acierto responde sin reservar ni llamar al modelo y queda medido como caché', async () => {
-  const d = deps({ cache: { texto: 'Se dice «after-dinner conversation».', ejemplo_en: 'We had a long after-dinner conversation.', ejemplo_es: 'Tuvimos una larga sobremesa.' } })
+  const d = deps({ cacheActiva: true, cache: { texto: 'Se dice «after-dinner conversation».', ejemplo_en: 'We had a long after-dinner conversation.', ejemplo_es: 'Tuvimos una larga sobremesa.' } })
   const r = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d)
   assert.ok(r.ok && r.cache); assert.strictEqual(d.llamadas.modelo.length, 0); assert.ok(!d.llamadas.rpc.some(x => x[0] === 'riso_chat_reserve'))
   const m = d.llamadas.rpc.find(x => x[0] === 'riso_metrica_ia')[1]; assert.strictEqual(m.p_cache, true); assert.strictEqual(m.p_neur, 0); assert.ok(/^cache:[0-9a-f]{16}$/.test(m.p_tema))
   assert.strictEqual(r.answer.metrica.c, 'cache')
 })
 await test('caché: sin acierto pregunta a Gemma y guarda la respuesta validada (pregunta normalizada, sin datos del alumno)', async () => {
-  const d = deps(); const r = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d)
+  const d = deps({ cacheActiva: true }); const r = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d)
   assert.ok(r.ok); assert.strictEqual(d.llamadas.modelo.length, 1)
   const g = d.llamadas.rpc.find(x => x[0] === 'riso_cache_guardar')[1]
   assert.strictEqual(g.p_pregunta, 'como se dice sobremesa en ingles'); assert.strictEqual(g.p_intencion, 'traduccion'); assert.ok(/check/.test(g.p_texto))
   assert.strictEqual(r.answer.metrica.c, 'ia')
 })
 await test('caché: con conversación previa o ejercicio no busca ni guarda; si la migración no existe, todo sigue igual', async () => {
-  const d = deps(); await procesarChat('u1', B({ pregunta: '¿Y de forma más educada?', historial: [{ rol: 'alumno', texto: '¿Cómo se dice tengo hambre?' }, { rol: 'riso', texto: 'I am hungry.' }] }), d)
+  const d = deps({ cacheActiva: true }); await procesarChat('u1', B({ pregunta: '¿Y de forma más educada?', historial: [{ rol: 'alumno', texto: '¿Cómo se dice tengo hambre?' }, { rol: 'riso', texto: 'I am hungry.' }] }), d)
   assert.ok(!d.llamadas.rpc.some(x => /^riso_cache_/.test(x[0])))
-  const d2 = deps({ cacheError: { message: 'function riso_cache_buscar does not exist' } }); const r2 = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d2)
+  const d2 = deps({ cacheActiva: true, cacheError: { message: 'function riso_cache_buscar does not exist' } }); const r2 = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d2)
   assert.ok(r2.ok && !r2.cache); assert.strictEqual(d2.llamadas.modelo.length, 1)
-  const d3 = deps(); d3.rpc = async (fn, a) => { if (/^riso_cache_/.test(fn)) throw new Error('x'); return deps().rpc(fn, a) }
+  const d3 = deps({ cacheActiva: true }); d3.rpc = async (fn, a) => { if (/^riso_cache_/.test(fn)) throw new Error('x'); return deps().rpc(fn, a) }
   const r3 = await procesarChat('u1', B({ pregunta: '¿Cómo se dice «sobremesa» en inglés?' }), d3); assert.ok(r3.ok)
 })
 await test('estado: al estar habilitado precarga el índice (sin esperar); sin habilitar, no', async () => {
@@ -238,5 +238,13 @@ await test('estado: al estar habilitado precarga el índice (sin esperar); sin h
   const a = await estadoChat('u1', { rpc: rpcOn, precargarIndice: () => { n++ } }); await new Promise(r => setTimeout(r, 5))
   assert.strictEqual(a.riso.enabled, true); assert.strictEqual(n, 1)
   await estadoChat('u1', { rpc: rpcOff, precargarIndice: () => { n++ } }); await new Promise(r => setTimeout(r, 5)); assert.strictEqual(n, 1)
+})
+await test('lanzamiento: la caché está DESACTIVADA y no hace ninguna llamada a la base (ni buscar ni guardar)', async () => {
+  assert.strictEqual(CACHE_ACTIVA, false)
+  for (const q of ['¿Cómo se dice «sobremesa» en inglés?', '¿Qué significa awkward?', '¿Cuál es la diferencia entre say y tell?', '¿Cómo se pronuncia comfortable?']) {
+    const d = deps(); const r = await procesarChat('u1', B({ pregunta: q }), d)
+    assert.ok(r.ok, q); assert.ok(!d.llamadas.rpc.some(x => /^riso_cache_/.test(x[0])), q + ': ' + d.llamadas.rpc.map(x => x[0]).join())
+    assert.deepStrictEqual(d.llamadas.rpc.map(x => x[0]), ['riso_chat_status', 'riso_chat_reserve', 'riso_chat_finish', 'riso_metrica_ia'])
+  }
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)
