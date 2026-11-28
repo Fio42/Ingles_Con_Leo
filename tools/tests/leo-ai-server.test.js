@@ -6,8 +6,11 @@
 const fs = require('fs'), vm = require('vm'), path = require('path'), assert = require('assert');
 const ts = require(path.join(__dirname, '..', '..', 'node_modules', 'typescript'));
 const root = path.join(__dirname, '..', '..');
-const src = fs.readFileSync(path.join(root, 'supabase_functions', 'leo-ai.ts'), 'utf8')
-  .replace("import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'", '');
+// LEO_AI_SRC=supabase/functions/leo-ai/index.ts prueba la versión con Riso (modo chat simulado: los modos de Leo AI no deben cambiar).
+const src = fs.readFileSync(path.join(root, process.env.LEO_AI_SRC || path.join('supabase_functions', 'leo-ai.ts')), 'utf8')
+  .replace("import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'", '')
+  .replace("import { procesarChat, estadoChat, cargarIndice as risoIndice, llamarCloudflare as risoLlamarCloudflare } from './riso-chat.mjs'", "const risoIndice = async () => null; const estadoChat = async () => ({ ok: true, riso: { enabled: false } }); const procesarChat = async (u: any, b: any) => (b && typeof b.pregunta === 'string' ? { ok: false, reason: 'disabled' } : { ok: false, reason: 'bad_input' }); const risoLlamarCloudflare = () => null;")
+;
 const js = ts.transpileModule(src, { compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS } }).outputText;
 
 // Token con forma real de Supabase. La firma 'firma-valida' es la única que el

@@ -86,6 +86,7 @@
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { procesarChat, estadoChat, cargarIndice as risoIndice, llamarCloudflare as risoLlamarCloudflare } from './riso-chat.mjs'
 
 const env = (k: string) => Deno.env.get(k) || ''
 const SUPABASE_URL = env('SUPABASE_URL')
@@ -733,6 +734,19 @@ Deno.serve(async (req: Request) => {
     if (body && body.mode === 'trial_status') {
       if (isMember) return json({ ok: true, trial: { enabled: false, member: true } })
       return json({ ok: true, trial: (await trialInfo(user.id)) || { enabled: false } })
+    }
+    // Riso (chat del tutor). Todo lo decide la base: interruptor apagado por defecto, piloto, cuotas y presupuesto
+    // compartido dentro de las neuronas gratis. Si la migración no está aplicada, la reserva falla y no se llama al modelo.
+    if (body && body.mode === 'chat_status') {
+      return json(await estadoChat(user.id, { rpc: (fn: string, args: Record<string, unknown>) => supabase.rpc(fn, args) }))
+    }
+    if (body && body.mode === 'chat') {
+      const r = await procesarChat(user.id, body, {
+        rpc: (fn: string, args: Record<string, unknown>) => supabase.rpc(fn, args),
+        llamarModelo: (mensajes: unknown) => risoLlamarCloudflare(mensajes, { fetchImpl: fetch, env }),
+        obtenerIndice: () => risoIndice(env('RISO_EJERCICIOS_URL') || 'https://inglesconleo.com/supabase/functions/leo-ai/riso-ejercicios.json', fetch), ahora: () => Date.now(), log: (o: unknown) => console.log(JSON.stringify(o)),
+      })
+      return json(r, r && !r.ok && ['bad_input', 'too_long', 'bad_context'].includes(r.reason) ? 400 : 200)
     }
     const mode = body && MODES.includes(body.mode) ? body.mode : null
     // Writing: sin al menos 2 palabras reales no se revisa nada. Se rechaza ANTES de
