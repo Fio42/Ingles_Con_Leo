@@ -4,8 +4,8 @@
      correcciones que YA calcula la plataforma y está disponible cuando el alumno quiere más ayuda.
    - Solo se activa si el SERVIDOR dice que Riso está habilitado para esta cuenta (leo-ai, modo chat_status: sin IA,
      0 neuronas). Hoy eso es solo la cuenta del piloto. Para todos los demás la academia queda exactamente igual.
-   - Corrección de ejercicios: la nota, la respuesta correcta y la explicación son las de siempre (app.js). Riso solo
-     las presenta. Cero llamadas a Gemma por corregir.
+   - Corrección de ejercicios: la presenta PROFE LEO, con su firma e imagen, exactamente como siempre (app.js y v2-fx.js).
+     Riso no firma la corrección: aparece debajo, en su propio espacio («Pregúntale a Riso»). Cero llamadas a Gemma por corregir.
    - «Pregúntale a Riso»: abre la conversación con el contexto del ejercicio (pregunta, respuesta, correcta, si
      acertó, explicación que ya vio, tema). «¿Por qué?» usa la explicación de Leo AI de siempre (no repite lo que el
      alumno ya leyó); lo demás lo responde Riso por capas (herramientas, glosario, fichas aprobadas, IA).
@@ -14,7 +14,7 @@
 (function (root) {
   'use strict';
   if (root.RisoAcademia) return;
-  var d = document, V = '20261128c';
+  var d = document, V = '20261128h';
   var BASE = (function () { try { var s = d.currentScript && d.currentScript.src; return s ? s.replace(/riso-academia\.js(\?.*)?$/, '') : 'riso/'; } catch (e) { return 'riso/'; } })();
   var IMG = { neutro: BASE + 'img/riso-neutro.webp', guino: BASE + 'img/riso-guino-cuerpo.webp' };
   var CLAVE = 'riso_estado_v1', VIDA_ON = 30 * 60e3, VIDA_OFF = 6 * 3600e3;
@@ -41,18 +41,11 @@
     }).catch(function () { return null; });
   }
 
-  // ---------- 2. Riso presenta las correcciones de la plataforma ----------
-  // La corrección (acierto o error, respuesta correcta, explicación) es la de siempre. Riso solo la presenta, en la misma
-  // línea donde la academia mostraba quién explica (v2-fx.js pone ahí al Profe Leo en los errores): una sola firma.
-  function decorar(host, ctx) {
-    try {
-      if (!host || !host.querySelector || !host.querySelector('.fb-head') || host.querySelector('.rsa-tip')) return;
-      var ok = !!(ctx && (ctx.isCorrect === true || ctx.isOk === true));
-      var tip = el('div', 'v2-leo-tip rsa-tip'); tip.appendChild(avatar('rsa-tip__av', ok ? 'guino' : 'neutro')); tip.appendChild(el('span', null, 'Riso'));
-      host.insertBefore(tip, host.firstChild);
-      host.classList.add('rsa-fb');
-    } catch (e) {}
-  }
+  // ---------- 2. La corrección principal es de Profe Leo ----------
+  // Inglés con Leo enseña, Riso acompaña: la corrección (acierto o error, respuesta correcta, explicación, ejemplos y firma
+  // de Profe Leo) queda exactamente como la muestra la academia. Riso no la toca. La función se conserva vacía porque
+  // app.js la llama; así no hace falta cambiar app.js.
+  function decorar() {}
 
   // Lo que la conversación necesita saber del ejercicio: el MISMO resumen con el que Leo AI explica (buildLeoAiPayload en
   // app.js: pregunta, opciones, respuesta, correcta, explicación que ya vio, tema). No se recalcula nada.
