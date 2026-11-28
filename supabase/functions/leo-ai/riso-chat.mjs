@@ -21,7 +21,11 @@ export const RISO_REGLAS = [
   'Si te preguntan algo que no es de inglés, dilo con amabilidad y ofrece decirlo en inglés. No des consejos médicos, legales ni financieros.',
   'No hables de precios, pagos ni cuentas: eso lo resuelve Soporte. No pidas ni repitas datos personales.',
   'Si no estás seguro, dilo y sugiere revisar la guía. Nunca inventes reglas. No digas que eres Profe Leo: eres una IA.',
-  'Si hay un ejercicio, explica por qué la respuesta correcta es correcta y por qué la del alumno no, sin regañar.',
+  'Si hay un ejercicio, el dato ACERTÓ o FALLÓ es la verdad: si acertó, confírmalo y explica por qué; si falló, explica por qué la correcta es correcta y por qué la suya no, sin regañar.',
+  'Exactitud antes que brevedad. No digas «siempre» ni «nunca» de una regla que tiene excepciones: usa «normalmente» o «en general». Will no expresa certeza por sí mismo. El presente perfecto también va con periodos no terminados (today, this week).',
+  'Pronunciación: si usas IPA, escríbela entre barras y di que es IPA; si das una aproximación con letras del español, di que es aproximada. No mezcles las dos. La th tiene un sonido sordo /θ/ (think) y uno sonoro /ð/ (this).',
+  'No recomiendes audios, videos, apps, páginas ni otros recursos: la plataforma agrega la guía cuando existe.',
+  'Los ejemplos deben ser frases naturales que diría un hablante nativo, con una traducción natural al español. Si piden otro ejemplo, usa otra situación y otras palabras, distinto de los ejemplos ya mostrados en la conversación.',
   'Devuelve solo JSON con: texto (la explicación), ejemplo_en y ejemplo_es (pueden ir vacíos).'
 ].join(' ')
 
@@ -72,8 +76,17 @@ export function resolverContexto(contexto, indice) {
   const it = indice[contexto.itemId]
   if (!it) return { ok: false, error: 'bad_context' }
   const elegida = contexto.respuestaAlumno.trim()
-  if (!it.o.some(o => o.toLowerCase() === elegida.toLowerCase())) return { ok: false, error: 'bad_context' }
-  return { ok: true, ctx: { tema: it.t, enunciado: it.e, respuestaAlumno: elegida, respuestaCorrecta: it.c } }
+  if (it.k === 'error') {
+    // Misma regla que la práctica real (app.js, tipo 'error'): acierta si la palabra tocada está dentro de la marcada.
+    if (!/^\d{1,2}$/.test(elegida)) return { ok: false, error: 'bad_context' }
+    const i = Number(elegida)
+    if (i >= it.p.length) return { ok: false, error: 'bad_context' }
+    return { ok: true, ctx: { tema: it.t, tipo: 'error', enunciado: it.e, respuestaAlumno: it.p[i].replace(/[.,?!]/g, ''),
+      respuestaCorrecta: it.c, fraseCorrecta: it.f, acerto: i >= it.s[0] && i <= it.s[1] } }
+  }
+  const op = it.o.find(o => o.toLowerCase() === elegida.toLowerCase())
+  if (!op) return { ok: false, error: 'bad_context' }
+  return { ok: true, ctx: { tema: it.t, enunciado: it.e, respuestaAlumno: op, respuestaCorrecta: it.c, acerto: op.toLowerCase() === it.c.toLowerCase() } }
 }
 
 // 3) Filtro del servidor (por si alguien se salta el navegador). Devuelve una respuesta fija o null.
@@ -86,7 +99,8 @@ export function filtroServidor(pregunta, hayHistorial) {
 
 export function construirMensajes(pregunta, historial, ctx) {
   const partes = []
-  if (ctx) partes.push(`Ejercicio (${ctx.tema}): «${ctx.enunciado}». El alumno respondió «${ctx.respuestaAlumno}». La respuesta correcta es «${ctx.respuestaCorrecta}».`)
+  if (ctx && ctx.tipo === 'error') partes.push(`Ejercicio (${ctx.tema}). Consigna: encontrar la palabra incorrecta en «${ctx.enunciado}». El alumno tocó «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La palabra incorrecta es «${ctx.respuestaCorrecta}» y la frase correcta es «${ctx.fraseCorrecta}».`)
+  else if (ctx) partes.push(`Ejercicio (${ctx.tema}): «${ctx.enunciado}». El alumno respondió «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La respuesta correcta es «${ctx.respuestaCorrecta}».`)
   if (historial.length) partes.push('Conversación reciente:\n' + historial.map(m => (m.rol === 'alumno' ? 'Alumno: ' : 'Riso: ') + m.texto).join('\n'))
   partes.push('Pregunta del alumno: ' + pregunta)
   return [{ role: 'system', content: RISO_REGLAS }, { role: 'user', content: partes.join('\n\n') }]
@@ -97,11 +111,20 @@ export function estimarNeuronas(mensajes) {
 }
 
 // 4) Respuesta del modelo: JSON válido, no vacía, recortada y sin datos personales.
+// Frases que recomiendan un recurso que no podemos comprobar (audio, video, app, página): se quitan. La guía real la
+// agrega la plataforma con su enlace verificado.
+const RECURSO = /\b(escuch\w*|audio|video|v[ií]deo|app|aplicaci[oó]n|glosario|p[aá]gina|sitio web|enlace|link|youtube|podcast|diccionario)\b/i
+const RECOMIENDA = /\b(te recomiendo|recomiendo|te sugiero|puedes (escuchar|ver|consultar|revisar|buscar|visitar|usar)|consulta|visita|revisa|busca|escucha|mira)\b/i
+export function quitarRecursos(texto) {
+  const frases = texto.match(/[^.!?]+[.!?]*/g) || [texto]
+  const quedan = frases.filter(f => !(RECURSO.test(f) && RECOMIENDA.test(f)))
+  return (quedan.length ? quedan : frases).join('').replace(/\s+/g, ' ').trim()
+}
 export function validarSalida(raw) {
   let j = raw
   if (typeof raw === 'string') { try { j = JSON.parse(raw) } catch (_) { return null } }
   if (!j || typeof j.texto !== 'string') return null
-  const texto = R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim()).slice(0, CHAT.maxRespuesta)
+  const texto = quitarRecursos(R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim())).slice(0, CHAT.maxRespuesta)
   if (texto.length < 8) return null
   const ej = (s) => typeof s === 'string' ? R._int.limpiarPII(s.trim()).slice(0, 200) : ''
   return { texto, ejemplo_en: ej(j.ejemplo_en), ejemplo_es: ej(j.ejemplo_es) }

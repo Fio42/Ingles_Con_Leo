@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, RISO_REGLAS } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -124,5 +124,39 @@ await test('proveedor cortado por tiempo: se registra la estimación completa (p
 await test('sin índice de ejercicios disponible: el modo ejercicio responde bad_context sin gastar', async () => {
   const d = deps({ sinIndice: true }); const r = await procesarChat('u1', B({ contexto: { itemId: 'g-facil7-dodoes-2', respuestaAlumno: 'Is' } }), d)
   assert.strictEqual(r.reason, 'bad_context'); assert.strictEqual(d.llamadas.modelo.length, 0)
+})
+await test('ejercicio «encontrar el error»: misma regla que la práctica real (índice tocado dentro de la palabra marcada)', async () => {
+  // g-medio-ppf-3: «I have bought this car last month.», palabra marcada «have bought» (índices 1 y 2).
+  const casos = [['2', true, 'bought'], ['1', true, 'have'], ['5', false, 'last']]
+  for (const [idx, acierta, palabra] of casos) {
+    const r = resolverContexto({ itemId: 'g-medio-ppf-3', respuestaAlumno: idx }, indice)
+    assert.ok(r.ok, idx); assert.strictEqual(r.ctx.acerto, acierta, idx); assert.strictEqual(r.ctx.respuestaAlumno, palabra)
+    assert.strictEqual(r.ctx.respuestaCorrecta, 'have bought'); assert.strictEqual(r.ctx.fraseCorrecta, 'I bought this car last month.')
+  }
+  for (const malo of ['bought', '99', '-1', '1.5']) assert.strictEqual(resolverContexto({ itemId: 'g-medio-ppf-3', respuestaAlumno: malo }, indice).ok, false, malo)
+  const d = deps(); await procesarChat('u1', B({ pregunta: '¿Por qué está mal mi respuesta?', contexto: { itemId: 'g-medio-ppf-3', respuestaAlumno: '5' } }), d)
+  const s = d.llamadas.modelo[0][1].content
+  assert.ok(/tocó «last» y FALLÓ/.test(s), s); assert.ok(/palabra incorrecta es «have bought»/.test(s)); assert.ok(/frase correcta es «I bought this car last month\.»/.test(s))
+})
+await test('el modelo sabe si el alumno acertó o falló (opción múltiple)', async () => {
+  const bien = resolverContexto({ itemId: 'g-facil7-dodoes-2', respuestaAlumno: 'does' }, indice), mal = resolverContexto({ itemId: 'g-facil7-dodoes-2', respuestaAlumno: 'Is' }, indice)
+  assert.strictEqual(bien.ctx.acerto, true); assert.strictEqual(mal.ctx.acerto, false)
+  assert.ok(/y ACERTÓ/.test(construirMensajes('x', [], bien.ctx)[1].content)); assert.ok(/y FALLÓ/.test(construirMensajes('x', [], mal.ctx)[1].content))
+})
+await test('índice: ningún ejercicio con la respuesta correcta fuera de sus opciones', async () => {
+  for (const [id, v] of Object.entries(indice)) {
+    if (v.k === 'error') assert.ok(v.s[0] >= 0 && v.s[1] < v.p.length && v.s[0] <= v.s[1], id)
+    else assert.ok(v.o.some(o => o.toLowerCase() === v.c.toLowerCase()), id)
+  }
+})
+await test('calidad: se quitan recomendaciones de audios o páginas que no podemos comprobar', async () => {
+  const o = validarSalida(JSON.stringify({ texto: 'Suena aproximadamente como KÁMF-ter-bol. Te recomiendo escuchar el audio en nuestro glosario para captar el ritmo.', ejemplo_en: '', ejemplo_es: '' }))
+  assert.ok(o && !/audio|glosario/.test(o.texto), o && o.texto); assert.ok(/KÁMF/.test(o.texto))
+  assert.strictEqual(quitarRecursos('Usa the para algo concreto. Mira este ejemplo.'), 'Usa the para algo concreto. Mira este ejemplo.')
+  assert.ok(validarSalida(JSON.stringify({ texto: 'Escucha el audio del video.', ejemplo_en: '', ejemplo_es: '' })), 'si todo es recurso, no se vacía la respuesta')
+})
+await test('calidad: reglas del modelo con los matices revisados', async () => {
+  for (const re of [/ACERTÓ o FALLÓ es la verdad/, /normalmente/, /Will no expresa certeza/, /periodos no terminados/, /IPA/, /sordo \/θ\//, /sonoro \/ð\//, /No recomiendes audios/, /otra situación y otras palabras/]) assert.ok(re.test(RISO_REGLAS), String(re))
+  assert.ok(!/—/.test(RISO_REGLAS)); assert.ok(estimarNeuronas(construirMensajes('¿Cuándo uso the?', [], null)) < 60)
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

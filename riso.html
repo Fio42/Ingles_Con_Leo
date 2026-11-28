@@ -187,12 +187,29 @@ button,textarea{font:inherit;color:inherit}
     $('ctxQuitar').onclick = function(){ ponerContexto(null); };
     async function nuevoEjercicio(){
       if(!indice){ try{ indice = await (await fetch('supabase/functions/leo-ai/riso-ejercicios.json')).json(); }catch(e){ indice = {}; } }
-      var ids = Object.keys(indice).filter(function(k){ return indice[k].o && indice[k].o.length > 1; });
+      var ids = Object.keys(indice).filter(function(k){ return (indice[k].o && indice[k].o.length > 1) || indice[k].k === 'error'; });
       if(!ids.length){ $('ejFrase').textContent = 'No pude cargar los ejercicios.'; return; }
       var id = ids[Math.floor(Math.random() * ids.length)], it = indice[id];
       actual = { id: id, it: it };
       $('ejTema').textContent = it.t; $('ejFrase').textContent = it.e; $('ejFb').textContent = ''; $('ejRiso').hidden = true;
       var ops = $('ejOps'); ops.innerHTML = '';
+      if(it.k === 'error'){
+        // Igual que la práctica real (app.js, tipo 'error'): se toca la palabra incorrecta; acierta si cae dentro de la marcada.
+        $('ejFrase').textContent = 'Encuentra el error, toca la palabra incorrecta';
+        it.p.forEach(function(w, i){
+          var b = el('button', 'ej-op', w); b.type = 'button';
+          b.onclick = async function(){
+            var dentro = function(j){ return j >= it.s[0] && j <= it.s[1]; };
+            ops.querySelectorAll('button').forEach(function(x, j){ x.disabled = true; if(dentro(j)) x.classList.add('bien'); });
+            var ok = dentro(i); if(!ok) b.classList.add('mal');
+            $('ejFb').textContent = (ok ? '¡Bien! ' : 'La palabra incorrecta es «' + it.c + '». ') + 'Frase correcta: ' + it.f;
+            try{ await LeoBackend.getClient().rpc('riso_registrar_intento', { p_item: id, p_respuesta: String(i) }); }catch(e){}
+            actual.respuesta = String(i); actual.palabra = w; $('ejRiso').hidden = false;
+          };
+          ops.appendChild(b);
+        });
+        return;
+      }
       it.o.slice().sort(function(){ return Math.random() - .5; }).forEach(function(o){
         var b = el('button', 'ej-op', o); b.type = 'button';
         b.onclick = async function(){
@@ -209,6 +226,7 @@ button,textarea{font:inherit;color:inherit}
     $('ejRiso').onclick = function(){
       if(!actual || !actual.respuesta) return;
       ponerContexto({ itemId: actual.id, fuente: 'practica', tema: actual.it.t, enunciado: actual.it.e, respuestaAlumno: actual.respuesta, respuestaCorrecta: actual.it.c });
+      if(actual.it.k === 'error') $('ctxTxt').textContent = 'Hablando del ejercicio: «' + actual.it.e + '» (tocaste «' + actual.palabra + '»)';
       riso({ capa: 1, texto: 'Vi tu respuesta. ¿Qué parte no te quedó clara?' });
       $('q').focus({ preventScroll: true });
       if(matchMedia('(max-width: 899px)').matches) $('tutor').scrollIntoView({ block: 'start' });

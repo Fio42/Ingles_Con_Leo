@@ -169,4 +169,5 @@ test('la base de conocimiento no incluye contenido privado de cursos', () => {
 });
 
 require('./riso-tutor-v2.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
+require('./riso-tutor-piloto1.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 Promise.all(pend).then(() => { console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0); });

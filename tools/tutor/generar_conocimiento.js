@@ -38,11 +38,23 @@ const guias = fs.readdirSync(root).filter(f => /^articulo-.*\.html$/.test(f)).ma
 });
 
 const faq = require('./faq.js');
+// Cada ficha de la FAQ debe apuntar a una guía o ficha del glosario que exista de verdad.
+faq.forEach(f => { if (f.ref && !fs.existsSync(path.join(root, f.ref.replace(/\/$/, '/index.html')))) throw new Error('FAQ ' + f.id + ': no existe ' + f.ref); });
+// Pronunciación: 'ipa' = transcripción fonética entre barras (/θɔːt/); 'aprox' = aproximación con letras del español
+// (ol-DÓU). Audio: solo si la ficha del glosario lo enlaza y el archivo está publicado (lista de audio/glosario en
+// tools/tutor/glosario-audios.txt, porque esta copia del repositorio no siempre trae los mp3).
+const audios = new Set(fs.readFileSync(path.join(__dirname, 'glosario-audios.txt'), 'utf8').trim().split(/\s+/));
+function conPron(g) {
+  const pron = (terminos.find(t => t.slug === g.s) || {}).pron || null;
+  const pag = path.join(root, 'glosario', g.s, 'index.html');
+  const audio = audios.has(g.s) && fs.existsSync(pag) && read(path.join('glosario', g.s, 'index.html')).includes('/audio/glosario/' + g.s + '.mp3');
+  return Object.assign(g, { p: pron, pt: pron ? (/^\/.*\/$/.test(pron.trim()) ? 'ipa' : 'aprox') : null, a: audio ? 1 : 0 });
+}
 const extra = require('./verbos-extra.js');
 // Verbos: los del artículo + los extra verificados a mano (sin duplicar). Quinto campo: nota opcional.
 extra.irregulares.forEach(v => { if (!verbos.some(x => x[0] === v[0])) verbos.push(v.slice()); });
 const regulares = [...new Set(extra.regulares)].filter(v => !verbos.some(x => x[0] === v));
-const out = { version: new Date().toISOString().slice(0, 10), verbos, regulares, doblanSiempre: extra.doblanSiempre, doblanSoloUK: extra.doblanSoloUK, glosario: glosario.map(g => Object.assign(g, { p: (terminos.find(t => t.slug === g.s) || {}).pron || null })), guias, faq };
+const out = { version: new Date().toISOString().slice(0, 10), verbos, regulares, doblanSiempre: extra.doblanSiempre, doblanSoloUK: extra.doblanSoloUK, glosario: glosario.map(g => conPron(g)), guias, faq };
 const js = '/* Generado por tools/tutor/generar_conocimiento.js. No editar a mano. Contenido público del sitio. */\n' +
   '(function(r){ r.RISO_CONOCIMIENTO = ' + JSON.stringify(out) + '; if(typeof module!=="undefined") module.exports = r.RISO_CONOCIMIENTO; })(typeof window!=="undefined"?window:globalThis);\n';
 fs.writeFileSync(path.join(root, 'riso/tutor/conocimiento.js'), js);
