@@ -8717,7 +8717,7 @@ function sessionInsightAiCtx(ins){
   const main = mainTema ? [mainTema] : [];
   return { kind:'insight', scope:'session', facts, examples: leoAiExamples(ids, 3),
     shown: ins.tema ? [ins.tema.label] : (ins.struggle ? [ins.struggleTema ? temaLabelOf(ins.struggleTema) : ins.struggle.label] : []),
-    candidates: leoAiTemaPool(main, main), label:'Analizar mi sesión con Leo AI' };
+    candidates: leoAiTemaPool(main, main), label:'Analizar mi sesión con ' + leoAiNombre() };
 }
 
 /* "Para reforzar" en el resumen de sesión de miembros: hasta 2 temas con errores de ESTA sesión,
@@ -8868,7 +8868,7 @@ function mistakePatternsAiCtx(pat){
   const shownIds = pat.groups.map(g => g.temaContent ? g.temaContent.id : null).filter(Boolean);
   return { kind:'insight', scope:'mistakes', facts, examples: leoAiExamples(ids, 3),
     shown: pat.groups.map(g => g.temaContent ? g.temaContent.label : g.label),
-    candidates: leoAiTemaPool(shownIds.slice(0, 1), shownIds), label:'Analizar mis errores con Leo AI' };
+    candidates: leoAiTemaPool(shownIds.slice(0, 1), shownIds), label:'Analizar mis errores con ' + leoAiNombre() };
 }
 
 /* Tarjeta "Tus patrones de error" en errores.html (arriba del repaso). */

@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat, CACHE_ACTIVA } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat, CACHE_ACTIVA, esTrucoForma, quitarTrucosForma, repiteExplicacion, PORQUE } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -246,5 +246,45 @@ await test('lanzamiento: la caché está DESACTIVADA y no hace ninguna llamada a
     assert.ok(r.ok, q); assert.ok(!d.llamadas.rpc.some(x => /^riso_cache_/.test(x[0])), q + ': ' + d.llamadas.rpc.map(x => x[0]).join())
     assert.deepStrictEqual(d.llamadas.rpc.map(x => x[0]), ['riso_chat_status', 'riso_chat_reserve', 'riso_chat_finish', 'riso_metrica_ia'])
   }
+})
+
+// ---------- Ajustes educativos (tras las pruebas reales de v34) ----------
+const ejemplo = Object.entries(indice).find(([id, it]) => it.k !== 'error' && it.x && it.x.length > 40)
+const ctxB = (pregunta) => B({ pregunta, contexto: { itemId: ejemplo[0], respuestaAlumno: ejemplo[1].o.find(o => o.toLowerCase() !== ejemplo[1].c.toLowerCase()) } })
+await test('truco por la terminación: la frase que usa la -s como pista se quita; describir cómo se forma algo no', async () => {
+  assert.ok(esTrucoForma('Como "tourists" termina en \'s\', es una señal clara de que necesitas el plural "are".'))
+  assert.ok(esTrucoForma('Sabes que es plural porque la palabra termina en s.'))
+  assert.ok(!esTrucoForma('Con he, she o it, el verbo en presente simple termina en -s: she works.'))
+  assert.ok(!esTrucoForma('Usa "are" porque hablas de varios turistas.'))
+  const s1 = validarSalida(JSON.stringify({ texto: 'Si son dos o más, usas "are". Como "tourists" termina en \'s\', es una señal clara de que necesitas "are". Ojo: people también es plural.', ejemplo_en: '', ejemplo_es: '' }))
+  assert.ok(!/termina/.test(s1.texto), s1.texto); assert.ok(/dos o más/.test(s1.texto) && /people/.test(s1.texto))
+})
+await test('reglas: una sola forma de pronunciación, «más fácil» sin perder exactitud, sin trucos por la forma; se conservan excepciones y forma cortés', async () => {
+  assert.ok(/UNA sola forma/.test(RISO_REGLAS) && /Nunca mezcles las dos ni inventes audios/.test(RISO_REGLAS))
+  assert.ok(/más fácil/.test(RISO_REGLAS) && /misma regla exacta/.test(RISO_REGLAS))
+  assert.ok(/terminación de una palabra/.test(RISO_REGLAS))
+  assert.ok(/excepciones/.test(RISO_REGLAS) && /Could I/.test(RISO_REGLAS))
+})
+await test('«¿Por qué?» de un ejercicio: el modelo recibe la explicación ya vista y la orden de complementarla, no repetirla', async () => {
+  assert.ok(PORQUE.test('¿Por qué?') && PORQUE.test('y por qué') && !PORQUE.test('¿Por qué se usa have con I y has con she en las preguntas largas de este tipo?'))
+  const d = deps(); const r = await procesarChat('u1', ctxB('¿Por qué?'), d)
+  assert.ok(r.ok); const u = d.llamadas.modelo[0][1].content
+  assert.ok(/no la repitas/.test(u) && /NO la repitas ni la parafrasees/.test(u) && /pista concreta/.test(u), u)
+  const d2 = deps(); await procesarChat('u1', ctxB('Dame otro ejemplo'), d2)
+  assert.ok(!/pista concreta/.test(d2.llamadas.modelo[0][1].content))
+})
+await test('si la respuesta repite la explicación ya vista: UNA segunda llamada con otro enfoque y se cobran las dos', async () => {
+  const rep = { ok: true, raw: JSON.stringify({ texto: ejemplo[1].x, ejemplo_en: '', ejemplo_es: '' }), usage: { input: 900, output: 60 } }
+  const nueva = { ok: true, raw: JSON.stringify({ texto: 'Fíjate en la pista de esta frase: decide la respuesta. Tu opción sirve en otro contexto.', ejemplo_en: '', ejemplo_es: '' }), usage: { input: 950, output: 50 } }
+  assert.ok(repiteExplicacion(ejemplo[1].x, ejemplo[1].x))
+  const d = deps(); const temps = []; d.llamarModelo = async (m, o) => { d.llamadas.modelo.push(m); temps.push(o && o.temperatura); return d.llamadas.modelo.length === 1 ? rep : nueva }
+  const r = await procesarChat('u1', ctxB('¿Por qué?'), d)
+  assert.strictEqual(d.llamadas.modelo.length, 2); assert.deepStrictEqual(temps, [undefined, 0.6]); assert.ok(/pista de esta frase/.test(r.answer.texto))
+  const fin = d.llamadas.rpc.find(x => x[0] === 'riso_chat_finish')[1]
+  assert.strictEqual(fin.p_input, 1850); assert.strictEqual(fin.p_output, 110)
+  const d2 = deps(); d2.llamarModelo = async (m) => { d2.llamadas.modelo.push(m); return nueva }
+  await procesarChat('u1', ctxB('¿Por qué?'), d2); assert.strictEqual(d2.llamadas.modelo.length, 1)
+  const d3 = deps(); d3.llamarModelo = async (m) => { d3.llamadas.modelo.push(m); return rep }
+  await procesarChat('u1', B({ pregunta: '¿Cómo se dice tengo hambre?' }), d3); assert.strictEqual(d3.llamadas.modelo.length, 1)
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

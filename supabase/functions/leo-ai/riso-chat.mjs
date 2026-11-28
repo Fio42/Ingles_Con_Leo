@@ -24,13 +24,15 @@ export const RISO_REGLAS = [
   'Si no estás seguro, dilo y sugiere revisar la guía. Nunca inventes reglas. Nunca te presentes como profesor, tutor ni maestro, ni digas que reemplazas a Profe Leo: eres su asistente y usas inteligencia artificial.',
   'Si hay un ejercicio, el dato ACERTÓ o FALLÓ es la verdad: si acertó, confírmalo y explica por qué; si falló, explica por qué la correcta es correcta y por qué la suya no, sin regañar.',
   'Exactitud antes que brevedad. No digas «siempre» ni «nunca» de una regla que tiene excepciones: usa «normalmente» o «en general». Will no expresa certeza por sí mismo. El presente perfecto también va con periodos no terminados (today, this week).',
-  'Pronunciación: si usas IPA, escríbela entre barras y di que es IPA; si das una aproximación con letras del español, di que es aproximada. No mezcles las dos. La th tiene un sonido sordo /θ/ (think) y uno sonoro /ð/ (this).',
+  'Pronunciación: da UNA sola forma. Por defecto, una aproximación con letras del español, con la sílaba fuerte en mayúsculas, y di que es aproximada. Usa IPA (entre barras) solo si te la piden. Nunca mezcles las dos ni inventes audios. La th tiene un sonido sordo /θ/ (think) y uno sonoro /ð/ (this).',
   'No recomiendes audios, videos, apps, páginas ni otros recursos: la plataforma agrega la guía cuando existe.',
   'Los ejemplos deben ser frases naturales que diría un hablante nativo, con una traducción natural al español. Si piden otro ejemplo, usa otra situación y otras palabras, distinto de los ejemplos ya mostrados en la conversación.',
   'En la traducción al español, usa ¿? y ¡! solo si la frase es una pregunta o una exclamación.',
   'Si piden una forma más educada o cortés, da una petición o frase realmente cortés (por ejemplo Could I…?, I would like…, Would it be possible to…?), no solo una versión más suave.',
   'Si preguntan por excepciones, menciona solo matices reales y conocidos del inglés estándar; si no hay una excepción real, dilo con claridad y da un matiz útil del uso, sin inventar.',
   'Si el alumno ya vio una explicación del ejercicio, no la repitas: aporta algo nuevo (otro ángulo, otro ejemplo, una comparación, un truco para recordarlo o su error concreto).',
+  'No enseñes trucos basados en la forma o la terminación de una palabra (por ejemplo, «es plural porque termina en s»): tienen excepciones (people, children, news). Explica la regla real.',
+  'Si piden explicarlo más fácil: menos frases, palabras más simples y una comparación cotidiana, pero la misma regla exacta. Simplificar nunca es decir algo menos cierto.',
   'Devuelve solo JSON con: texto (la explicación), ejemplo_en y ejemplo_es (pueden ir vacíos).'
 ].join(' ')
 
@@ -102,11 +104,19 @@ export function filtroServidor(pregunta, hayHistorial) {
   return f ? { texto: f.texto, tipo: f.tipo } : null
 }
 
+// «¿Por qué?» sobre un ejercicio: la explicación original sigue siendo la fuente de verdad; Riso la complementa.
+export const PORQUE = /^\s*¿?\s*(y\s+)?por\s*qu[eé](?![a-záéíóúñ]).{0,40}$/i
+export function INSTRUCCION_PORQUE(ctx) {
+  return 'El alumno pregunta por qué. Ya leyó la explicación de la corrección: NO la repitas ni la parafrasees. Aporta lo que le falta, en 2 o 3 frases: ' +
+    'la pista concreta de ESTA frase que decide la respuesta' + (ctx.acerto ? ' y por qué funciona aquí' : ', por qué «' + ctx.respuestaAlumno + '» no funciona aquí y, solo si es cierto, en qué otra frase sí funcionaría') +
+    '. Si das ejemplo, que sea nuevo.'
+}
 export function construirMensajes(pregunta, historial, ctx) {
   const partes = []
   if (ctx && ctx.tipo === 'error') partes.push(`Ejercicio (${ctx.tema}). Consigna: encontrar la palabra incorrecta en «${ctx.enunciado}». El alumno tocó «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La palabra incorrecta es «${ctx.respuestaCorrecta}» y la frase correcta es «${ctx.fraseCorrecta}».`)
   else if (ctx) partes.push(`Ejercicio (${ctx.tema}): «${ctx.enunciado}». El alumno respondió «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La respuesta correcta es «${ctx.respuestaCorrecta}».`)
   if (ctx && ctx.explicacion) partes.push(`Explicación que el alumno ya vio en la corrección (no la repitas): «${String(ctx.explicacion).slice(0, 300)}».`)
+  if (ctx && PORQUE.test(pregunta)) partes.push(INSTRUCCION_PORQUE(ctx))
   if (historial.length) partes.push('Conversación reciente:\n' + historial.map(m => (m.rol === 'alumno' ? 'Alumno: ' : 'Riso: ') + m.texto).join('\n'))
   partes.push('Pregunta del alumno: ' + pregunta)
   return [{ role: 'system', content: RISO_REGLAS }, { role: 'user', content: partes.join('\n\n') }]
@@ -139,6 +149,26 @@ export function corregirIdentidad(texto) {
     return AUTOATRIBUCION.reduce((t, [re, fn]) => t.replace(re, fn), tramo)
   }).join('')
 }
+// Trucos falsos por la forma de la palabra («como tourists termina en s, es plural»): la frase se quita. Solo cuando la
+// terminación se usa como PISTA o causa; describir cómo se forma algo («con he/she/it el verbo termina en -s») sí es cierto.
+const norm0 = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+const TERMINA = /\b(termin|acab)\w* en (la )?(letra )?["'\u2018\u2019\u201c\u201d«]?-?s["'\u2018\u2019\u201c\u201d»]?(?![a-z])|\b(tiene|lleva) (una )?-?s al final\b|\bpor (la|esa) -?s( final)?\b/
+const PISTA = /\b(senal|indica|pista|sabes que|significa que|por eso|asi que|es plural|esta en plural|te dice)\b|\b(como|porque|ya que|pues)\s+(\S+\s+){0,4}(termin|acab|tiene|lleva)/
+export function esTrucoForma(frase) { const n = norm0(frase); return TERMINA.test(n) && PISTA.test(n) }
+export function quitarTrucosForma(texto) {
+  const frases = String(texto).match(/[^.!?]+[.!?]*/g) || [texto]
+  return frases.filter(f => !esTrucoForma(f)).join('').replace(/\s+/g, ' ').trim()
+}
+// ¿Repite (o casi copia) la explicación que el alumno ya vio? Misma medida que usa Leo AI (repeatsExplanation en index.ts).
+const palabrasContenido = (t) => new Set(norm0(t).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(w => w.length >= 4))
+export function repiteExplicacion(texto, base) {
+  if (!texto || !base) return false
+  const A = palabrasContenido(texto), B = palabrasContenido(base)
+  if (A.size >= 6 && B.size) { let hit = 0; A.forEach(w => { if (B.has(w)) hit++ }); if (hit / A.size >= 0.7) return true }
+  const ta = norm0(texto).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean), tb = ' ' + norm0(base).replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean).join(' ') + ' '
+  for (let i = 0; i + 7 <= ta.length; i++) if (tb.includes(' ' + ta.slice(i, i + 7).join(' ') + ' ')) return true
+  return false
+}
 export function quitarRecursos(texto) {
   const frases = texto.match(/[^.!?]+[.!?]*/g) || [texto]
   const quedan = frases.filter(f => !(RECURSO.test(f) && RECOMIENDA.test(f)))
@@ -148,7 +178,7 @@ export function validarSalida(raw) {
   let j = raw
   if (typeof raw === 'string') { try { j = JSON.parse(raw) } catch (_) { return null } }
   if (!j || typeof j.texto !== 'string') return null
-  const texto = corregirIdentidad(quitarRecursos(R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim()))).slice(0, CHAT.maxRespuesta)
+  const texto = corregirIdentidad(quitarTrucosForma(quitarRecursos(R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim())))).slice(0, CHAT.maxRespuesta)
   if (texto.length < 8) return null
   const ej = (s) => typeof s === 'string' ? R._int.limpiarPII(s.trim()).slice(0, 200) : ''
   return { texto, ejemplo_en: ej(j.ejemplo_en), ejemplo_es: ej(j.ejemplo_es) }
@@ -169,7 +199,7 @@ export async function cargarIndice(url, fetchImpl) {
 }
 
 // Llamada a Cloudflare Workers AI (mismo proveedor y modelo que Leo AI).
-export async function llamarCloudflare(mensajes, { fetchImpl, env }) {
+export async function llamarCloudflare(mensajes, { fetchImpl, env, temperatura }) {
   const account = env('CLOUDFLARE_ACCOUNT_ID'), token = env('CLOUDFLARE_API_TOKEN')
   if (!account || !token) return { ok: false, reason: 'not_configured' }
   const model = env('CLOUDFLARE_AI_MODEL') || '@cf/google/gemma-4-26b-a4b-it'
@@ -178,7 +208,7 @@ export async function llamarCloudflare(mensajes, { fetchImpl, env }) {
     const res = await fetchImpl(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/ai/run/${model}`, {
       method: 'POST', signal: ctrl.signal,
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ messages: mensajes, max_completion_tokens: CHAT.maxSalida, temperature: 0.2,
+      body: JSON.stringify({ messages: mensajes, max_completion_tokens: CHAT.maxSalida, temperature: typeof temperatura === 'number' ? temperatura : 0.2,
         chat_template_kwargs: { enable_thinking: false }, response_format: { type: 'json_schema', json_schema: { name: 'riso_chat', schema: SCHEMA } } })
     })
     const data = await res.json().catch(() => null)
@@ -277,15 +307,28 @@ export async function procesarChat(userId, body, deps) {
   if (res.status === 'in_progress') return { ok: false, reason: 'in_progress' }
   if (res.status !== 'ok') { log({ ev: 'riso_chat', limite: res.status }); return { ok: false, reason: MOTIVOS[res.status] || 'busy', final: true } }
 
-  const r = await deps.llamarModelo(mensajes)
-  const usage = r && r.usage ? r.usage : { input: 0, output: 0 }
+  let r = await deps.llamarModelo(mensajes)
+  let usage = r && r.usage ? { input: r.usage.input || 0, output: r.usage.output || 0 } : { input: 0, output: 0 }
+  // Si la respuesta repite la explicación que el alumno ya vio, se pide UNA vez otro enfoque (como hace Leo AI). Máximo 2
+  // llamadas por pregunta; se cobran los tokens de las dos.
+  let reintentos = 0
+  if (rc.ctx && rc.ctx.explicacion && r && r.ok) {
+    const s1 = validarSalida(r.raw)
+    if (s1 && repiteExplicacion(s1.texto, rc.ctx.explicacion)) {
+      reintentos = 1
+      const m2 = mensajes.slice(0, 1).concat([{ role: 'user', content: mensajes[1].content + '\n\nTu respuesta anterior repetía la explicación que el alumno ya vio. Cambia de enfoque: otra idea, otro ejemplo.' }])
+      const r2 = await deps.llamarModelo(m2, { temperatura: 0.6 })
+      if (r2 && r2.usage) usage = { input: usage.input + (r2.usage.input || 0), output: usage.output + (r2.usage.output || 0) }
+      if (r2 && r2.ok && validarSalida(r2.raw)) r = Object.assign({}, r2, { usage })
+    }
+  }
   // Si se cortó por tiempo o por red, Cloudflare pudo haber procesado igual: se registra la estimación completa
   // (conservador) para que una solicitud que el proveedor siga procesando nunca deje gastar de más.
   const cortada = r && !r.ok && (r.reason === 'timeout' || r.reason === 'network')
   const n = cortada ? est : neuronas(usage.input, usage.output)
   const salida = r && r.ok ? validarSalida(r.raw) : null
   await deps.rpc('riso_chat_finish', { p_user: userId, p_request: e.requestId, p_ok: !!salida, p_input: usage.input, p_output: usage.output, p_neurons: n, p_answer: salida })
-  log({ ev: 'riso_chat', capa: 5, ok: !!salida, motivo: salida ? null : (r && r.reason) || 'bad_output', in: usage.input, out: usage.output, neuronas: Math.round(n * 100) / 100, est, ms: deps.ahora() - t0, ctx: !!rc.ctx, hist: e.historial.length })
+  log({ ev: 'riso_chat', capa: 5, ok: !!salida, motivo: salida ? null : (r && r.reason) || 'bad_output', in: usage.input, out: usage.output, neuronas: Math.round(n * 100) / 100, est, ms: deps.ahora() - t0, ctx: !!rc.ctx, hist: e.historial.length, reintentos })
   // Métrica agregada (fase 1): capa IA, intención, tema corto, tiempo, tokens y neuronas reales. Sin texto ni alumno.
   // Si la migración de métricas aún no está aplicada, el error se ignora y la respuesta sigue igual.
   const metrica = { c: 'ia', i: rc.ctx ? 'ejercicio' : R._int.intencion(R._int.norm(e.pregunta), e.historial.length > 0).tipo, t: temaMetrica(rc.ctx) }

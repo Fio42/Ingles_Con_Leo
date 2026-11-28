@@ -14,7 +14,7 @@
 (function (root) {
   'use strict';
   if (root.RisoAcademia) return;
-  var d = document, V = '20261128c';
+  var d = document, V = '20261128d';
   var BASE = (function () { try { var s = d.currentScript && d.currentScript.src; return s ? s.replace(/riso-academia\.js(\?.*)?$/, '') : 'riso/'; } catch (e) { return 'riso/'; } })();
   var IMG = { neutro: BASE + 'img/riso-neutro.webp', guino: BASE + 'img/riso-guino-cuerpo.webp' };
   var CLAVE = 'riso_estado_v1', VIDA_ON = 30 * 60e3, VIDA_OFF = 6 * 3600e3;
@@ -63,8 +63,20 @@
       itemId: it.id || '', tipo: ctx.kind, tipoItem: it.type || '', tema: texto(pl.topic || '').replace(/^Palabra: /, '').slice(0, 120),
       enunciado: texto(pl.question).slice(0, 200), respuestaAlumno: texto(error ? ctx.userAnswer : pl.studentAnswer).slice(0, 120),
       respuestaCorrecta: texto(error ? (it.wrongWord ? 'la palabra incorrecta es «' + it.wrongWord + '»; frase correcta: ' + (it.right || '') : pl.correctAnswer) : pl.correctAnswer).slice(0, 200),
-      acerto: ctx.isCorrect === true, explicacion: texto(pl.baseExplanation).slice(0, 400), palabraIdx: typeof ctx.pickedIdx === 'number' ? ctx.pickedIdx : null
+      acerto: ctx.isCorrect === true, explicacion: texto(pl.baseExplanation).slice(0, 400), palabraIdx: typeof ctx.pickedIdx === 'number' ? ctx.pickedIdx : null,
+      clave: claveDe(error, it, texto(pl.correctAnswer), texto(error ? ctx.userAnswer : pl.studentAnswer))
     };
+  }
+  // Lo que el alumno querrá pronunciar: la palabra correcta del ejercicio (en «encuentra el error», la corregida; si la
+  // opción correcta es una frase, las palabras que la distinguen de la que eligió). Sale de los datos, no se inventa.
+  function claveDe(error, it, correcta, elegida) {
+    var limpia = function (t) { return String(t || '').replace(/[.,!?;:"“”«»()]/g, ' ').replace(/\s+/g, ' ').trim(); };
+    if (error) return limpia(it.rightWord || '');
+    var c = limpia(correcta), e = limpia(elegida);
+    if (!c) return '';
+    if (c.split(' ').length <= 3) return c;
+    var ee = e.toLowerCase().split(' '), dif = c.split(' ').filter(function (w) { return ee.indexOf(w.toLowerCase()) < 0; });
+    return dif.length && dif.length <= 3 ? dif.join(' ') : '';
   }
 
   // Intento del alumno, para que el servidor acepte el contexto (solo práctica de gramática, la que está en su índice).
@@ -84,7 +96,7 @@
     var box = el('div', 'leo-ai rsa-preg');
     var b = el('button', 'leo-ai-btn rsa-preg__btn'); b.type = 'button';
     b.appendChild(avatar('rsa-preg__av', 'neutro')); b.appendChild(el('span', null, 'Pregúntale a Riso'));
-    b.addEventListener('click', function () { abrir({ ejercicio: c, payload: payload }); });
+    b.addEventListener('click', function () { abrir({ ejercicio: c, payload: payload, ctx: ctx }); });
     box.appendChild(b); host.appendChild(box);
     return box;
   }
@@ -138,7 +150,7 @@
     d.body.appendChild(raiz);
     raiz.querySelector('.rsa__cab-av').appendChild(avatar('rsa__av', 'neutro'));
     P = { raiz: raiz, msgs: raiz.querySelector('.rsa__msgs'), chips: raiz.querySelector('.rsa__chips'), q: raiz.querySelector('textarea'), env: raiz.querySelector('.rsa__enviar'),
-      ctx: raiz.querySelector('.rsa__ctx'), ctxTxt: raiz.querySelector('.rsa__ctx-t'), tutor: null, ejercicio: null, payload: null, explicados: {}, ocupado: false, lote: [], ultimo: null };
+      ctx: raiz.querySelector('.rsa__ctx'), ctxTxt: raiz.querySelector('.rsa__ctx-t'), tutor: null, ejercicio: null, payload: null, ctxApp: null, explicados: {}, pasosVistos: {}, ocupado: false, lote: [], ultimo: null };
     raiz.addEventListener('click', function (e) { if (e.target && e.target.hasAttribute('data-cerrar')) cerrar(); });
     d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !raiz.hidden) cerrar(); });
     raiz.querySelector('.rsa__ctx-q').addEventListener('click', function () { ponerEjercicio(null, null); });
@@ -158,6 +170,13 @@
     if (r.ref) { var a = el('a', 'rsa-ref', 'Lee la guía' + (r.refTitulo ? ': ' + r.refTitulo.split('(')[0].split(':')[0].trim() : '')); a.href = r.ref; m.appendChild(a); }
     if (r.enlace) { var s = el('a', 'rsa-ref', 'Ir a Soporte'); s.href = r.enlace; m.appendChild(s); }
     if (r.aviso) m.appendChild(el('div', 'rsa-aviso', r.aviso));
+    if (r.pasos) {
+      // Los pasos siguientes de siempre (leoAiNextSteps en app.js): mismos textos y destinos; Riso solo los presenta.
+      m.appendChild(el('div', 'rsa-pasos__intro', r.pasos.intro));
+      r.pasos.links.forEach(function (l) { var a = el('a', 'rsa-ref rsa-paso', l.text); a.href = l.href; if (l.key) a.setAttribute('data-ai-next', l.key); m.appendChild(a); });
+      if (r.pasos.note) m.appendChild(el('div', 'rsa-aviso', r.pasos.note));
+      m.addEventListener('click', function (ev) { var a = ev.target && ev.target.closest && ev.target.closest('[data-ai-next]'); if (a) { try { trackLeoEvent('leo_ai_next_clicked', { tipo: a.getAttribute('data-ai-next') }); } catch (e) {} } });
+    }
     var mt = r.metrica;
     if (mt && /^(codigo|biblioteca|faq|cache|ia)$/.test(mt.c)) {
       var v = el('button', 'rsa-voto', 'No me ayudó'); v.type = 'button';
@@ -174,8 +193,8 @@
     P.chips.innerHTML = '';
     lista.forEach(function (t) { var b = el('button', 'rsa-chip', t); b.type = 'button'; b.onclick = function () { enviar(t); }; P.chips.appendChild(b); });
   }
-  function ponerEjercicio(c, payload) {
-    P.ejercicio = c; P.payload = payload;
+  function ponerEjercicio(c, payload, ctxApp) {
+    P.ejercicio = c; P.payload = payload; P.ctxApp = ctxApp || null;
     P.ctx.hidden = !c;
     if (c) P.ctxTxt.textContent = 'Hablando del ejercicio: «' + c.enunciado + '»' + (c.respuestaAlumno ? ' · tu respuesta: «' + c.respuestaAlumno + '»' : '');
     chips();
@@ -185,6 +204,9 @@
   var PORQUE = /^\s*¿?\s*(y\s+)?por\s*qu[eé](?![a-záéíóúñ]).{0,40}$/i; // sin \b: en JavaScript la «é» no cuenta como letra
   function explicarPorQue(q) {
     var c = P.ejercicio, clave = c && (c.itemId + '|' + c.respuestaAlumno);
+    // Ejercicio que el servidor puede verificar (práctica de gramática): Riso responde con la explicación ya vista como
+    // referencia y la orden de complementarla. Los demás (vocabulario, listening, lectura) usan Leo AI, que recibe el texto.
+    if (c && c.respuestaServidor) return null;
     if (!c || !P.payload || P.explicados[clave] || !PORQUE.test(q)) return null;
     P.explicados[clave] = 1;
     return Promise.resolve().then(function () { return LeoBackend.askLeoAI(P.payload); }).catch(function () { return { ok: false }; }).then(function (res) {
@@ -193,13 +215,45 @@
       return { capa: 5, tipo: 'explicacion', texto: a.explanation, ej: a.example_en ? [[a.example_en, a.example_es || '']] : [], aviso: 'Generada con IA. Puede tener errores.', metrica: { c: 'ia', i: 'ejercicio', t: 'explicar' } };
     });
   }
-  // «¿Cómo se pronuncia?» en un ejercicio: de la respuesta correcta (si es una palabra o expresión corta).
+  function pasosSiguientes() {
+    var c = P.ejercicio, k = c && (c.itemId + '|' + c.respuestaAlumno);
+    if (!c || !P.ctxApp || P.pasosVistos[k]) return null;
+    try {
+      var ns = typeof root.leoAiNextSteps === 'function' ? root.leoAiNextSteps(P.ctxApp) : null;
+      if (ns && ns.links && ns.links.length) {
+        P.pasosVistos[k] = 1;
+        try { trackLeoEvent('leo_ai_next_shown', { tier: root.__leoMemberVerified === true ? 'member' : 'free', links: ns.links.length }); } catch (e) {}
+        return { intro: ns.intro, links: ns.links, note: ns.note || '' };
+      }
+      var rp = typeof root.leoAiRepeatPractice === 'function' ? root.leoAiRepeatPractice(P.ctxApp) : null;
+      if (rp) { P.pasosVistos[k] = 1; return { intro: '', links: [{ href: rp.href, text: rp.text }], note: '' }; }
+    } catch (e) {}
+    return null;
+  }
+
+  // «¿Cómo se pronuncia?» en un ejercicio: la palabra clave del ejercicio. Primero la pronunciación verificada del glosario
+  // (con su ficha y su audio); si la expresión no está, prueba sus palabras; si ninguna está, Riso la explica sin inventar audios.
+  function verificada(w) {
+    var R = root.RisoTutor && root.RisoTutor._int, K = root.RISO_CONOCIMIENTO;
+    if (!R || !K || !w) return false;
+    try { return !!R.herramientaGlosario({ tipo: 'pronunciacion', objeto: w }, R.norm(w), K); } catch (e) { return false; }
+  }
+  function palabraParaPronunciar(c) {
+    var w = c && c.clave;
+    if (!w) return '';
+    if (verificada(w)) return w;
+    var partes = w.split(' ').filter(function (x) { return x.length > 1; }).sort(function (a, b) { return b.length - a.length; });
+    for (var i = 0; i < partes.length; i++) if (verificada(partes[i])) return partes[i];
+    return w;
+  }
+  var MAS_FACIL = /^¿?\s*expl[ií]camelo m[aá]s f[aá]cil\s*\??$/i;
   function concretar(q) {
     var c = P.ejercicio;
     if (c && /^¿?\s*c[oó]mo se pronuncia\s*\??$/i.test(q.trim())) {
-      var w = (c.tipoItem === 'error' ? '' : c.respuestaCorrecta).replace(/[.!?]+$/, '');
-      if (w && w.split(' ').length <= 3) return { texto: '¿Cómo se pronuncia «' + w + '»?', sinContexto: true };
+      var w = palabraParaPronunciar(c);
+      if (w) return { texto: '¿Cómo se pronuncia «' + w + '»?', sinContexto: true };
     }
+    if (c && MAS_FACIL.test(q.trim())) return { texto: 'Explícamelo más fácil, con palabras sencillas pero sin perder exactitud.', sinContexto: false };
     // Traducir, conjugar, significado o pronunciación no dependen del ejercicio: primero las capas sin IA (herramientas,
     // glosario, fichas aprobadas). Solo si ninguna responde va a Gemma, y sin contexto, porque la pregunta se entiende sola.
     var R = root.RisoTutor && root.RisoTutor._int, tipo = R ? R.intencion(R.norm(q), false).tipo : '';
@@ -218,6 +272,7 @@
     return Promise.resolve(tarea).then(function (r) {
       clearTimeout(timer); pensando.remove();
       if (porque && r.capa === 5 && P.tutor.anotar) P.tutor.anotar(t, r.texto + (r.ej && r.ej[0] ? ' Ejemplo mostrado: ' + r.ej[0][0] : ''));
+      if (P.ejercicio && PORQUE.test(t) && r.capa === 5) { var ps = pasosSiguientes(); if (ps) r = Object.assign({}, r, { pasos: ps }); }
       msgRiso(r);
     }).catch(function () { clearTimeout(timer); pensando.remove(); msgRiso({ capa: 0, tipo: 'error', reintentar: true, texto: 'No pude responder ahora. Toca «Reintentar» en unos segundos.' }); })
       .then(function () { P.ocupado = false; ajustar(); });
@@ -240,7 +295,7 @@
       }
       if (opts.ejercicio) {
         var nuevo = !P.ejercicio || P.ejercicio.itemId !== opts.ejercicio.itemId || P.ejercicio.respuestaAlumno !== opts.ejercicio.respuestaAlumno;
-        ponerEjercicio(opts.ejercicio, opts.payload);
+        ponerEjercicio(opts.ejercicio, opts.payload, opts.ctx);
         if (nuevo) msgRiso({ capa: 1, texto: opts.ejercicio.acerto ? '¡Bien hecho! Ya viste la explicación del ejercicio. Si quieres, te doy otro ejemplo, un truco para recordarlo o lo que necesites.' : 'Ya viste la corrección. ¿Qué parte no te quedó clara? Puedo explicarte por qué, darte otro ejemplo o ayudarte con la pronunciación.' });
       } else if (!P.chips.childNodes.length) ponerEjercicio(null, null);
       setTimeout(function () { try { P.q.focus({ preventScroll: true }); } catch (e) {} }, 60);
@@ -267,11 +322,45 @@
     var meta = d.getElementById('v2Goal');
     if (meta && meta.parentNode === cont) cont.insertBefore(a, meta); else cont.appendChild(a);
   }
+  // ---------- 5. Riso presenta las recomendaciones automáticas de la plataforma ----------
+  // No hay otro motor ni IA: los diagnósticos, textos, enlaces y destinos son los que ya calcula app.js con los resultados
+  // reales del alumno (sessionInsight, «Para reforzar», «Hoy te conviene», patrones de error, el porqué de la sesión
+  // recomendada). Riso solo firma el bloque, una vez. Cero llamadas a Gemma, cero neuronas.
+  var RECOMENDACIONES = [
+    ['.session-summary .sess-insight', 'Lo que noté en tu sesión'],
+    ['.diag-today-card', 'Según tus resultados'],
+    ['.mistake-patterns', 'Lo que noté en tus errores']
+  ];
+  function firma(caption) {
+    var f = el('div', 'rsa-rec'); f.appendChild(avatar('rsa-rec__av', 'neutro')); f.appendChild(el('b', null, 'Riso'));
+    if (caption) f.appendChild(el('span', null, caption));
+    return f;
+  }
+  function firmarRecomendaciones() {
+    RECOMENDACIONES.forEach(function (r) {
+      d.querySelectorAll(r[0]).forEach(function (b) {
+        if (b.closest('.rsa') || b.querySelector(':scope > .rsa-rec') || b.parentElement.closest('.rsa-firmado')) return;
+        b.classList.add('rsa-firmado'); b.insertBefore(firma(r[1]), b.firstChild);
+      });
+    });
+    // «Lo que vemos en tus respuestas» (diagnóstico del progreso): la tarjeta que contiene la lista de hallazgos.
+    d.querySelectorAll('.diag-card > .diag-insights').forEach(function (l) {
+      var b = l.parentElement; if (b.closest('.rsa-firmado') || b.querySelector(':scope > .rsa-rec')) return;
+      b.classList.add('rsa-firmado'); b.insertBefore(firma('Lo que noté en tus respuestas'), b.firstChild);
+    });
+    // Botones de análisis creados antes de que Riso se activara («Analizar mi sesión con Leo AI»): mismo botón, con su nombre.
+    d.querySelectorAll('.leo-ai-btn span').forEach(function (t) { if (/ con Leo AI$/.test(t.textContent)) t.textContent = t.textContent.replace(/ con Leo AI$/, ' con Riso'); });
+    // El porqué de la recomendación principal (Inicio y Practicar): la misma línea, con Riso al lado.
+    d.querySelectorAll('.v2-next__why').forEach(function (w) {
+      if (w.querySelector('.rsa-why__av')) return;
+      w.classList.add('rsa-why'); w.insertBefore(avatar('rsa-why__av', 'neutro'), w.firstChild);
+    });
+  }
   function vigilar() {
     var pendiente = false;
-    new MutationObserver(function () { if (pendiente) return; pendiente = true; requestAnimationFrame(function () { pendiente = false; botonBarra(); tarjetaInicio(); }); })
+    new MutationObserver(function () { if (pendiente) return; pendiente = true; requestAnimationFrame(function () { pendiente = false; botonBarra(); tarjetaInicio(); firmarRecomendaciones(); }); })
       .observe(d.body, { childList: true, subtree: true });
-    botonBarra(); tarjetaInicio();
+    botonBarra(); tarjetaInicio(); firmarRecomendaciones();
   }
 
   function activar(st) {
@@ -282,6 +371,6 @@
     if (/[?&#]riso=1\b/.test(location.search + location.hash)) abrir();
   }
 
-  root.RisoAcademia = { botonEjercicio: botonEjercicio, decorar: decorar, abrir: abrir, cerrar: cerrar, _int: { contextoDe: contextoDe, prefijo: prefijo, PORQUE: PORQUE } };
+  root.RisoAcademia = { botonEjercicio: botonEjercicio, decorar: decorar, abrir: abrir, cerrar: cerrar, _int: { contextoDe: contextoDe, prefijo: prefijo, PORQUE: PORQUE, claveDe: claveDe, firmarRecomendaciones: firmarRecomendaciones } };
   consultarEstado().then(function (st) { if (st && st.enabled === true) activar(st); });
 })(typeof window !== 'undefined' ? window : this);

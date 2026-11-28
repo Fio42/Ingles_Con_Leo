@@ -743,7 +743,7 @@ Deno.serve(async (req: Request) => {
     if (body && body.mode === 'chat') {
       const r = await procesarChat(user.id, body, {
         rpc: (fn: string, args: Record<string, unknown>) => supabase.rpc(fn, args),
-        llamarModelo: (mensajes: unknown) => risoLlamarCloudflare(mensajes, { fetchImpl: fetch, env }),
+        llamarModelo: (mensajes: unknown, o?: { temperatura?: number }) => risoLlamarCloudflare(mensajes, { fetchImpl: fetch, env, temperatura: o && o.temperatura }),
         obtenerIndice: () => risoIndice(env('RISO_EJERCICIOS_URL') || 'https://inglesconleo.com/supabase/functions/leo-ai/riso-ejercicios.json', fetch), ahora: () => Date.now(), log: (o: unknown) => console.log(JSON.stringify(o)),
       })
       return json(r, r && !r.ok && ['bad_input', 'too_long', 'bad_context'].includes(r.reason) ? 400 : 200)
