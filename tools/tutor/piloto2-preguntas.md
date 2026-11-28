@@ -1,7 +1,9 @@
 # Riso · batería reducida del piloto 2 (20 preguntas)
 
 Centrada en los fallos y las respuestas parciales del primer piloto, más variantes nuevas. Se hace con la cuenta de pruebas de Leo, en este orden (las de seguimiento van justo después de su pregunta).
-El resultado esperado indica qué capa debería responder: **sin IA** (herramienta, glosario o FAQ revisada), **IA**, **filtro**.
+**Importante:** las fichas nuevas y los cambios de texto están pendientes de la aprobación de Leo y no responden a alumnos. Si la batería se corre antes de aprobarlas, las preguntas 1, 4, 5, 7, 10, 11 y 12 las responde la IA (unas 13 respuestas con IA en total, unas 130 neuronas). Después de aprobarlas, unas 7 respuestas con IA (unas 70 neuronas).
+
+El resultado esperado (con las fichas aprobadas) indica qué capa debería responder: **sin IA** (herramienta, glosario o FAQ revisada), **IA**, **filtro**.
 
 | # | Pregunta | Viene de | Esperado |
 |---|---|---|---|
@@ -26,4 +28,4 @@ El resultado esperado indica qué capa debería responder: **sin IA** (herramien
 | 19 | (mismo ejercicio) ¿Hay alguna excepción? | parcial 50 | IA: con matiz, sin «nunca» absoluto |
 | 20 | Me cobraron dos veces la membresía | control | filtro: Soporte |
 
-Costo estimado con IA: 7 respuestas × unas 8 neuronas = unas 60 neuronas (0,6 % del día gratis).
+Costo estimado: unas 9,8 neuronas por respuesta con IA (reglas de exactitud e identidad incluidas). Entre 70 y 130 neuronas según estén aprobadas o no las fichas: entre 0,7 % y 1,3 % del día gratis.

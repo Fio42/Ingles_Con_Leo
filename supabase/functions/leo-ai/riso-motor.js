@@ -1,4 +1,4 @@
-/* Riso · motor del tutor (cliente). Prototipo local: no llama a ningún servicio real.
+/* Riso, el asistente de Inglés con Leo · motor (cliente). Prototipo local: no llama a ningún servicio real.
    Orden de resolución (la primera que responde gana):
      0 intención   : traducción, significado, pronunciación, conjugación, explicación, corrección, seguimiento u otra.
      1 filtro      : vacío, largo, datos personales, temas sensibles, manipulación, insultos, fuera de alcance,
@@ -15,7 +15,8 @@
   'use strict';
   var CONFIG = {
     nombre: 'Riso',
-    presentacion: 'Tu tutor de inglés con inteligencia artificial',
+    presentacion: 'El asistente inteligente de Inglés con Leo',
+    saludo: '¡Hola! Soy Riso, el asistente de la academia Inglés con Leo 👋 Estoy aquí para ayudarte con tus dudas de inglés, explicarte tus errores y acompañarte mientras practicas. ¿Qué necesitas?', // identidad permanente: Profe Leo es el profesor y creador del método; Riso, la mascota y el asistente inteligente de la academia
     maxCaracteres: 400,
     maxHistorial: 6,                 // mensajes (no turnos) enviables al modelo
     maxCampoContexto: 200,
@@ -87,7 +88,7 @@
   var SENSIBLE = /\b(suicid|matarme|quitarme la vida|hacerme dano|autolesion|me quiero morir)/;
   // Solo consultas administrativas reales (primera persona o acción sobre la cuenta), nunca traducciones.
   var SOPORTE = /\b(me cobraron|me cobran|cobro doble|doble cobro|reembolso|devolucion de mi|devuelvan mi|cancelar mi|cancelar la (membresia|suscripcion)|no puedo (entrar|iniciar sesion|pagar|acceder)|olvide mi contrasena|cambiar mi (correo|contrasena)|mi cuenta|mi pago|mi membresia|mi suscripcion|mi factura|no me llego|renovacion|como pago la membresia|cuanto cuesta la membresia|precio de la membresia)\b/;
-  var PROFE = /\b(profe leo|eres leo|eres humano|eres una persona|quien eres|que eres|eres un robot|eres una ia|eres real)\b/;
+  var PROFE = /\b(profe leo|eres leo|eres humano|eres una persona|quien eres|que eres|eres un robot|eres una ia|eres real|eres (mi |un |el )?(profesor|profe|tutor|maestro))\b/;
   var SALUDO = /^(hola|hello|hi|hey|buenas|buenos dias|buenas tardes|buenas noches|que tal)( riso)?$/;
   var GRACIAS = /^(gracias|muchas gracias|thanks|thank you|ok gracias|genial gracias|listo)( riso)?$/;
   var FUERA = [
@@ -105,12 +106,12 @@
     if (SENSIBLE.test(n)) return resp(1, 'Siento mucho que estés pasando por esto. No estás solo. Por favor habla ahora con alguien de confianza o con una línea de ayuda de tu país. Si estás en peligro inmediato, llama al número de emergencias local.', { tipo: 'sensible', bloqueado: true, privado: true });
     if (INYECCION.test(n)) return resp(1, 'Solo puedo ayudarte con inglés. ¿Qué duda tienes?', { tipo: 'inyeccion', bloqueado: true, privado: true });
     if (INSULTOS.test(n)) return resp(1, 'Estoy aquí para ayudarte con tu inglés. Si algo te frustró, cuéntame qué ejercicio fue y lo vemos juntos.', { tipo: 'abuso', privado: true });
-    if (SALUDO.test(n)) return resp(1, '¡Hola! Soy ' + CONFIG.nombre + ', ' + CONFIG.presentacion.charAt(0).toLowerCase() + CONFIG.presentacion.slice(1) + '. Pregúntame una palabra, una regla o cómo se dice algo.', { tipo: 'saludo' });
+    if (SALUDO.test(n)) return resp(1, CONFIG.saludo, { tipo: 'saludo' }); // natural y sencillo: no explica quién es Profe Leo si nadie lo pregunta
     if (GRACIAS.test(n)) return resp(1, '¡Con gusto! Sigue practicando, vas muy bien.', { tipo: 'gracias' });
     var esLengua = it.tipo === 'traduccion' || it.tipo === 'significado' || it.tipo === 'pronunciacion' || it.tipo === 'conjugacion' || it.tipo === 'correccion';
     if (!esLengua && FUERA.some(function (re) { return re.test(n); })) return resp(1, 'Solo puedo ayudarte con inglés. Si quieres, te ayudo a decir eso en inglés: escríbeme «¿Cómo se dice… en inglés?» con la palabra o la frase que necesites.', { tipo: 'fuera_de_alcance' });
     if (!esLengua && SOPORTE.test(n)) return resp(1, 'Eso lo resuelve el equipo de Soporte, no yo. Escríbenos desde la página de contacto y te ayudamos con tu cuenta o tu pago.', { tipo: 'soporte', enlace: 'index.html#contacto' });
-    if (!esLengua && PROFE.test(n)) return resp(1, 'Soy ' + CONFIG.nombre + ', ' + CONFIG.presentacion.charAt(0).toLowerCase() + CONFIG.presentacion.slice(1) + '. No soy Profe Leo: él crea las lecciones y yo te ayudo con tus dudas mientras practicas. Puedo equivocarme, así que revisa lo importante con las guías.', { tipo: 'identidad' });
+    if (!esLengua && PROFE.test(n)) return resp(1, 'Soy ' + CONFIG.nombre + ', la mascota y el asistente inteligente de Inglés con Leo. Profe Leo es el profesor y el creador del método; yo atiendo tus dudas, te doy ejemplos y te acompaño mientras practicas. Uso inteligencia artificial, así que a veces me equivoco: lo importante, revísalo también en las guías.', { tipo: 'identidad' });
     return null;
   }
 
@@ -427,6 +428,15 @@
     return (mejorS >= CONFIG.umbralGuia && mejorN >= 2) || mejorN >= 3 ? { u: mejor.u, t: mejor.t, puntaje: +mejorS.toFixed(2) } : null;
   }
 
+  // Los cupos se renuevan a las 00:00 UTC (el mismo día que usan la base y Cloudflare). Se muestra en la hora del alumno.
+  function renovacion(ms) {
+    try {
+      var d = new Date(ms), sig = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
+      var hora = new Date(sig).toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit' });
+      var mismoDia = new Date(sig).toDateString() === d.toDateString();
+      return 'Se renueva ' + (mismoDia ? 'hoy' : 'mañana') + ' a las ' + hora + ' (tu hora).';
+    } catch (e) { return 'Se renueva cada día a las 00:00 UTC.'; }
+  }
   function categoriaFiltro(tipo) {
     if (tipo === 'saludo' || tipo === 'gracias' || tipo === 'identidad') return 'conversacion';
     if (tipo === 'vacio' || tipo === 'largo') return 'aviso';
@@ -440,10 +450,17 @@
     return 'aviso';
   }
 
+  // Fichas pendientes de la aprobación de Leo: solo con opts.fichasPendientes (pruebas y vista previa). Nunca por defecto.
+  function conFichas(K, pendientes) {
+    if (!pendientes || !K || !K.faqPendientes || !K.faqPendientes.length) return K;
+    var ids = {}; K.faqPendientes.forEach(function (f) { ids[f.id] = 1; });
+    return Object.assign({}, K, { faq: K.faq.filter(function (f) { return !ids[f.id]; }).concat(K.faqPendientes) });
+  }
+
   // ---------- motor ----------
   function crear(opts) {
     opts = opts || {};
-    var K = opts.conocimiento || root.RISO_CONOCIMIENTO;
+    var K = conFichas(opts.conocimiento || root.RISO_CONOCIMIENTO, opts.fichasPendientes === true);
     var ahora = opts.ahora || function () { return Date.now(); };
     var plan = opts.plan || 'visitante';
     var presupuesto = opts.presupuesto || { disponible: function () { return true; } };
@@ -525,8 +542,8 @@
       if (estado.usadasHoy + estado.reservadas >= cuota) {
         estado.metricas.limite++;
         var txt = plan === 'visitante' ? 'Para preguntarme cosas nuevas necesitas una cuenta gratis. Mientras, puedo responder números, horas, fechas, verbos y palabras del glosario.'
-          : plan === 'gratis' ? 'Usaste tus ' + cuota + ' preguntas abiertas de hoy. Con la membresía tienes más. Las preguntas de números, verbos y glosario siguen disponibles.'
-          : 'Llegaste a tu límite de preguntas abiertas de hoy. Mañana se renueva. Las preguntas de números, verbos y glosario siguen disponibles.';
+          : plan === 'gratis' ? 'Usaste tus ' + cuota + ' respuestas con IA de hoy. Con la membresía tienes más. Las respuestas revisadas (números, verbos, glosario y dudas frecuentes) siguen disponibles.'
+          : 'Llegaste a tu límite de respuestas con IA de hoy. ' + renovacion(ahora()) + ' Las respuestas revisadas (números, verbos, glosario y dudas frecuentes) siguen disponibles.';
         return Promise.resolve(resp(0, txt, { tipo: 'cuota', plan: plan }));
       }
       var lim = limiteFrecuencia();
@@ -547,7 +564,7 @@
       }).catch(function (err) {
         estado.reservadas--; estado.enCurso = false; estado.metricas.errores++;
         var motivo = err && err.message;
-        var FINAL = { daily_limit: 'Llegaste a tu límite de preguntas abiertas de hoy. Mañana se renueva. Las preguntas de números, verbos y glosario siguen disponibles.',
+        var FINAL = { daily_limit: 'Llegaste a tu límite de respuestas con IA de hoy. ' + renovacion(ahora()) + ' Las respuestas revisadas (números, verbos, glosario y dudas frecuentes) siguen disponibles.',
           busy: 'Riso está descansando un rato. Vuelve a intentarlo más tarde; mientras, las guías del sitio tienen la respuesta a casi todo.',
           not_allowed: 'Riso todavía no está disponible para tu cuenta.', disabled: 'Riso todavía no está disponible.', unverified: 'Confirma tu correo para poder preguntarle a Riso.' };
         if (FINAL[motivo]) return resp(0, FINAL[motivo], { tipo: 'limite_servidor', motivo: motivo });
@@ -563,7 +580,7 @@
     };
   }
 
-  var api = { crear: crear, CONFIG: CONFIG, categoria: categoria, _int: { cubreTodo: cubreTodo, esCompuesta: esCompuesta, herramientaGlosario: herramientaGlosario, norm: norm, intencion: intencion, capaFiltro: capaFiltro, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
+  var api = { crear: crear, CONFIG: CONFIG, categoria: categoria, _int: { conFichas: conFichas, cubreTodo: cubreTodo, esCompuesta: esCompuesta, herramientaGlosario: herramientaGlosario, norm: norm, intencion: intencion, capaFiltro: capaFiltro, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
   root.RisoTutor = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

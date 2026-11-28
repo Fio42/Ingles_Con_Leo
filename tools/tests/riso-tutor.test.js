@@ -79,7 +79,7 @@ test('faltas de ortografía comunes siguen llegando a la FAQ', async () => {
 });
 test('FAQ: todas las guías referidas existen', () => {
   const fs = require('fs');
-  K.faq.forEach(q => assert.ok(fs.existsSync(path.join(ROOT, q.ref)), q.id + ' → ' + q.ref));
+  K.faq.concat(K.faqPendientes || []).forEach(q => assert.ok(fs.existsSync(path.join(ROOT, q.ref)), q.id + ' → ' + q.ref));
   K.faq.forEach(q => assert.ok(!/—/.test(q.r), 'raya larga en ' + q.id));
 });
 test('frase concreta y larga del alumno NO recibe la FAQ genérica', async () => {
@@ -94,7 +94,19 @@ const BLOQ = [['mi correo es ana@gmail.com, cómo se dice correo', 'dato_persona
   ['me quiero morir', 'sensible']];
 BLOQ.forEach(([q, tipo]) => test('bloquea (' + tipo + '): ' + q, async () => { const tu = tutor(); const r = await tu.preguntar(q); assert.strictEqual(r.tipo, tipo); assert.strictEqual(tu.llamadas.length, 0, 'no debe llamar al modelo'); }));
 test('cuenta y pagos van a Soporte, no a la IA', async () => { const tu = tutor(); const r = await tu.preguntar('me cobraron dos veces la membresía'); assert.strictEqual(r.tipo, 'soporte'); assert.strictEqual(tu.llamadas.length, 0); });
-test('Riso no se hace pasar por Profe Leo', async () => { const r = await capa('eres profe leo?'); assert.ok(/No soy Profe Leo/.test(r.texto)); });
+test('Riso no se hace pasar por Profe Leo: si le preguntan, explica que Leo es el profesor', async () => { const r = await capa('eres profe leo?'); assert.ok(/Profe Leo es el profesor y el creador del método/.test(r.texto) && /asistente inteligente de Inglés con Leo/.test(r.texto), r.texto); });
+test('identidad: el saludo es natural y no menciona a Profe Leo', async () => { const r = await capa('hola'); assert.strictEqual(r.texto, '¡Hola! Soy Riso, el asistente de la academia Inglés con Leo 👋 Estoy aquí para ayudarte con tus dudas de inglés, explicarte tus errores y acompañarte mientras practicas. ¿Qué necesitas?'); assert.ok(!/Leo es|Profe Leo/.test(r.texto)); });
+test('identidad: Riso nunca se presenta como profesor, tutor ni maestro', async () => {
+  for (const q of ['hola', '¿eres mi profesor?', '¿eres un tutor?', '¿quién eres?']) {
+    const r = await capa(q); assert.ok(/asistente (inteligente )?de (la academia )?Inglés con Leo/.test(r.texto), q + ' → ' + r.texto);
+    assert.ok(!/\b(soy|como) (tu|un|el) (tutor|profesor|maestro)\b/i.test(r.texto), q + ' → ' + r.texto);
+  }
+  const fs = require('fs');
+  for (const f of ['riso.html', 'riso/tutor/riso-tutor.js', 'tools/v2-preview/riso-integracion/propuesta.js']) { // las reglas del servidor se prueban aparte
+    const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert.ok(!/tu tutor|tutor de inglés|tutor con IA|profesor personal|nuevo maestro|Riso es quien te enseña/i.test(t), 'frase prohibida en ' + f);
+  }
+});
 test('insulto: respuesta amable, sin modelo', async () => { const tu = tutor(); const r = await tu.preguntar('eres un idiota'); assert.strictEqual(r.tipo, 'abuso'); assert.strictEqual(tu.llamadas.length, 0); });
 test('mensaje vacío y demasiado largo', async () => { assert.strictEqual((await capa('   ')).tipo, 'vacio'); assert.strictEqual((await capa('a'.repeat(401))).tipo, 'largo'); });
 test('saludo y gracias', async () => { assert.strictEqual((await capa('Hola Riso')).tipo, 'saludo'); assert.strictEqual((await capa('muchas gracias')).tipo, 'gracias'); });
@@ -168,6 +180,18 @@ test('la base de conocimiento no incluye contenido privado de cursos', () => {
   assert.ok(K.guias.every(g => /^articulo-.*\.html$/.test(g.u)));
 });
 
+test('sin cuota gratis de IA: las respuestas revisadas siguen funcionando y la IA avisa con claridad', async () => {
+  const t = tutor({ generar: () => Promise.reject(new Error('busy')) });
+  const a = await t.preguntar('¿Cuándo uso do y does?'); assert.strictEqual(a.capa, 3, a.texto);
+  const b = await t.preguntar('¿Cómo se dice 7:45?'); assert.strictEqual(b.capa, 2, b.texto);
+  const c = await t.preguntar('¿Cómo se dice «sobremesa» en inglés?'); assert.strictEqual(c.tipo, 'limite_servidor'); assert.ok(/descansando/.test(c.texto), c.texto);
+  const d = await t.preguntar('¿Cómo se dice «extraño a mi familia»?'); assert.strictEqual(d.tipo, 'limite_servidor');
+  assert.strictEqual(t.metricas().educativaSinIA, 2);
+});
+test('límite diario: el aviso dice a qué hora se renueva (00:00 UTC en la hora del alumno)', async () => {
+  const t = tutor({ generar: () => Promise.reject(new Error('daily_limit')) });
+  const r = await t.preguntar('¿Cómo se dice «sobremesa» en inglés?'); assert.ok(/Se renueva (hoy|mañana) a las .+ \(tu hora\)\./.test(r.texto), r.texto); assert.ok(/respuestas con IA/.test(r.texto));
+});
 require('./riso-tutor-v2.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 require('./riso-tutor-piloto1.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 Promise.all(pend).then(() => { console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0); });

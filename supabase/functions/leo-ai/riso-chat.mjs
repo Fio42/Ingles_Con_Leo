@@ -15,12 +15,13 @@ export const CHAT = { maxPregunta: 400, maxHistorial: 6, maxTextoHistorial: 700,
 const CF_NEURONS_PER_M = { input: 9091, output: 27273 }
 
 export const RISO_REGLAS = [
-  'Eres Riso, el tutor de inglés con inteligencia artificial de la academia Inglés con Leo. Hablas con estudiantes hispanohablantes.',
+  'Eres Riso, la mascota y el asistente inteligente de Inglés con Leo. Profe Leo es el profesor, el creador del método y la figura principal de la academia; tú atiendes las consultas de los estudiantes hispanohablantes mientras practican.',
+  'Tienes personalidad propia: eres simpático, cercano y animado, y puedes hacer alguna broma ligera cuando venga al caso, sin desviar la explicación. No menciones a Profe Leo salvo que el alumno pregunte por él o el contexto lo haga relevante.',
   'Responde SIEMPRE en español, en 2 a 4 frases cortas, claras y correctas. Cuando ayude, da un ejemplo en inglés con su traducción.',
   'Solo ayudas con inglés: traducir, explicar gramática y vocabulario, pronunciación aproximada, corregir frases y preparar situaciones reales.',
   'Si te preguntan algo que no es de inglés, dilo con amabilidad y ofrece decirlo en inglés. No des consejos médicos, legales ni financieros.',
   'No hables de precios, pagos ni cuentas: eso lo resuelve Soporte. No pidas ni repitas datos personales.',
-  'Si no estás seguro, dilo y sugiere revisar la guía. Nunca inventes reglas. No digas que eres Profe Leo: eres una IA.',
+  'Si no estás seguro, dilo y sugiere revisar la guía. Nunca inventes reglas. Nunca te presentes como profesor, tutor ni maestro, ni digas que reemplazas a Profe Leo: eres su asistente y usas inteligencia artificial.',
   'Si hay un ejercicio, el dato ACERTÓ o FALLÓ es la verdad: si acertó, confírmalo y explica por qué; si falló, explica por qué la correcta es correcta y por qué la suya no, sin regañar.',
   'Exactitud antes que brevedad. No digas «siempre» ni «nunca» de una regla que tiene excepciones: usa «normalmente» o «en general». Will no expresa certeza por sí mismo. El presente perfecto también va con periodos no terminados (today, this week).',
   'Pronunciación: si usas IPA, escríbela entre barras y di que es IPA; si das una aproximación con letras del español, di que es aproximada. No mezcles las dos. La th tiene un sonido sordo /θ/ (think) y uno sonoro /ð/ (this).',
@@ -115,6 +116,24 @@ export function estimarNeuronas(mensajes) {
 // agrega la plataforma con su enlace verificado.
 const RECURSO = /\b(escuch\w*|audio|video|v[ií]deo|app|aplicaci[oó]n|glosario|p[aá]gina|sitio web|enlace|link|youtube|podcast|diccionario)\b/i
 const RECOMIENDA = /\b(te recomiendo|recomiendo|te sugiero|puedes (escuchar|ver|consultar|revisar|buscar|visitar|usar)|consulta|visita|revisa|busca|escucha|mira)\b/i
+// Identidad: Profe Leo es el profesor; Riso, el asistente inteligente de la academia. Solo se corrige cuando RISO se
+// atribuye ese papel («soy tu tutor», «como tu profesor», «tu profesor Riso»). Las palabras profesor, maestro o tutor en
+// explicaciones, traducciones y ejemplos («Soy profesor» = I am a teacher) no se tocan, y lo que va entre comillas tampoco.
+const ROL = '(?:nuevo |nueva )?(?:profesor|profesora|tutor|tutora|maestro|maestra|profe)(?: de ingl[eé]s| personal| particular| virtual)?'
+const AUTOATRIBUCION = [
+  [new RegExp('\\b(soy|seré|sere) (?:tu|el|la) ' + ROL + '\\b', 'gi'), (m, v) => v + ' el asistente inteligente de Inglés con Leo'],
+  // Con «un/una» solo si el papel es claro (soy un profesor de inglés / soy un tutor.): «soy un maestro de los phrasal verbs» es una broma.
+  [new RegExp('\\b(soy|seré|sere) (?:un|una) (?:profesor|profesora|tutor|tutora|maestro|maestra|profe)(?: de ingl[eé]s| personal| particular| virtual|(?=[.,;:!?]|$))', 'gi'), (m, v) => v + ' el asistente inteligente de Inglés con Leo'],
+  [new RegExp('\\b(como|siendo) tu ' + ROL + '\\b', 'gi'), (m, v) => v + ' asistente de Inglés con Leo'],
+  [new RegExp('\\btu ' + ROL + ' Riso\\b', 'gi'), () => 'Riso'],
+]
+export function corregirIdentidad(texto) {
+  // Se trabaja solo fuera de las comillas («...», "...", “...”, '...').
+  return String(texto).split(/(«[^»]*»|"[^"]*"|“[^”]*”|'[^']*')/).map((tramo, i) => {
+    if (i % 2) return tramo
+    return AUTOATRIBUCION.reduce((t, [re, fn]) => t.replace(re, fn), tramo)
+  }).join('')
+}
 export function quitarRecursos(texto) {
   const frases = texto.match(/[^.!?]+[.!?]*/g) || [texto]
   const quedan = frases.filter(f => !(RECURSO.test(f) && RECOMIENDA.test(f)))
@@ -124,7 +143,7 @@ export function validarSalida(raw) {
   let j = raw
   if (typeof raw === 'string') { try { j = JSON.parse(raw) } catch (_) { return null } }
   if (!j || typeof j.texto !== 'string') return null
-  const texto = quitarRecursos(R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim())).slice(0, CHAT.maxRespuesta)
+  const texto = corregirIdentidad(quitarRecursos(R._int.limpiarPII(j.texto.replace(/\s+/g, ' ').trim()))).slice(0, CHAT.maxRespuesta)
   if (texto.length < 8) return null
   const ej = (s) => typeof s === 'string' ? R._int.limpiarPII(s.trim()).slice(0, 200) : ''
   return { texto, ejemplo_en: ej(j.ejemplo_en), ejemplo_es: ej(j.ejemplo_es) }

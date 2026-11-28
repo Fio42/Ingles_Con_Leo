@@ -2,7 +2,10 @@
    Cada caso sale de un fallo o una respuesta parcial de la batería de 60 preguntas, más variantes nuevas.
    Se cargan desde riso-tutor.test.js (sin red, modelo simulado). */
 module.exports = function (test, H) {
-  const { T, K, tutor, capa, assert } = H;
+  const { T, K, assert } = H;
+  // Estas pruebas cubren las fichas nuevas y los cambios pendientes de la aprobación de Leo: se activan solo aquí.
+  const tutor = o => H.tutor(Object.assign({ fichasPendientes: true }, o || {}));
+  const capa = (q, o) => H.capa(q, Object.assign({ fichasPendientes: true }, o || {}));
 
   // ---- FAQ: coincidencias incorrectas ----
   test('piloto · 13: make vs do ya no responde there is (la palabra «hay» no basta)', async () => {
@@ -49,7 +52,7 @@ module.exports = function (test, H) {
     ['¿Por qué no se dice «more better»?', 'comparativos', /much better/], ['¿Cómo se pronuncia el sonido «th»?', 'sonido-th', /sordo.*sonoro/]];
   FICHAS.forEach(([q, id, re]) => test('piloto · ficha revisada ' + id, async () => { const r = await capa(q); assert.strictEqual(r.id, id, r.texto); assert.ok(re.test(r.texto), r.texto); assert.ok(!/—/.test(r.texto)); }));
   test('piloto · matices: will no expresa certeza, people «normalmente» plural, th sonoro y sordo', () => {
-    const f = id => K.faq.find(x => x.id === id).r;
+    const f = id => K.faqPendientes.find(x => x.id === id).r;
     assert.ok(!/certeza/.test(f('will-would')) || /sin indicar/.test(f('will-would')));
     assert.ok(/normalmente/.test(f('people')) && !/siempre/.test(f('people')));
     assert.ok(/sonoro/.test(f('sonido-th')) && /sordo/.test(f('sonido-th')) && !/vibrante/.test(f('sonido-th')));
@@ -83,5 +86,29 @@ module.exports = function (test, H) {
     const m = t.metricas();
     assert.strictEqual(m.educativaSinIA, 2); assert.strictEqual(m.filtro, 2); assert.strictEqual(m.conversacion, 1); assert.strictEqual(m.capa5, 1);
     assert.strictEqual(T.categoria({ capa: 1, tipo: 'soporte' }), 'filtro'); assert.strictEqual(T.categoria({ capa: 3 }), 'educativa_sin_ia');
+  });
+
+  // ---- aprobación de Leo: nada pendiente responde a alumnos por defecto ----
+  test('aprobación · por defecto ninguna ficha nueva ni cambio propuesto responde', async () => {
+    const nuevas = ['make-do', 'say-tell', 'be-used-to', 'presente-continuo-futuro', 'will-would', 'people', 'the', 'phrasal-verbs', 'sonido-th'];
+    nuevas.forEach(id => assert.ok(!K.faq.some(f => f.id === id), id + ' no debe estar activa'));
+    assert.strictEqual(K.faqPendientes.length, 13);
+    const pp = K.faq.find(f => f.id === 'presente-perfecto'); assert.ok(!/today/.test(pp.r), 'el texto activo del presente perfecto sigue siendo el aprobado');
+    for (const q of ['¿Qué diferencia hay entre «make» y «do»?', '¿Cuándo uso «the»?', '¿Qué es un phrasal verb?', '¿Cómo se pronuncia el sonido «th»?']) {
+      const r = await H.capa(q); assert.ok(!['make-do', 'the', 'phrasal-verbs', 'sonido-th'].includes(r.id), q + ' → ' + r.id);
+    }
+    const faq = require(H.path.join(H.ROOT, 'tools/tutor/faq.js')); assert.ok(Array.isArray(faq.APROBADAS_POR_LEO));
+  });
+  // ---- correcciones de la auditoría educativa de las 9 fichas ----
+  test('auditoría · correcciones de contenido de las fichas', () => {
+    const P = id => K.faqPendientes.find(f => f.id === id).r;
+    assert.ok(/turn it off, no turn off it/.test(P('phrasal-verbs')));
+    assert.ok(/make the bed/.test(P('make-do')) && !/do exercise/.test(P('make-do')));
+    assert.ok(/Did you use to/.test(P('be-used-to')) && /o que era así/.test(P('be-used-to')));
+    assert.ok(/acciones repetidas del pasado/.test(P('will-would')));
+    assert.ok(/también se puede usar going to/.test(P('presente-continuo-futuro')));
+    assert.ok(/d suave/.test(P('sonido-th')) && /justo detrás/.test(P('sonido-th')));
+    assert.ok(/persons/.test(P('people')) && /superlativos/.test(P('the')));
+    K.faqPendientes.forEach(f => { assert.ok(!/—/.test(f.r), f.id); assert.ok(!/\b(siempre|nunca)\b/i.test(f.r.replace(/«[^»]*»/g, '')), 'absoluto en ' + f.id); assert.ok(f.ej.length === 2, f.id); });
   });
 };

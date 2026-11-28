@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, RISO_REGLAS } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -158,5 +158,25 @@ await test('calidad: se quitan recomendaciones de audios o páginas que no podem
 await test('calidad: reglas del modelo con los matices revisados', async () => {
   for (const re of [/ACERTÓ o FALLÓ es la verdad/, /normalmente/, /Will no expresa certeza/, /periodos no terminados/, /IPA/, /sordo \/θ\//, /sonoro \/ð\//, /No recomiendes audios/, /otra situación y otras palabras/]) assert.ok(re.test(RISO_REGLAS), String(re))
   assert.ok(!/—/.test(RISO_REGLAS)); assert.ok(estimarNeuronas(construirMensajes('¿Cuándo uso the?', [], null)) < 60)
+})
+await test('identidad: la IA es la asistente de Profe Leo y no se presenta como profesor ni tutor', async () => {
+  assert.ok(/Eres Riso, la mascota y el asistente inteligente de Inglés con Leo/.test(RISO_REGLAS) && /Profe Leo es el profesor, el creador del método/.test(RISO_REGLAS) && /Nunca te presentes como profesor, tutor ni maestro/.test(RISO_REGLAS))
+  assert.ok(/personalidad propia/.test(RISO_REGLAS) && /No menciones a Profe Leo salvo/.test(RISO_REGLAS))
+  // Solo se corrige la autoatribución del papel; las explicaciones y traducciones legítimas no cambian.
+  const cambia = [['Soy tu tutor de inglés.', 'Soy el asistente inteligente de Inglés con Leo.'], ['Como tu profesor, te recomiendo practicar.', 'Como asistente de Inglés con Leo, te recomiendo practicar.'],
+    ['Tu profesor Riso te explica: since marca el inicio.', 'Riso te explica: since marca el inicio.'], ['Soy un tutor.', 'Soy el asistente inteligente de Inglés con Leo.']]
+  for (const [a, b] of cambia) assert.strictEqual(corregirIdentidad(a), b)
+  for (const t of ['Para decir «Soy profesor» usa I am a teacher.', 'Trabajo como profesor de matemáticas se dice I work as a math teacher.', 'Tu profesor de la escuela tiene razón.',
+    'Profe Leo es el profesor de la academia.', 'Si dices "I am your teacher" significa "soy tu profesor".', 'Soy un maestro de los phrasal verbs, ¡ja!', 'El tutor de mi hermano es muy paciente.'])
+    assert.strictEqual(corregirIdentidad(t), t, t)
+  assert.ok(!/el tutor de inglés/.test(RISO_REGLAS))
+  const o = validarSalida(JSON.stringify({ texto: 'Soy tu tutor de inglés. Usa since con un punto de inicio en el tiempo.', ejemplo_en: '', ejemplo_es: '' }))
+  assert.ok(o && !/tutor/.test(o.texto) && /since/.test(o.texto), o && o.texto)
+  assert.ok(/profesor/.test(quitarRecursos('El profesor de la clase dijo hello.')), 'no quita frases que solo mencionan a un profesor')
+})
+await test('cuota gratis de Cloudflare agotada: Riso responde «busy» y registra el intento sin cobrar respuesta al alumno', async () => {
+  const d = deps({ modelo: { ok: false, reason: 'quota' } }); const r = await procesarChat('u1', B({ pregunta: '¿Cómo se dice sobremesa?' }), d)
+  assert.strictEqual(r.ok, false); assert.strictEqual(r.reason, 'busy')
+  const fin = d.llamadas.rpc.find(x => x[0] === 'riso_chat_finish'); assert.ok(fin && fin[1].p_ok === false, 'cierra la reserva como fallida (no cuenta en el cupo del alumno)')
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

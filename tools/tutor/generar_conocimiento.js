@@ -37,9 +37,21 @@ const guias = fs.readdirSync(root).filter(f => /^articulo-.*\.html$/.test(f)).ma
   return { u: f, t: titulo, d: desc };
 });
 
-const faq = require('./faq.js');
+const fichas = require('./faq.js');
+// Aprobación de Leo: una ficha 'pendiente' o un cambio en 'propuesta' solo responde a alumnos si su id está en
+// APROBADAS_POR_LEO. Las pendientes viajan aparte (faqPendientes) para las pruebas y la vista previa, nunca para alumnos.
+const aprobadas = new Set(fichas.APROBADAS_POR_LEO || []);
+const fusionar = f => { const c = Object.assign({}, f, f.propuesta || {}); delete c.propuesta; delete c.estado; return c; };
+const limpia = f => { const c = Object.assign({}, f); delete c.propuesta; delete c.estado; return c; };
+const faq = [], faqPendientes = [];
+fichas.forEach(f => {
+  const pendiente = f.estado === 'pendiente' || !!f.propuesta;
+  if (!pendiente || aprobadas.has(f.id)) { faq.push(pendiente ? fusionar(f) : limpia(f)); return; }
+  if (f.estado !== 'pendiente') faq.push(limpia(f)); // cambio propuesto: sigue la versión aprobada
+  faqPendientes.push(fusionar(f));
+});
 // Cada ficha de la FAQ debe apuntar a una guía o ficha del glosario que exista de verdad.
-faq.forEach(f => { if (f.ref && !fs.existsSync(path.join(root, f.ref.replace(/\/$/, '/index.html')))) throw new Error('FAQ ' + f.id + ': no existe ' + f.ref); });
+faq.concat(faqPendientes).forEach(f => { if (f.ref && !fs.existsSync(path.join(root, f.ref.replace(/\/$/, '/index.html')))) throw new Error('FAQ ' + f.id + ': no existe ' + f.ref); });
 // Pronunciación: 'ipa' = transcripción fonética entre barras (/θɔːt/); 'aprox' = aproximación con letras del español
 // (ol-DÓU). Audio: solo si la ficha del glosario lo enlaza y el archivo está publicado (lista de audio/glosario en
 // tools/tutor/glosario-audios.txt, porque esta copia del repositorio no siempre trae los mp3).
@@ -54,8 +66,8 @@ const extra = require('./verbos-extra.js');
 // Verbos: los del artículo + los extra verificados a mano (sin duplicar). Quinto campo: nota opcional.
 extra.irregulares.forEach(v => { if (!verbos.some(x => x[0] === v[0])) verbos.push(v.slice()); });
 const regulares = [...new Set(extra.regulares)].filter(v => !verbos.some(x => x[0] === v));
-const out = { version: new Date().toISOString().slice(0, 10), verbos, regulares, doblanSiempre: extra.doblanSiempre, doblanSoloUK: extra.doblanSoloUK, glosario: glosario.map(g => conPron(g)), guias, faq };
+const out = { version: new Date().toISOString().slice(0, 10), verbos, regulares, doblanSiempre: extra.doblanSiempre, doblanSoloUK: extra.doblanSoloUK, glosario: glosario.map(g => conPron(g)), guias, faq, faqPendientes };
 const js = '/* Generado por tools/tutor/generar_conocimiento.js. No editar a mano. Contenido público del sitio. */\n' +
   '(function(r){ r.RISO_CONOCIMIENTO = ' + JSON.stringify(out) + '; if(typeof module!=="undefined") module.exports = r.RISO_CONOCIMIENTO; })(typeof window!=="undefined"?window:globalThis);\n';
 fs.writeFileSync(path.join(root, 'riso/tutor/conocimiento.js'), js);
-console.log('verbos', verbos.length, 'regulares', regulares.length, 'glosario', glosario.length, 'guias', guias.length, 'faq', faq.length, 'bytes', js.length);
+console.log('verbos', verbos.length, 'regulares', regulares.length, 'glosario', glosario.length, 'guias', guias.length, 'faq', faq.length, 'pendientes', faqPendientes.length, 'bytes', js.length);

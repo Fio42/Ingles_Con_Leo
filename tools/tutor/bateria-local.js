@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Riso · batería local (sin red, sin costo): corre preguntas por el motor real con la IA simulada y cuenta, por separado,
 // las preguntas EDUCATIVAS resueltas sin IA, las consultas del FILTRO (rechazadas o derivadas), la CONVERSACIÓN
-// (saludos, identidad) y las que irían a la IA. Uso: node tools/tutor/bateria-local.js [piloto1|piloto2]
+// (saludos, identidad) y las que irían a la IA. Uso: node tools/tutor/bateria-local.js [piloto1|piloto2] [--pendientes]
+// Sin --pendientes se mide lo que verían los alumnos hoy (fichas nuevas sin aprobar desactivadas).
 const path = require('path'), fs = require('fs');
 const root = path.join(__dirname, '..', '..');
 const K = require(path.join(root, 'riso/tutor/conocimiento.js'));
@@ -13,7 +14,7 @@ function preguntas(archivo, columna) {
   return md.split('\n').map(l => l.match(/^\d+\.\s+(.*)$/) || l.match(/→\s*\d+\.\s+(.*)$/)).filter(Boolean).map(m => m[1].trim())
     .concat([...md.matchAll(/\d+\. ([^→\n]+?) → \d+\. ([^\n]+)/g)].flatMap(m => [m[1].trim(), m[2].trim()]));
 }
-const cual = process.argv[2] || 'piloto2';
+const cual = process.argv[2] || 'piloto2', pendientes = process.argv.includes('--pendientes');
 let lista;
 if (cual === 'piloto1') {
   const md = fs.readFileSync(path.join(__dirname, 'piloto-preguntas.md'), 'utf8');
@@ -28,7 +29,7 @@ if (cual === 'piloto1') {
 (async () => {
   let t0 = 0, n = 0;
   T.CONFIG.cuotaDiaria.miembro = 1000; // solo en esta simulación local: el cupo real lo pone el servidor
-  const tutor = T.crear({ conocimiento: K, plan: 'miembro', ahora: () => (t0 += 20000), generar: () => Promise.resolve({ texto: '(respuesta de la IA)' }) });
+  const tutor = T.crear({ conocimiento: K, fichasPendientes: pendientes, plan: 'miembro', ahora: () => (t0 += 20000), generar: () => Promise.resolve({ texto: '(respuesta de la IA)' }) });
   const filas = [], cuenta = { educativa_sin_ia: 0, filtro: 0, conversacion: 0, ia: 0, aviso: 0 };
   for (const q0 of lista) {
     n++;
@@ -40,6 +41,7 @@ if (cual === 'piloto1') {
   }
   filas.forEach(f => console.log(String(f[0]).padStart(2) + '  ' + f[2].padEnd(18) + ' ' + String(f[3]).padEnd(24) + ' ' + f[1]));
   const ed = cuenta.educativa_sin_ia, totalEd = ed + cuenta.ia;
-  console.log('\nTotal', lista.length, JSON.stringify(cuenta));
+  console.log('\nModo: ' + (pendientes ? 'CON las fichas pendientes de aprobación' : 'como lo verían los alumnos hoy (sin fichas pendientes)'));
+  console.log('Total', lista.length, JSON.stringify(cuenta));
   console.log('Preguntas educativas resueltas sin IA: ' + ed + ' de ' + totalEd + ' (' + Math.round(ed * 100 / totalEd) + ' %). Filtro: ' + cuenta.filtro + '. Conversación: ' + cuenta.conversacion + '.');
 })();
