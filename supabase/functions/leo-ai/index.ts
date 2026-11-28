@@ -86,8 +86,7 @@
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { procesarChat, estadoChat, llamarCloudflare as risoLlamarCloudflare } from './riso-chat.mjs'
-import risoEjercicios from './riso-ejercicios.json' with { type: 'json' }
+import { procesarChat, estadoChat, cargarIndice as risoIndice, llamarCloudflare as risoLlamarCloudflare } from './riso-chat.mjs'
 
 const env = (k: string) => Deno.env.get(k) || ''
 const SUPABASE_URL = env('SUPABASE_URL')
@@ -745,7 +744,7 @@ Deno.serve(async (req: Request) => {
       const r = await procesarChat(user.id, body, {
         rpc: (fn: string, args: Record<string, unknown>) => supabase.rpc(fn, args),
         llamarModelo: (mensajes: unknown) => risoLlamarCloudflare(mensajes, { fetchImpl: fetch, env }),
-        indice: risoEjercicios, ahora: () => Date.now(), log: (o: unknown) => console.log(JSON.stringify(o)),
+        obtenerIndice: () => risoIndice(env('RISO_EJERCICIOS_URL') || 'https://inglesconleo.com/supabase/functions/leo-ai/riso-ejercicios.json', fetch), ahora: () => Date.now(), log: (o: unknown) => console.log(JSON.stringify(o)),
       })
       return json(r, r && !r.ok && ['bad_input', 'too_long', 'bad_context'].includes(r.reason) ? 400 : 200)
     }

@@ -46,7 +46,6 @@ async function base() {
   await c.query(`insert into public.leo_ai_config (id, enabled, public) values (true, true, true) on conflict (id) do update set enabled = true, public = true`);
   const antes = await c.query(`select public.leo_ai_reserve($1, ${hoy}) r`, [OTRO]);
   await c.query(read('supabase/pendientes/20261128_riso_chat_piloto.sql'));
-  await c.query(read('supabase/pendientes/20261128b_riso_items.sql'));
   await c.query(`update public.leo_ai_config set chat_enabled = true; insert into public.riso_pilot_testers (user_id) select id from auth.users`);
   return { c, url, nombre, leoAntes: antes.rows[0].r };
 }
@@ -99,15 +98,21 @@ const cuenta = (arr, v) => arr.filter(x => x === v).length;
     await cerrar(ks[0], U(10), 'req-len-0001', false, 0);
     assert.strictEqual(await reservar(ks[2], U(12), 'req-len-0004'), 'ok');
   });
-  await test('respuesta tardía (después de liberar a los 60 s): registra las neuronas reales y no cuenta la pregunta', async () => {
+  await test('respuesta tardía (después de liberar a los 180 s): registra las neuronas reales y no cuenta la pregunta', async () => {
     await reset();
     assert.strictEqual(await reservar(ks[0], LEO, 'req-tar-0001'), 'ok');
-    await c.query(`update public.riso_chat_requests set updated_at = now() - interval '2 minutes'`);
+    await c.query(`update public.riso_chat_requests set updated_at = now() - interval '4 minutes'`);
     assert.strictEqual(await reservar(ks[1], LEO, 'req-tar-0002'), 'ok'); // la reserva vieja se liberó
     const r = await cerrar(ks[0], LEO, 'req-tar-0001', true, 15);
     assert.strictEqual(r.status, 'late');
     assert.strictEqual(+(await c.query(`select neurons from public.ai_usage_daily where provider = 'cloudflare:riso'`)).rows[0].neurons, 15);
     assert.strictEqual((await c.query(`select coalesce(sum(count),0)::int n from public.riso_chat_usage`)).rows[0].n, 0);
+  });
+  await test('una reserva NO caduca mientras la función pueda seguir viva (150 s): a los 2 minutos sigue contando', async () => {
+    await reset('update public.leo_ai_config set riso_neuron_budget = 12');
+    assert.strictEqual(await reservar(ks[0], LEO, 'req-viva-0001'), 'ok');
+    await c.query(`update public.riso_chat_requests set updated_at = now() - interval '150 seconds'`);
+    assert.strictEqual(await reservar(ks[1], OTRO, 'req-viva-0002'), 'riso_budget', 'la reserva de 150 s sigue ocupando el presupuesto');
   });
   await test('la estimación previa cubre el peor caso: entrada máxima y 220 tokens de salida nunca superan lo reservado', async () => {
     const m = await import(path.join(ROOT, 'supabase/functions/leo-ai/riso-chat.mjs'));
@@ -132,8 +137,8 @@ const cuenta = (arr, v) => arr.filter(x => x === v).length;
     // registrar exige sesión, ejercicio publicado y una respuesta que sea opción
     const reg = async (u, item, resp) => { const k = ks[6]; await k.query("select set_config('request.jwt.claim.sub', $1, false)", [u]); await k.query('set role authenticated'); const r = (await k.query('select public.riso_registrar_intento($1,$2) r', [item, resp])).rows[0].r; await k.query('reset role'); return r; };
     assert.strictEqual(await reg(LEO, 'g-facil7-dodoes-2', 'Is'), 'ok');
-    assert.strictEqual(await reg(LEO, 'no-existe-1', 'Is'), 'bad_item');
-    assert.strictEqual(await reg(LEO, 'g-facil7-dodoes-2', 'Banana'), 'bad_answer');
+    assert.strictEqual(await reg(LEO, 'MAL FORMADO; drop', 'Is'), 'bad_item');
+    assert.strictEqual(await reg(LEO, 'g-facil7-dodoes-2', 'x'.repeat(200)), 'bad_answer');
     const val = async (u, item, resp) => (await c.query('select public.riso_intento_valido($1,$2,$3) v', [u, item, resp])).rows[0].v;
     assert.strictEqual(await val(LEO, 'g-facil7-dodoes-2', 'Is'), true);
     assert.strictEqual(await val(OTRO, 'g-facil7-dodoes-2', 'Is'), false, 'otra cuenta no puede usar el intento');

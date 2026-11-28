@@ -4,7 +4,6 @@
 --   copiarla a supabase/migrations/<fecha>_riso_chat_piloto.sql y ejecutarla.
 -- Probada localmente contra PGlite (node tools/tests/riso-chat-sql.test.js) y contra un PostgreSQL 16 real con
 -- conexiones independientes simultáneas (node tools/tests/riso-chat-pg.test.js).
--- Después de esta migración va 20261128b_riso_items.sql (lista de ejercicios de práctica, generada).
 --
 -- Qué hace (sin cambiar NINGÚN límite actual de Leo AI):
 --   1. Interruptores nuevos, todos apagados o restrictivos por defecto:
@@ -121,9 +120,11 @@ begin
   insert into public.ai_usage_daily (day, provider) values (v_day, 'riso_reserved') on conflict do nothing;
   perform 1 from public.ai_usage_daily where day = v_day and provider = 'riso_reserved' for update;
 
-  -- Pedidos colgados más de 60 s: se liberan (no cuentan como gastados).
+  -- Pedidos colgados más de 180 s se liberan. 180 s es más que el máximo que puede vivir la función (150 s en el plan
+  -- gratuito) y la llamada al proveedor se corta a los 20 s: una reserva nunca caduca mientras el proveedor pueda seguir
+  -- procesando esa solicitud, así que no se puede gastar de más.
   update public.riso_chat_requests set status = 'failed', updated_at = now()
-    where status = 'processing' and updated_at < now() - interval '60 seconds';
+    where status = 'processing' and updated_at < now() - interval '180 seconds';
   delete from public.riso_chat_requests where updated_at < now() - interval '15 minutes'; -- sin texto viejo guardado
 
   -- Idempotencia
@@ -186,7 +187,7 @@ begin
   select * into v_req from public.riso_chat_requests where user_id = p_user and request_id = p_request for update;
   if not found then return jsonb_build_object('status', 'not_found'); end if;
   if v_req.status <> 'processing' then
-    -- Respuesta tardía (la reserva ya se liberó a los 60 s): las neuronas se gastaron igual, se registran;
+    -- Respuesta tardía (la reserva ya se liberó): las neuronas se gastaron igual, se registran;
     -- la pregunta no cuenta para la cuota y la respuesta no se guarda.
     if coalesce(p_neurons, 0) > 0 or coalesce(p_input, 0) > 0 then
       insert into public.ai_usage_daily (day, provider, requests, input_tokens, output_tokens, neurons)
@@ -219,25 +220,20 @@ $$;
 
 -- ------------------------------------------------------------
 -- Modo «sobre el ejercicio»: solo ejercicios que la cuenta respondió de verdad.
--- La página registra cada respuesta del alumno en riso_intentos (solo cuentas del piloto) con riso_registrar_intento,
--- que acepta únicamente ejercicios de práctica publicados (riso_items, sin evaluaciones) y una respuesta que sea una de
--- sus opciones. El servidor solo acepta contexto si existe ese intento de la MISMA cuenta, con la MISMA respuesta,
+-- La página registra cada respuesta del alumno en riso_intentos (solo cuentas del piloto) con riso_registrar_intento.
+-- Al usar el chat, la función valida contra su índice que el ejercicio sea de práctica publicado (sin evaluaciones)
+-- y que la respuesta sea una de sus opciones. El servidor solo acepta contexto si existe ese intento de la MISMA cuenta, con la MISMA respuesta,
 -- en las últimas 2 horas. Un identificador válido sin intento propio se rechaza.
 -- ------------------------------------------------------------
-create table if not exists public.riso_items (
-  id text primary key,
-  opciones text[] not null
-);
 create table if not exists public.riso_intentos (
   user_id uuid not null references auth.users(id) on delete cascade,
-  item_id text not null references public.riso_items(id) on delete cascade,
-  respuesta text not null,
+  item_id text not null check (item_id ~ '^[a-z0-9-]{3,60}$'),
+  respuesta text not null check (char_length(respuesta) between 1 and 120),
   created_at timestamptz not null default now(),
   primary key (user_id, item_id, respuesta)
 );
-alter table public.riso_items enable row level security;
 alter table public.riso_intentos enable row level security;
-revoke all on public.riso_items, public.riso_intentos from anon, authenticated;
+revoke all on public.riso_intentos from anon, authenticated;
 
 create or replace function public.riso_registrar_intento(p_item text, p_respuesta text)
 returns text
@@ -247,15 +243,14 @@ set search_path = public
 as $$
 declare
   v_user uuid := auth.uid();
-  v_ops text[];
   v_hoy int;
 begin
   if v_user is null then return 'no_session'; end if;
   if not exists (select 1 from public.leo_ai_config c where c.id and c.chat_enabled) then return 'disabled'; end if;
   if (select chat_pilot_only from public.leo_ai_config where id) and not exists (select 1 from public.riso_pilot_testers t where t.user_id = v_user) then return 'not_allowed'; end if;
-  select opciones into v_ops from public.riso_items where id = p_item;
-  if not found then return 'bad_item'; end if;
-  if p_respuesta is null or not exists (select 1 from unnest(v_ops) o where lower(o) = lower(trim(p_respuesta))) then return 'bad_answer'; end if;
+  -- El ejercicio y la opción se validan contra el índice del servidor al usar el chat; aquí solo el formato.
+  if p_item is null or p_item !~ '^[a-z0-9-]{3,60}$' then return 'bad_item'; end if;
+  if p_respuesta is null or char_length(trim(p_respuesta)) not between 1 and 120 then return 'bad_answer'; end if;
   select count(*) into v_hoy from public.riso_intentos where user_id = v_user and created_at > now() - interval '1 day';
   if v_hoy >= 500 then return 'limit'; end if;
   delete from public.riso_intentos where user_id = v_user and created_at < now() - interval '1 day';
@@ -375,7 +370,7 @@ grant execute on function public.riso_chat_finish(uuid, text, boolean, int, int,
 -- drop function if exists public.riso_registrar_intento(text, text);
 -- drop function if exists public.riso_chat_status(uuid);
 -- drop function if exists public.riso_intento_valido(uuid, text, text);
--- drop table if exists public.riso_intentos, public.riso_items;
+-- drop table if exists public.riso_intentos;
 -- drop table if exists public.ai_budget_alerts, public.riso_chat_requests, public.riso_chat_usage, public.riso_pilot_testers;
 -- alter table public.leo_ai_config drop column if exists chat_enabled, drop column if exists chat_pilot_only,
 --   drop column if exists chat_member_daily, drop column if exists chat_free_daily, drop column if exists chat_global_daily,

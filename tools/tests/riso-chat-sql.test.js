@@ -84,11 +84,11 @@ const hoy = "(now() at time zone 'utc')::date";
     assert.strictEqual(r.r.status, 'duplicate'); assert.strictEqual(r.r.answer.texto, 'x');
     assert.strictEqual((await q1(db, `select count from public.riso_chat_usage where user_id = $1`, [U.miembro])).count, 1);
   });
-  await test('pedido colgado más de 60 s se libera solo', async () => {
+  await test('pedido colgado más de 180 s se libera solo', async () => {
     const db = await db0(PGlite);
     await db.exec(`update public.leo_ai_config set chat_enabled = true, chat_pilot_only = false, chat_free_daily = 1`);
     assert.strictEqual(await reserve(db, U.gratis, 'req-c0000001'), 'ok');
-    await db.exec(`update public.riso_chat_requests set updated_at = now() - interval '2 minutes'`);
+    await db.exec(`update public.riso_chat_requests set updated_at = now() - interval '4 minutes'`);
     assert.strictEqual(await reserve(db, U.gratis, 'req-c0000002'), 'ok');
   });
   await test('total del piloto: 100 consultas generativas como máximo', async () => {

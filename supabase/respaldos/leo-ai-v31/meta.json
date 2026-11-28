@@ -1,0 +1,13 @@
+{
+ "id": "c57e7415-a906-4cdf-aff6-d586f3e4547c",
+ "slug": "leo-ai",
+ "name": "leo-ai",
+ "status": "ACTIVE",
+ "version": 31,
+ "created_at": 1790875782264,
+ "updated_at": 1794233663757,
+ "verify_jwt": false,
+ "import_map": false,
+ "entrypoint_path": "/tmp/user_fn_iviksyhzhiygkuaojply_c57e7415-a906-4cdf-aff6-d586f3e4547c_23/source/supabase/functions/leo-ai/index.ts",
+ "ezbr_sha256": "715c309c70eeba11affacad06c1af0a8e2c18fb31744a1db028e2c1a447440ea"
+}

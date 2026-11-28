@@ -20,11 +20,4 @@ for (const lv in ctx.G) for (const v of ctx.G[lv]) for (const t of v) for (const
 const dir = path.join(root, 'supabase/functions/leo-ai');
 fs.writeFileSync(path.join(dir, 'riso-ejercicios.json'), JSON.stringify(out));
 fs.copyFileSync(path.join(root, 'riso/tutor/riso-tutor.js'), path.join(dir, 'riso-motor.js'));
-// Lista de ejercicios para la base (riso_items): solo ids y opciones, sin enunciados ni respuestas correctas.
-const q = (x) => "'" + String(x).replace(/'/g, "''") + "'";
-const filas = Object.entries(out).map(([id, it]) => '(' + q(id) + ', array[' + it.o.map(q).join(', ') + ']::text[])');
-fs.writeFileSync(path.join(root, 'supabase/pendientes/20261128b_riso_items.sql'),
-  '-- Generado por tools/tutor/generar_indice_ejercicios.js. PENDIENTE, NO EJECUTADO. Va después de 20261128_riso_chat_piloto.sql.\n' +
-  '-- Ejercicios de práctica en los que se puede usar «Pregúntale a Riso sobre este ejercicio» (sin evaluaciones de la Academia).\n' +
-  'insert into public.riso_items (id, opciones) values\n' + filas.join(',\n') + '\non conflict (id) do update set opciones = excluded.opciones;\n');
 console.log('ejercicios', Object.keys(out).length, 'bytes', fs.statSync(path.join(dir, 'riso-ejercicios.json')).size);

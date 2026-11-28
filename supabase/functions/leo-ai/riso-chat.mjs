@@ -107,6 +107,20 @@ export function validarSalida(raw) {
   return { texto, ejemplo_en: ej(j.ejemplo_en), ejemplo_es: ej(j.ejemplo_es) }
 }
 
+// Índice de ejercicios: el mismo archivo público del sitio (riso-ejercicios.json), cacheado en memoria 1 hora.
+let _indice = null, _indiceT = 0
+export async function cargarIndice(url, fetchImpl) {
+  if (_indice && Date.now() - _indiceT < 3600000) return _indice
+  try {
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 5000)
+    const r = await fetchImpl(url, { signal: ctrl.signal }); clearTimeout(t)
+    if (!r.ok) return _indice
+    const j = await r.json()
+    if (j && typeof j === 'object' && Object.keys(j).length > 100) { _indice = j; _indiceT = Date.now() }
+  } catch (_) { /* sin índice: el modo ejercicio responde bad_context */ }
+  return _indice
+}
+
 // Llamada a Cloudflare Workers AI (mismo proveedor y modelo que Leo AI).
 export async function llamarCloudflare(mensajes, { fetchImpl, env }) {
   const account = env('CLOUDFLARE_ACCOUNT_ID'), token = env('CLOUDFLARE_API_TOKEN')
@@ -145,15 +159,21 @@ export async function estadoChat(userId, deps) {
 }
 
 /* Orquestación. deps: { rpc(nombre, args) → { data, error }, llamarModelo(mensajes) → resultado de llamarCloudflare,
-   indice, ahora() → ms, log(objeto sin textos) }. Devuelve el cuerpo JSON para el navegador. */
+   obtenerIndice() → índice de ejercicios (o null), ahora() → ms, log(objeto sin textos) }. Devuelve el cuerpo JSON para el navegador. */
 export async function procesarChat(userId, body, deps) {
   const t0 = deps.ahora()
   const log = deps.log || (() => {})
+  // 0) Autorización en el servidor ANTES de todo: interruptor, piloto, cuenta. Una cuenta fuera del piloto no recibe
+  //    ni siquiera las respuestas fijas.
+  const { data: st, error: errSt } = await deps.rpc('riso_chat_status', { p_user: userId })
+  if (errSt || !st || st.enabled !== true) { log({ ev: 'riso_chat', fallo: 'no_autorizado' }); return { ok: false, reason: 'not_allowed', final: true } }
   const e = validarEntrada(body)
   if (e.error) return { ok: false, reason: e.error }
   const fijo = filtroServidor(e.pregunta, e.historial.length > 0)
   if (fijo) { log({ ev: 'riso_chat', capa: 1, tipo: fijo.tipo }); return { ok: true, answer: { texto: fijo.texto, ejemplo_en: '', ejemplo_es: '' }, fixed: true } }
-  const rc = resolverContexto(e.contexto, deps.indice)
+  const indice = e.contexto ? await deps.obtenerIndice() : null
+  if (e.contexto && !indice) return { ok: false, reason: 'bad_context' }
+  const rc = resolverContexto(e.contexto, indice)
   if (!rc.ok) return { ok: false, reason: rc.error }
   if (e.contexto) {
     // Solo ejercicios que ESTA cuenta respondió (con esa misma respuesta) en las últimas 2 horas.
@@ -171,7 +191,10 @@ export async function procesarChat(userId, body, deps) {
 
   const r = await deps.llamarModelo(mensajes)
   const usage = r && r.usage ? r.usage : { input: 0, output: 0 }
-  const n = neuronas(usage.input, usage.output)
+  // Si se cortó por tiempo o por red, Cloudflare pudo haber procesado igual: se registra la estimación completa
+  // (conservador) para que una solicitud que el proveedor siga procesando nunca deje gastar de más.
+  const cortada = r && !r.ok && (r.reason === 'timeout' || r.reason === 'network')
+  const n = cortada ? est : neuronas(usage.input, usage.output)
   const salida = r && r.ok ? validarSalida(r.raw) : null
   await deps.rpc('riso_chat_finish', { p_user: userId, p_request: e.requestId, p_ok: !!salida, p_input: usage.input, p_output: usage.output, p_neurons: n, p_answer: salida })
   log({ ev: 'riso_chat', capa: 5, ok: !!salida, motivo: salida ? null : (r && r.reason) || 'bad_output', in: usage.input, out: usage.output, neuronas: Math.round(n * 100) / 100, est, ms: deps.ahora() - t0, ctx: !!rc.ctx, hist: e.historial.length })

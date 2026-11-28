@@ -8,7 +8,7 @@ drop function if exists public.ai_neurons_today(date);
 drop function if exists public.riso_registrar_intento(text, text);
 drop function if exists public.riso_chat_status(uuid);
 drop function if exists public.riso_intento_valido(uuid, text, text);
-drop table if exists public.riso_intentos, public.riso_items;
+drop table if exists public.riso_intentos;
 drop table if exists public.ai_budget_alerts, public.riso_chat_requests, public.riso_chat_usage, public.riso_pilot_testers;
 alter table public.leo_ai_config drop column if exists chat_enabled, drop column if exists chat_pilot_only,
   drop column if exists chat_member_daily, drop column if exists chat_free_daily, drop column if exists chat_global_daily,
