@@ -26,7 +26,7 @@ vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8') + `
 ;this.__t = { computeDiagnosis, computeWeeklyReport, computeSessionInsight, sessionInsightAiCtx, computeMistakePatterns, mistakePatternsAiCtx,
   progressAiCtx, getTodayPick, todayStartHref, contentForUnit, familyHasItemsAt, computePlanSelection, buildPlanPool, summarizePlanSelection,
   buildLeoAiPayload, leoAiInsightCacheGet, leoAiInsightCacheSet, diagFamilyForTopic, DIAG_GRAMMAR_FAMILIES, SKILL_PAGE, SKILL_ARTICLE,
-  PROGRESS_KEY, G:GRAMMAR_BANK, LB:LISTENING_BANK, VB:VOCAB_BANK, WB:WRITING_BANK };`, ctx);
+  PROGRESS_KEY, temaEnFrase, cuentaEs, G:GRAMMAR_BANK, LB:LISTENING_BANK, VB:VOCAB_BANK, WB:WRITING_BANK };`, ctx);
 const T = ctx.__t;
 
 const DAY = 86400000, NOW = Date.now();
@@ -136,7 +136,7 @@ test('miembro nuevo: la primera sesión se analiza sin comparar con nada y lleva
   assert(ins && ins.n === 8 && ins.correct === 4);
   assert(!ins.improved, 'sin historial no hay "mejoraste"');
   assert(ins.struggle && ins.struggle.key === 'family:preposiciones');
-  assert(ins.lines.some(l => /Hoy te costó Preposiciones: fallaste 4 de 8/.test(l.text)), JSON.stringify(ins.lines));
+  assert(ins.lines.some(l => /Hoy fallaste 4 de 8 en Preposiciones\./.test(l.text)), JSON.stringify(ins.lines));
   assert.strictEqual(ins.actions[0].title, 'Practicar Preposiciones');
   assert(/plan-estudio\.html\?foco=preposiciones&empezar=1/.test(ins.actions[0].href));
   assert(ins.actions.some(a => a.href === 'articulo-in-on-at.html' && /in, on, at/i.test(a.title)));
@@ -150,11 +150,11 @@ test('pocos datos: sesión de 2 respuestas o solo Speaking no muestra análisis'
   assert.strictEqual(finish([], 'toefl-reading', answers(['toefl-1','toefl-2','toefl-3','toefl-4'], 4, 50)), null, 'exámenes: banco propio, sin análisis');
 });
 
-test('mejora: "Tu Listening mejoró respecto a tus sesiones anteriores" con % reales', ()=>{
+test('mejora: "Mejoraste en Listening respecto a tus sesiones anteriores" con % reales', ()=>{
   const hist = [session('listening', 10, answers(IDS.lis, 12, 50)), session('listening', 5, answers(IDS.lis, 8, 50, 12))];
   const ins = finish(hist, 'listening', answers(IDS.lis, 8, 100, 30));
   assert(ins.improved && ins.improved.key === 'skill:listening');
-  assert(ins.lines.some(l => l.text === 'Tu Listening mejoró respecto a tus sesiones anteriores: 100% hoy, 50% antes.'), JSON.stringify(ins.lines));
+  assert(ins.lines.some(l => l.text === 'Mejoraste en Listening respecto a tus sesiones anteriores: 100% hoy, 50% antes.'), JSON.stringify(ins.lines));
   assert(ins.lines[0].text === 'Sesión perfecta: 8 de 8 correctas.');
   checkActions(ins.actions, 'mejora');
 });
@@ -165,10 +165,10 @@ test('mejora en un tema de gramática: nombra la familia, no "Gramática"', ()=>
   assert(ins.lines.some(l => l.text === 'Hoy mejoraste en Pasado simple: 100% de aciertos, antes ibas en 40%.'), JSON.stringify(ins.lines));
 });
 
-test('retroceso: "Hoy te costó más X que de costumbre" y acción para practicarlo', ()=>{
+test('retroceso: "Hoy fallaste más que de costumbre en X" y acción para practicarlo', ()=>{
   const hist = [session('listening', 8, answers(IDS.lis, 12, 92))];
   const ins = finish(hist, 'listening', answers(IDS.lis, 6, 33, 20));
-  assert(ins.lines.some(l => l.tone === 'down' && /Hoy te costó más Listening que de costumbre: 33% hoy, 92% antes/.test(l.text)), JSON.stringify(ins.lines));
+  assert(ins.lines.some(l => l.tone === 'down' && /Hoy fallaste más que de costumbre en Listening: 33% de aciertos hoy, 92% antes/.test(l.text)), JSON.stringify(ins.lines));
   assert.strictEqual(ins.actions[0].href, 'listening.html');
   checkActions(ins.actions, 'retroceso');
 });
@@ -178,7 +178,7 @@ test('errores repetidos: "Sigues fallando con Preposiciones" y repaso rápido', 
   const hist = [session('gramatica', 3, four.map(id => ({ itemId:id, isCorrect:false })))];
   const ins = finish(hist, 'gramatica', four.map(id => ({ itemId:id, isCorrect:false })).concat(answers(IDS.tobe, 4, 100)));
   assert.strictEqual(ins.repeated, 4);
-  assert(ins.lines.some(l => l.text === 'Sigues fallando con Preposiciones: 4 errores hoy.'), JSON.stringify(ins.lines));
+  assert(ins.lines.some(l => l.text === 'Sigues fallando con Preposiciones: hoy cometiste cuatro errores.'), JSON.stringify(ins.lines));
   assert(ins.actions.some(a => a.href === 'errores.html?modo=rapido'));
   checkActions(ins.actions, 'repetidos');
 });
@@ -304,6 +304,16 @@ test('mucho historial (400 sesiones): el análisis de una sesión es rápido', (
   const ms = Date.now() - t0;
   assert(ins && ms < 300, 'tardó ' + ms + ' ms');
   console.log('       (análisis de sesión con 4.000 respuestas en ' + ms + ' ms)');
+});
+
+test('textos de las recomendaciones: nombre del tema limpio, cantidades en palabras y sin concordancias rotas', ()=>{
+  assert.strictEqual(T.temaEnFrase('A lot of: sirve para los dos'), 'A lot of');
+  assert.strictEqual(T.temaEnFrase('Some, any, much y many'), 'Some, any, much y many');
+  assert.strictEqual(T.cuentaEs(1, 'error', 'errores'), 'un error'); assert.strictEqual(T.cuentaEs(6, 'error', 'errores'), 'seis errores');
+  assert.strictEqual(T.cuentaEs(2, 'ejercicio', 'ejercicios'), 'dos ejercicios'); assert.strictEqual(T.cuentaEs(14, 'error', 'errores'), '14 errores');
+  const src = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  for(const malo of ['te ha costado varias veces', 'Hoy te costó ${', 'Tu ${u.label} mejoró', 'En ${mm.label} fallaste', 'Recordamos que te costó'])
+    assert(!src.includes(malo), 'sigue la plantilla: ' + malo);
 });
 
 console.log((failed ? failed + ' prueba(s) fallaron, ' : '') + passed + ' pruebas pasaron');

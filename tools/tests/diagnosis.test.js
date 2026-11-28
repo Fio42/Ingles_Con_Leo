@@ -169,7 +169,7 @@ test('errores repetidos: se agrupan y se nombra el tema (sin red, regla de Mis e
   const d = T.computeDiagnosis(undefined, null), w = T.computeWeeklyReport(d);
   assert.strictEqual(d.activeMistakes, T.computeMistakeIds().length, 'mismo conteo que Mis errores');
   assert(d.repeated[0] && d.repeated[0].label === 'Preposiciones' && d.repeated[0].count === 4);
-  assert(d.insights.some(i => i.text === 'Sigues fallando con Preposiciones: 4 ejercicios que ya fallaste más de una vez.'));
+  assert(d.insights.some(i => i.text === 'Sigues fallando con Preposiciones: cuatro ejercicios que ya fallaste más de una vez.'));
   assert.strictEqual(d.weak.key, 'family:preposiciones');
   assert(d.actions[0].title === 'Reforzar Preposiciones' && d.actions[0].article === 'articulo-in-on-at.html');
   const sel = T.computePlanSelection('facil', 9);

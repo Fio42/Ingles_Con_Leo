@@ -16,7 +16,7 @@ test('el simulador no está en el repositorio', () => {
 });
 test('ningún archivo del sitio contiene textos ni direcciones del simulador', () => {
   assert.ok(sitio.length > 50, 'lista de archivos del sitio');
-  const malos = sitio.filter(a => { const t = fs.readFileSync(path.join(ROOT, a), 'utf8'); return /\(Simulador\)|Respuesta de prueba de Riso|127\.0\.0\.1:8792|__vendor\/supabase/.test(t); });
+  const malos = sitio.filter(a => { const t = fs.readFileSync(path.join(ROOT, a), 'utf8'); return /\(Simulador\)|Respuesta de prueba de Riso|Eco del simulador|after-dinner conversation|127\.0\.0\.1:8792|__vendor\/supabase/.test(t); });
   assert.deepStrictEqual(malos, []);
 });
 test('backend.js apunta al servidor real de Supabase', () => {

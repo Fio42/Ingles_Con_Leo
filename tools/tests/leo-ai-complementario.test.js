@@ -143,7 +143,7 @@ test('memoria (miembro): los pasos son del catalogo, maximo 3, sin venta de memb
   const ns = T.leoAiNextSteps(ctxFail);
   assert(ns && ns.links.length >= 1 && ns.links.length <= 3);
   assert(ns.links.every(l => !/^https?:/.test(l.href) && /\.html/.test(l.href)), 'enlaces internos');
-  assert(/te ha costado varias veces/.test(ns.intro));
+  assert(/^Has fallado varias veces en .+\. Para reforzarlo:$/.test(ns.intro), ns.intro);
   assert(!/membres|\$2|premium/i.test(JSON.stringify(ns)));
 });
 test('Academia alimenta la memoria: errores de un curso (ac:...) cuentan para el tema y se ven en Leo AI, sin duplicar', ()=>{

@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat, CACHE_ACTIVA, esTrucoForma, quitarTrucosForma, repiteExplicacion, PORQUE } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica, preguntaCacheable, claveCache, estadoChat, CACHE_ACTIVA, esTrucoForma, quitarTrucosForma, repiteExplicacion, PORQUE, porqueBreve } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -286,5 +286,21 @@ await test('si la respuesta repite la explicación ya vista: UNA segunda llamada
   await procesarChat('u1', ctxB('¿Por qué?'), d2); assert.strictEqual(d2.llamadas.modelo.length, 1)
   const d3 = deps(); d3.llamarModelo = async (m) => { d3.llamadas.modelo.push(m); return rep }
   await procesarChat('u1', B({ pregunta: '¿Cómo se dice tengo hambre?' }), d3); assert.strictEqual(d3.llamadas.modelo.length, 1)
+})
+await test('si las DOS respuestas repiten la explicación: respuesta breve y honesta con los datos del ejercicio, sin inventar', async () => {
+  const rep = { ok: true, raw: JSON.stringify({ texto: ejemplo[1].x, ejemplo_en: '', ejemplo_es: '' }), usage: { input: 900, output: 60 } }
+  const d = deps(); d.llamarModelo = async (m) => { d.llamadas.modelo.push(m); return rep }
+  const b = ctxB('¿Por qué?'); const r = await procesarChat('u1', b, d)
+  assert.strictEqual(d.llamadas.modelo.length, 2)
+  assert.ok(r.ok && r.answer.texto.startsWith('La explicación de la corrección ya lo cubre: la respuesta correcta es «' + ejemplo[1].c + '», no «' + b.contexto.respuestaAlumno + '»'), r.answer.texto)
+  assert.ok(!r.answer.texto.includes(ejemplo[1].x))
+  const fin = d.llamadas.rpc.find(x => x[0] === 'riso_chat_finish')[1]; assert.strictEqual(fin.p_input, 1800)
+})
+await test('«How do you say "3"?» con «Seven»: el modelo recibe exactamente ese ejercicio, la correcta Three y la explicación vista', async () => {
+  const d = deps(); await procesarChat('u1', B({ pregunta: '¿Por qué?', contexto: { itemId: 'g-principiante-num-1', respuestaAlumno: 'Seven' } }), d)
+  const u = d.llamadas.modelo[0][1].content
+  assert.ok(/How do you say "3" in English\?/.test(u) && /respondió «Seven» y FALLÓ/.test(u) && /correcta es «Three»/.test(u) && /«“Three” es el número 3\.»/.test(u), u)
+  const d2 = deps(); const r2 = await procesarChat('u1', B({ pregunta: '¿Por qué?', contexto: { itemId: 'g-principiante-num-1', respuestaAlumno: 'Ocho' } }), d2)
+  assert.strictEqual(r2.reason, 'bad_context'); assert.strictEqual(d2.llamadas.modelo.length, 0)
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

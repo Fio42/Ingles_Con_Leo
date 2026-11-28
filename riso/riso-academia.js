@@ -93,6 +93,7 @@
     decorar(host, ctx);
     var c = contextoDe(ctx, payload);
     c.respuestaServidor = registrarIntento(c);
+    ULTIMO = { ejercicio: c, payload: payload, ctx: ctx, host: host };   // la corrección que el alumno tiene en pantalla
     var box = el('div', 'leo-ai rsa-preg');
     var b = el('button', 'leo-ai-btn rsa-preg__btn'); b.type = 'button';
     b.appendChild(avatar('rsa-preg__av', 'neutro')); b.appendChild(el('span', null, 'Pregúntale a Riso'));
@@ -102,6 +103,7 @@
   }
 
   // ---------- 3. La conversación (un solo panel para toda la academia) ----------
+  var ULTIMO = null; // última corrección mostrada { ejercicio, payload, ctx, host }
   var P = null; // { raiz, msgs, chips, q, ctxTxt, tutor, ejercicio, payload, explicado, ocupado, lote }
   function cargar(src) { return new Promise(function (ok, mal) { var s = d.createElement('script'); s.src = src; s.onload = ok; s.onerror = mal; d.body.appendChild(s); }); }
   function motorListo() {
@@ -153,7 +155,7 @@
       ctx: raiz.querySelector('.rsa__ctx'), ctxTxt: raiz.querySelector('.rsa__ctx-t'), tutor: null, ejercicio: null, payload: null, ctxApp: null, explicados: {}, pasosVistos: {}, ocupado: false, lote: [], ultimo: null };
     raiz.addEventListener('click', function (e) { if (e.target && e.target.hasAttribute('data-cerrar')) cerrar(); });
     d.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !raiz.hidden) cerrar(); });
-    raiz.querySelector('.rsa__ctx-q').addEventListener('click', function () { ponerEjercicio(null, null); });
+    raiz.querySelector('.rsa__ctx-q').addEventListener('click', function () { nuevoTutor(); ponerEjercicio(null, null); ULTIMO = null; });
     raiz.querySelector('form').addEventListener('submit', function (e) { e.preventDefault(); enviar(P.q.value); });
     P.q.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); enviar(P.q.value); } });
     P.q.addEventListener('input', ajustar);
@@ -266,18 +268,34 @@
     if (!reintento) msgAlumno(t);
     P.q.value = ''; ajustar();
     var pensando = el('div', 'rsa-pensando', 'Riso está pensando…'), timer = setTimeout(function () { P.msgs.appendChild(pensando); bajar(); }, 250);
+    // «¿Por qué?» otra vez sobre el mismo ejercicio: ya está respondido arriba. Breve y honesto, sin IA y sin repetirlo.
+    var kq = P.ejercicio && PORQUE.test(t) ? P.ejercicio.itemId + '|' + P.ejercicio.respuestaAlumno : null;
+    if (kq && P.porqueDado && P.porqueDado[kq]) {
+      clearTimeout(timer); msgRiso({ capa: 1, texto: 'Te lo expliqué justo arriba. Si quieres, te doy otro ejemplo, te lo explico más fácil o vemos la pronunciación.' });
+      P.ocupado = false; ajustar(); return Promise.resolve();
+    }
     var conc = concretar(t);
     var porque = explicarPorQue(t);
     var tarea = porque || P.tutor.preguntar(conc.texto, conc.sinContexto || !P.ejercicio ? null : { itemId: P.ejercicio.itemId, fuente: 'academia', tema: P.ejercicio.tema, enunciado: P.ejercicio.enunciado, respuestaAlumno: P.ejercicio.respuestaAlumno, respuestaCorrecta: P.ejercicio.respuestaCorrecta });
     return Promise.resolve(tarea).then(function (r) {
       clearTimeout(timer); pensando.remove();
       if (porque && r.capa === 5 && P.tutor.anotar) P.tutor.anotar(t, r.texto + (r.ej && r.ej[0] ? ' Ejemplo mostrado: ' + r.ej[0][0] : ''));
+      if (kq && r.capa === 5) { P.porqueDado = P.porqueDado || {}; P.porqueDado[kq] = 1; }
       if (P.ejercicio && PORQUE.test(t) && r.capa === 5) { var ps = pasosSiguientes(); if (ps) r = Object.assign({}, r, { pasos: ps }); }
       msgRiso(r);
     }).catch(function () { clearTimeout(timer); pensando.remove(); msgRiso({ capa: 0, tipo: 'error', reintentar: true, texto: 'No pude responder ahora. Toca «Reintentar» en unos segundos.' }); })
       .then(function () { P.ocupado = false; ajustar(); });
   }
 
+  // Un motor por conversación: el historial que viaja al modelo y las respuestas ya dadas pertenecen a UN ejercicio (o a la
+  // conversación libre). El uso del día se conserva.
+  function nuevoTutor() {
+    var plan = ESTADO.member ? 'miembro' : 'gratis', usadas = P.tutor ? P.tutor.metricas().usadasHoy : (ESTADO.usadas || 0);
+    root.RisoTutor.CONFIG.cuotaDiaria[plan] = ESTADO.cupo || 0;
+    P.porqueDado = {};
+    P.tutor = root.RisoTutor.crear({ plan: plan, usadasHoy: usadas, generar: generar,
+      medir: function (m) { P.lote.push(m); if (P.lote.length >= 20) enviarLote(); } });
+  }
   var foco = null;
   function abrir(opts) {
     opts = opts || {};
@@ -286,18 +304,19 @@
     foco = d.activeElement;
     P.raiz.hidden = false; d.documentElement.classList.add('rsa-abierto');
     return motorListo().then(function () {
-      if (!P.tutor) {
-        var plan = ESTADO.member ? 'miembro' : 'gratis';
-        root.RisoTutor.CONFIG.cuotaDiaria[plan] = ESTADO.cupo || 0;
-        P.tutor = root.RisoTutor.crear({ plan: plan, usadasHoy: ESTADO.usadas || 0, generar: generar,
-          medir: function (m) { P.lote.push(m); if (P.lote.length >= 20) enviarLote(); } });
-        msgRiso({ capa: 1, texto: root.RisoTutor.CONFIG.saludo });
-      }
+      if (!P.tutor) { nuevoTutor(); msgRiso({ capa: 1, texto: root.RisoTutor.CONFIG.saludo }); }
+      // Desde la barra superior o Inicio: si en pantalla sigue la corrección de un ejercicio, la conversación es sobre ese
+      // ejercicio; si no (pasó al siguiente, o no hay ejercicio), es una conversación libre. Nunca la del ejercicio anterior.
+      if (!opts.ejercicio && ULTIMO && ULTIMO.host && ULTIMO.host.isConnected) opts = { ejercicio: ULTIMO.ejercicio, payload: ULTIMO.payload, ctx: ULTIMO.ctx };
       if (opts.ejercicio) {
-        var nuevo = !P.ejercicio || P.ejercicio.itemId !== opts.ejercicio.itemId || P.ejercicio.respuestaAlumno !== opts.ejercicio.respuestaAlumno;
+        var nuevo = !P.ejercicio || P.ejercicio !== opts.ejercicio;
+        if (nuevo) nuevoTutor();   // otro ejercicio: conversación nueva para el modelo (la pantalla conserva lo anterior)
         ponerEjercicio(opts.ejercicio, opts.payload, opts.ctx);
         if (nuevo) msgRiso({ capa: 1, texto: opts.ejercicio.acerto ? '¡Bien hecho! Ya viste la explicación del ejercicio. Si quieres, te doy otro ejemplo, un truco para recordarlo o lo que necesites.' : 'Ya viste la corrección. ¿Qué parte no te quedó clara? Puedo explicarte por qué, darte otro ejemplo o ayudarte con la pronunciación.' });
-      } else if (!P.chips.childNodes.length) ponerEjercicio(null, null);
+      } else if (P.ejercicio || !P.chips.childNodes.length) {
+        if (P.ejercicio) nuevoTutor();
+        ponerEjercicio(null, null);
+      }
       setTimeout(function () { try { P.q.focus({ preventScroll: true }); } catch (e) {} }, 60);
     }).catch(function () { msgRiso({ capa: 0, tipo: 'error', texto: 'No pude abrir a Riso. Revisa tu conexión e inténtalo de nuevo.' }); });
   }

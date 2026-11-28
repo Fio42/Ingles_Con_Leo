@@ -1304,6 +1304,11 @@ function microPracticeHref(m, start){
   const tema = (typeof TEMA_BY_ID !== 'undefined' && TEMA_BY_ID[m.tema]) || {};
   return planFocusHref(tema.family, !!start, m.tema) + '&micro=' + encodeURIComponent(m.id);
 }
+// Para frases armadas con el nombre de un tema: algunos microtemas traen una pista en el nombre («A lot of: sirve para
+// los dos»); dentro de una frase solo va el nombre («A lot of»). Los números pequeños van en palabras (ejercicio y error son
+// masculinos: «un error», «dos ejercicios»).
+function temaEnFrase(label){ const t = String(label || ''); const i = t.indexOf(': '); return i > 0 ? t.slice(0, i) : t; }
+function cuentaEs(n, uno, varios){ const w = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'][n]; return (w || String(n)) + ' ' + (n === 1 ? uno : varios); }
 // Acción lista para "Hoy te conviene" y el fin de sesión; nombra el concepto exacto, no la familia.
 function microAction(m, s, state){
   const nWrong = s && s.wi ? Object.keys(s.wi).length : 0;
@@ -3605,7 +3610,7 @@ function leoAiNextSteps(ctx){
     }
     if(row && row.course) links.push({ key: 'course', href: row.course.href, text: 'Curso: ' + row.course.title + (mem.member ? '' : (row.course.demo ? ' (demo gratis)' : '')) });
     if(!links.length && !note) return null;
-    return { intro: label ? `${label} te ha costado varias veces. Para reforzarlo:` : 'Este tema te ha costado varias veces. Para reforzarlo:', links: links.slice(0, 3), note, tema: mem.temaId };
+    return { intro: label ? `Has fallado varias veces en ${temaEnFrase(label)}. Para reforzarlo:` : 'Has fallado varias veces en este tema. Para reforzarlo:', links: links.slice(0, 3), note, tema: mem.temaId };
   }catch(e){ return null; }
 }
 
@@ -4760,7 +4765,7 @@ function freeMemoryBoost(skill, level, pool){
     const use = picked.slice(0, removed).map(i => { const c = Object.assign({}, i); delete c.__tema; return c; });
     if(!use.length) return none;
     const label = TEMA_BY_ID[picked[0].__tema].label;       // la nota nombra el tema del primer ejercicio nuevo (nunca otro)
-    return { pool: use.concat(out), boosted: use.map(i => i.id), note: 'Recordamos que te costó ' + label + '. Empezamos con ejercicios nuevos sobre eso.' };
+    return { pool: use.concat(out), boosted: use.map(i => i.id), note: 'Recordamos que fallaste en ' + temaEnFrase(label) + '. Empezamos con ejercicios nuevos sobre eso.' };
   }catch(e){ return none; }
 }
 function freeMemoryNoteHtml(mem, idx){
@@ -7671,16 +7676,16 @@ function computeDiagnosis(p, statsMap){
   diag.improving
     .filter(u => !(u.type === 'skill' && u.id === 'gramatica' && improvingFamilies.length))
     .slice(0, 2).forEach(u=>{
-    diag.insights.push({ tone:'up', text:`Mejoraste en ${u.label}: de ${u.prevAcc}% a ${u.recentAcc}% de aciertos.` });
+    diag.insights.push({ tone:'up', text:`Mejoraste en ${temaEnFrase(u.label)}: de ${u.prevAcc}% a ${u.recentAcc}% de aciertos.` });
   });
   if(diag.repeated.length){
     const r = diag.repeated[0];
     diag.insights.push({ tone:'warn', text: r.count === 1
-      ? `Sigues fallando un ejercicio de ${r.label} que ya fallaste más de una vez.`
-      : `Sigues fallando con ${r.label}: ${r.count} ejercicios que ya fallaste más de una vez.` });
+      ? `Sigues fallando un ejercicio de ${temaEnFrase(r.label)} que ya fallaste más de una vez.`
+      : `Sigues fallando con ${temaEnFrase(r.label)}: ${cuentaEs(r.count, 'ejercicio', 'ejercicios')} que ya fallaste más de una vez.` });
   }
   diag.declining.slice(0, 1).forEach(u=>{
-    diag.insights.push({ tone:'down', text:`Bajaste en ${u.label}: de ${u.prevAcc}% a ${u.recentAcc}%. Conviene repasarlo.` });
+    diag.insights.push({ tone:'down', text:`Bajaste en ${temaEnFrase(u.label)}: de ${u.prevAcc}% a ${u.recentAcc}%. Conviene repasarlo.` });
   });
   if(diag.recoveredWeek > 0){
     diag.insights.push({ tone:'up', text: diag.recoveredWeek === 1 ? 'Recuperaste 1 error esta semana.' : `Recuperaste ${diag.recoveredWeek} errores esta semana.` });
@@ -7699,7 +7704,7 @@ function computeDiagnosis(p, statsMap){
     .sort((a,b)=> b.acc - a.acc);
   if(diag.nearMastery.length){
     const u = diag.nearMastery[0];
-    diag.insights.push({ tone:'good', text:`Estás cerca de dominar ${u.label}: vas en ${u.acc}%.` });
+    diag.insights.push({ tone:'good', text:`Estás cerca de dominar ${temaEnFrase(u.label)}: vas en ${u.acc}%.` });
   }
 
   // Qué practicar hoy (máximo 3 acciones, sin repetir destino). El orden
@@ -8491,15 +8496,16 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.improved){
     const u = ins.improved;
     ins.lines.push({ tone:'up', text: u.key.indexOf('skill:') === 0
-      ? `Tu ${u.label} mejoró respecto a tus sesiones anteriores: ${u.acc}% hoy, ${u.prevAcc}% antes.`
-      : `Hoy mejoraste en ${u.label}: ${u.acc}% de aciertos, antes ibas en ${u.prevAcc}%.` });
+      ? `Mejoraste en ${u.label} respecto a tus sesiones anteriores: ${u.acc}% hoy, ${u.prevAcc}% antes.`
+      : `Hoy mejoraste en ${temaEnFrase(u.label)}: ${u.acc}% de aciertos, antes ibas en ${u.prevAcc}%.` });
   }
   if(ins.struggle){
     const u = ins.struggle;
     let text;
-    if(dropped) text = `Hoy te costó más ${u.label} que de costumbre: ${u.acc}% hoy, ${u.prevAcc}% antes.`;
-    else if(u.repeatedWrong || u.key === weakKey) text = `Sigues fallando con ${u.label}: ${u.wrong} ${u.wrong === 1 ? 'error' : 'errores'} hoy.`;
-    else text = `Hoy te costó ${u.label}: fallaste ${u.wrong} de ${u.n}.`;
+    const nombre = temaEnFrase(u.label);
+    if(dropped) text = `Hoy fallaste más que de costumbre en ${nombre}: ${u.acc}% de aciertos hoy, ${u.prevAcc}% antes.`;
+    else if(u.repeatedWrong || u.key === weakKey) text = `Sigues fallando con ${nombre}: hoy cometiste ${cuentaEs(u.wrong, 'error', 'errores')}.`;
+    else text = `Hoy fallaste ${u.wrong} de ${u.n} en ${nombre}.`;
     ins.lines.push({ tone: dropped ? 'down' : 'warn', text });
   }
   if(ins.recovered){
@@ -8521,8 +8527,8 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(ins.tema){
     const tp = ins.tema;
     ins.lines.unshift({ tone: tp.needsMore ? 'warn' : 'good', text: tp.needsMore
-      ? `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Todavía conviene reforzarlo.`
-      : `En ${tp.label} acertaste ${tp.ok} de ${tp.n}. Ya vas bien en este tema.` });
+      ? `En ${temaEnFrase(tp.label)} acertaste ${tp.ok} de ${tp.n}. Todavía conviene reforzarlo.`
+      : `En ${temaEnFrase(tp.label)} acertaste ${tp.ok} de ${tp.n}. Ya vas bien en este tema.` });
   }
   // Microtemas ACTIVOS tocados en esta sesión con refuerzo o comprobación pendiente (la señal ya se guardó en recordSession).
   let microActs = [];
@@ -8534,8 +8540,9 @@ function computeSessionInsight(results, startedAt, sessionSkill, opts){
   if(microActs.length){
     const ma = microActs[0], mm = MICRO_BY_ID[ma.micro];
     ins.lines.unshift({ tone: ma.microState === 'listo-comprobar' ? 'good' : 'warn', text: ma.microState === 'listo-comprobar'
-      ? `Ya practicaste ${mm.label}. Puedes comprobar si ya lo dominas.`
-      : `En ${mm.label} fallaste ejercicios distintos: es un punto concreto para reforzar.` });
+      ? `Ya practicaste ${temaEnFrase(mm.label)}. Puedes comprobar si ya lo dominas.`
+      : (ma.evidence >= 2 ? `Fallaste ${cuentaEs(ma.evidence, 'ejercicio', 'ejercicios')} distintos sobre ${temaEnFrase(mm.label)}: es un punto concreto para reforzar.`
+        : `Fallaste ejercicios de ${temaEnFrase(mm.label)} en días diferentes: es un punto concreto para reforzar.`) });
   }
   ins.lines = ins.lines.slice(0, 3);
   ins.voice = sessionVoiceId(ins, diag, new Set(list.map(u => u.key)));

@@ -109,7 +109,13 @@ export const PORQUE = /^\s*¿?\s*(y\s+)?por\s*qu[eé](?![a-záéíóúñ]).{0,40
 export function INSTRUCCION_PORQUE(ctx) {
   return 'El alumno pregunta por qué. Ya leyó la explicación de la corrección: NO la repitas ni la parafrasees. Aporta lo que le falta, en 2 o 3 frases: ' +
     'la pista concreta de ESTA frase que decide la respuesta' + (ctx.acerto ? ' y por qué funciona aquí' : ', por qué «' + ctx.respuestaAlumno + '» no funciona aquí y, solo si es cierto, en qué otra frase sí funcionaría') +
-    '. Si das ejemplo, que sea nuevo.'
+    '. Si das ejemplo, que sea nuevo. Si de verdad no hay nada nuevo que añadir, dilo en una frase breve: mejor corto y honesto que repetir.'
+}
+// Si aun después del segundo intento la respuesta repite la explicación ya vista: una respuesta breve y honesta con los
+// datos del ejercicio (no se inventa nada y no se repite la explicación).
+export function porqueBreve(ctx) {
+  return { texto: 'La explicación de la corrección ya lo cubre: la respuesta correcta es «' + ctx.respuestaCorrecta + '»' + (ctx.acerto ? '' : ', no «' + ctx.respuestaAlumno + '»') +
+    '. Si quieres, te doy otro ejemplo o te lo explico más fácil.', ejemplo_en: '', ejemplo_es: '' }
 }
 export function construirMensajes(pregunta, historial, ctx) {
   const partes = []
@@ -320,6 +326,8 @@ export async function procesarChat(userId, body, deps) {
       const r2 = await deps.llamarModelo(m2, { temperatura: 0.6 })
       if (r2 && r2.usage) usage = { input: usage.input + (r2.usage.input || 0), output: usage.output + (r2.usage.output || 0) }
       if (r2 && r2.ok && validarSalida(r2.raw)) r = Object.assign({}, r2, { usage })
+      const s2 = r2 && r2.ok ? validarSalida(r2.raw) : null
+      if (!s2 || repiteExplicacion(s2.texto, rc.ctx.explicacion)) r = { ok: true, raw: JSON.stringify(porqueBreve(rc.ctx)), usage, breve: true }
     }
   }
   // Si se cortó por tiempo o por red, Cloudflare pudo haber procesado igual: se registra la estimación completa

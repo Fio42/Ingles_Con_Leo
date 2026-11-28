@@ -181,7 +181,7 @@ test('después de la sesión, el fin de sesión lo ofrece primero y con el nombr
   assert.ok(ins, 'sin insight');
   assert.strictEqual(ins.actions[0].title, 'Comprobar: Going to: lo que se ve venir');
   assert.ok(ins.actions[0].main);
-  assert.ok(/Ya practicaste Going to: lo que se ve venir/.test(ins.lines[0].text));
+  assert.ok(/^Ya practicaste Going to\. Puedes comprobar si ya lo dominas\.$/.test(ins.lines[0].text), ins.lines[0].text);
   assert.ok(!ins.actions.some(a => /Will y going to|Futuro/.test(a.title)), 'quedó una acción genérica de Futuro: ' + ins.actions.map(a => a.title).join(' | '));
 });
 test('si no quedan 3 comprobaciones inéditas no se ofrece: queda el refuerzo', () => {
