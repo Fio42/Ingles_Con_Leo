@@ -47,6 +47,7 @@ button,textarea{font:inherit;color:inherit}
 .m-ri .ej .en{font-weight:800}.m-ri .ej .es{color:var(--t2);font-size:14px}
 .m-ri .ref{display:inline-block;margin-top:8px;font-weight:800;color:var(--azul);text-decoration:none;white-space:normal}
 .m-ri .aviso{margin-top:6px;font-size:11px;color:var(--t2)}
+.m-ri .voto{display:block;min-height:44px;margin-top:2px;padding:0;border:0;background:none;font:inherit;font-size:12px;color:var(--t2);text-decoration:underline;cursor:pointer}
 .m-error{background:var(--rojo-t);border-color:transparent}
 .reint{margin-top:8px;border:1px solid var(--rojo);background:transparent;border-radius:999px;padding:4px 12px;font-weight:800;cursor:pointer;min-height:36px}
 .pensando{align-self:flex-start;color:var(--t2);font-size:14px}
@@ -133,7 +134,13 @@ button,textarea{font:inherit;color:inherit}
     despierta();
     var plan = st.member ? 'miembro' : 'gratis';
     RisoTutor.CONFIG.cuotaDiaria[plan] = st.cupo || 0;
-    var tutor = RisoTutor.crear({ plan: plan, usadasHoy: st.usadas || 0, generar: RisoTutor.generarConServidor(LeoBackend) });
+    // Métricas agregadas (fase 1): solo capa, intención, tema corto y tiempo de las respuestas resueltas sin IA.
+    // Nunca la pregunta, la respuesta ni datos del alumno. Se envían en lotes; si falla, se descartan sin molestar.
+    var lote = [];
+    function enviarLote(){ if(!lote.length) return; var l = lote.splice(0, 50); try{ LeoBackend.getClient().rpc('riso_metricas_lote', { p_lote: l }).then(function(){}, function(){}); }catch(e){} }
+    document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') enviarLote(); });
+    var tutor = RisoTutor.crear({ plan: plan, usadasHoy: st.usadas || 0, generar: RisoTutor.generarConServidor(LeoBackend),
+      medir: function(m){ lote.push(m); if(lote.length >= 20) enviarLote(); } });
     var ctx = null, ocupado = false, ultima = null;
     window.__risoLog = []; // solo en memoria, para revisar el piloto en esta pestaña; nunca se envía a Analytics
 
@@ -147,6 +154,12 @@ button,textarea{font:inherit;color:inherit}
       if(r.ref){ var a = el('a', 'ref', 'Lee la guía' + (r.refTitulo ? ': ' + r.refTitulo.split('(')[0].split(':')[0].trim() : '')); a.href = r.ref; d.appendChild(a); }
       if(r.enlace){ var s = el('a', 'ref', 'Ir a Soporte'); s.href = r.enlace; d.appendChild(s); }
       if(r.aviso) d.appendChild(el('div', 'aviso', '✦ ' + r.aviso));
+      var mt = r.metrica;
+      if(mt && /^(codigo|biblioteca|faq|ia)$/.test(mt.c)){
+        var v = el('button', 'voto', 'No me ayudó'); v.type = 'button';
+        v.onclick = function(){ v.disabled = true; v.textContent = 'Gracias, lo revisaremos.'; try{ LeoBackend.getClient().rpc('riso_valorar', { p_capa: mt.c, p_intencion: mt.i, p_tema: mt.t }).then(function(){}, function(){}); }catch(e){} };
+        d.appendChild(v);
+      }
       if(r.reintentar){ var b2 = el('button', 'reint', 'Reintentar'); b2.type = 'button'; b2.onclick = function(){ d.remove(); enviar(ultima, true); }; d.appendChild(b2); }
       $('msgs').appendChild(d); bajar();
     }

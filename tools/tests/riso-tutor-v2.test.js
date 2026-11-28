@@ -175,7 +175,7 @@ module.exports = function (test, H) {
     assert.ok(/their phone/.test(f('possessivos')));
     assert.ok(/auxiliar o modal/.test(f('adverbios-frecuencia')));
   });
-  test('v2 · FAQ: respuestas cortas (máximo 500 caracteres) y sin raya larga', () => { K.faq.forEach(q => { assert.ok(q.r.length <= 500, q.id + ' ' + q.r.length); assert.ok(!/—/.test(q.r)); }); });
+  test('v2 · FAQ: respuestas cortas (máximo 500 caracteres; will-would hasta 600, texto aprobado por Leo el 27 nov 2026) y sin raya larga', () => { const MAX = { 'will-would': 600 }; K.faq.forEach(q => { assert.ok(q.r.length <= (MAX[q.id] || 500), q.id + ' ' + q.r.length); assert.ok(!/—/.test(q.r)); }); });
   test('v2 · FAQ: ningún ejemplo en inglés se repite entre preguntas', () => {
     const vistos = {}; K.faq.forEach(q => q.ej.forEach(e => { assert.ok(!vistos[e[0]], 'repetido: ' + e[0] + ' en ' + q.id + ' y ' + vistos[e[0]]); vistos[e[0]] = q.id; }));
   });

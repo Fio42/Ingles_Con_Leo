@@ -437,6 +437,24 @@
       return 'Se renueva ' + (mismoDia ? 'hoy' : 'mañana') + ' a las ' + hora + ' (tu hora).';
     } catch (e) { return 'Se renueva cada día a las 00:00 UTC.'; }
   }
+  // Capa, intención y tema de una respuesta, con identificadores cortos del sitio (nunca texto del alumno).
+  var CODIGO = { numero: 1, hora: 1, hora_invalida: 1, hora_ambigua: 1, fecha: 1, fecha_invalida: 1, anio: 1, ordinal: 1, verbo: 1 };
+  function temaSeguro(t) { t = String(t || '').toLowerCase().replace(/_/g, '-'); return /^[a-z0-9][a-z0-9:-]{0,59}$/.test(t) ? t : 'otro'; }
+  // Mismo identificador que usa el servidor (temaMetrica en riso-chat.mjs), para que votos y respuestas coincidan.
+  function temaEjercicio(ctx) {
+    if (!ctx || !ctx.tema) return 'libre';
+    var s = String(ctx.tema).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+    return s ? 'ejercicio:' + s : 'ejercicio';
+  }
+  function metricaDe(r, intencionTipo, ctx) {
+    if (!r) return null;
+    var i = intencionTipo || 'otra', slug = r.ref && /^glosario\/([^/]+)\//.exec(r.ref);
+    if (r.capa === 5) return { c: r.repetida ? 'cache' : 'ia', i: i, t: r.metrica && r.metrica.t || temaEjercicio(ctx) };
+    if (r.capa === 3) return { c: 'faq', i: i, t: temaSeguro(r.id) };
+    if (r.capa === 2) return CODIGO[r.tipo] ? { c: 'codigo', i: i, t: temaSeguro(r.tipo) } : { c: 'biblioteca', i: i, t: temaSeguro(slug ? 'glosario:' + slug[1] : r.tipo) };
+    if (r.capa === 1) { var cat = categoriaFiltro(r.tipo); return { c: cat === 'conversacion' ? 'conversacion' : cat === 'aviso' ? 'aviso' : 'filtro', i: i, t: temaSeguro(r.tipo) }; }
+    return { c: 'aviso', i: i, t: temaSeguro(r.tipo) };
+  }
   function categoriaFiltro(tipo) {
     if (tipo === 'saludo' || tipo === 'gracias' || tipo === 'identidad') return 'conversacion';
     if (tipo === 'vacio' || tipo === 'largo') return 'aviso';
@@ -502,7 +520,7 @@
       return c;
     }
 
-    function preguntar(q, ctx) {
+    function preguntar0(q, ctx) {
       if (estado.enCurso) return Promise.resolve(resp(0, 'Espera a que termine la respuesta anterior.', { tipo: 'ocupado' }));
       var n = norm(q), it = intencion(n, estado.enviable.length > 0);
       var f = capaFiltro(q, n, it);
@@ -557,7 +575,7 @@
         var texto = limpiarPII(String(g && g.texto || '').replace(/\s+/g, ' ').trim()).slice(0, 700);
         if (!texto) throw new Error('vacia');
         estado.reservadas--; estado.usadasHoy++; estado.metricas.capa5++; estado.enCurso = false;
-        var r = resp(5, texto, { tipo: 'generativa', ej: g.ej || [], ref: guia ? guia.u : null, refTitulo: guia ? guia.t : null, aviso: 'Generada con IA. Puede tener errores.' });
+        var r = resp(5, texto, { tipo: 'generativa', ej: g.ej || [], ref: guia ? guia.u : null, refTitulo: guia ? guia.t : null, aviso: 'Generada con IA. Puede tener errores.', metrica: g.metrica || { c: 'ia', i: ctx ? 'ejercicio' : it.tipo, t: temaEjercicio(ctx) } });
         estado.dedupe[claveD] = r;
         registrar(q, r);
         return r;
@@ -571,6 +589,20 @@
         return resp(0, 'No pude responder ahora. Toca «Reintentar» en unos segundos.', { tipo: 'error', reintentar: true });
       });
     }
+    // Medición (fase 1): cada respuesta resuelta SIN IA se anota como { c: capa, i: intención, t: tema, ms } y se entrega a
+    // opts.medir (la página la envía en lotes a riso_metricas_lote). Nunca incluye el texto de la pregunta ni de la respuesta.
+    // Las respuestas de Gemma las cuenta el servidor (con tokens y neuronas reales), así que aquí no se duplican.
+    function preguntar(q, ctx) {
+      var t0 = Date.now(), it0 = intencion(norm(q), estado.enviable.length > 0);
+      return preguntar0(q, ctx).then(function (r) {
+        try {
+          if (r.capa === 5 && !r.repetida) return r; // respuesta nueva de IA: la cuenta el servidor con tokens y neuronas reales
+          var m = metricaDe(r, ctx ? 'ejercicio' : it0.tipo, ctx);
+          if (m) { r.metrica = { c: m.c, i: m.i, t: m.t }; if (typeof opts.medir === 'function') { m.ms = Math.max(0, Date.now() - t0); opts.medir(m); } }
+        } catch (e) { /* medir nunca rompe una respuesta */ }
+        return r;
+      });
+    }
     return {
       preguntar: preguntar,
       metricas: function () { return Object.assign({}, estado.metricas, { usadasHoy: estado.usadasHoy }); },
@@ -580,7 +612,7 @@
     };
   }
 
-  var api = { crear: crear, CONFIG: CONFIG, categoria: categoria, _int: { conFichas: conFichas, cubreTodo: cubreTodo, esCompuesta: esCompuesta, herramientaGlosario: herramientaGlosario, norm: norm, intencion: intencion, capaFiltro: capaFiltro, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
+  var api = { crear: crear, CONFIG: CONFIG, categoria: categoria, metricaDe: metricaDe, _int: { conFichas: conFichas, cubreTodo: cubreTodo, esCompuesta: esCompuesta, herramientaGlosario: herramientaGlosario, norm: norm, intencion: intencion, capaFiltro: capaFiltro, tienePII: tienePII, limpiarPII: limpiarPII, numeroEn: numeroEn, anioEn: anioEn, ordinalEn: ordinalEn, horaEn: horaEn, parseNumero: parseNumero, herramientaNumero: herramientaNumero, herramientaHora: herramientaHora, herramientaFecha: herramientaFecha, terceraPersona: terceraPersona, pasadoRegular: pasadoRegular, gerundio: gerundio, capaFaq: capaFaq, capaBusqueda: capaBusqueda, guiaDelTema: guiaDelTema, diasMes: diasMes } };
   root.RisoTutor = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

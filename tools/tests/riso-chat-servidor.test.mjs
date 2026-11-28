@@ -2,7 +2,7 @@
    No llama a Cloudflare ni a Supabase. Uso: node tools/tests/riso-chat-servidor.test.mjs */
 import assert from 'assert'
 import fs from 'fs'
-import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS } from '../../supabase/functions/leo-ai/riso-chat.mjs'
+import { procesarChat, validarEntrada, resolverContexto, filtroServidor, validarSalida, estimarNeuronas, construirMensajes, llamarCloudflare, neuronas, quitarRecursos, corregirIdentidad, RISO_REGLAS, temaMetrica } from '../../supabase/functions/leo-ai/riso-chat.mjs'
 const indice = JSON.parse(fs.readFileSync(new URL('../../supabase/functions/leo-ai/riso-ejercicios.json', import.meta.url)))
 let p = 0, f = 0
 async function test(n, fn) { try { await fn(); p++; console.log('  ok   ' + n) } catch (e) { f++; console.log('  FAIL ' + n + '\n       ' + (e && e.message)) } }
@@ -178,5 +178,21 @@ await test('cuota gratis de Cloudflare agotada: Riso responde «busy» y registr
   const d = deps({ modelo: { ok: false, reason: 'quota' } }); const r = await procesarChat('u1', B({ pregunta: '¿Cómo se dice sobremesa?' }), d)
   assert.strictEqual(r.ok, false); assert.strictEqual(r.reason, 'busy')
   const fin = d.llamadas.rpc.find(x => x[0] === 'riso_chat_finish'); assert.ok(fin && fin[1].p_ok === false, 'cierra la reserva como fallida (no cuenta en el cupo del alumno)')
+})
+await test('métrica de IA: después del cierre, con tokens y neuronas reales, intención y tema corto; nunca el texto', async () => {
+  const d = deps(); const r = await procesarChat('u1', B({ pregunta: '¿Cómo digo que mi hermano Pedro vive en Cali?' }), d)
+  const nombres = d.llamadas.rpc.map(x => x[0]); const m = d.llamadas.rpc.find(x => x[0] === 'riso_metrica_ia')[1]
+  assert.ok(nombres.indexOf('riso_metrica_ia') > nombres.indexOf('riso_chat_finish'))
+  assert.strictEqual(m.p_in, 980); assert.strictEqual(m.p_out, 70); assert.strictEqual(m.p_neur, Math.round(neuronas(980, 70) * 100) / 100); assert.strictEqual(m.p_ok, true); assert.strictEqual(m.p_tema, 'libre')
+  assert.ok(!/Pedro|Cali/.test(JSON.stringify(m))); assert.deepStrictEqual(r.metrica, { c: 'ia', i: m.p_intencion, t: 'libre' })
+  assert.strictEqual(temaMetrica({ tema: 'Present Perfect / Pasado' }), 'ejercicio:present-perfect-pasado'); assert.strictEqual(temaMetrica(null), 'libre')
+})
+await test('métrica de IA: si la migración no existe (la llamada falla), la respuesta llega igual', async () => {
+  const d = deps(); const rpc0 = d.rpc; d.rpc = async (fn, a) => { if (fn === 'riso_metrica_ia') throw new Error('function does not exist'); return rpc0(fn, a) }
+  const r = await procesarChat('u1', B(), d); assert.ok(r.ok && /check/.test(r.answer.texto))
+})
+await test('respuestas fijas del servidor y límites no generan métrica de IA', async () => {
+  const d = deps(); await procesarChat('u1', B({ pregunta: 'mi correo es ana@ejemplo.com' }), d); assert.ok(!d.llamadas.rpc.some(x => x[0] === 'riso_metrica_ia'))
+  const d2 = deps({ reserva: 'member_limit' }); await procesarChat('u1', B(), d2); assert.ok(!d2.llamadas.rpc.some(x => x[0] === 'riso_metrica_ia'))
 })
 console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0)

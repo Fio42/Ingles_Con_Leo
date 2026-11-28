@@ -6,7 +6,9 @@
    APROBACIÓN DE LEO: una ficha con estado 'pendiente' o un cambio en «propuesta» NO responde a alumnos hasta que su id
    esté en APROBADAS_POR_LEO (abajo). Mientras tanto, la ficha aprobada anterior sigue igual, o la pregunta la responde la IA.
    Las respuestas nuevas que genere la IA NO se agregan aquí sin revisión humana. */
-const APROBADAS_POR_LEO = [];
+// Aprobadas por Leo el 27 nov 2026 (informe riso-arquitectura-1M): 9 fichas nuevas y 4 cambios de texto, con los textos finales del informe.
+const APROBADAS_POR_LEO = ['make-do', 'say-tell', 'be-used-to', 'presente-continuo-futuro', 'will-would', 'people', 'the', 'phrasal-verbs', 'sonido-th',
+  'presente-perfecto', 'will-going-to', 'comparativos', 'used-to'];
 const fichas = [
 {"id":"do-does","temas":[["do","does"]],"variantes":["cuando uso do y does","diferencia entre do y does","por que se usa does con she","do o does","cuando se usa does"],"r":"Do y does ayudan al verbo en presente simple para hacer preguntas y negaciones. Usa does con he, she e it (y con un solo nombre: my mom, the store). Usa do con I, you, we y they. Con does, el verbo principal va sin -s.","ej":[["Does she work on Saturdays?","¿Ella trabaja los sábados?"],["They don't live here.","Ellos no viven aquí."]],"ref":"articulo-do-vs-does.html"},
 {"id":"did","temas":[["did"]],"variantes":["cuando se usa did","para que sirve did","did en pasado","como uso did"],"r":"Did es el auxiliar del pasado simple para preguntas y negaciones, con todas las personas. Después de did el verbo vuelve a su forma base: no se dice \"did you went\", sino \"did you go\". Excepción: con el verbo to be no se usa did; se dice \"Were you tired?\" y \"I wasn't there\".","ej":[["Did you call her yesterday?","¿La llamaste ayer?"],["Were you at home?","¿Estabas en casa?"]],"ref":"articulo-did-was-were.html"},

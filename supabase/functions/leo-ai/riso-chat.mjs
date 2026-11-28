@@ -240,6 +240,19 @@ export async function procesarChat(userId, body, deps) {
   const salida = r && r.ok ? validarSalida(r.raw) : null
   await deps.rpc('riso_chat_finish', { p_user: userId, p_request: e.requestId, p_ok: !!salida, p_input: usage.input, p_output: usage.output, p_neurons: n, p_answer: salida })
   log({ ev: 'riso_chat', capa: 5, ok: !!salida, motivo: salida ? null : (r && r.reason) || 'bad_output', in: usage.input, out: usage.output, neuronas: Math.round(n * 100) / 100, est, ms: deps.ahora() - t0, ctx: !!rc.ctx, hist: e.historial.length })
+  // Métrica agregada (fase 1): capa IA, intención, tema corto, tiempo, tokens y neuronas reales. Sin texto ni alumno.
+  // Si la migración de métricas aún no está aplicada, el error se ignora y la respuesta sigue igual.
+  const metrica = { c: 'ia', i: rc.ctx ? 'ejercicio' : R._int.intencion(R._int.norm(e.pregunta), e.historial.length > 0).tipo, t: temaMetrica(rc.ctx) }
+  try {
+    await deps.rpc('riso_metrica_ia', { p_intencion: metrica.i, p_tema: metrica.t, p_ms: deps.ahora() - t0, p_in: usage.input, p_out: usage.output, p_neur: Math.round(n * 100) / 100, p_ok: !!salida, p_cache: false })
+  } catch (err) { /* medir nunca rompe una respuesta */ }
   if (!salida) return { ok: false, reason: (r && r.reason === 'quota') ? 'busy' : 'retry' }
-  return { ok: true, answer: salida }
+  return { ok: true, answer: salida, metrica }
+}
+
+// Tema de la métrica: el tema del ejercicio convertido a identificador corto, o 'libre'. Nunca texto del alumno.
+export function temaMetrica(ctx) {
+  if (!ctx || !ctx.tema) return 'libre'
+  const slug = String(ctx.tema).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48)
+  return slug ? 'ejercicio:' + slug : 'ejercicio'
 }

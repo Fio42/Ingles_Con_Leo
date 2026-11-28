@@ -4628,3 +4628,11 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Visual: medido en 320, 360, 375, 390, 430, 1280 y 1366 px. Sin desbordes, tarjeta de Inicio visible sobre la navegación inferior, toques de 44 px como mínimo, campos de 16 px en móvil, sugerencias en una fila deslizable, panel de escritorio de 340 a 400 px (la academia conserva 644 a 714 px), contexto del ejercicio en el chat, transición de 220 ms con reducir movimiento.
 - Integración real: 505 ejercicios y 1.837 respuestas posibles renderizados con la función real de la academia; 0 diferencias entre el veredicto de la academia y el de Riso.
 - Pruebas: motor 165, servidor 29, Leo AI 62 + 62 con Riso + 4 de calidad, SQL 16, PostgreSQL real 16, deno check sin errores.
+
+2026-11-27 · Riso fases 0 y 1 (rama v2/tutor, sin push, nada publicado ni migrado)
+- Fase 0: las 13 fichas aprobadas por Leo quedan activas en desarrollo (APROBADAS_POR_LEO), con «Would you help me?». Piloto 2 local de 20 preguntas: 20 de 20 correctas (11 educativas sin IA, 8 a la IA simulada, 1 filtro). Regresión de 505 ejercicios y 1.837 respuestas: 0 diferencias. Neuronas reales gastadas: 0.
+- Fase 1: métricas agregadas por día (capa: código, biblioteca, FAQ, caché, IA, filtro, conversación, aviso; intención; tema corto; tiempo por tramos; tokens; neuronas; aciertos de caché; fallos; votos «No me ayudó»). Nunca se guarda el texto de la pregunta ni de la respuesta ni ningún id o dato del alumno.
+- El navegador envía en lotes solo lo que resolvió sin IA; las respuestas de Gemma las cuenta el servidor con tokens y neuronas reales. Si la migración no existe, la respuesta sigue igual.
+- Migración PENDIENTE: supabase/pendientes/20261128b_riso_metricas.sql (+ _revertir.sql). Probada solo en PostgreSQL local con roles de Supabase. No aplicada en producción.
+- riso.html (página temporal del piloto): enlace discreto «No me ayudó» bajo respuestas de código, biblioteca, FAQ e IA. Leo AI, backend.js, pagos, límites y secretos sin cambios.
+- Pruebas: motor 170, servidor 32, métricas PG 10, chat SQL 16, chat PG 16, Leo AI 62 + 62 con Riso + 4 calidad + 14 + 13, trial SQL 17, deno check sin errores.

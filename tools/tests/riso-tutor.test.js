@@ -192,6 +192,37 @@ test('límite diario: el aviso dice a qué hora se renueva (00:00 UTC en la hora
   const t = tutor({ generar: () => Promise.reject(new Error('daily_limit')) });
   const r = await t.preguntar('¿Cómo se dice «sobremesa» en inglés?'); assert.ok(/Se renueva (hoy|mañana) a las .+ \(tu hora\)\./.test(r.texto), r.texto); assert.ok(/respuestas con IA/.test(r.texto));
 });
+// ---- fase 1: medición sin texto del alumno ----
+test('medir: código, biblioteca, FAQ, filtro y conversación se anotan con capa, intención, tema y tiempo; nunca el texto', async () => {
+  const ev = []; const tu = tutor({ medir: m => ev.push(m) });
+  await tu.preguntar('¿Cómo se dice 47 en inglés?');
+  await tu.preguntar('¿Cuál es la diferencia entre make y do?');
+  await tu.preguntar('hola');
+  await tu.preguntar('mi correo es ana@ejemplo.com');
+  const capas = ev.map(e => e.c); assert.ok(capas.includes('codigo') && capas.includes('faq') && capas.includes('conversacion') && capas.includes('filtro'), JSON.stringify(ev));
+  const faq = ev.find(e => e.c === 'faq'); assert.strictEqual(faq.t, 'make-do'); assert.strictEqual(faq.i, 'explicacion');
+  for (const e of ev) { assert.deepStrictEqual(Object.keys(e).sort(), ['c', 'i', 'ms', 't']); assert.ok(/^[a-z0-9][a-z0-9:-]{0,59}$/.test(e.t), e.t); assert.ok(e.ms >= 0); }
+  assert.ok(!/ana@|ejemplo|47|make y do/.test(JSON.stringify(ev)));
+});
+test('medir: las respuestas de IA no se anotan en el navegador (las cuenta el servidor) pero llevan su métrica para valorar', async () => {
+  const ev = []; const tu = tutor({ medir: m => ev.push(m) });
+  const r = await tu.preguntar('¿Cómo se dice «sobremesa» en inglés?');
+  assert.strictEqual(r.capa, 5); assert.strictEqual(ev.length, 0); assert.strictEqual(r.metrica.c, 'ia');
+  const r2 = await tu.preguntar('¿Cómo se dice «sobremesa» en inglés?');
+  assert.ok(r2.repetida); assert.strictEqual(ev.length, 1); assert.strictEqual(ev[0].c, 'cache'); assert.strictEqual(r2.metrica.c, 'cache');
+  assert.strictEqual(tu.llamadas.length, 1, 'la repetida no vuelve a llamar a la IA');
+});
+test('medir: en un ejercicio, la IA usa el mismo tema que el servidor', async () => {
+  const tu = tutor(); const r = await tu.preguntar('¿Por qué está mal mi respuesta?', { itemId: 'x-1', tema: 'Present Perfect / Pasado', enunciado: 'a', respuestaAlumno: 'b', respuestaCorrecta: 'c' });
+  if (r.capa === 5) assert.deepStrictEqual(r.metrica, { c: 'ia', i: 'ejercicio', t: 'ejercicio:present-perfect-pasado' });
+});
+test('medir: un fallo del callback nunca rompe la respuesta', async () => {
+  const r = await tutor({ medir: () => { throw new Error('x'); } }).preguntar('¿Cómo se dice 47 en inglés?'); assert.ok(/forty-seven/i.test(r.texto));
+});
+test('metricaDe: glosario como biblioteca con su palabra; temas raros se vuelven «otro»', () => {
+  assert.deepStrictEqual(T.metricaDe({ capa: 2, tipo: 'glosario', ref: 'glosario/thought/' }, 'pronunciacion'), { c: 'biblioteca', i: 'pronunciacion', t: 'glosario:thought' });
+  assert.strictEqual(T.metricaDe({ capa: 3, id: '¿Qué? <b>' }, 'otra').t, 'otro');
+});
 require('./riso-tutor-v2.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 require('./riso-tutor-piloto1.test.js')(test, { T, K, tutor, capa, assert, path, ROOT });
 Promise.all(pend).then(() => { console.log('\n' + p + ' ok, ' + f + ' fallos'); process.exit(f ? 1 : 0); });

@@ -52,7 +52,7 @@ module.exports = function (test, H) {
     ['¿Por qué no se dice «more better»?', 'comparativos', /much better/], ['¿Cómo se pronuncia el sonido «th»?', 'sonido-th', /sordo.*sonoro/]];
   FICHAS.forEach(([q, id, re]) => test('piloto · ficha revisada ' + id, async () => { const r = await capa(q); assert.strictEqual(r.id, id, r.texto); assert.ok(re.test(r.texto), r.texto); assert.ok(!/—/.test(r.texto)); }));
   test('piloto · matices: will no expresa certeza, people «normalmente» plural, th sonoro y sordo', () => {
-    const f = id => K.faqPendientes.find(x => x.id === id).r;
+    const f = id => (K.faqPendientes.find(x => x.id === id) || K.faq.find(x => x.id === id)).r;
     assert.ok(!/certeza/.test(f('will-would')) || /sin indicar/.test(f('will-would')));
     assert.ok(/normalmente/.test(f('people')) && !/siempre/.test(f('people')));
     assert.ok(/sonoro/.test(f('sonido-th')) && /sordo/.test(f('sonido-th')) && !/vibrante/.test(f('sonido-th')));
@@ -89,19 +89,25 @@ module.exports = function (test, H) {
   });
 
   // ---- aprobación de Leo: nada pendiente responde a alumnos por defecto ----
-  test('aprobación · por defecto ninguna ficha nueva ni cambio propuesto responde', async () => {
-    const nuevas = ['make-do', 'say-tell', 'be-used-to', 'presente-continuo-futuro', 'will-would', 'people', 'the', 'phrasal-verbs', 'sonido-th'];
-    nuevas.forEach(id => assert.ok(!K.faq.some(f => f.id === id), id + ' no debe estar activa'));
-    assert.strictEqual(K.faqPendientes.length, 13);
-    const pp = K.faq.find(f => f.id === 'presente-perfecto'); assert.ok(!/today/.test(pp.r), 'el texto activo del presente perfecto sigue siendo el aprobado');
-    for (const q of ['¿Qué diferencia hay entre «make» y «do»?', '¿Cuándo uso «the»?', '¿Qué es un phrasal verb?', '¿Cómo se pronuncia el sonido «th»?']) {
-      const r = await H.capa(q); assert.ok(!['make-do', 'the', 'phrasal-verbs', 'sonido-th'].includes(r.id), q + ' → ' + r.id);
+  test('aprobación · solo lo que está en APROBADAS_POR_LEO responde a alumnos', async () => {
+    const faq = require(H.path.join(H.ROOT, 'tools/tutor/faq.js'));
+    const aprob = new Set(faq.APROBADAS_POR_LEO);
+    // Toda ficha nueva o cambio propuesto que NO esté aprobado debe seguir en faqPendientes; lo aprobado, activo.
+    faq.filter(f => f.estado === 'pendiente' || f.propuesta).forEach(f => {
+      const activa = K.faq.find(x => x.id === f.id), pend = K.faqPendientes.some(x => x.id === f.id);
+      if (aprob.has(f.id)) { assert.ok(activa && !pend, f.id + ' aprobada debe estar activa'); if (f.propuesta) assert.strictEqual(activa.r, f.propuesta.r || f.r, f.id); }
+      else { assert.ok(pend, f.id + ' sin aprobar debe quedar pendiente'); if (f.estado === 'pendiente') assert.ok(!activa, f.id); }
+    });
+    assert.strictEqual(K.faqPendientes.length, 0, 'Leo aprobó las 13 (27 nov 2026)');
+    // Por defecto (sin fichasPendientes) responden porque están aprobadas.
+    for (const [q, id] of [['¿Qué diferencia hay entre «make» y «do»?', 'make-do'], ['¿Cuándo uso «the»?', 'the'], ['¿Qué es un phrasal verb?', 'phrasal-verbs'], ['¿Cómo se pronuncia el sonido «th»?', 'sonido-th']]) {
+      const r = await H.capa(q); assert.strictEqual(r.id, id, q + ' → ' + r.id);
     }
-    const faq = require(H.path.join(H.ROOT, 'tools/tutor/faq.js')); assert.ok(Array.isArray(faq.APROBADAS_POR_LEO));
+    assert.ok(/Would you help me\?/.test(K.faq.find(f => f.id === 'will-would').r), 'se mantiene «Would you help me?»');
   });
   // ---- correcciones de la auditoría educativa de las 9 fichas ----
   test('auditoría · correcciones de contenido de las fichas', () => {
-    const P = id => K.faqPendientes.find(f => f.id === id).r;
+    const P = id => (K.faqPendientes.find(f => f.id === id) || K.faq.find(f => f.id === id)).r;
     assert.ok(/turn it off, no turn off it/.test(P('phrasal-verbs')));
     assert.ok(/make the bed/.test(P('make-do')) && !/do exercise/.test(P('make-do')));
     assert.ok(/Did you use to/.test(P('be-used-to')) && /o que era así/.test(P('be-used-to')));
@@ -109,6 +115,6 @@ module.exports = function (test, H) {
     assert.ok(/también se puede usar going to/.test(P('presente-continuo-futuro')));
     assert.ok(/d suave/.test(P('sonido-th')) && /justo detrás/.test(P('sonido-th')));
     assert.ok(/persons/.test(P('people')) && /superlativos/.test(P('the')));
-    K.faqPendientes.forEach(f => { assert.ok(!/—/.test(f.r), f.id); assert.ok(!/\b(siempre|nunca)\b/i.test(f.r.replace(/«[^»]*»/g, '')), 'absoluto en ' + f.id); assert.ok(f.ej.length === 2, f.id); });
+    K.faq.filter(f => ['make-do','say-tell','be-used-to','presente-continuo-futuro','will-would','people','the','phrasal-verbs','sonido-th'].includes(f.id)).forEach(f => { assert.ok(!/—/.test(f.r), f.id); assert.ok(!/\b(siempre|nunca)\b/i.test(f.r.replace(/«[^»]*»/g, '')), 'absoluto en ' + f.id); assert.ok(f.ej.length === 2, f.id); });
   });
 };
