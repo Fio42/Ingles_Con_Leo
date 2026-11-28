@@ -106,6 +106,9 @@
     /* C9: LeoBot vive en la barra superior (zona segura): el robot flotante ya no tapa contenido en ningún tamaño */
     var hb = d.getElementById('v2Help'); hb.innerHTML = K.px(A.UI.chat); html.classList.add('v2-help-docked');
     hb.addEventListener('click', function(){ SND.play('tap'); openLeoBot(); });
+    /* Riso (asistente de la academia): se carga en las páginas de la academia; solo se muestra si el servidor lo habilita
+       para la cuenta (hoy, solo el piloto). Sin eso no cambia nada. */
+    if(!nonMember && !d.getElementById('risoAcademiaJs')){ var rj = d.createElement('script'); rj.id = 'risoAcademiaJs'; rj.src = 'riso/riso-academia.js?v=20261128c'; rj.async = true; d.body.appendChild(rj); }
     window.addEventListener('v2:sound', paintTop);
     d.getElementById('v2Theme').addEventListener('click', function(){ SND.play('tap'); setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); });
     addEventListener('scroll', function(){ d.getElementById('v2Top').classList.toggle('k-is-scrolled', scrollY > 4); }, { passive: true });
