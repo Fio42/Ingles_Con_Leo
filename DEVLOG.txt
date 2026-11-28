@@ -4642,3 +4642,7 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 - Archivo movido a supabase/migrations/20261128030634_riso_metricas.sql (mismo contenido). La reversión sigue en supabase/pendientes/20261128b_riso_metricas_revertir.sql.
 - Comprobado en producción: 1 registro, 7 funciones, tabla vacía con RLS; visitantes y alumnos no la leen; solo el servidor anota IA y lee el resumen; pagos apagados, solo piloto, 1 cuenta; otra cuenta recibe enabled:false.
 - riso.html: versión ?v=20261128b para conocimiento.js y riso-tutor.js. Respaldo exacto de leo-ai v32 en _respaldos_privados (ignorado por git).
+
+2026-11-28 · Riso: corrección PENDIENTE de search_path (no aplicada)
+- supabase/pendientes/20261128c_riso_metricas_search_path.sql (+ _revertir.sql): fija search_path vacío en riso_metricas_norm_intencion y riso_metricas_norm_tema (aviso function_search_path_mutable). No cambia permisos ni datos. Probada en PostgreSQL local: métricas 11 de 11. Se aplica antes del lanzamiento general, no forma parte de la publicación del piloto 2.
+- Estado comprobado: origin/main c309f5b, origin/v2/tutor 48d46ca, sin cambios en los 9 archivos de publicación.
