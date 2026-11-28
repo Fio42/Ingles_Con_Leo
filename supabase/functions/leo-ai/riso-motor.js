@@ -608,6 +608,9 @@
       metricas: function () { return Object.assign({}, estado.metricas, { usadasHoy: estado.usadasHoy }); },
       historial: function () { return estado.visual.slice(); },
       historialEnviable: function () { return estado.enviable.slice(); },
+      // Una respuesta que llegó por otro camino (p. ej. «¿Por qué?» de un ejercicio con la explicación de Leo AI) entra al
+      // historial para que la conversación siga con contexto y no la repita.
+      anotar: function (q, texto) { registrar(String(q || ''), resp(5, String(texto || ''), {})); },
       config: CONFIG
     };
   }

@@ -1,5 +1,5 @@
 // ============================================================
-// Riso · modo "chat" de la función leo-ai (servidor). PREPARADO, NO DESPLEGADO.
+// Riso · modo "chat" de la función leo-ai (servidor).
 // Lo usa index.ts solo cuando body.mode === 'chat'. Los modos actuales de Leo AI no cambian.
 //
 // Orden: sesión (ya verificada en index.ts) → datos mínimos y recortados → filtro del servidor (el mismo motor del
@@ -27,6 +27,10 @@ export const RISO_REGLAS = [
   'Pronunciación: si usas IPA, escríbela entre barras y di que es IPA; si das una aproximación con letras del español, di que es aproximada. No mezcles las dos. La th tiene un sonido sordo /θ/ (think) y uno sonoro /ð/ (this).',
   'No recomiendes audios, videos, apps, páginas ni otros recursos: la plataforma agrega la guía cuando existe.',
   'Los ejemplos deben ser frases naturales que diría un hablante nativo, con una traducción natural al español. Si piden otro ejemplo, usa otra situación y otras palabras, distinto de los ejemplos ya mostrados en la conversación.',
+  'En la traducción al español, usa ¿? y ¡! solo si la frase es una pregunta o una exclamación.',
+  'Si piden una forma más educada o cortés, da una petición o frase realmente cortés (por ejemplo Could I…?, I would like…, Would it be possible to…?), no solo una versión más suave.',
+  'Si preguntan por excepciones, menciona solo matices reales y conocidos del inglés estándar; si no hay una excepción real, dilo con claridad y da un matiz útil del uso, sin inventar.',
+  'Si el alumno ya vio una explicación del ejercicio, no la repitas: aporta algo nuevo (otro ángulo, otro ejemplo, una comparación, un truco para recordarlo o su error concreto).',
   'Devuelve solo JSON con: texto (la explicación), ejemplo_en y ejemplo_es (pueden ir vacíos).'
 ].join(' ')
 
@@ -83,11 +87,11 @@ export function resolverContexto(contexto, indice) {
     const i = Number(elegida)
     if (i >= it.p.length) return { ok: false, error: 'bad_context' }
     return { ok: true, ctx: { tema: it.t, tipo: 'error', enunciado: it.e, respuestaAlumno: it.p[i].replace(/[.,?!]/g, ''),
-      respuestaCorrecta: it.c, fraseCorrecta: it.f, acerto: i >= it.s[0] && i <= it.s[1] } }
+      respuestaCorrecta: it.c, fraseCorrecta: it.f, acerto: i >= it.s[0] && i <= it.s[1], explicacion: it.x || '' } }
   }
   const op = it.o.find(o => o.toLowerCase() === elegida.toLowerCase())
   if (!op) return { ok: false, error: 'bad_context' }
-  return { ok: true, ctx: { tema: it.t, enunciado: it.e, respuestaAlumno: op, respuestaCorrecta: it.c, acerto: op.toLowerCase() === it.c.toLowerCase() } }
+  return { ok: true, ctx: { tema: it.t, enunciado: it.e, respuestaAlumno: op, respuestaCorrecta: it.c, acerto: op.toLowerCase() === it.c.toLowerCase(), explicacion: it.x || '' } }
 }
 
 // 3) Filtro del servidor (por si alguien se salta el navegador). Devuelve una respuesta fija o null.
@@ -102,6 +106,7 @@ export function construirMensajes(pregunta, historial, ctx) {
   const partes = []
   if (ctx && ctx.tipo === 'error') partes.push(`Ejercicio (${ctx.tema}). Consigna: encontrar la palabra incorrecta en «${ctx.enunciado}». El alumno tocó «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La palabra incorrecta es «${ctx.respuestaCorrecta}» y la frase correcta es «${ctx.fraseCorrecta}».`)
   else if (ctx) partes.push(`Ejercicio (${ctx.tema}): «${ctx.enunciado}». El alumno respondió «${ctx.respuestaAlumno}» y ${ctx.acerto ? 'ACERTÓ' : 'FALLÓ'}. La respuesta correcta es «${ctx.respuestaCorrecta}».`)
+  if (ctx && ctx.explicacion) partes.push(`Explicación que el alumno ya vio en la corrección (no la repitas): «${String(ctx.explicacion).slice(0, 300)}».`)
   if (historial.length) partes.push('Conversación reciente:\n' + historial.map(m => (m.rol === 'alumno' ? 'Alumno: ' : 'Riso: ') + m.texto).join('\n'))
   partes.push('Pregunta del alumno: ' + pregunta)
   return [{ role: 'system', content: RISO_REGLAS }, { role: 'user', content: partes.join('\n\n') }]
@@ -194,10 +199,35 @@ const MOTIVOS = { disabled: 'disabled', not_allowed: 'not_allowed', unverified: 
   pilot_total: 'busy', riso_budget: 'busy', shared_ceiling: 'busy', too_long: 'too_long', bad_request: 'bad_input' }
 
 // Estado de Riso para esta cuenta (sin IA, sin gastar nada).
+export const INDICE_URL = 'https://inglesconleo.com/supabase/functions/leo-ai/riso-ejercicios.json'
 export async function estadoChat(userId, deps) {
   const { data, error } = await deps.rpc('riso_chat_status', { p_user: userId })
   if (error || !data || typeof data !== 'object') return { ok: true, riso: { enabled: false } }
+  // La página consulta el estado al abrirse: se aprovecha para tener listo el índice de ejercicios (la primera pregunta
+  // sobre un ejercicio ya no espera a descargarlo). Solo en el servidor real (Deno) y sin esperar el resultado.
+  if (data.enabled === true) {
+    const precargar = deps.precargarIndice || (typeof Deno !== 'undefined' ? () => cargarIndice((Deno.env.get('RISO_EJERCICIOS_URL') || INDICE_URL), fetch) : null)
+    if (precargar) Promise.resolve().then(precargar).catch(() => {})
+  }
   return { ok: true, riso: data }
+}
+
+// ---------- Caché compartida de respuestas genéricas (APAGADA por defecto: leo_ai_config.riso_cache) ----------
+// Solo preguntas sueltas de inglés (sin ejercicio, sin conversación previa, sin datos personales) de traducción,
+// significado, pronunciación o explicación. Se guarda la pregunta NORMALIZADA (sin datos personales) y la respuesta ya
+// validada, para reutilizarla con otro alumno que pregunte lo mismo. No es la biblioteca oficial: Leo revisa, aprueba o
+// retira (riso_cache_revisar / riso_cache_aprobar / riso_cache_retirar); un «No me ayudó» la retira sola.
+const CACHE_INTENCIONES = { traduccion: 1, significado: 1, pronunciacion: 1, explicacion: 1 }
+export function preguntaCacheable(pregunta, historial, contexto) {
+  if (contexto || (historial && historial.length)) return null
+  if (R._int.tienePII(pregunta)) return null
+  const n = R._int.norm(pregunta), it = R._int.intencion(n, false)
+  if (!CACHE_INTENCIONES[it.tipo] || n.length < 4 || n.length > 160) return null
+  return { norm: n, intencion: it.tipo }
+}
+export async function claveCache(intencion, norm) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(intencion + '|' + norm))
+  return Array.from(new Uint8Array(buf)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 /* Orquestación. deps: { rpc(nombre, args) → { data, error }, llamarModelo(mensajes) → resultado de llamarCloudflare,
@@ -221,6 +251,19 @@ export async function procesarChat(userId, body, deps) {
     // Solo ejercicios que ESTA cuenta respondió (con esa misma respuesta) en las últimas 2 horas.
     const { data: valido, error: errV } = await deps.rpc('riso_intento_valido', { p_user: userId, p_item: e.contexto.itemId, p_respuesta: e.contexto.respuestaAlumno })
     if (errV || valido !== true) { log({ ev: 'riso_chat', fallo: 'contexto_sin_intento' }); return { ok: false, reason: 'bad_context' } }
+  }
+  const cacheable = preguntaCacheable(e.pregunta, e.historial, e.contexto)
+  const clave = cacheable ? await claveCache(cacheable.intencion, cacheable.norm) : null
+  if (clave) {
+    try {
+      const { data: hit, error: errC } = await deps.rpc('riso_cache_buscar', { p_clave: clave })
+      if (!errC && hit && typeof hit.texto === 'string' && hit.texto.length >= 8) {
+        const metricaC = { c: 'cache', i: cacheable.intencion, t: 'cache:' + clave }
+        try { await deps.rpc('riso_metrica_ia', { p_intencion: metricaC.i, p_tema: metricaC.t, p_ms: deps.ahora() - t0, p_in: 0, p_out: 0, p_neur: 0, p_ok: true, p_cache: true }) } catch (err) { /* medir nunca rompe */ }
+        log({ ev: 'riso_chat', capa: 'cache', ms: deps.ahora() - t0 })
+        return { ok: true, answer: { texto: hit.texto, ejemplo_en: hit.ejemplo_en || '', ejemplo_es: hit.ejemplo_es || '', metrica: metricaC }, cache: true }
+      }
+    } catch (err) { /* sin caché (migración no aplicada o apagada): sigue igual */ }
   }
   const mensajes = construirMensajes(R._int.limpiarPII(e.pregunta), e.historial, rc.ctx)
   const est = estimarNeuronas(mensajes)
@@ -247,7 +290,10 @@ export async function procesarChat(userId, body, deps) {
     await deps.rpc('riso_metrica_ia', { p_intencion: metrica.i, p_tema: metrica.t, p_ms: deps.ahora() - t0, p_in: usage.input, p_out: usage.output, p_neur: Math.round(n * 100) / 100, p_ok: !!salida, p_cache: false })
   } catch (err) { /* medir nunca rompe una respuesta */ }
   if (!salida) return { ok: false, reason: (r && r.reason === 'quota') ? 'busy' : 'retry' }
-  return { ok: true, answer: salida, metrica }
+  if (clave) {
+    try { await deps.rpc('riso_cache_guardar', { p_clave: clave, p_intencion: cacheable.intencion, p_pregunta: R._int.limpiarPII(cacheable.norm).slice(0, 200), p_texto: salida.texto, p_ejemplo_en: salida.ejemplo_en, p_ejemplo_es: salida.ejemplo_es }) } catch (err) { /* sin caché: no pasa nada */ }
+  }
+  return { ok: true, answer: Object.assign({}, salida, { metrica }), metrica }
 }
 
 // Tema de la métrica: el tema del ejercicio convertido a identificador corto, o 'libre'. Nunca texto del alumno.

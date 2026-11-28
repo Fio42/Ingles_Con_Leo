@@ -2666,7 +2666,7 @@ function renderGrammarItemInto(container, item, onAnswered, aiOpts){
 
         renderFeedback(container, isCorrect, item.explain, item.examples);
         addErrorLessonLink(container, item, isCorrect);
-        leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:cleanTokens[pickedIdx] }, aiOpts));
+        leoAiAttach(container.querySelector('#fb'), Object.assign({ kind:'grammar', item, isCorrect, userAnswer:cleanTokens[pickedIdx], pickedIdx }, aiOpts));
         noteGrammarAnswer(container, item, isCorrect, cleanTokens[pickedIdx]);
         onAnswered(isCorrect);
       });
@@ -3134,10 +3134,16 @@ function buildLeoAiPayload(ctx){
   return (base.question && base.correctAnswer && base.studentAnswer) ? base : null;
 }
 
+/* RISO EN LA ACADEMIA: con Riso activo para la cuenta (window.__risoActivo, lo decide el servidor; ver
+   riso/riso-academia.js), Riso es la identidad visible de toda la ayuda con IA. Por detrás siguen las mismas
+   funciones de Leo AI (explicar, Writing, análisis): solo cambian el nombre y la forma de pedir más ayuda.
+   Sin Riso activo, todo se ve y funciona exactamente igual que antes. */
+function risoActivo(){ return window.__risoActivo === true && typeof window.RisoAcademia === 'object' && window.RisoAcademia !== null; }
+function leoAiNombre(){ return risoActivo() ? 'Riso' : 'Leo AI'; }
 function leoAiDefaultLabel(ctx){
-  if(ctx.kind === 'writing') return 'Revisar mi frase con Leo AI';
+  if(ctx.kind === 'writing') return 'Revisar mi frase con ' + leoAiNombre();
   if(ctx.kind === 'diagnosis') return '¿Por qué es mi punto débil?';
-  if(ctx.kind === 'insight') return 'Analizar con Leo AI';
+  if(ctx.kind === 'insight') return 'Analizar con ' + leoAiNombre();
   if(ctx.isCorrect === true) return '¿Por qué es correcta?';
   return ctx.reviewMode ? 'Explícame este error' : 'Explícame por qué';
 }
@@ -3152,6 +3158,7 @@ const LEO_AI_FAIL_TEXT = {
   members_only: 'Esta ayuda de Leo AI es solo para miembros.',
   default: 'Leo AI no pudo responder ahora. Revisa tu conexión e inténtalo de nuevo en un momento. La explicación de arriba sigue siendo válida.'
 };
+function leoAiFailText(reason){ var t = LEO_AI_FAIL_TEXT[reason] || LEO_AI_FAIL_TEXT.default; return risoActivo() ? t.replace(/Leo AI/g, 'Riso') : t; }
 const _leoAiCache = new Map();
 // Los análisis (modo "insight") se guardan también en el navegador: si el
 // alumno vuelve a abrir su progreso o sus errores y los datos no
@@ -3191,6 +3198,13 @@ function leoAiAttach(host, ctx){
     if(!isLeoAiEnabled()) return leoAiAttachFree(host, ctx);
     const payload = buildLeoAiPayload(ctx);
     if(!payload) return null;
+    if(risoActivo() && typeof RisoAcademia.decorar === 'function') RisoAcademia.decorar(host, ctx);   // Riso presenta la corrección (la misma de siempre)
+    // Con Riso activo, en los ejercicios hay UN solo botón: «Pregúntale a Riso». Abre la conversación con el contexto del
+    // ejercicio; «¿Por qué?» usa la misma explicación de Leo AI de siempre y lo demás lo responde Riso.
+    if(risoActivo() && payload.mode === 'explain' && typeof RisoAcademia.botonEjercicio === 'function'){
+      const rb = RisoAcademia.botonEjercicio(host, ctx, payload);
+      if(rb) return rb;
+    }
     const box = document.createElement('div');
     box.className = 'leo-ai';
     const btn = document.createElement('button');
@@ -3223,7 +3237,7 @@ function leoAiAttach(host, ctx){
       const out = document.createElement('div');
       out.className = 'leo-ai-answer';
       out.setAttribute('aria-live', 'polite');
-      out.innerHTML = '<p class="leo-ai-loading">Leo AI está pensando…</p>';
+      out.innerHTML = '<p class="leo-ai-loading">' + leoAiNombre() + ' está pensando…</p>';
       box.appendChild(out);
       const request = _leoAiCache.has(key)
         ? Promise.resolve(_leoAiCache.get(key))
@@ -3598,12 +3612,13 @@ function leoAiNextSteps(ctx){
 function renderLeoAiAnswer(out, payload, res, ctx){
   out.innerHTML = '';
   const add = (tag, cls, text)=>{ const el = document.createElement(tag); el.className = cls; el.textContent = text; out.appendChild(el); return el; };
-  const head = add('div', 'leo-ai-head', 'Leo AI');
+  const head = add('div', 'leo-ai-head', leoAiNombre());
+  if(risoActivo()) head.classList.add('is-riso');
   if(!LEO_AI_PUBLIC){ const beta = document.createElement('span'); beta.className = 'leo-ai-beta'; beta.textContent = 'Beta'; head.appendChild(beta); }
   const a = res && res.ok && res.answer;
   if(!a || typeof a.explanation !== 'string'){
     out.classList.add('is-error');
-    add('p', 'leo-ai-text', LEO_AI_FAIL_TEXT[res && res.reason] || LEO_AI_FAIL_TEXT.default);
+    add('p', 'leo-ai-text', leoAiFailText(res && res.reason));
     return;
   }
   if(payload.mode === 'writing'){

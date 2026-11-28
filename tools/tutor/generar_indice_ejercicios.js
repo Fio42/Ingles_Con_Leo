@@ -9,6 +9,8 @@ const root = path.join(__dirname, '..', '..');
 const ctx = { window: {}, console }; vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8') + ';this.G = GRAMMAR_BANK;', ctx);
 const out = {}, malos = [];
+// Explicación que el alumno YA vio en la corrección (texto plano, recortado): Riso la recibe para no repetirla y aportar algo nuevo.
+const plano = h => String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
 for (const lv in ctx.G) for (const v of ctx.G[lv]) for (const t of v) for (const it of t.items) {
   let e, o, c;
   if (it.type === 'choice') { e = it.prompt; o = it.options; c = it.options[it.correct]; }
@@ -22,11 +24,11 @@ for (const lv in ctx.G) for (const v of ctx.G[lv]) for (const t of v) for (const
     let ini = -1;
     for (let i = 0; ww.length && i <= limpio.length - ww.length; i++) if (limpio.slice(i, i + ww.length).join(' ') === it.wrongWord) { ini = i; break; }
     if (ini < 0) { malos.push(it.id); continue; }
-    out[it.id] = { t: t.topic, k: 'error', e: it.wrong, p: tok, s: [ini, ini + ww.length - 1], c: it.wrongWord, f: it.right };
+    out[it.id] = { t: t.topic, k: 'error', e: it.wrong, p: tok, s: [ini, ini + ww.length - 1], c: it.wrongWord, f: it.right, x: plano(it.explain) };
     continue;
   }
   else continue;
-  out[it.id] = { t: t.topic, e, o, c };
+  out[it.id] = { t: t.topic, e, o, c, x: plano(it.explain) };
 }
 const dir = path.join(root, 'supabase/functions/leo-ai');
 fs.writeFileSync(path.join(dir, 'riso-ejercicios.json'), JSON.stringify(out));
