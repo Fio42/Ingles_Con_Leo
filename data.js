@@ -11794,9 +11794,9 @@ GRAMMAR_BANK.medio.push(
         "id": "g-medio-m100-4",
         "type": "error",
         "wrong": "He can swim, can't he.",
-        "wrongWord": "he.",
+        "wrongWord": "he",
         "right": "He can swim, can't he?",
-        "rightWord": "he?",
+        "rightWord": "he",
         "explain": "Un question tag siempre termina con signo de interrogación.",
         "examples": [
           {
