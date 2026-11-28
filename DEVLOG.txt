@@ -4646,3 +4646,14 @@ clases-particulares.html: se mantiene la clase de US$25 y el boton de reservar. 
 2026-11-28 · Riso: corrección PENDIENTE de search_path (no aplicada)
 - supabase/pendientes/20261128c_riso_metricas_search_path.sql (+ _revertir.sql): fija search_path vacío en riso_metricas_norm_intencion y riso_metricas_norm_tema (aviso function_search_path_mutable). No cambia permisos ni datos. Probada en PostgreSQL local: métricas 11 de 11. Se aplica antes del lanzamiento general, no forma parte de la publicación del piloto 2.
 - Estado comprobado: origin/main c309f5b, origin/v2/tutor 48d46ca, sin cambios en los 9 archivos de publicación.
+
+2026-11-28 · Riso piloto 2 REAL con Gemma 4 (publicado en main cda8d8b, leo-ai v33 desplegada)
+- GitHub Pages sirve los 7 archivos públicos con la misma huella que main. leo-ai v33 = index.ts, riso-chat.mjs y riso-motor.js de main (equivalentes byte a byte salvo la forma de escribir algunos caracteres, igual que v32). riso-ejercicios.json no se importa: la función lo lee del sitio (huella comprobada). Respaldo v32 en _respaldos_privados.
+- Leo AI sigue igual: explain real con la cuenta de Leo en 4,2 s (11 neuronas), trial_status bien; sin sesión, 401.
+- Riso: solo la cuenta del piloto (otra cuenta enabled:false); la página toma el cupo del servidor (60/día).
+- 20 preguntas con la interfaz real: 12 sin IA (9 fichas aprobadas, 2 glosario, 1 Soporte) en 0-2 ms y 8 con Gemma en 4,3 s de promedio (3,0 a 4,6 s; la primera del ejercicio tardó 15,5 s). Todas respondieron con la capa esperada.
+- Exactitud: 18 correctas, 2 parciales (15: «de forma más educada» solo suaviza; y el ejemplo traducido empieza con ¿ de más. 19: excepciones del -ed/-ing, poco útil), 0 incorrectas. Identidad bien en todas: ninguna se presenta como profesor o tutor ni menciona a Leo sin motivo.
+- Neuronas reales del piloto: 91,06 en 8 respuestas con IA (11,38 por respuesta) + 11 del control de Leo AI = unas 102 (1 % del día gratis). Pagos apagados, límites sin cambios.
+- Métricas: 20 preguntas registradas por capa (ia 8, faq 9, biblioteca 2, filtro 1), con temas cortos, sin texto ni alumno. Desde el navegador no se puede leer la tabla, ni el resumen, ni anotar IA (42501).
+- Capacidad que queda: hoy 9 respuestas con IA hasta las 19:00 (hora Colombia); piloto total 49 de 100.
+- Pendiente: mejorar 15 y 19 en las reglas, aplicar 20261128c (search_path) antes del lanzamiento general, y la página riso.html sin ?v puede quedar en caché del navegador hasta 10 minutos.
