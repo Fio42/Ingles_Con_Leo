@@ -5,6 +5,7 @@
 .rsa-tip .rsa-tip__av{width:26px;height:31px;border-radius:0;background:none;padding:0;object-fit:contain;flex:none}
 .rsa-preg__btn{min-height:44px;gap:8px}
 .rsa-preg__av{width:24px;height:28px;object-fit:contain;flex:none}
+.rsa-fb .leo-ai-head.is-riso{display:none}   /* dentro de una corrección ya firmada por Riso, una sola firma */
 .leo-ai-head.is-riso::before{content:"";width:22px;height:26px;background:url(img/riso-neutro.webp) center/contain no-repeat;flex:none}
 
 .rsa-top{display:inline-flex;align-items:center;justify-content:center;padding:0}
